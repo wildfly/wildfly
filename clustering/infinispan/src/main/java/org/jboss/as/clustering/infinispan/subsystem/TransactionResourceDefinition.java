@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.transaction.LockingMode;
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -45,7 +46,7 @@ import org.jboss.dmr.ModelType;
  */
 public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement TRANSACTION_PATH = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
     // attributes
     // cache mode required, txn mode not
@@ -55,26 +56,25 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new EnumValidator<>(LockingMode.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(LockingMode.PESSIMISTIC.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, true)
             .setXmlName(Attribute.MODE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(TransactionMode.class, true, true))
             .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition STOP_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)
             .setXmlName(Attribute.STOP_TIMEOUT.getLocalName())
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(30000))
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] TRANSACTION_ATTRIBUTES = { MODE, STOP_TIMEOUT, LOCKING };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MODE, STOP_TIMEOUT, LOCKING };
 
     // metrics
     static final AttributeDefinition COMMITS = new SimpleAttributeDefinitionBuilder(MetricKeys.COMMITS, ModelType.LONG, true).setStorageRuntime().build();
@@ -83,24 +83,21 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] TRANSACTION_METRICS = { COMMITS, PREPARES, ROLLBACKS };
 
-    public TransactionResourceDefinition() {
-        super(TRANSACTION_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION),
-                CacheConfigOperationHandlers.TRANSACTION_ADD,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    TransactionResourceDefinition() {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    public void registerAttributes(ManagementResourceRegistration registration) {
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSACTION_ATTRIBUTES);
-        for (AttributeDefinition attr : TRANSACTION_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
         // register any metrics
         for (AttributeDefinition attr : TRANSACTION_METRICS) {
-            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 }

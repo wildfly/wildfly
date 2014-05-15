@@ -103,9 +103,9 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public abstract class CacheAdd extends AbstractAddStepHandler {
+public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
-    private static final Logger log = Logger.getLogger(CacheAdd.class.getPackage().getName());
+    private static final Logger log = Logger.getLogger(CacheAddHandler.class.getPackage().getName());
     private static final String DEFAULTS = "infinispan-defaults.xml";
     private static final String QUERY_MODULE = "org.infinispan.query";
     private static volatile Map<CacheMode, Configuration> defaults = null;
@@ -131,7 +131,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     private static ConfigurationBuilderHolder load(String resource) {
-        URL url = find(resource, CacheAdd.class.getClassLoader());
+        URL url = find(resource, CacheAddHandler.class.getClassLoader());
         log.debugf("Loading Infinispan defaults from %s", url.toString());
         ParserRegistry parser = new ParserRegistry(ParserRegistry.class.getClassLoader());
         try (InputStream input = url.openStream()) {
@@ -155,7 +155,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     final CacheMode mode;
 
-    CacheAdd(CacheMode mode) {
+    CacheAddHandler(CacheMode mode) {
         this.mode = mode;
     }
 
@@ -229,12 +229,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel) throws OperationFailedException {
         // get container and cache addresses
-        final PathAddress cacheAddress = getCacheAddressFromOperation(operation) ;
-        final PathAddress containerAddress = getCacheContainerAddressFromOperation(operation) ;
+        final PathAddress cacheAddress = getCacheAddressFromOperation(operation);
+        final PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
 
         // get container and cache names
-        final String cacheName = cacheAddress.getLastElement().getValue() ;
-        final String containerName = containerAddress.getLastElement().getValue() ;
+        final String cacheName = cacheAddress.getLastElement().getValue();
+        final String containerName = containerAddress.getLastElement().getValue();
 
         // remove all services started by CacheAdd, in reverse order
         // remove the binder service
@@ -252,13 +252,13 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     protected PathAddress getCacheAddressFromOperation(ModelNode operation) {
-        return PathAddress.pathAddress(operation.get(OP_ADDR)) ;
+        return PathAddress.pathAddress(operation.get(OP_ADDR));
     }
 
     protected PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
-        final PathAddress cacheAddress = getCacheAddressFromOperation(operation) ;
-        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1) ;
-        return containerAddress ;
+        final PathAddress cacheAddress = getCacheAddressFromOperation(operation);
+        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1);
+        return containerAddress;
     }
 
     ServiceController<?> installCacheConfigurationService(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId,
@@ -524,7 +524,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     // }
                     String propertyName = property.getName();
                     // get the value from ModelNode {"value" => "property-value"}
-                    ModelNode propertyValue = null ;
+                    ModelNode propertyValue = null;
                     propertyValue = StorePropertyResourceDefinition.VALUE.resolveModelAttribute(context,property.getValue());
                     properties.setProperty(propertyName, propertyValue.asString());
                 }
@@ -574,7 +574,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
             final SingleFileStoreConfigurationBuilder builder = persistenceBuilder.addSingleFileStore();
 
-            final String path = ((resolvedValue = FileStoreResourceDefinition.PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
+            final String path = ((resolvedValue = FileStoreResourceDefinition.RELATIVE_PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
             final String relativeTo = ((resolvedValue = FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR;
             Injector<PathManager> injector = new Injector<PathManager>() {
                 private volatile PathManager.Callback.Handle callbackHandle;
@@ -690,7 +690,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     {
         if (!table.isDefined() || !table.hasDefined(columnKey)) return defaultValue;
         ModelNode column = table.get(columnKey);
-        ModelNode resolvedValue = null ;
+        ModelNode resolvedValue = null;
         return ((resolvedValue = columnAttribute.resolveModelAttribute(context, column)).isDefined()) ? resolvedValue.asString() : defaultValue;
     }
 

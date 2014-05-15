@@ -32,16 +32,15 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
-    public static final PathElement LOCAL_CACHE_PATH = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.LOCAL_CACHE, name);
+    }
 
     // attributes
 
-    public LocalCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
-        super(LOCAL_CACHE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCAL_CACHE),
-                LocalCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
+    LocalCacheResourceDefinition(ResolvePathHandler resolvePathHandler) {
+        super(ModelKeys.LOCAL_CACHE, LocalCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler);
     }
-
-
 }

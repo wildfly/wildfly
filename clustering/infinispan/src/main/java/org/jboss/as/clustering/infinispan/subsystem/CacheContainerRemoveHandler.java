@@ -47,9 +47,7 @@ import org.jboss.dmr.Property;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat, Inc.
  */
-public class CacheContainerRemove extends AbstractRemoveStepHandler {
-
-    public static final CacheContainerRemove INSTANCE = new CacheContainerRemove();
+public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -61,7 +59,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         removeExistingCacheServices(context, model, containerName);
 
         // remove the cache container services
-        CacheContainerAdd.INSTANCE.removeRuntimeServices(context, operation, model);
+        CacheContainerAddHandler.removeRuntimeServices(context, operation, model);
     }
 
     /**
@@ -78,10 +76,10 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String containerName = address.getLastElement().getValue();
         // used by service installation
-        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler() ;
+        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
         // re-install the cache container services
-        CacheContainerAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler);
+        CacheContainerAddHandler.installRuntimeServices(context, operation, model, verificationHandler);
 
         // re-install any existing cache services
         reinstallExistingCacheServices(context, model, containerName, verificationHandler);
@@ -98,8 +96,8 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
      */
     private static void reinstallExistingCacheServices(OperationContext context, ModelNode containerModel, String containerName, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
-        for (String cacheType: CacheRemove.INSTANCE.getCacheTypes()) {
-            CacheAdd addHandler = CacheRemove.INSTANCE.getAddHandler(cacheType);
+        for (String cacheType: CacheRemoveHandler.INSTANCE.getCacheTypes()) {
+            CacheAddHandler addHandler = CacheRemoveHandler.INSTANCE.getAddHandler(cacheType);
             List<Property> caches = getCachesFromParentModel(cacheType, containerModel);
             if (caches != null) {
                 for (Property cache: caches) {
@@ -122,8 +120,8 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
      */
     private static void removeExistingCacheServices(OperationContext context, ModelNode containerModel, String containerName) throws OperationFailedException {
 
-        for (String cacheType: CacheRemove.INSTANCE.getCacheTypes()) {
-            CacheAdd addHandler = CacheRemove.INSTANCE.getAddHandler(cacheType);
+        for (String cacheType: CacheRemoveHandler.INSTANCE.getCacheTypes()) {
+            CacheAddHandler addHandler = CacheRemoveHandler.INSTANCE.getAddHandler(cacheType);
             List<Property> caches = getCachesFromParentModel(cacheType, containerModel);
             if (caches != null) {
                 for (Property cache : caches) {

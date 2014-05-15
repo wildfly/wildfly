@@ -31,7 +31,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -52,59 +51,59 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
             .setXmlName(Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new ModuleIdentifierValidator(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition INDEXING = new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
             .setXmlName(Attribute.INDEX.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(Indexing.class, true, false))
             .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)
             .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallerFactory.createPropertyListAttributeMarshaller())
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
             .setXmlName(Attribute.JNDI_NAME.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
             .setXmlName(Attribute.START.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(StartMode.class, true, false))
             .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.STATISTICS_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS_ENABLED};
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
+            BATCHING, MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS_ENABLED
+    };
 
     // here for legacy purposes only
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
             .setXmlName(Attribute.NAME.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
 
     // metrics
     static final AttributeDefinition ACTIVATIONS = new SimpleAttributeDefinitionBuilder(MetricKeys.ACTIVATIONS, ModelType.STRING, true).setStorageRuntime().build();
@@ -128,25 +127,23 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             INVALIDATIONS, MISSES, NUMBER_OF_ENTRIES, PASSIVATIONS, READ_WRITE_RATIO, REMOVE_HITS, REMOVE_MISSES, STORES, TIME_SINCE_RESET };
 
     private final ResolvePathHandler resolvePathHandler;
-    final boolean runtimeRegistration;
 
-    public CacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    public CacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+        super(PathElement.pathElement(key), InfinispanExtension.getResourceDescriptionResolver(key), addHandler, removeHandler);
         this.resolvePathHandler = resolvePathHandler;
-        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    public void registerAttributes(ManagementResourceRegistration registration) {
         // do we really need a special handler here?
-        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CACHE_ATTRIBUTES);
-        for (AttributeDefinition attr : CACHE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
         }
 
         // register any metrics
         for (AttributeDefinition attr : CACHE_METRICS) {
-            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 

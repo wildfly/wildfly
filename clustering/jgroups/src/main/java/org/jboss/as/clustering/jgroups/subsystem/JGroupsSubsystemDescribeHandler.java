@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -50,9 +49,7 @@ import org.jboss.dmr.Property;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class JGroupsSubsystemDescribe implements OperationStepHandler {
-
-    public static final JGroupsSubsystemDescribe INSTANCE = new JGroupsSubsystemDescribe();
+public class JGroupsSubsystemDescribeHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -65,52 +62,41 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         }
 
         final PathAddress rootAddress = PathAddress.pathAddress(opAddress.getLastElement());
-        final ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        result.add(createOperation(rootAddress, model, JGroupsSubsystemResourceDefinition.ATTRIBUTES));
 
-        result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
+        if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                PathAddress stackAddress = rootAddress.append(StackResourceDefinition.pathElement(property.getName()));
+                ModelNode stack = property.getValue();
+                result.add(createOperation(stackAddress, stack));
 
-        if (subModel.hasDefined(ModelKeys.STACK)) {
-            for (final Property stack: subModel.get(ModelKeys.STACK).asPropertyList()) {
-                // process one stack
-                final ModelNode stackAddress = rootAddress.toModelNode();
-                stackAddress.add(ModelKeys.STACK, stack.getName());
-                result.add(ProtocolStackAdd.createOperation(stackAddress, stack.getValue()));
-
-                // process the child resources
-
-                // transport=TRANSPORT
-                if (stack.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).isDefined()) {
-                    ModelNode transport = stack.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-                    ModelNode transportAddress = stackAddress.clone();
-                    transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+                if (stack.get(TransportResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+                    ModelNode transport = stack.get(TransportResourceDefinition.PATH.getKeyValuePair());
+                    PathAddress transportAddress = stackAddress.append(TransportResourceDefinition.PATH);
                     // no optional transport:add parameters will be present, so use attributes list
-                    result.add(createOperation(transportAddress, transport, TransportResourceDefinition.TRANSPORT_ATTRIBUTES));
-                    addProtocolPropertyCommands(transport, transportAddress, result);
+                    result.add(createOperation(transportAddress, transport, TransportResourceDefinition.ATTRIBUTES));
+                    addProtocolPropertyCommands(transportAddress, transport, result);
                 }
-                // protocol=*
-                if (stack.getValue().get(ModelKeys.PROTOCOL).isDefined()) {
-                    for (Property protocol : ProtocolStackAdd.getOrderedProtocolPropertyList(stack.getValue())) {
+                if (stack.get(ProtocolResourceDefinition.WILDCARD_PATH.getKey()).isDefined()) {
+                    for (Property protocol : StackAddHandler.getOrderedProtocolPropertyList(stack)) {
                         // no optional transport:add parameters will be present, so use attributes list
-                        result.add(createProtocolOperation(ProtocolResourceDefinition.PROTOCOL_ATTRIBUTES, stackAddress,
-                                protocol.getValue()));
-                        ModelNode protocolAddress = stackAddress.clone();
-                        protocolAddress.add(ModelKeys.PROTOCOL, protocol.getName());
-                        addProtocolPropertyCommands(protocol.getValue(), protocolAddress, result);
+                        result.add(createProtocolOperation(stackAddress, protocol.getValue(), ProtocolResourceDefinition.ATTRIBUTES));
+                        PathAddress protocolAddress = stackAddress.append(ProtocolResourceDefinition.pathElement(protocol.getName()));
+                        addProtocolPropertyCommands(protocolAddress, protocol.getValue(), result);
                     }
                 }
-                // relay=RELAY
-                if (stack.getValue().get(ModelKeys.RELAY, ModelKeys.RELAY_NAME).isDefined()) {
-                    ModelNode relay = stack.getValue().get(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
-                    ModelNode relayAddress = stackAddress.clone();
-                    relayAddress.add(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
-                    result.add(createOperation(relayAddress, relay, RelayResource.ATTRIBUTES));
-                    addProtocolPropertyCommands(relay, relayAddress, result);
-                    // remote-site=*
-                    if (relay.get(ModelKeys.REMOTE_SITE).isDefined()) {
-                        for (final Property remoteSite: relay.get(ModelKeys.REMOTE_SITE).asPropertyList()) {
-                            ModelNode remoteSiteAddress = relayAddress.clone().add(ModelKeys.REMOTE_SITE, remoteSite.getName());
+                if (stack.get(RelayResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+                    ModelNode relay = stack.get(RelayResourceDefinition.PATH.getKeyValuePair());
+                    PathAddress relayAddress = stackAddress.append(RelayResourceDefinition.PATH);
+                    result.add(createOperation(relayAddress, relay, RelayResourceDefinition.ATTRIBUTES));
+                    addProtocolPropertyCommands(relayAddress, relay, result);
+
+                    if (relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).isDefined()) {
+                        for (Property remoteSite: relay.get(RemoteSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            PathAddress remoteSiteAddress = relayAddress.append(RemoteSiteResourceDefinition.pathElement(remoteSite.getName()));
                             // no optional transport:add parameters will be present, so use attributes list
-                            result.add(createOperation(remoteSiteAddress, remoteSite.getValue(), RemoteSiteResource.ATTRIBUTES));
+                            result.add(createOperation(remoteSiteAddress, remoteSite.getValue(), RemoteSiteResourceDefinition.ATTRIBUTES));
                         }
                     }
                 }
@@ -120,26 +106,25 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private void addProtocolPropertyCommands(ModelNode protocol, ModelNode address, ModelNode result) throws OperationFailedException {
-
-        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property : protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
-                ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
+    private static void addProtocolPropertyCommands(PathAddress address, ModelNode protocol, ModelNode result) throws OperationFailedException {
+        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property : protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                PathAddress propertyAddress = address.append(PropertyResourceDefinition.pathElement(property.getName()));
                 result.add(createOperation(propertyAddress, property.getValue(), PropertyResourceDefinition.VALUE));
             }
         }
     }
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing,AttributeDefinition ... attributes) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
+    private static ModelNode createOperation(PathAddress address, ModelNode existing, AttributeDefinition ... attributes) throws OperationFailedException {
+        ModelNode operation = Util.createAddOperation(address);
         for (final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(existing, operation);
         }
         return operation;
     }
 
-    static ModelNode createProtocolOperation(AttributeDefinition[] attributes, ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ModelKeys.ADD_PROTOCOL, address);
+    private static ModelNode createProtocolOperation(PathAddress address, ModelNode existing, AttributeDefinition... attributes) throws OperationFailedException {
+        ModelNode operation = Util.createOperation(ModelKeys.ADD_PROTOCOL, address);
         for (final AttributeDefinition attribute : attributes) {
             attribute.validateAndSet(existing, operation);
         }

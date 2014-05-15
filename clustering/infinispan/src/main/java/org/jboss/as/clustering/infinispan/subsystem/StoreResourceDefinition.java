@@ -53,53 +53,55 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition PASSIVATION = new SimpleAttributeDefinitionBuilder(ModelKeys.PASSIVATION, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.PASSIVATION.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition PRELOAD = new SimpleAttributeDefinitionBuilder(ModelKeys.PRELOAD, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.PRELOAD.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition PURGE = new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.PURGE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.SHARED.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition SINGLETON = new SimpleAttributeDefinitionBuilder(ModelKeys.SINGLETON, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.SINGLETON.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
 
     // used to pass in a list of properties to the store add command
     static final AttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
     static final SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY)
             .setAllowNull(true)
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] COMMON_STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON };
-    static final AttributeDefinition[] COMMON_STORE_PARAMETERS = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
+            SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON
+    };
+    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] {
+            SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES
+    };
 
     // metrics
     static final AttributeDefinition CACHE_LOADER_LOADS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG, true).setStorageRuntime().build();
@@ -109,34 +111,32 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
 
     // operations
     private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-            .setParameters(COMMON_STORE_PARAMETERS)
-            .build()
-    ;
+            .setParameters(PARAMETERS)
+            .build();
 
-    public StoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    StoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+    public void registerAttributes(ManagementResourceRegistration registration) {
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(COMMON_STORE_ATTRIBUTES);
-        for (AttributeDefinition attr : COMMON_STORE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
         // register any metrics
         for (AttributeDefinition attr : COMMON_STORE_METRICS) {
-            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
+    public void registerChildren(ManagementResourceRegistration registration) {
         // child resources
-        resourceRegistration.registerSubModel(new StoreWriteBehindResourceDefinition());
-        resourceRegistration.registerSubModel(new StorePropertyResourceDefinition());
+        registration.registerSubModel(new StoreWriteBehindResourceDefinition());
+        registration.registerSubModel(new StorePropertyResourceDefinition());
     }
 
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())

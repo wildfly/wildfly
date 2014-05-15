@@ -24,8 +24,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 
@@ -37,8 +35,11 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public SharedCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler, runtimeRegistration);
+    private final boolean allowRuntimeOnlyRegistration;
+
+    public SharedCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(key, addHandler, removeHandler, resolvePathHandler);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -46,7 +47,7 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
         super.registerChildren(registration);
 
         registration.registerSubModel(new StateTransferResourceDefinition());
-        registration.registerSubModel(new BackupSiteResourceDefinition(this.runtimeRegistration));
+        registration.registerSubModel(new BackupSiteResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new BackupForResourceDefinition());
     }
 }

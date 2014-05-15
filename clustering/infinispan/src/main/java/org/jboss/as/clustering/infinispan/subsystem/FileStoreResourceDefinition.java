@@ -48,59 +48,53 @@ import org.jboss.dmr.ModelType;
  */
 public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
-    public static final PathElement FILE_STORE_PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
+    static final SimpleAttributeDefinition RELATIVE_PATH = new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
             .setXmlName(Attribute.PATH.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelKeys.RELATIVE_TO, ModelType.STRING, true)
             .setXmlName(Attribute.RELATIVE_TO.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] FILE_STORE_ATTRIBUTES = { RELATIVE_TO, PATH };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { RELATIVE_TO, RELATIVE_PATH };
 
     // operations
-    private static final OperationDefinition FILE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-            .setParameters(COMMON_STORE_PARAMETERS)
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
+            .setParameters(PARAMETERS)
             .addParameter(RELATIVE_TO)
-            .addParameter(PATH)
+            .addParameter(RELATIVE_PATH)
             .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-            .build()
-    ;
+            .build();
 
     private final ResolvePathHandler resolvePathHandler;
 
-    public FileStoreResourceDefinition(final ResolvePathHandler resolvePathHandler) {
-        super(FILE_STORE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
-                CacheConfigOperationHandlers.FILE_STORE_ADD,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    FileStoreResourceDefinition(ResolvePathHandler resolvePathHandler) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE), new FileStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(FILE_STORE_ATTRIBUTES);
-        for (AttributeDefinition attr : FILE_STORE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(FILE_STORE_ADD_DEFINITION, handler);
+        registration.registerOperationHandler(ADD_DEFINITION, handler);
         if (this.resolvePathHandler != null) {
             registration.registerOperationHandler(this.resolvePathHandler.getOperationDefinition(), this.resolvePathHandler);
         }

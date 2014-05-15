@@ -37,9 +37,9 @@ import org.jboss.dmr.Property;
 /**
  * @author Paul Ferraro
  */
-public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
+public abstract class SharedStateCacheAddHandler extends ClusteredCacheAddHandler {
 
-    SharedStateCacheAdd(CacheMode mode) {
+    SharedStateCacheAddHandler(CacheMode mode) {
         super(mode);
     }
 

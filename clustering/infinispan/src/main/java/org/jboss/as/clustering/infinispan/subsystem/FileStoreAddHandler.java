@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
-import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * Add operation handler for a file-store.
+ *
+ * @author Richard Achmatowicz
  */
-public class InvalidationCacheAdd extends ClusteredCacheAdd {
+public class FileStoreAddHandler extends StoreAddHandler {
 
-    static final InvalidationCacheAdd INSTANCE = new InvalidationCacheAdd();
-
-    // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        INSTANCE.populate(model, operation);
-        return operation;
-    }
-
-    private InvalidationCacheAdd() {
-        super(CacheMode.INVALIDATION_SYNC);
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attribute: FileStoreResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 }

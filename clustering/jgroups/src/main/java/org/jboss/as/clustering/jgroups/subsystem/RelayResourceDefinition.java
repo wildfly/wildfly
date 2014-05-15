@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -28,6 +29,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -35,33 +37,37 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource definition for subsystem=jgroups/stack=X/relay=RELAY/remote-site=Y
+ * Resource definition for /subsystem=jgroups/stack=X/relay=RELAY
  *
  * @author Paul Ferraro
  */
-public class RemoteSiteResource extends SimpleResourceDefinition {
+public class RelayResourceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.REMOTE_SITE);
-    private static final ResourceDescriptionResolver RESOLVER = JGroupsExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_SITE);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
+    private static final ResourceDescriptionResolver RESOLVER = JGroupsExtension.getResourceDescriptionResolver(ModelKeys.RELAY);
 
-    static final SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
-            .setXmlName(Attribute.STACK.getLocalName())
+    static final SimpleAttributeDefinition SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.SITE, ModelType.STRING, false)
+            .setXmlName(Attribute.SITE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build()
-    ;
+            .build();
 
-    static final SimpleAttributeDefinition CLUSTER = new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
-            .setXmlName(Attribute.CLUSTER.getLocalName())
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build()
-    ;
+    static final SimpleAttributeDefinition REMOTE_SITE = new SimpleAttributeDefinition(ModelKeys.REMOTE_SITE, ModelType.PROPERTY, true);
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STACK, CLUSTER };
+    static final SimpleListAttributeDefinition REMOTE_SITES = new SimpleListAttributeDefinition.Builder(ModelKeys.REMOTE_SITES, REMOTE_SITE)
+            .setAllowNull(true)
+            .build();
 
-    RemoteSiteResource() {
-        super(PATH, RESOLVER, new AddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+    static final SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
+
+    static final SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
+            .setAllowNull(true)
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { SITE };
+
+    RelayResourceDefinition() {
+        super(PATH, RESOLVER, new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -70,5 +76,11 @@ public class RemoteSiteResource extends SimpleResourceDefinition {
         for (AttributeDefinition attribute: ATTRIBUTES) {
             registration.registerReadWriteAttribute(attribute, null, writeHandler);
         }
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new RemoteSiteResourceDefinition());
+        registration.registerSubModel(PropertyResourceDefinition.INSTANCE);
     }
 }

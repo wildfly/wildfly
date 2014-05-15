@@ -22,8 +22,9 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
+
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -31,73 +32,48 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
- * Implements the operation /subsystem=jgroups/stack=X/protocol=Y:add()
+ * Implements the operation /subsystem=jgroups/stack=X/protocol=Y:remove()
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ProtocolLayerAdd implements OperationStepHandler {
-
-    AttributeDefinition[] attributes;
-
-    public ProtocolLayerAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes;
-    }
+public class ProtocolRemoveHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
         // read /subsystem=jgroups/stack=* for update
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode subModel = resource.getModel();
 
-        // validate the protocol type to be added
+         // validate the protocol type to be added
         ModelNode type = ProtocolResourceDefinition.TYPE.validateOperation(operation);
         PathElement protocolRelativePath = PathElement.pathElement(ModelKeys.PROTOCOL, type.asString());
 
         // if child resource already exists, throw OFE
-        if (resource.hasChild(protocolRelativePath)) {
-            throw JGroupsLogger.ROOT_LOGGER.protocolAlreadyDefined(protocolRelativePath.toString());
+        // TODO not sure if this works ex expected - it may only confirm a registered resource
+        if (!resource.hasChild(protocolRelativePath))  {
+            throw JGroupsLogger.ROOT_LOGGER.protocolNotDefined(protocolRelativePath.toString());
         }
 
-        // now get the created model
-        Resource childResource = context.createResource(PathAddress.pathAddress(protocolRelativePath));
-        final ModelNode protocol = childResource.getModel();
+        // remove the resource and its children
+        context.removeResource(PathAddress.pathAddress(protocolRelativePath));
 
-        // Process attributes
-        for (final AttributeDefinition attribute : attributes) {
-            // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
-            // don't copy these into the model
-            if (attribute.getName().equals(ModelKeys.PROPERTIES)) { continue; }
-
-            attribute.validateAndSet(operation, protocol);
-        }
-
-        // get the current list of protocol names and add the new protocol
+        // get the current list of protocol names and remove the protocol
+        // copy all elements of the list except the one to remove
         // this list is used to maintain order
-        ModelNode protocols = subModel.get(ModelKeys.PROTOCOLS);
-        if (!protocols.isDefined()) {
-            protocols.setEmptyList();
+        List<ModelNode> protocols = subModel.get(ModelKeys.PROTOCOLS).asList();
+        ModelNode newList = new ModelNode();
+        if (protocols == null) {
+            // something wrong
         }
-        protocols.add(type);
-
-        // Process type specific properties if required
-
-        // The protocol parameters  <property name=>value</property>
-        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
-                // create a new property=name resource
-                final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
-                final ModelNode value = property.getValue();
-                if (!value.isDefined()) {
-                    throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), protocolRelativePath.toString());
-                }
-                // set the value of the property
-                PropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());
+        for (ModelNode protocol : protocols) {
+            if (!protocol.asString().equals(type.asString())) {
+               newList.add(protocol);
             }
         }
+        subModel.get(ModelKeys.PROTOCOLS).set(newList);
+
         // This needs a reload
         reloadRequiredStep(context);
         context.stepCompleted();
@@ -111,7 +87,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
      * @param context the operation context
      */
     void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer() && !context.isBooting()) {
+        if (context.getProcessType().isServer() &&  !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -123,5 +99,4 @@ public class ProtocolLayerAdd implements OperationStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }

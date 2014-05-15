@@ -225,8 +225,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // - check transformation of virtual nodes into segments
         // - check that statistics is discarded
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(CacheContainerResourceDefinition.CONTAINER_PATH.getKey(), "container"),
-                PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
+                CacheContainerResourceDefinition.pathElement("container"),
+                DistributedCacheResourceDefinition.pathElement("cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(4);
         addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
@@ -286,8 +286,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // - check transformation of virtual nodes into segments
         // - check that statistics is discarded
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(CacheContainerResourceDefinition.CONTAINER_PATH.getKey(), "container"),
-                PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
+                CacheContainerResourceDefinition.pathElement("container"),
+                DistributedCacheResourceDefinition.pathElement("cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(1);
         addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
@@ -511,34 +511,34 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
 
-        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH);
+        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(containerAddress, new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CONTAINER_ATTRIBUTES));
 
-        PathAddress transportAddress = containerAddress.append(TransportResourceDefinition.TRANSPORT_PATH);
+        PathAddress transportAddress = containerAddress.append(TransportResourceDefinition.PATH);
         config.addFailedAttribute(transportAddress, new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_TRANSPORT_ATTRIBUTES));
 
         PathElement[] cachePaths = {
-                LocalCacheResourceDefinition.LOCAL_CACHE_PATH,
-                InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH,
-                ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH,
-                DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH
+                LocalCacheResourceDefinition.WILDCARD_PATH,
+                InvalidationCacheResourceDefinition.WILDCARD_PATH,
+                ReplicatedCacheResourceDefinition.WILDCARD_PATH,
+                DistributedCacheResourceDefinition.WILDCARD_PATH
         };
 
         PathElement[] childPaths = {
-                LockingResourceDefinition.LOCKING_PATH,
-                TransactionResourceDefinition.TRANSACTION_PATH,
-                ExpirationResourceDefinition.EXPIRATION_PATH,
-                EvictionResourceDefinition.EVICTION_PATH,
-                StateTransferResourceDefinition.STATE_TRANSFER_PATH
+                LockingResourceDefinition.PATH,
+                TransactionResourceDefinition.PATH,
+                ExpirationResourceDefinition.PATH,
+                EvictionResourceDefinition.PATH,
+                StateTransferResourceDefinition.PATH
         } ;
 
         PathElement[] storePaths = {
-                CustomStoreResourceDefinition.STORE_PATH,
-                FileStoreResourceDefinition.FILE_STORE_PATH,
-                StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH,
-                BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH,
-                MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH,
-                RemoteStoreResourceDefinition.REMOTE_STORE_PATH
+                CustomStoreResourceDefinition.PATH,
+                FileStoreResourceDefinition.PATH,
+                StringKeyedJDBCStoreResourceDefinition.PATH,
+                BinaryKeyedJDBCStoreResourceDefinition.PATH,
+                MixedKeyedJDBCStoreResourceDefinition.PATH,
+                RemoteStoreResourceDefinition.PATH
         } ;
 
         // cache attributes
@@ -555,7 +555,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 config.addFailedAttribute(cacheAddress.append(childPath), new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CHILD_ATTRIBUTES));
             }
 
-            RejectExpressionsConfig keyedTableComplexChildConfig = new RejectExpressionsConfig(JDBCStoreResourceDefinition.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
+            RejectExpressionsConfig keyedTableComplexChildConfig = new RejectExpressionsConfig(JDBCStoreResourceDefinition.TABLE_ATTRIBUTES);
 
             // cache store attributes
             for (PathElement storePath: storePaths) {
@@ -566,10 +566,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
                         .configureComplexAttribute(ModelKeys.BINARY_KEYED_TABLE, keyedTableComplexChildConfig)
                 );
 
-                PathAddress writeBehindAddress = storeAddress.append(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH);
+                PathAddress writeBehindAddress = storeAddress.append(StoreWriteBehindResourceDefinition.PATH);
                 config.addFailedAttribute(writeBehindAddress, new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
 
-                PathAddress storePropertyAddress = storeAddress.append(StorePropertyResourceDefinition.STORE_PROPERTY_PATH);
+                PathAddress storePropertyAddress = storeAddress.append(StorePropertyResourceDefinition.WILDCARD_PATH);
                 config.addFailedAttribute(storePropertyAddress, new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_STORE_ATTRIBUTES));
             }
         }
@@ -577,12 +577,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // x-site related resources where we expect failure
 
         // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -600,14 +600,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
 
-        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH);
+        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -625,14 +625,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
 
-        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.CONTAINER_PATH);
+        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
         config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 

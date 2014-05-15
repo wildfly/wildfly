@@ -29,12 +29,11 @@ import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -48,15 +47,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat, Inc
  */
-public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
-
-    public static final JGroupsSubsystemAdd INSTANCE = new JGroupsSubsystemAdd();
-
-    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-        populate(existing, operation);
-        return operation;
-    }
+public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
 
     /*
      * Install a custom version of JGroupsSubsystemRootResourceDefinition
@@ -64,23 +55,16 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     @Override
     protected Resource createResource(OperationContext context) {
         // debugging
-        assert context.getServiceRegistry(false) != null ;
+        assert context.getServiceRegistry(false) != null;
         // create a custom resource
-        JGroupsSubsystemRootResource resource = new JGroupsSubsystemRootResource();
+        JGroupsSubsystemResource resource = new JGroupsSubsystemResource();
         resource.setRegistry(context.getServiceRegistry(false));
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
-        return resource ;
+        return resource;
     }
 
-    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
-
-        JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.validateAndSet(source, target);
-        target.get(ModelKeys.STACK).setEmptyObject();
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        populate(operation, model);
+    JGroupsSubsystemAddHandler(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -95,7 +79,7 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
             newControllers.add(pdsController);
         }
 
-        final String stack = JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model).asString() ;
+        final String stack = JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model).asString();
 
         // install the default channel factory service
         ServiceController<ChannelFactory> dcfsController = installDefaultChannelFactoryService(target, stack, verificationHandler);

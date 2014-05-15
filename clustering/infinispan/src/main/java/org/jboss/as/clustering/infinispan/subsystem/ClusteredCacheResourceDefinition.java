@@ -25,11 +25,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,15 +48,14 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
             .setXmlName(Attribute.MODE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(Mode.class, false, true))
-            .build()
-    ;
+            .build();
 
     static final SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_FLUSH_INTERVAL, ModelType.LONG, true)
             .setXmlName(Attribute.QUEUE_FLUSH_INTERVAL.getLocalName())
@@ -66,25 +63,24 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(10))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
             .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(0))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition REMOTE_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
             .setXmlName(Attribute.REMOTE_TIMEOUT.getLocalName())
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(17500))
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
 
     // metrics
     static final AttributeDefinition AVERAGE_REPLICATION_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true).setStorageRuntime().build();
@@ -94,23 +90,22 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = { AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO };
 
-    public ClusteredCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler, runtimeRegistration);
+    ClusteredCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+        super(key, addHandler, removeHandler, resolvePathHandler);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
         // do we really need a special handler here?
-        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CLUSTERED_CACHE_ATTRIBUTES);
-        for (AttributeDefinition attr : CLUSTERED_CACHE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attribute, CacheReadAttributeHandler.INSTANCE, writeHandler);
         }
 
         // register any metrics
-        for (AttributeDefinition attr : CLUSTERED_CACHE_METRICS) {
-            resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+        for (AttributeDefinition attribute : CLUSTERED_CACHE_METRICS) {
+            registration.registerMetric(attribute, CacheMetricsHandler.INSTANCE);
         }
     }
 }

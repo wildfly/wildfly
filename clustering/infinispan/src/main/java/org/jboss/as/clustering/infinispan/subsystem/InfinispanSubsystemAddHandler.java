@@ -27,7 +27,6 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 import java.util.List;
 
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,9 +43,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSubsystemAdd extends AbstractBoottimeAddStepHandler {
-
-    public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
+public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandler {
 
     static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
@@ -70,7 +67,7 @@ public class InfinispanSubsystemAdd extends AbstractBoottimeAddStepHandler {
         OperationStepHandler step = new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(JGroupsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
+                processorTarget.addDeploymentProcessor(InfinispanExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
             }
         };
         context.addStep(step, OperationContext.Stage.RUNTIME);

@@ -37,9 +37,9 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class DistributedCacheAdd extends SharedStateCacheAdd {
+public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
 
-    static final DistributedCacheAdd INSTANCE = new DistributedCacheAdd();
+    static final DistributedCacheAddHandler INSTANCE = new DistributedCacheAddHandler();
 
     // used to create subsystem description
     static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
@@ -48,7 +48,7 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         return operation;
     }
 
-    private DistributedCacheAdd() {
+    private DistributedCacheAddHandler() {
         super(CacheMode.DIST_SYNC);
     }
 

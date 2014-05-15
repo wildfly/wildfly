@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -33,41 +34,65 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Operation handler for /subsystem=jgroups/stack=X/transport=TRANSPORT:add()
+ * Implements the operation /subsystem=jgroups/stack=X/protocol=Y:add()
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class TransportLayerAdd implements OperationStepHandler {
+public class ProtocolAddHandler implements OperationStepHandler {
 
-    AttributeDefinition[] attributes ;
+    private final AttributeDefinition[] attributes;
 
-    public TransportLayerAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes ;
+    public ProtocolAddHandler(AttributeDefinition... attributes) {
+        this.attributes = attributes;
     }
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
-        final PathElement transportRelativePath = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        // read /subsystem=jgroups/stack=* for update
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode subModel = resource.getModel();
 
-        // Process attributes
-        for(final AttributeDefinition attribute : attributes) {
-            // don't process properties twice - we do them below
-            if (attribute.getName().equals(ModelKeys.PROPERTIES))
-                continue ;
-            attribute.validateAndSet(operation, subModel);
+        // validate the protocol type to be added
+        ModelNode type = ProtocolResourceDefinition.TYPE.validateOperation(operation);
+        PathElement protocolRelativePath = PathElement.pathElement(ModelKeys.PROTOCOL, type.asString());
+
+        // if child resource already exists, throw OFE
+        if (resource.hasChild(protocolRelativePath)) {
+            throw JGroupsLogger.ROOT_LOGGER.protocolAlreadyDefined(protocolRelativePath.toString());
         }
 
-        // The transport config parameters  <property name=>value</property>
-        if(operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for(Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        // now get the created model
+        Resource childResource = context.createResource(PathAddress.pathAddress(protocolRelativePath));
+        final ModelNode protocol = childResource.getModel();
+
+        // Process attributes
+        for (final AttributeDefinition attribute : this.attributes) {
+            // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
+            // don't copy these into the model
+            if (attribute.getName().equals(ModelKeys.PROPERTIES)) continue;
+
+            attribute.validateAndSet(operation, protocol);
+        }
+
+        // get the current list of protocol names and add the new protocol
+        // this list is used to maintain order
+        ModelNode protocols = subModel.get(ModelKeys.PROTOCOLS);
+        if (!protocols.isDefined()) {
+            protocols.setEmptyList();
+        }
+        protocols.add(type);
+
+        // Process type specific properties if required
+
+        // The protocol parameters  <property name=>value</property>
+        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
+            for (Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
                 // create a new property=name resource
-                final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
+                final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
-                if(!value.isDefined()) {
-                    throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), transportRelativePath.toString());
+                if (!value.isDefined()) {
+                    throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), protocolRelativePath.toString());
                 }
                 // set the value of the property
                 PropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());
@@ -78,7 +103,6 @@ public class TransportLayerAdd implements OperationStepHandler {
         context.stepCompleted();
     }
 
-
     /**
      * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the
      * the cache service is installed, since the transport-config operations need a reload/restart and can't be
@@ -87,7 +111,7 @@ public class TransportLayerAdd implements OperationStepHandler {
      * @param context the operation context
      */
     void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer() &&  !context.isBooting()) {
+        if (context.getProcessType().isServer() && !context.isBooting()) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -99,5 +123,4 @@ public class TransportLayerAdd implements OperationStepHandler {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }

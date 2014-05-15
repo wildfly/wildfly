@@ -38,25 +38,25 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheRemove extends AbstractRemoveStepHandler {
+public class CacheRemoveHandler extends AbstractRemoveStepHandler {
 
-    static final CacheRemove INSTANCE = new CacheRemove();
+    static final CacheRemoveHandler INSTANCE = new CacheRemoveHandler();
 
-    private final Map<String, CacheAdd> handlers = new HashMap<>();
+    private final Map<String, CacheAddHandler> handlers = new HashMap<>();
 
-    CacheRemove() {
-        this.handlers.put(ModelKeys.LOCAL_CACHE, LocalCacheAdd.INSTANCE);
-        this.handlers.put(ModelKeys.INVALIDATION_CACHE, InvalidationCacheAdd.INSTANCE);
-        this.handlers.put(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAdd.INSTANCE);
-        this.handlers.put(ModelKeys.DISTRIBUTED_CACHE, DistributedCacheAdd.INSTANCE);
+    CacheRemoveHandler() {
+        this.handlers.put(ModelKeys.LOCAL_CACHE, LocalCacheAddHandler.INSTANCE);
+        this.handlers.put(ModelKeys.INVALIDATION_CACHE, InvalidationCacheAddHandler.INSTANCE);
+        this.handlers.put(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE);
+        this.handlers.put(ModelKeys.DISTRIBUTED_CACHE, DistributedCacheAddHandler.INSTANCE);
     }
 
     Set<String> getCacheTypes() {
         return this.handlers.keySet();
     }
 
-    CacheAdd getAddHandler(String cacheType) {
-        CacheAdd handler = this.handlers.get(cacheType);
+    CacheAddHandler getAddHandler(String cacheType) {
+        CacheAddHandler handler = this.handlers.get(cacheType);
         if (handler == null) {
             throw new IllegalArgumentException(cacheType);
         }
@@ -72,7 +72,7 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
         String cacheType = getCacheType(operation);
-        CacheAdd addHandler = getAddHandler(cacheType);
+        CacheAddHandler addHandler = getAddHandler(cacheType);
         addHandler.removeRuntimeServices(context, operation, containerModel, model);
     }
 
@@ -87,7 +87,7 @@ public class CacheRemove extends AbstractRemoveStepHandler {
         // re-add the services if the remove failed
         String cacheType = getCacheType(operation);
         ServiceVerificationHandler verificationHandler = null;
-        CacheAdd addHandler = getAddHandler(cacheType);
+        CacheAddHandler addHandler = getAddHandler(cacheType);
         addHandler.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
     }
 

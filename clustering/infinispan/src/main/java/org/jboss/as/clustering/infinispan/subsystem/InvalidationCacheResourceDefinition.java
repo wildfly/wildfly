@@ -32,14 +32,15 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public static final PathElement INVALIDATION_CACHE_PATH = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.INVALIDATION_CACHE, name);
+    }
 
     // attributes
 
-    public InvalidationCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
-        super(INVALIDATION_CACHE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.INVALIDATION_CACHE),
-                InvalidationCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
+    InvalidationCacheResourceDefinition(ResolvePathHandler resolvePathHandler) {
+        super(ModelKeys.INVALIDATION_CACHE, InvalidationCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler);
     }
 }

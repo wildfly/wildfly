@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +53,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
@@ -71,13 +71,7 @@ import org.jboss.threads.JBossExecutors;
 /**
  * @author Paul Ferraro
  */
-public class ProtocolStackAdd extends AbstractAddStepHandler {
-
-    public static final ProtocolStackAdd INSTANCE = new ProtocolStackAdd();
-
-    static ModelNode createOperation(ModelNode address, ModelNode existing) {
-        return Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
-    }
+public class StackAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -100,7 +94,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             addTransport.get(OP_ADDR).set(transportAddress);
 
             // execute the operation using the transport handler
-            context.addStep(addTransport, TransportResourceDefinition.TRANSPORT_ADD, OperationContext.Stage.MODEL, true);
+            context.addStep(addTransport, TransportResourceDefinition.ADD_HANDLER, OperationContext.Stage.MODEL, true);
         }
 
         // add steps to initialize *optional* PROTOCOL parameters
@@ -111,8 +105,9 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             // of the elements in the LIST, they will get applied in reverse order - the last step
             // added gets executed first
 
-            for (int i = protocols.size()-1; i >= 0; i--) {
-                ModelNode protocol = protocols.get(i);
+            ListIterator<ModelNode> iterator = protocols.listIterator(protocols.size());
+            while (iterator.hasPrevious()) {
+                ModelNode protocol = iterator.previous();
                 // create an ADD operation to add the protocol=* child
                 ModelNode addProtocol = protocol.clone();
                 addProtocol.get(OPERATION_NAME).set(ModelKeys.ADD_PROTOCOL);
@@ -122,7 +117,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 addProtocol.get(OP_ADDR).set(protocolAddress);
 
                 // execute the operation using the transport handler
-                context.addStep(addProtocol, ProtocolResourceDefinition.PROTOCOL_ADD_HANDLER, OperationContext.Stage.MODEL, true);
+                context.addStep(addProtocol, ProtocolResourceDefinition.ADD_HANDLER, OperationContext.Stage.MODEL, true);
             }
         }
     }
@@ -137,7 +132,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         installRuntimeServices(context, operation, model, verificationHandler, newControllers);
     }
 
-    protected void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -174,7 +169,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         List<Map.Entry<String, Injector<ChannelFactory>>> stacks = new LinkedList<Map.Entry<String, Injector<ChannelFactory>>>();
         if (model.hasDefined(ModelKeys.RELAY)) {
             final ModelNode relay = model.get(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
-            final String siteName = RelayResource.SITE.resolveModelAttribute(context, relay).asString();
+            final String siteName = RelayResourceDefinition.SITE.resolveModelAttribute(context, relay).asString();
             relayConfig = new Relay(siteName);
             initProtocolProperties(context, relay, relayConfig);
             if (relay.hasDefined(ModelKeys.REMOTE_SITE)) {
@@ -182,8 +177,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 for (Property remoteSiteProperty: relay.get(ModelKeys.REMOTE_SITE).asPropertyList()) {
                     final String remoteSiteName = remoteSiteProperty.getName();
                     final ModelNode remoteSite = remoteSiteProperty.getValue();
-                    final String cluster = RemoteSiteResource.CLUSTER.resolveModelAttribute(context, remoteSite).asString();
-                    final String stack = RemoteSiteResource.STACK.resolveModelAttribute(context, remoteSite).asString();
+                    final String cluster = RemoteSiteResourceDefinition.CLUSTER.resolveModelAttribute(context, remoteSite).asString();
+                    final String stack = RemoteSiteResourceDefinition.STACK.resolveModelAttribute(context, remoteSite).asString();
                     final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
                     remoteSites.add(new RemoteSite(remoteSiteName, cluster, channelFactory));
                     stacks.add(new AbstractMap.SimpleImmutableEntry<String, Injector<ChannelFactory>>(stack, channelFactory));
@@ -213,8 +208,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         }
     }
 
-    protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
+    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         final String name = address.getLastElement().getValue();
@@ -224,7 +218,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     }
 
 
-    protected ServiceController<ChannelFactory> installChannelFactoryService(ServiceTarget target,
+    private static ServiceController<ChannelFactory> installChannelFactoryService(ServiceTarget target,
                                                                              String name,
                                                                              String diagnosticsSocketBinding,
                                                                              String defaultExecutor,
@@ -268,7 +262,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    private void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
+    private static void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
 
         Map<String, String> properties = protocolConfig.getProperties();
         // properties are a child resource of protocol
@@ -280,7 +274,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 //   }
                 String propertyName = property.getName();
                 // get the value from the ModelNode {"value" => "fred"}
-                ModelNode propertyValue = null ;
+                ModelNode propertyValue = null;
                 propertyValue = PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue());
 
                 properties.put(propertyName, propertyValue.asString());
@@ -307,13 +301,13 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         return orderedProtocols.asPropertyList();
     }
 
-    private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
+    private static void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
         if (socketBinding != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class, injector);
         }
     }
 
-    private void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, String executor, Injector<Executor> injector) {
+    private static void addExecutorDependency(ServiceBuilder<ChannelFactory> builder, String executor, Injector<Executor> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
@@ -322,7 +316,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
     /*
      * A check that we have the minimal configuration required to create a protocol stack.
      */
-    private void protocolStackSanityCheck(String stackName, ModelNode model) throws OperationFailedException {
+    private static void protocolStackSanityCheck(String stackName, ModelNode model) throws OperationFailedException {
 
          ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
          if (!transport.isDefined()) {

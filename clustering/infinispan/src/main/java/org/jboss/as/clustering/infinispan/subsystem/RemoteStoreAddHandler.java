@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/replicated-cache=*
+ * Add operation handler for a remote-store.
  *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Richard Achmatowicz
  */
-public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefinition {
+public class RemoteStoreAddHandler extends StoreAddHandler {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.REPLICATED_CACHE, name);
-    }
-
-    // attributes
-
-    ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attribute: RemoteStoreResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
+        // now check for outbound connections passed as optional parameter
     }
 }

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -52,16 +50,18 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH);
+        PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode subsystem = Util.createAddOperation(subsystemAddress);
+        operations.add(subsystem);
 
+        String defaultStack = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_STACK: {
-                    JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.parseAndSetParameter(value, subsystem, reader);
+                    defaultStack = value;
                     break;
                 }
                 default: {
@@ -70,11 +70,11 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             }
         }
 
-        if (!subsystem.hasDefined(ModelKeys.DEFAULT_STACK)) {
+        if (defaultStack == null) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.DEFAULT_STACK));
         }
 
-        operations.add(subsystem);
+        JGroupsSubsystemResourceDefinition.DEFAULT_STACK.parseAndSetParameter(defaultStack, subsystem, reader);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -82,7 +82,7 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                     Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case STACK: {
-                            this.parseStack(reader, subsystemAddress, operations);
+                            parseStack(reader, subsystemAddress, operations);
                             break;
                         }
                         default: {
@@ -98,7 +98,7 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseStack(XMLExtendedStreamReader reader, PathAddress subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
+    private static void parseStack(XMLExtendedStreamReader reader, PathAddress subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             ParseUtils.requireNoNamespaceAttribute(reader, i);
@@ -118,21 +118,21 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         if (name == null) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.NAME));
         }
-        PathAddress stackAddress = subsystemAddress.append(ModelKeys.STACK, name);
-        final ModelNode stack = Util.createAddOperation(stackAddress);
-        stack.get(OP_ADDR).set(stackAddress.toModelNode());
+        PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement(name));
+        ModelNode stack = Util.createAddOperation(stackAddress);
+        operations.add(stack);
 
         if (!reader.hasNext() || (reader.nextTag() == XMLStreamConstants.END_ELEMENT) || Element.forName(reader.getLocalName()) != Element.TRANSPORT) {
             throw ParseUtils.missingRequiredElement(reader, Collections.singleton(Element.TRANSPORT));
         }
-        operations.add(stack);
-        this.parseTransport(reader, stackAddress, operations);
+
+        parseTransport(reader, stackAddress, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROTOCOL: {
-                    this.parseProtocol(reader, stackAddress, operations);
+                    parseProtocol(reader, stackAddress, operations);
                     break;
                 }
                 default: {
@@ -142,11 +142,11 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseTransport(XMLExtendedStreamReader reader, final PathAddress stackAddress, List<ModelNode> operations) throws XMLStreamException {
+    private static void parseTransport(XMLExtendedStreamReader reader, final PathAddress stackAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the cache add operation
-        PathAddress transportAddress = stackAddress.append(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+        PathAddress transportAddress = stackAddress.append(TransportResourceDefinition.PATH);
         ModelNode transport = Util.createAddOperation(transportAddress);
+        operations.add(transport);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -210,34 +210,36 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         if (!transport.hasDefined(ModelKeys.TYPE)) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
-        operations.add(transport);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROPERTY: {
-                    this.parseProperty(reader, transportAddress, operations);
-                     break;
+                    parseProperty(reader, transportAddress, operations);
+                    break;
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
         }
-
     }
 
-    private void parseProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, final List<ModelNode> operations) throws XMLStreamException {
+    private static void parseProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, final List<ModelNode> operations) throws XMLStreamException {
 
         ModelNode protocol = Util.createOperation(ModelKeys.ADD_PROTOCOL, stackAddress);
+        operations.add(protocol);
 
+        String type = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case TYPE: {
                     try {
-                        Protocol.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(Protocol.class).newInstance();
-                        ProtocolResourceDefinition.TYPE.parseAndSetParameter(value, protocol, reader);
+                        type = value;
+                        Protocol.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + type).asSubclass(Protocol.class).newInstance();
+                        ProtocolResourceDefinition.TYPE.parseAndSetParameter(type, protocol, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
@@ -253,20 +255,19 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             }
         }
 
-        if (!protocol.hasDefined(ModelKeys.TYPE)) {
+        if (type == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
 
         // in order to add any property, we need the protocol address which will be generated
-        PathAddress protocolAddress = stackAddress.append(ModelKeys.PROTOCOL, protocol.get(ModelKeys.TYPE).asString());
+        PathAddress protocolAddress = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
 
-        operations.add(protocol);
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case PROPERTY: {
-                    this.parseProperty(reader, protocolAddress, operations);
-                     break;
+                    parseProperty(reader, protocolAddress, operations);
+                    break;
                 }
                 default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -275,7 +276,7 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         }
     }
 
-    private void parseProperty(final XMLExtendedStreamReader reader, final PathAddress transportOrProtocolAddress, final List<ModelNode> operations) throws XMLStreamException {
+    private static void parseProperty(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         String propertyName = null;
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -290,18 +291,17 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                 }
             }
         }
+
         if (propertyName == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
-        String propertyValue = reader.getElementText();
 
         // ModelNode for the property add operation
-        PathAddress propertyAddress = transportOrProtocolAddress.append(ModelKeys.PROPERTY, propertyName);
+        PathAddress propertyAddress = address.append(PropertyResourceDefinition.pathElement(propertyName));
         ModelNode property = Util.createAddOperation(propertyAddress);
+        operations.add(property);
 
         // assign the value
-        PropertyResourceDefinition.VALUE.parseAndSetParameter(propertyValue, property, reader);
-
-        operations.add(property);
+        PropertyResourceDefinition.VALUE.parseAndSetParameter(reader.getElementText(), property, reader);
     }
 }

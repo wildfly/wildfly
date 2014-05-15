@@ -48,93 +48,95 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
         ModelNode model = context.getModelNode();
         if (model.isDefined()) {
-            for (Property entry: model.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
+            if (model.hasDefined(CacheContainerResourceDefinition.WILDCARD_PATH.getKey())) {
+                for (Property entry: model.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
 
-                String containerName = entry.getName();
-                ModelNode container = entry.getValue();
+                    String containerName = entry.getName();
+                    ModelNode container = entry.getValue();
 
-                writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
+                    writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
 
-                CacheContainerResourceDefinition.DEFAULT_CACHE.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.EVICTION_EXECUTOR.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.JNDI_NAME.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.LISTENER_EXECUTOR.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.START.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.MODULE.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.DEFAULT_CACHE.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.EVICTION_EXECUTOR.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.JNDI_NAME.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.LISTENER_EXECUTOR.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.START.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.MODULE.marshallAsAttribute(container, writer);
+                    CacheContainerResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(container, writer);
 
-                CacheContainerResourceDefinition.ALIASES.marshallAsElement(container, writer);
+                    CacheContainerResourceDefinition.ALIASES.marshallAsElement(container, writer);
 
-                if (container.hasDefined(ModelKeys.TRANSPORT)) {
-                    writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                    ModelNode transport = container.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-                    TransportResourceDefinition.STACK.marshallAsAttribute(transport,false,  writer);
-                    TransportResourceDefinition.CLUSTER.marshallAsAttribute(transport,false,  writer);
-                    TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport,false,  writer);
-                    TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport,false,  writer);
+                    if (container.hasDefined(TransportResourceDefinition.PATH.getKey())) {
+                        writer.writeStartElement(Element.TRANSPORT.getLocalName());
+                        ModelNode transport = container.get(TransportResourceDefinition.PATH.getKeyValuePair());
+                        TransportResourceDefinition.STACK.marshallAsAttribute(transport,false,  writer);
+                        TransportResourceDefinition.CLUSTER.marshallAsAttribute(transport,false,  writer);
+                        TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport,false,  writer);
+                        TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport,false,  writer);
+                        writer.writeEndElement();
+                    }
+
+                    // write any existent cache types
+                    if (container.hasDefined(LocalCacheResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property property : container.get(LocalCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            ModelNode cache = property.getValue();
+
+                            writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
+
+                            writeCacheAttributes(writer, property.getName(), cache);
+                            writeCacheElements(writer, cache);
+
+                            writer.writeEndElement();
+                        }
+                    }
+
+                    if (container.hasDefined(InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property property : container.get(InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            ModelNode cache = property.getValue();
+
+                            writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
+
+                            writeClusteredCacheAttributes(writer, property.getName(), cache);
+                            writeCacheElements(writer, cache);
+
+                            writer.writeEndElement();
+                        }
+                    }
+
+                    if (container.hasDefined(ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property property : container.get(ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            ModelNode cache = property.getValue();
+
+                            writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
+
+                            writeClusteredCacheAttributes(writer, property.getName(), cache);
+                            writeCacheElements(writer, cache);
+
+                            writer.writeEndElement();
+                        }
+                    }
+
+                    if (container.hasDefined(DistributedCacheResourceDefinition.WILDCARD_PATH.getKey())) {
+                        for (Property property : container.get(DistributedCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                            ModelNode cache = property.getValue();
+
+                            writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
+
+                            writeClusteredCacheAttributes(writer, property.getName(), cache);
+
+                            DistributedCacheResourceDefinition.OWNERS.marshallAsAttribute(cache, writer);
+                            DistributedCacheResourceDefinition.SEGMENTS.marshallAsAttribute(cache, writer);
+                            DistributedCacheResourceDefinition.L1_LIFESPAN.marshallAsAttribute(cache, writer);
+
+                            writeCacheElements(writer, cache);
+
+                            writer.writeEndElement();
+                        }
+                    }
                     writer.writeEndElement();
                 }
-
-                // write any existent cache types
-                if (container.get(ModelKeys.LOCAL_CACHE).isDefined()) {
-                    for (Property property : container.get(ModelKeys.LOCAL_CACHE).asPropertyList()) {
-                        ModelNode cache = property.getValue();
-
-                        writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
-
-                        writeCacheAttributes(writer, property.getName(), cache);
-                        writeCacheElements(writer, cache);
-
-                        writer.writeEndElement();
-                    }
-                }
-
-                if (container.get(ModelKeys.INVALIDATION_CACHE).isDefined()) {
-                    for (Property property : container.get(ModelKeys.INVALIDATION_CACHE).asPropertyList()) {
-                        ModelNode cache = property.getValue();
-
-                        writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
-
-                        writeClusteredCacheAttributes(writer, property.getName(), cache);
-                        writeCacheElements(writer, cache);
-
-                        writer.writeEndElement();
-                    }
-                }
-
-                if (container.get(ModelKeys.REPLICATED_CACHE).isDefined()) {
-                    for (Property property : container.get(ModelKeys.REPLICATED_CACHE).asPropertyList()) {
-                        ModelNode cache = property.getValue();
-
-                        writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
-
-                        writeClusteredCacheAttributes(writer, property.getName(), cache);
-                        writeCacheElements(writer, cache);
-
-                        writer.writeEndElement();
-                    }
-                }
-
-                if (container.get(ModelKeys.DISTRIBUTED_CACHE).isDefined()) {
-                    for (Property property : container.get(ModelKeys.DISTRIBUTED_CACHE).asPropertyList()) {
-                        ModelNode cache = property.getValue();
-
-                        writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
-
-                        writeClusteredCacheAttributes(writer, property.getName(), cache);
-
-                        DistributedCacheResourceDefinition.OWNERS.marshallAsAttribute(cache, writer);
-                        DistributedCacheResourceDefinition.SEGMENTS.marshallAsAttribute(cache, writer);
-                        DistributedCacheResourceDefinition.L1_LIFESPAN.marshallAsAttribute(cache, writer);
-
-                        writeCacheElements(writer, cache);
-
-                        writer.writeEndElement();
-                    }
-                }
-                writer.writeEndElement();
             }
         }
         writer.writeEndElement();
@@ -163,9 +165,9 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     private static void writeCacheElements(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {
 
-        if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
+        if (cache.hasDefined(LockingResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.LOCKING.getLocalName());
-            ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+            ModelNode locking = cache.get(LockingResourceDefinition.PATH.getKeyValuePair());
             LockingResourceDefinition.ISOLATION.marshallAsAttribute(locking, writer);
             LockingResourceDefinition.STRIPING.marshallAsAttribute(locking, writer);
             LockingResourceDefinition.ACQUIRE_TIMEOUT.marshallAsAttribute(locking, writer);
@@ -173,34 +175,34 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
+        if (cache.hasDefined(TransactionResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.TRANSACTION.getLocalName());
-            ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+            ModelNode transaction = cache.get(TransactionResourceDefinition.PATH.getKeyValuePair());
             TransactionResourceDefinition.STOP_TIMEOUT.marshallAsAttribute(transaction, writer);
             TransactionResourceDefinition.MODE.marshallAsAttribute(transaction, writer);
             TransactionResourceDefinition.LOCKING.marshallAsAttribute(transaction, writer);
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
+        if (cache.hasDefined(EvictionResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.EVICTION.getLocalName());
-            ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+            ModelNode eviction = cache.get(EvictionResourceDefinition.PATH.getKeyValuePair());
             EvictionResourceDefinition.STRATEGY.marshallAsAttribute(eviction, writer);
             EvictionResourceDefinition.MAX_ENTRIES.marshallAsAttribute(eviction, writer);
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
+        if (cache.hasDefined(ExpirationResourceDefinition.PATH.getKey())) {
             writer.writeStartElement(Element.EXPIRATION.getLocalName());
-            ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+            ModelNode expiration = cache.get(ExpirationResourceDefinition.PATH.getKeyValuePair());
             ExpirationResourceDefinition.MAX_IDLE.marshallAsAttribute(expiration, writer);
             ExpirationResourceDefinition.LIFESPAN.marshallAsAttribute(expiration, writer);
             ExpirationResourceDefinition.INTERVAL.marshallAsAttribute(expiration, writer);
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
-            ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+        if (cache.hasDefined(StateTransferResourceDefinition.PATH.getKey())) {
+            ModelNode stateTransfer = cache.get(StateTransferResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
             StateTransferResourceDefinition.ENABLED.marshallAsAttribute(stateTransfer, writer);
             StateTransferResourceDefinition.TIMEOUT.marshallAsAttribute(stateTransfer, writer);
@@ -208,8 +210,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
+        if (cache.hasDefined(CustomStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(CustomStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STORE.getLocalName());
             CustomStoreResourceDefinition.CLASS.marshallAsAttribute(store, writer);
             writeStoreAttributes(writer, store);
@@ -217,18 +219,18 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+        if (cache.hasDefined(FileStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(FileStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.FILE_STORE.getLocalName());
             writeStoreAttributes(writer, store);
             FileStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
-            FileStoreResourceDefinition.PATH.marshallAsAttribute(store, writer);
+            FileStoreResourceDefinition.RELATIVE_PATH.marshallAsAttribute(store, writer);
             writeStoreElements(writer, store);
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+        if (cache.hasDefined(StringKeyedJDBCStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(StringKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
             writeJDBCStoreAttributes(writer, store);
             writeStoreElements(writer, store);
@@ -236,8 +238,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+        if (cache.hasDefined(BinaryKeyedJDBCStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(BinaryKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
             writeJDBCStoreAttributes(writer, store);
             writeStoreElements(writer, store);
@@ -245,8 +247,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+        if (cache.hasDefined(MixedKeyedJDBCStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(MixedKeyedJDBCStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
             writeJDBCStoreAttributes(writer, store);
             writeStoreElements(writer, store);
@@ -255,8 +257,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
-            ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+        if (cache.hasDefined(RemoteStoreResourceDefinition.PATH.getKey())) {
+            ModelNode store = cache.get(RemoteStoreResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
             writeStoreAttributes(writer, store);
             RemoteStoreResourceDefinition.CACHE.marshallAsAttribute(store, writer);
@@ -271,16 +273,16 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.INDEXING).isDefined()|| cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
+        if (cache.get(ModelKeys.INDEXING).isDefined() || cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()) {
             writer.writeStartElement(Element.INDEXING.getLocalName());
             CacheResourceDefinition.INDEXING.marshallAsAttribute(cache, writer);
             CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache, writer);
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.BACKUP).isDefined()) {
+        if (cache.hasDefined(BackupSiteResourceDefinition.WILDCARD_PATH.getKey())) {
             writer.writeStartElement(Element.BACKUPS.getLocalName());
-            for (Property property: cache.get(ModelKeys.BACKUP).asPropertyList()) {
+            for (Property property: cache.get(BackupSiteResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 writer.writeStartElement(Element.BACKUP.getLocalName());
                 writer.writeAttribute(Attribute.SITE.getLocalName(), property.getName());
                 ModelNode backup = property.getValue();
@@ -299,8 +301,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             writer.writeEndElement();
         }
 
-        if (cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
-            ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+        if (cache.hasDefined(BackupForResourceDefinition.PATH.getKey())) {
+            ModelNode backupFor = cache.get(BackupForResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.BACKUP_FOR.getLocalName());
             BackupForResourceDefinition.REMOTE_CACHE.marshallAsAttribute(backupFor, writer);
             BackupForResourceDefinition.REMOTE_SITE.marshallAsAttribute(backupFor, writer);
@@ -349,8 +351,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     }
 
     private static void writeStoreElements(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
-        if (store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined()) {
-            ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+        if (store.hasDefined(StoreWriteBehindResourceDefinition.PATH.getKey())) {
+            ModelNode writeBehind = store.get(StoreWriteBehindResourceDefinition.PATH.getKeyValuePair());
             writer.writeStartElement(Element.WRITE_BEHIND.getLocalName());
             StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.marshallAsAttribute(writeBehind, writer);
             StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE.marshallAsAttribute(writeBehind, writer);
@@ -358,12 +360,12 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
             StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE.marshallAsAttribute(writeBehind, writer);
             writer.writeEndElement();
         }
-        if (store.hasDefined(ModelKeys.PROPERTY)) {
+        if (store.hasDefined(StorePropertyResourceDefinition.WILDCARD_PATH.getKey())) {
             // the format of the property elements
             //  "property" => {
             //       "relative-to" => {"value" => "fred"},
             //   }
-            for (Property property: store.get(ModelKeys.PROPERTY).asPropertyList()) {
+            for (Property property: store.get(StorePropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 Property complexValue = property.getValue().asProperty();

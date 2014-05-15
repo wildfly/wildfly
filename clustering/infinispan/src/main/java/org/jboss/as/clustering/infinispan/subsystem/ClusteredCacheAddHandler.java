@@ -35,10 +35,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public abstract class ClusteredCacheAdd extends CacheAdd {
+public abstract class ClusteredCacheAddHandler extends CacheAddHandler {
 
 
-    ClusteredCacheAdd(CacheMode mode) {
+    ClusteredCacheAddHandler(CacheMode mode) {
         super(mode);
     }
 
@@ -65,7 +65,7 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
         super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
         // required attribute MODE (ASYNC/SYNC)
-        final Mode mode = Mode.valueOf(ClusteredCacheResourceDefinition.MODE.resolveModelAttribute(context, cache).asString()) ;
+        final Mode mode = Mode.valueOf(ClusteredCacheResourceDefinition.MODE.resolveModelAttribute(context, cache).asString());
 
         final long remoteTimeout = ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final int queueSize = ClusteredCacheResourceDefinition.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();

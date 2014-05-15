@@ -74,7 +74,7 @@ public class InfinispanTransformers {
 
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        final ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH)
+        final ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES)
                         // discard statistics if set to true, reject otherwise
@@ -84,12 +84,12 @@ public class InfinispanTransformers {
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
 
-        cacheContainerBuilder.addChildResource(TransportResourceDefinition.TRANSPORT_PATH)
+        cacheContainerBuilder.addChildResource(TransportResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES)
                 .end();
 
-        final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH)
+        final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.WILDCARD_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -106,7 +106,7 @@ public class InfinispanTransformers {
                 .end();
         registerCacheResourceChildren(localCacheBuilder, false);
 
-        final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH)
+        final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.WILDCARD_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -124,7 +124,7 @@ public class InfinispanTransformers {
                 .end();
         registerCacheResourceChildren(invalidationCacheBuilder, false);
 
-        ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
         replicatedCacheBuilder.getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -141,11 +141,11 @@ public class InfinispanTransformers {
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
         // reject use of x-site related elements
-        replicatedCacheBuilder.rejectChildResource(BackupSiteResourceDefinition.BACKUP_PATH);
-        replicatedCacheBuilder.rejectChildResource(BackupForResourceDefinition.BACKUP_FOR_PATH);
+        replicatedCacheBuilder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
+        replicatedCacheBuilder.rejectChildResource(BackupForResourceDefinition.PATH);
         registerCacheResourceChildren(replicatedCacheBuilder, true);
 
-        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.WILDCARD_PATH);
         distributedCacheBuilder.getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -175,27 +175,27 @@ public class InfinispanTransformers {
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
         // reject use of x-site related elements
-        distributedCacheBuilder.rejectChildResource(BackupSiteResourceDefinition.BACKUP_PATH);
-        distributedCacheBuilder.rejectChildResource(BackupForResourceDefinition.BACKUP_FOR_PATH);
+        distributedCacheBuilder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
+        distributedCacheBuilder.rejectChildResource(BackupForResourceDefinition.PATH);
         registerCacheResourceChildren(distributedCacheBuilder, true);
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
 
     private static void registerCacheResourceChildren(final ResourceTransformationDescriptionBuilder parent, final boolean addStateTransfer) {
-        parent.addChildResource(LockingResourceDefinition.LOCKING_PATH)
+        parent.addChildResource(LockingResourceDefinition.PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LockingResourceDefinition.LOCKING_ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LockingResourceDefinition.ATTRIBUTES)
                 .end();
-        parent.addChildResource(EvictionResourceDefinition.EVICTION_PATH)
+        parent.addChildResource(EvictionResourceDefinition.PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EvictionResourceDefinition.EVICTION_ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EvictionResourceDefinition.ATTRIBUTES)
                 .end();
-        parent.addChildResource(ExpirationResourceDefinition.EXPIRATION_PATH)
+        parent.addChildResource(ExpirationResourceDefinition.PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ExpirationResourceDefinition.EXPIRATION_ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ExpirationResourceDefinition.ATTRIBUTES)
                 .end();
-        parent.addChildResource(TransactionResourceDefinition.TRANSACTION_PATH)
+        parent.addChildResource(TransactionResourceDefinition.PATH)
                 .getAttributeBuilder()
                         // TRANSACTION_ATTRIBUTES - MODE
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionResourceDefinition.LOCKING, TransactionResourceDefinition.STOP_TIMEOUT)
@@ -205,17 +205,17 @@ public class InfinispanTransformers {
         registerJdbcStoreTransformers(parent);
 
         //fileStore=FILE_STORE
-        ResourceTransformationDescriptionBuilder fileStoreBuilder = parent.addChildResource(FileStoreResourceDefinition.FILE_STORE_PATH)
+        ResourceTransformationDescriptionBuilder fileStoreBuilder = parent.addChildResource(FileStoreResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        FileStoreResourceDefinition.PATH, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
+                        FileStoreResourceDefinition.RELATIVE_PATH, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
                         StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON)
                 .end();
         registerStoreTransformerChildren(fileStoreBuilder);
 
         //store=STORE
-        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(CustomStoreResourceDefinition.STORE_PATH)
+        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(CustomStoreResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         CustomStoreResourceDefinition.CLASS, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION, StoreResourceDefinition.PRELOAD,
@@ -224,7 +224,7 @@ public class InfinispanTransformers {
         registerStoreTransformerChildren(storeBuilder);
 
         //remote-store=REMOTE_STORE
-        ResourceTransformationDescriptionBuilder remoteStoreBuilder = parent.addChildResource(RemoteStoreResourceDefinition.REMOTE_STORE_PATH)
+        ResourceTransformationDescriptionBuilder remoteStoreBuilder = parent.addChildResource(RemoteStoreResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -235,9 +235,9 @@ public class InfinispanTransformers {
         registerStoreTransformerChildren(remoteStoreBuilder);
 
         if (addStateTransfer) {
-            parent.addChildResource(StateTransferResourceDefinition.STATE_TRANSFER_PATH)
+            parent.addChildResource(StateTransferResourceDefinition.PATH)
                     .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, StateTransferResourceDefinition.STATE_TRANSFER_ATTRIBUTES)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, StateTransferResourceDefinition.ATTRIBUTES)
                     .end();
         }
     }
@@ -264,7 +264,7 @@ public class InfinispanTransformers {
                 StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON};
 
         //binaryKeyedJdbcStore
-        ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = parent.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = parent.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
@@ -273,7 +273,7 @@ public class InfinispanTransformers {
         registerStoreTransformerChildren(binaryKeyedJdbcStoreBuilder);
 
         //stringKeyedJdbcStore
-        ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = parent.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = parent.addChildResource(StringKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
@@ -282,7 +282,7 @@ public class InfinispanTransformers {
         registerStoreTransformerChildren(stringKeyedJdbcStoreBuilder);
 
         //mixedKeyedJdbcStore
-        ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = parent.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = parent.addChildResource(MixedKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
@@ -292,12 +292,12 @@ public class InfinispanTransformers {
     }
 
     private static void registerStoreTransformerChildren(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(StorePropertyResourceDefinition.STORE_PROPERTY_PATH)
+        parent.addChildResource(StorePropertyResourceDefinition.WILDCARD_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, StorePropertyResourceDefinition.VALUE)
                 .end();
 
-        parent.addChildResource(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH)
+        parent.addChildResource(StoreWriteBehindResourceDefinition.PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
@@ -324,14 +324,14 @@ public class InfinispanTransformers {
         final ModelVersion version = ModelVersion.create(1, 4, 0);
 
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
 
-        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.WILDCARD_PATH).getAttributeBuilder()
                 //Convert virtual-nodes to segments if it is set
                 //.setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResourceDefinition.VIRTUAL_NODES)
                 // this is required to address WFLY-2598
@@ -353,9 +353,9 @@ public class InfinispanTransformers {
                 .addRename(DistributedCacheResourceDefinition.VIRTUAL_NODES, DistributedCacheResourceDefinition.SEGMENTS.getName())
                 .end();
         registerCacheTransformations(distributedCacheBuilder, CacheMode.DIST_SYNC);
-        registerCacheTransformations(cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH), CacheMode.REPL_SYNC);
-        registerCacheTransformations(cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH), CacheMode.INVALIDATION_SYNC);
-        registerCacheTransformations(cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH), CacheMode.LOCAL);
+        registerCacheTransformations(cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.WILDCARD_PATH), CacheMode.REPL_SYNC);
+        registerCacheTransformations(cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.WILDCARD_PATH), CacheMode.INVALIDATION_SYNC);
+        registerCacheTransformations(cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.WILDCARD_PATH), CacheMode.LOCAL);
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
@@ -369,16 +369,16 @@ public class InfinispanTransformers {
     private static void registerTransformers141(final SubsystemRegistration subsystem) {
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder containerBuilder = builder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder containerBuilder = builder.addChildResource(CacheContainerResourceDefinition.WILDCARD_PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheTransformations(containerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH), CacheMode.DIST_SYNC);
-        registerCacheTransformations(containerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH), CacheMode.REPL_SYNC);
-        registerCacheTransformations(containerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH), CacheMode.INVALIDATION_SYNC);
-        registerCacheTransformations(containerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH), CacheMode.LOCAL);
+        registerCacheTransformations(containerBuilder.addChildResource(DistributedCacheResourceDefinition.WILDCARD_PATH), CacheMode.DIST_SYNC);
+        registerCacheTransformations(containerBuilder.addChildResource(ReplicatedCacheResourceDefinition.WILDCARD_PATH), CacheMode.REPL_SYNC);
+        registerCacheTransformations(containerBuilder.addChildResource(InvalidationCacheResourceDefinition.WILDCARD_PATH), CacheMode.INVALIDATION_SYNC);
+        registerCacheTransformations(containerBuilder.addChildResource(LocalCacheResourceDefinition.WILDCARD_PATH), CacheMode.LOCAL);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 4, 1));
     }
@@ -393,21 +393,21 @@ public class InfinispanTransformers {
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
             .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
         ;
-        cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
-        cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
-        cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
         if (mode.isReplicated() || mode.isDistributed()) {
-            cacheBuilder.rejectChildResource(BackupSiteResourceDefinition.BACKUP_PATH);
-            cacheBuilder.rejectChildResource(BackupForResourceDefinition.BACKUP_FOR_PATH);
+            cacheBuilder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
+            cacheBuilder.rejectChildResource(BackupForResourceDefinition.PATH);
         }
     }
 

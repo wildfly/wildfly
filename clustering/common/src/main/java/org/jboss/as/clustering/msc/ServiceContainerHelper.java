@@ -31,6 +31,7 @@ import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 
 /**
@@ -53,10 +54,8 @@ public class ServiceContainerHelper {
         modeToggle.put(State.DOWN, map);
 
         map = new EnumMap<>(Mode.class);
-        for (Mode mode: Mode.values()) {
-            if (mode != Mode.REMOVE) {
-                map.put(mode, Mode.REMOVE);
-            }
+        for (Mode mode: EnumSet.complementOf(EnumSet.of(Mode.REMOVE))) {
+            map.put(mode, Mode.REMOVE);
         }
         modeToggle.put(State.REMOVED, map);
     }

@@ -22,14 +22,12 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
@@ -38,66 +36,60 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-
 public class StackResourceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement STACK_PATH = PathElement.pathElement(ModelKeys.STACK);
-    static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION_HANDLER = new ExportNativeConfiguration();
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    private final boolean runtimeRegistration;
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.STACK, name);
+    }
+
+    private final boolean allowRuntimeOnlyRegistration;
 
     static final StringListAttributeDefinition PROTOCOLS = new StringListAttributeDefinition.Builder(ModelKeys.PROTOCOLS)
             .setAllowNull(true)
             .build();
 
-    // attributes
     // operations
-    private static final OperationDefinition PROTOCOL_STACK_ADD = new SimpleOperationDefinitionBuilder(ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK))
-          .addParameter(TransportResourceDefinition.TRANSPORT)
-          .addParameter(ProtocolResourceDefinition.PROTOCOLS)
-          .setAttributeResolver(JGroupsExtension.getResourceDescriptionResolver("stack.add"))
-          .build();
+    private static final OperationDefinition ADD = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK))
+            .addParameter(TransportResourceDefinition.TRANSPORT)
+            .addParameter(ProtocolResourceDefinition.PROTOCOLS)
+            .setAttributeResolver(JGroupsExtension.getResourceDescriptionResolver("stack.add"))
+            .build();
 
     static final OperationDefinition EXPORT_NATIVE_CONFIGURATION = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, JGroupsExtension.getResourceDescriptionResolver("stack"))
             .setReplyType(ModelType.STRING)
             .build();
 
     // registration
-    public StackResourceDefinition(boolean runtimeRegistration) {
-        super(STACK_PATH,
-                JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK),
-                // register below with custom signature
-                null,
-                ProtocolStackRemove.INSTANCE);
-        this.runtimeRegistration = runtimeRegistration;
+    public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK), null, StackRemoveHandler.INSTANCE);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+    public void registerOperations(ManagementResourceRegistration registration) {
+        super.registerOperations(registration);
         // override to set up TRANSPORT and PROTOCOLS parameters
-        resourceRegistration.registerOperationHandler(PROTOCOL_STACK_ADD, ProtocolStackAdd.INSTANCE);
+        registration.registerOperationHandler(ADD, new StackAddHandler());
         // register protocol add and remove
-        resourceRegistration.registerOperationHandler(ProtocolResourceDefinition.PROTOCOL_ADD, ProtocolResourceDefinition.PROTOCOL_ADD_HANDLER);
-        resourceRegistration.registerOperationHandler(ProtocolResourceDefinition.PROTOCOL_REMOVE, ProtocolResourceDefinition.PROTOCOL_REMOVE_HANDLER);
+        registration.registerOperationHandler(ProtocolResourceDefinition.ADD, ProtocolResourceDefinition.ADD_HANDLER);
+        registration.registerOperationHandler(ProtocolResourceDefinition.REMOVE, ProtocolResourceDefinition.REMOVE_HANDLER);
         // register export-native-configuration
-        if (runtimeRegistration) {
-            resourceRegistration.registerOperationHandler(StackResourceDefinition.EXPORT_NATIVE_CONFIGURATION, StackResourceDefinition.EXPORT_NATIVE_CONFIGURATION_HANDLER);
+        if (this.allowRuntimeOnlyRegistration) {
+            registration.registerOperationHandler(StackResourceDefinition.EXPORT_NATIVE_CONFIGURATION, new ExportNativeConfiguration());
         }
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(PROTOCOLS, null);
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        registration.registerReadOnlyAttribute(PROTOCOLS, null);
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-        // child resources
-        resourceRegistration.registerSubModel(TransportResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(ProtocolResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(new RelayResource());
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new TransportResourceDefinition());
+        registration.registerSubModel(new ProtocolResourceDefinition());
+        registration.registerSubModel(new RelayResourceDefinition());
     }
 }

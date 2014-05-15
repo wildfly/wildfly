@@ -48,47 +48,46 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             .setXmlName(Attribute.DATASOURCE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition DIALECT = new SimpleAttributeDefinitionBuilder(ModelKeys.DIALECT, ModelType.STRING, true)
             .setXmlName(Attribute.DIALECT.getLocalName())
             .setValidator(new EnumValidator<>(DatabaseType.class, true, true))
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
-    static final AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, DIALECT };
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATA_SOURCE, DIALECT };
 
     static final SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
             .setXmlName(Attribute.BATCH_SIZE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(100))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition FETCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
             .setXmlName(Attribute.FETCH_SIZE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(100))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
             .setXmlName(Attribute.PREFIX.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-//                   .setDefaultValue(new ModelNode().set("ispn_bucket"))
-//                   .setDefaultValue(new ModelNode().set("ispn_entry"))
-            .build()
-    ;
+//          .setDefaultValue(new ModelNode().set("ispn_bucket"))
+//          .setDefaultValue(new ModelNode().set("ispn_entry"))
+            .build();
 
     static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
             .setXmlName("name")
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set("name"))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
             .setXmlName("type")
             .setAllowExpression(true)
@@ -99,55 +98,57 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
     static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE)
             .setAllowNull(true)
             .setSuffix("column")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of("data-column", COLUMN_NAME, COLUMN_TYPE)
             .setAllowNull(true)
             .setSuffix("column")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of("timestamp-column", COLUMN_NAME, COLUMN_TYPE)
             .setAllowNull(true)
             .setSuffix("column")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
             .setAllowNull(true)
             .setSuffix("table")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
             .setAllowNull(true)
             .setSuffix("table")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
             .setAllowNull(true)
             .setSuffix("table")
-            .build()
-    ;
+            .build();
+
     static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
             .setAllowNull(true)
             .setSuffix("table")
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] COMMON_JDBC_STORE_TABLE_ATTRIBUTES = { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
-    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
-            ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE };
+    static final AttributeDefinition[] TABLE_ATTRIBUTES = new AttributeDefinition[] {
+            PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN
+    };
+    static final AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[] {
+            DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
+            ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE
+    };
 
-    public JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(COMMON_JDBC_STORE_ATTRIBUTES);
-        for (AttributeDefinition attr : COMMON_JDBC_STORE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 }

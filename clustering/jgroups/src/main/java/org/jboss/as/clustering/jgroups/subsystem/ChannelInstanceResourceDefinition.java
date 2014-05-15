@@ -70,7 +70,9 @@ import org.jgroups.stack.Protocol;
  */
 public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement CHANNEL_PATH = PathElement.pathElement(MetricKeys.CHANNEL);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(MetricKeys.CHANNEL, name);
+    }
 
     private final boolean runtimeRegistration;
 
@@ -131,23 +133,17 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
     static final AttributeDefinition[] CHANNEL_METRICS = {ADDRESS, ADDRESS_AS_UUID, DISCARD_OWN_MESSAGES, NUM_TASKS_IN_TIMER,
             NUM_TIMER_THREADS, RECEIVED_BYTES, RECEIVED_MESSAGES, SENT_BYTES, SENT_MESSAGES, STATE, STATS_ENABLED, VERSION, VIEW};
 
-    public ChannelInstanceResourceDefinition(String channelName, boolean runtimeRegistration) {
-
-        super(PathElement.pathElement(MetricKeys.CHANNEL, channelName),
-                JGroupsExtension.getResourceDescriptionResolver(MetricKeys.CHANNEL),
-                null,
-                null);
+    ChannelInstanceResourceDefinition(String channelName, boolean runtimeRegistration) {
+        super(pathElement(channelName), JGroupsExtension.getResourceDescriptionResolver(MetricKeys.CHANNEL), null, null);
         this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
         // register any metrics and the read-only handler
         if (runtimeRegistration) {
             for (AttributeDefinition attr : CHANNEL_METRICS) {
-                resourceRegistration.registerMetric(attr, ChannelMetricsHandler.INSTANCE);
+                registration.registerMetric(attr, ChannelMetricsHandler.INSTANCE);
             }
         }
     }
@@ -163,7 +159,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
     public static void addChannelProtocolMetricsRegistrationStep(OperationContext context, String channelName, String stackName) {
 
         // set up the operation for the step
-        PathAddress rootSubsystemAddress = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH);
+        PathAddress rootSubsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode registerProtocolsOp = Util.createOperation("some_operation_name", rootSubsystemAddress);
         if (stackName != null)
             registerProtocolsOp.get(ModelKeys.STACK).set(new ModelNode(stackName));
@@ -190,13 +186,13 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
             stackName = getDefaultStack(context);
         }
         // get the stack model
-        PathElement stackElement = PathElement.pathElement(ModelKeys.STACK, stackName);
-        PathAddress stackPath = PathAddress.pathAddress(PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH), stackElement);
-        ModelNode stack = Resource.Tools.readModel(context.readResourceFromRoot(stackPath, true));
+        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        PathAddress stackAddress = address.append(StackResourceDefinition.pathElement(stackName));
+        ModelNode stack = Resource.Tools.readModel(context.readResourceFromRoot(stackAddress, true));
 
         // get the transport
         ModelNode transport = stack.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).clone();
-        String transportName = (String) transport.get(ModelKeys.TYPE).asString();
+        String transportName = transport.get(ModelKeys.TYPE).asString();
         ResourceDefinition transportDefinition = getProtocolMetricResourceDefinition(context, channelName, transportName);
 
         List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();
@@ -235,9 +231,9 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
      */
     private static String getDefaultStack(OperationContext context) throws OperationFailedException {
         ModelNode resolvedValue = null;
-        PathAddress subsystemPath = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH);
+        PathAddress subsystemPath = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode subsystem = Resource.Tools.readModel(context.readResourceFromRoot(subsystemPath));
-        return (resolvedValue = JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, subsystem)).isDefined() ? resolvedValue.asString() : null;
+        return (resolvedValue = JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, subsystem)).isDefined() ? resolvedValue.asString() : null;
     }
 
     /*
@@ -389,14 +385,17 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
            resources.putAll(map);
        }
 
+       @Override
        public Object handleGetObject(String key) {
            return resources.get(key);
        }
 
+       @Override
        public Enumeration<String> getKeys() {
            return Collections.enumeration(keySet());
        }
 
+       @Override
        protected Set<String> handleKeySet() {
            return resources.keySet();
        }

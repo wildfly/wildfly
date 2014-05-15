@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
-import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
- *  LocalCacheAdd handler
+ * Add operation handler for a mixed-keyed-jdbc-store.
  *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Richard Achmatowicz
  */
-public class LocalCacheAdd extends CacheAdd {
+public class MixedKeyedJDBCStoreAddHandler extends JDBCStoreAddHandler {
 
-    static final LocalCacheAdd INSTANCE = new LocalCacheAdd();
-
-    private LocalCacheAdd() {
-        super(CacheMode.LOCAL);
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition attribute: MixedKeyedJDBCStoreResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
+        // now check for string-keyed and binary-keyed-table passed as optional parameter
+        // now check for string-keyed-table passed as optional parameter
     }
-
-    // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        INSTANCE.populate(model, operation);
-        return operation;
-    }
-
 }

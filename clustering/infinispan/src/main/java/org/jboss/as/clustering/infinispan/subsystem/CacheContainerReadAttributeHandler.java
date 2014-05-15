@@ -49,7 +49,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
     private CacheContainerReadAttributeHandler() {
-        this(CacheContainerResourceDefinition.CACHE_CONTAINER_ATTRIBUTES);
+        this(CacheContainerResourceDefinition.ATTRIBUTES);
     }
 
     private CacheContainerReadAttributeHandler(final AttributeDefinition... definitions) {

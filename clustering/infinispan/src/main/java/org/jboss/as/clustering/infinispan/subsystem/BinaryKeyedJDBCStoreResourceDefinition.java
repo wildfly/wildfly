@@ -43,34 +43,31 @@ import org.jboss.as.controller.registry.OperationEntry;
  */
 public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefinition {
 
-    public static final PathElement BINARY_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
 
     // attributes
-    static final AttributeDefinition[] BINARY_KEYED_JDBC_STORE_ATTRIBUTES = { BINARY_KEYED_TABLE };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { BINARY_KEYED_TABLE };
 
     // operations
     private static final OperationDefinition BINARY_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
-        .setParameters(COMMON_STORE_PARAMETERS)
-        .addParameter(DATA_SOURCE)
-        .addParameter(DIALECT)
-        .addParameter(BINARY_KEYED_TABLE)
-        .build();
+            .setParameters(PARAMETERS)
+            .addParameter(DATA_SOURCE)
+            .addParameter(DIALECT)
+            .addParameter(BINARY_KEYED_TABLE)
+            .build();
 
-    public BinaryKeyedJDBCStoreResourceDefinition() {
-        super(BINARY_KEYED_JDBC_STORE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE),
-                CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ADD,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    BinaryKeyedJDBCStoreResourceDefinition() {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE),
+                new BinaryKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(BINARY_KEYED_JDBC_STORE_ATTRIBUTES);
-        for (AttributeDefinition attr : BINARY_KEYED_JDBC_STORE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 

@@ -22,25 +22,28 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
+import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/replicated-cache=*
- *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefinition {
+public class InvalidationCacheAddHandler extends ClusteredCacheAddHandler {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+    static final InvalidationCacheAddHandler INSTANCE = new InvalidationCacheAddHandler();
 
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.REPLICATED_CACHE, name);
+    // used to create subsystem description
+    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
+        ModelNode operation = Util.getEmptyOperation(ADD, address);
+        INSTANCE.populate(model, operation);
+        return operation;
     }
 
-    // attributes
-
-    ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+    private InvalidationCacheAddHandler() {
+        super(CacheMode.INVALIDATION_SYNC);
     }
 }

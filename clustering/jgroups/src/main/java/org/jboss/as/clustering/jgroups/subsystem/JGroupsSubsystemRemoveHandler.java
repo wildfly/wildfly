@@ -40,9 +40,7 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Kabir Khan
  */
-public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
-
-    public static final JGroupsSubsystemRemove INSTANCE = new JGroupsSubsystemRemove();
+public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -54,12 +52,12 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
 
         // Now add steps on top of the one added above to remove any existing child stacks
         if (model.hasDefined(ModelKeys.STACK)) {
-            List<Property> stacks = model.get(ModelKeys.STACK).asPropertyList() ;
+            List<Property> stacks = model.get(ModelKeys.STACK).asPropertyList();
             for (Property stack: stacks) {
                 PathAddress address = opAddress.append(ModelKeys.STACK, stack.getName());
                 ModelNode removeStack = Util.createOperation(REMOVE, address);
                 // remove the stack
-                context.addStep(removeStack, ProtocolStackRemove.INSTANCE, OperationContext.Stage.MODEL, true);
+                context.addStep(removeStack, StackRemoveHandler.INSTANCE, OperationContext.Stage.MODEL, true);
             }
         }
 
@@ -68,13 +66,12 @@ public class JGroupsSubsystemRemove extends AbstractRemoveStepHandler {
 
     static class OriginalSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
             removeRuntimeServices(context, operation, model);
         }
 
-        protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model)
-                throws OperationFailedException {
+        protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
 
             // remove the ProtocolDefaultsService
             ServiceName protocolDefaultsService = ProtocolDefaultsService.SERVICE_NAME;

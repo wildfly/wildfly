@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,45 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.infinispan.subsystem;
 
-package org.jboss.as.clustering.jgroups.subsystem;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
- * @author Paul Ferraro
+ * Add operation handler for a custom-store.
+ *
+ * @author Richard Achmatowicz
  */
-public class AddStepHandler extends AbstractAddStepHandler {
-
-    private final Collection<AttributeDefinition> attributes;
-
-    AddStepHandler(final AttributeDefinition... attributes) {
-        this(Arrays.asList(attributes));
-    }
-
-    AddStepHandler(final Collection<AttributeDefinition> attributes) {
-        this.attributes = attributes;
-    }
+public class CustomStoreAddHandler extends StoreAddHandler {
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : this.attributes) {
-            attr.validateAndSet(operation, model);
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        ModelNode model = resource.getModel();
+        // this abstract method is called when populateModel() is called in the base class
+        for (AttributeDefinition attribute: CustomStoreResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
         }
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        context.reloadRequired();
     }
 }

@@ -25,9 +25,7 @@ import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
@@ -43,7 +41,6 @@ import org.jboss.staxmapper.XMLElementReader;
 public class InfinispanExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
-    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
@@ -71,14 +68,14 @@ public class InfinispanExtension implements Extension {
         final ResolvePathHandler resolvePathHandler;
         if (context.getProcessType().isServer()) {
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setPathAttribute(FileStoreResourceDefinition.PATH)
+                    .setPathAttribute(FileStoreResourceDefinition.RELATIVE_PATH)
                     .setRelativeToAttribute(FileStoreResourceDefinition.RELATIVE_TO)
                     .build();
         } else {
             resolvePathHandler = null;
         }
 
-        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResourceDefinition(resolvePathHandler, context.isRuntimeOnlyRegistrationValid()));
+        subsystem.registerSubsystemModel(new InfinispanSubsystemResourceDefinition(resolvePathHandler, context.isRuntimeOnlyRegistrationValid()));
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
         if (context.isRegisterTransformers()) {
             // TODO move transformation out of this utility class and into the ResourceDefinition impls

@@ -31,22 +31,23 @@ import org.jboss.dmr.ModelNode;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat, Inc.
  */
-public class ProtocolStackRemove extends AbstractRemoveStepHandler {
+public class StackRemoveHandler extends AbstractRemoveStepHandler {
 
-    public static final ProtocolStackRemove INSTANCE = new ProtocolStackRemove();
+    static final StackRemoveHandler INSTANCE = new StackRemoveHandler();
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
-        ProtocolStackAdd.INSTANCE.removeRuntimeServices(context, operation, model);
+        StackAddHandler.removeRuntimeServices(context, operation, model);
     }
 
+    @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException{
         // re-install the ProtocolStack services using the information in model
         ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-        ProtocolStackAdd.INSTANCE.installRuntimeServices(context, operation, model, verificationHandler, null);
+        StackAddHandler.installRuntimeServices(context, operation, model, verificationHandler, null);
     }
 
 }

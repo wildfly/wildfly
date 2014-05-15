@@ -50,16 +50,16 @@ import org.jgroups.Channel;
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class JGroupsSubsystemRootResource implements Resource {
+public class JGroupsSubsystemResource implements Resource {
 
     private final Resource delegate;
     private volatile ServiceRegistry registry;
 
-    public JGroupsSubsystemRootResource() {
+    public JGroupsSubsystemResource() {
         this(Resource.Factory.create());
     }
 
-    public JGroupsSubsystemRootResource(final Resource delegate) {
+    public JGroupsSubsystemResource(final Resource delegate) {
         this.delegate = delegate;
     }
 
@@ -182,7 +182,7 @@ public class JGroupsSubsystemRootResource implements Resource {
                 // build up a set of ResourceEntry descriptions
                 ServiceController<Channel> serviceController = ServiceContainerHelper.getService(this.registry, serviceName);
                 String name = getNameFromServiceName(serviceName);
-                result.add(new ChannelInstanceResource.ChannelInstanceResourceEntry(serviceController, MetricKeys.CHANNEL, name)) ;
+                result.add(new ChannelInstanceResource.ChannelInstanceResourceEntry(serviceController, MetricKeys.CHANNEL, name));
                 //result.add(new PlaceholderResource.PlaceholderResourceEntry(childType, name));
             }
             return result;
@@ -224,7 +224,7 @@ public class JGroupsSubsystemRootResource implements Resource {
 
     @Override
     public Resource clone() {
-        JGroupsSubsystemRootResource clone = new JGroupsSubsystemRootResource(delegate.clone());
+        JGroupsSubsystemResource clone = new JGroupsSubsystemResource(delegate.clone());
         // set the pointer to the ServiceRegistry
         clone.setRegistry(this.getRegistry());
         return clone;

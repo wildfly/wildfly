@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -41,29 +42,32 @@ import org.jboss.dmr.ModelType;
  */
 public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.PROPERTY, name);
+    }
 
     // attributes
     static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
             .setXmlName("value")
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
 
-    public StorePropertyResourceDefinition() {
-        super(STORE_PROPERTY_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
-                CacheConfigOperationHandlers.STORE_PROPERTY_ADD,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    StorePropertyResourceDefinition() {
+        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
+                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
-    static final AttributeDefinition[] STORE_PROPERTY_ATTRIBUTES = { VALUE };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { VALUE };
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         // do we need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(VALUE);
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attribute: ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attribute, null, writeHandler);
+        }
     }
 }

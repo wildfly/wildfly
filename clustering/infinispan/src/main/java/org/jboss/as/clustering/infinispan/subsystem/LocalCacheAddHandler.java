@@ -30,11 +30,17 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
+ *  LocalCacheAdd handler
+ *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheAdd extends SharedStateCacheAdd {
+public class LocalCacheAddHandler extends CacheAddHandler {
 
-    static final ReplicatedCacheAdd INSTANCE = new ReplicatedCacheAdd();
+    static final LocalCacheAddHandler INSTANCE = new LocalCacheAddHandler();
+
+    private LocalCacheAddHandler() {
+        super(CacheMode.LOCAL);
+    }
 
     // used to create subsystem description
     static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
@@ -43,7 +49,4 @@ public class ReplicatedCacheAdd extends SharedStateCacheAdd {
         return operation;
     }
 
-    private ReplicatedCacheAdd() {
-        super(CacheMode.REPL_SYNC);
-    }
 }

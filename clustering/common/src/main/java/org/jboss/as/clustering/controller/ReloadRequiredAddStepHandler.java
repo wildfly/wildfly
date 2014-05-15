@@ -20,27 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.controller;
 
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.services.path.ResolvePathHandler;
+import java.util.Collection;
+import java.util.List;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
- * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/replicated-cache=*
- *
- * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Paul Ferraro
  */
-public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefinition {
+public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.REPLICATED_CACHE, name);
+    public ReloadRequiredAddStepHandler(final AttributeDefinition... attributes) {
+        super(attributes);
     }
 
-    // attributes
+    public ReloadRequiredAddStepHandler(final Collection<AttributeDefinition> attributes) {
+        super(attributes);
+    }
 
-    ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        context.reloadRequired();
     }
 }

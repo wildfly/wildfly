@@ -50,17 +50,19 @@ import org.jboss.msc.service.ServiceController;
  */
 public class PropertyResourceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static SimpleAttributeDefinition VALUE =
-            new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
-                    .setXmlName("value")
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.PROPERTY, name);
+    }
 
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
+            .setXmlName("value")
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
 
-    static final OperationStepHandler REMOVE = new OperationStepHandler() {
+    static final OperationStepHandler REMOVE_HANDLER = new OperationStepHandler() {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             context.removeResource(PathAddress.EMPTY_ADDRESS);
@@ -69,7 +71,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         }
     };
 
-    static final AbstractAddStepHandler PROTOCOL_PROPERTY_ADD = new AbstractAddStepHandler() {
+    static final AbstractAddStepHandler ADD_HANDLER = new AbstractAddStepHandler() {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
             PropertyResourceDefinition.VALUE.validateAndSet(operation, model);
@@ -81,21 +83,16 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         }
     };
 
-    static final PropertyResourceDefinition INSTANCE = new PropertyResourceDefinition() ;
+    static final PropertyResourceDefinition INSTANCE = new PropertyResourceDefinition();
 
     // registration
-    PropertyResourceDefinition() {
-        super(PROPERTY_PATH,
-                JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
-                PropertyResourceDefinition.PROTOCOL_PROPERTY_ADD,
-                PropertyResourceDefinition.REMOVE);
+    private PropertyResourceDefinition() {
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY), PropertyResourceDefinition.ADD_HANDLER, PropertyResourceDefinition.REMOVE_HANDLER);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, new ReloadRequiredWriteAttributeHandler(VALUE));
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        registration.registerReadWriteAttribute(VALUE, null, new ReloadRequiredWriteAttributeHandler(VALUE));
     }
 
     /**
@@ -118,5 +115,4 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }

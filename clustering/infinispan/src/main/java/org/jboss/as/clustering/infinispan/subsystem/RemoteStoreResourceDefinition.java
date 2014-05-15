@@ -49,84 +49,76 @@ import org.jboss.dmr.ModelType;
  */
 public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
-    public static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 
     // attributes
     static final SimpleAttributeDefinition CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE, ModelType.STRING, true)
             .setXmlName(Attribute.CACHE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition TCP_NO_DELAY = new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.TCP_NO_DELAY.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition SOCKET_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
             .setXmlName(Attribute.SOCKET_TIMEOUT.getLocalName())
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(60000))
-            .build()
-    ;
+            .build();
 
     // the remote servers parameter is required (not null), and the list of remote-server objects must have size >= 1
     static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.OUTBOUND_SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setXmlName(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName())
-            .build()
-    ;
+            .build();
 
     static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition. Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING)
             .setAllowNull(false)
             .setSuffix("remote-server")
-            .build()
-    ;
+            .build();
+
     static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER)
             .setAllowNull(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS };
 
     // operations
-    private static final OperationDefinition REMOTE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
-            .setParameters(COMMON_STORE_PARAMETERS)
+    private static final OperationDefinition ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
+            .setParameters(PARAMETERS)
             .addParameter(CACHE)
             .addParameter(TCP_NO_DELAY)
             .addParameter(SOCKET_TIMEOUT)
             .addParameter(REMOTE_SERVERS)
             .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
-            .build()
-    ;
+            .build();
 
-    public RemoteStoreResourceDefinition() {
-        super(REMOTE_STORE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE),
-                CacheConfigOperationHandlers.REMOTE_STORE_ADD,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    RemoteStoreResourceDefinition() {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE), new RemoteStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(REMOTE_STORE_ATTRIBUTES);
-        for (AttributeDefinition attr : REMOTE_STORE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(REMOTE_STORE_ADD_DEFINITION, handler);
+        registration.registerOperationHandler(ADD_DEFINITION, handler);
     }
 }

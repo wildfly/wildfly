@@ -21,10 +21,13 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -34,23 +37,34 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2012 Red Hat Inc.
  */
-public class JGroupsSubsystemRootResourceDefinition extends SimpleResourceDefinition {
+public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME);
 
     // attributes
-    static SimpleAttributeDefinition DEFAULT_STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
+    static final SimpleAttributeDefinition DEFAULT_STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
             .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build()
-    ;
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DEFAULT_STACK };
+
+    private final boolean allowRuntimeOnlyRegistration;
 
     // registration
-    JGroupsSubsystemRootResourceDefinition() {
-        super(JGroupsExtension.SUBSYSTEM_PATH, JGroupsExtension.getResourceDescriptionResolver(), JGroupsSubsystemAdd.INSTANCE, JGroupsSubsystemRemove.INSTANCE);
+    JGroupsSubsystemResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, JGroupsExtension.getResourceDescriptionResolver(), new JGroupsSubsystemAddHandler(ATTRIBUTES), new JGroupsSubsystemRemoveHandler());
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_STACK, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_STACK));
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        registration.registerReadWriteAttribute(DEFAULT_STACK, null, new ReloadRequiredWriteAttributeHandler(ATTRIBUTES));
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new StackResourceDefinition(this.allowRuntimeOnlyRegistration));
     }
 }
