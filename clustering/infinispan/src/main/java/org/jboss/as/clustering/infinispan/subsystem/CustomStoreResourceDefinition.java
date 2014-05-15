@@ -63,8 +63,8 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
             .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
             .build();
 
-    CustomStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE), new CustomStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    CustomStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE), new CustomStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
     }
 
     @Override

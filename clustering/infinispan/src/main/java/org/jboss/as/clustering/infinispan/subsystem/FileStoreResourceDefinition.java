@@ -76,8 +76,8 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
     private final ResolvePathHandler resolvePathHandler;
 
-    FileStoreResourceDefinition(ResolvePathHandler resolvePathHandler) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE), new FileStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    FileStoreResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE), new FileStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
         this.resolvePathHandler = resolvePathHandler;
     }
 

@@ -81,15 +81,11 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING };
 
-    // metrics
-    static final AttributeDefinition CURRENT_CONCURRENCY_LEVEL = new SimpleAttributeDefinitionBuilder(MetricKeys.CURRENT_CONCURRENCY_LEVEL, ModelType.INT, true).setStorageRuntime().build();
-    static final AttributeDefinition NUMBER_OF_LOCKS_AVAILABLE = new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_LOCKS_AVAILABLE, ModelType.INT, true).setStorageRuntime().build();
-    static final AttributeDefinition NUMBER_OF_LOCKS_HELD = new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_LOCKS_HELD, ModelType.INT, true).setStorageRuntime().build();
+    private final boolean allowRuntimeOnlyRegistration;
 
-    static final AttributeDefinition[] LOCKING_METRICS = { CURRENT_CONCURRENCY_LEVEL, NUMBER_OF_LOCKS_AVAILABLE, NUMBER_OF_LOCKS_HELD };
-
-    LockingResourceDefinition() {
+    LockingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -100,9 +96,11 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
-        // register any metrics
-        for (AttributeDefinition attr : LOCKING_METRICS) {
-            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new LockingMetricsHandler();
+            for (LockingMetric metric: LockingMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 }

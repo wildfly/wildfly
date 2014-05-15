@@ -1,10 +1,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
@@ -128,31 +130,12 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.ENTRY_TABLE.getName() + "table", "jdbc-store");
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.BUCKET_TABLE.getName() + "table", "jdbc-store");
 
-        // shared cache metrics
-        sharedAttributeResolver.put(CacheResourceDefinition.ACTIVATIONS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.AVERAGE_READ_TIME.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.AVERAGE_WRITE_TIME.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.CACHE_STATUS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.ELAPSED_TIME.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.HIT_RATIO.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.HITS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.INVALIDATIONS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.MISSES.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.NUMBER_OF_ENTRIES.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.PASSIVATIONS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.READ_WRITE_RATIO.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.REMOVE_HITS.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.REMOVE_MISSES.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.STORES.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.TIME_SINCE_RESET.getName(), "cache");
-
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.AVERAGE_REPLICATION_TIME.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.REPLICATION_COUNT.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.REPLICATION_FAILURES.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.SUCCESS_RATIO.getName(), "clustered-cache");
-
-        sharedAttributeResolver.put(StoreResourceDefinition.CACHE_LOADER_LOADS.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.CACHE_LOADER_MISSES.getName(), "store");
+        this.initMetric(CacheMetric.class, "cache");
+        this.initMetric(ClusteredCacheMetric.class, "clustered-cache");
+        this.initMetric(EvictionMetric.class, "eviction");
+        this.initMetric(LockingMetric.class, "locking");
+        this.initMetric(StoreMetric.class, "store");
+        this.initMetric(TransactionMetric.class, "transaction");
 
         // shared children - this avoids having to describe the children for each parent resource
         sharedAttributeResolver.put(ModelKeys.TRANSPORT, null);
@@ -170,5 +153,11 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
         sharedAttributeResolver.put(ModelKeys.WRITE_BEHIND, null);
         sharedAttributeResolver.put(ModelKeys.PROPERTY, null);
         sharedAttributeResolver.put(ModelKeys.BACKUP_FOR, null);
+    }
+
+    private <E extends Enum<E> & Metric<?>> void initMetric(Class<E> metricClass, String prefix) {
+        for (Metric<?> metric: EnumSet.allOf(metricClass)) {
+            this.sharedAttributeResolver.put(metric.getDefinition().getName(), prefix);
+        }
     }
 }

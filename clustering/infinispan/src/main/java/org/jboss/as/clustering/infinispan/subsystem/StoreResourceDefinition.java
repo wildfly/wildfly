@@ -103,19 +103,16 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
             SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES
     };
 
-    // metrics
-    static final AttributeDefinition CACHE_LOADER_LOADS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition CACHE_LOADER_MISSES = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG, true).setStorageRuntime().build();
-
-    static final AttributeDefinition[] COMMON_STORE_METRICS = { CACHE_LOADER_LOADS, CACHE_LOADER_MISSES };
-
     // operations
     private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
             .setParameters(PARAMETERS)
             .build();
 
-    StoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    private final boolean allowRuntimeOnlyRegistration;
+
+    StoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, boolean allowRuntimeOnlyRegistration) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -126,9 +123,11 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
-        // register any metrics
-        for (AttributeDefinition attr : COMMON_STORE_METRICS) {
-            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new StoreMetricsHandler();
+            for (StoreMetric metric: StoreMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 

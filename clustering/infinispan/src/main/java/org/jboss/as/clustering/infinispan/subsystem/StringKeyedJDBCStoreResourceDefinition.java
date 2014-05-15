@@ -56,9 +56,8 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
             .addParameter(STRING_KEYED_TABLE)
             .build();
 
-    StringKeyedJDBCStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE),
-                new StringKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    StringKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE), new StringKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
     }
 
     @Override

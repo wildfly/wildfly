@@ -136,15 +136,6 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setParameters(NAME)
             .build();
 
-    // metrics
-    static final AttributeDefinition CACHE_MANAGER_STATUS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition CLUSTER_NAME = new SimpleAttributeDefinitionBuilder(MetricKeys.CLUSTER_NAME, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition COORDINATOR_ADDRESS = new SimpleAttributeDefinitionBuilder(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition IS_COORDINATOR = new SimpleAttributeDefinitionBuilder(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN, true).setStorageRuntime().build();
-    static final AttributeDefinition LOCAL_ADDRESS = new SimpleAttributeDefinitionBuilder(MetricKeys.LOCAL_ADDRESS, ModelType.STRING, true).setStorageRuntime().build();
-
-    static final AttributeDefinition[] CACHE_CONTAINER_METRICS = { CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS };
-
     private final ResolvePathHandler resolvePathHandler;
     private final boolean allowRuntimeOnlyRegistration;
 
@@ -163,26 +154,29 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attr, CacheContainerReadAttributeHandler.INSTANCE, writeHandler);
         }
 
-        for (AttributeDefinition attr : CACHE_CONTAINER_METRICS) {
-            registration.registerMetric(attr, CacheContainerMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new CacheContainerMetricsHandler();
+            for (CacheContainerMetric metric: CacheContainerMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+    public void registerOperations(ManagementResourceRegistration registration) {
+        super.registerOperations(registration);
         // register add-alias and remove-alias
-        resourceRegistration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_ADD, AddAliasCommand.INSTANCE);
-        resourceRegistration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
+        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_ADD, AddAliasCommand.INSTANCE);
+        registration.registerOperationHandler(CacheContainerResourceDefinition.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+    public void registerChildren(ManagementResourceRegistration registration) {
         // child resources
-        resourceRegistration.registerSubModel(new TransportResourceDefinition());
-        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(this.resolvePathHandler));
-        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(this.resolvePathHandler));
-        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
-        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new TransportResourceDefinition());
+        registration.registerSubModel(new LocalCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new InvalidationCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new ReplicatedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new DistributedCacheResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
     }
 }

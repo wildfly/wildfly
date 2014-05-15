@@ -82,16 +82,8 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
 
-    // metrics
-    static final AttributeDefinition AVERAGE_REPLICATION_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition REPLICATION_COUNT = new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_COUNT, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition REPLICATION_FAILURES = new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_FAILURES, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition SUCCESS_RATIO = new SimpleAttributeDefinitionBuilder(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true).setStorageRuntime().build();
-
-    static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = { AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO };
-
-    ClusteredCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
-        super(key, addHandler, removeHandler, resolvePathHandler);
+    ClusteredCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(key, addHandler, removeHandler, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override
@@ -103,9 +95,11 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             registration.registerReadWriteAttribute(attribute, CacheReadAttributeHandler.INSTANCE, writeHandler);
         }
 
-        // register any metrics
-        for (AttributeDefinition attribute : CLUSTERED_CACHE_METRICS) {
-            registration.registerMetric(attribute, CacheMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new ClusteredCacheMetricsHandler();
+            for (ClusteredCacheMetric metric: ClusteredCacheMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 }

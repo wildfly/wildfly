@@ -35,11 +35,8 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    private final boolean allowRuntimeOnlyRegistration;
-
     public SharedCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(key, addHandler, removeHandler, resolvePathHandler);
-        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
+        super(key, addHandler, removeHandler, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override

@@ -56,9 +56,8 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
             .addParameter(BINARY_KEYED_TABLE)
             .build();
 
-    BinaryKeyedJDBCStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE),
-                new BinaryKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    BinaryKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE), new BinaryKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
     }
 
     @Override

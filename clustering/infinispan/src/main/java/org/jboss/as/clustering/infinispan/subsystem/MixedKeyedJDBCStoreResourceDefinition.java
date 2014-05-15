@@ -57,9 +57,8 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
             .addParameter(BINARY_KEYED_TABLE)
             .build();
 
-    MixedKeyedJDBCStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.MIXED_KEYED_JDBC_STORE),
-                new MixedKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.MIXED_KEYED_JDBC_STORE), new MixedKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
     }
 
     @Override

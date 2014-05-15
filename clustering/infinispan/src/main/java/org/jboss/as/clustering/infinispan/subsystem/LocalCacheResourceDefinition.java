@@ -40,7 +40,7 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
     // attributes
 
-    LocalCacheResourceDefinition(ResolvePathHandler resolvePathHandler) {
-        super(ModelKeys.LOCAL_CACHE, LocalCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler);
+    LocalCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(ModelKeys.LOCAL_CACHE, LocalCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 }

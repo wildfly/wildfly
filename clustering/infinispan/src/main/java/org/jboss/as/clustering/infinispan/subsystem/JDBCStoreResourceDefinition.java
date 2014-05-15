@@ -138,8 +138,8 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE
     };
 
-    JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, boolean allowRuntimeOnlyRegistration) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override

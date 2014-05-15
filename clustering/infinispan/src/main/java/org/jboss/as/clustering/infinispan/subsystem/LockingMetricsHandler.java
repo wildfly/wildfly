@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @author tags. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,39 +21,39 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.infinispan.Cache;
+import org.infinispan.util.concurrent.locks.LockManagerImpl;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Handler for cache metrics.
+ * A handler for cache locking metrics.
  *
- * @author Tristan Tarrant
- * @author Richard Achmatowicz
  * @author Paul Ferraro
  */
-public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
+public class LockingMetricsHandler extends AbstractRuntimeOnlyHandler {
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*
+    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+        // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/locking=LOCKING
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String containerName = address.getElement(1).getValue();
         String cacheName = address.getElement(2).getValue();
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        CacheMetric metric = CacheMetric.forName(name);
+        LockingMetric metric = LockingMetric.forName(name);
 
         if (metric == null) {
             context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
             Cache<?, ?> cache = ServiceContainerHelper.findValue(context.getServiceRegistry(false), CacheService.getServiceName(containerName, cacheName));
             if (cache != null) {
-                context.getResult().set(metric.getValue(cache));
+                context.getResult().set(metric.getValue((LockManagerImpl) cache.getAdvancedCache().getLockManager()));
             }
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);

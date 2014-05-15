@@ -65,13 +65,11 @@ public class EvictionResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STRATEGY, MAX_ENTRIES };
 
-    // metrics
-    static final AttributeDefinition EVICTIONS = new SimpleAttributeDefinitionBuilder(MetricKeys.EVICTIONS, ModelType.LONG, true).setStorageRuntime().build();
+    private final boolean allowRuntimeOnlyRegistration;
 
-    static final AttributeDefinition[] EVICTION_METRICS = { EVICTIONS };
-
-    EvictionResourceDefinition() {
+    EvictionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -81,9 +79,12 @@ public class EvictionResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-        // register any metrics
-        for (AttributeDefinition attr : EVICTION_METRICS) {
-            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new EvictionMetricsHandler();
+            for (EvictionMetric metric: EvictionMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 }

@@ -76,15 +76,11 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MODE, STOP_TIMEOUT, LOCKING };
 
-    // metrics
-    static final AttributeDefinition COMMITS = new SimpleAttributeDefinitionBuilder(MetricKeys.COMMITS, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition PREPARES = new SimpleAttributeDefinitionBuilder(MetricKeys.PREPARES, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition ROLLBACKS = new SimpleAttributeDefinitionBuilder(MetricKeys.ROLLBACKS, ModelType.LONG, true).setStorageRuntime().build();
+    private final boolean allowRuntimeOnlyRegistration;
 
-    static final AttributeDefinition[] TRANSACTION_METRICS = { COMMITS, PREPARES, ROLLBACKS };
-
-    TransactionResourceDefinition() {
+    TransactionResourceDefinition(boolean allowRuntimeOnlyRegistration) {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -95,9 +91,12 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
-        // register any metrics
-        for (AttributeDefinition attr : TRANSACTION_METRICS) {
-            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            // register any metrics
+            OperationStepHandler handler = new TransactionMetricsHandler();
+            for (TransactionMetric metric: TransactionMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 }

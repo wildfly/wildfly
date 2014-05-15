@@ -43,7 +43,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -76,63 +75,6 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
 
     private final boolean runtimeRegistration;
 
-    // metrics
-    static final SimpleAttributeDefinition ADDRESS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition ADDRESS_AS_UUID =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS_AS_UUID, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition DISCARD_OWN_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.DISCARD_OWN_MESSAGES, ModelType.BOOLEAN, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition NUM_TASKS_IN_TIMER =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TASKS_IN_TIMER, ModelType.INT, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition NUM_TIMER_THREADS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TIMER_THREADS, ModelType.INT, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition RECEIVED_BYTES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_BYTES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition RECEIVED_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_MESSAGES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition SENT_BYTES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_BYTES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition SENT_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_MESSAGES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition STATE =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.STATE, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition STATS_ENABLED =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.STATS_ENABLED, ModelType.BOOLEAN, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition VERSION =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.VERSION, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition VIEW =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.VIEW, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final AttributeDefinition[] CHANNEL_METRICS = {ADDRESS, ADDRESS_AS_UUID, DISCARD_OWN_MESSAGES, NUM_TASKS_IN_TIMER,
-            NUM_TIMER_THREADS, RECEIVED_BYTES, RECEIVED_MESSAGES, SENT_BYTES, SENT_MESSAGES, STATE, STATS_ENABLED, VERSION, VIEW};
-
     ChannelInstanceResourceDefinition(String channelName, boolean runtimeRegistration) {
         super(pathElement(channelName), JGroupsExtension.getResourceDescriptionResolver(MetricKeys.CHANNEL), null, null);
         this.runtimeRegistration = runtimeRegistration;
@@ -141,9 +83,10 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         // register any metrics and the read-only handler
-        if (runtimeRegistration) {
-            for (AttributeDefinition attr : CHANNEL_METRICS) {
-                registration.registerMetric(attr, ChannelMetricsHandler.INSTANCE);
+        if (this.runtimeRegistration) {
+            ChannelMetricsHandler handler = new ChannelMetricsHandler();
+            for (ChannelMetric metric: ChannelMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
             }
         }
     }

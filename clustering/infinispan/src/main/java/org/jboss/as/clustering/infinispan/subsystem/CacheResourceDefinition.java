@@ -105,32 +105,13 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    // metrics
-    static final AttributeDefinition ACTIVATIONS = new SimpleAttributeDefinitionBuilder(MetricKeys.ACTIVATIONS, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition AVERAGE_READ_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_READ_TIME, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition AVERAGE_WRITE_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_WRITE_TIME, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition CACHE_STATUS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_STATUS, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition ELAPSED_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.ELAPSED_TIME, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition HIT_RATIO = new SimpleAttributeDefinitionBuilder(MetricKeys.HIT_RATIO, ModelType.DOUBLE, true).setStorageRuntime().build();
-    static final AttributeDefinition HITS = new SimpleAttributeDefinitionBuilder(MetricKeys.HITS, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition INVALIDATIONS = new SimpleAttributeDefinitionBuilder(MetricKeys.INVALIDATIONS, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition MISSES = new SimpleAttributeDefinitionBuilder(MetricKeys.MISSES, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition NUMBER_OF_ENTRIES = new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_ENTRIES, ModelType.INT, true).setStorageRuntime().build();
-    static final AttributeDefinition PASSIVATIONS = new SimpleAttributeDefinitionBuilder(MetricKeys.PASSIVATIONS, ModelType.STRING, true).setStorageRuntime().build();
-    static final AttributeDefinition READ_WRITE_RATIO = new SimpleAttributeDefinitionBuilder(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE, true).setStorageRuntime().build();
-    static final AttributeDefinition REMOVE_HITS = new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_HITS, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition REMOVE_MISSES = new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_MISSES, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition STORES = new SimpleAttributeDefinitionBuilder(MetricKeys.STORES, ModelType.LONG, true).setStorageRuntime().build();
-    static final AttributeDefinition TIME_SINCE_RESET = new SimpleAttributeDefinitionBuilder(MetricKeys.TIME_SINCE_RESET, ModelType.LONG, true).setStorageRuntime().build();
-
-    static final AttributeDefinition[] CACHE_METRICS = { /*ACTIVATIONS,*/ AVERAGE_READ_TIME, AVERAGE_WRITE_TIME, CACHE_STATUS, ELAPSED_TIME, HIT_RATIO, HITS,
-            INVALIDATIONS, MISSES, NUMBER_OF_ENTRIES, PASSIVATIONS, READ_WRITE_RATIO, REMOVE_HITS, REMOVE_MISSES, STORES, TIME_SINCE_RESET };
-
     private final ResolvePathHandler resolvePathHandler;
+    final boolean allowRuntimeOnlyRegistration;
 
-    public CacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+    public CacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
         super(PathElement.pathElement(key), InfinispanExtension.getResourceDescriptionResolver(key), addHandler, removeHandler);
         this.resolvePathHandler = resolvePathHandler;
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 
     @Override
@@ -141,23 +122,25 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
         }
 
-        // register any metrics
-        for (AttributeDefinition attr : CACHE_METRICS) {
-            registration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
+        if (this.allowRuntimeOnlyRegistration) {
+            OperationStepHandler handler = new CacheMetricsHandler();
+            for (CacheMetric metric: CacheMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
+            }
         }
     }
 
     @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new LockingResourceDefinition());
-        resourceRegistration.registerSubModel(new TransactionResourceDefinition());
-        resourceRegistration.registerSubModel(new EvictionResourceDefinition());
-        resourceRegistration.registerSubModel(new ExpirationResourceDefinition());
-        resourceRegistration.registerSubModel(new CustomStoreResourceDefinition());
-        resourceRegistration.registerSubModel(new FileStoreResourceDefinition(this.resolvePathHandler));
-        resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition());
-        resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition());
-        resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResourceDefinition());
-        resourceRegistration.registerSubModel(new RemoteStoreResourceDefinition());
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new LockingResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new TransactionResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new EvictionResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new ExpirationResourceDefinition());
+        registration.registerSubModel(new CustomStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new FileStoreResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new MixedKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
+        registration.registerSubModel(new RemoteStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
     }
 }

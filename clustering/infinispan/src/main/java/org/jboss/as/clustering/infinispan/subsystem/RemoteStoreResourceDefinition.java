@@ -102,8 +102,8 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
             .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
             .build();
 
-    RemoteStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE), new RemoteStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+    RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE), new RemoteStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
     }
 
     @Override
