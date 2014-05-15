@@ -21,6 +21,7 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -61,12 +62,24 @@ public @interface Version {
             return version;
         }
 
+        /**
+         * @return the fully expanded HOME directory
+         */
         public String getExpandedDirectoryName() {
+            // any hack to guess the directory in the zip will do
+            // an alternative is picking the one and only directory in target-directory
+            return getTargetDirectoryName() + File.separator + basename + version.substring(0, 3);
+        }
+
+        /**
+         * @return the target directory into which to expand the zip
+         */
+        public String getTargetDirectoryName() {
             return basename + version;
         }
 
         public String getZipFileName() {
-            return getExpandedDirectoryName() + ".zip";
+            return getTargetDirectoryName() + ".zip";
         }
     }
 

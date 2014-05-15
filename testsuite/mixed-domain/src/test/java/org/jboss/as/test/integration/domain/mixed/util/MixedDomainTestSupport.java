@@ -45,6 +45,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         File dir = oldVersionCopier.getVersionDir(version);
 
         return new MixedDomainTestSupport(testClass, "master-config/domain.xml", "master-config/host.xml",
-                "slave-configs/" + dir.getName() + "/domain/configuration/host-slave.xml", dir.getAbsolutePath());
+                "slave-configs/" + version.getTargetDirectoryName() + "/domain/configuration/host-slave.xml", dir.getAbsolutePath());
     }
 }
