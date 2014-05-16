@@ -38,7 +38,7 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
 
-    static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
+    public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .build();
