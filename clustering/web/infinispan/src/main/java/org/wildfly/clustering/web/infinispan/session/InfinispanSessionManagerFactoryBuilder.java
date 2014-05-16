@@ -21,25 +21,20 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.jboss.ReplicationConfig;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 
@@ -51,22 +46,16 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
-        ServiceName templateCacheServiceName = getCacheServiceName(metaData.getReplicationConfig());
+    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration config) {
+        ServiceName templateCacheServiceName = getCacheServiceName(config.getCacheName());
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
-        String host = deploymentServiceName.getParent().getSimpleName();
-        String contextPath = deploymentServiceName.getSimpleName();
-        StringBuilder cacheNameBuilder = new StringBuilder(host).append(contextPath);
-        if (contextPath.isEmpty() || contextPath.equals("/")) {
-            cacheNameBuilder.append("ROOT");
-        }
-        String cacheName = cacheNameBuilder.toString();
+        String cacheName = config.getDeploymentName();
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
-        SessionCacheConfigurationService.build(target, containerName, cacheName, templateCacheName, metaData)
+        SessionCacheConfigurationService.build(target, containerName, cacheName, templateCacheName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
@@ -83,7 +72,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             }
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addAliases(RouteLocatorService.getCacheServiceName(deploymentServiceName))
+                .addAliases(RouteLocatorService.getCacheServiceAlias(cacheName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
@@ -91,19 +80,11 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 .install()
         ;
 
-        @SuppressWarnings("rawtypes")
-        InjectedValue<Cache> cache = new InjectedValue<>();
-        InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-        InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(module, metaData, cache, affinityFactory);
-        return target.addService(name, factory)
-                .addDependency(cacheServiceName, Cache.class, cache)
-                .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, affinityFactory)
-        ;
+        return InfinispanSessionManagerFactory.build(target, name, containerName, cacheName, config);
     }
 
-    private static ServiceName getCacheServiceName(ReplicationConfig config) {
+    private static ServiceName getCacheServiceName(String cacheName) {
         ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
-        String cacheName = (config != null) ? config.getCacheName() : null;
         ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);

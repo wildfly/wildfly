@@ -34,8 +34,8 @@ import org.wildfly.clustering.web.session.RouteLocator;
 public class RouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
 
     @Override
-    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
-        return RouteLocatorService.build(target, name, deploymentServiceName);
+    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName) {
+        return RouteLocatorService.build(target, name, deploymentName);
     }
 
     @Override

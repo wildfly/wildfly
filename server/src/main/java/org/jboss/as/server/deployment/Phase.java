@@ -216,6 +216,7 @@ public enum Phase {
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_1  = 0x0A17;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_2  = 0x0A18;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_WELD           = 0x0A19;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_UNDERTOW_SHARED_SESSION = 0x0A1A;
     public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0AE0;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
@@ -487,6 +488,7 @@ public enum Phase {
     public static final int POST_MODULE_UNDERTOW_MODCLUSTER             = 0x3400;
 
     // INSTALL
+    public static final int INSTALL_SHARED_SESSION_MANAGER              = 0x0100;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;

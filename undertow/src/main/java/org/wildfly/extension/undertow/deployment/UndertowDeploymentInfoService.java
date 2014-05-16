@@ -142,6 +142,7 @@ import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
+import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -201,6 +202,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<HandlerWrapper> outerHandlerChainWrappers;
     private final List<ThreadSetupAction> threadSetupActions;
     private final List<ServletExtension> servletExtensions;
+    private final SharedSessionManagerConfig sharedSessionManagerConfig;
     private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
@@ -213,7 +215,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -235,6 +237,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.threadSetupActions = threadSetupActions;
         this.explodedDeployment = explodedDeployment;
         this.servletExtensions = servletExtensions;
+        this.sharedSessionManagerConfig = sharedSessionManagerConfig;
     }
 
     @Override
@@ -255,6 +258,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
+            if(sharedSessionManagerConfig != null && sharedSessionManagerConfig.getSessionConfig() != null) {
+                sessionConfig = sharedSessionManagerConfig.getSessionConfig();
+            }
             ServletSessionConfig config = null;
             //default session config
             SessionCookieConfig defaultSessionConfig = container.getValue().getSessionCookieConfig();
@@ -1286,6 +1292,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private List<HandlerWrapper> outerHandlerChainWrappers;
         private List<ThreadSetupAction> threadSetupActions;
         private List<ServletExtension> servletExtensions;
+        private SharedSessionManagerConfig sharedSessionManagerConfig;
         private boolean explodedDeployment;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
@@ -1397,8 +1404,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setSharedSessionManagerConfig(SharedSessionManagerConfig sharedSessionManagerConfig) {
+            this.sharedSessionManagerConfig = sharedSessionManagerConfig;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig);
         }
     }
 }
