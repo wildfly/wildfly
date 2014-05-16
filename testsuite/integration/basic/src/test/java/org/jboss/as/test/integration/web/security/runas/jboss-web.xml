@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<jboss-web>
+  <security-domain>web-tests</security-domain>
+
+    <security-role>
+        <role-name>anil</role-name>
+        <principal-name>anil</principal-name>
+    </security-role>
+    <security-role>
+        <role-name>marcus</role-name>
+        <principal-name>marcus</principal-name>
+    </security-role>
+    <security-role>
+        <role-name>peter</role-name>
+        <principal-name>peter</principal-name>
+    </security-role>
+
+    <servlet>
+        <servlet-name>RunAsInitServlet</servlet-name>
+        <run-as-principal>anil</run-as-principal>
+    </servlet>
+    <servlet>
+        <servlet-name>RunAsServlet</servlet-name>
+        <run-as-principal>peter</run-as-principal>
+    </servlet>
+</jboss-web>
