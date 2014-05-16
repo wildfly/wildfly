@@ -135,6 +135,7 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.JbossAuthorizationManager;
+import org.wildfly.extension.undertow.security.RunAsLifecycleInterceptor;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
@@ -846,6 +847,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
             d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
             d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
+
+            d.addLifecycleInterceptor(new RunAsLifecycleInterceptor(mergedMetaData.getRunAsIdentity()));
 
             if (principalVersusRolesMap != null) {
                 for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
