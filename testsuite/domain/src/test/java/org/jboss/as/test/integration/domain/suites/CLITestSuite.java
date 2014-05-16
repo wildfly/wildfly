@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.domain.suites;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,7 +61,6 @@ import org.junit.runners.Suite;
 })
 public class CLITestSuite {
 
-    private static DomainTestSupport domainSupport;
     public static final Map<String, String[]> hostServers = new HashMap<String, String[]>();
     public static final Map<String, String> hostAddresses = new HashMap<String, String>();
     public static final Map<String, String[]> serverGroups = new HashMap<String, String[]>();
@@ -70,13 +68,43 @@ public class CLITestSuite {
     public static final Map<String, String[]> serverProfiles = new HashMap<String, String[]>();
     public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
 
+    private static boolean initializedLocally = false;
+    private static volatile DomainTestSupport support;
+
+    // This can only be called from tests as part of this suite
+    public static synchronized DomainTestSupport createSupport(final String testName) {
+        if(support == null) {
+            start(testName);
+        }
+        return support;
+    }
+
+    // This can only be called from tests as part of this suite
+    public static synchronized void stopSupport() {
+        if(! initializedLocally) {
+            stop();
+        }
+    }
+
+    private synchronized static void start(final String name) {
+        try {
+            support = DomainTestSupport.createAndStartDefaultSupport(name);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private synchronized static void stop() {
+        if(support != null) {
+            support.stop();
+            support = null;
+        }
+    }
+
     @BeforeClass
     public static void initSuite() throws Exception {
-        DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(CLITestSuite.class.getSimpleName(),
-                "domain-configs"+ File.separatorChar+"domain-standard.xml", "host-configs"+File.separatorChar+"host-master.xml",
-                "host-configs"+File.separatorChar+"host-slave.xml");
-        domainSupport = DomainTestSupport.create(configuration);
-        domainSupport.start();
+        initializedLocally = true;
+        start(CLITestSuite.class.getSimpleName());
 
         hostServers.put("master", new String[]{"main-one", "main-two", "other-one"});
         hostServers.put("slave", new String[]{"main-three", "main-four", "other-two"});
@@ -108,7 +136,7 @@ public class CLITestSuite {
 
     @AfterClass
     public static void tearDownSuite() {
-        domainSupport.stop();
+        stop();
     }
 
     public static void addServer(String serverName, String hostName, String groupName, String profileName, int portOffset, boolean status) {

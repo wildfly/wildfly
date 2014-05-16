@@ -64,6 +64,9 @@ public class UndeployWildcardDomainTestCase {
 
     @BeforeClass
     public static void before() throws Exception {
+
+        CLITestSuite.createSupport(UndeployWildcardDomainTestCase.class.getSimpleName());
+
         String tempDir = System.getProperty("java.io.tmpdir");
 
         // deployment1
@@ -109,6 +112,9 @@ public class UndeployWildcardDomainTestCase {
 
     @AfterClass
     public static void after() throws Exception {
+
+        CLITestSuite.stopSupport();
+
         cliTestApp1War.delete();
         cliTestApp2War.delete();
         cliTestAnotherWar.delete();

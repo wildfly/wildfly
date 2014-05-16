@@ -22,11 +22,15 @@
 package org.jboss.as.test.integration.domain.management.cli;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -35,6 +39,16 @@ import java.util.List;
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 public class BasicOpsTestCase {
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CLITestSuite.createSupport(BasicOpsTestCase.class.getSimpleName());
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        CLITestSuite.stopSupport();
+    }
 
     @Test
     public void testConnect() throws Exception {

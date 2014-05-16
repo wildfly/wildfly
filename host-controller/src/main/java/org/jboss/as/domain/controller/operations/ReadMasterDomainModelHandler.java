@@ -64,7 +64,9 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler {
         context.completeStep(new OperationContext.ResultHandler() {
             @Override
             public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-                runtimeIgnoreTransformationRegistry.addKnownDataForSlave(host, readUtil.getNewKnownRootResources());
+                if (resultAction == OperationContext.ResultAction.KEEP) {
+                    runtimeIgnoreTransformationRegistry.addKnownDataForSlave(host, readUtil.getNewKnownRootResources());
+                }
             }
         });
     }

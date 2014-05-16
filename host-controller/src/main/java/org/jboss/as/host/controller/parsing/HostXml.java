@@ -77,6 +77,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -86,16 +87,18 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
 import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
+import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -113,9 +116,13 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class HostXml extends CommonXml {
 
     private final String defaultHostControllerName;
+    private final RunningMode runningMode;
+    private final boolean isCachedDc;
 
-    public HostXml(String defaultHostControllerName) {
+    public HostXml(String defaultHostControllerName, RunningMode runningMode, boolean isCachedDC) {
         this.defaultHostControllerName = defaultHostControllerName;
+        this.runningMode = runningMode;
+        this.isCachedDc = isCachedDC;
     }
 
     @Override
@@ -1050,7 +1057,10 @@ public class HostXml extends CommonXml {
         }
 
         if (requireDiscoveryOptions && !hasDiscoveryOptions) {
-            throw ControllerLogger.ROOT_LOGGER.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
+            throw ControllerLogger.ROOT_LOGGER.discoveryOptionsMustBeDeclared(CommandLineConstants.ADMIN_ONLY,
+                    Attribute.ADMIN_ONLY_POLICY.getLocalName(),
+                    AdminOnlyDomainConfigPolicy.FETCH_FROM_MASTER.toString(),
+                    Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
                     Attribute.PORT.getLocalName(), reader.getLocation());
         }
     }
@@ -1189,6 +1199,7 @@ public class HostXml extends CommonXml {
         update.get(OP).set("write-remote-domain-controller");
 
         // Handle attributes
+        AdminOnlyDomainConfigPolicy adminOnlyPolicy = AdminOnlyDomainConfigPolicy.DEFAULT;
         boolean requireDiscoveryOptions = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -1220,6 +1231,10 @@ public class HostXml extends CommonXml {
                     }
                     case ADMIN_ONLY_POLICY: {
                         RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY.parseAndSetParameter(value, update, reader);
+                        ModelNode nodeValue = update.get(RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY.getName());
+                        if (nodeValue.getType() != ModelType.EXPRESSION) {
+                            adminOnlyPolicy = AdminOnlyDomainConfigPolicy.getPolicy(nodeValue.asString());
+                        }
                         break;
                     }
                     default:
@@ -1230,14 +1245,14 @@ public class HostXml extends CommonXml {
 
         if (!update.hasDefined(RemoteDomainControllerAddHandler.HOST.getName())) {
             if (allowDiscoveryOptions) {
-                requireDiscoveryOptions = true;
+                requireDiscoveryOptions = isRequireDiscoveryOptions(adminOnlyPolicy);
             } else {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
             }
         }
         if (!update.hasDefined(RemoteDomainControllerAddHandler.PORT.getName())) {
             if (allowDiscoveryOptions) {
-                requireDiscoveryOptions = true;
+                requireDiscoveryOptions = requireDiscoveryOptions || isRequireDiscoveryOptions(adminOnlyPolicy);
             } else {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
             }
@@ -1245,6 +1260,11 @@ public class HostXml extends CommonXml {
 
         list.add(update);
         return requireDiscoveryOptions;
+    }
+
+    private boolean isRequireDiscoveryOptions(AdminOnlyDomainConfigPolicy adminOnlyPolicy) {
+        return !isCachedDc &&
+                (runningMode != RunningMode.ADMIN_ONLY || adminOnlyPolicy == AdminOnlyDomainConfigPolicy.FETCH_FROM_MASTER);
     }
 
     private void parseIgnoredResource(final XMLExtendedStreamReader reader, final ModelNode address,

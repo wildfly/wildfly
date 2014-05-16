@@ -67,7 +67,11 @@ class ProcessWrapper {
 
     int getExitValue() {
         synchronized (this) {
-            return process.exitValue();
+            try {
+                return process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                return -1;
+            }
         }
     }
 

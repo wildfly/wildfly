@@ -315,7 +315,9 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         }
 
         @Override
-        public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers, Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
+        public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
+                                       Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation,
+                                       boolean registerProxyController) throws SlaveRegistrationException {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 

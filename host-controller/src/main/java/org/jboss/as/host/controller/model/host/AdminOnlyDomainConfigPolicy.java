@@ -49,6 +49,8 @@ public enum AdminOnlyDomainConfigPolicy {
      */
     REQUIRE_LOCAL_CONFIG("require-local-config");
 
+    public static final AdminOnlyDomainConfigPolicy DEFAULT = ALLOW_NO_CONFIG;
+
     private final String toString;
 
     private AdminOnlyDomainConfigPolicy(String toString) {
