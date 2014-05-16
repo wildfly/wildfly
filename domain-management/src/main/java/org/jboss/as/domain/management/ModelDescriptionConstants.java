@@ -31,6 +31,7 @@ public class ModelDescriptionConstants {
 
     public static final String ALIAS = "alias";
     public static final String ALLOWED_USERS = "allowed-users";
+    public static final String ASSIGN_GROUPS = "assign-groups";
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHORIZATION = "authorization";
     public static final String BY_ACCESS_TIME = "by-access-time";
@@ -51,6 +52,7 @@ public class ModelDescriptionConstants {
     public static final String IGNORE = "ignore";
     public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
     public static final String IS_CALLER_IN_ROLE = "is-caller-in-role";
+    public static final String JAAS = "jaas";
     public static final String JKS = "JKS";
     public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";

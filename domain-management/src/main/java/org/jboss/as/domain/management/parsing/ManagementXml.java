@@ -41,11 +41,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
@@ -87,6 +87,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
@@ -1268,7 +1269,7 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, realmAddress, list);
+                    parseJaasAuthentication_1_1(reader, realmAddress, list);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1331,7 +1332,18 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                        case DOMAIN_2_0:
+                        case DOMAIN_2_1:
+                            parseJaasAuthentication_1_1(reader, realmAddress, list);
+                            break;
+                        default:
+                            parseJaasAuthentication_3_0(reader, realmAddress, list);
+                            break;
+                    }
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1415,7 +1427,7 @@ public class ManagementXml {
         }
     }
 
-    private static void parseJaasAuthentication(final XMLExtendedStreamReader reader,
+    private static void parseJaasAuthentication_1_1(final XMLExtendedStreamReader reader,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
         ModelNode jaas = Util.getEmptyOperation(ADD, addr);
@@ -1436,6 +1448,44 @@ public class ManagementXml {
                         }
                         nameFound = true;
                         JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        requireNoContent(reader);
+    }
+
+    private static void parseJaasAuthentication_3_0(final XMLExtendedStreamReader reader,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
+        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
+        list.add(jaas);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        if (nameFound) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        nameFound = true;
+                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    case ASSIGN_GROUPS:
+                        JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.parseAndSetParameter(value, jaas, reader);
                         break;
                     default: {
                         throw unexpectedAttribute(reader, i);
@@ -3555,9 +3605,7 @@ public class ManagementXml {
                 writeAuthentication(writer, realm);
             }
 
-            if (realm.hasDefined(AUTHORIZATION)) {
-                writeAuthorization(writer, realm);
-            }
+            writeAuthorization(writer, realm);
             writer.writeEndElement();
         }
         writer.writeEndElement();
@@ -3654,6 +3702,7 @@ public class ManagementXml {
             ModelNode jaas = authentication.get(JAAS);
             writer.writeStartElement(Element.JAAS.getLocalName());
             JaasAuthenticationResourceDefinition.NAME.marshallAsAttribute(jaas, writer);
+            JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.marshallAsAttribute(jaas, writer);
             writer.writeEndElement();
         } else if (authentication.hasDefined(LDAP)) {
             ModelNode userLdap = authentication.get(LDAP);
@@ -3718,21 +3767,28 @@ public class ManagementXml {
     }
 
     private void writeAuthorization(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
-        writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
-        SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
-        ModelNode authorization = realm.require(AUTHORIZATION);
-        if (authorization.hasDefined(PROPERTIES)) {
-            ModelNode properties = authorization.require(PROPERTIES);
-            writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
-            PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
-            PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
-        } else if (authorization.hasDefined(PLUG_IN)) {
-            writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
-        } else if (authorization.hasDefined(LDAP)) {
-            writeLdapAuthorization(writer,authorization.get(LDAP));
-        }
+        // A String comparison in-case it is an expression.
+        String defaultMapGroupsToRoles = Boolean.toString(SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.getDefaultValue().asBoolean());
+        String mapGroupsToRoles = realm.hasDefined(MAP_GROUPS_TO_ROLES) ? realm.require(MAP_GROUPS_TO_ROLES).asString() : defaultMapGroupsToRoles;
 
-        writer.writeEndElement();
+        if (realm.hasDefined(AUTHORIZATION) || defaultMapGroupsToRoles.equals(mapGroupsToRoles) == false) {
+            writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
+            SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
+            if (realm.hasDefined(AUTHORIZATION)) {
+                ModelNode authorization = realm.require(AUTHORIZATION);
+                if (authorization.hasDefined(PROPERTIES)) {
+                    ModelNode properties = authorization.require(PROPERTIES);
+                    writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
+                    PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
+                    PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
+                } else if (authorization.hasDefined(PLUG_IN)) {
+                    writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
+                } else if (authorization.hasDefined(LDAP)) {
+                    writeLdapAuthorization(writer, authorization.get(LDAP));
+                }
+            }
+            writer.writeEndElement();
+        }
     }
 
     private void writeLdapAuthorization(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
