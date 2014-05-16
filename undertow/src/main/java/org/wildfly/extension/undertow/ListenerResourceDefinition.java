@@ -42,7 +42,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
-import org.wildfly.extension.io.OptionList;
 import org.xnio.Options;
 
 /**
@@ -82,37 +81,46 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(false)
             .build();
 
-    static final List<OptionAttributeDefinition> SOCKET_OPTIONS = OptionList.builder()
-            .addOption(Options.BACKLOG, "tcp-backlog")
-            .addOption(Options.RECEIVE_BUFFER, "receive-buffer")
-            .addOption(Options.SEND_BUFFER, "send-buffer")
-            .addOption(Options.KEEP_ALIVE, "tcp-keep-alive")
-            .build();
+
+    public static final OptionAttributeDefinition BACKLOG = OptionAttributeDefinition.builder("tcp-backlog", Options.BACKLOG).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition RECEIVE_BUFFER = OptionAttributeDefinition.builder("receive-buffer", Options.RECEIVE_BUFFER).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition SEND_BUFFER = OptionAttributeDefinition.builder("send-buffer", Options.SEND_BUFFER).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition KEEP_ALIVE = OptionAttributeDefinition.builder("tcp-keep-alive", Options.KEEP_ALIVE).setAllowExpression(true).build();
 
 
-    static final List<OptionAttributeDefinition> LISTENER_OPTIONS = OptionList.builder()
-            .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))
-            .addOption(UndertowOptions.MAX_ENTITY_SIZE, Constants.MAX_POST_SIZE, new ModelNode(10485760L))
-            .addOption(UndertowOptions.BUFFER_PIPELINED_DATA, "buffer-pipelined-data", new ModelNode(true))
-            .addOption(UndertowOptions.MAX_PARAMETERS, "max-parameters", new ModelNode(1000))
-            .addOption(UndertowOptions.MAX_HEADERS, "max-headers", new ModelNode(200))
-            .addOption(UndertowOptions.MAX_COOKIES, "max-cookies", new ModelNode(200))
-            .addOption(UndertowOptions.ALLOW_ENCODED_SLASH, "allow-encoded-slash", new ModelNode(false))
-            .addOption(UndertowOptions.DECODE_URL, "decode-url", new ModelNode(true))
-            .addOption(UndertowOptions.URL_CHARSET, "url-charset", new ModelNode("UTF-8"))
-            .addOption(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, "always-set-keep-alive", new ModelNode(true))
-            .addOption(UndertowOptions.MAX_BUFFERED_REQUEST_SIZE, "max-buffered-request-size", new ModelNode(16384))
-            .addOption(UndertowOptions.RECORD_REQUEST_START_TIME, "record-request-start-time", new ModelNode(false))
-            .addOption(UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE, "allow-equals-in-cookie-value", new ModelNode(false))
-            .build();
+    public static final OptionAttributeDefinition MAX_HEADER_SIZE = OptionAttributeDefinition.builder("max-header-size", UndertowOptions.MAX_HEADER_SIZE).setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_ENTITY_SIZE = OptionAttributeDefinition.builder(Constants.MAX_POST_SIZE, UndertowOptions.MAX_ENTITY_SIZE).setDefaultValue(new ModelNode(10485760L)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition BUFFER_PIPELINED_DATA = OptionAttributeDefinition.builder("buffer-pipelined-data", UndertowOptions.BUFFER_PIPELINED_DATA).setDefaultValue(new ModelNode(true)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_PARAMETERS = OptionAttributeDefinition.builder("max-parameters", UndertowOptions.MAX_PARAMETERS).setDefaultValue(new ModelNode(1000)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_HEADERS = OptionAttributeDefinition.builder("max-headers", UndertowOptions.MAX_HEADERS).setDefaultValue(new ModelNode(200)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_COOKIES = OptionAttributeDefinition.builder("max-cookies", UndertowOptions.MAX_COOKIES).setDefaultValue(new ModelNode(200)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition ALLOW_ENCODED_SLASH = OptionAttributeDefinition.builder("allow-encoded-slash", UndertowOptions.ALLOW_ENCODED_SLASH).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition DECODE_URL = OptionAttributeDefinition.builder("decode-url", UndertowOptions.DECODE_URL).setDefaultValue(new ModelNode(true)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition URL_CHARSET = OptionAttributeDefinition.builder("url-charset", UndertowOptions.URL_CHARSET).setDefaultValue(new ModelNode("UTF-8")).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition ALWAYS_SET_KEEP_ALIVE = OptionAttributeDefinition.builder("always-set-keep-alive", UndertowOptions.ALWAYS_SET_KEEP_ALIVE).setDefaultValue(new ModelNode(true)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder("max-buffered-request-size", UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
+
 
     protected static final Collection ATTRIBUTES;
     protected static final List<AccessConstraintDefinition> CONSTRAINTS = Arrays.asList(UndertowExtension.LISTENER_CONSTRAINT);
 
+    public static final List<OptionAttributeDefinition> LISTENER_OPTIONS = Arrays.asList(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
+            BUFFER_PIPELINED_DATA, MAX_PARAMETERS, MAX_HEADERS, MAX_COOKIES, ALLOW_ENCODED_SLASH, DECODE_URL,
+            URL_CHARSET, ALWAYS_SET_KEEP_ALIVE, MAX_BUFFERED_REQUEST_SIZE, RECORD_REQUEST_START_TIME,
+            ALLOW_EQUALS_IN_COOKIE_VALUE);
+
+    public static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE);
+
     static {
         ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
+
         ATTRIBUTES.addAll(LISTENER_OPTIONS);
+
+
         ATTRIBUTES.addAll(SOCKET_OPTIONS);
+
     }
 
     public ListenerResourceDefinition(PathElement pathElement) {
