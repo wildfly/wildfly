@@ -39,6 +39,12 @@
     <name>JBoss Application Server: JAX-RS Integration</name>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -143,4 +149,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>
