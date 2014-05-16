@@ -23,8 +23,6 @@ package org.jboss.as.clustering.jgroups;
 
 import java.util.List;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.server.ServerEnvironment;
 
 /**
@@ -36,8 +34,6 @@ public interface ProtocolStackConfiguration {
     String getName();
 
     ProtocolDefaults getDefaults();
-
-    MBeanServer getMBeanServer();
 
     TransportConfiguration getTransport();
 
