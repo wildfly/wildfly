@@ -26,18 +26,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.txn.logging.TransactionLogger.ROOT_LOGGER;
 
 import java.util.List;
-import java.util.Map;
 
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.txn.service.CMResourceService;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 
 /**
  * the {@link AbstractAddStepHandler} implementations that add CM managed resource.
@@ -76,21 +76,13 @@ class CMResourceAdd extends AbstractAddStepHandler {
         final boolean immediateCleanup = CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.resolveModelAttribute(context, model).asBoolean();
         ROOT_LOGGER.debugf("adding commit-markable-resource: jndi-name=%s, table-name=%s, batch-size=%d, immediate-cleanup=%b", jndiName, tableName, batchSize, immediateCleanup);
 
-        JTAEnvironmentBean jTAEnvironmentBean = BeanPopulator.getDefaultInstance(JTAEnvironmentBean.class);
+        CMResourceService service = new CMResourceService(jndiName, tableName, immediateCleanup, batchSize);
+        final ServiceBuilder<?> builder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CMR.append(jndiName), service);
+        builder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT, JTAEnvironmentBean.class, service.getJTAEnvironmentBeanInjector());
+        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-        List<String> connectableResourceJNDINames = jTAEnvironmentBean.getCommitMarkableResourceJNDINames();
-        Map<String, String> connectableResourceTableNameMap = jTAEnvironmentBean.getCommitMarkableResourceTableNameMap();
-        Map<String, Boolean> performImmediateCleanupOfConnectableResourceBranchesMap = jTAEnvironmentBean.getPerformImmediateCleanupOfCommitMarkableResourceBranchesMap();
-        Map<String, Integer> connectableResourceRecordDeleteBatchSizeMap = jTAEnvironmentBean.getCommitMarkableResourceRecordDeleteBatchSizeMap();
-
-        connectableResourceJNDINames.add(jndiName);
-        connectableResourceTableNameMap.put(jndiName, tableName);
-        performImmediateCleanupOfConnectableResourceBranchesMap.put(jndiName, immediateCleanup);
-        connectableResourceRecordDeleteBatchSizeMap.put(jndiName, batchSize);
-
-        jTAEnvironmentBean.setCommitMarkableResourceJNDINames(connectableResourceJNDINames);
-        jTAEnvironmentBean.setCommitMarkableResourceTableNameMap(connectableResourceTableNameMap);
-        jTAEnvironmentBean.setPerformImmediateCleanupOfCommitMarkableResourceBranchesMap(performImmediateCleanupOfConnectableResourceBranchesMap);
-        jTAEnvironmentBean.setCommitMarkableResourceRecordDeleteBatchSizeMap(connectableResourceRecordDeleteBatchSizeMap);
+        if (! context.isBooting()) {
+            context.reloadRequired();
+        }
     }
 }
