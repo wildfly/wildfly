@@ -61,9 +61,10 @@ public abstract class PoolOperations implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName;
+        ModelNode model;
         if (!address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT) &&
-                context.readModel(PathAddress.EMPTY_ADDRESS).isDefined()) {
-            jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
+                (model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel()).isDefined()) {
+            jndiName = Util.getJndiName(model);
         } else {
             jndiName = address.getLastElement().getValue();
         }

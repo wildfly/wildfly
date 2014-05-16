@@ -465,74 +465,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    public ModelNode readModel(final PathAddress requestAddress) {
-        authorize(false, READ_CONFIG);
-        final PathAddress address = activeStep.address.append(requestAddress);
-        assert isControllingThread();
-        Stage currentStage = this.currentStage;
-        if (currentStage == null) {
-            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
-        }
-        Resource model = this.model;
-        for (final PathElement element : address) {
-            model = requireChild(model, element, address);
-        }
-        // recursively read the model
-        return Resource.Tools.readModel(model);
-    }
-
-    public ModelNode readModelForUpdate(final PathAddress requestAddress) {
-        assert isControllingThread();
-
-        readOnly = false;
-
-        final PathAddress address = activeStep.address.append(requestAddress);
-        Stage currentStage = this.currentStage;
-        if (currentStage == null) {
-            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
-        }
-        if (currentStage != Stage.MODEL) {
-            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
-        }
-        rejectUserDomainServerUpdates();
-        checkHostServerGroupTracker(address);
-        authorize(false, READ_WRITE_CONFIG);
-        if (!isModelAffected()) {
-            takeWriteLock();
-            model = model.clone();
-        }
-        affectsModel.put(address, NULL);
-        Resource model = this.model;
-        final Iterator<PathElement> i = address.iterator();
-        while (i.hasNext()) {
-            final PathElement element = i.next();
-            if (element.isMultiTarget()) {
-                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
-            }
-            if (! i.hasNext()) {
-                final String key = element.getKey();
-                if(! model.hasChild(element)) {
-                    final PathAddress parent = address.subAddress(0, address.size() -1);
-                    final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
-                    if(!childrenNames.contains(key)) {
-                        throw ControllerLogger.ROOT_LOGGER.noChildType(key);
-                    }
-                    final Resource newModel = Resource.Factory.create();
-                    model.registerChild(element, newModel);
-                    model = newModel;
-                } else {
-                    model = requireChild(model, element, address);
-                }
-            } else {
-                model = requireChild(model, element, address);
-            }
-        }
-        if(model == null) {
-            throw new IllegalStateException();
-        }
-        return model.getModel();
-    }
-
     public Resource readResource(final PathAddress requestAddress) {
         return readResource(requestAddress, true);
     }
@@ -797,14 +729,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public void acquireControllerLock() {
         takeWriteLock();
-    }
-
-    @Override
-    public Resource getRootResource() {
-        // TODO limit children
-        authorize(false, READ_CONFIG);
-        final Resource readOnlyModel = this.model;
-        return readOnlyModel.clone();
     }
 
     @Override

@@ -85,7 +85,7 @@ public class ManagementUtil {
         UserDomainCallbackHandler cbh = getUserDomainCallbackHandler(context, operation);
         if (cbh != null) {
             PathAddress authAddress = getXmlAuthenticationAddress(operation);
-            Resource root = forRollback ? context.getOriginalRootResource() : context.getRootResource();
+            Resource root = forRollback ? context.getOriginalRootResource() : context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
             ModelNode userMap;
             try {
                 Resource authResource = root.navigate(authAddress);

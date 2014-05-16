@@ -187,20 +187,6 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public ModelNode readModel(PathAddress address) {
-        PathAddress fullAddress = activeStep.address.append(address);
-        return primaryContext.readModel(fullAddress);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public ModelNode readModelForUpdate(PathAddress address) {
-        PathAddress fullAddress = activeStep.address.append(address);
-        return primaryContext.readModelForUpdate(fullAddress);
-    }
-
-    @Override
     public void acquireControllerLock() {
         if(lockStep == null) {
             try {
@@ -261,12 +247,6 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         acquireControllerLock();
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.removeResource(fullAddress);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public Resource getRootResource() {
-        return primaryContext.getRootResource();
     }
 
     @Override
