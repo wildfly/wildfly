@@ -54,14 +54,18 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Recognize Spring deployment and add the JAX-RS integration to it
  */
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
+    private static final String VERSION_PROPERTIES = "org/jboss/as/jaxrs/spring-version.properties";
+    private static final String VERSION_KEY = "resteasy.version";
 
-    public static final String SPRING_INT_JAR = "resteasy-spring.jar";
+    private static final String SPRING_INT_JAR_BASE = "resteasy-spring-";
+
     public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
     @Deprecated
@@ -84,7 +88,11 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
         try {
             if (resourceRoot == null) {
-                URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR);
+
+                Properties props = new Properties();
+                props.load(getClass().getClassLoader().getResourceAsStream(VERSION_PROPERTIES));
+
+                URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR_BASE + props.get(VERSION_KEY) + ".jar");
                 if (url == null) {
                     throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
                 }
