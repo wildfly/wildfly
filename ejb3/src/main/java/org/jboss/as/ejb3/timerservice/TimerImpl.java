@@ -663,6 +663,50 @@ public class TimerImpl implements Timer {
             return this;
         }
 
+        public String getId() {
+            return id;
+        }
+
+        public String getTimedObjectId() {
+            return timedObjectId;
+        }
+
+        public Date getInitialDate() {
+            return initialDate;
+        }
+
+        public long getRepeatInterval() {
+            return repeatInterval;
+        }
+
+        public Date getNextDate() {
+            return nextDate;
+        }
+
+        public Date getPreviousRun() {
+            return previousRun;
+        }
+
+        public Serializable getInfo() {
+            return info;
+        }
+
+        public Object getPrimaryKey() {
+            return primaryKey;
+        }
+
+        public TimerState getTimerState() {
+            return timerState;
+        }
+
+        public boolean isPersistent() {
+            return persistent;
+        }
+
+        public boolean isNewTimer() {
+            return newTimer;
+        }
+
         public TimerImpl build(final TimerServiceImpl timerService) {
             return new TimerImpl(this, timerService);
         }

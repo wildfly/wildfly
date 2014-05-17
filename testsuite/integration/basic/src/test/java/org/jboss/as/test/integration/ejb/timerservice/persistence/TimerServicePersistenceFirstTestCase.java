@@ -57,11 +57,19 @@ public class TimerServicePersistenceFirstTestCase {
     }
 
     @Test
-    public void createTimerService() throws NamingException {
+    public void testSimplePersistentTimer() throws NamingException {
         InitialContext ctx = new InitialContext();
         SimpleTimerServiceBean bean = (SimpleTimerServiceBean)ctx.lookup("java:module/" + SimpleTimerServiceBean.class.getSimpleName());
         bean.createTimer();
         Assert.assertTrue(SimpleTimerServiceBean.awaitTimerCall());
+    }
+
+    @Test
+    public void testPersistentCalendarTimer() throws NamingException {
+        InitialContext ctx = new InitialContext();
+        CalendarTimerServiceBean bean = (CalendarTimerServiceBean)ctx.lookup("java:module/" + CalendarTimerServiceBean.class.getSimpleName());
+        bean.createTimer();
+        Assert.assertEquals(CalendarTimerServiceBean.MESSAGE, CalendarTimerServiceBean.awaitTimerCall());
     }
 
     @Test
