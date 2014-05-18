@@ -83,6 +83,15 @@ public class NetworkUtilsTestCase {
         inetAddress = InetAddress.getByName("1:0:0:1:1:0:0:1");
         socketAddress = new InetSocketAddress(inetAddress,8000);
         Assert.assertEquals("[1::1:1:0:0:1]:8000", NetworkUtils.formatAddress(socketAddress));
+        
+        socketAddress = InetSocketAddress.createUnresolved("127.0.0.1", 8000);
+        Assert.assertEquals("127.0.0.1:8000", NetworkUtils.formatAddress(socketAddress));
+        
+        socketAddress = InetSocketAddress.createUnresolved("fe80:0:0:0:f24d:a2ff:fe63:5766", 8000);
+        Assert.assertEquals("fe80:0:0:0:f24d:a2ff:fe63:5766:8000", NetworkUtils.formatAddress(socketAddress));
+        
+        socketAddress = InetSocketAddress.createUnresolved("jboss.org", 8000);
+        Assert.assertEquals("jboss.org:8000", NetworkUtils.formatAddress(socketAddress));
     }
 
     private void checkSameFormat(String nochange) {
