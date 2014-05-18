@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.IoUtils;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -141,6 +143,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     */
     private TimerServiceResource resource = new TimerServiceResource();
 
+    private Closeable listenerHandle;
+
     private volatile boolean started = false;
 
     static {
@@ -183,6 +187,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         // restore the timers
         started = true;
         restoreTimers(timers);
+        listenerHandle = timerPersistence.getValue().registerChangeListener(getInvoker().getTimedObjectId(), new TimerRefreshListener());
     }
 
     @Override
@@ -191,6 +196,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         timerPersistence.getValue().timerUndeployed(timedObjectInvoker.getValue().getTimedObjectId());
         started = false;
         this.transactionManager = null;
+        IoUtils.safeClose(listenerHandle);
+        listenerHandle = null;
     }
 
     @Override
@@ -500,7 +507,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         return timer;
     }
 
-    public TimerImpl getTimer(final String timedObjectId, final String timerId) {
+    public TimerImpl getTimer(final String timerId) {
         return timers.get(timerId);
     }
 
@@ -1060,6 +1067,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.resource.timerRemoved(timerId);
     }
 
+    public boolean shouldRun(TimerImpl timer) {
+        return timerPersistence.getValue().shouldRun(timer);
+    }
+
     private class TimerCreationTransactionSynchronization implements Synchronization {
         /**
          * The timer being managed in the transaction
@@ -1154,6 +1165,24 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         public boolean cancel() {
             delegate.cancel();
             return super.cancel();
+        }
+    }
+
+    private final class TimerRefreshListener implements TimerPersistence.TimerChangeListener {
+
+        @Override
+        public void timerAdded(TimerImpl timer) {
+            TimerServiceImpl.this.startTimer(timer);
+        }
+
+        @Override
+        public void timerRemoved(String timerId) {
+            TimerServiceImpl.this.cancelTimeout(TimerServiceImpl.this.getTimer(timerId));
+        }
+
+        @Override
+        public TimerServiceImpl getTimerService() {
+            return TimerServiceImpl.this;
         }
     }
 

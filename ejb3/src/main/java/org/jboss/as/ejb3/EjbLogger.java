@@ -612,6 +612,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14273, value = "Exception running timer task for timer %s on EJB %s")
     void exceptionRunningTimerTask(String timerId, String timedObjectId, @Cause  Exception e);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 14274, value = "Failed to refresh timers for %s")
+    void failedToRefreshTimers(String timedObjectId);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

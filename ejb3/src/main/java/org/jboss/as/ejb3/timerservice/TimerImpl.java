@@ -130,14 +130,8 @@ public class TimerImpl implements Timer {
     /**
      * Creates a {@link TimerImpl}
      *
-     * @param id               The id of this timer
+     * @param builder          The builder with the timer information
      * @param service          The timer service through which this timer was created
-     * @param initialExpiry    The first expiry of this timer. Can be null
-     * @param intervalDuration The duration (in milli sec) between timeouts
-     * @param nextEpiry        The next expiry of this timer
-     * @param info             The info that will be passed on through the {@link javax.ejb.Timer} and will be available through the {@link javax.ejb.Timer#getInfo()} method
-     * @param persistent       True if this timer is persistent. False otherwise
-     * @param timedObjectId
      */
     protected TimerImpl(Builder builder, TimerServiceImpl service) {
         assert builder.id != null : "id is null";
@@ -290,6 +284,9 @@ public class TimerImpl implements Timer {
      * @param next The next scheduled timeout of this timer
      */
     public void setNextTimeout(Date next) {
+        if(next == null) {
+            setTimerState(TimerState.EXPIRED);
+        }
         this.nextExpiration = next;
     }
 

@@ -61,13 +61,28 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-
     public static final SimpleAttributeDefinition PARTITION =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PARTITION, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(""))
                     .setValidator(new StringLengthValidator(0))
+                    .build();
+
+
+    public static final SimpleAttributeDefinition REFRESH_INTERVAL =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.REFRESH_INTERVAL, ModelType.INT, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDefaultValue(new ModelNode(-1))
+                    .build();
+
+
+    public static final SimpleAttributeDefinition ALLOW_EXECUTION =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ALLOW_EXECUTION, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
                     .build();
 
     public static final Map<String, AttributeDefinition> ATTRIBUTES ;
@@ -77,6 +92,8 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
         map.put(DATASOURCE_JNDI_NAME.getName(), DATASOURCE_JNDI_NAME);
         map.put(DATABASE.getName(), DATABASE);
         map.put(PARTITION.getName(), PARTITION);
+        map.put(REFRESH_INTERVAL.getName(), REFRESH_INTERVAL);
+        map.put(ALLOW_EXECUTION.getName(), ALLOW_EXECUTION);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }

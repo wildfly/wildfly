@@ -262,6 +262,28 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
     }
 
+    private static void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
+        registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 0));
+    }
+
+    private static void registerTransformers_1_2_1(SubsystemRegistration subsystemRegistration) {
+        registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 1));
+    }
+
+    private static void registerTransformers1_2(SubsystemRegistration subsystemRegistration, ModelVersion subsystem12) {
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
+
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
+        // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and
+        // a legacy slave can't have that subsystem in its profile.
+        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
+        PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
+        TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
+    }
+
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
 
         private EJB3ThreadFactoryResolver() {

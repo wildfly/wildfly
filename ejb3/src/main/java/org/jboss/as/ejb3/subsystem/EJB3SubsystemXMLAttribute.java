@@ -31,6 +31,7 @@ public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
 
     ALIASES("aliases"),
+    ALLOW_EXECUTION("allow-execution"),
 
     BEAN_CACHE("bean-cache"),
 
@@ -65,6 +66,7 @@ public enum EJB3SubsystemXMLAttribute {
     NAME("name"),
 
     PARTITION("partition"),
+    REFRESH_INTERVAL("refresh-interval"),
     PASS_BY_VALUE("pass-by-value"),
     PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
     PASSIVATION_STORE_REF("passivation-store-ref"),

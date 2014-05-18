@@ -93,7 +93,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     @Override
     public void run() {
         try {
-            TimerImpl timer = timerService.getTimer(timedObjectId, timerId);
+            TimerImpl timer = timerService.getTimer(timerId);
             if (cancelled) {
                 ROOT_LOGGER.debug("Timer task was cancelled for " + timer);
                 return;
@@ -114,6 +114,14 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 scheduleTimeoutIfRequired(timer);
                 return;
             }
+
+            if(!timerService.shouldRun(timer)) {
+                ROOT_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node", timer.getTimedObjectId());
+                timer.setNextTimeout(calculateNextTimeout(timer));
+                scheduleTimeoutIfRequired(timer);
+                return;
+            }
+
             // If the recurring timer running longer than the interval is, we don't want to allow another
             // execution until the it is complete. See JIRA AS7-3119
             if (timer.getState() == TimerState.IN_TIMEOUT && !timer.isCalendarTimer()) {
