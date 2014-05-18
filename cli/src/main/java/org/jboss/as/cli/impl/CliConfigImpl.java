@@ -382,6 +382,7 @@ class CliConfigImpl implements CliConfig {
                             readCLIElement_1_1(reader, readerNS, config);
                             break;
                         case CLI_1_2:
+                        case CLI_1_3:
                             readCLIElement_1_2(reader, readerNS, config);
                             break;
                         case CLI_2_0:
@@ -476,7 +477,11 @@ class CliConfigImpl implements CliConfig {
                         }
                     } else if (localName.equals("ssl")) {
                         SslConfig sslConfig = new SslConfig();
-                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        if(expectedNs == Namespace.CLI_1_2) {
+                            readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        } else {
+                            readSSLElement_2_0(reader, expectedNs, sslConfig);
+                        }
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(SILENT)) {
                         config.silent = resolveBoolean(reader.getElementText());
