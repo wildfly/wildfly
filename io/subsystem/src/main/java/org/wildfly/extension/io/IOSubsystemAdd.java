@@ -29,7 +29,9 @@ import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -65,4 +67,12 @@ class IOSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.performRuntime(context, operation, model, verificationHandler, newControllers);
+
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode workers = Resource.Tools.readModel(resource).get(IOExtension.WORKER_PATH.getKey());
+        WorkerAdd.checkWorkerConfiguration(context, workers);
+    }
 }
