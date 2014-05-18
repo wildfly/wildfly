@@ -2984,4 +2984,8 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 455, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
     DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 456, value = "Failed to refresh timers for %s")
+    void failedToRefreshTimers(String timedObjectId);
 }

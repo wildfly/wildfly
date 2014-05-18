@@ -40,6 +40,7 @@ public enum EJB3SubsystemNamespace {
     EJB3_1_3("urn:jboss:domain:ejb3:1.3"),
     EJB3_1_4("urn:jboss:domain:ejb3:1.4"),
     EJB3_2_0("urn:jboss:domain:ejb3:2.0"),
+    EJB3_3_0("urn:jboss:domain:ejb3:3.0"),
     ;
 
 

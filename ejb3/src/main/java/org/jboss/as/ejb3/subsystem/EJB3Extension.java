@@ -54,11 +54,12 @@ public class EJB3Extension implements Extension {
     public static final String NAMESPACE_1_2 = EJB3SubsystemNamespace.EJB3_1_2.getUriString();
     public static final String NAMESPACE_1_3 = EJB3SubsystemNamespace.EJB3_1_3.getUriString();
     public static final String NAMESPACE_1_4 = EJB3SubsystemNamespace.EJB3_1_4.getUriString();
-    public static final String NAMESPACE_1_5 = EJB3SubsystemNamespace.EJB3_2_0.getUriString();
+    public static final String NAMESPACE_2_0 = EJB3SubsystemNamespace.EJB3_2_0.getUriString();
+    public static final String NAMESPACE_3_0 = EJB3SubsystemNamespace.EJB3_3_0.getUriString();
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -111,6 +112,7 @@ public class EJB3Extension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, EJB3Subsystem12Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, EJB3Subsystem13Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_4, EJB3Subsystem14Parser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_5, EJB3Subsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_2_0, EJB3Subsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_3_0, EJB3Subsystem30Parser.INSTANCE);
     }
 }

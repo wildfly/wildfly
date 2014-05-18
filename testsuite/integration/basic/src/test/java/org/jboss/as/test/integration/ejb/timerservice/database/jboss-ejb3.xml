@@ -2,7 +2,7 @@
 <jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
                   xmlns="http://java.sun.com/xml/ns/javaee"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xmlsns:timer="urn:timer-service:1.0"
+                  xmlns:timer="urn:timer-service:1.0"
                   xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
                      http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd
                      http://www.jboss.org/j2ee/schema/jboss_5_0.xsd"
@@ -11,7 +11,7 @@
     <assembly-descriptor>
             <timer:timer>
                 <ejb-name>*</ejb-name>
-                <persistence-store-name>database</persistence-store-name>
+                <timer:persistence-store-name>dbstore</timer:persistence-store-name>
             </timer:timer>
         </assembly-descriptor>
 </jboss:ejb-jar>

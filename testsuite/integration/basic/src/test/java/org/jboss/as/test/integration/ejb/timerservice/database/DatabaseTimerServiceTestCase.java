@@ -96,7 +96,7 @@ public class DatabaseTimerServiceTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
         war.addPackage(DatabaseTimerServiceTestCase.class.getPackage());
-        war.addAsManifestResource(DatabaseTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        war.addAsWebInfResource(DatabaseTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return war;
     }
 

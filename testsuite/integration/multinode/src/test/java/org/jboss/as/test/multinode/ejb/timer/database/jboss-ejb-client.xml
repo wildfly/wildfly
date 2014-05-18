@@ -1,6 +1,8 @@
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
+
     <client-context>
-        <ejb-receivers>
+
+        <ejb-receivers exclude-local-receiver="true">
             <remoting-ejb-receiver outbound-connection-ref="remote-ejb-connection"/>
         </ejb-receivers>
     </client-context>

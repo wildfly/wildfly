@@ -176,6 +176,11 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
     }
 
+    @Override
+    public boolean shouldRun(TimerImpl timer) {
+        return true;
+    }
+
     private void persistTimer(final TimerImpl timer, boolean newTimer) {
         final Lock lock = getLock(timer.getTimedObjectId());
         try {
@@ -259,6 +264,15 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public Closeable registerChangeListener(String timedObjectId, TimerChangeListener listener) {
+        return new Closeable() {
+            @Override
+            public void close() throws IOException {
+            }
+        };
     }
 
     /**

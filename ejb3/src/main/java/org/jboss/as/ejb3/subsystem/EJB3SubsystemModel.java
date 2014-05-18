@@ -107,6 +107,8 @@ public interface EJB3SubsystemModel {
     String DATABASE = "database";
     String DATABASE_DATA_STORE = "database-data-store";
     String PARTITION  = "partition";
+    String REFRESH_INTERVAL = "refresh-interval";
+    String ALLOW_EXECUTION = "allow-execution";
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);

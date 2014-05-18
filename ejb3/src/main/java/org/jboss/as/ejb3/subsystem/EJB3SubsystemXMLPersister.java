@@ -51,7 +51,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_2_0.getUriString(), false);
+        context.startSubsystemElement(EJB3SubsystemNamespace.EJB3_3_0.getUriString(), false);
 
         writeElements(writer,  context);
 
@@ -488,6 +488,8 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.marshallAsAttribute(store, writer);
                 DatabaseDataStoreResourceDefinition.DATABASE.marshallAsAttribute(store, writer);
                 DatabaseDataStoreResourceDefinition.PARTITION.marshallAsAttribute(store, writer);
+                DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.marshallAsAttribute(store, writer);
+                DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.marshallAsAttribute(store, writer);
                 writer.writeEndElement();
             }
         }
