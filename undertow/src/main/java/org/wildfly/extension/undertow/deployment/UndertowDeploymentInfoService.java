@@ -333,21 +333,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             for (final SetupAction action : setupActions) {
-                deploymentInfo.addThreadSetupAction(new ThreadSetupAction() {
-
-                    private final Handle handle = new Handle() {
-                        @Override
-                        public void tearDown() {
-                            action.teardown(Collections.<String, Object>emptyMap());
-                        }
-                    };
-
-                    @Override
-                    public Handle setup(final HttpServerExchange exchange) {
-                        action.setup(Collections.<String, Object>emptyMap());
-                        return handle;
-                    }
-                });
+                deploymentInfo.addThreadSetupAction(new UndertowThreadSetupAction(action));
             }
 
             if (initialHandlerChainWrappers != null) {
@@ -1411,6 +1397,28 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
             return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig);
+        }
+    }
+
+    private static class UndertowThreadSetupAction implements ThreadSetupAction {
+
+        private final Handle handle;
+        private final SetupAction action;
+
+        public UndertowThreadSetupAction(SetupAction action) {
+            this.action = action;
+            handle = new Handle() {
+                @Override
+                public void tearDown() {
+                    UndertowThreadSetupAction.this.action.teardown(Collections.<String, Object>emptyMap());
+                }
+            };
+        }
+
+        @Override
+        public Handle setup(final HttpServerExchange exchange) {
+            action.setup(Collections.<String, Object>emptyMap());
+            return handle;
         }
     }
 }

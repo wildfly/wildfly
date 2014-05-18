@@ -61,7 +61,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
                 // skip components without namespace
                 continue;
             }
-            processComponentDescription(componentDescription, deploymentUnit);
+            processComponentDescription(componentDescription);
         }
     }
 
@@ -74,13 +74,13 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).add(setupAction);
     }
 
-    private void processComponentDescription(final ComponentDescription componentDescription, final DeploymentUnit deploymentUnit) {
+    private void processComponentDescription(final ComponentDescription componentDescription) {
         final ComponentConfigurator componentConfigurator = new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 final ConcurrentContext concurrentContext = configuration.getConcurrentContext();
                 // setup context
-                setupConcurrentContext(concurrentContext, description.getApplicationName(), description.getModuleName(), description.getComponentName(), configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), deploymentUnit, context.getServiceTarget());
+                setupConcurrentContext(concurrentContext, description.getApplicationName(), description.getModuleName(), description.getComponentName(), configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), context.getDeploymentUnit(), context.getServiceTarget());
                 // add the interceptor which manages the concurrent context
                 final ConcurrentContextInterceptor interceptor = new ConcurrentContextInterceptor(concurrentContext);
                 final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(interceptor);
