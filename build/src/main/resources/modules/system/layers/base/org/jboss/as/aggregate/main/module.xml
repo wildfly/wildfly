@@ -35,7 +35,7 @@
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.jmx" />
         <module name="org.jboss.as.logging" />
-        <module name="org.jboss.as.managed-beans" />
+        <module name="org.jboss.as.jmx" />
         <module name="org.jboss.as.messaging" />
         <module name="org.jboss.as.naming" />
         <module name="org.jboss.as.remoting" />
