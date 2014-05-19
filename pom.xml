@@ -239,7 +239,7 @@
         <version.org.jboss.ws.cxf>4.3.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Beta1</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.2.2.Final</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.3.0.Beta1</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.4.3.Final</version.org.jgroups>
