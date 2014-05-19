@@ -27,11 +27,13 @@ import static org.jboss.as.messaging.AddressSettingDefinition.ADDRESS_FULL_MESSA
 import static org.jboss.as.messaging.AddressSettingDefinition.EXPIRY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.LAST_VALUE_QUEUE;
 import static org.jboss.as.messaging.AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS;
+import static org.jboss.as.messaging.AddressSettingDefinition.MAX_REDELIVERY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.MAX_SIZE_BYTES;
 import static org.jboss.as.messaging.AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
 import static org.jboss.as.messaging.AddressSettingDefinition.PAGE_MAX_CACHE_SIZE;
 import static org.jboss.as.messaging.AddressSettingDefinition.PAGE_SIZE_BYTES;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_DELAY;
+import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_MULTIPLIER;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDISTRIBUTION_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
@@ -113,13 +115,13 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(EXPIRY_DELAY.getName()).set(settings.getExpiryDelay());
         result.get(LAST_VALUE_QUEUE.getName()).set(settings.isLastValueQueue());
         result.get(MAX_DELIVERY_ATTEMPTS.getName()).set(settings.getMaxDeliveryAttempts());
-        // FIXME [WFLY-3370] max-redelivery-delay is missing
+        result.get(MAX_REDELIVERY_DELAY.getName()).set(settings.getMaxRedeliveryDelay());
         result.get(MAX_SIZE_BYTES.getName()).set(settings.getMaxSizeBytes());
         result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).set(settings.getMessageCounterHistoryDayLimit());
         result.get(PAGE_MAX_CACHE_SIZE.getName()).set(settings.getPageCacheMaxSize());
         result.get(PAGE_SIZE_BYTES.getName()).set(settings.getPageSizeBytes());
         result.get(REDELIVERY_DELAY.getName()).set(settings.getRedeliveryDelay());
-        // FIXME [WFLY-3370] redelivery-multiplier is missing
+        result.get(REDELIVERY_MULTIPLIER.getName()).set(settings.getRedeliveryMultiplier());
         result.get(REDISTRIBUTION_DELAY.getName()).set(settings.getRedistributionDelay());
         result.get(SEND_TO_DLA_ON_NO_ROUTE.getName()).set(settings.isSendToDLAOnNoRoute());
 

@@ -88,6 +88,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
+
         if (config.hasDefined(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.getName())) {
             final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
             settings.setAddressFullMessagePolicy(addressPolicy);
@@ -115,6 +116,12 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         }
         if (config.hasDefined(AddressSettingDefinition.REDELIVERY_DELAY.getName())) {
             settings.setRedeliveryDelay(AddressSettingDefinition.REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.REDELIVERY_MULTIPLIER.getName())) {
+            settings.setRedeliveryMultiplier(AddressSettingDefinition.REDELIVERY_MULTIPLIER.resolveModelAttribute(context, config).asDouble());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_REDELIVERY_DELAY.getName())) {
+            settings.setMaxRedeliveryDelay(AddressSettingDefinition.MAX_REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
         }
         if (config.hasDefined(AddressSettingDefinition.REDISTRIBUTION_DELAY.getName())) {
             settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());

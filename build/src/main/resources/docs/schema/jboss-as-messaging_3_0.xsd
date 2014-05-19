@@ -1563,10 +1563,24 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="redelivery-multiplier" type="xs:double">
+              <xs:annotation>
+                  <xs:documentation>
+                      Multiplier to apply to the redelivery-delay parameter
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="max-delivery-attempts" type="xs:int">
               <xs:annotation>
                   <xs:documentation>
                       Defines how many time a cancelled message can be redelivered before sending to the dead-letter-address
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="max-redelivery-delay" type="xs:long">
+              <xs:annotation>
+                  <xs:documentation>
+                      Maximum value for the redelivery-delay (in ms).
                   </xs:documentation>
               </xs:annotation>
           </xs:element>

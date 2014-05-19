@@ -55,4 +55,16 @@ public class Messaging30SubsystemParser extends Messaging20SubsystemParser {
             }
         }
     }
+
+    @Override
+    protected void handleUnknownAddressSetting(XMLExtendedStreamReader reader, Element element, ModelNode addressSettingsAdd) throws XMLStreamException {
+        switch (element) {
+            case MAX_REDELIVERY_DELAY:
+            case REDELIVERY_MULTIPLIER:
+                handleElementText(reader, element, addressSettingsAdd);
+                break;
+            default:
+                super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+        }
+    }
 }

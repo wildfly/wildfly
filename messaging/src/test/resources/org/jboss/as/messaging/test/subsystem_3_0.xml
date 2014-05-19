@@ -254,7 +254,9 @@
                   <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                   <expiry-address>jms.queue.ExpiryQueue</expiry-address>
                   <redelivery-delay>0</redelivery-delay>
+                  <redelivery-multiplier>1.0</redelivery-multiplier>
                   <max-delivery-attempts>5</max-delivery-attempts>
+                  <max-redelivery-delay>0</max-redelivery-delay>
                   <max-size-bytes>10485760</max-size-bytes>
                   <page-size-bytes>10485760</page-size-bytes>
                   <page-max-cache-size>7</page-max-cache-size>

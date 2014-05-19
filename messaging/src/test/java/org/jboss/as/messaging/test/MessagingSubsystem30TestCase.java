@@ -335,7 +335,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, AddressSettingDefinition.PATH),
                                 createChainedConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, ConnectorServiceDefinition.PATH, ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
@@ -413,7 +413,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
         );
     }
 
@@ -469,7 +469,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
         );
     }
 
@@ -499,8 +499,11 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{OVERRIDE_IN_VM_SECURITY})
-                        )
+                                        new AttributeDefinition[]{OVERRIDE_IN_VM_SECURITY}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{ AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER }))
         );
     }
 
