@@ -475,6 +475,8 @@ public class DomainTestSupport {
                     " -Djboss.test.host.slave.address=" + slaveAddress);
             slaveConfig.setReadOnlyHost(readOnlyHost);
             URL url = tccl.getResource(hostConfigPath);
+            if (url == null)
+                throw new IllegalStateException("Can't locate " + hostConfigPath);
             slaveConfig.setHostConfigFile(new File(toURI(url)).getAbsolutePath());
             File slaveDir = new File(domains, hostName);
             // TODO this should not be necessary

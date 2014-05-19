@@ -97,7 +97,8 @@ public class OldVersionCopier {
             throw new RuntimeException("Old version not found in " + file.getAbsolutePath());
         }
         try {
-            expandAsInstance(file);
+            final File targetDirectory = new File(targetOldVersions, version.getTargetDirectoryName());
+            expandAsInstance(file, targetDirectory);
 
 //                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
 //                        patchBadRemoting("jboss-as-7.1.2.Final");
@@ -185,14 +186,14 @@ public class OldVersionCopier {
 
     }
 
-    private void expandAsInstance(final File file) throws Exception {
+    private void expandAsInstance(final File file, final File destination) throws Exception {
 
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(file);
             for (Enumeration<? extends ZipEntry> en = zipFile.entries() ; en.hasMoreElements() ; ) {
                 final ZipEntry entry = en.nextElement();
-                final File output = new File(targetOldVersions, entry.getName());
+                final File output = new File(destination, entry.getName());
                 if (entry.isDirectory()) {
                     if (!output.exists()) {
                         if (!output.mkdirs() && !output.exists()) {
