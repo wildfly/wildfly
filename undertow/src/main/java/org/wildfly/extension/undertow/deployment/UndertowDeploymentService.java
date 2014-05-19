@@ -35,6 +35,7 @@ import javax.servlet.ServletException;
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
+import org.jboss.el.cache.FactoryFinderCache;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
@@ -105,6 +106,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
         Thread.currentThread().setContextClassLoader(deploymentInfo.getClassLoader());
         try {
+            FactoryFinderCache.clearClassLoader(deploymentInfo.getClassLoader());
             if (deploymentManager != null) {
                 Deployment deployment = deploymentManager.getDeployment();
                 try {
