@@ -117,7 +117,6 @@ public class HTTPWebConnectorRedirectTestCase {
     public static final File UNTRUSTED_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.UNTRUSTED_KEYSTORE);
 
     private static final String TEST_SSL_CONNECTOR = "ssl-test";
-    private static final String TEST_REVERSE_PROXY_NAME = "reverse-proxy";
 
     private static final int HTTPS_PORT = 18443;
 

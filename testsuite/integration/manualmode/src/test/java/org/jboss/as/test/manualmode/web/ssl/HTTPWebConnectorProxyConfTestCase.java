@@ -108,7 +108,7 @@ public class HTTPWebConnectorProxyConfTestCase {
 
     public static final String CONTAINER = "default-jbossas";
 
-    private static final String PROXY_NAME = "www.redhat.com";
+    private static final String PROXY_NAME = System.getProperty("test.http.web.proxy.name", "www.redhat.com");
 
     private static final String TEST_CONNECTOR_NAME = "manual-http-test";
     private static final int TEST_CONNECTOR_PORT = 8090;
