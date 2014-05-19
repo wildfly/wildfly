@@ -41,10 +41,9 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
-        OldVersionCopier oldVersionCopier = OldVersionCopier.expandOldVersion(version);
-        File dir = oldVersionCopier.getVersionDir(version);
+        File dir = OldVersionCopier.expandOldVersion(version);
 
         return new MixedDomainTestSupport(testClass, "master-config/domain.xml", "master-config/host.xml",
-                "slave-configs/" + dir.getName() + "/domain/configuration/host-slave.xml", dir.getAbsolutePath());
+                "slave-configs/" + version.getFullVersionName() + "/domain/configuration/host-slave.xml", dir.getAbsolutePath());
     }
 }

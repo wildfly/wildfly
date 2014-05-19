@@ -61,12 +61,11 @@ public @interface Version {
             return version;
         }
 
-        public String getExpandedDirectoryName() {
+        public String getFullVersionName() {
             return basename + version;
         }
-
         public String getZipFileName() {
-            return getExpandedDirectoryName() + ".zip";
+            return  getFullVersionName() + ".zip";
         }
     }
 

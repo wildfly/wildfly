@@ -51,27 +51,21 @@ public class OldVersionCopier {
 
     private static String OLD_VERSIONS_DIR = "jboss.test.mixed.domain.dir";
 
+    private final Version.AsVersion version;
     private final File oldVersionsBaseDir;
     private final File targetOldVersions = new File("target/old-versions/");
 
 
-    private OldVersionCopier(File oldVersionsBaseDir) {
+    private OldVersionCopier(Version.AsVersion version, File oldVersionsBaseDir) {
+        this.version = version;
         this.oldVersionsBaseDir = oldVersionsBaseDir;
     }
 
-    static OldVersionCopier expandOldVersion(Version.AsVersion version) {
-        OldVersionCopier copier = new OldVersionCopier(obtainOldVersionsDir());
-        copier.expandAsInstance(version);
-        return copier;
+    static File expandOldVersion(Version.AsVersion version) {
+        OldVersionCopier copier = new OldVersionCopier(version, obtainOldVersionsDir());
+        return copier.expandAsInstance(version);
     }
 
-    File getVersionDir(Version.AsVersion version) {
-        File file = new File(targetOldVersions, version.getExpandedDirectoryName());
-        if (!file.exists() || !file.isDirectory()) {
-            throw new IllegalStateException("Could not find " + file.getAbsolutePath());
-        }
-        return file;
-    }
 
     private static File obtainOldVersionsDir() {
         String error = "System property '" + OLD_VERSIONS_DIR + "' must be set to a directory containing old versions";
@@ -86,24 +80,23 @@ public class OldVersionCopier {
         return file;
     }
 
-    private void expandAsInstance(Version.AsVersion version) {
-        if (!targetOldVersions.exists()) {
-            if (!targetOldVersions.mkdirs() && targetOldVersions.exists()) {
-                throw new RuntimeException("Could not create " + targetOldVersions);
-            }
-        }
+
+    private File expandAsInstance(Version.AsVersion version) {
+        createIfNotExists(targetOldVersions);
+
         File file = new File(oldVersionsBaseDir, version.getZipFileName());
         if (!file.exists()) {
             throw new RuntimeException("Old version not found in " + file.getAbsolutePath());
         }
         try {
-            expandAsInstance(file);
+            File expanded = expandAsInstance(file);
 
 //                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
 //                        patchBadRemoting("jboss-as-7.1.2.Final");
 //                    } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
 //                        patchBadRemoting("jboss-as-7.1.3.Final");
 //                    }
+            return expanded;
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
@@ -185,20 +178,17 @@ public class OldVersionCopier {
 
     }
 
-    private void expandAsInstance(final File file) throws Exception {
+    private File expandAsInstance(final File file) throws Exception {
+        File versionDir = new File(targetOldVersions, version.getFullVersionName());
+        createIfNotExists(versionDir);
 
-        ZipFile zipFile = null;
+        final ZipFile zipFile = new ZipFile(file);
         try {
-            zipFile = new ZipFile(file);
             for (Enumeration<? extends ZipEntry> en = zipFile.entries() ; en.hasMoreElements() ; ) {
                 final ZipEntry entry = en.nextElement();
-                final File output = new File(targetOldVersions, entry.getName());
+                final File output = new File(versionDir, entry.getName());
                 if (entry.isDirectory()) {
-                    if (!output.exists()) {
-                        if (!output.mkdirs() && !output.exists()) {
-                            throw new RuntimeException("Could not make dir " + output.getAbsolutePath());
-                        }
-                    }
+                    createIfNotExists(output);
                 } else {
                     inputStreamToFile(zipFile.getInputStream(entry), output);
                 }
@@ -207,6 +197,13 @@ public class OldVersionCopier {
         } finally {
             IoUtils.safeClose(zipFile);
         }
+
+        File[] files = versionDir.listFiles();
+        if (files.length != 1) {
+            //If this really becomes a problem, inspect the directory structures
+            throw new RuntimeException("The unzipped file contains more than one file in " + versionDir.getAbsolutePath() + ". Unable to determine the true distribution");
+        }
+        return files[0];
     }
 
     private void inputStreamToFile(InputStream input, File output) throws Exception {
@@ -225,6 +222,14 @@ public class OldVersionCopier {
             }
         } finally {
             IoUtils.safeClose(in);
+        }
+    }
+
+    private void createIfNotExists(File file) {
+        if (!file.exists()) {
+            if (!file.mkdirs() && file.exists()) {
+                throw new RuntimeException("Could not create " + targetOldVersions);
+            }
         }
     }
 }
