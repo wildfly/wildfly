@@ -2767,6 +2767,9 @@ public interface ControllerMessages {
     @Message(id = 13488, value = "Timeout after %d seconds waiting for existing service %s to be removed so a new instance can be installed.")
     IllegalStateException serviceInstallTimedOut(long timeout, ServiceName name);
 
+    @Message(id = 13489, value = "No response handler for request %s")
+    IOException responseHandlerNotFound(int id);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 
 }
