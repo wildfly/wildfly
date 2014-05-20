@@ -119,6 +119,8 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
         if (registerRuntimeOnly) {
             HornetQServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
             JMSServerControlHandler.INSTANCE.registerOperations(resourceRegistration, getResourceDescriptionResolver());
+
+            AddressSettingsResolveHandler.registerOperationHandler(resourceRegistration, getResourceDescriptionResolver());
         }
 
         // unsupported runtime operations exposed by HornetQServerControl
