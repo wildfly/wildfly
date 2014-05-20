@@ -3188,4 +3188,7 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 352, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
     void cancellingOperation(String operation, int id, String thread);
 
+    @Message(id = 353, value = "No response handler for request %s")
+    IOException responseHandlerNotFound(int id);
+
 }
