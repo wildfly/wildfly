@@ -800,6 +800,7 @@ public interface CommonAttributes {
     String ENTRY = "entry";
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
     String GROUPING_HANDLER = "grouping-handler";
+    String HORNETQ_ADDRESS = "hornetq-address";
     String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
@@ -842,6 +843,7 @@ public interface CommonAttributes {
     String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
     String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
     String RESOURCE_ADAPTER = "resource-adapter";
+    String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
     String RUNTIME_QUEUE = "runtime-queue";

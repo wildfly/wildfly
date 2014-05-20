@@ -88,19 +88,43 @@ class AddressSettingAdd extends AbstractAddStepHandler {
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-        final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
-        settings.setAddressFullMessagePolicy(addressPolicy);
-        settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
-        settings.setLastValueQueue(AddressSettingDefinition.LAST_VALUE_QUEUE.resolveModelAttribute(context, config).asBoolean());
-        settings.setMaxDeliveryAttempts(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
-        settings.setMaxSizeBytes(AddressSettingDefinition.MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
-        settings.setMessageCounterHistoryDayLimit(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
-        settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
-        settings.setRedeliveryDelay(AddressSettingDefinition.REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
-        settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
-        settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
-        settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
-        settings.setSendToDLAOnNoRoute(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
+        if (config.hasDefined(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.getName())) {
+            final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
+            settings.setAddressFullMessagePolicy(addressPolicy);
+        }
+        if (config.hasDefined(DEAD_LETTER_ADDRESS.getName())) {
+            settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
+        }
+        if (config.hasDefined(AddressSettingDefinition.LAST_VALUE_QUEUE.getName())) {
+            settings.setLastValueQueue(AddressSettingDefinition.LAST_VALUE_QUEUE.resolveModelAttribute(context, config).asBoolean());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.getName())) {
+            settings.setMaxDeliveryAttempts(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MAX_SIZE_BYTES.getName())) {
+            settings.setMaxSizeBytes(AddressSettingDefinition.MAX_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName())) {
+            settings.setMessageCounterHistoryDayLimit(AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(CommonAttributes.EXPIRY_ADDRESS.getName())) {
+            settings.setExpiryAddress(asSimpleString(EXPIRY_ADDRESS.resolveModelAttribute(context, config), null));
+        }
+        if (config.hasDefined(AddressSettingDefinition.REDELIVERY_DELAY.getName())) {
+            settings.setRedeliveryDelay(AddressSettingDefinition.REDELIVERY_DELAY.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.REDISTRIBUTION_DELAY.getName())) {
+            settings.setRedistributionDelay(AddressSettingDefinition.REDISTRIBUTION_DELAY.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.PAGE_SIZE_BYTES.getName())) {
+            settings.setPageSizeBytes(AddressSettingDefinition.PAGE_SIZE_BYTES.resolveModelAttribute(context, config).asLong());
+        }
+        if (config.hasDefined(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.getName())) {
+            settings.setPageCacheMaxSize(AddressSettingDefinition.PAGE_MAX_CACHE_SIZE.resolveModelAttribute(context, config).asInt());
+        }
+        if (config.hasDefined(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.getName())) {
+            settings.setSendToDLAOnNoRoute(AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE.resolveModelAttribute(context, config).asBoolean());
+        }
         return settings;
     }
 
