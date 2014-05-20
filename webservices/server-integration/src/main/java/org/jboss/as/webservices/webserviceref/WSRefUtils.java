@@ -64,7 +64,6 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaDat
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaDataBuilder;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefType;
 
 /**
  * Translates WS Refs from JBossAS MD to JBossWS UMDM format.
@@ -125,8 +124,6 @@ final class WSRefUtils {
            builder.setWsdlOverride(jbossServiceRefMD.getWsdlOverride());
            builder.setHandlerChain(jbossServiceRefMD.getHandlerChain());
         }
-
-        builder.setType(ServiceRefType.JAXWS);
 
         return builder.build();
     }
