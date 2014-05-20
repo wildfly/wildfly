@@ -70,18 +70,31 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                         .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
+
                                         .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET)
-                                        .addAttributes(ListenerResourceDefinition.LISTENER_OPTIONS)
-                                        .addAttributes(ListenerResourceDefinition.SOCKET_OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                                                ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
+                                                ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                        .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
                                         .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
-                                        .addAttributes(ListenerResourceDefinition.LISTENER_OPTIONS)
-                                        .addAttributes(ListenerResourceDefinition.SOCKET_OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                                                ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
+                                                ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                        .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())
+                                        .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
+                                        .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES,HttpsListenerResourceDefinition.ENABLED_PROTOCOLS)
+                                        .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                                                ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
+                                                ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                        .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
                         ).addChild(
                                 builder(HostDefinition.INSTANCE)
                                         .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
@@ -90,17 +103,17 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                         .addAttributes(LocationDefinition.HANDLER)
                                                         .addChild(
                                                                 builder(FilterRefDefinition.INSTANCE)
-                                                                        .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
+                                                                        .addAttributes(FilterRefDefinition.PREDICATE)
                                                         )
                                         ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
                                                     .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
-                                                    .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
+                                                    .addAttributes(FilterRefDefinition.PREDICATE)
                                         ).addChild(
                                                 builder(SingleSignOnDefinition.INSTANCE)
-                                                    .addAttributes(SingleSignOnDefinition.INSTANCE.getAttributes())
+                                                    .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE)
                                         )
                         )
                 )
@@ -199,10 +212,9 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                         builder(ResponseHeaderFilter.INSTANCE)
-                                                .addAttributes(ResponseHeaderFilter.INSTANCE.getAttributes())
+                                                .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
                                 ).addChild(
                                         builder(GzipFilter.INSTANCE)
-                                                .addAttributes(GzipFilter.INSTANCE.getAttributes())
                                 )
 
                 )
