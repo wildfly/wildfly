@@ -57,6 +57,7 @@ import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HexConverter;
 import io.undertow.util.Methods;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -72,6 +73,8 @@ import org.xnio.streams.ChannelInputStream;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class DomainApiHandler implements HttpHandler {
+
+    private static final String JSON_PRETTY = "json.pretty";
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET. Cacheable operations
@@ -135,7 +138,13 @@ class DomainApiHandler implements HttpHandler {
                 dmr = convertPostRequest(exchange, encode);
                 cachable = false;
             }
-            operationParameterBuilder.pretty(dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean());
+            boolean pretty = false;
+            if (dmr.hasDefined(JSON_PRETTY)) {
+                String jsonPretty = dmr.get(JSON_PRETTY).asString();
+                pretty = "true".equalsIgnoreCase(jsonPretty) || "1".equals(jsonPretty);
+
+            }
+            operationParameterBuilder.pretty(pretty);
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
             Common.sendError(exchange, false, e.getLocalizedMessage());
