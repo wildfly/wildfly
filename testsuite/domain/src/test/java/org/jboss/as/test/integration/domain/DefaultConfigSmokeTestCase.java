@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -44,6 +43,7 @@ import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfig
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

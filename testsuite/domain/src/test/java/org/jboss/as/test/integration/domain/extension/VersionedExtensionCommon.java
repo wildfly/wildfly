@@ -22,13 +22,8 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
-import java.util.List;
-import java.util.Locale;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
@@ -40,21 +35,10 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author Emanuel Muckenhuber
@@ -88,8 +72,8 @@ public abstract class VersionedExtensionCommon implements Extension {
         }
     };
 
-    static OperationDefinition getOperationDefinition(String name){
-        return new SimpleOperationDefinitionBuilder(name,new NonResolvingResourceDescriptionResolver())
+    static OperationDefinition getOperationDefinition(String name) {
+        return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
                 .setReadOnly()
                 .build();
     }
