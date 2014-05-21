@@ -57,13 +57,14 @@ public class HttpMgmtProxy {
     }
 
     public ModelNode sendGetCommand(String cmd) throws Exception {
+        return ModelNode.fromJSONString(sendGetCommandJson(cmd));
+    }
 
+    public String sendGetCommandJson(String cmd) throws Exception {
         HttpGet get = new HttpGet(url.toURI().toString() + cmd);
 
         HttpResponse response = httpClient.execute(get, httpContext);
-        String str = EntityUtils.toString(response.getEntity());
-
-        return ModelNode.fromJSONString(str);
+        return EntityUtils.toString(response.getEntity());
     }
 
     public ModelNode sendPostCommand(String address, String operation) throws Exception {
