@@ -29,12 +29,12 @@ package org.jboss.as.controller.audit.spi;
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class AuditLogItemEventFormatterSupport implements AuditLogEventFormatter {
+public abstract class AuditLogEventFormatterSupport implements AuditLogEventFormatter {
     private final String name;
     private volatile String formattedString;
 
 
-    protected AuditLogItemEventFormatterSupport(String name) {
+    protected AuditLogEventFormatterSupport(String name) {
         this.name = name;
     }
 

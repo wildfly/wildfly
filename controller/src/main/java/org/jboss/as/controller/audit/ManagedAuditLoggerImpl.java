@@ -69,6 +69,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     /** Guarded by config's auditLock - the number of failures writing to the log */
     private short failureCount;
 
+
     public ManagedAuditLoggerImpl(String asVersion, boolean server) {
         config = new CoreAuditLogConfiguration(asVersion, server);
         childImpls = new ArrayList<ManagedAuditLoggerImpl>();

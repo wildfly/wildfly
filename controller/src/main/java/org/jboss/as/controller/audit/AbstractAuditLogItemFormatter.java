@@ -24,7 +24,7 @@ package org.jboss.as.controller.audit;
 import java.text.SimpleDateFormat;
 
 import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
-import org.jboss.as.controller.audit.spi.AuditLogItemEventFormatterSupport;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatterSupport;
 
 
 /**
@@ -32,7 +32,7 @@ import org.jboss.as.controller.audit.spi.AuditLogItemEventFormatterSupport;
   *
   * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public abstract class AbstractAuditLogItemFormatter extends AuditLogItemEventFormatterSupport implements AuditLogEventFormatter {
+public abstract class AbstractAuditLogItemFormatter extends AuditLogEventFormatterSupport implements AuditLogEventFormatter {
     private volatile boolean includeDate ;
     private volatile String dateSeparator;
     //SimpleDateFormat is not good to store among threads, since it stores intermediate results in its fields

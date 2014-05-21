@@ -22,12 +22,15 @@
 
 package org.jboss.as.domain.management.security.auditlog;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -767,5 +770,89 @@ public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerT
         } finally {
             server.close();
         }
+    }
+
+    @Test
+    public void testCustomFormatter() throws Exception {
+        File file = new File(logDir, "test-file.log");
+        Assert.assertTrue(file.exists());
+
+        ModelNode op = createAddCustomFormatterOperation("custom-test", TestCustomAuditLogEventFormatterFactory.class.getName());
+        executeForResult(op);
+        List<ModelNode> records = readFile(file, 2);
+        List<ModelNode> ops = checkBootRecordHeader(records.get(1), 1, "core", false, false, true);
+        checkOpsEqual(op, ops.get(0));
+
+        Assert.assertTrue(file.delete());
+        op = createUpdateFileHandlerFormatterOperation("test-file", "custom-test");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        String contents = readFullFileRecord(file);
+        Assert.assertEquals(WRITE_ATTRIBUTE_OPERATION, contents);
+
+        Assert.assertTrue(file.delete());
+        op = Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals(READ_RESOURCE_OPERATION, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createAddCustomFormatterPropertyOperation("custom-test", "a", "A");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals("[a=A]" + ADD, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createAddCustomFormatterPropertyOperation("custom-test", "b", "B");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals("[a=A][b=B]" + ADD, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createUpdateCustomFormatterPropertyOperation("custom-test", "b", "Be");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals("[a=A][b=Be]" + WRITE_ATTRIBUTE_OPERATION, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createRemoveCustomFormatterPropertyOperation("custom-test", "a");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals("[b=Be]" + REMOVE, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createRemoveCustomFormatterPropertyOperation("custom-test", "b");
+        executeForResult(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals(REMOVE, contents);
+
+        //Removing the formatter should fail
+        Assert.assertTrue(file.delete());
+        op = createRemoveCustomFormatterOperation("custom-test");
+        executeForFailure(op);
+        Assert.assertTrue(file.exists());
+        contents = readFullFileRecord(file);
+        Assert.assertEquals(REMOVE, contents);
+
+        Assert.assertTrue(file.delete());
+        op = createUpdateFileHandlerFormatterOperation("test-file", "test-formatter");
+        executeForResult(op);
+        records = readFile(file, 1);
+        ops = checkBootRecordHeader(records.get(0), 1, "core", false, false, true);
+        checkOpsEqual(op, ops.get(0));
+
+        //Back to normal formatter
+        Assert.assertTrue(file.delete());
+        op = createRemoveCustomFormatterOperation("custom-test");
+        executeForResult(op);
+        records = readFile(file, 1);
+        ops = checkBootRecordHeader(records.get(0), 1, "core", false, false, true);
+        checkOpsEqual(op, ops.get(0));
     }
 }

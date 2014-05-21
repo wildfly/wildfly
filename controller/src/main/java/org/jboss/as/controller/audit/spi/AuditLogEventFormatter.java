@@ -26,7 +26,7 @@ package org.jboss.as.controller.audit.spi;
 /**
  * Interface for audit log event formatters.
  * Methods called on this formatter instance get called with the controller's lock taken, so it is thread-safe.
- * To get support for the caching mentioned in the method comments, you can extend {@link AuditLogItemEventFormatterSupport}.
+ * To get support for the caching mentioned in the method comments, you can extend {@link AuditLogEventFormatterSupport}.
  * As we add support for more types of auditable events this interface might have more methods added, even among minor releases.
  *
  *

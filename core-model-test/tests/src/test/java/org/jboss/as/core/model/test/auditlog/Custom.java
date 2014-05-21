@@ -66,8 +66,8 @@ public class Custom implements CustomAuditLogEventFormatterFactory {
             }
 
             @Override
-            public void deleteProperty(String property) {
-                properties.remove(property);
+            public void deleteProperty(String name) {
+                properties.remove(name);
             }
 
             @Override

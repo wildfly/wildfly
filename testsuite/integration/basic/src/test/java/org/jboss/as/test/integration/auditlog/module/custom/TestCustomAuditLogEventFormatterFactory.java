@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.auditlog.module.custom;
 
-package org.jboss.as.controller.audit.spi;
-
+import org.jboss.as.controller.audit.spi.CustomAuditLogEventFormatter;
+import org.jboss.as.controller.audit.spi.CustomAuditLogEventFormatterFactory;
 
 /**
  *
- * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface CustomAuditLogEventFormatter extends AuditLogEventFormatter {
+public class TestCustomAuditLogEventFormatterFactory implements CustomAuditLogEventFormatterFactory {
 
-    /**
-     * Add a property for configuring the formatter
-     *
-     * @param name the name of the property
-     * @param value the value of the property
-     */
-    void addProperty(String name, String value);
+    @Override
+    public CustomAuditLogEventFormatter createFormatter(String name) {
+        return new TestCustomAuditLogEventFormatter(name);
+    }
 
-    /**
-     * Update a property used for configuring the formatter
-     *
-     * @param name the name of the property
-     * @param value the value of the property
-     * @return the old value of the property
-     */
-    String updateProperty(String name, String value);
-
-    /**
-     * Delete a property for configuring the formatter
-     *
-     * @param name the name of the property
-     */
-    void deleteProperty(String name);
 }
