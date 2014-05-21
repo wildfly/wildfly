@@ -23,20 +23,28 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Executes the {@link java.lang.management.ThreadMXBean#findMonitorDeadlockedThreads()} method.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanFindMonitorDeadlockedThreadsHandler implements OperationStepHandler, DescriptionProvider {
+public class ThreadMXBeanFindMonitorDeadlockedThreadsHandler implements OperationStepHandler {
+
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.LONG)
+            .setRuntimeOnly()
+            .setReadOnly()
+            .build();
 
     public static final ThreadMXBeanFindMonitorDeadlockedThreadsHandler INSTANCE = new ThreadMXBeanFindMonitorDeadlockedThreadsHandler();
 
@@ -63,9 +71,5 @@ public class ThreadMXBeanFindMonitorDeadlockedThreadsHandler implements Operatio
         context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getFindThreadsOperation(locale, PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS,
-                PlatformMBeanConstants.THREADING);
-    }
+
 }

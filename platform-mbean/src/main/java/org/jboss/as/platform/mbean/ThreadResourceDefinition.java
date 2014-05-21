@@ -24,14 +24,6 @@
 
 package org.jboss.as.platform.mbean;
 
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.DUMP_ALL_THREADS;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FIND_DEADLOCKED_THREADS;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.FIND_MONITOR_DEADLOCKED_THREADS;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_CPU_TIME;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFO;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_INFOS;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.GET_THREAD_USER_TIME;
-import static org.jboss.as.platform.mbean.PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.THREADING_PATH;
 
 import java.util.Arrays;
@@ -162,7 +154,7 @@ class ThreadResourceDefinition extends SimpleResourceDefinition {
 
     private ThreadResourceDefinition() {
         super(THREADING_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.THREADING));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING));
     }
 
     @Override
@@ -185,7 +177,6 @@ class ThreadResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    static EnumSet<OperationEntry.Flag> RUNTIME_ONLY_FLAG = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
     static EnumSet<OperationEntry.Flag> READ_ONLY_RUNTIME_ONLY_FLAG = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY, OperationEntry.Flag.READ_ONLY);
 
 
@@ -193,17 +184,14 @@ class ThreadResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration threads) {
         super.registerOperations(threads);
         threads.registerOperationHandler(ReadResourceHandler.DEFINITION, ThreadMXBeanReadResourceHandler.INSTANCE);
-        threads.registerOperationHandler(RESET_PEAK_THREAD_COUNT, ThreadMXBeanResetPeakThreadCountHandler.INSTANCE,
-                ThreadMXBeanResetPeakThreadCountHandler.INSTANCE, RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(FIND_DEADLOCKED_THREADS, ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE,
-                ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(FIND_MONITOR_DEADLOCKED_THREADS, ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE,
-                ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(GET_THREAD_INFO, ThreadMXBeanThreadInfoHandler.INSTANCE, ThreadMXBeanThreadInfoHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(GET_THREAD_INFOS, ThreadMXBeanThreadInfosHandler.INSTANCE, ThreadMXBeanThreadInfosHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(GET_THREAD_CPU_TIME, ThreadMXBeanCpuTimeHandler.INSTANCE, ThreadMXBeanCpuTimeHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(GET_THREAD_USER_TIME, ThreadMXBeanUserTimeHandler.INSTANCE, ThreadMXBeanUserTimeHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
-        threads.registerOperationHandler(DUMP_ALL_THREADS, ThreadMXBeanDumpAllThreadsHandler.INSTANCE, ThreadMXBeanDumpAllThreadsHandler.INSTANCE, READ_ONLY_RUNTIME_ONLY_FLAG);
+        threads.registerOperationHandler(ThreadMXBeanResetPeakThreadCountHandler.DEFINITION, ThreadMXBeanResetPeakThreadCountHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanFindDeadlockedThreadsHandler.DEFINITION, ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanFindMonitorDeadlockedThreadsHandler.DEFINITION, ThreadMXBeanFindMonitorDeadlockedThreadsHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanThreadInfoHandler.DEFINITION, ThreadMXBeanThreadInfoHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanThreadInfosHandler.DEFINITION, ThreadMXBeanThreadInfosHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanCpuTimeHandler.DEFINITION, ThreadMXBeanCpuTimeHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanUserTimeHandler.DEFINITION, ThreadMXBeanUserTimeHandler.INSTANCE);
+        threads.registerOperationHandler(ThreadMXBeanDumpAllThreadsHandler.DEFINITION, ThreadMXBeanDumpAllThreadsHandler.INSTANCE);
     }
 }
 

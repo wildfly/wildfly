@@ -13,7 +13,7 @@ public class PlatformMBeanResourceDefinition extends SimpleResourceDefinition {
 
     private PlatformMBeanResourceDefinition() {
         super(PlatformMBeanConstants.PLATFORM_MBEAN_PATH,
-                PlatformMBeanDescriptions.getResolver("platform-mbeans"));
+                PlatformMBeanUtil.getResolver("platform-mbeans"));
     }
 
     @Override

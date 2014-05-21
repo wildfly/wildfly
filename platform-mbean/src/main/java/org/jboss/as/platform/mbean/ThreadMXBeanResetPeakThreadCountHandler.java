@@ -23,20 +23,26 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Executes the {@link java.lang.management.ThreadMXBean#resetPeakThreadCount()} method.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanResetPeakThreadCountHandler implements OperationStepHandler, DescriptionProvider {
+public class ThreadMXBeanResetPeakThreadCountHandler implements OperationStepHandler {
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
+            .setReplyType(ModelType.OBJECT)
+            .setRuntimeOnly()
+            .build();
+
 
     public static final ThreadMXBeanResetPeakThreadCountHandler INSTANCE = new ThreadMXBeanResetPeakThreadCountHandler();
 
@@ -56,9 +62,5 @@ public class ThreadMXBeanResetPeakThreadCountHandler implements OperationStepHan
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT,
-                PlatformMBeanConstants.THREADING);
-    }
+
 }

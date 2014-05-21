@@ -34,6 +34,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -197,5 +198,17 @@ public class PlatformMBeanUtil {
 
     private PlatformMBeanUtil() {
 
+    }
+    static final String RESOURCE_NAME = PlatformMBeanUtil.class.getPackage().getName() + ".LocalDescriptions";
+
+    static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder("");
+        for (String kp : keyPrefix) {
+            if (prefix.length() > 0) {
+                prefix.append('.');
+            }
+            prefix.append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, CommonAttributes.class.getClassLoader(), true, false);
     }
 }

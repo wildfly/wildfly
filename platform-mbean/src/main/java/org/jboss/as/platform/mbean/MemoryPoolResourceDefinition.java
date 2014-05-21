@@ -181,7 +181,7 @@ class MemoryPoolResourceDefinition extends SimpleResourceDefinition {
 
     private MemoryPoolResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_POOL));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_POOL));
     }
 
     @Override

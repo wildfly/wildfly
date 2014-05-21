@@ -34,7 +34,7 @@ class MemoryManagerRootResourceDefinition extends SimpleResourceDefinition {
     static final MemoryManagerRootResourceDefinition INSTANCE = new MemoryManagerRootResourceDefinition();
     private MemoryManagerRootResourceDefinition() {
         super(PlatformMBeanConstants.MEMORY_MANAGER_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
     }
 
     @Override

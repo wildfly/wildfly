@@ -45,7 +45,7 @@ import org.jboss.dmr.ModelNode;
 public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandler{
 
     static final MemoryPoolMXBeanResetPeakUsageHandler INSTANCE = new MemoryPoolMXBeanResetPeakUsageHandler();
-    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("reset-peak-usage", PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_POOL))
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("reset-peak-usage", PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_POOL))
             .setRuntimeOnly()
             .build();
 

@@ -66,7 +66,7 @@ class MemoryManagerResourceDefinition extends SimpleResourceDefinition {
 
     private MemoryManagerResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
     }
 
     @Override

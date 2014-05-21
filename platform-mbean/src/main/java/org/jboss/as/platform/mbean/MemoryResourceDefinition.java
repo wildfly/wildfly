@@ -99,7 +99,7 @@ class MemoryResourceDefinition extends SimpleResourceDefinition {
 
     private MemoryResourceDefinition() {
         super(MEMORY_PATH,
-                PlatformMBeanDescriptions.getResolver(MEMORY));
+                PlatformMBeanUtil.getResolver(MEMORY));
     }
 
     @Override

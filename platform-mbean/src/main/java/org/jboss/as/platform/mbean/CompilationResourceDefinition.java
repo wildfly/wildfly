@@ -47,7 +47,7 @@ class CompilationResourceDefinition extends SimpleResourceDefinition {
 
     private CompilationResourceDefinition() {
         super(PlatformMBeanConstants.COMPILATION_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.COMPILATION));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.COMPILATION));
     }
 
     @Override

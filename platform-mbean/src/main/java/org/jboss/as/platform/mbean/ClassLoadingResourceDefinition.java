@@ -52,7 +52,7 @@ class ClassLoadingResourceDefinition extends SimpleResourceDefinition {
 
     private ClassLoadingResourceDefinition() {
         super(PlatformMBeanConstants.CLASS_LOADING_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.CLASS_LOADING));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.CLASS_LOADING));
     }
 
     @Override

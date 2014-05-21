@@ -80,7 +80,7 @@ class BufferPoolResourceDefinition extends SimpleResourceDefinition {
 
     private BufferPoolResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(BUFFER_POOL));
+                PlatformMBeanUtil.getResolver(BUFFER_POOL));
     }
 
     @Override

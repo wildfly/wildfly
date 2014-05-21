@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
 public class MemoryMXBeanGCHandler implements OperationStepHandler {
 
     public static final MemoryMXBeanGCHandler INSTANCE = new MemoryMXBeanGCHandler();
-    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GC, PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY))
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GC, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY))
             .setRuntimeOnly()
             .build();
 

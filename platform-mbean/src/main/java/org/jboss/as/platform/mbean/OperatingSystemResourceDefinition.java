@@ -87,7 +87,7 @@ class OperatingSystemResourceDefinition extends SimpleResourceDefinition {
 
     private OperatingSystemResourceDefinition() {
         super(OPERATING_SYSTEM_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.OPERATING_SYSTEM));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.OPERATING_SYSTEM));
     }
 
     @Override

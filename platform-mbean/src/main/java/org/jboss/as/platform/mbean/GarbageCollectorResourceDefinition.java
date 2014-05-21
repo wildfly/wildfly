@@ -80,7 +80,7 @@ class GarbageCollectorResourceDefinition extends SimpleResourceDefinition {
 
     private GarbageCollectorResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.GARBAGE_COLLECTOR));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.GARBAGE_COLLECTOR));
     }
 
     @Override

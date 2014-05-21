@@ -34,7 +34,7 @@ class MemoryPoolRootResourceDefinition extends SimpleResourceDefinition {
     static final MemoryPoolRootResourceDefinition INSTANCE = new MemoryPoolRootResourceDefinition();
     private MemoryPoolRootResourceDefinition() {
         super(PlatformMBeanConstants.MEMORY_POOL_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_POOL));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_POOL));
     }
 
     @Override
