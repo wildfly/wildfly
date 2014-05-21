@@ -28,6 +28,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
 
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Pedro Igor
  */
+@Ignore
 public class FederationSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     public FederationSubsystemUnitTestCase() {
