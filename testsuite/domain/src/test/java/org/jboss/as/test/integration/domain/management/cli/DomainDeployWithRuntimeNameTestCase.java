@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -62,7 +63,9 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
     public static void setup() throws Exception {
 
         CLITestSuite.createSupport(DomainDeployWithRuntimeNameTestCase.class.getSimpleName());
-        serverGroups = CLITestSuite.serverGroups.keySet().toArray(new String[CLITestSuite.serverGroups.size()]);
+        List<String> groups = new ArrayList(CLITestSuite.serverGroups.keySet());
+        Collections.sort(groups);
+        serverGroups = groups.toArray(new String[groups.size()]);
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
     }
 
