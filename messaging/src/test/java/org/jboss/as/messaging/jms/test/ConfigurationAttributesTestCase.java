@@ -43,7 +43,6 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_NIO");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_NIO");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_NIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
         // messaging protocols are automatically resolved by HornetQ using a ServiceLoader
@@ -59,6 +58,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         KNOWN_ATTRIBUTES.add("liveConnectorRef");
         KNOWN_ATTRIBUTES.add("clustered");
         KNOWN_ATTRIBUTES.add("statisticsEnabled");
+        KNOWN_ATTRIBUTES.add("overrideInVmSecurity");
 
         //where we have slightly different names between as7/HornetQ
         DODGY_NAME.put("allowFailback", "allowAutoFailBack");

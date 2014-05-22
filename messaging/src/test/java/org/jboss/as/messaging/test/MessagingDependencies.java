@@ -31,11 +31,18 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class HornetQDependencies {
+public class MessagingDependencies {
 
-    private static final Map<ModelTestControllerVersion, String[]> HORNET_Q_DEPENDENCIES;
+    private static final Map<ModelTestControllerVersion, String[]> HORNETQ_DEPENDENCIES;
     static {
         Map<ModelTestControllerVersion, String[]> map = new HashMap<ModelTestControllerVersion, String[]>();
+
+        map.put(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, new String[] {
+                "org.hornetq:hornetq-core-client:2.4.1.Final",
+                "org.hornetq:hornetq-jms-client:2.4.1.Final",
+                "org.hornetq:hornetq-server:2.4.1.Final",
+                "org.hornetq:hornetq-jms-server:2.4.1.Final",
+                "org.hornetq:hornetq-ra:2.4.1.Final"});
 
         map.put(ModelTestControllerVersion.V7_1_2_FINAL, new String[] {
                 "org.hornetq:hornetq-core:2.2.16.Final",
@@ -78,10 +85,23 @@ public class HornetQDependencies {
                 "org.hornetq:hornetq-jms-client:2.3.5.Final-redhat-2",
                 "org.hornetq:hornetq-ra:2.3.5.Final-redhat-2"});
 
-        HORNET_Q_DEPENDENCIES = Collections.unmodifiableMap(map);
+        HORNETQ_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 
-    static String[] getDependencies(ModelTestControllerVersion controllerVersion) {
-        return HORNET_Q_DEPENDENCIES.get(controllerVersion);
+    static String[] getHornetQDependencies(ModelTestControllerVersion controllerVersion) {
+        return HORNETQ_DEPENDENCIES.get(controllerVersion);
+    }
+
+    static final String getMessagingGAV(ModelTestControllerVersion version) {
+        final String groupAndArtifactID;
+        switch (version) {
+            case WILDFLY_8_0_0_FINAL:
+                groupAndArtifactID = "org.wildfly:wildfly-messaging";
+                break;
+            default:
+                groupAndArtifactID = "org.jboss.as:jboss-as-messaging";
+        }
+        return groupAndArtifactID + ":" + version.getMavenGavVersion();
+
     }
 }

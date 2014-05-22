@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.messaging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:messaging:2.0">
+   <subsystem xmlns="urn:jboss:domain:messaging:3.0">
        <hornetq-server>
            <?CLUSTERED?>
            <journal-file-size>102400</journal-file-size>
