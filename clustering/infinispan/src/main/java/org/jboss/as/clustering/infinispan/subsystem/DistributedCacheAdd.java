@@ -75,21 +75,16 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
     }
 
     /**
-     * Implementation of abstract method processModelNode suitable for distributed cache
+     * Implementation of abstract method processModelNode suitable for distributed cache.
      *
-     * @param context
-     * @param containerName
-     * @param builder
-     * @param dependencies
-     * @return
+     * {@inheritDoc}
      */
     @Override
-    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
+    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
             throws OperationFailedException {
 
         // process the basic clustered configuration
-        super.processModelNode(context, containerName, cache, builder, dependencies);
-
+        super.processModelNode(context, containerName, containerModel, cache, builder, dependencies);
         final int owners = DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt();
         final int segments = DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt();
         final long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
