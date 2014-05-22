@@ -93,9 +93,7 @@ class OperatingSystemResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, OperatingSystemMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, OperatingSystemMXBeanAttributeHandler.INSTANCE);
 
         for (AttributeDefinition attribute : READ_ATTRIBUTES) {
             registration.registerReadOnlyAttribute(attribute, OperatingSystemMXBeanAttributeHandler.INSTANCE);

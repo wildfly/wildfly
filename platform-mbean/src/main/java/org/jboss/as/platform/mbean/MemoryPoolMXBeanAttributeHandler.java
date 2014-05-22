@@ -58,7 +58,7 @@ class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || MemoryPoolResourceDefinition.MEMORY_POOL_READ_ATTRIBUTES.contains(name)
                     || MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
                     || MemoryPoolResourceDefinition.MEMORY_POOL_METRICS.contains(name)) {
@@ -108,7 +108,7 @@ class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
 
     static void storeResult(final String name, final ModelNode store, final MemoryPoolMXBean memoryPoolMXBean, final String memPoolName) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.MEMORY_POOL_MXBEAN_DOMAIN_TYPE, memPoolName);
             store.set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {

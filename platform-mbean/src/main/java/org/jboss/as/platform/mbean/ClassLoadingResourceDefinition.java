@@ -58,10 +58,7 @@ class ClassLoadingResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ClassLoadingMXBeanAttributeHandler.INSTANCE);
-        }
-
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ClassLoadingMXBeanAttributeHandler.INSTANCE);
         for (SimpleAttributeDefinition attribute : METRICS) {
             registration.registerMetric(attribute, ClassLoadingMXBeanAttributeHandler.INSTANCE);
         }

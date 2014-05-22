@@ -160,9 +160,7 @@ class ThreadResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ThreadMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ThreadMXBeanAttributeHandler.INSTANCE);
 
         for (AttributeDefinition attribute : READ_WRITE_ATTRIBUTES) {
             registration.registerReadWriteAttribute(attribute, ThreadMXBeanAttributeHandler.INSTANCE, ThreadMXBeanAttributeHandler.INSTANCE);

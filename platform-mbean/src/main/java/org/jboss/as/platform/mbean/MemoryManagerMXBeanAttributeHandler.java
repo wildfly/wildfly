@@ -65,7 +65,7 @@ class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAttribute
             throw PlatformMBeanLogger.ROOT_LOGGER.unknownMemoryManager(mmName);
         }
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE, mmName);
             context.getResult().set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {

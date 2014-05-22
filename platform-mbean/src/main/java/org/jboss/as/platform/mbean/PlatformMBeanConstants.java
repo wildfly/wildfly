@@ -261,14 +261,10 @@ public class PlatformMBeanConstants {
 
     static {
         final List<String> JDK6 = ManagementFactory.getCompilationMXBean() == null ? JDK_NOCOMPILATION_TYPES : JDK6_BASE_TYPES;
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            List<String> list = new ArrayList<String>(JDK6);
-            list.add(BUFFER_POOL);
-            // list.add(LOGGING); AS7-2185
-            BASE_TYPES = Collections.unmodifiableList(list);
-        } else {
-            BASE_TYPES = JDK6;
-        }
+        List<String> list = new ArrayList<String>(JDK6);
+        list.add(BUFFER_POOL);
+        // list.add(LOGGING); AS7-2185
+        BASE_TYPES = Collections.unmodifiableList(list);
 
         try {
             PLATFORM_LOGGING_OBJECT_NAME = new ObjectName(PLATFORM_LOGGING_MXBEAN_NAME);

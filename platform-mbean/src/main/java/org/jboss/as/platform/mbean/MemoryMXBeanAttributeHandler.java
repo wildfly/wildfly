@@ -50,7 +50,7 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             context.getResult().set(ManagementFactory.MEMORY_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.OBJECT_PENDING_FINALIZATION_COUNT.equals(name)) {
             context.getResult().set(ManagementFactory.getMemoryMXBean().getObjectPendingFinalizationCount());

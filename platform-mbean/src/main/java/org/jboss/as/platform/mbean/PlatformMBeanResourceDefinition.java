@@ -31,8 +31,6 @@ public class PlatformMBeanResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(RuntimeResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(ThreadResourceDefinition.INSTANCE);
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            resourceRegistration.registerSubModel(BufferPoolRootResourceDefinition.INSTANCE);
-        }
+        resourceRegistration.registerSubModel(BufferPoolRootResourceDefinition.INSTANCE);
     }
 }

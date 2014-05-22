@@ -86,9 +86,7 @@ class GarbageCollectorResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, GarbageCollectorMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, GarbageCollectorMXBeanAttributeHandler.INSTANCE);
 
         for (AttributeDefinition attribute : READ_ATTRIBUTES) {
             registration.registerReadOnlyAttribute(attribute, GarbageCollectorMXBeanAttributeHandler.INSTANCE);

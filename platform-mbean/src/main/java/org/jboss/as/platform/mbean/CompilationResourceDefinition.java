@@ -53,9 +53,7 @@ class CompilationResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, CompilationMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, CompilationMXBeanAttributeHandler.INSTANCE);
 
         for (SimpleAttributeDefinition attribute : READ_ATTRIBUTES) {
             registration.registerReadOnlyAttribute(attribute, CompilationMXBeanAttributeHandler.INSTANCE);

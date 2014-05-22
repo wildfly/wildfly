@@ -137,9 +137,7 @@ public class PlatformMBeanResourceUnitTestCase {
         if (ManagementFactory.getCompilationMXBean() != null) {
             baseTypeCount++;
         }
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            baseTypeCount += 1;
-        }
+        baseTypeCount += 1;
         final ModelNode childTypes = result.get(CHILDREN, TYPE, MODEL_DESCRIPTION);
         Assert.assertEquals(baseTypeCount, childTypes.asPropertyList().size());
 

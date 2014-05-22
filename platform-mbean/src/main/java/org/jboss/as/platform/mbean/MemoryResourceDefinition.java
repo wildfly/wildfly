@@ -105,9 +105,7 @@ class MemoryResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, MemoryMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, MemoryMXBeanAttributeHandler.INSTANCE);
 
         for (AttributeDefinition attribute : READ_WRITE_ATTRIBUTES) {
             registration.registerReadWriteAttribute(attribute, MemoryMXBeanAttributeHandler.INSTANCE, MemoryMXBeanAttributeHandler.INSTANCE);
