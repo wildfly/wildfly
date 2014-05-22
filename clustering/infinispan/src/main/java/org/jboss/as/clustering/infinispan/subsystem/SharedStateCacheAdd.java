@@ -44,10 +44,10 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
     }
 
     @Override
-    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
+    void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
 
         // process the basic clustered configuration
-        super.processModelNode(context, containerName, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
+        super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
         // state transfer is a child resource
         if (cache.hasDefined(ModelKeys.STATE_TRANSFER) && cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
