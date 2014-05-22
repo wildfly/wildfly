@@ -112,7 +112,7 @@ public class SessionOperationServlet extends HttpServlet {
             String name = getRequiredParameter(req, NAME);
             String[] values = req.getParameterValues(VALUE);
             if (values != null) {
-                SessionAttributeValue value = (values != null) ? new SessionAttributeValue(values[0]) : null;
+                SessionAttributeValue value = new SessionAttributeValue(values[0]);
                 session.setAttribute(name, value);
                 for (int i = 1; i < values.length; ++i) {
                     value.setValue(values[i]);

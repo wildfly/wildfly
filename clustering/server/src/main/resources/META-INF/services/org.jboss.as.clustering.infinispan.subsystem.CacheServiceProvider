@@ -1,5 +1,0 @@
-org.wildfly.clustering.server.group.CacheGroupProvider
-org.wildfly.clustering.server.group.CacheNodeFactoryProvider
-org.wildfly.clustering.server.provider.ServiceProviderRegistrationFactoryProvider
-org.wildfly.clustering.server.registry.RegistryFactoryProvider
-org.wildfly.clustering.server.singleton.SingletonServiceBuilderFactoryProvider

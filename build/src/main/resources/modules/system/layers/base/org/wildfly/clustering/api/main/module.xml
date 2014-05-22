@@ -29,6 +29,5 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.msc"/>
     </dependencies>
 </module>

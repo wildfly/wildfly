@@ -26,9 +26,7 @@ import java.util.UUID;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.Affinity;
-import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
@@ -51,19 +49,16 @@ public class DistributableCache<K, V extends Identifiable<K>> implements Cache<K
     private final BeanManager<UUID, K, V> manager;
     private final StatefulObjectFactory<V> factory;
     private final RemoveListener<V> listener;
-    private final ServerEnvironment environment;
 
-    public DistributableCache(BeanManager<UUID, K, V> manager, StatefulObjectFactory<V> factory, ServerEnvironment environment) {
+    public DistributableCache(BeanManager<UUID, K, V> manager, StatefulObjectFactory<V> factory) {
         this.manager = manager;
         this.factory = factory;
         this.listener = new RemoveListenerAdapter<>(factory);
-        this.environment = environment;
     }
 
     @Override
     public Affinity getStrictAffinity() {
-        Affinity affinity = this.manager.getStrictAffinity();
-        return (affinity != null) ? affinity : new NodeAffinity(this.environment.getNodeName());
+        return this.manager.getStrictAffinity();
     }
 
     @Override

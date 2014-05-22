@@ -975,6 +975,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-singleton"/>
         </module-def>
 
+        <module-def name="org.wildfly.clustering.spi">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-spi"/>
+        </module-def>
+
         <module-def name="org.jboss.as.clustering.web.infinispan"/>
 
         <module-def name="org.wildfly.clustering.web.api">

@@ -26,18 +26,25 @@ import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
+public class InfinispanSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
 
@@ -57,8 +64,16 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
+
+        OperationStepHandler step = new AbstractDeploymentChainStep() {
+            @Override
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(JGroupsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
+            }
+        };
+        context.addStep(step, OperationContext.Stage.RUNTIME);
     }
 
     @Override

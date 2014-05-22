@@ -376,7 +376,7 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
             Thread.sleep(2000);
 
             // Timeout should trigger session destroyed event and valueUnbound binding event
-            response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL1, "a")));
+            response = client.execute(new HttpGet(SessionOperationServlet.createGetURI(baseURL2, "a")));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertFalse(response.containsHeader(SessionOperationServlet.RESULT));

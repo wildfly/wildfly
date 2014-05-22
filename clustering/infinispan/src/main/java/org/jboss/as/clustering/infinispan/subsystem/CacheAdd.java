@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -67,6 +66,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -77,11 +77,9 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.naming.ManagedReferenceInjector;
-import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
@@ -226,13 +224,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         controllers.add(this.installJndiService(target, containerName, cacheName, defaultCache, jndiName, verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
-        if (this.mode.isClustered()) {
-            for (CacheServiceProvider provider: ServiceLoader.load(CacheServiceProvider.class, CacheServiceProvider.class.getClassLoader())) {
-                log.debugf("Installing %s for cache %s/%s", provider.getClass().getSimpleName(), containerName, cacheName);
-                controllers.addAll(provider.install(target, containerName, cacheName, defaultCache, moduleId));
-            }
-        }
-
         return controllers;
     }
 
@@ -250,21 +241,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         ModelNode resolvedValue = null;
         final String jndiName = (resolvedValue = CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined() ? resolvedValue.asString() : null;
 
-        String defaultCacheName = CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, containerModel).asString();
-        boolean defaultCache = cacheName.equals(defaultCacheName);
-
         ContextNames.BindInfo binding = createCacheBinding((jndiName != null) ? JndiNameFactory.parse(jndiName) : createJndiName(containerName, cacheName));
         context.removeService(binding.getBinderServiceName());
         // remove the CacheService instance
         context.removeService(CacheService.getServiceName(containerName, cacheName));
         // remove the cache configuration service
         context.removeService(CacheConfigurationService.getServiceName(containerName, cacheName));
-
-        for (CacheServiceProvider provider: ServiceLoader.load(CacheServiceProvider.class, CacheServiceProvider.class.getClassLoader())) {
-            for (ServiceName name: provider.getServiceNames(containerName, cacheName, defaultCache)) {
-                context.removeService(name);
-            }
-        }
 
         log.debugf("cache %s removed for container %s", cacheName, containerName);
     }
@@ -323,18 +305,11 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    @SuppressWarnings("rawtypes")
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, String jndiName, ServiceVerificationHandler verificationHandler) {
 
-        final ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-        final ContextNames.BindInfo binding = createCacheBinding((jndiName != null) ? JndiNameFactory.parse(jndiName) : createJndiName(containerName, cacheName));
-        final BinderService binder = new BinderService(binding.getBindName());
-        ServiceBuilder<?> builder = target.addService(binding.getBinderServiceName(), binder)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getBindName()))
-                .addDependency(cacheServiceName, Cache.class, new ManagedReferenceInjector<Cache>(binder.getManagedObjectInjector()))
-                .addDependency(binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-        ;
+        ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
+        ContextNames.BindInfo binding = createCacheBinding((jndiName != null) ? JndiNameFactory.parse(jndiName) : createJndiName(containerName, cacheName));
+        ServiceBuilder<ManagedReferenceFactory> builder = new BinderServiceBuilder(target).build(binding, cacheServiceName, Cache.class);
         if (defaultCache) {
             ContextNames.BindInfo defaultBinding = createCacheBinding(createJndiName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
             builder.addAliases(defaultBinding.getBinderServiceName(), ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(defaultBinding.getBindName()));
