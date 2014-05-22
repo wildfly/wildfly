@@ -73,7 +73,7 @@ public class LoggingExtension implements Extension {
 
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
