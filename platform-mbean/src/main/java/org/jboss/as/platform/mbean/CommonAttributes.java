@@ -25,9 +25,9 @@ package org.jboss.as.platform.mbean;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.dmr.ModelNode;
@@ -56,21 +56,21 @@ class CommonAttributes {
             .setMinSize(1)
             .build();
 
-    static final StringListAttributeDefinition IDS = new StringListAttributeDefinition.Builder(PlatformMBeanConstants.IDS)
+    static final PrimitiveListAttributeDefinition IDS = new PrimitiveListAttributeDefinition.Builder(PlatformMBeanConstants.IDS, ModelType.LONG)
             .setAllowNull(false)
             .build();
 
-    static final SimpleAttributeDefinition MAX_DEPTH = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.MAX_DEPTH, ModelType.INT, true)
+    static final SimpleAttributeDefinition MAX_DEPTH = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.MAX_DEPTH, ModelType.INT, false)
             .setDefaultValue(new ModelNode(0))
             .setMinSize(1)
             .build();
 
 
-    static final SimpleAttributeDefinition LOCKED_MONITORS_FLAG = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.LOCKED_MONITORS, ModelType.BOOLEAN, true)
+    static final SimpleAttributeDefinition LOCKED_MONITORS_FLAG = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.LOCKED_MONITORS, ModelType.BOOLEAN, false)
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    static final SimpleAttributeDefinition LOCKED_SYNCHRONIZERS_FLAG = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.LOCKED_SYNCHRONIZERS, ModelType.BOOLEAN, true)
+    static final SimpleAttributeDefinition LOCKED_SYNCHRONIZERS_FLAG = new SimpleAttributeDefinitionBuilder(PlatformMBeanConstants.LOCKED_SYNCHRONIZERS, ModelType.BOOLEAN, false)
             .setDefaultValue(new ModelNode(false))
             .build();
 
@@ -132,6 +132,7 @@ class CommonAttributes {
             .build();
 
     static final AttributeDefinition STACK_TRACE = new ObjectListAttributeDefinition.Builder(PlatformMBeanConstants.STACK_TRACE, STACK_TRACE_ELEMENT)
+            .setAllowNull(true)
             .build();
 
 
@@ -150,10 +151,12 @@ class CommonAttributes {
 
 
     static final AttributeDefinition LOCKED_MONITORS = new ObjectListAttributeDefinition.Builder(PlatformMBeanConstants.LOCKED_MONITORS, LOCKED_MONITOR_ELEMENT)
+            .setAllowNull(true)
             .build();
 
 
     static final AttributeDefinition LOCKED_SYNCHRONIZERS = new ObjectListAttributeDefinition.Builder(PlatformMBeanConstants.LOCKED_SYNCHRONIZERS, LOCK_INFO)
+            .setAllowNull(true)
             .build();
     static final AttributeDefinition[] THREAD_INFO_ATTRIBUTES = {THREAD_ID, THREAD_NAME, THREAD_STATE, BLOCKED_TIME, BLOCKED_COUNT,
             WAITED_TIME, WAITED_COUNT, LOCK_INFO, LOCK_NAME, LOCK_OWNER_ID, LOCK_OWNER_NAME, STACK_TRACE, SUSPENDED, IN_NATIVE,

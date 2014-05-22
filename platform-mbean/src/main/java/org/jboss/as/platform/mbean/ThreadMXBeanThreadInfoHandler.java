@@ -42,19 +42,20 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler{
+public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler {
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GET_THREAD_INFO, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
-                  .setParameters(CommonAttributes.ID, CommonAttributes.MAX_DEPTH)
-                  .setReplyType(ModelType.LIST)
-                  .setReplyParameters(CommonAttributes.THREAD_INFO_ATTRIBUTES)
+            .setParameters(CommonAttributes.ID, CommonAttributes.MAX_DEPTH)
+            .setReplyType(ModelType.OBJECT)
+            .setReplyParameters(CommonAttributes.THREAD_INFO_ATTRIBUTES)
             .setReadOnly()
             .setRuntimeOnly()
-                  .build();
+            .build();
 
 
     public static final ThreadMXBeanThreadInfoHandler INSTANCE = new ThreadMXBeanThreadInfoHandler();
 
     private final ParametersValidator validator = new ParametersValidator();
+
     private ThreadMXBeanThreadInfoHandler() {
         validator.registerValidator(PlatformMBeanConstants.ID, new LongRangeValidator(1));
         validator.registerValidator(PlatformMBeanConstants.MAX_DEPTH, new IntRangeValidator(1, Integer.MAX_VALUE, true, false));

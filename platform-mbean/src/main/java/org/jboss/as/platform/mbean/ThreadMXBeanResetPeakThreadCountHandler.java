@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Executes the {@link java.lang.management.ThreadMXBean#resetPeakThreadCount()} method.
@@ -39,7 +38,6 @@ import org.jboss.dmr.ModelType;
  */
 public class ThreadMXBeanResetPeakThreadCountHandler implements OperationStepHandler {
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.RESET_PEAK_THREAD_COUNT, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
-            .setReplyType(ModelType.OBJECT)
             .setRuntimeOnly()
             .build();
 
