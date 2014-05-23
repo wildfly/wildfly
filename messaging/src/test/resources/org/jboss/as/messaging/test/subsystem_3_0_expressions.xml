@@ -281,7 +281,9 @@
                 <expiry-address>${expiry.address:jms.queue.ExpiryQueue}</expiry-address>
                 <expiry-delay>${expiry.delay:12345}</expiry-delay>
                 <redelivery-delay>${redelivery.delay:0}</redelivery-delay>
+                <redelivery-multiplier>${redelivery.multiplier:1.0}</redelivery-multiplier>
                 <max-delivery-attempts>${max.delivery.attempts:5}</max-delivery-attempts>
+                <max-redelivery-delay>${max.redelivery.delay:234}</max-redelivery-delay>
                 <max-size-bytes>${max.size.bytes:10485760}</max-size-bytes>
                 <page-size-bytes>${page.size.bytes:10485760}</page-size-bytes>
                 <page-max-cache-size>${page.max.cache.size:7}</page-max-cache-size>

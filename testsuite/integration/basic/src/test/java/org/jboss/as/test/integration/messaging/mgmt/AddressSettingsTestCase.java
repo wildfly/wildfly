@@ -22,9 +22,21 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.messaging.AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.util.Set;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -37,19 +49,27 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
 
-    private static final ModelNode address = new ModelNode();
+    private static final ModelNode hornetqServerAddress;
+    private static final ModelNode defaultAddress;
+    private static final ModelNode address;
 
     static {
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("address-setting", "test");
+        hornetqServerAddress = new ModelNode();
+        hornetqServerAddress.add("subsystem", "messaging");
+        hornetqServerAddress.add("hornetq-server", "default");
+
+        defaultAddress = hornetqServerAddress.clone();
+        defaultAddress.add("address-setting", "#");
+
+        address = hornetqServerAddress.clone();
+        address.add("address-setting", "jms.queue.foo");
     }
 
     @Test
     public void testAddressSettingWrite() throws Exception {
-        // /subsystem=messaging/hornetq-server=default/address-setting=#:write-attribute(name=redelivery-delay,value=50)
+        // /subsystem=messaging/hornetq-server=default/address-setting=test:write-attribute(name=redelivery-delay,value=50)
         final ModelNode add = new ModelNode();
-        add.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        add.get(ModelDescriptionConstants.OP).set(ADD);
         add.get(ModelDescriptionConstants.OP_ADDR).set(address);
 
         executeOperation(add);
@@ -62,11 +82,60 @@ public class AddressSettingsTestCase extends ContainerResourceMgmtTestBase {
 
         executeOperation(update);
 
-        final ModelNode remove = new ModelNode();
-        remove.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        remove.get(ModelDescriptionConstants.OP_ADDR).set(address);
-
-        executeOperation(remove);
+        remove(address);
     }
 
+    @Test
+    public void testResolveAddressSettings() throws Exception {
+        final ModelNode readResourceDescription = new ModelNode();
+        readResourceDescription.get(ModelDescriptionConstants.OP_ADDR).set(defaultAddress);
+        readResourceDescription.get(ModelDescriptionConstants.OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        final ModelNode description = executeOperation(readResourceDescription, true);
+        Set<String> attributeNames = description.get(ATTRIBUTES).keys();
+
+        final ModelNode readResource = new ModelNode();
+        readResource.get(ModelDescriptionConstants.OP_ADDR).set(defaultAddress);
+        readResource.get(ModelDescriptionConstants.OP).set(READ_RESOURCE_OPERATION);
+        final ModelNode defaultAddressSetting = executeOperation(readResource);
+
+        // there is no address-setting for the given address but
+        // we can resolve its settings based on HornetQ hierarchical
+        // repository of address setting.
+        final ModelNode resolve = new ModelNode();
+        resolve.get(ModelDescriptionConstants.OP_ADDR).set(hornetqServerAddress);
+        resolve.get(ModelDescriptionConstants.OP).set(CommonAttributes.RESOLVE_ADDRESS_SETTING);
+        resolve.get(CommonAttributes.HORNETQ_ADDRESS).set("jms.queue.foo");
+        ModelNode result = executeOperation(resolve);
+
+        for (String attributeName : attributeNames) {
+            assertEquals("unexpected value for " + attributeName, defaultAddressSetting.get(attributeName), result.get(attributeName));
+        }
+    }
+
+    @Test
+    public void testSpecificAddressSetting() throws Exception {
+        // /subsystem=messaging/hornetq-server=default/address-setting=jms.queue.foo:add()
+        final ModelNode add = new ModelNode();
+        add.get(ModelDescriptionConstants.OP).set(ADD);
+        add.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        executeOperation(add);
+
+        final ModelNode readResourceWithoutDefault = new ModelNode();
+        readResourceWithoutDefault.get(ModelDescriptionConstants.OP).set(READ_RESOURCE_OPERATION);
+        readResourceWithoutDefault.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        readResourceWithoutDefault.get(INCLUDE_DEFAULTS).set(false);
+        ModelNode result = executeOperation(readResourceWithoutDefault);
+        // the resource has not defined the message-counter-history-day-limit attribute
+        assertFalse(result.hasDefined(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()));
+
+        final ModelNode resolve = new ModelNode();
+        resolve.get(ModelDescriptionConstants.OP_ADDR).set(hornetqServerAddress);
+        resolve.get(ModelDescriptionConstants.OP).set(CommonAttributes.RESOLVE_ADDRESS_SETTING);
+        resolve.get(CommonAttributes.HORNETQ_ADDRESS).set("jms.queue.foo");
+        result = executeOperation(resolve);
+        // inherit the message-counter-history-day-limit for the '#' address-setting
+        assertEquals(10, result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).asInt());
+
+        remove(address);
+    }
 }

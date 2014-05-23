@@ -78,6 +78,14 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
+            // default value is not exposed by HornetQ API (see HORNETQ-1348)
+            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_DELAY * 10))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
     public static final SimpleAttributeDefinition MAX_SIZE_BYTES = create("max-size-bytes", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MAX_SIZE_BYTES))
             .setMeasurementUnit(BYTES)
@@ -112,6 +120,12 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition REDELIVERY_MULTIPLIER = create("redelivery-multiplier", ModelType.DOUBLE)
+            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_MULTIPLIER))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
     public static final SimpleAttributeDefinition REDISTRIBUTION_DELAY = create("redistribution-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY))
             .setMeasurementUnit(MILLISECONDS)
@@ -139,7 +153,9 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
         EXPIRY_ADDRESS,
         EXPIRY_DELAY,
         REDELIVERY_DELAY,
+        REDELIVERY_MULTIPLIER,
         MAX_DELIVERY_ATTEMPTS,
+        MAX_REDELIVERY_DELAY,
         MAX_SIZE_BYTES,
         PAGE_SIZE_BYTES,
         PAGE_MAX_CACHE_SIZE,

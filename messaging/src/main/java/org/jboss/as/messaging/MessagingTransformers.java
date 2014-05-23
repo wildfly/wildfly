@@ -30,6 +30,8 @@ import static org.jboss.as.controller.transform.description.DiscardAttributeChec
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.SIMPLE_EXPRESSIONS;
 import static org.jboss.as.messaging.AddressSettingDefinition.EXPIRY_DELAY;
+import static org.jboss.as.messaging.AddressSettingDefinition.MAX_REDELIVERY_DELAY;
+import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_MULTIPLIER;
 import static org.jboss.as.messaging.BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE;
 import static org.jboss.as.messaging.ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS;
 import static org.jboss.as.messaging.ClusterConnectionDefinition.NOTIFICATION_INTERVAL;
@@ -175,7 +177,7 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectAttributesWithExpression(addressSetting, AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
 
         ResourceTransformationDescriptionBuilder connectorService = hornetqServer.addChildResource(ConnectorServiceDefinition.PATH);
 
@@ -255,7 +257,7 @@ public class MessagingTransformers {
         hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
@@ -300,7 +302,7 @@ public class MessagingTransformers {
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
 
         ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(groupingHandler, GROUP_TIMEOUT, REAPER_PERIOD);
@@ -324,7 +326,7 @@ public class MessagingTransformers {
         rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
     }
 
     private static void registerTransformers_2_0_0(final SubsystemRegistration subsystem) {
@@ -340,6 +342,9 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
         rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
+
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
 
         return subsystemRoot.build();
     }
