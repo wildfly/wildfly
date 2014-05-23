@@ -1322,40 +1322,5 @@
             </build>
         </profile>
 
-	<!-- WFLY-3361 Remove empty xmlns attributes from server configs which XSLT transformation on IBM JDK could produce. -->
-	<profile>
-	    <id>ibmjdk.cleanBlankNs.profile</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>IBM Corporation</value>
-               </property>
-            </activation>
-	    <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <version>1.5.2</version>
-                        <executions>
-                            <execution>
-                                <id>ibmjdk.clean.blank.namespaces</id>
-                                <phase>test-compile</phase>
-                                <goals><goal>replace</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <includes>
-                                        <include>**/standalone/configuration/standalone*.xml</include>
-                                        <include>**/domain/configuration/domain.xml</include>
-                                    </includes>
-                                    <token>xmlns=\"\"</token>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-	    </build>
-	</profile>
-
     </profiles>
 </project>
