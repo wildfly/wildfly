@@ -166,12 +166,12 @@ case "$1" in
 		if [ "$JBOSS_MODE" = "standalone" ]; then
 			start-stop-daemon --start --user "$JBOSS_USER" \
 			--chuid "$JBOSS_USER" --chdir "$JBOSS_HOME" --pidfile "$JBOSS_PIDFILE" \
-			--exec "$JBOSS_SCRIPT" -- -c $JBOSS_CONFIG >> "$JBOSS_CONSOLE_LOG" 2>&1 &
+			--exec "$JBOSS_SCRIPT" -- -c $JBOSS_CONFIG $JBOSS_OPTS >> "$JBOSS_CONSOLE_LOG" 2>&1 &
 		else
 			start-stop-daemon --start --user "$JBOSS_USER" \
 			--chuid "$JBOSS_USER" --chdir "$JBOSS_HOME" --pidfile "$JBOSS_PIDFILE" \
 			--exec "$JBOSS_SCRIPT" -- --domain-config=$JBOSS_DOMAIN_CONFIG \
-			--host-config=$JBOSS_HOST_CONFIG >> "$JBOSS_CONSOLE_LOG" 2>&1 &
+			--host-config=$JBOSS_HOST_CONFIG $JBOSS_OPTS >> "$JBOSS_CONSOLE_LOG" 2>&1 &
 		fi
 
 		count=0
