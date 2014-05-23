@@ -65,6 +65,8 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     //injections that have been set in the components deployment descriptor
     private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
 
+    private EEClassIntrospector classIntrospector;
+
     private final boolean appClient;
 
     /**
@@ -288,5 +290,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public Map<String, InterceptorEnvironment> getInterceptorEnvironment() {
         return interceptorEnvironment;
+    }
+
+    public EEClassIntrospector getClassIntrospector() {
+        return classIntrospector;
+    }
+
+    public void setClassIntrospector(EEClassIntrospector classIntrospector) {
+        this.classIntrospector = classIntrospector;
     }
 }

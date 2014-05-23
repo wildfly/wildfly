@@ -30,6 +30,7 @@ import org.apache.catalina.Realm;
 import org.apache.catalina.Valve;
 import org.apache.catalina.core.StandardContext;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.websocket.ClassIntrospecter;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactory;
 import org.jboss.as.clustering.web.DistributedCacheManagerFactoryService;
 import org.jboss.as.controller.PathElement;
@@ -48,7 +49,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebDeploymentDefinition;
-import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
@@ -189,6 +189,14 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
+        if(warMetaData.getJBossWebMetaData().isEnableWebSockets()) {
+            final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            if(description != null && description.getClassIntrospector() != null) {
+                ClassIntrospecter ci = new WebsocketIntrospector(description.getClassIntrospector());
+                deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(ClassIntrospecter.class.getName(), ci));
+            }
+        }
+
         // see AS7-2077
         // basically we want to ignore components that have failed for whatever reason
         // if they are important they will be picked up when the web deployment actually starts
@@ -292,7 +300,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,
                             realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
-            final WebDeploymentService webappService = new WebDeploymentService(webContext, injectionContainer, setupActions, attributes);
+            final WebDeploymentService webappService = new WebDeploymentService(metaData.isEnableWebSockets(), webContext, injectionContainer, setupActions, attributes);
             ServiceBuilder<StandardContext> webappBuilder = serviceTarget.addService(webappServiceName, webappService)
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
                     .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())

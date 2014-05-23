@@ -34,6 +34,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Realm;
+import org.apache.catalina.ThreadBindingListener;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
@@ -57,6 +58,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class WebDeploymentService implements Service<StandardContext> {
 
+    private final boolean websockets;
     private final StandardContext context;
     private final InjectedValue<Realm> realm = new InjectedValue<Realm>();
     private final WebInjectionContainer injectionContainer;
@@ -65,8 +67,9 @@ public class WebDeploymentService implements Service<StandardContext> {
     // used for blocking tasks in this Service's start/stop
     private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
 
-    public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions,
-            final List<ServletContextAttribute> attributes) {
+    public WebDeploymentService(boolean websockets, final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions,
+                                final List<ServletContextAttribute> attributes) {
+        this.websockets = websockets;
         this.context = context;
         this.injectionContainer = injectionContainer;
         this.setupActions = setupActions;
@@ -129,10 +132,10 @@ public class WebDeploymentService implements Service<StandardContext> {
     }
 
     private void doStart() throws StartException {
+        final ServletContext sc = this.context.getServletContext();
         if (attributes != null) {
-            final ServletContext context = this.context.getServletContext();
             for (ServletContextAttribute attribute : attributes) {
-                context.setAttribute(attribute.getName(), attribute.getValue());
+                sc.setAttribute(attribute.getName(), attribute.getValue());
             }
         }
 
@@ -142,7 +145,11 @@ public class WebDeploymentService implements Service<StandardContext> {
         final List<SetupAction> actions = new ArrayList<SetupAction>();
         actions.addAll(setupActions);
         context.setInstanceManager(injectionContainer);
-        context.setThreadBindingListener(new ThreadSetupBindingListener(actions));
+        ThreadSetupBindingListener threadBindingListener = new ThreadSetupBindingListener(actions);
+        context.setThreadBindingListener(threadBindingListener);
+        if(websockets) {
+            sc.setAttribute(ThreadBindingListener.class.getName(), threadBindingListener); //needed for web sockets
+        }
         WEB_LOGGER.registerWebapp(context.getName());
         try {
             try {

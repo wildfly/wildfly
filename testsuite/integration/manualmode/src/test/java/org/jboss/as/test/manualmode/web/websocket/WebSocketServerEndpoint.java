@@ -1,5 +1,6 @@
 package org.jboss.as.test.manualmode.web.websocket;
 
+import javax.inject.Inject;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -18,6 +19,9 @@ public class WebSocketServerEndpoint {
 
     private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
 
+    @Inject
+    private CdiBean bean;
+
     @OnMessage
     public void onMessage(String message, Session session)
             throws IOException {
@@ -26,7 +30,7 @@ public class WebSocketServerEndpoint {
             // Iterate over the connected sessions
             // and broadcast the received message
             for (Session client : clients) {
-                client.getBasicRemote().sendText("Reply to " + message);
+                client.getBasicRemote().sendText(bean.getMessage() + message);
 
             }
         }

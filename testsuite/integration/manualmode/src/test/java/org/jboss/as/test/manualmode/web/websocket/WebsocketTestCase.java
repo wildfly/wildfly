@@ -15,6 +15,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -66,8 +67,9 @@ public class WebsocketTestCase {
         final String resourcesLocation = "org/jboss/as/test/manualmode/web/websocket/resources/";
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "websocket.war");
-        war.addClasses(WebSocketServerEndpoint.class, WebSocketClient.class);
+        war.addClasses(WebSocketServerEndpoint.class, WebSocketClient.class, CdiBean.class);
         war.addAsWebInfResource(tccl.getResource(resourcesLocation + "jboss-web.xml"), "jboss-web.xml");
+        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         log.info(war.toString(true));
         return war;
     }
