@@ -16,12 +16,7 @@
     <xsl:output method="xml" indent="yes"/>
 
     <xsl:variable name="ispnns">urn:jboss:domain:infinispan:2.0</xsl:variable>
-
-    <!-- populate the <backup/> element by input parameters -->
-    <xsl:variable name="new-backup-element">
-        <backup-for remote-site="{$remote-site}" remote-cache="{$remote-cache}"/>
-    </xsl:variable>
-
+   
     <xsl:template name="copy-attributes">
         <xsl:for-each select="@*">
             <xsl:copy/>
@@ -29,7 +24,10 @@
     </xsl:template>
 
     <xsl:template name="add-backup-for-element">
-        <xsl:copy-of select="$new-backup-element"/>
+        <xsl:element name="backup-for" namespace="{namespace-uri()}">
+            <xsl:attribute name="remote-site"><xsl:value-of select="$remote-site"/></xsl:attribute>
+            <xsl:attribute name="remote-cache"><xsl:value-of select="$remote-cache"/></xsl:attribute>
+        </xsl:element>
     </xsl:template>
 
     <!-- copy the cache over and add the backup element -->

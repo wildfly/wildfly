@@ -20,54 +20,96 @@
         <xsl:attribute name="batching">true</xsl:attribute>
     </xsl:attribute-set>
 
-    <xsl:variable name="newCacheDefinition">
-        <cache-container name="testDbPersistence" default-cache="jdbc-cache" module="org.wildfly.clustering.web.infinispan">
-            <transport lock-timeout="60000" />
-            <xsl:element name="{$cacheType}-cache" use-attribute-sets="cacheAttributes">
-                <xsl:element name="{$cacheLoader}-jdbc-store" use-attribute-sets="cacheLoaderAttributes">
-                    <xsl:choose>
-                        
-                        <xsl:when test="$cacheLoader = 'string-keyed'">
-                            <string-keyed-table prefix="stringbased">
-                                <id-column name="id" type="VARCHAR(255)" />
-                                <data-column name="datum" type="VARBINARY(10000)" />
-                                <timestamp-column name="version" type="BIGINT" />
-                            </string-keyed-table>
-                        </xsl:when>
-                        
-                        <xsl:when test="$cacheLoader = 'binary-keyed'">
-                            <binary-keyed-table prefix="binarybased">
-                                <id-column name="id" type="VARCHAR(255)" />
-                                <data-column name="datum" type="VARBINARY(10000)" />
-                                <timestamp-column name="version" type="BIGINT" />
-                            </binary-keyed-table>
-                        </xsl:when>
-
-                        <xsl:when test="$cacheLoader = 'mixed-keyed'">
-                            <string-keyed-table prefix="stringbased">
-                                <id-column name="id" type="VARCHAR(255)" />
-                                <data-column name="datum" type="VARBINARY(10000)" />
-                                <timestamp-column name="version" type="BIGINT" />
-                            </string-keyed-table>
-                            <binary-keyed-table prefix="binarybased">
-                                <id-column name="id" type="VARCHAR(255)" />
-                                <data-column name="datum" type="VARBINARY(10000)" />
-                                <timestamp-column name="version" type="BIGINT" />
-                            </binary-keyed-table>
-                        </xsl:when>
-
-                    </xsl:choose>
-                </xsl:element>
-            </xsl:element>
-        </cache-container>
-    </xsl:variable>
     <!-- replace the old definition with the new -->
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $ispn)]
-    /*[local-name()='cache-container' and starts-with(namespace-uri(), $ispn) and @name='web']">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $ispn)]">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()" />
+            <xsl:element name="cache-container" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">testDbPersistence</xsl:attribute>
+                <xsl:attribute name="default-cache">jdbc-cache</xsl:attribute>
+                <xsl:attribute name="module">org.wildfly.clustering.web.infinispan</xsl:attribute>            
+
+                <xsl:element name="transport" namespace="{namespace-uri()}">
+                    <xsl:attribute name="lock-timeout">6000</xsl:attribute>
+                </xsl:element>
+                <xsl:element name="{$cacheType}-cache" use-attribute-sets="cacheAttributes" namespace="{namespace-uri()}">
+                    <xsl:element name="{$cacheLoader}-jdbc-store" use-attribute-sets="cacheLoaderAttributes" namespace="{namespace-uri()}">
+                        <xsl:choose>
+
+                            <xsl:when test="$cacheLoader = 'string-keyed'">
+                                <xsl:element name="string-keyed-table" namespace="{namespace-uri()}">
+                                    <xsl:attribute name="prefix">stringbased</xsl:attribute>
+                                    <xsl:element name="id-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">id</xsl:attribute>
+                                        <xsl:attribute name="type">VARCHAR(255)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="data-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">datum</xsl:attribute>
+                                        <xsl:attribute name="type">VARBINARY(10000)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="timestamp-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">version</xsl:attribute>
+                                        <xsl:attribute name="type">BIGINT</xsl:attribute>
+                                    </xsl:element>
+                                </xsl:element>
+                            </xsl:when>
+
+                            <xsl:when test="$cacheLoader = 'binary-keyed'">
+                                <xsl:element name="binary-keyed-table" namespace="{namespace-uri()}">
+                                    <xsl:attribute name="prefix">binarybased</xsl:attribute>
+                                    <xsl:element name="id-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">id</xsl:attribute>
+                                        <xsl:attribute name="type">VARCHAR(255)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="data-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">datum</xsl:attribute>
+                                        <xsl:attribute name="type">VARBINARY(10000)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="timestamp-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">version</xsl:attribute>
+                                        <xsl:attribute name="type">BIGINT</xsl:attribute>
+                                    </xsl:element>
+                                </xsl:element>                                
+                            </xsl:when>
+
+                            <xsl:when test="$cacheLoader = 'mixed-keyed'">
+                                <xsl:element name="string-keyed-table" namespace="{namespace-uri()}">
+                                    <xsl:attribute name="prefix">stringbased</xsl:attribute>
+                                    <xsl:element name="id-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">id</xsl:attribute>
+                                        <xsl:attribute name="type">VARCHAR(255)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="data-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">datum</xsl:attribute>
+                                        <xsl:attribute name="type">VARBINARY(10000)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="timestamp-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">version</xsl:attribute>
+                                        <xsl:attribute name="type">BIGINT</xsl:attribute>
+                                    </xsl:element>
+                                </xsl:element>
+                                <xsl:element name="binary-keyed-table" namespace="{namespace-uri()}">
+                                    <xsl:attribute name="prefix">binarybased</xsl:attribute>
+                                    <xsl:element name="id-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">id</xsl:attribute>
+                                        <xsl:attribute name="type">VARCHAR(255)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="data-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">datum</xsl:attribute>
+                                        <xsl:attribute name="type">VARBINARY(10000)</xsl:attribute>
+                                    </xsl:element>
+                                    <xsl:element name="timestamp-column" namespace="{namespace-uri()}">                                        
+                                        <xsl:attribute name="name">version</xsl:attribute>
+                                        <xsl:attribute name="type">BIGINT</xsl:attribute>
+                                    </xsl:element>
+                                </xsl:element>                                   
+                            </xsl:when>
+
+                        </xsl:choose>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>            
         </xsl:copy>
-        <xsl:copy-of select="$newCacheDefinition" />
     </xsl:template>
 
     <!-- Copy everything else. -->
