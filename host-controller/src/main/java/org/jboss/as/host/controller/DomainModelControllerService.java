@@ -535,7 +535,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     if (ok) {
                         InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry),
+                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry, environment.getDomainTempDir()),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
                                 HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
@@ -548,7 +548,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (ok) {
                 // Install the server > host operation handler
                 ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME,
-                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver);
+                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver, environment.getDomainTempDir());
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)

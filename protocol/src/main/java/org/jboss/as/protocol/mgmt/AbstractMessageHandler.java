@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageOutputStream;
@@ -138,6 +138,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
      */
     protected <T, A> AsyncFuture<T> executeRequest(final ManagementRequest<T, A> request, final Channel channel, final ActiveOperation<T, A> support) {
         assert support != null;
+        updateChannelRef(support, channel);
         final Integer requestId = this.requestID.incrementAndGet();
         final ActiveRequest<T, A> ar = new ActiveRequest<T, A>(support, request, channel);
         requests.put(requestId, ar);
@@ -248,7 +249,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     protected <T, A> void handleMessage(final Channel channel, final DataInput message, final ManagementProtocolHeader header,
                                  final ActiveOperation<T, A> support, final ManagementRequestHandler<T, A> handler) {
         assert support != null;
-
+        updateChannelRef(support, channel);
         final ActiveOperation.ResultHandler<T> resultHandler = support.getResultHandler();
         try {
             handler.handleRequest(message, resultHandler, new ManagementRequestContext<A>() {
@@ -349,25 +350,6 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     @Override
     public void handleClose(final Channel closed, final IOException exception) {
         handleChannelClosed(closed, exception);
-    }
-
-    /**
-     * Receive a notification that the channel was closed.
-     *
-     * This is used for the {@link ManagementClientChannelStrategy.Establishing} since it might use multiple channels.
-     *
-     * @param closed the closed resource
-     * @param e the exception which occurred during close, if any
-     */
-    public void handleChannelClosed(final Channel closed, final IOException e) {
-        for(final Map.Entry<Integer, ActiveRequest<?, ?>> requestEntry : requests.entrySet()) {
-            final ActiveRequest<?, ?> request = requestEntry.getValue();
-            if(request.channel == closed) {
-                final IOException failure = e == null ? new IOException("Channel closed") : e;
-                request.context.getResultHandler().failed(failure);
-                requests.remove(requestEntry.getKey());
-            }
-        }
     }
 
     /**

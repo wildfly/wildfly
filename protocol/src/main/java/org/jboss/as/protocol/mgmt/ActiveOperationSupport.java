@@ -22,11 +22,7 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.logging.ProtocolLogger;
-import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
-import org.xnio.Cancellable;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +32,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jboss.as.protocol.logging.ProtocolLogger;
+import org.jboss.remoting3.Channel;
+import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
+import org.xnio.Cancellable;
 
 /**
  * Management operation support encapsulating active operations.
@@ -209,6 +211,23 @@ class ActiveOperationSupport {
     }
 
     /**
+     * Receive a notification that the channel was closed.
+     *
+     * This is used for the {@link ManagementClientChannelStrategy.Establishing} since it might use multiple channels.
+     *
+     * @param closed the closed resource
+     * @param e the exception which occurred during close, if any
+     */
+    public void handleChannelClosed(final Channel closed, final IOException e) {
+        for(final ActiveOperationImpl<?, ?> activeOperation : activeRequests.values()) {
+            if (activeOperation.channel == closed) {
+                // Only call cancel, to also interrupt still active threads
+                activeOperation.getResultHandler().cancel();
+            }
+        }
+    }
+
+    /**
      * Cancel all currently active operations.
      *
      * @return a list of cancelled operations
@@ -274,6 +293,7 @@ class ActiveOperationSupport {
         private final A attachment;
         private final Integer operationId;
         private List<Cancellable> cancellables;
+        private volatile Channel channel;
 
         private final ResultHandler<T> completionHandler = new ResultHandler<T>() {
             @Override
@@ -402,6 +422,15 @@ class ActiveOperationSupport {
             return super.cancel(true);
         }
 
+    }
+
+    static void updateChannelRef(final ActiveOperation<?, ?> operation, Channel channel) {
+        if (operation instanceof ActiveOperationImpl) {
+            final ActiveOperationImpl<?, ?> a = (ActiveOperationImpl) operation;
+            if (a.channel == null) {
+                a.channel = channel;
+            }
+        }
     }
 
 }
