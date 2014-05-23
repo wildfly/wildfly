@@ -39,7 +39,7 @@ public class SimpleImmutableSessionAttributes implements ImmutableSessionAttribu
     public SimpleImmutableSessionAttributes(ImmutableSessionAttributes attributes) {
         Map<String, Object> map = new HashMap<>();
         for (String name: attributes.getAttributeNames()) {
-            this.attributes.put(name, attributes.getAttribute(name));
+            map.put(name, attributes.getAttribute(name));
         }
         this.attributes = Collections.unmodifiableMap(map);
     }
