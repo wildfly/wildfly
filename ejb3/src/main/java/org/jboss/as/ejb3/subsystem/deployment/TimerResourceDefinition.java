@@ -361,7 +361,10 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
             final TimerImpl timer = getTimer(context, operation);
 
-            readAttribute(timer, context.getResult());
+            if(timer != null) {
+                //the timer can expire at any point, so protect against an NPE
+                readAttribute(timer, context.getResult());
+            }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 
