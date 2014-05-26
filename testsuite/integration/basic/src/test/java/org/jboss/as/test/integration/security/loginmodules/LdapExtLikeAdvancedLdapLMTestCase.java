@@ -64,7 +64,7 @@ import org.junit.runner.RunWith;
  * ones are located in org.jboss.as.test.integration.security.loginmodules.negotiation package.
  * <p>
  * The test data used in this testcase comes from {@link LdapExtLoginModuleTestCase}.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -91,7 +91,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test1(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP1)
@@ -101,7 +101,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test2(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP2)
@@ -111,7 +111,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test2throw(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP2_THROW)
@@ -121,7 +121,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test3(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP3)
@@ -131,7 +131,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test4(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP4)
@@ -141,7 +141,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test4_direct(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP4_DIRECT)
@@ -151,7 +151,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Creates {@link WebArchive} for {@link #test5(URL)}.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP5)
@@ -161,48 +161,52 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Test case for Example 1.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP1)
     public void test1(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "jduke", "TheDuke", "Echo", "Admin");
+        testDeployment(webAppURL, "jduke", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "mmcfly", "sugarless", "Admin");
     }
 
     /**
      * Test case for Example 2.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP2)
     public void test2(@ArquillianResource URL webAppURL) throws Exception {
         // JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
-        testDeployment(webAppURL, "jduke", "TheDuke", "Echo");
+        testDeployment(webAppURL, "jduke", "theduke", "TheDuke", "Echo");
     }
 
     @Test
     @OperateOnDeployment(DEP2_THROW)
     public void test2throw(@ArquillianResource URL webAppURL) throws Exception {
         // JBPAPP-10173 - ExtendedLdap LM would contain also "jduke"
-        testDeployment(webAppURL, "jduke", "TheDuke", "Echo");
+        testDeployment(webAppURL, "jduke", "theduke", "TheDuke", "Echo");
     }
 
     /**
      * Test case for Example 3.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP3)
     public void test3(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "Java Duke", "TheDuke", "Echo", "Admin");
+        testDeployment(webAppURL, "Java Duke", "theduke", "TheDuke", "Echo", "Admin");
+        // referral authenticated user
+        testDeployment(webAppURL, "Biff Tannen", "almanac", "RX", "Admin");
     }
 
     /**
      * Test case for Example 4.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -211,29 +215,31 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
         // JBPAPP-10173 - ExtendedLdap LM would contain also "R1", "R2", "R3"
         // recursion in AdvancedLdapLoginModule is enabled only if the roleAttributeIsDN module option is true. This is not
         // required in LdapExtLogiModule.
-        testDeployment(webAppURL, "Java Duke", "RG/2", "R5");
+        testDeployment(webAppURL, "Java Duke", "theduke", "RG/2", "R5");
     }
 
     /**
      * Test case for Example 4 (direct).
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP4_DIRECT)
     public void test4_direct(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "jduke", "RG/2");
+        testDeployment(webAppURL, "jduke", "theduke", "RG/2");
     }
 
     /**
      * Test case for Example 5.
-     * 
+     *
      * @throws Exception
      */
     @Test
     @OperateOnDeployment(DEP5)
     public void test5(@ArquillianResource URL webAppURL) throws Exception {
-        testDeployment(webAppURL, "jduke", "R1");
+        testDeployment(webAppURL, "jduke", "theduke", "R1");
+        // referral authenticated user
+        testDeployment(webAppURL, "ebrown", "atomic", "ebrown-1");
     }
 
     // Private methods -------------------------------------------------------
@@ -241,11 +247,11 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
     /**
      * Tests role assignment for given deployment (web-app URL).
      */
-    private void testDeployment(URL webAppURL, String username, String... assignedRoles) throws MalformedURLException,
+    private void testDeployment(URL webAppURL, String username, String password, String... assignedRoles) throws MalformedURLException,
             ClientProtocolException, IOException, URISyntaxException, LoginException {
         final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?"
                 + LdapExtLDAPServerSetupTask.QUERY_ROLES);
-        final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, "theduke", 200);
+        final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, username, password, 200);
 
         final List<String> assignedRolesList = Arrays.asList(assignedRoles);
 
@@ -258,13 +264,13 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
         }
         final URL principalPrintingURL = new URL(webAppURL.toExternalForm()
                 + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?" + LdapExtLDAPServerSetupTask.QUERY_ROLES);
-        final String principal = Utils.makeCallWithBasicAuthn(principalPrintingURL, username, "theduke", 200);
+        final String principal = Utils.makeCallWithBasicAuthn(principalPrintingURL, username, password, 200);
         assertEquals("Unexpected Principal name", username, principal);
     }
 
     /**
      * Creates a {@link WebArchive} for given security domain.
-     * 
+     *
      * @param securityDomainName
      * @return
      */
@@ -285,7 +291,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Asserts, the role list returned from the {@link RolePrintingServlet} contains the given role.
-     * 
+     *
      * @param rolePrintResponse
      * @param role
      */
@@ -297,7 +303,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * Asserts, the role list returned from the {@link RolePrintingServlet} doesn't contain the given role.
-     * 
+     *
      * @param rolePrintResponse
      * @param role
      */
@@ -311,14 +317,14 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -335,7 +341,8 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
                                     .putOption("java.naming.provider.url",
                                             "ldap://" + secondaryTestAddress + ":" + LdapExtLDAPServerSetupTask.LDAP_PORT)
-                                    .putOption("baseFilter", "(uid={0})").putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
+                                    .putOption("baseFilter", "(|(objectClass=referral)(uid={0}))")
+                                    .putOption("rolesCtxDN", "ou=Roles,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
                                     .putOption("roleAttributeID", "cn")
                                     .putOption("referralUserAttributeIDToCheck", "member")
@@ -368,7 +375,7 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .putOption("java.naming.provider.url",
                                             "ldaps://" + secondaryTestAddress + ":" + LdapExtLDAPServerSetupTask.LDAPS_PORT)
                                     .putOption("baseCtxDN", "ou=People,o=example3,dc=jboss,dc=org")
-                                    .putOption("baseFilter", "(cn={0})")
+                                    .putOption("baseFilter", "(|(objectClass=referral)(cn={0}))")
                                     .putOption("rolesCtxDN", "ou=Roles,o=example3,dc=jboss,dc=org")
                                     .putOption("roleFilter", "(|(objectClass=referral)(member={1}))")
                                     .putOption("roleAttributeID", "cn")
@@ -414,10 +421,11 @@ public class LdapExtLikeAdvancedLdapLMTestCase {
                                     .putOption("java.naming.provider.url",
                                             "ldap://" + secondaryTestAddress + ":" + LdapExtLDAPServerSetupTask.LDAP_PORT) //
                                     .putOption("baseCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
-                                    .putOption("baseFilter", "(uid={0})") //
+                                    .putOption("baseFilter", "(|(objectClass=referral)(uid={0}))") //
                                     .putOption("rolesCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
-                                    .putOption("roleFilter", "(uid={0})") //
-                                    .putOption("roleAttributeID", "employeeNumber").build()) //
+                                    .putOption("roleFilter", "(|(objectClass=referral)(uid={0}))") //
+                                    .putOption("roleAttributeID", "employeeNumber")
+                                    .putOption("referralUserAttributeIDToCheck", "uid").build())
                     .build();
             return new SecurityDomain[] { sd1, sd2, sd2throw, sd3, sd4, sd4_direct, sd5 };
         }

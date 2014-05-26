@@ -186,13 +186,30 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
                         "dn: dc=jboss,dc=com\n" +
                         "dc: jboss\n" +
                         "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
+                        "objectClass: domain\n\n"
+                        ),
                 indexes =
                 {
                     @CreateIndex( attribute = "objectClass" ),
                     @CreateIndex( attribute = "dc" ),
                     @CreateIndex( attribute = "ou" )
-                })
+                }),
+            @CreatePartition(
+                    name = "jbossOrg",
+                    suffix = "dc=jboss,dc=org",
+                    contextEntry = @ContextEntry(
+                        entryLdif =
+                            "dn: dc=jboss,dc=org\n" +
+                            "dc: jboss\n" +
+                            "objectClass: top\n" +
+                            "objectClass: domain\n\n"
+                            ),
+                    indexes =
+                    {
+                        @CreateIndex( attribute = "objectClass" ),
+                        @CreateIndex( attribute = "dc" ),
+                        @CreateIndex( attribute = "ou" )
+                    })
         },
         additionalInterceptors = { KeyDerivationInterceptor.class })
     @CreateLdapServer (
