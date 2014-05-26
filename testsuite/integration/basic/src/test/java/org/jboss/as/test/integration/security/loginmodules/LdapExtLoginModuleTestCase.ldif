@@ -20,6 +20,13 @@ cn: Java Duke
 sn: Duke
 userPassword: theduke
 
+dn: ou=RefUser,ou=People,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefUser
+ref: ldap://${hostname}:${ldapPort2}/ou=People,dc=jboss,dc=org
+
 dn: ou=Roles,dc=jboss,dc=org
 objectclass: top
 objectclass: organizationalUnit
@@ -168,6 +175,13 @@ dn: ou=People,o=example3,dc=jboss,dc=org
 objectclass: top
 objectclass: organizationalUnit
 ou: People
+
+dn: ou=RefUser,ou=People,o=example3,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefUser
+ref: ldap://${hostname}:${ldapPort2}/ou=People,o=example3,dc=jboss,dc=org
 
 dn: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
 objectclass: top
@@ -327,6 +341,18 @@ objectclass: top
 objectclass: organizationalUnit
 ou: People
 
+dn: ou=Roles,o=example5,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: Roles
+
+dn: ou=RefUser,ou=People,o=example5,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefUser
+ref: ldap://${hostname}:${ldapPort2}/ou=People,o=example5,dc=jboss,dc=org
+
 dn: uid=jduke,ou=People,o=example5,dc=jboss,dc=org
 objectClass: top
 objectClass: uidObject
@@ -338,3 +364,9 @@ sn: Duke
 uid: jduke
 userPassword: theduke
 
+dn: ou=RefRoles,ou=Roles,o=example5,dc=jboss,dc=org
+objectClass: extensibleObject
+objectClass: referral
+objectClass: top
+ou: RefRoles
+ref: ldap://${hostname}:${ldapPort2}/ou=SharedRoles,dc=jboss,dc=com
