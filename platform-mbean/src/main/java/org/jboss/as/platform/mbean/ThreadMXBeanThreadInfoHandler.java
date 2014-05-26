@@ -49,6 +49,7 @@ public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler {
             .setReplyParameters(CommonAttributes.THREAD_INFO_ATTRIBUTES)
             .setReadOnly()
             .setRuntimeOnly()
+            .allowReturnNull()
             .build();
 
 
