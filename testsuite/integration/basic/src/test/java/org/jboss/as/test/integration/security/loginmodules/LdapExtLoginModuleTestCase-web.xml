@@ -38,6 +38,6 @@
   <security-role><role-name>User</role-name></security-role>
   <security-role><role-name>Admin</role-name></security-role>
   <security-role><role-name>SharedRoles</role-name></security-role>
-  <security-role><role-name>RX</role-name></security-role>
+  <security-role><role-name>ebrown-1</role-name></security-role>
   
 </web-app>

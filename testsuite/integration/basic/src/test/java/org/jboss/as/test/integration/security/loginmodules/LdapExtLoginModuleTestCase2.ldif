@@ -19,6 +19,8 @@ cn: Admin
 member: uid=jduke,ou=People,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example3,dc=jboss,dc=org
 member: uid=jduke,ou=People,o=example4,dc=jboss,dc=org
+member: uid=mmcfly,ou=People,dc=jboss,dc=org
+member: uid=btannen,ou=People,o=example3,dc=jboss,dc=org
 
 # If the Example2 has referral follow, then this would be used to map the User role for jduke
 dn: cn=RX,ou=SharedRoles,dc=jboss,dc=com
@@ -27,3 +29,70 @@ objectClass: groupOfNames
 cn: RX
 description: cn=User,ou=SharedRoles,dc=jboss,dc=com
 member: uid=jduke,ou=People,o=example2,dc=jboss,dc=org
+member: uid=ebrown,ou=People,o=example5,dc=jboss,dc=org
+member: uid=btannen,ou=People,o=example3,dc=jboss,dc=org
+
+dn: cn=Science,ou=SharedRoles,dc=jboss,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: Science
+description: cn=User,ou=SharedRoles,dc=jboss,dc=com
+member: uid=ebrown,ou=People,o=example5,dc=jboss,dc=org
+
+dn: ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: o=example3,dc=jboss,dc=org
+objectclass: top
+objectclass: organization
+o: example3
+
+dn: ou=People,o=example3,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: o=example5,dc=jboss,dc=org
+objectclass: top
+objectclass: organization
+o: example3
+
+dn: ou=People,o=example5,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: uid=mmcfly,ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+objectClass: inetOrgPerson
+uid: mmcfly
+employeeNumber: mmcfly-1
+cn: Marty McFly
+sn: McFly
+userPassword: sugarless
+
+dn: uid=btannen,ou=People,o=example3,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+objectClass: inetOrgPerson
+uid: btannen
+employeeNumber: btannen-1
+cn: Biff Tannen
+sn: Tannen
+userPassword: almanac
+
+dn: uid=ebrown,ou=People,o=example5,dc=jboss,dc=org
+objectclass: top
+objectclass: uidObject
+objectclass: person
+objectClass: inetOrgPerson
+uid: ebrown
+employeeNumber: ebrown-1
+cn: Emmett Brown
+sn: Brown
+userPassword: atomic
