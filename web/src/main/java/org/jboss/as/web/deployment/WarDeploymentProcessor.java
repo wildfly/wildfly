@@ -189,7 +189,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader());
 
-        if(warMetaData.getJBossWebMetaData().isEnableWebSockets()) {
+        if(warMetaData.getJBossWebMetaData() != null && warMetaData.getJBossWebMetaData().isEnableWebSockets()) {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if(description != null && description.getClassIntrospector() != null) {
                 ClassIntrospecter ci = new WebsocketIntrospector(description.getClassIntrospector());
