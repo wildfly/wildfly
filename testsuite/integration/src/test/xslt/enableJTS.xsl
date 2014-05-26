@@ -6,10 +6,10 @@
         by adding the JTS attribute to the transactions subsystem,
         and turning on transaction propagation in the JacORB subsystem.
     -->
-    
+
     <xsl:variable name="transactions" select="'urn:jboss:domain:transactions:'"/>
     <xsl:variable name="jacorb" select="'urn:jboss:domain:jacorb:'"/>
-    
+
     <!-- traverse the whole tree, so that all elements and attributes are eventually current node -->
     <xsl:template match="node()|@*">
         <xsl:copy>
@@ -22,7 +22,10 @@
         <xsl:copy>
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
             <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>
-            <initializers transactions="on" security="client"/>
+            <xsl:element name="initializers" namespace="{namespace-uri()}">
+                <xsl:attribute name="transactions">on</xsl:attribute>
+                <xsl:attribute name="security">client</xsl:attribute>
+            </xsl:element>
         </xsl:copy>
     </xsl:template>
 
@@ -32,7 +35,7 @@
             					 /*[local-name()='jts'])">
                 <xsl:copy>
                     <xsl:apply-templates select="node()|@*"/>
-                    <jts/>
+                    <xsl:element name="jts" namespace="{namespace-uri()}"/>
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
@@ -42,5 +45,5 @@
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    
+
 </xsl:stylesheet>

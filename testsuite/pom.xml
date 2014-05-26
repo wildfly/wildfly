@@ -416,6 +416,13 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                        <version>2.7.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <!--
@@ -498,6 +505,11 @@
                         <artifactId>ant-junit</artifactId>
                         <version>1.6.5</version>
                     </dependency>
+                    <dependency>
+                        <groupId>xalan</groupId>
+                        <artifactId>xalan</artifactId>
+                        <version>2.7.1</version>
+                    </dependency>
                 </dependencies>
             </plugin>
 
@@ -548,7 +560,7 @@
                 <module>domain</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>mixed-domain.module.profile</id>
             <activation><property><name>jboss.test.mixed.domain.dir</name></property></activation>

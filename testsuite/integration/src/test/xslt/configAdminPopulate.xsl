@@ -31,10 +31,17 @@
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $configadmin)]" >
         <xsl:copy>
             <xsl:apply-templates select="@* | *"/>
-            <configuration pid="a.test.pid">
-            	<property name="testkey" value="test value"/>
-            	<property name="test.key.2" value="nothing"/>
-            </configuration>
+            <xsl:element name="configuration" namespace="{namespace-uri()}">
+                <xsl:attribute name="pid">a.test.pid</xsl:attribute>
+                <xsl:element name="property" namespace="{namespace-uri()}">
+                    <xsl:attribute name="name">testkey</xsl:attribute>
+                    <xsl:attribute name="value">test value</xsl:attribute>
+                </xsl:element>
+                <xsl:element name="property" namespace="{namespace-uri()}">
+                    <xsl:attribute name="name">test.key.2</xsl:attribute>
+                    <xsl:attribute name="value">nothing</xsl:attribute>
+                </xsl:element>
+            </xsl:element>
         </xsl:copy>
     </xsl:template>
 

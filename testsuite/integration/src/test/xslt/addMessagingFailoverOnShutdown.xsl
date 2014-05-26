@@ -4,11 +4,11 @@
     <xsl:variable name="nsInf" select="'urn:jboss:domain:messaging:'"/>
 
 	<xsl:output method="xml" indent="yes"/>
-	
+
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
      					  /*[local-name()='hornetq-server' ]">
         <xsl:copy>
-			<failover-on-shutdown>true</failover-on-shutdown>
+            <xsl:element name="failover-on-shutdown" namespace="{namespace-uri()}">true</xsl:element>
             <xsl:apply-templates select="node()"/>
         </xsl:copy>
     </xsl:template>
@@ -19,5 +19,5 @@
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
-    
+
 </xsl:stylesheet>
