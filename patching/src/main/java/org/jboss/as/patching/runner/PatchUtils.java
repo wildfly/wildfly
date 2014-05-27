@@ -45,12 +45,16 @@ import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.PatchableTarget;
 
 /**
  * @author Emanuel Muckenhuber
  */
 public final class PatchUtils {
+
+    public static final String JAR_EXT = ".jar";
+    public static final String BACKUP_EXT = ".jar.patched";
 
     public static String readRef(final Properties properties, final String name) {
         final String ref = (String) properties.get(name);
@@ -147,8 +151,12 @@ public final class PatchUtils {
     }
 
     public static void writeRefs(final File file, final List<String> refs) throws IOException {
+        writeRefs(file, refs, false);
+    }
+
+    public static void writeRefs(final File file, final List<String> refs,final boolean append) throws IOException {
         mkdir(file.getParentFile());
-        final OutputStream os = new FileOutputStream(file);
+        final OutputStream os = new FileOutputStream(file, append);
         try {
             writeRefs(os, refs);
             os.flush();
@@ -221,7 +229,7 @@ public final class PatchUtils {
     public static void writeProperties(final File file, final Properties properties) throws IOException {
         final OutputStream os = new FileOutputStream(file);
         try {
-            final Writer writer = new OutputStreamWriter(os, "UTF-8");
+            final Writer writer = new OutputStreamWriter(os, IoUtils.UTF_8);
             properties.store(writer, "read only");
             writer.close();
         } finally {
@@ -235,12 +243,22 @@ public final class PatchUtils {
         }
         Reader reader = null;
         try {
-            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            reader = new InputStreamReader(new FileInputStream(file), IoUtils.UTF_8);
             final Properties props = new Properties();
             props.load(reader);
             return props;
         } finally {
             safeClose(reader);
         }
+    }
+
+    public static File getRenamedFileName(final File file) {
+        String fileName = file.getName();
+        if (fileName.endsWith(BACKUP_EXT)) {
+            return new File(file.getParentFile(), fileName.substring(0, fileName.length() - BACKUP_EXT.length()) + JAR_EXT);
+        } else if (fileName.endsWith(JAR_EXT)) {
+            return new File(file.getParentFile(), fileName.substring(0, fileName.length() - JAR_EXT.length()) + BACKUP_EXT);
+        }
+        return file;
     }
 }

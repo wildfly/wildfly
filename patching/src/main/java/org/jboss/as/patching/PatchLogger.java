@@ -59,4 +59,13 @@ public interface PatchLogger extends BasicLogger {
     @Message(id =16802, value = "failed to undo change for: '%s'")
     void failedToUndoChange(final String name);
 
+    @LogMessage(level = WARN)
+    @Message(id = 16803, value = "Cannot rename file %s")
+    void cannotRenameFile(String name);
+
+    @Message(id = 16804, value = "Cannot process backup by renaming file %s")
+    IllegalStateException cannotRenameFileDuringBackup(String name);
+
+    @Message(id = 16805, value = "Cannot process restore by renaming file %s")
+    IllegalStateException cannotRenameFileDuringRestore(String name);
 }

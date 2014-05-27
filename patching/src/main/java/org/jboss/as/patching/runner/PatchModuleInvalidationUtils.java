@@ -32,6 +32,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
 import org.jboss.as.patching.PatchLogger;
+import static org.jboss.as.patching.runner.PatchUtils.BACKUP_EXT;
+import static org.jboss.as.patching.runner.PatchUtils.JAR_EXT;
 
 /**
  * Cripple a JAR or other zip file by flipping a bit in the end of central directory record
@@ -141,11 +143,13 @@ class PatchModuleInvalidationUtils {
      * @param mode the patching mode
      * @throws IOException
      */
-    static void processFile(final File file, final PatchingTaskContext.Mode mode) throws IOException {
+    static void processFile(final IdentityPatchContext context, final File file, final PatchingTaskContext.Mode mode) throws IOException {
         if (mode == PatchingTaskContext.Mode.APPLY) {
             updateJar(file, GOOD_ENDSIG_PATTERN, GOOD_END_BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
+            backup(context, file);
         } else if (mode == PatchingTaskContext.Mode.ROLLBACK) {
             updateJar(file, CRIPPLED_ENDSIG_PATTERN, CRIPPLED_BAD_BYTE_SKIP, GOOD_ENDSIG, CRIPPLED_ENDSIG);
+            restore(context, file);
         } else {
             throw new IllegalStateException();
         }
@@ -189,6 +193,34 @@ class PatchModuleInvalidationUtils {
             }
         } finally {
             safeClose(raf);
+        }
+    }
+
+    private static void backup(final IdentityPatchContext context, final File file) {
+        String fileName = file.getName();
+        if (fileName.endsWith(JAR_EXT)) {
+            File targetFile = PatchUtils.getRenamedFileName(file);
+            if (!file.renameTo(targetFile)) {
+                if (context != null) {
+                    context.failedToRenameFile(file, targetFile);
+                } else {
+                    throw PatchLogger.ROOT_LOGGER.cannotRenameFileDuringBackup(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+
+    private static void restore(final IdentityPatchContext context, final File file) {
+        String fileName = file.getName();
+        if (fileName.endsWith(BACKUP_EXT)) {
+            File targetFile = PatchUtils.getRenamedFileName(file);
+            if (!file.renameTo(targetFile)) {
+                if (context != null) {
+                    context.failedToRenameFile(file, targetFile);
+                } else {
+                    throw PatchLogger.ROOT_LOGGER.cannotRenameFileDuringRestore(file.getAbsolutePath());
+                }
+            }
         }
     }
 
