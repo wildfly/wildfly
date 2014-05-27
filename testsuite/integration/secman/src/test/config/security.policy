@@ -68,6 +68,101 @@ grant codeBase "vfs:/content/read-file-grant.war/-" {
 };
 
 // ****************************************************************************
+// EarSubdeploymentsPropertyPermissionReadTestCase
+// ****************************************************************************
+// Grant read PropertyPermission for all properties to test application
+grant codeBase "vfs:/content/ear-subdeployments-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to servlets and ejb in test application
+grant codeBase "vfs:/content/ear-subdeployments-read-props-limited.ear/ear-subdeployments-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+grant codeBase "vfs:/content/ear-subdeployments-read-props-limited.ear/ear-subdeployments-ejb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant the permission to codebase, where will not fit exact match (i.e. no WEB-INF/classes)
+// So the permission should not be assigned to the test-servlet. 
+grant codeBase "vfs:/content/ear-subdeployments-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// ****************************************************************************
+// EarLibPropertyPermissionReadTestCase
+// ****************************************************************************
+// Grant read PropertyPermission for all properties to test application
+grant codeBase "vfs:/content/ear-lib-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to servlets in test application
+grant codeBase "vfs:/content/ear-lib-read-props-limited.ear/ear-lib-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant "java.home" read to classes in lib
+grant codeBase "vfs:/content/ear-lib-read-props-limited.ear/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant the permission to codebase, where will not fit exact match (i.e. no WEB-INF/classes)
+// So the permission should not be assigned to the test-servlet. 
+grant codeBase "vfs:/content/ear-lib-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// ****************************************************************************
+// WarLibPropertyPermissionReadTestCase
+// ****************************************************************************
+// Grant read PropertyPermission for all properties to test application
+grant codeBase "vfs:/content/war-lib-read-props-grant.war/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to servlets in test application
+grant codeBase "vfs:/content/war-lib-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant "java.home" read to classes in lib
+grant codeBase "vfs:/content/war-lib-read-props-limited.war/WEB-INF/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant the permission to codebase, where will not fit exact match (i.e. no WEB-INF/classes)
+// So the permission should not be assigned to the test-servlet. 
+grant codeBase "vfs:/content/war-lib-read-props-deny.war" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// ****************************************************************************
+// EarLibInWarPropertyPermissionReadTestCase
+// ****************************************************************************
+// Grant read PropertyPermission for all properties to test application
+grant codeBase "vfs:/content/ear-lib-in-war-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to servlets in test application
+grant codeBase "vfs:/content/ear-lib-in-war-read-props-limited.ear/ear-lib-in-war-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant "java.home" read to classes in lib
+grant codeBase "vfs:/content/ear-lib-in-war-read-props-limited.ear/ear-lib-in-war-web-read-props-limited.war/WEB-INF/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant the permission to codebase, where will not fit exact match (i.e. no WEB-INF/classes)
+// So the permission should not be assigned to the test-servlet. 
+grant codeBase "vfs:/content/ear-lib-in-war-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// ****************************************************************************
 // HACKS - remove this grant once the bugs are fixed
 // ****************************************************************************
 
@@ -77,7 +172,7 @@ grant {
 };
 
 // https://bugzilla.redhat.com/show_bug.cgi?id=1075083
-// Workaround for JSP permissions in PropertyPermissionReadTestCase
+// Workaround for JSP permissions in PropertyPermissionReadTestCase and in EarSubdeploymentsPropertyPermissionReadTestCase
 grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/read-props-grant/" {
   permission java.util.PropertyPermission "*", "read";
 };
@@ -85,6 +180,15 @@ grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-hos
 grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/read-props-deny" {
   permission java.util.PropertyPermission "java.home", "read";
 };
+
+grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/ear-subdeployments-web-read-props-grant/" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/ear-subdeployments-web-read-props-deny" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
 
 // Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1082518 - Incorrect VFS URLs in codebase of deployed applications on windows
 grant codeBase "vfs:/${user.dir}/content/xxx.war/-" {
@@ -121,6 +225,55 @@ grant codeBase "vfs:/${user.dir}/content/ejb-read-props-deny.jar" {
 grant codeBase "vfs:/${user.dir}/content/read-file-grant.war/-" {
   permission java.io.FilePermission "${java.io.tmpdir}/-", "read";
 };
+grant codeBase "vfs:/${user.dir}/content/ear-subdeployments-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-subdeployments-read-props-limited.ear/ear-subdeployments-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-subdeployments-read-props-limited.ear/ear-subdeployments-ejb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-subdeployments-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-read-props-limited.ear/ear-lib-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-read-props-limited.ear/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/war-lib-read-props-grant.war/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/war-lib-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/war-lib-read-props-limited.war/WEB-INF/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/war-lib-read-props-deny.war" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-in-war-read-props-grant.ear/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-in-war-read-props-limited.ear/ear-lib-in-war-web-read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-in-war-read-props-limited.ear/ear-lib-in-war-web-read-props-limited.war/WEB-INF/lib/-" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ear-lib-in-war-read-props-deny.ear" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
 
 // ****************************************************************************
 // AS + Arquillian related grants 
