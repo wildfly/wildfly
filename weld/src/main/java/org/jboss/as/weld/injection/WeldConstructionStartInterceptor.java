@@ -9,7 +9,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.weld.construction.api.AroundConstructCallback;
 import org.jboss.weld.construction.api.ConstructionHandle;
-import org.jboss.weld.context.CreationalContextImpl;
+import org.jboss.weld.construction.api.WeldCreationalContext;
 
 /**
  * Initiates component construction. This interceptor delegates to Weld to start component construction. When Weld resolves the values of constructor
@@ -39,7 +39,7 @@ public class WeldConstructionStartInterceptor implements Interceptor {
     }
 
     private <T> void setupAroundConstructCallback(CreationalContext<T> ctx, final InterceptorContext context) {
-        CreationalContextImpl<T> ctxImpl = (CreationalContextImpl<T>) ctx;
+        WeldCreationalContext<T> ctxImpl = (WeldCreationalContext<T>) ctx;
         ctxImpl.setConstructorInterceptionSuppressed(true); // Weld will not try to invoke around construct interceptors on this instance
 
         ctxImpl.registerAroundConstructCallback(new AroundConstructCallback<T>() {
