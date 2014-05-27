@@ -245,7 +245,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 processState, executorService, expressionResolver, authorizer, auditLogger);
 
         // Initialize the model
-        initModel(controller.getRootResource(), controller.getRootRegistration());
+        initModel(controller.getRootResource(), controller.getRootRegistration(), controller.getModelControllerResource());
         this.controller = controller;
 
         final long bootStackSize = getBootStackSize();
@@ -396,7 +396,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         //
     }
 
-    protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
+    protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource);
 
     protected ManagedAuditLogger getAuditLogger() {
         return auditLogger;

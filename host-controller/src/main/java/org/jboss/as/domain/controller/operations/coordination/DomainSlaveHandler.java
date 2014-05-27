@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.CurrentOperationIdHolder;
@@ -150,7 +153,8 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 interrupted = true;
                 // Set rollback only
                 domainOperationContext.setFailureReported(true);
-                // Rollback all HCs
+                // Cancel all HCs
+                HOST_CONTROLLER_LOGGER.interruptedAwaitingHostPreparedResponse(finalResults.keySet());
                 for(final HostControllerUpdateTask.ExecutedHostRequest finalResult : finalResults.values()) {
                     finalResult.asyncCancel();
                 }
@@ -176,11 +180,13 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 }
             }
 
-            final boolean interruptThread = interrupted;
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
             context.completeStep(new OperationContext.ResultHandler() {
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-                    finalizeOp(results, finalResults, interruptThread, context);
+                    finalizeOp(results, finalResults, false, context);
                 }
             });
 
@@ -196,12 +202,16 @@ public class DomainSlaveHandler implements OperationStepHandler {
     private void finalizeOp(final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results,
                             final Map<String, HostControllerUpdateTask.ExecutedHostRequest> finalResults,
                             final boolean interrupted, final OperationContext context) {
-        boolean interruptThread = interrupted;
+        boolean interruptThread = Thread.interrupted() || interrupted;
         try {
             // Inform the remote hosts whether to commit or roll back their updates
             // Do this in parallel
             boolean rollback = domainOperationContext.isCompleteRollback();
             for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
+
+                // Clear any thread interrupted status so we know the commit/rollback message will go out
+                interruptThread = Thread.interrupted() || interruptThread;
+
                 if(prepared.isDone()) {
                     continue;
                 }
@@ -212,22 +222,31 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 }
             }
             // Now get the final results from the hosts
+            boolean patient = !interruptThread;
             for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
                 final String hostName = prepared.getOperation().getName();
+                final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
+                final Future<ModelNode> future = prepared.getFinalResult();
                 try {
-                    final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
-                    final ModelNode finalResult = prepared.getFinalResult().get();
+                    final ModelNode finalResult = patient ? future.get(): future.get(0, TimeUnit.MILLISECONDS);
                     final ModelNode transformedResult = request.transformResult(finalResult);
                     domainOperationContext.addHostControllerResult(hostName, transformedResult);
 
-                    if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                        HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", hostName, finalResult);
-                    }
+                    HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", hostName, finalResult);
+
                 } catch (InterruptedException e) {
                     interruptThread = true;
+                    future.cancel(true);
+                    // We suppressed an interrupt, so don't block indefinitely waiting for other responses;
+                    // just grab them if they are already available
+                    patient = false;
                     CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(hostName);
                 } catch (ExecutionException e) {
                     CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), hostName);
+                } catch (TimeoutException e) {
+                    // This only happens if we were interrupted previously, so treat it that way
+                    future.cancel(true);
+                    CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(hostName);
                 }
             }
 

@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -201,8 +202,8 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
     private void setExpressions(PathAddress address, String hostName, Map<PathAddress, Map<String, ModelNode>> expectedValues) throws IOException, MgmtOperationException {
 
         ModelNode description = readResourceDescription(address);
-        ModelNode resource = readResource(address, true);
-        ModelNode resourceNoDefaults = readResource(address, false);
+        ModelNode resource = readResource(address, true, false);
+        ModelNode resourceNoDefaults = readResource(address, false, false);
 
         Map<String, ModelNode> expressionAttrs = new HashMap<String, ModelNode>();
         Map<String, ModelNode> otherAttrs = new HashMap<String, ModelNode>();
@@ -220,7 +221,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         if (expectedAttrs.size() > 0 && immediateValidation) {
             // Validate that our write-attribute calls resulted in the expected values in the model
-            ModelNode modifiedResource = readResource(address, true);
+            ModelNode modifiedResource = readResource(address, true, true);
             for (Map.Entry<String, ModelNode> entry : expectedAttrs.entrySet()) {
                 ModelNode expectedValue = entry.getValue();
                 ModelNode modVal = modifiedResource.get(entry.getKey());
@@ -619,11 +620,18 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
     }
 
-    private ModelNode readResource(PathAddress address, boolean defaults) throws IOException, MgmtOperationException {
+    private ModelNode readResource(PathAddress address, boolean defaults, boolean failIfMissing) throws IOException, MgmtOperationException {
 
-        ModelNode op = createOperation(READ_RESOURCE_OPERATION, address);
-        op.get(INCLUDE_DEFAULTS).set(defaults);
-        return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
+        try {
+            ModelNode op = createOperation(READ_RESOURCE_OPERATION, address);
+            op.get(INCLUDE_DEFAULTS).set(defaults);
+            return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
+        } catch (MgmtOperationException e) {
+            if (failIfMissing) {
+                throw e;
+            }
+            return new ModelNode();
+        }
     }
 
     private void checkForUnconvertedExpression(PathAddress address, String attrName, ModelNode attrValue) {
@@ -660,7 +668,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         Map<String, ModelNode> expectedModel = expectedValues.get(address);
         if (expectedModel != null && isValidatable(address)) {
-            ModelNode resource = readResource(address, true);
+            ModelNode resource = readResource(address, true, true);
             for (Map.Entry<String, ModelNode> entry : expectedModel.entrySet()) {
                 String attrName = entry.getKey();
                 ModelNode expectedValue = entry.getValue();

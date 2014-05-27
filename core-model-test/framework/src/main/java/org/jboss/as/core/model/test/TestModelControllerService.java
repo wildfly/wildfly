@@ -156,17 +156,17 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     @Override
-    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
         //See server HttpManagementAddHandler
         System.setProperty("jboss.as.test.disable.runtime", "1");
         if (type == TestModelType.STANDALONE) {
-            initializer.initCoreModel(rootResource, rootRegistration);
+            initializer.initCoreModel(rootResource, rootRegistration, modelControllerResource);
 
         } else if (type == TestModelType.HOST){
-            initializer.initCoreModel(rootResource, rootRegistration);
+            initializer.initCoreModel(rootResource, rootRegistration, modelControllerResource);
 
         } else if (type == TestModelType.DOMAIN){
-            initializer.initCoreModel(rootResource, rootRegistration);
+            initializer.initCoreModel(rootResource, rootRegistration, modelControllerResource);
         }
         if (modelInitializer != null) {
             modelInitializer.populateModel(rootResource);
@@ -392,7 +392,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     private interface Initializer {
         void setRootResourceDefinitionDelegate();
-        void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
+        void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource);
     }
 
     private class ServerInitializer implements Initializer {
@@ -417,7 +417,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
 
         @Override
-        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             VersionModelInitializer.registerRootResource(rootResource, null);
             Resource managementResource = Resource.Factory.create();
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), managementResource);
@@ -462,7 +462,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
 
         @Override
-        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             HostModelUtil.createRootRegistry(
                     rootRegistration,
                     env,
@@ -471,7 +471,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
                         }
-                    },ProcessType.HOST_CONTROLLER, authorizer);
+                    },ProcessType.HOST_CONTROLLER, authorizer, modelControllerResource);
 
             HostModelUtil.createHostRegistry(
                     hostName,
@@ -502,7 +502,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
 
         @Override
-        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             VersionModelInitializer.registerRootResource(rootResource, null);
             final HostControllerEnvironment env = createHostControllerEnvironment();
             final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
@@ -524,7 +524,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration root) {
                         }
-                    },processType, authorizer);
+                    },processType, authorizer, modelControllerResource);
 
             CoreManagementResourceDefinition.registerDomainResource(rootResource, null);
 

@@ -211,7 +211,7 @@ class HostControllerUpdateTask {
         }
 
         public void asyncCancel() {
-            futureResult.asyncCancel(false);
+            futureResult.asyncCancel(true);
         }
     }
 

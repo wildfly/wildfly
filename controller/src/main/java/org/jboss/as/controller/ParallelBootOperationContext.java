@@ -190,7 +190,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     public void acquireControllerLock() {
         if(lockStep == null) {
             try {
-                controller.acquireLock(operationId, true, this);
+                controller.acquireLock(operationId, true);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
@@ -290,7 +290,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
-    void awaitModelControllerContainerMonitor() throws InterruptedException {
+    void awaitServiceContainerStability() throws InterruptedException {
         // ignored
     }
 

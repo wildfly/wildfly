@@ -279,7 +279,7 @@ class HostControllerConnection extends FutureManagementChannel {
                         resultHandler.done(Boolean.FALSE);
                     }
                 }
-            });
+            }, false);
         }
 
     }
@@ -322,6 +322,7 @@ class HostControllerConnection extends FutureManagementChannel {
 
         @Override
         public ProtocolConnectionManager.ConnectTask connectionClosed() {
+            ServerLogger.AS_ROOT_LOGGER.debugf("Connection to Host Controller closed");
             return this;
         }
 
