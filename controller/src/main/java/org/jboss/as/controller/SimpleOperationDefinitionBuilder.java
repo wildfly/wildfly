@@ -110,7 +110,7 @@ public class SimpleOperationDefinitionBuilder {
         return withFlag(OperationEntry.Flag.READ_ONLY);
     }
 
-    public SimpleOperationDefinitionBuilder setParameters(AttributeDefinition... parameters) {
+    public SimpleOperationDefinitionBuilder setParameters(AttributeDefinition... parameters) {//todo add validation for same param name
         this.parameters = parameters;
         return this;
     }
