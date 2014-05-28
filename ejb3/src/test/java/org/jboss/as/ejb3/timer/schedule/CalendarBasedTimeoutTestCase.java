@@ -100,13 +100,13 @@ public class CalendarBasedTimeoutTestCase {
         expression.second("50");
         expression.start(start);
         CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(expression);
-        Calendar nextTimeout = calendarTimeout.getNextTimeout();
-        Assert.assertNotNull(nextTimeout);
-        Assert.assertEquals(50, nextTimeout.get(Calendar.SECOND));
-        Assert.assertEquals(21, nextTimeout.get(Calendar.MINUTE));
-        Assert.assertEquals(3, nextTimeout.get(Calendar.HOUR_OF_DAY));
-        Assert.assertEquals(7, nextTimeout.get(Calendar.DAY_OF_WEEK));
-        Assert.assertEquals(29, nextTimeout.get(Calendar.DAY_OF_MONTH));
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+        Assert.assertNotNull(firstTimeout);
+        Assert.assertEquals(50, firstTimeout.get(Calendar.SECOND));
+        Assert.assertEquals(21, firstTimeout.get(Calendar.MINUTE));
+        Assert.assertEquals(3, firstTimeout.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(7, firstTimeout.get(Calendar.DAY_OF_WEEK));
+        Assert.assertEquals(29, firstTimeout.get(Calendar.DAY_OF_MONTH));
     }
 
 
@@ -587,7 +587,11 @@ public class CalendarBasedTimeoutTestCase {
     }
 
     private ScheduleExpression getTimezoneSpecificScheduleExpression() {
-        return new ScheduleExpression().timezone(this.timezone.getID());
+        ScheduleExpression scheduleExpression = new ScheduleExpression().timezone(this.timezone.getID());
+        GregorianCalendar start = new GregorianCalendar(this.timezone);
+        start.clear();
+        start.set(2014,0,1,1,0,0);
+        return scheduleExpression.start(start.getTime());
     }
 
     private boolean isLeapYear(Calendar cal) {
