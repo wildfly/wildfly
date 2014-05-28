@@ -36,6 +36,7 @@ public class ModelDescriptionConstants {
     public static final String ACCESS_MECHANISM = "access-mechanism";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
+    public static final String ACTIVE_OPERATION = "active-operation";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ADMIN_ONLY = "admin-only";
@@ -67,8 +68,10 @@ public class ModelDescriptionConstants {
     public static final String BASE_DN = "base-dn";
     public static final String BASE_ROLE = "base-role";
     public static final String BLOCKING = "blocking";
+    public static final String BLOCKING_TIMEOUT = "blocking-timeout";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
+    public static final String CALLER_THREAD = "caller-thread";
     public static final String CALLER_TYPE = "caller-type";
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
@@ -131,7 +134,9 @@ public class ModelDescriptionConstants {
     public static final String EXCLUDE = "exclude";
     public static final String ESCAPE_CONTROL_CHARACTERS = "escape-control-characters";
     public static final String ESCAPE_NEW_LINE = "escape-new-line";
+    public static final String EXCLUSIVE_RUNNING_TIME = "exclusive-running-time";
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
+    public static final String EXECUTION_STATUS = "execution-status";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
@@ -201,13 +206,14 @@ public class ModelDescriptionConstants {
     public static final String LOGGER = "logger";
     public static final String LOG_BOOT = "log-boot";
     public static final String LOG_READ_ONLY = "log-read-only";
-    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MANAGEMENT = "management";
     public static final String MANAGEMENT_CLIENT_CONTENT = "management-client-content";
     public static final String MANAGEMENT_INTERFACE = "management-interface";
     public static final String MANAGEMENT_MAJOR_VERSION = "management-major-version";
     public static final String MANAGEMENT_MINOR_VERSION = "management-minor-version";
     public static final String MANAGEMENT_MICRO_VERSION = "management-micro-version";
+    public static final String MANAGEMENT_OPERATIONS = "management-operations";
+    public static final String MANAGEMENT_SUBSYSTEM_ENDPOINT = "management-subsystem-endpoint";
     public static final String MAP_GROUPS_TO_ROLES = "map-groups-to-roles";
     public static final String MASK = "mask";
     public static final String MASTER = "master";
@@ -317,6 +323,7 @@ public class ModelDescriptionConstants {
     public static final String ROLE_MAPPING = "role-mapping";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
+    public static final String ROLLBACK_ONLY = "rollback-only";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLED_BACK = "rolled-back";
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
@@ -325,6 +332,7 @@ public class ModelDescriptionConstants {
     public static final String ROLES_FILTER = "roles-filter";
     public static final String RUNNING_MODE = "running-mode";
     public static final String RUNNING_SERVER = "server";
+    public static final String RUNNING_TIME = "running-time";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNTIME_ONLY = "runtime-only";
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
@@ -348,6 +356,7 @@ public class ModelDescriptionConstants {
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";
+    public static final String SERVICE = "service";
     public static final String SERVICE_CONTAINER = "service-container";
     public static final String SINCE = "since";
     public static final String SOURCE_NETWORK = "source-network";

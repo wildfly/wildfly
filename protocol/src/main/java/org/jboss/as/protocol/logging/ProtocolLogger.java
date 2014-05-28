@@ -23,6 +23,7 @@
 package org.jboss.as.protocol.logging;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
@@ -335,5 +336,13 @@ public interface ProtocolLogger extends BasicLogger {
      */
     @Message(id = 56, value = "No response handler for request %s")
     IOException responseHandlerNotFound(int id);
+
+    @LogMessage(level = INFO)
+    @Message(id = 57, value = "%s cancelled task by interrupting thread %s")
+    void cancelledAsyncTask(String asyncTaskRunner, Thread thread);
+
+    @LogMessage(level = INFO)
+    @Message(id = 58, value = "%s cancelled task before execution began")
+    void cancelledAsyncTaskBeforeRun(String asyncTaskRunner);
 
 }

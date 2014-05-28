@@ -22,9 +22,12 @@
 
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -40,7 +43,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import org.jboss.as.protocol.logging.ProtocolLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -74,13 +77,29 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
     @Override
     public ManagementRequestHandler<?, ?> resolveHandler(RequestHandlerChain handlers, ManagementRequestHeader request) {
         switch(request.getOperationId()) {
-            case ModelControllerProtocol.EXECUTE_TX_REQUEST:
+            case ModelControllerProtocol.EXECUTE_TX_REQUEST: {
                 // Initialize the request context
                 final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
-                executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext, executeRequestContext);
+                try {
+                    executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext, executeRequestContext);
+                } catch (IllegalStateException ise) {
+                    // WFLY-3381 Unusual case where the initial request lost a race with a COMPLETE_TX_REQUEST carrying a cancellation
+                    return new AbortOperationHandler(true);
+                }
                 return new ExecuteRequestHandler();
-            case ModelControllerProtocol.COMPLETE_TX_REQUEST:
+            }
+            case ModelControllerProtocol.COMPLETE_TX_REQUEST: {
+                final ExecuteRequestContext executeRequestContext = new ExecuteRequestContext();
+                try {
+                    executeRequestContext.operation = handlers.registerActiveOperation(request.getBatchId(), executeRequestContext, executeRequestContext);
+                    // WLFY-3381 Unusual case where the initial request must have lost a race with a COMPLETE_TX_REQUEST carrying a cancellation
+                    return new AbortOperationHandler(false);
+                } catch (IllegalStateException ise) {
+                    // Expected case -- not a normal commit/rollback or one where a COMPLETE_TX_REQUEST with a cancel
+                    // won a race with the initial request
+                }
                 return new CompleteTxOperationHandler();
+            }
         }
         return handlers.resolveNext();
     }
@@ -92,25 +111,15 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            final ModelNode operation = new ModelNode();
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
-            operation.readExternal(input);
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
-            final int attachmentsLength = input.readInt();
+            ControllerLogger.MGMT_OP_LOGGER.tracef("Handling transactional ExecuteRequest for %d", context.getOperationId());
 
-            final Subject subject;
-            final Boolean readSubject = channelAssociation.getAttachments().getAttachment(TransactionalProtocolClient.SEND_SUBJECT);
-            if (readSubject != null && readSubject) {
-                subject = readSubject(input);
-            } else {
-                subject = new Subject();
-            }
+            final ExecutableRequest executableRequest = ExecutableRequest.parse(input, channelAssociation);
 
             final PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
 
                 @Override
                 public Void run() {
-                    doExecute(operation, attachmentsLength, context);
+                    doExecute(executableRequest.operation, executableRequest.attachmentsLength, context);
                     return null;
                 }
             };
@@ -126,7 +135,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
                         @Override
                         public Void run() {
-                            AccessAuditContext.doAs(subject, action);
+                            AccessAuditContext.doAs(executableRequest.subject, action);
                             return null;
                         }
                     });
@@ -136,6 +145,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
         }
 
         protected void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<ExecuteRequestContext> context) {
+            ControllerLogger.MGMT_OP_LOGGER.tracef("Executing transactional ExecuteRequest for %d", context.getOperationId());
             final ExecuteRequestContext executeRequestContext = context.getAttachment();
             // Set the response information
             executeRequestContext.initialize(context);
@@ -148,6 +158,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 // Execute the operation
                 result = internalExecute(operation, context, messageHandlerProxy, control, attachmentsProxy);
             } catch (Exception e) {
+
                 final ModelNode failure = new ModelNode();
                 failure.get(OUTCOME).set(FAILED);
                 failure.get(FAILURE_DESCRIPTION).set(e.getClass().getName() + ":" + e.getMessage());
@@ -155,13 +166,43 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 attachmentsProxy.shutdown(e);
                 return;
             }
+
             if (result.hasDefined(FAILURE_DESCRIPTION)) {
                 control.operationFailed(result);
             } else {
-                // controller.execute() will block in OperationControl.prepared until the {@code PoxyController}
+                // controller.execute() will block in OperationControl.prepared until the {@code ProxyController}
                 // sent a CompleteTxRequest, which will either commit or rollback the operation
                 control.operationCompleted(result);
             }
+        }
+    }
+
+    private static class ExecutableRequest {
+        private final ModelNode operation;
+        private final int attachmentsLength;
+        private final Subject subject;
+
+        private ExecutableRequest(ModelNode operation, int attachmentsLength, Subject subject) {
+            this.operation = operation;
+            this.attachmentsLength = attachmentsLength;
+            this.subject = subject;
+        }
+
+        static ExecutableRequest parse(DataInput input, ManagementChannelAssociation channelAssociation) throws IOException {
+            final ModelNode operation = new ModelNode();
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
+            operation.readExternal(input);
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
+            final int attachmentsLength = input.readInt();
+
+            final Subject subject;
+            final Boolean readSubject = channelAssociation.getAttachments().getAttachment(TransactionalProtocolClient.SEND_SUBJECT);
+            if (readSubject != null && readSubject) {
+                subject = readSubject(input);
+            } else {
+                subject = new Subject();
+            }
+            return new ExecutableRequest(operation, attachmentsLength, subject);
         }
     }
 
@@ -199,6 +240,42 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
     }
 
+    private class AbortOperationHandler implements ManagementRequestHandler<Void, ExecuteRequestContext> {
+
+        private final boolean forExecuteTxRequest;
+
+        private AbortOperationHandler(boolean forExecuteTxRequest) {
+            this.forExecuteTxRequest = forExecuteTxRequest;
+        }
+
+        @Override
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+
+            if (forExecuteTxRequest) {
+                try {
+                    // Read and discard the input
+                    ExecutableRequest.parse(input, channelAssociation);
+                } finally {
+                    ControllerLogger.MGMT_OP_LOGGER.tracef("aborting (cancel received before request) for %d", context.getOperationId());
+                    ModelNode response = new ModelNode();
+                    response.get(OUTCOME).set(CANCELLED);
+                    context.getAttachment().failed(response);
+                }
+            } else {
+                // This was a COMPLETE_TX_REQUEST that came in before the original EXECUTE_TX_REQUEST
+                final byte commitOrRollback = input.readByte();
+                if (commitOrRollback == ModelControllerProtocol.PARAM_COMMIT) {
+                    // a cancel would not use PARAM_COMMIT; this was a request that didn't match any existing op
+                    // Likely the request was cancelled and removed but the commit message was in process
+                    throw ControllerLogger.MGMT_OP_LOGGER.responseHandlerNotFound(context.getOperationId());
+                }
+                // else this was a cancel request. Do nothing and wait for the initial operation request to come in
+                // and see the pre-existing ActiveOperation and then call this with forExecuteTxRequest=true
+            }
+        }
+
+    }
+
     static class ProxyOperationControlProxy implements ProxyController.ProxyOperationControl {
 
         private final ExecuteRequestContext requestContext;
@@ -224,6 +301,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 requestContext.txCompletedLatch.await();
             } catch (InterruptedException e) {
                 // requestContext.getResultHandler().failed(e);
+                ROOT_LOGGER.tracef("Clearing interrupted status from client request %d", requestContext.getOperationId());
                 Thread.currentThread().interrupt();
             }
         }
@@ -237,6 +315,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
         private ActiveOperation<Void, ExecuteRequestContext> operation;
         private ManagementRequestContext<ExecuteRequestContext> responseChannel;
         private final CountDownLatch txCompletedLatch = new CountDownLatch(1);
+        private boolean txCompleted;
         private PrivilegedAction<Void> action;
 
         Integer getOperationId() {
@@ -275,10 +354,11 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 final ModelNode response = new ModelNode();
                 response.get(OUTCOME).set(FAILED);
                 response.get(FAILURE_DESCRIPTION).set(message);
+                ControllerLogger.MGMT_OP_LOGGER.tracef("sending pre-prepare failed response for %d  --- interrupted: %s", getOperationId(), Thread.currentThread().isInterrupted());
                 try {
                     sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_FAILED, response);
                 } catch (IOException ignored) {
-                    ProtocolLogger.ROOT_LOGGER.debugf(ignored, "failed to process message");
+                    ControllerLogger.MGMT_OP_LOGGER.debugf(ignored, "failed to process message");
                 }
             }
         }
@@ -309,6 +389,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 assert !prepared;
                 assert activeTx == null;
                 assert responseChannel != null;
+                ControllerLogger.MGMT_OP_LOGGER.tracef("sending prepared response for %d  --- interrupted: %s", getOperationId(), Thread.currentThread().isInterrupted());
                 try {
                     // 2) send the operation-prepared notification (just clear response info)
                     sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_PREPARED, result);
@@ -323,29 +404,32 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
         }
 
         synchronized void completeTx(final ManagementRequestContext<ExecuteRequestContext> context, final boolean commit) {
-            if(!prepared) {
+            if (!prepared) {
                 assert !commit; // can only be rollback before it's prepared
+
+                ControllerLogger.MGMT_OP_LOGGER.tracef("completeTx (cancel unprepared) for %d", getOperationId());
                 rollbackOnPrepare = true;
-                // Hmm,  perhaps block remoting thread to cancel?
-                context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
-                    @Override
-                    public void execute(ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws Exception {
-                        operation.getResultHandler().cancel();
-                    }
-                });
+                cancel(context);
 
                 // TODO response !?
 
+            } else if (txCompleted) {
+                // A 2nd call means a cancellation from the remote side after the tx was committed/rolled back
+                // This would usually mean the completion of the request is hanging for some reason
+                assert !commit; // can only be rollback if this has already been called
+                ControllerLogger.MGMT_OP_LOGGER.tracef("completeTx (post-commit cancel) for %d", getOperationId());
+                cancel(context);
             } else {
-                assert prepared;
                 assert activeTx != null;
                 assert responseChannel == null;
                 responseChannel = context;
+                ControllerLogger.MGMT_OP_LOGGER.tracef("completeTx (%s) for %d", commit, getOperationId());
                 if (commit) {
                     activeTx.commit();
                 } else {
                     activeTx.rollback();
                 }
+                txCompleted = true;
                 txCompletedLatch.countDown();
             }
         }
@@ -356,11 +440,12 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 completed(response);
             } else {
                 assert responseChannel != null;
+                ControllerLogger.MGMT_OP_LOGGER.tracef("sending pre-prepare failed response for %d  --- interrupted: %s", getOperationId(), Thread.currentThread().isInterrupted());
                 try {
                     // 2) send the operation-failed message (done)
                     sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_FAILED, response);
                 } catch (IOException e) {
-                    ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+                    ControllerLogger.MGMT_OP_LOGGER.debugf(e, "failed to process message");
                 } finally {
                     getResultHandler().done(null);
                 }
@@ -370,14 +455,24 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
         synchronized void completed(final ModelNode response) {
             assert prepared;
             assert responseChannel != null;
+            ControllerLogger.MGMT_OP_LOGGER.tracef("sending completed response for %d  --- interrupted: %s", getOperationId(), Thread.currentThread().isInterrupted());
             try {
                 // 4) operation-completed (done)
                 sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_COMPLETED, response);
             } catch (IOException e) {
-                ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
+                ControllerLogger.MGMT_OP_LOGGER.debugf(e, "failed to process message");
             } finally {
                 getResultHandler().done(null);
             }
+        }
+
+        private void cancel(final ManagementRequestContext<ExecuteRequestContext> context) {
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> executeRequestContextManagementRequestContext) throws Exception {
+                    operation.getResultHandler().cancel();
+                }
+            }, false);
         }
 
     }
@@ -391,24 +486,50 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
      * @throws java.io.IOException for any error
      */
     static void sendResponse(final ManagementRequestContext<ExecuteRequestContext> context, final byte responseType, final ModelNode response) throws IOException {
-        final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
-        final FlushableDataOutput output = context.writeMessage(header);
-        try {
-            // response type
-            output.writeByte(responseType);
-            // operation result
-            response.writeExternal(output);
-            // response end
-            output.writeByte(ManagementProtocol.RESPONSE_END);
-            output.close();
-        } finally {
-            StreamUtils.safeClose(output);
-        }
 
+        // WFLY-3090 Protect the communication channel from getting closed due to administrative
+        // cancellation of the management op by using a separate thread to send
+        final CountDownLatch latch = new CountDownLatch(1);
+        final IOExceptionHolder exceptionHolder = new IOExceptionHolder();
+        context.executeAsync(new AsyncTask<TransactionalProtocolOperationHandler.ExecuteRequestContext>() {
+
+            @Override
+            public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
+                final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+                final FlushableDataOutput output = context.writeMessage(header);
+                try {
+                    // response type
+                    output.writeByte(responseType);
+                    // operation result
+                    response.writeExternal(output);
+                    // response end
+                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                    output.close();
+                } catch (IOException toCache) {
+                    exceptionHolder.exception = toCache;
+                } finally {
+                    StreamUtils.safeClose(output);
+                    latch.countDown();
+                }
+            }
+        }, false);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        if (exceptionHolder.exception != null) {
+            throw exceptionHolder.exception;
+        }
     }
 
     static Subject readSubject(final DataInput input) throws IOException {
         return SubjectProtocolUtil.read(input);
+    }
+
+    private static class IOExceptionHolder {
+        private IOException exception;
     }
 
 }

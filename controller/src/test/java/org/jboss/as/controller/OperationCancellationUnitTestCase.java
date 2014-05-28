@@ -25,6 +25,9 @@
  */
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTION_STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,7 +40,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -76,6 +81,7 @@ public class OperationCancellationUnitTestCase {
     private ServiceContainer container;
     private ModelController controller;
     private ModelControllerClient client;
+    private Resource managementControllerResource;
 
     public static void toggleRuntimeState(AtomicBoolean state) {
         boolean runtimeVal = false;
@@ -103,6 +109,8 @@ public class OperationCancellationUnitTestCase {
         controller.execute(setup, null, null, null);
 
         client = controller.createClient(executor);
+
+        managementControllerResource = svc.managementControllerResource;
     }
 
     @After
@@ -148,8 +156,10 @@ public class OperationCancellationUnitTestCase {
 
     public static class ModelControllerService extends TestModelControllerService {
 
+        private volatile Resource managementControllerResource;
+
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
@@ -162,19 +172,34 @@ public class OperationCancellationUnitTestCase {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
             rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
+
+            this.managementControllerResource = modelControllerResource;
         }
     }
 
     @Test
     public void testModelStageInterruption() throws Exception {
+        modelStageInterruptionTest(false);
+    }
+
+    @Test
+    public void testModelStageMgmtCancellation() throws Exception {
+        modelStageInterruptionTest(true);
+    }
+
+    private void modelStageInterruptionTest(boolean cancelViaResource) throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("block-model", "attr2", 1);
         Future<ModelNode> future = client.executeAsync(getCompositeOperation(null, step1, step2), null);
 
         latch.await();
 
-        // cancel should return false becase interrupting here will result in a RuntimeException in the block-model handler
-        assertFalse(future.cancel(true));
+        if (cancelViaResource) {
+            testCancelViaMmgtOpResource(COMPOSITE, OperationContext.ExecutionStatus.EXECUTING, future, false);
+        } else {
+            // cancel should return false becase interrupting here will result in a RuntimeException in the block-model handler
+            assertFalse(future.cancel(true));
+        }
 
         // Confirm model was unchanged
         ModelNode result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
@@ -183,16 +208,61 @@ public class OperationCancellationUnitTestCase {
 
     }
 
+    private void testCancelViaMmgtOpResource(String expectedOpName, OperationContext.ExecutionStatus expectedExecutionStatus, Future<ModelNode> future, boolean expectCancellationException) throws ExecutionException, InterruptedException {
+        boolean cancelled = false;
+        long timeout = System.currentTimeMillis() + 10000;
+        String matchedStatus = null;
+        OUT:
+        while (System.currentTimeMillis() < timeout) {
+            for (Resource resource : managementControllerResource.getChildren(ACTIVE_OPERATION)) {
+                if (resource.getModel().get(OP).asString().equals(expectedOpName)) {
+                    matchedStatus = resource.getModel().get(EXECUTION_STATUS).asString();
+                    if (expectedExecutionStatus.toString().equals(matchedStatus)) {
+                        cancelled = Cancellable.class.cast(resource).cancel();
+                        break OUT;
+                    }
+                    break;
+                }
+            }
+            if (matchedStatus != null) {
+                // The op thread may have tripped the latch but still hasn't
+                // gotten to the blocking code. So give it time
+                Thread.sleep(100);
+            }
+        }
+        assertEquals(expectedExecutionStatus.toString(), matchedStatus);
+        assertTrue(cancelled);
+        try {
+            future.get();
+            assertFalse(expectCancellationException);
+        } catch (CancellationException e) {
+            assertTrue(expectCancellationException);
+        }
+    }
+
     @Test
     public void testRuntimeStageInterruption() throws Exception {
+        runtimeStageInterruptionTest(false);
+    }
+
+    @Test
+    public void testRuntimeStageMgmtCancellation() throws Exception {
+        runtimeStageInterruptionTest(true);
+    }
+
+    private void runtimeStageInterruptionTest(boolean cancelViaResource) throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("block-runtime", "attr2", 1);
         Future<ModelNode> future = client.executeAsync(getCompositeOperation(null, step1, step2), null);
 
         latch.await();
 
-        // cancel should return false becase interrupting here will result in a RuntimeException in the block-runtime handler
-        assertFalse(future.cancel(true));
+        if (cancelViaResource) {
+            testCancelViaMmgtOpResource(COMPOSITE, OperationContext.ExecutionStatus.EXECUTING, future, false);
+        } else {
+            // cancel should return false becase interrupting here will result in a RuntimeException in the block-model handler
+            assertFalse(future.cancel(true));
+        }
 
         // Confirm model was unchanged
         ModelNode result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
@@ -203,6 +273,15 @@ public class OperationCancellationUnitTestCase {
 
     @Test
     public void testVerifyStageInterruption() throws Exception {
+        verifyStageInterruptionTest(false);
+    }
+
+    @Test
+    public void testVerifyStageMgmtCancellation() throws Exception {
+        verifyStageInterruptionTest(true);
+    }
+
+    private void verifyStageInterruptionTest(boolean cancelViaResource) throws Exception {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good-service", "attr1", 2);
         ModelNode step3 = getOperation("block-verify", "attr2", 1);
@@ -210,7 +289,11 @@ public class OperationCancellationUnitTestCase {
 
         latch.await();
 
-        assertTrue(future.cancel(true));
+        if (cancelViaResource) {
+            testCancelViaMmgtOpResource(COMPOSITE, OperationContext.ExecutionStatus.AWAITING_STABILITY, future, true);
+        } else {
+            assertTrue(future.cancel(true));
+        }
 
         // Confirm model was unchanged
         ModelNode result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
@@ -220,6 +303,15 @@ public class OperationCancellationUnitTestCase {
 
     @Test
     public void testReadResourceForUpdateInterruption() throws Exception {
+        readResourceForUpdateInterruptionTest(false);
+    }
+
+    @Test
+    public void testReadResourceForUpdateMgmtCancellation() throws Exception {
+        readResourceForUpdateInterruptionTest(true);
+    }
+
+    private void readResourceForUpdateInterruptionTest(boolean cancelViaResource) throws Exception {
 
         ModelNode blocker = getOperation("block-model", "attr2", 1);
         client.executeAsync(blocker, null);
@@ -229,8 +321,13 @@ public class OperationCancellationUnitTestCase {
         ModelNode blockee = getOperation("good", "attr1", 2);
         Future<ModelNode> future = client.executeAsync(blockee, null);
         ModelStageGoodHandler.goodHandlerLatch.await(5, TimeUnit.SECONDS);
-        // cancel should return true
-        assertTrue(future.cancel(true));
+
+        if (cancelViaResource) {
+            testCancelViaMmgtOpResource("good", OperationContext.ExecutionStatus.AWAITING_OTHER_OPERATION, future, true);
+        } else {
+            // cancel should return true
+            assertTrue(future.cancel(true));
+        }
 
         releaseBlockingThreads();
 

@@ -44,6 +44,7 @@ import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefiniti
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
+import org.jboss.as.domain.management.controller.ManagementControllerResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 
 /**
@@ -87,6 +88,7 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (environment != Environment.DOMAIN) {
+            resourceRegistration.registerSubModel(ManagementControllerResourceDefinition.INSTANCE);
             resourceRegistration.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
             resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.newInstance());
         }

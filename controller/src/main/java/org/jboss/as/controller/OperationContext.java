@@ -891,4 +891,24 @@ public interface OperationContext extends ExpressionResolver {
             return new AttachmentKey(valueClass);
         }
     }
+
+    /** The current activity of an operation. */
+    public static enum ExecutionStatus {
+        EXECUTING("executing"),
+        AWAITING_OTHER_OPERATION("awaiting-other-operation"),
+        AWAITING_STABILITY("awaiting-stability"),
+        COMPLETING("completing"),
+        ROLLING_BACK("rolling-back");
+
+        private final String name;
+
+        private ExecutionStatus(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 }
