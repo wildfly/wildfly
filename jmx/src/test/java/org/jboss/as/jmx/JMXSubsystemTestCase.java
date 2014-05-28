@@ -53,7 +53,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
@@ -68,6 +67,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.ServerEnvironmentResourceDescription;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
@@ -87,7 +87,6 @@ import org.xnio.OptionMap;
  */
 public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
-    private static final String LAUNCH_TYPE = "launch-type";
     private static final String TYPE_STANDALONE = "STANDALONE";
 
     public JMXSubsystemTestCase() {
@@ -126,6 +125,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad child");
         } catch (XMLStreamException expected) {
+            //expected
         }
     }
 
@@ -139,6 +139,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad attribute");
         } catch (XMLStreamException expected) {
+            //expected
         }
     }
 
@@ -176,6 +177,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed second connector");
         } catch (XMLStreamException expected) {
+            //expected
         }
     }
 
@@ -190,6 +192,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
             super.parse(subsystemXml);
             Assert.fail("Should not have parsed bad attribute");
         } catch (XMLStreamException expected) {
+            //expected
         }
     }
 
@@ -1083,13 +1086,13 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                                         ManagementResourceRegistration rootRegistration) {
-            rootRegistration.registerReadOnlyAttribute(LAUNCH_TYPE, new OperationStepHandler() {
+            rootRegistration.registerReadOnlyAttribute(ServerEnvironmentResourceDescription.LAUNCH_TYPE, new OperationStepHandler() {
 
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.getResult().set(TYPE_STANDALONE);
                 }
-            }, AttributeAccess.Storage.RUNTIME);
+            });
         }
 
         @Override
