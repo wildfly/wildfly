@@ -54,7 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.security.auth.Subject;
@@ -90,7 +89,7 @@ abstract class AbstractOperationContext implements OperationContext {
     final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
-    final ControlledProcessState processState;
+    private final ControlledProcessState processState;
     private final boolean booting;
     private final ProcessType processType;
     private final RunningMode runningMode;
@@ -320,13 +319,12 @@ abstract class AbstractOperationContext implements OperationContext {
 
     /**
      * If appropriate for this implementation, block waiting for the
-     * {@link ModelControllerImpl#awaitContainerStability(long, java.util.concurrent.TimeUnit, boolean)} method to return,
-     * ensuring that the controller's MSC ServiceContainer is settled and it is safe to proceed to service status verification.
+     * {@link ModelControllerImpl#acquireContainerMonitor()} method to return, ensuring that the controller's
+     * MSC ServiceContainer is settled and it is safe to proceed to service status verification.
      *
      * @throws InterruptedException if the thread is interrupted while blocking
-     * @throws java.util.concurrent.TimeoutException if attaining container stability takes an unacceptable amount of time
      */
-    abstract void awaitServiceContainerStability() throws InterruptedException, TimeoutException;
+    abstract void awaitModelControllerContainerMonitor() throws InterruptedException;
 
     /**
      * Create a persistence resource (if appropriate for this implementation) for use in persisting the configuration
@@ -352,7 +350,7 @@ abstract class AbstractOperationContext implements OperationContext {
      *
      * @throws InterruptedException if the thread is interrupted while waiting
      */
-    abstract void waitForRemovals() throws InterruptedException, TimeoutException;
+    abstract void waitForRemovals() throws InterruptedException;
 
     /**
      * Gets whether any steps have taken actions that indicate a wish to write to the model or the service container.
@@ -457,17 +455,22 @@ abstract class AbstractOperationContext implements OperationContext {
                         // a change was made to the runtime. Thus, we must wait
                         // for stability before resuming in to verify.
                         try {
-                            awaitServiceContainerStability();
+                            awaitModelControllerContainerMonitor();
                         } catch (InterruptedException e) {
                             cancelled = true;
-                            handleContainerStabilityFailure(response, e);
-                            return;
-                        }  catch (TimeoutException te) {
-                            // The service container is in an unknown state; but we don't require restart
-                            // because rollback may allow the container to stabilize. We force require-restart
-                            // in the rollback handling if the container cannot stabilize (see OperationContextImpl.releaseStepLocks)
-                            //processState.setRestartRequired();  // don't use our restartRequired() method as this is not reversible in rollback
-                            handleContainerStabilityFailure(response, te);
+                            if (response != null) {
+                                response.get(OUTCOME).set(CANCELLED);
+                                response.get(FAILURE_DESCRIPTION).set(ControllerLogger.ROOT_LOGGER.operationCancelled());
+                                response.get(ROLLED_BACK).set(true);
+                            }
+                            resultAction = ResultAction.ROLLBACK;
+                            respectInterruption = false;
+                            logAuditRecord();
+                            Thread.currentThread().interrupt();
+                            if (activeStep != null && activeStep.resultHandler != null) {
+                                // Finalize
+                                activeStep.finalizeStep(null);
+                            }
                             return;
                         }
                     }
@@ -643,7 +646,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 // This can happen with an operation with many, many steps that use the recursive no-arg completeStep()
                 // variant. This should be rare now as handlers are largely migrated from this variant.
                 // But, log a special message for this case
-                MGMT_OP_LOGGER.operationFailedInsufficientStackSpace(t, step.operation.get(OP), step.operation.get(OP_ADDR),
+                MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR),
                         AbstractControllerService.BOOT_STACK_SIZE_PROPERTY, AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
             } else {
                 MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR));
@@ -719,28 +722,6 @@ abstract class AbstractOperationContext implements OperationContext {
                 throwThrowable(toThrow);
             }
         }
-    }
-
-    private void handleContainerStabilityFailure(ModelNode response, Exception cause) {
-        boolean interrupted = cause instanceof InterruptedException;
-        assert interrupted || cause instanceof TimeoutException;
-
-        if (response != null) {
-            response.get(OUTCOME).set(CANCELLED);
-            response.get(FAILURE_DESCRIPTION).set(interrupted ? ControllerLogger.ROOT_LOGGER.operationCancelled(): ControllerLogger.ROOT_LOGGER.timeoutExecutingOperation());
-            response.get(ROLLED_BACK).set(true);
-        }
-        resultAction = ResultAction.ROLLBACK;
-        respectInterruption = false;
-        logAuditRecord();
-        if (interrupted) {
-            Thread.currentThread().interrupt();
-        }
-        if (activeStep != null && activeStep.resultHandler != null) {
-            // Finalize
-            activeStep.finalizeStep(null);
-        }
-
     }
 
     private static void throwThrowable(Throwable toThrow) {
@@ -894,7 +875,6 @@ abstract class AbstractOperationContext implements OperationContext {
         private Object restartStamp;
         private ResultHandler resultHandler;
         Step predecessor;
-        boolean hasRemovals;
 
         private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation,
                 final PathAddress address) {
@@ -959,7 +939,7 @@ abstract class AbstractOperationContext implements OperationContext {
             AbstractOperationContext.this.activeStep = this;
 
             try {
-                handleResult();
+                handleRollback();
 
                 if (currentStage != null && currentStage != Stage.DONE) {
                     // This is a failure because the next step failed to call
@@ -996,18 +976,15 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         }
 
-        private void handleResult() {
+        private void handleRollback() {
             if (resultHandler != null) {
-                hasRemovals = false;
                 try {
                     ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(handler.getClass());
                     try {
                         resultHandler.handleResult(resultAction, AbstractOperationContext.this, operation);
                     } finally {
                         WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
-                        if (hasRemovals) {
-                            waitForRemovals();
-                        }
+                        waitForRemovals();
                     }
                 } catch (Exception e) {
                     report(MessageSeverity.ERROR,

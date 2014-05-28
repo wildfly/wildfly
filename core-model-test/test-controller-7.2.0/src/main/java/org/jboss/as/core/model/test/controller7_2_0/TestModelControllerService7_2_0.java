@@ -146,12 +146,8 @@ class TestModelControllerService7_2_0 extends ModelTestModelControllerService {
         super.start(context);
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        initModel(rootResource, rootRegistration, null);
-    }
-
     @Override
-    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         //See server HttpManagementAddHandler
         System.setProperty("jboss.as.test.disable.runtime", "1");
         if (type == TestModelType.STANDALONE) {

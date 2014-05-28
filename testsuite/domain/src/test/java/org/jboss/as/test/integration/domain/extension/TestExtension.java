@@ -22,15 +22,12 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
+import java.util.List;
 import java.util.Locale;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -38,10 +35,15 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Fake extension to use in testing extension management.
@@ -52,8 +54,8 @@ public class TestExtension implements Extension {
 
     public static final String MODULE_NAME = "org.jboss.as.test.extension";
 
-    private final EmptySubsystemParser parserOne = new EmptySubsystemParser("urn:jboss:test:extension:1:1.0");
-    private final EmptySubsystemParser parserTwo = new EmptySubsystemParser("urn:jboss:test:extension:2:1.0");
+    private final Parser parserOne = new Parser("urn:jboss:test:extension:1:1.0");
+    private final Parser parserTwo = new Parser("urn:jboss:test:extension:2:1.0");
 
 
     @Override
@@ -71,8 +73,8 @@ public class TestExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping("1", parserOne.getNamespace(), parserOne);
-        context.setSubsystemXmlMapping("2", parserTwo.getNamespace(), parserTwo);
+        context.setSubsystemXmlMapping("1", parserOne.namespace, parserOne);
+        context.setSubsystemXmlMapping("2", parserTwo.namespace, parserTwo);
     }
 
 
@@ -102,4 +104,24 @@ public class TestExtension implements Extension {
         }
     }
 
+    private static class Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+
+        private final String namespace;
+
+        private Parser(String namespace) {
+            this.namespace = namespace;
+        }
+
+        @Override
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+            ParseUtils.requireNoContent(reader);
+        }
+
+        @Override
+        public void writeContent(XMLExtendedStreamWriter streamWriter, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(namespace, false);
+            streamWriter.writeEndElement();
+        }
+    }
 }

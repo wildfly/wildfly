@@ -64,7 +64,8 @@ public interface ManagementRequestContext<A> {
     ManagementProtocolHeader getRequestHeader();
 
     /**
-     * Execute an async task. Equivalent to {@code executeAsync(task, true)}.
+     * Execute an async task. Basically everything waiting for a response cannot block a remoting thread and
+     * has to be executed asynchronous.
      *
      * @param task the task
      */
@@ -75,27 +76,9 @@ public interface ManagementRequestContext<A> {
      * has to be executed asynchronous.
      *
      * @param task the task
-     * @param cancellable {@code true} if the task can be cancelled as part of overall request cancellation
-     */
-    void executeAsync(final AsyncTask<A> task, boolean cancellable);
-
-    /**
-     * Execute an async task. Equivalent to {@code executeAsync(task, true, executor)}.
-     *
-     * @param task the task
      * @param executor the executor
      */
     void executeAsync(final AsyncTask<A> task, Executor executor);
-
-    /**
-     * Execute an async task. Basically everything waiting for a response cannot block a remoting thread and
-     * has to be executed asynchronous.
-     *
-     * @param task the task
-     * @param cancellable {@code true} if the task can be cancelled as part of overall request cancellation
-     * @param executor the executor
-     */
-    void executeAsync(final AsyncTask<A> task, boolean cancellable, Executor executor);
 
     /**
      * Write a new message.

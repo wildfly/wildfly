@@ -93,8 +93,8 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param serverName the name of the server.
      * @param hostName   the name of the host.
      */
-    @LogMessage(level = Level.INFO)
-    @Message(id = 3, value = "Interrupted awaiting final response from server %s on host %s; remote process has been notified to cancel operation")
+    @LogMessage(level = Level.WARN)
+    @Message(id = 3, value = "Interrupted awaiting final response from server %s on host %s")
     void interruptedAwaitingFinalResponse(String serverName, String hostName);
 
     /**
@@ -115,8 +115,8 @@ public interface DomainControllerLogger extends BasicLogger {
      *
      * @param hostName the name of the host.
      */
-    @LogMessage(level = Level.INFO)
-    @Message(id = 5, value = "Interrupted awaiting final response from host %s; remote process has been notified to cancel operation")
+    @LogMessage(level = Level.WARN)
+    @Message(id = 5, value = "Interrupted awaiting final response from host %s")
     void interruptedAwaitingFinalResponse(String hostName);
 
     /**
@@ -158,7 +158,7 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param task          the task.
      */
     @LogMessage(level = Level.ERROR)
-    @Message(id = 9, value = "%s caught %s waiting for task %s. Cancelling task")
+    @Message(id = 9, value = "%s caught %s waiting for task %s")
     void caughtExceptionWaitingForTask(String className, String exceptionName, String task);
 
     /**
@@ -169,9 +169,9 @@ public interface DomainControllerLogger extends BasicLogger {
      * @param exceptionName the name of the exception caught.
      * @param task          the task.
      */
-//    @LogMessage(level = Level.ERROR)
-//    @Message(id = 10, value = "%s caught %s waiting for task %s; returning")
-//    void caughtExceptionWaitingForTaskReturning(String className, String exceptionName, String task);
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 10, value = "%s caught %s waiting for task %s; returning")
+    void caughtExceptionWaitingForTaskReturning(String className, String exceptionName, String task);
 
     /**
      * Logs an error message indicating the content for a configured deployment was unavailable at boot but boot
@@ -715,11 +715,4 @@ public interface DomainControllerLogger extends BasicLogger {
     @Message(id = 69, value = "Host registration task failed: %s")
     String registrationTaskFailed(String cause);
 
-    @LogMessage(level = Level.INFO)
-    @Message(id = 70, value = "%s interrupted awaiting server prepared response(s) -- cancelling updates for servers %s")
-    void interruptedAwaitingPreparedResponse(String callerClass, Set<ServerIdentity> servers);
-
-    @LogMessage(level = Level.INFO)
-    @Message(id = 71, value = "Interrupted awaiting host prepared response(s) -- cancelling updates for hosts %s")
-    void interruptedAwaitingHostPreparedResponse(Set<String> hosts);
 }

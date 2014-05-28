@@ -22,7 +22,6 @@
 package org.jboss.as.controller.remote;
 
 import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
@@ -50,7 +49,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.CountDownLatch;
 
 import javax.security.auth.Subject;
 
@@ -58,7 +56,6 @@ import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -134,7 +131,6 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
-            ControllerLogger.MGMT_OP_LOGGER.tracef("Handling ExecuteRequest for %d", context.getOperationId());
             final ModelNode operation = new ModelNode();
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
             operation.readExternal(input);
@@ -164,7 +160,6 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
         private void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context, final CompletedCallback callback) {
 
-            ControllerLogger.MGMT_OP_LOGGER.tracef("Executing ExecuteRequest for %d", context.getOperationId());
             // Header manipulation
             final ModelNode headers = operation.get(OPERATION_HEADERS);
             //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
@@ -269,41 +264,19 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 return;
             }
             completed = true;
-            // WFLY-3090 Protect the communication channel from getting closed due to administrative
-            // cancellation of the management op by using a separate thread to send
-            final CountDownLatch latch = new CountDownLatch(1);
-            final IOExceptionHolder exceptionHolder = new IOExceptionHolder();
-            responseContext.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
-
-                @Override
-                public void execute(final ManagementRequestContext<Void> context) throws Exception {
-                    MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
-                    try {
-                        final FlushableDataOutput output = responseContext.writeMessage(response);
-                        try {
-                            output.write(ModelControllerProtocol.PARAM_RESPONSE);
-                            result.writeExternal(output);
-                            output.writeByte(ManagementProtocol.RESPONSE_END);
-                            output.close();
-                        } finally {
-                            StreamUtils.safeClose(output);
-                            latch.countDown();
-                        }
-                    } catch (IOException e) {
-                        exceptionHolder.exception = e;
-                    }
-                }
-            }, false);
-
             try {
-                latch.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            if (exceptionHolder.exception != null) {
-                resultHandler.failed(exceptionHolder.exception);
-            } else {
+                final FlushableDataOutput output = responseContext.writeMessage(response);
+                try {
+                    output.write(ModelControllerProtocol.PARAM_RESPONSE);
+                    result.writeExternal(output);
+                    output.writeByte(ManagementProtocol.RESPONSE_END);
+                    output.close();
+                } finally {
+                    StreamUtils.safeClose(output);
+                }
                 resultHandler.done(result);
+            } catch (IOException e) {
+                resultHandler.failed(e);
             }
         }
 
@@ -313,7 +286,6 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
-            ControllerLogger.MGMT_OP_LOGGER.tracef("Cancellation of %d requested", context.getOperationId());
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
                 public void execute(ManagementRequestContext<Void> context) throws Exception {
@@ -326,13 +298,9 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                         StreamUtils.safeClose(output);
                     }
                 }
-            }, false);
+            });
             resultHandler.cancel();
         }
-    }
-
-    private static class IOExceptionHolder {
-        private IOException exception;
     }
 
 }

@@ -158,12 +158,12 @@ public class ProxyStepHandler implements OperationStepHandler {
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } else {
 
-            completeRemoteTransaction(context, txRef, preparedResultRef, finalResultRef);
+            completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
 
         }
     }
 
-    private void completeRemoteTransaction(OperationContext context, final AtomicReference<ModelController.OperationTransaction> txRef,
+    private void completeRemoteTransaction(OperationContext context, ModelNode operation, final AtomicReference<ModelController.OperationTransaction> txRef,
                                            final AtomicReference<ModelNode> preparedResultRef, final AtomicReference<ModelNode> finalResultRef) {
 
         boolean completeStepCalled = false;

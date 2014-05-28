@@ -79,28 +79,6 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             return parsedOp.getLastChunkIndex() + result;
         }};
 
-    private static final CommandLineCompleter INT_HEADER_COMPLETER = new CommandLineCompleter(){
-
-        private final DefaultCallbackHandler parsedOp = new DefaultCallbackHandler();
-
-        @Override
-        public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-            try {
-                ParserUtil.parseHeaders(buffer, parsedOp);
-            } catch (CommandFormatException e) {
-                //e.printStackTrace();
-                return -1;
-            }
-            if(parsedOp.endsOnSeparator()) {
-                return buffer.length();
-            }
-            if(parsedOp.getLastHeader() == null) {
-                candidates.add("=");
-                return buffer.length();
-            }
-            return buffer.length();
-        }};
-
     private static final Map<String, OperationRequestHeader> HEADERS;
     static {
         HEADERS = new HashMap<String, OperationRequestHeader>();
@@ -108,7 +86,6 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
 
         addBooleanHeader(Util.ALLOW_RESOURCE_SERVICE_RESTART);
         addBooleanHeader(Util.ROLLBACK_ON_RUNTIME_FAILURE);
-        addIntHeader(Util.BLOCKING_TIMEOUT);
     }
 
     private static void addBooleanHeader(final String name) {
@@ -121,20 +98,6 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             @Override
             public CommandLineCompleter getCompleter() {
                 return BOOLEAN_HEADER_COMPLETER;
-            }};
-        HEADERS.put(header.getName(), header);
-    }
-
-    private static void addIntHeader(final String name) {
-        OperationRequestHeader header = new OperationRequestHeader(){
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public CommandLineCompleter getCompleter() {
-                return INT_HEADER_COMPLETER;
             }};
         HEADERS.put(header.getName(), header);
     }

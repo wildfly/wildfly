@@ -81,12 +81,8 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
         this.mainExtension = mainExtension;
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        initModel(rootResource, rootRegistration, null);
-    }
-
     @Override
-    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);
         rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
         //rootRegistration.registerOperationHandler(READ_TRANSFORMED_RESOURCE_OPERATION, new ReadTransformedResourceOperation(), ReadTransformedResourceOperation.DESCRIPTION, true);

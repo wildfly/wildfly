@@ -963,7 +963,7 @@ public class ParseAndMarshalModelsTestCase {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             registration.setup(rootResource, rootRegistration, authorizer);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("capture-model", new NonResolvingResourceDescriptionResolver()).build()

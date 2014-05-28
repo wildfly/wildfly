@@ -125,8 +125,6 @@ class ActiveOperationSupport {
      * @param id the operation id
      * @param attachment the shared attachment
      * @return the created active operation
-     *
-     * @throws java.lang.IllegalStateException if an operation with the same id is already registered
      */
     protected <T, A> ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment) {
         final ActiveOperation.CompletedCallback<T> callback = getDefaultCallback();
@@ -140,8 +138,6 @@ class ActiveOperationSupport {
      * @param attachment the shared attachment
      * @param callback the completed callback
      * @return the created active operation
-     *
-     * @throws java.lang.IllegalStateException if an operation with the same id is already registered
      */
     protected <T, A> ActiveOperation<T, A> registerActiveOperation(final Integer id, A attachment, ActiveOperation.CompletedCallback<T> callback) {
         lock.lock(); try {
@@ -304,7 +300,6 @@ class ActiveOperationSupport {
 
             @Override
             public void cancel() {
-                ProtocolLogger.CONNECTION_LOGGER.debugf("Operation (%d) cancelled", operationId);
                 ActiveOperationImpl.this.cancel();
             }
         };

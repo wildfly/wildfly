@@ -90,11 +90,6 @@ public abstract class ServerTaskExecutor {
         return true;
     }
 
-    public boolean cancelTask(ServerIdentity toCancel) {
-        ExecutedServerRequest task = submittedTasks.get(toCancel);
-        return task != null && task.cancel();
-    }
-
     /**
      * Execute the operation.
      *
@@ -273,7 +268,7 @@ public abstract class ServerTaskExecutor {
 
         @Override
         public boolean cancel() {
-            return finalResult.cancel(true);
+            return finalResult.cancel(false);
         }
 
     }

@@ -72,7 +72,6 @@ public interface ManagementRequestHandlerFactory {
          * @param <T> the result type
          * @param <A> the attachment type
          * @return the registered active operation
-         * @throws java.lang.IllegalStateException if an operation with the same id is already registered
          */
         <T, A> ActiveOperation<T, A> registerActiveOperation(Integer id, A attachment);
 
@@ -85,7 +84,6 @@ public interface ManagementRequestHandlerFactory {
          * @param <T> the result type
          * @param <A> the attachment type
          * @return the registered active operation
-         * @throws java.lang.IllegalStateException if an operation with the same id is already registered
          */
         <T, A> ActiveOperation<T, A> registerActiveOperation(Integer id, A attachment, ActiveOperation.CompletedCallback<T> callback);
 

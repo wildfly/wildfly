@@ -180,7 +180,7 @@ public abstract class AbstractControllerTestBase {
             return super.boot(bootOperations, rollbackOnRuntimeFailure);
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             try {
                 AbstractControllerTestBase.this.initModel(rootResource, rootRegistration);
             } catch (Exception e) {

@@ -70,10 +70,6 @@ class TestModelControllerService7_2_0 extends ModelTestModelControllerService {
         this.mainExtension = mainExtension;
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        initModel(rootResource, rootRegistration, null);
-    }
-
     @Override
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);

@@ -73,7 +73,7 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
     }
 
     @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
 
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
         rootRegistration.registerOperationHandler(ValidateAddressOperationHandler.DEFINITION, ValidateAddressOperationHandler.INSTANCE);

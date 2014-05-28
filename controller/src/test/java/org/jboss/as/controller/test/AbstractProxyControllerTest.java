@@ -583,7 +583,7 @@ public abstract class AbstractProxyControllerTest {
                     ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build());
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
 
@@ -616,7 +616,7 @@ public abstract class AbstractProxyControllerTest {
                     ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build());
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
             rootRegistration.registerOperationHandler("Test",

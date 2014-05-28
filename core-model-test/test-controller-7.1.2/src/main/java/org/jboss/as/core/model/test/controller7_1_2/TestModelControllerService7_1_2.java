@@ -84,12 +84,8 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
         this.extensionRegistry = extensionRegistry;
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        initModel(rootResource, rootRegistration, null);
-    }
-
     @Override
-    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         //See server HttpManagementAddHandler
         System.setProperty("jboss.as.test.disable.runtime", "1");
         final HostControllerEnvironment env = createHostControllerEnvironment();

@@ -50,7 +50,6 @@ import org.junit.runners.Suite;
         ManagementVersionTestCase.class,
         ModelPersistenceTestCase.class,
         ModuleLoadingManagementTestCase.class,
-        OperationCancellationTestCase.class,
         OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
         ServerRestartRequiredTestCase.class,

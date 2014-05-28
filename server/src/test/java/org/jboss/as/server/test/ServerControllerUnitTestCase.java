@@ -295,7 +295,7 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             this.rootRegistration = rootRegistration;
         }
 

@@ -29,8 +29,8 @@ import java.util.Set;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.logging.DomainControllerLogger;
+import org.jboss.as.domain.controller.ServerIdentity;
 
 /**
  * @author Emanuel Muckenhuber
@@ -48,7 +48,7 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
         final ServerTaskExecutor.ServerOperationListener listener = new ServerTaskExecutor.ServerOperationListener();
         for(final ServerUpdateTask task : tasks) {
             final ServerIdentity identity = task.getServerIdentity();
-            if (updatePolicy.canUpdateServer(identity) && !Thread.currentThread().isInterrupted()) {
+            if(updatePolicy.canUpdateServer(identity)) {
                 // Execute the task
                 if(executor.executeTask(listener, task)) {
                     outstanding.add(task.getServerIdentity());
@@ -58,7 +58,7 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
             }
         }
         boolean interrupted = false;
-        while(!interrupted && ! outstanding.isEmpty()) {
+        while(! outstanding.isEmpty()) {
             try {
                 // Wait for all prepared results
                 final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> prepared = listener.retrievePreparedOperation();
@@ -69,14 +69,6 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
                 interrupted = true;
             }
         }
-
-        if (!outstanding.isEmpty()) {
-            DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.interruptedAwaitingPreparedResponse(getClass().getSimpleName(), outstanding);
-            for (ServerIdentity identity : outstanding) {
-                executor.cancelTask(identity);
-            }
-        }
-
         if(interrupted) {
             Thread.currentThread().interrupt();
         }

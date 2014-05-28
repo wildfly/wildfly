@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -46,7 +45,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -160,7 +158,6 @@ public class RemoteProxyController implements ProxyController {
 //            }
 
             // Execute the operation
-            ControllerLogger.MGMT_OP_LOGGER.tracef("Executing %s for %s", translated.get(OP).asString(), getProxyNodeAddress());
             futureResult = client.execute(operationListener, translated, messageHandler, attachments);
             // Wait for the prepared response
             final TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> prepared = queue.take();
@@ -170,7 +167,6 @@ public class RemoteProxyController implements ProxyController {
                 return;
             }
             // Send the prepared notification and wrap the OperationTransaction to block on commit/rollback
-            final Future cancellable = futureResult;
             control.operationPrepared(new ModelController.OperationTransaction() {
                 @Override
                 public void commit() {
@@ -179,8 +175,6 @@ public class RemoteProxyController implements ProxyController {
                         // Await the completed notification
                         completed.await();
                     } catch(InterruptedException e) {
-                        cancellable.cancel(true);
-                        ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingFinalResponse(translated.get(OP).asString(), getProxyNodeAddress());
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         // ignore
@@ -194,8 +188,6 @@ public class RemoteProxyController implements ProxyController {
                         // Await the completed notification
                         completed.await();
                     } catch(InterruptedException e) {
-                        cancellable.cancel(true);
-                        ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingFinalResponse(translated.get(OP).asString(), getProxyNodeAddress());
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         // ignore
@@ -204,12 +196,10 @@ public class RemoteProxyController implements ProxyController {
             }, prepared.getPreparedResult());
 
         } catch (InterruptedException e) {
-            if (futureResult != null) { // it won't be null, as IE can only be thrown after it's assigned
-                ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingInitialResponse(original.get(OP).asString(), getProxyNodeAddress());
+            if(futureResult != null) {
                 // Cancel the operation
-                futureResult.cancel(true);
+                futureResult.cancel(false);
             }
-            control.operationFailed(getCancelledResponse());
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             final ModelNode result = new ModelNode();
@@ -322,12 +312,5 @@ public class RemoteProxyController implements ProxyController {
         }
         //We did not get a preparedResult, because the address is not valid for the current user
         return false;
-    }
-
-    private static ModelNode getCancelledResponse() {
-        ModelNode result = new ModelNode();
-        result.get(OUTCOME).set(CANCELLED);
-        result.get(FAILURE_DESCRIPTION).set(ControllerLogger.ROOT_LOGGER.operationCancelled());
-        return result;
     }
 }

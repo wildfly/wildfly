@@ -29,6 +29,9 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -47,6 +50,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -603,7 +607,7 @@ public class ModelControllerImplUnitTestCase {
     static class ModelControllerService extends TestModelControllerService {
 
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
 
             rootRegistration.registerOperationHandler("setup", new ModelControllerImplUnitTestCase.SetupHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, ModelControllerImplUnitTestCase.DESC_PROVIDER, false);

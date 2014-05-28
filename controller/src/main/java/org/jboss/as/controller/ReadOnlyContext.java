@@ -65,7 +65,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    void awaitServiceContainerStability() throws InterruptedException {
+    void awaitModelControllerContainerMonitor() throws InterruptedException {
         // nothing here
     }
 
@@ -146,7 +146,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     public void acquireControllerLock() {
         if (lockStep == null) {
             try {
-                controller.acquireLock(operationId, true);
+                controller.acquireLock(operationId, true, this);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;

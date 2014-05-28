@@ -19,8 +19,6 @@
 package org.jboss.as.host.controller.operations;
 
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -28,7 +26,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.DomainController;
@@ -73,15 +70,8 @@ public class HostShutdownHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // WFLY-2741 -- DO NOT call context.getServiceRegistry(true) as that will trigger blocking for
-                // service container stability and one use case for this op is to recover from a
-                // messed up service container from a previous op. Instead just ask for authorization.
-                // Note that we already have the exclusive lock, so we are just skipping waiting for stability.
-                // If another op that is a step in a composite step with this op needs to modify the container
-                // it will have to wait for container stability, so skipping this only matters for the case
-                // where this step is the only runtime change.
-//                context.getServiceRegistry(true);
-                context.authorize(operation, EnumSet.of(Action.ActionEffect.WRITE_RUNTIME));
+                // Even though we don't read from the service registry, we are modifying a service
+                context.getServiceRegistry(true);
                 if (restart) {
                     //Add the exit code so that we get respawned
                     domainController.stopLocalHost(ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT);

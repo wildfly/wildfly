@@ -59,7 +59,6 @@ public class Util {
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
-    public static final String BLOCKING_TIMEOUT = "blocking-timeout";
     public static final String BYTES = "bytes";
     public static final String CHILDREN = "children";
     public static final String CHILD_TYPE = "child-type";

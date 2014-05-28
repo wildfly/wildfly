@@ -985,9 +985,6 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 88, value = "Unable to load username for supplied username '%s'")
     NamingException usernameNotLoaded(String name);
 
-    @Message(id = 89, value = "No operation was found that has been holding the operation execution write lock for long than [%d] seconds")
-    String noNonProgressingOperationFound(long timeout);
-
     /**
      * Information message saying the username and password must be different.
      *

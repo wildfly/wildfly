@@ -22,15 +22,10 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_THREAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUSIVE_RUNNING_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTION_STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL_SIGNIFICANT;
@@ -38,11 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
-import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -59,7 +52,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -88,7 +80,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -142,11 +133,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
     private final Map<OperationId, AuthorizationResponseImpl> authorizations =
             new ConcurrentHashMap<OperationId, AuthorizationResponseImpl>();
-    private final ModelNode blockingTimeoutConfig;
-    private volatile BlockingTimeout blockingTimeout;
-    private final long startTime = System.nanoTime();
-    private volatile long exclusiveStartTime = -1;
-
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -175,27 +161,14 @@ final class OperationContextImpl extends AbstractOperationContext {
             Collections.synchronizedMap(new HashMap<PathAddress, ModelNode>());
 
     private final Integer operationId;
-    private final String operationName;
-    private final ModelNode operationAddress;
-    private final AccessMechanism accessMechanism;
-    private final ActiveOperationResource activeOperationResource;
-    private final BooleanHolder done = new BooleanHolder();
 
-    private volatile ExecutionStatus executionStatus = ExecutionStatus.EXECUTING;
-
-    OperationContextImpl(final Integer operationId, final String operationName, final ModelNode operationAddress, final ModelControllerImpl modelController, final ProcessType processType,
+    OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
-                         final OperationMessageHandler messageHandler, final OperationAttachments attachments,
-                         final Resource model, final ModelController.OperationTransactionControl transactionControl,
-                         final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                         final HostServerGroupTracker hostServerGroupTracker,
-                         final ModelNode blockingTimeoutConfig,
-                         final AccessMechanism accessMechanism) {
+                            final OperationMessageHandler messageHandler, final OperationAttachments attachments,
+                            final Resource model, final ModelController.OperationTransactionControl transactionControl,
+                            final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
+                            final Integer operationId, final HostServerGroupTracker hostServerGroupTracker) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
-        this.operationId = operationId;
-        this.operationName = operationName;
-        this.operationAddress = operationAddress.isDefined()
-                ? operationAddress : ModelControllerImpl.EMPTY_ADDRESS;
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -204,10 +177,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
+        this.operationId = operationId;
         this.hostServerGroupTracker = hostServerGroupTracker;
-        this.blockingTimeoutConfig = blockingTimeoutConfig != null && blockingTimeoutConfig.isDefined() ? blockingTimeoutConfig : null;
-        this.activeOperationResource = new ActiveOperationResource();
-        this.accessMechanism = accessMechanism;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -222,51 +193,27 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    void awaitServiceContainerStability() throws InterruptedException, TimeoutException {
+    void awaitModelControllerContainerMonitor() throws InterruptedException {
         if (affectsRuntime) {
             MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
-            long timeout = getBlockingTimeout().getBlockingTimeout();
-            ExecutionStatus originalExecutionStatus = executionStatus;
-            try {
-                // First wait until any removals we've initiated have begun processing, otherwise
-                // the ContainerStateMonitor may not have gotten the notification causing it to untick
-                executionStatus = ExecutionStatus.AWAITING_STABILITY;
-                waitForRemovals();
-                ContainerStateMonitor.ContainerStateChangeReport changeReport =
-                        modelController.awaitContainerStateChangeReport(timeout, TimeUnit.MILLISECONDS);
-                // If any services are missing, add a verification handler to see if we caused it
-                if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
-                    ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
-                    addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
-                }
-            } catch (TimeoutException te) {
-                getBlockingTimeout().timeoutDetected();
-                // Deliberate log and throw; we want to log this but the caller method passes a slightly different
-                // message to the user as part of the operation response
-                MGMT_OP_LOGGER.timeoutExecutingOperation(timeout / 1000, containerMonitorStep.operationId.name, containerMonitorStep.address);
-                throw te;
-            } finally {
-                executionStatus = originalExecutionStatus;
+            // First wait until any removals we've initiated have begun processing, otherwise
+            // the ContainerStateMonitor may not have gotten the notification causing it to untick
+            waitForRemovals();
+            ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport();
+            // If any services are missing, add a verification handler to see if we caused it
+            if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
+                ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
+                addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
             }
         }
     }
 
     @Override
-    protected void waitForRemovals() throws InterruptedException, TimeoutException {
+    protected void waitForRemovals() throws InterruptedException {
         if (affectsRuntime && !cancelled) {
             synchronized (realRemovingControllers) {
-                long waitTime = getBlockingTimeout().getBlockingTimeout();
-                long end = System.currentTimeMillis() + waitTime;
-                boolean wait = !realRemovingControllers.isEmpty() && !cancelled;
-                while (wait && waitTime > 0) {
-                    realRemovingControllers.wait(waitTime);
-                    wait = !realRemovingControllers.isEmpty() && !cancelled;
-                    waitTime = end - System.currentTimeMillis();
-                }
-
-                if (wait) {
-                    getBlockingTimeout().timeoutDetected();
-                    throw new TimeoutException();
+                while (!realRemovingControllers.isEmpty() && !cancelled) {
+                    realRemovingControllers.wait();
                 }
             }
         }
@@ -345,8 +292,11 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw ControllerLogger.ROOT_LOGGER.serviceRegistryRuntimeOperationsOnly();
         }
         authorize(false, modify ? READ_WRITE_RUNTIME : READ_RUNTIME);
-        if (modify) {
-            ensureWriteLockForRuntime();
+        if (modify && !affectsRuntime) {
+            takeWriteLock();
+            affectsRuntime = true;
+            acquireContainerMonitor();
+            awaitContainerMonitor();
         }
         return new OperationContextServiceRegistry(modelController.getServiceRegistry());
     }
@@ -364,7 +314,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
-        ensureWriteLockForRuntime();
+        if (!affectsRuntime) {
+            takeWriteLock();
+            affectsRuntime = true;
+            acquireContainerMonitor();
+            awaitContainerMonitor();
+        }
         ServiceController<?> controller = modelController.getServiceRegistry().getService(name);
         if (controller != null) {
             doRemove(controller);
@@ -410,7 +365,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
-        ensureWriteLockForRuntime();
+        if (!affectsRuntime) {
+            takeWriteLock();
+            affectsRuntime = true;
+            acquireContainerMonitor();
+            awaitContainerMonitor();
+        }
         if (controller != null) {
             doRemove(controller);
         }
@@ -418,7 +378,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private void doRemove(final ServiceController<?> controller) {
         final Step removalStep = activeStep;
-        removalStep.hasRemovals = true;
         controller.addListener(new AbstractServiceListener<Object>() {
             public void listenerAdded(final ServiceController<?> controller) {
                 synchronized (realRemovingControllers) {
@@ -458,12 +417,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw ControllerLogger.ROOT_LOGGER.serviceTargetRuntimeOperationsOnly();
         }
-        ensureWriteLockForRuntime();
+        if (!affectsRuntime) {
+            takeWriteLock();
+            affectsRuntime = true;
+            acquireContainerMonitor();
+            awaitContainerMonitor();
+        }
         return serviceTarget;
-    }
-
-    Resource.ResourceEntry getActiveOperationResource() {
-        return activeOperationResource;
     }
 
     private void takeWriteLock() {
@@ -471,77 +431,37 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (currentStage == Stage.DONE) {
                 throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
-            ExecutionStatus originalStatus = executionStatus;
             try {
-                executionStatus = ExecutionStatus.AWAITING_OTHER_OPERATION;
-                // BES 2014/04/22 Ignore blocking timeout here. We risk some bug causing the
-                // lock to never be released. But we gain multiple ops being able to wait until they get
-                // a chance to run with no need to guess how long op 2 will take so we can
-                // let op 3 block for the time needed for both 1 and 2
-//                int timeout = blockingTimeout.getBlockingTimeout();
-//                if (timeout < 1) {
-                    modelController.acquireLock(operationId, respectInterruption);
-//                } else {
-//                    // Wait longer than the standard amount to get a chance to execute
-//                    // after whatever was holding the lock times out
-//                    timeout += 10;
-//                    if (!modelController.acquireLock(operationId, respectInterruption, timeout)) {
-//                        throw MESSAGES.operationTimeoutAwaitingControllerLock(timeout);
-//                    }
-//                }
-                exclusiveStartTime = System.nanoTime();
+                modelController.acquireLock(operationId, respectInterruption, this);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
                 throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
-            } finally {
-                executionStatus = originalStatus;
             }
         }
     }
 
-    private void ensureWriteLockForRuntime() {
-        if (!affectsRuntime) {
-            takeWriteLock();
-            affectsRuntime = true;
-            if (containerMonitorStep == null) {
-                if (currentStage == Stage.DONE) {
-                    throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
-                }
-                containerMonitorStep = activeStep;
-                int timeout = getBlockingTimeout().getBlockingTimeout();
-                ExecutionStatus origStatus = executionStatus;
-                try {
-                    executionStatus = ExecutionStatus.AWAITING_STABILITY;
-                    modelController.awaitContainerStability(timeout, TimeUnit.MILLISECONDS, respectInterruption);
-                } catch (InterruptedException e) {
-                    if (resultAction != ResultAction.ROLLBACK) {
-                        // We're not on the way out, so we've been cancelled on the way in
-                        cancelled = true;
-                    }
-                    Thread.currentThread().interrupt();
-                    throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
-                } catch (TimeoutException te) {
-
-                    getBlockingTimeout().timeoutDetected();
-                    // This is the first step trying to await stability for this op, so if it's
-                    // unstable some previous step must have messed it up and it can't recover.
-                    // So this process must restart.
-                    // The previous op should have set this in {@code releaseStepLocks}; doing it again
-                    // here is just a 2nd line of defense
-                    processState.setRestartRequired();// don't use our restartRequired() method as this is not reversible in rollback
-
-                    // Deliberate log and throw; we want this logged, we need to notify user, and I want slightly
-                    // different messages for both so just throwing a RuntimeException to get the automatic handling
-                    // in AbstractOperationContext.executeStep is not what I wanted
-                    ControllerLogger.MGMT_OP_LOGGER.timeoutAwaitingInitialStability(timeout / 1000, activeStep.operationId.name, activeStep.operationId.address);
-                    setRollbackOnly();
-                    throw new OperationFailedRuntimeException(ControllerLogger.ROOT_LOGGER.timeoutAwaitingInitialStability());
-                } finally {
-                    executionStatus = origStatus;
-                }
+    private void acquireContainerMonitor() {
+        if (containerMonitorStep == null) {
+            if (currentStage == Stage.DONE) {
+                throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
+            modelController.acquireContainerMonitor();
+            containerMonitorStep = activeStep;
+        }
+    }
+
+    private void awaitContainerMonitor() {
+        try {
+            modelController.awaitContainerMonitor(respectInterruption);
+        } catch (InterruptedException e) {
+            if (currentStage != Stage.DONE && resultAction != ResultAction.ROLLBACK) {
+                // We're not on the way out, so we've been cancelled on the way in
+                cancelled = true;
+            }
+            Thread.currentThread().interrupt();
+            throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
         }
     }
 
@@ -844,10 +764,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
-        boolean interrupted = false;
         try {
-            // Get container stability before releasing controller lock to ensure another
-            // op doesn't get in and destabilize the container.
+            if (this.lockStep == step) {
+                modelController.releaseLock(operationId);
+                lockStep = null;
+            }
             if (this.containerMonitorStep == step) {
                 // Note: If we allow this thread to be interrupted, an op that has been cancelled
                 // because of minor user impatience can release the controller lock while the
@@ -856,39 +777,17 @@ final class OperationContextImpl extends AbstractOperationContext {
                 // will not be cancellable. I (BES 2012/01/24) chose the former as the lesser evil.
                 // Any subsequent step that calls getServiceRegistry/getServiceTarget/removeService
                 // is going to have to await the monitor uninterruptibly anyway before proceeding.
-                long timeout = getBlockingTimeout().getBlockingTimeout();
                 try {
-                    modelController.awaitContainerStability(timeout, TimeUnit.MILLISECONDS, true);
+                    modelController.awaitContainerMonitor(true);
                 }  catch (InterruptedException e) {
-                    interrupted = true;
+                    Thread.currentThread().interrupt();
                     MGMT_OP_LOGGER.interruptedWaitingStability();
-                } catch (TimeoutException te) {
-                    // If we can't attain stability on the way out after rollback ops have run,
-                    // we can no longer have any sense of MSC state or how the model relates to the runtime and
-                    // we need to start from a fresh service container.
-                    processState.setRestartRequired(); // don't use our restartRequired() method as this is not reversible in rollback
-                    // Just log; this doesn't change the result of the op. And if we're not stable here
-                    // it's almost certain we never stabilized during execution or we are rolling back and destabilized there.
-                    // Either one means there is already a failure message associated with this op.
-                    MGMT_OP_LOGGER.timeoutCompletingOperation(timeout, activeStep.operationId.name, activeStep.operationId.address);
                 }
-            }
-
-            if (this.lockStep == step) {
-                modelController.releaseLock(operationId);
-                exclusiveStartTime = -1;
-                lockStep = null;
             }
         } finally {
-            try {
-                if (this.containerMonitorStep == step) {
-                    modelController.logContainerStateChangesAndReset();
-                    containerMonitorStep = null;
-                }
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
+            if (this.containerMonitorStep == step) {
+                modelController.releaseContainerMonitor();
+                containerMonitorStep = null;
             }
         }
     }
@@ -998,7 +897,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (authResp == null) {
             // Non-existent resource type or operation. This is permitted but will fail
             // later for reasons unrelated to authz
-            return null;
+            return authResp;
         }
         Environment callEnvironment = getCallEnvironment();
         if (authResp.getResourceResult(ActionEffect.ADDRESS) == null) {
@@ -1052,22 +951,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     Resource getModel() {
         return model;
-    }
-
-    @Override
-    ResultAction executeOperation() {
-        try {
-            return super.executeOperation();
-        } finally {
-            synchronized (done) {
-                if (done.done) {
-                    // late cancellation; clear the thread status
-                    Thread.interrupted();
-                } else {
-                    done.done = true;
-                }
-            }
-        }
     }
 
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
@@ -1336,17 +1219,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private BlockingTimeout getBlockingTimeout() {
-        if (blockingTimeout == null) {
-            synchronized (this) {
-                if (blockingTimeout == null) {
-                    blockingTimeout = new BlockingTimeout(blockingTimeoutConfig);
-                }
-            }
-        }
-        return blockingTimeout;
-    }
-
     class ContextServiceTarget implements ServiceTarget {
 
         private final ModelControllerImpl modelController;
@@ -1380,28 +1252,22 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("deprecation")
         public ServiceTarget addListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
 
-        @SafeVarargs
-        @SuppressWarnings("deprecation")
-        public final ServiceTarget addListener(final ServiceListener<Object>... listeners) {
+        public ServiceTarget addListener(final ServiceListener<Object>... listeners) {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("deprecation")
         public ServiceTarget addListener(final Collection<ServiceListener<Object>> listeners) {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("deprecation")
         public ServiceTarget removeListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
 
-        @SuppressWarnings("deprecation")
         public Set<ServiceListener<Object>> getListeners() {
             throw new UnsupportedOperationException();
         }
@@ -1530,36 +1396,29 @@ final class OperationContextImpl extends AbstractOperationContext {
             return this;
         }
 
-        @SuppressWarnings("deprecation")
         public ServiceBuilder<T> addListener(final ServiceListener<? super T> listener) {
             realBuilder.addListener(listener);
             return this;
         }
 
-        @SafeVarargs
-        @SuppressWarnings("deprecation")
-        public final ServiceBuilder<T> addListener(final ServiceListener<? super T>... listeners) {
+        public ServiceBuilder<T> addListener(final ServiceListener<? super T>... listeners) {
             realBuilder.addListener(listeners);
             return this;
         }
 
-        @SuppressWarnings("deprecation")
         public ServiceBuilder<T> addListener(final Collection<? extends ServiceListener<? super T>> listeners) {
             realBuilder.addListener(listeners);
             return this;
         }
 
         public ServiceController<T> install() throws ServiceRegistryException, IllegalStateException {
-            synchronized (realRemovingControllers) {
+            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
+            synchronized (map) {
                 boolean intr = false;
                 try {
-                    boolean containsKey = realRemovingControllers.containsKey(name);
-                    long timeout = getBlockingTimeout().getBlockingTimeout();
-                    long waitTime = timeout;
-                    long end = System.currentTimeMillis() + waitTime;
-                    while (containsKey && waitTime > 0) {
+                    while (map.containsKey(name)) {
                         try {
-                            realRemovingControllers.wait(waitTime);
+                            map.wait();
                         } catch (InterruptedException e) {
                             intr = true;
                             if (respectInterruption) {
@@ -1567,13 +1426,6 @@ final class OperationContextImpl extends AbstractOperationContext {
                                 throw ControllerLogger.ROOT_LOGGER.serviceInstallCancelled();
                             } // else keep waiting and mark the thread interrupted at the end
                         }
-                        containsKey = realRemovingControllers.containsKey(name);
-                        waitTime = end - System.currentTimeMillis();
-                    }
-
-                    if (containsKey) {
-                        // We timed out
-                        throw ControllerLogger.ROOT_LOGGER.serviceInstallTimedOut(timeout, name);
                     }
 
                     // If a step removed this ServiceName before, it's no longer responsible
@@ -1737,12 +1589,10 @@ final class OperationContextImpl extends AbstractOperationContext {
             return controller.getAliases();
         }
 
-        @SuppressWarnings("deprecation")
         public void addListener(ServiceListener<? super S> serviceListener) {
             controller.addListener(serviceListener);
         }
 
-        @SuppressWarnings("deprecation")
         public void removeListener(ServiceListener<? super S> serviceListener) {
             controller.removeListener(serviceListener);
         }
@@ -1968,66 +1818,5 @@ final class OperationContextImpl extends AbstractOperationContext {
             DescriptionProvider realProvider = super.getModelDescription(relativeAddress);
             return new CachingDescriptionProvider(fullAddress, realProvider);
         }
-    }
-
-    private class ActiveOperationResource extends PlaceholderResource.PlaceholderResourceEntry implements Cancellable {
-
-        private ActiveOperationResource() {
-            super(ACTIVE_OPERATION, operationId.toString());
-        }
-
-        @Override
-        public boolean isModelDefined() {
-            return true;
-        }
-
-        @Override
-        public ModelNode getModel() {
-            final ModelNode model = new ModelNode();
-
-            model.get(OP).set(operationName);
-            model.get(OP_ADDR).set(operationAddress);
-
-            model.get(CALLER_THREAD).set(initiatingThread.getName());
-            ModelNode accessMechanismNode = model.get(ACCESS_MECHANISM);
-            if (accessMechanism != null) {
-                accessMechanismNode.set(accessMechanismNode.toString());
-            }
-            model.get(EXECUTION_STATUS).set(getExecutionStatus());
-            model.get(RUNNING_TIME).set(System.nanoTime() - startTime);
-            long exclusive = exclusiveStartTime;
-            if (exclusive > -1) {
-                exclusive = System.nanoTime() - exclusive;
-            }
-            model.get(EXCLUSIVE_RUNNING_TIME).set(exclusive);
-            model.get(CANCELLED).set(cancelled);
-            return model;
-        }
-
-        private String getExecutionStatus() {
-            ExecutionStatus currentStatus = executionStatus;
-            if (currentStatus == ExecutionStatus.EXECUTING) {
-                currentStatus = resultAction == ResultAction.ROLLBACK ? ExecutionStatus.ROLLING_BACK
-                        : currentStage == Stage.DONE ? ExecutionStatus.COMPLETING : ExecutionStatus.EXECUTING;
-            }
-            return currentStatus.toString();
-        }
-
-        @Override
-        public boolean cancel() {
-            synchronized (done) {
-                boolean canCancel = !done.done;
-                if (canCancel) {
-                    done.done = true;
-                    ControllerLogger.MGMT_OP_LOGGER.cancellingOperation(operationName, operationId, initiatingThread.getName());
-                    initiatingThread.interrupt();
-                }
-                return canCancel;
-            }
-        }
-    }
-
-    private static class BooleanHolder {
-        private boolean done = false;
     }
 }

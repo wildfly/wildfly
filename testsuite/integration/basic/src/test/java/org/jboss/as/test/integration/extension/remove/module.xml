@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.1" name="extensionremovemodule">
 
     <resources>
-        <resource-root path="test-extension.jar"/>
+        <resource-root path="extension-remove-module.jar"/>
     </resources>
 
     <dependencies>
