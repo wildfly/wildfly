@@ -46,6 +46,9 @@ import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.as.patching.tool.PatchingResult;
 
+import static org.jboss.as.patching.runner.PatchUtils.BACKUP_EXT;
+import static org.jboss.as.patching.runner.PatchUtils.JAR_EXT;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -74,6 +77,8 @@ class IdentityPatchContext implements PatchContentProvider {
     private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
     // The modules we need to invalidate
     private final List<File> moduleInvalidations = new ArrayList<File>();
+
+    private final Map<String, FailedFileRenaming> renames = new LinkedHashMap<String, FailedFileRenaming>();
 
     static enum State {
 
@@ -183,6 +188,13 @@ class IdentityPatchContext implements PatchContentProvider {
     protected void failedToCleanupDir(final File file) {
         checkForGarbageOnRestart = true;
         PatchLogger.ROOT_LOGGER.cannotDeleteFile(file.getAbsolutePath());
+    }
+
+    protected void failedToRenameFile(final File file, final File target) {
+        if (!renames.containsKey(file.getAbsolutePath())) {
+            renames.put(file.getAbsolutePath(), new FailedFileRenaming(file, target, getIdentityEntry().applyPatchId));
+            PatchLogger.ROOT_LOGGER.cannotRenameFile(file.getAbsolutePath());
+        }
     }
 
     @Override
@@ -345,7 +357,7 @@ class IdentityPatchContext implements PatchContentProvider {
                     // Only invalidate modules when applying patches; on rollback files are immediately restored
                     for (final File invalidation : moduleInvalidations) {
                         processed.add(invalidation);
-                        PatchModuleInvalidationUtils.processFile(invalidation, mode);
+                        PatchModuleInvalidationUtils.processFile(this, invalidation, mode);
                     }
                 }
                 modification.complete();
@@ -373,10 +385,22 @@ class IdentityPatchContext implements PatchContentProvider {
                         final File cleanupMarker = new File(installedImage.getInstallationMetadata(), "cleanup-patching-dirs");
                         cleanupMarker.createNewFile();
                     }
+                    storeFailedRenaming();
                 } catch (IOException e) {
                     PatchLogger.ROOT_LOGGER.debugf(e, "failed to create cleanup marker");
                 }
             }
+        }
+    }
+
+    private void storeFailedRenaming() throws IOException {
+        if (!renames.isEmpty()) {
+            final File failedRenaming = new File(installedImage.getInstallationMetadata(), "cleanup-renaming-files");
+            if (!failedRenaming.exists()) {
+                failedRenaming.createNewFile();
+            }
+            List<String> failures = new ArrayList<String>(renames.keySet());
+            PatchUtils.writeRefs(failedRenaming, failures, true);
         }
     }
 
@@ -403,7 +427,7 @@ class IdentityPatchContext implements PatchContentProvider {
             final PatchingTaskContext.Mode mode = currentMode == PatchingTaskContext.Mode.APPLY ? PatchingTaskContext.Mode.ROLLBACK : PatchingTaskContext.Mode.APPLY;
             for (final File file : moduleInvalidations) {
                 try {
-                    PatchModuleInvalidationUtils.processFile(file, mode);
+                    PatchModuleInvalidationUtils.processFile(this, file, mode);
                 } catch (Exception e) {
                     PatchLogger.ROOT_LOGGER.debugf(e, "failed to restore state for %s", file);
                 }
@@ -750,7 +774,7 @@ class IdentityPatchContext implements PatchContentProvider {
             final File[] files = moduleRoot.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
+                    return name.endsWith(JAR_EXT) || name.endsWith(BACKUP_EXT);
                 }
             });
             if (files != null && files.length > 0) {
@@ -758,7 +782,7 @@ class IdentityPatchContext implements PatchContentProvider {
                     moduleInvalidations.add(file);
                     if (mode == Mode.ROLLBACK) {
                         // For rollback we need to restore the file before calculating the hash
-                        PatchModuleInvalidationUtils.processFile(file, mode);
+                        PatchModuleInvalidationUtils.processFile(null, file, mode);
                     }
                 }
             }

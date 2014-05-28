@@ -39,7 +39,7 @@ public class PatchReenableJarTool {
         findModuleRoots(base, jars);
 
         for (final File file : jars) {
-            PatchModuleInvalidationUtils.processFile(file, PatchingTaskContext.Mode.ROLLBACK);
+            PatchModuleInvalidationUtils.processFile(null, file, PatchingTaskContext.Mode.ROLLBACK);
         }
     }
 

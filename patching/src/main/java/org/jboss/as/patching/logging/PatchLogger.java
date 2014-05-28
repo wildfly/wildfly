@@ -230,4 +230,14 @@ public interface PatchLogger extends BasicLogger {
 
     @Message(id = 34, value = "in error: '%s'")
     String artifactInError(PatchingArtifact.ArtifactState state);
+
+    @LogMessage(level = WARN)
+    @Message(id = 35, value = "Cannot rename file %s")
+    void cannotRenameFile(String name);
+
+    @Message(id = 36, value = "Cannot process backup by renaming file %s")
+    IllegalStateException cannotRenameFileDuringBackup(String name);
+
+    @Message(id = 37, value = "Cannot process restore by renaming file %s")
+    IllegalStateException cannotRenameFileDuringRestore(String name);
 }
