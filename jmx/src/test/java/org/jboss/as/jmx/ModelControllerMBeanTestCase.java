@@ -83,13 +83,16 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
@@ -1386,7 +1389,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 }
             });
             // We always need to add an 'add' operation
-            registration.registerOperationHandler(ADD, TestSubystemAdd.INSTANCE, TestSubystemAdd.INSTANCE, false);
+            registration.registerOperationHandler(new SimpleOperationDefinition(ADD, new NonResolvingResourceDescriptionResolver()), TestSubystemAdd.INSTANCE);
 
             //Register the attributes
             OperationStepHandler expressionHandler = new WriteAttributeHandlers.StringLengthValidatingHandler(1, false, true);
@@ -1450,7 +1453,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             }
         }
 
-        static class TestSubystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+        static class TestSubystemAdd extends AbstractAddStepHandler{
             static final TestSubystemAdd INSTANCE = new TestSubystemAdd();
 
             @Override
@@ -1470,13 +1473,6 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 model.get("map", "key2").set(12);
             }
 
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(NAME).set(ADD);
-                node.get(DESCRIPTION).set("Add the test subsystem");
-                return node;
-            }
         }
 
         static class VoidOperationNoParams implements OperationStepHandler, DescriptionProvider {

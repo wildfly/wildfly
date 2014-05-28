@@ -41,23 +41,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-
-import java.util.EnumSet;
 
 /**
  * Version 2 of an extension.
@@ -79,7 +74,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
     void processTestSubsystem(final SubsystemRegistration subsystem, final ManagementResourceRegistration registration) {
 
         // Register an update operation, which requires the transformer to create composite operation
-        registration.registerOperationHandler("update", new OperationStepHandler() {
+        registration.registerOperationHandler(getOperationDefinition("update"), new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -88,20 +83,20 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 context.getResult().set(model);
                 context.stepCompleted();
             }
-        }, DESCRIPTION_PROVIDER);
+        });
 
         // Add a new model, which does not exist in the old model
         registration.registerSubModel(createResourceDefinition(NEW_ELEMENT));
         registration.registerSubModel(createResourceDefinition(OTHER_NEW_ELEMENT));
         // Add the renamed model
         registration.registerSubModel(createResourceDefinition(RENAMED));
-        registration.registerOperationHandler("test", new OperationStepHandler() {
+        registration.registerOperationHandler(getOperationDefinition("test"), new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(true);
                 context.stepCompleted();
             }
-        }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        });
 
         //
         // Transformation rules
@@ -196,7 +191,6 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 }
             });
         }
-
-    };
+    }
 
 }

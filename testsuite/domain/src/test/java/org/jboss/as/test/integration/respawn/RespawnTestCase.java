@@ -558,7 +558,7 @@ public class RespawnTestCase {
         return client;
     }
 
-    private static abstract class ProcessUtil {
+    private abstract static class ProcessUtil {
 
         List<String> initialProcessIds;
 

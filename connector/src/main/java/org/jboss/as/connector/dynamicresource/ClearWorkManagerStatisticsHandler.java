@@ -20,12 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.dynamicresource.operations;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
-
-import java.util.Arrays;
-import java.util.List;
+package org.jboss.as.connector.dynamicresource;
 
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
@@ -35,22 +30,23 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
+import org.jboss.jca.core.api.workmanager.WorkManager;
+
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_NAME;
 
 /**
  * Clear stats from passed plugins
  *
  * @author Stefano Maestri
  */
-public class ClearStatisticsHandler implements OperationStepHandler {
+public class ClearWorkManagerStatisticsHandler implements OperationStepHandler {
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.CLEAR_STATISTICS, ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.CLEAR_STATISTICS, ResourceAdaptersExtension.getResourceDescriptionResolver(STATISTICS_NAME))
             .build();
 
-    private final List<StatisticsPlugin> stats;
-
-    public ClearStatisticsHandler(StatisticsPlugin... stats) {
-        this.stats = Arrays.asList(stats);
+    private final WorkManager wm;
+    public ClearWorkManagerStatisticsHandler(final WorkManager wm) {
+        this.wm = wm;
     }
 
     @Override
@@ -59,9 +55,7 @@ public class ClearStatisticsHandler implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    for (StatisticsPlugin statsPlugin : stats) {
-                        statsPlugin.clear();
-                    }
+                    wm.getStatistics().clear();
                     context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);

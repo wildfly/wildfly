@@ -22,18 +22,13 @@
 
 package org.jboss.as.management.client.content;
 
-import java.util.Locale;
-
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,15 +36,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ManagedDMRContentAddHandler implements OperationStepHandler, DescriptionProvider {
+public class ManagedDMRContentAddHandler extends AbstractAddStepHandler {
 
-    private final AttributeDefinition contentAttribute;
-    private final ResourceDescriptionResolver descriptionResolver;
+    public ManagedDMRContentAddHandler(final AttributeDefinition contentAttribute) {
+        super(contentAttribute);
 
-    public ManagedDMRContentAddHandler(final AttributeDefinition contentAttribute, final ResourceDescriptionResolver descriptionResolver) {
-        this.contentAttribute = contentAttribute;
-        this.descriptionResolver = descriptionResolver;
     }
+
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -57,7 +50,7 @@ public class ManagedDMRContentAddHandler implements OperationStepHandler, Descri
         PathElement pe = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement();
 
         ModelNode model = new ModelNode();
-        contentAttribute.validateAndSet(operation, model);
+        populateModel(operation, model);
 
         // Create and add the specialized resource type we use for a managed dmr content resource
         ManagedDMRContentResource resource = new ManagedDMRContentResource(pe);
@@ -66,11 +59,5 @@ public class ManagedDMRContentAddHandler implements OperationStepHandler, Descri
         resource.writeModel(model);
 
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        DescriptionProvider delegate = new DefaultOperationDescriptionProvider(ModelDescriptionConstants.ADD, descriptionResolver, contentAttribute);
-        return delegate.getModelDescription(locale);
     }
 }

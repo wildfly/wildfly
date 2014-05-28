@@ -22,26 +22,22 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
-import java.util.Locale;
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Fake extension to use in testing extension management.
@@ -60,13 +56,12 @@ public class TestExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration one = context.registerSubsystem("1", 1, 1, 1);
         one.registerXMLElementWriter(parserOne);
-        ManagementResourceRegistration mrrOne = one.registerSubsystemModel(new Subsystem("1"));
-        mrrOne.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        ManagementResourceRegistration mrrOne = one.registerSubsystemModel(new RootResourceDefinition("1"));
 
         SubsystemRegistration two = context.registerSubsystem("2", 2, 2, 2);
         two.registerXMLElementWriter(parserTwo);
-        ManagementResourceRegistration mrrTwo = two.registerSubsystemModel(new Subsystem("2"));
-        mrrTwo.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        ManagementResourceRegistration mrrTwo = two.registerSubsystemModel(new RootResourceDefinition("2"));
+
     }
 
     @Override
@@ -75,31 +70,24 @@ public class TestExtension implements Extension {
         context.setSubsystemXmlMapping("2", parserTwo.getNamespace(), parserTwo);
     }
 
+    private static class Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    private static class Subsystem implements DescriptionProvider {
+        private final String namespace;
 
-        private final String name;
-
-        private Subsystem(String name) {
-            this.name = name;
+        private Parser(String namespace) {
+            this.namespace = namespace;
         }
 
         @Override
-        public ModelNode getModelDescription(Locale locale) {
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+            ParseUtils.requireNoContent(reader);
+        }
 
-            ModelNode desc = new ModelNode();
-            desc.get(DESCRIPTION).set("Subsystem " + name);
-            ModelNode attr = desc.get(ATTRIBUTES, NAME);
-            attr.get(DESCRIPTION).set("The name");
-            attr.get(TYPE).set(ModelType.STRING);
-            attr.get(NILLABLE).set(false);
-
-            desc.get(OPERATIONS);
-
-            desc.get(CHILDREN).setEmptyObject();
-
-            return desc;
+        @Override
+        public void writeContent(XMLExtendedStreamWriter streamWriter, SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(namespace, false);
+            streamWriter.writeEndElement();
         }
     }
-
 }

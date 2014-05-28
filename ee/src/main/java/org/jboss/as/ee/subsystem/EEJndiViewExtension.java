@@ -84,7 +84,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
 
         final ServiceRegistry serviceRegistry = context.getOperationContext().getServiceRegistry(false);
 
-        final Set<Resource.ResourceEntry> deploymentResource = context.getOperationContext().readResourceFromRoot(PathAddress.EMPTY_ADDRESS).getChildren(DEPLOYMENT);
+        final Set<Resource.ResourceEntry> deploymentResource = context.getOperationContext().readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).getChildren(DEPLOYMENT);
         for (final Resource.ResourceEntry entry : deploymentResource) {
             final ServiceController<?> deploymentUnitServiceController = serviceRegistry.getService(ServiceName.JBOSS.append("deployment", "unit", entry.getName()));
             if (deploymentUnitServiceController != null) {

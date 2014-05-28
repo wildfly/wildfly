@@ -76,7 +76,9 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-        Assert.assertTrue(warFile.delete());
+        if (warFile!=null) {
+            Assert.assertTrue(warFile.delete());
+        }
 
         CLITestSuite.stopSupport();
     }

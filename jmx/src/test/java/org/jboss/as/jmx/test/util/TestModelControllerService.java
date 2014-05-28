@@ -24,7 +24,6 @@
 
 package org.jboss.as.jmx.test.util;
 
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,9 +38,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 
@@ -88,11 +85,4 @@ public abstract class TestModelControllerService extends AbstractControllerServi
         super.bootThreadDone();
         latch.countDown();
     }
-
-    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 }

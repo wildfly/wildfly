@@ -61,8 +61,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 public class PoolConfigurationRWHandler {
 
-    static final String[] NO_LOCATION = new String[0];
-
     public static final List<String> ATTRIBUTES = Arrays.asList(MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), INITIAL_POOL_SIZE.getName(),BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
             IDLETIMEOUTMINUTES.getName(), BACKGROUNDVALIDATION.getName(), BACKGROUNDVALIDATIONMILLIS.getName(),
             POOL_PREFILL.getName(), POOL_USE_STRICT_MIN.getName(), POOL_FLUSH_STRATEGY.getName());

@@ -86,7 +86,7 @@ public class CLITestSuite {
         }
     }
 
-    private synchronized static void start(final String name) {
+    private static synchronized void start(final String name) {
         try {
             support = DomainTestSupport.createAndStartDefaultSupport(name);
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class CLITestSuite {
         }
     }
 
-    private synchronized static void stop() {
+    private static synchronized void stop() {
         if(support != null) {
             support.stop();
             support = null;

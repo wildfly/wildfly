@@ -34,9 +34,11 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -224,13 +226,7 @@ public class RegistryProxyControllerTestCase {
     }
 
     private ManagementResourceRegistration registerSubModel(final ManagementResourceRegistration parent, final PathElement address) {
-        return parent.registerSubModel(address, new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        });
+        return parent.registerSubModel(new SimpleResourceDefinition(address, new NonResolvingResourceDescriptionResolver()));
     }
 
     static class TestProxyController implements ProxyController {

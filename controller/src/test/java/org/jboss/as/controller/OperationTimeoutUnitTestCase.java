@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -238,14 +239,15 @@ public class OperationTimeoutUnitTestCase {
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
-            rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("block", new BlockingServiceHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler(SetupHandler.DEFINITION, new SetupHandler());
+            rootRegistration.registerOperationHandler(BlockingServiceHandler.DEFINITION, new BlockingServiceHandler());
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
         }
     }
 
     public static class SetupHandler implements OperationStepHandler {
+        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinition("setup", new NonResolvingResourceDescriptionResolver());
 
         @Override
         public void execute(OperationContext context, ModelNode operation) {
@@ -270,6 +272,7 @@ public class OperationTimeoutUnitTestCase {
     }
 
     public static class BlockingServiceHandler implements OperationStepHandler {
+        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinition("block", new NonResolvingResourceDescriptionResolver());
         @Override
         public void execute(OperationContext context, ModelNode operation) {
 

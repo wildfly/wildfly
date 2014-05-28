@@ -22,7 +22,6 @@
 
 package org.jboss.as.platform.mbean;
 
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.controller.AbstractControllerService;
@@ -35,14 +34,12 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 
@@ -52,13 +49,6 @@ import org.jboss.msc.service.StartException;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class PlatformMBeanTestModelControllerService extends AbstractControllerService {
-
-    private static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode().set("Test");
-        }
-    };
 
     final CountDownLatch latch = new CountDownLatch(2);
 

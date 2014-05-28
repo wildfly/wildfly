@@ -27,7 +27,6 @@ import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

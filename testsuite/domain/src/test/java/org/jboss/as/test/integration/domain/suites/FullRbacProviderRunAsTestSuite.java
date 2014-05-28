@@ -64,7 +64,7 @@ public class FullRbacProviderRunAsTestSuite {
         }
     }
 
-    private synchronized static void start(final String name) {
+    private static synchronized void start(final String name) {
         try {
             support = createAndStartDefaultSupport(name);
         } catch (Exception e) {
@@ -72,7 +72,7 @@ public class FullRbacProviderRunAsTestSuite {
         }
     }
 
-    private synchronized static void stop() {
+    private static synchronized void stop() {
         if(support != null) {
             support.stop();
             support = null;
@@ -80,13 +80,13 @@ public class FullRbacProviderRunAsTestSuite {
     }
 
     @BeforeClass
-    public synchronized static void beforeClass() {
+    public static synchronized void beforeClass() {
         initializedLocally = true;
         start(FullRbacProviderRunAsTestSuite.class.getSimpleName());
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         stop();
     }
 

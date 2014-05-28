@@ -45,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.as.controller.PathAddress;
@@ -215,7 +214,7 @@ public class HTTPSManagementInterfaceTestCase {
      *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
      *
-     * @throws ClientProtocolException, IOException, URISyntaxException
+     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      */
     @Test
     public void testHTTPS() throws Exception {
@@ -233,7 +232,7 @@ public class HTTPSManagementInterfaceTestCase {
      *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
      *
-     * @throws ClientProtocolException, IOException, URISyntaxException
+     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      */
     @Test
     public void testHTTPSWithSecureInterface() throws Exception {

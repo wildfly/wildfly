@@ -52,7 +52,7 @@ import org.junit.Test;
 
 /**
  * Tests of management operations involving discovery options.
- * 
+ *
  * @author Farah Juma
  */
 public class DiscoveryOptionTestCase {
@@ -175,8 +175,7 @@ public class DiscoveryOptionTestCase {
         Assert.assertEquals(originalOptionsOrdering, returnVal);
     }
 
-    private void addAndRemoveDiscoveryOptionTest(ModelControllerClient client, ModelNode discoveryOptionAddress, 
-            ModelNode addDiscoveryOption) throws Exception {
+    private void addAndRemoveDiscoveryOptionTest(ModelControllerClient client, ModelNode discoveryOptionAddress, ModelNode addDiscoveryOption) throws Exception {
         addDiscoveryOptionTest(client, discoveryOptionAddress, addDiscoveryOption);
         removeDiscoveryOptionTest(client, discoveryOptionAddress);
     }
@@ -190,8 +189,7 @@ public class DiscoveryOptionTestCase {
         return addDiscoveryOption;
     }
 
-    private void addDiscoveryOptionTest(ModelControllerClient client, ModelNode discoveryOptionAddress, 
-            ModelNode addDiscoveryOption) throws Exception {
+    private void addDiscoveryOptionTest(ModelControllerClient client, ModelNode discoveryOptionAddress, ModelNode addDiscoveryOption) throws Exception {
         addDiscoveryOption.get(OP_ADDR).set(discoveryOptionAddress);
 
         Assert.assertFalse(exists(discoveryOptionAddress, client));

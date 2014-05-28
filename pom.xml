@@ -64,6 +64,7 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.1.0</maven.min.version>
+        <version.checkstyle.plugin>2.12.1</version.checkstyle.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
