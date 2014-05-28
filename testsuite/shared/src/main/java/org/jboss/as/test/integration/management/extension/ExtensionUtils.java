@@ -28,6 +28,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +64,7 @@ public class ExtensionUtils {
 
     public static void createExtensionModule(File extensionModuleRoot, Class<? extends Extension> extension, Package... additionalPackages) throws IOException {
 
-        deleteRecursively(extensionModuleRoot);
+        deleteRecursively(extensionModuleRoot.toPath());
 
         if (extensionModuleRoot.exists()) {
             throw new IllegalArgumentException(extensionModuleRoot + " already exists");
@@ -83,11 +88,11 @@ public class ExtensionUtils {
     }
 
     public static void deleteExtensionModule(String moduleName) {
-        deleteRecursively(getExtensionModuleRoot(moduleName));
+        deleteRecursively(getExtensionModuleRoot(moduleName).toPath());
     }
 
     public static void deleteExtensionModule(File extensionModuleRoot) {
-        deleteRecursively(extensionModuleRoot);
+        deleteRecursively(extensionModuleRoot.toPath());
     }
 
     private static void copyFile(File target, InputStream src) throws IOException {
@@ -144,14 +149,27 @@ public class ExtensionUtils {
         return archive.as(ZipExporter.class);
     }
 
-    private static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
+    private static void deleteRecursively(Path path) {
+        if (path == null) {
+            return;
+        }
+        try {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
                 }
-            }
-            assert file.delete();
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
+        } catch (IOException e) {
+            System.out.println("Could not delete file = " + e.getMessage());
         }
     }
 }
