@@ -145,13 +145,17 @@ public class ExtensionUtils {
     }
 
     private static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
-                }
+        if (file == null) {
+            return;
+        }
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                deleteRecursively(f);
             }
-            assert file.delete();
+        }
+        if (!file.delete()) {
+            System.out.println("Could not delete file: " + file);
         }
     }
 }
