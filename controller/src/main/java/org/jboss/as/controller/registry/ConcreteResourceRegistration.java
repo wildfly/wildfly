@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -486,6 +487,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // an unexpected undefined value returned. But it removes the possibility of a
                 // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
                 // in the valid attribute "foo" not being readable
+                DescriptionProvider provider = resourceDefinition.getDescriptionProvider(this);
+                if (provider instanceof DefaultResourceDescriptionProvider){
+                    return null; // attribute was not registered so it does not exist. no need to read resource description as we wont find anything and cause SO
+                }
+                //todo get rid of this fallback loop as with code cleanup we wont need it anymore.
                 final ModelNode desc = resourceDefinition.getDescriptionProvider(this).getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
                     access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null, null);
