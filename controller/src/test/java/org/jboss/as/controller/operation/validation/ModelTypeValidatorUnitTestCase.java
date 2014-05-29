@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Test;
 
 /**
@@ -48,10 +49,10 @@ public class ModelTypeValidatorUnitTestCase {
     @Test
     public void testAllowExpressions() {
         ModelTypeValidator testee = new ModelTypeValidator(ModelType.BOOLEAN, false, true);
-        assertOk(testee, new ModelNode().setExpression("{test}"));
+        assertOk(testee, new ModelNode().set(new ValueExpression("{test}")));
 
         testee = new ModelTypeValidator(ModelType.BOOLEAN, false, false);
-        assertInvalid(testee, new ModelNode().setExpression("{test}"));
+        assertInvalid(testee, new ModelNode().set(new ValueExpression("{test}")));
     }
 
     @Test
@@ -199,7 +200,7 @@ public class ModelTypeValidatorUnitTestCase {
     @Test
     public void testExpression() {
         ModelTypeValidator testee = new ModelTypeValidator(ModelType.EXPRESSION, false, false, false);
-        assertOk(testee, new ModelNode().setExpression("${test}"));
+        assertOk(testee, new ModelNode().set(new ValueExpression("${test}")));
         assertInvalid(testee, new ModelNode().set("${test}"));
     }
 

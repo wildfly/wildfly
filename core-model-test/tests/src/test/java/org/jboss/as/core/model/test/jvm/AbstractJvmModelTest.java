@@ -44,6 +44,7 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -172,7 +173,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
         KernelServices kernelServices = doEmptyJvmAdd();
         String expression = "-Xmx${my.xmx:100}m";
         ModelNode value = new ModelNode().add(expression);
-        Assert.assertEquals(new ModelNode().add(new ModelNode().setExpression(expression)), writeTest(kernelServices, "jvm-options", value));
+        Assert.assertEquals(new ModelNode().add(new ModelNode().set(new ValueExpression(expression))), writeTest(kernelServices, "jvm-options", value));
     }
 
     @Test

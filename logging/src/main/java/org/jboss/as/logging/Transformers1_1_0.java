@@ -30,6 +30,7 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * Utility classes related to transforming the logging subsystem to the 1.1.0 model version.
@@ -79,7 +80,7 @@ final class Transformers1_1_0 {
                 attributeValue.set(fixFormatPattern(currentPattern));
             } else if (attributeValue.getType() == ModelType.EXPRESSION) {
                 String currentPattern = attributeValue.asString();
-                attributeValue.setExpression(fixFormatPattern(currentPattern));
+                attributeValue.set(new ValueExpression(fixFormatPattern(currentPattern)));
             }
         }
     }

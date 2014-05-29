@@ -45,6 +45,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * Sets up how to handle failed transformation for use with
@@ -424,7 +425,7 @@ public class FailedOperationTransformationConfig {
 
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             if (toResolve.getType() == ModelType.STRING) {
-                toResolve = new ModelNode().setExpression(toResolve.asString());
+                toResolve = new ModelNode().set(new ValueExpression(toResolve.asString()));
             }
             return toResolve.resolve();
         }

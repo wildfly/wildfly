@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Test;
 
 /**
@@ -209,15 +210,15 @@ public class ExpressionResolverUnitTestCase {
     private ModelNode createModelNode() {
         ModelNode node = new ModelNode();
         node.get("int").set(1);
-        node.get("expr").setExpression("${test.prop.expr}");
+        node.get("expr").set(new ValueExpression("${test.prop.expr}"));
         node.get("map", "plain").set("a");
-        node.get("map", "prop.b").setExpression("${test.prop.b}");
-        node.get("map", "prop.c").setExpression("${test.prop.c}");
+        node.get("map", "prop.b").set(new ValueExpression("${test.prop.b}"));
+        node.get("map", "prop.c").set(new ValueExpression("${test.prop.c}"));
         node.get("list").add("one");
-        node.get("list").addExpression("${test.prop.two}");
-        node.get("list").addExpression("${test.prop.three}");
+        node.get("list").add(new ValueExpression("${test.prop.two}"));
+        node.get("list").add(new ValueExpression("${test.prop.three}"));
         node.get("plainprop").set("plain", "plain");
-        node.get("prop").setExpression("test", "${test.prop.prop}");
+        node.get("prop").set("test", new ValueExpression("${test.prop.prop}"));
         return node;
     }
 }

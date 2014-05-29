@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -318,7 +319,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         }
                         String expression = "${exp.test:" + attrValue.asString() + "}";
                         expressionAttrs.put(attrName, new ModelNode(expression));
-                        expectedAttrs.put(attrName, new ModelNode().setExpression(expression));
+                        expectedAttrs.put(attrName, new ModelNode().set(new ValueExpression(expression)));
                         simple++;
                         logHandling("Added expression to simple attribute " + attrName + " at " + address.toModelNode().asString());
                     }
@@ -446,7 +447,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         }
                         String expression = "${exp.test:" + propVal.asString() + "}";
                         updated.get(prop.getName()).set(expression);
-                        expected.get(prop.getName()).set(new ModelNode().setExpression(expression));
+                        expected.get(prop.getName()).set(new ModelNode().set(new ValueExpression(expression)));
                         hasExpression = true;
 
                     } else {
@@ -460,7 +461,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     }
                     String expression = "${exp.test:" + item.asString() + "}";
                     updated.add(expression);
-                    expected.add(new ModelNode().setExpression(expression));
+                    expected.add(new ModelNode().set(new ValueExpression(expression)));
                     hasExpression = true;
                 } else {
                     updated.add(item);
@@ -601,7 +602,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 String valueString = timeunit ? fieldValue.asString().toLowerCase() : fieldValue.asString();
                 String expression = "${exp.test:" + valueString + "}";
                 updatedItem.get(fieldName).set(expression);
-                itemToExpect.get(fieldName).set(new ModelNode().setExpression(expression));
+                itemToExpect.get(fieldName).set(new ModelNode().set(new ValueExpression(expression)));
                 changed = true;
             }
         }

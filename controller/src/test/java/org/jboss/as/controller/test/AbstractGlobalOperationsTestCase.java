@@ -86,6 +86,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -154,7 +155,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 model.get("profile", "profileA", "subsystem", "subsystem2", "boolean").set(true);
                 model.get("profile", "profileA", "subsystem", "subsystem2", "bytes").set(new byte[]{1, 2, 3});
                 model.get("profile", "profileA", "subsystem", "subsystem2", "double").set(Double.MAX_VALUE);
-                model.get("profile", "profileA", "subsystem", "subsystem2", "expression").setExpression("{expr}");
+                model.get("profile", "profileA", "subsystem", "subsystem2", "expression").set(new ValueExpression("{expr}"));
                 model.get("profile", "profileA", "subsystem", "subsystem2", "int").set(102);
                 model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1A");
                 model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1B");

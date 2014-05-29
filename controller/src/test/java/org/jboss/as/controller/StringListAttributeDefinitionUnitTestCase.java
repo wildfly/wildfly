@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,12 +47,12 @@ public class StringListAttributeDefinitionUnitTestCase {
 
         ModelNode validated = ld.validateOperation(op);
         Assert.assertEquals(op.get("test").get(0), validated.get(0));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), validated.get(1));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).asString())), validated.get(1));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
         Assert.assertEquals(op.get("test").get(0), model.get("test").get(0));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), model.get("test").get(1));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).asString())), model.get("test").get(1));
 
     }
 }
