@@ -45,6 +45,9 @@ set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
 rem # Prefer IPv4
 set "JAVA_OPTS=%JAVA_OPTS%  -Djava.net.preferIPv4Stack=true "
 
+rem # Set the jboss.modules.policy-permissions property to true by default.
+set "JAVA_OPTS=%JAVA_OPTS%  -Djboss.modules.policy-permissions=true "
+
 rem # Make Byteman classes visible in all module loaders
 rem # This is necessary to inject Byteman rules into AS7 deployments
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"

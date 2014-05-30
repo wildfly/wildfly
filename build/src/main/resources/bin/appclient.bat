@@ -85,7 +85,6 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 "%JAVA%" %JAVA_OPTS% ^
  "-Dorg.jboss.boot.log.file=%JBOSS_HOME%\appclient\log\appclient.log" ^
  "-Dlogging.configuration=file:%JBOSS_HOME%/appclient/configuration/logging.properties" ^
-    -Djboss.modules.policy-permissions ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -jaxpmodule "javax.xml.jaxp-provider" ^
