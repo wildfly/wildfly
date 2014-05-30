@@ -37,6 +37,7 @@ import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGG
 
 import java.io.ByteArrayInputStream;
 import java.util.Deque;
+import java.util.Iterator;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -65,7 +66,6 @@ import org.jboss.dmr.ModelNode;
 class DomainApiGenericOperationHandler implements HttpHandler {
 
     private static final String OPERATION = "operation";
-    private static final String INPUT_STREAMS = "input-streams";
 
     private final ModelController modelController;
     private final FormParserFactory formParserFactory;
@@ -104,12 +104,19 @@ class DomainApiGenericOperationHandler implements HttpHandler {
 
         // Process the input streams
         final OperationBuilder builder = OperationBuilder.create(operation, true);
-        final Deque<FormData.FormValue> contents = data.get(INPUT_STREAMS);
-        if (contents != null && !contents.isEmpty()) {
-            for (final FormData.FormValue value : contents) {
-                builder.addFileAsAttachment(value.getFile());
+        final Iterator<String> i = data.iterator();
+        while (i.hasNext()) {
+            final String name = i.next();
+            final Deque<FormData.FormValue> contents = data.get(name);
+            if (contents != null && !contents.isEmpty()) {
+                for (final FormData.FormValue value : contents) {
+                    if (value.isFile()) {
+                        builder.addFileAsAttachment(value.getFile());
+                    }
+                }
             }
         }
+
         operationParameterBuilder.pretty(operation.hasDefined("json.pretty") && operation.get("json.pretty").asBoolean());
         // Response callback to handle the :reload operation
         final OperationParameter opParam = operationParameterBuilder.build();
