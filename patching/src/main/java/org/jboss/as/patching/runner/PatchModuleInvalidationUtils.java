@@ -38,7 +38,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * Cripple a JAR or other zip file by flipping a bit in the end of central directory record
  * This process can be reversed by flipping the bit back. Useful for rendering JARs non-executable.
  *
- * based on the {@linkplain org.jboss.as.server.deployment.scanner.ZipCompletionScanner}
+ * based on the org.jboss.as.server.deployment.scanner.ZipCompletionScanner
  *
  * @author David Jorm
  * @author Emanuel Muckenhuber
@@ -118,16 +118,16 @@ class PatchModuleInvalidationUtils {
     private static final byte[] CRIPPLED_ENDSIG_PATTERN = new byte[]{0x07, 0x05, 0x4b, 0x50}; // crippled signature
     private static final int SIG_PATTERN_LENGTH = 4;
 
-    private static final int[] GOOD_END_BAD_BYTE_SKIP = new int[ALPHABET_SIZE];
-    private static final int[] CRIPPLED_BAD_BYTE_SKIP = new int[ALPHABET_SIZE];
+    private static final int[] BAD_BYTE_SKIP = new int[ALPHABET_SIZE];
 
     private static final byte[] LOCSIG_PATTERN = new byte[]{0x50, 0x4b, 0x03, 0x04};
     private static final int[] LOC_BAD_BYTE_SKIP = new int[ALPHABET_SIZE];
 
     static {
         // Set up the Boyer Moore "bad character arrays" for our 3 patterns
-        computeBadByteSkipArray(GOOD_ENDSIG_PATTERN, GOOD_END_BAD_BYTE_SKIP);
-        computeBadByteSkipArray(CRIPPLED_ENDSIG_PATTERN, CRIPPLED_BAD_BYTE_SKIP);
+//        computeBadByteSkipArray(GOOD_ENDSIG_PATTERN, GOOD_END_BAD_BYTE_SKIP);
+//        computeBadByteSkipArray(CRIPPLED_ENDSIG_PATTERN, CRIPPLED_BAD_BYTE_SKIP);
+        computeBadByteSkipArray(GOOD_ENDSIG_PATTERN, CRIPPLED_ENDSIG_PATTERN, BAD_BYTE_SKIP);
         computeBadByteSkipArray(LOCSIG_PATTERN, LOC_BAD_BYTE_SKIP);
     }
 
@@ -145,13 +145,10 @@ class PatchModuleInvalidationUtils {
      * @throws IOException
      */
     static void processFile(final File file, final PatchingTaskContext.Mode mode) throws IOException {
-        if (!ENABLE_INVALIDATION) {
-            return;
-        }
-        if (mode == PatchingTaskContext.Mode.APPLY) {
-            updateJar(file, GOOD_ENDSIG_PATTERN, GOOD_END_BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
+        if (mode == PatchingTaskContext.Mode.APPLY && !ENABLE_INVALIDATION) {
+            updateJar(file, GOOD_ENDSIG_PATTERN, BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
         } else if (mode == PatchingTaskContext.Mode.ROLLBACK) {
-            updateJar(file, CRIPPLED_ENDSIG_PATTERN, CRIPPLED_BAD_BYTE_SKIP, GOOD_ENDSIG, CRIPPLED_ENDSIG);
+            updateJar(file, CRIPPLED_ENDSIG_PATTERN, BAD_BYTE_SKIP, GOOD_ENDSIG, CRIPPLED_ENDSIG);
         } else {
             throw new IllegalStateException();
         }
@@ -173,12 +170,23 @@ class PatchModuleInvalidationUtils {
             final FileChannel channel = raf.getChannel();
             try {
                 long pos = channel.size() - ENDLEN;
+                final ScanContext context;
+                if (newSig == CRIPPLED_ENDSIG) {
+                    context = new ScanContext(GOOD_ENDSIG_PATTERN, CRIPPLED_ENDSIG_PATTERN);
+                } else if (newSig == GOOD_ENDSIG) {
+                    context = new ScanContext(CRIPPLED_ENDSIG_PATTERN, GOOD_ENDSIG_PATTERN);
+                } else {
+                    context = null;
+                }
+
                 if (!validateEndRecord(file, channel, pos, endSig)) {
-                    pos = scanForEndSig(file, channel, searchPattern, badSkipBytes, endSig);
+                    pos = scanForEndSig(file, channel, context);
                 }
                 if (pos == -1) {
-                    // Don't fail patching if we cannot validate a valid zip
-                    PatchLogger.ROOT_LOGGER.cannotInvalidateZip(file.getAbsolutePath());
+                    if (context.state == State.NOT_FOUND) {
+                        // Don't fail patching if we cannot validate a valid zip
+                        PatchLogger.ROOT_LOGGER.cannotInvalidateZip(file.getAbsolutePath());
+                    }
                     return;
                 }
                 // Update the central directory record
@@ -278,13 +286,13 @@ class PatchModuleInvalidationUtils {
      *
      * @param file     the file being checked
      * @param channel  the channel
-     * @param pattern  the search pattern
-     * @param byteSkip the bad bytes skip table
-     * @param endSig   the end of central dir signature
+     * @param context  the scan context
      * @return
      * @throws IOException
      */
-    private static long scanForEndSig(final File file, final FileChannel channel, final byte[] pattern, final int[] byteSkip, final long endSig) throws IOException {
+    private static long scanForEndSig(final File file, final FileChannel channel, final ScanContext context) throws IOException {
+
+
 
         // TODO Consider just reading in MAX_REVERSE_SCAN bytes -- increased peak memory cost but less complex
 
@@ -307,18 +315,23 @@ class PatchModuleInvalidationUtils {
 
                 int patternPos;
                 for (patternPos = SIG_PATTERN_LENGTH - 1;
-                     patternPos >= 0 && pattern[patternPos] == bb.get(bufferPos - patternPos);
-                     --patternPos) {
+                        patternPos >= 0 && context.matches(patternPos, bb.get(bufferPos - patternPos));
+                        --patternPos) {
                     // empty loop while bytes match
                 }
 
                 // Switch gives same results as checking the "good suffix array" in the Boyer Moore algorithm
                 switch (patternPos) {
                     case -1: {
+                        final State state = context.state;
                         // Pattern matched. Confirm is this is the start of a valid end of central dir record
                         long startEndRecord = channelPos + bufferPos - SIG_PATTERN_LENGTH + 1;
-                        if (validateEndRecord(file, channel, startEndRecord, endSig)) {
-                            return startEndRecord;
+                        if (validateEndRecord(file, channel, startEndRecord, context.getSig())) {
+                            if (state == State.FOUND) {
+                                return startEndRecord;
+                            } else {
+                                return -1;
+                            }
                         }
                         // wasn't a valid end record; continue scan
                         bufferPos -= 4;
@@ -329,7 +342,7 @@ class PatchModuleInvalidationUtils {
                         // With our pattern, this is the only case where the Boyer Moore algorithm's "bad char array" may
                         // produce a shift greater than the "good suffix array" (which would shift 1 byte)
                         int idx = bb.get(bufferPos - patternPos) - Byte.MIN_VALUE;
-                        bufferPos -= byteSkip[idx];
+                        bufferPos -= BAD_BYTE_SKIP[idx];
                         break;
                     }
                     default:
@@ -479,6 +492,21 @@ class PatchModuleInvalidationUtils {
         }
     }
 
+    private static void computeBadByteSkipArray(byte[] patterOne, byte[] patternTwo, int[] badByteArray) {
+        assert patterOne.length == patternTwo.length;
+        for (int a = 0; a < ALPHABET_SIZE; a++) {
+            badByteArray[a] = patterOne.length;
+        }
+
+        for (int j = 0; j < patternTwo.length - 1; j++) {
+            badByteArray[patterOne[j] - Byte.MIN_VALUE] = patterOne.length - j - 1;
+        }
+        for (int j = 0; j < patternTwo.length - 1; j++) {
+            badByteArray[patternTwo[j] - Byte.MIN_VALUE] = patternTwo.length - j - 1;
+        }
+    }
+
+
     private static void safeClose(Closeable closeable) {
         if (closeable != null) {
             try {
@@ -486,6 +514,62 @@ class PatchModuleInvalidationUtils {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    static enum State {
+
+        FOUND,
+        NOTHING_TODO,
+        NOT_FOUND
+
+    }
+
+    static class ScanContext {
+
+        private byte good;
+        private byte bad;
+        private byte[] pattern;
+        private State state = State.NOT_FOUND;
+
+        private ScanContext(byte[] good, byte[] bad) {
+            assert good.length== bad.length;
+            this.good = good[0];
+            this.bad = bad[0];
+            assert this.good != this.bad;
+            pattern = new byte[good.length];
+            for (int i = 1; i < good.length; i++) {
+                assert good[i] == bad[i];
+                pattern[i] = good[i];
+            }
+        }
+
+        boolean matches(int pos, byte b) {
+            if (pos == 0) {
+                if (b == good) {
+                    state = State.FOUND;
+                    return true;
+                } else if (b == bad) {
+                    state = State.NOTHING_TODO;
+                    return true;
+                }
+                return false;
+            } else {
+                return pattern[pos] == b;
+            }
+        }
+
+        int getSig() {
+            final byte b;
+            if (state == State.FOUND) {
+                b = good;
+            } else if (state == State.NOTHING_TODO) {
+                b = bad;
+            } else {
+                throw new IllegalStateException();
+            }
+            return ((b << 24) + (pattern[1] << 16) + (pattern[2] << 8) + (pattern[3] << 0));
+        }
+
     }
 
 }
