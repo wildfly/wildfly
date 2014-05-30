@@ -29,15 +29,19 @@ import java.io.InputStreamReader;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.logging.ServerLogger;
@@ -72,6 +76,9 @@ public class VFSResourceLoader extends AbstractResourceLoader implements Iterabl
     private final String rootName;
     private final Manifest manifest;
     private final URL rootUrl;
+
+    // protected by {@code this}
+    private final Map<CodeSigners, CodeSource> codeSources = new HashMap<>();
 
     /**
      * Construct new instance.
@@ -144,7 +151,13 @@ public class VFSResourceLoader extends AbstractResourceLoader implements Iterabl
                                 // done
                                 is.close();
                                 spec.setBytes(bytes);
-                                spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
+                                final CodeSigner[] entryCodeSigners = file.getCodeSigners();
+                                final CodeSigners codeSigners = entryCodeSigners == null || entryCodeSigners.length == 0 ? EMPTY_CODE_SIGNERS : new CodeSigners(entryCodeSigners);
+                                CodeSource codeSource = codeSources.get(codeSigners);
+                                if (codeSource == null) {
+                                    codeSources.put(codeSigners, codeSource = new CodeSource(rootUrl, entryCodeSigners));
+                                }
+                                spec.setCodeSource(codeSource);
                                 return spec;
                             } else {
                                 throw ServerLogger.ROOT_LOGGER.resourceTooLarge();
@@ -317,6 +330,31 @@ public class VFSResourceLoader extends AbstractResourceLoader implements Iterabl
         public long getSize() {
             final long size = entry.getSize();
             return size == -1 ? 0 : size;
+        }
+    }
+
+    static final CodeSigners EMPTY_CODE_SIGNERS = new CodeSigners(new CodeSigner[0]);
+
+    static final class CodeSigners {
+
+        private final CodeSigner[] codeSigners;
+        private final int hashCode;
+
+        public CodeSigners(final CodeSigner[] codeSigners) {
+            this.codeSigners = codeSigners;
+            hashCode = Arrays.hashCode(codeSigners);
+        }
+
+        public boolean equals(final Object obj) {
+            return obj instanceof CodeSigners && equals((CodeSigners) obj);
+        }
+
+        private boolean equals(final CodeSigners other) {
+            return Arrays.equals(codeSigners, other.codeSigners);
+        }
+
+        public int hashCode() {
+            return hashCode;
         }
     }
 }
