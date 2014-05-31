@@ -145,8 +145,10 @@ class PatchModuleInvalidationUtils {
      * @throws IOException
      */
     static void processFile(final File file, final PatchingTaskContext.Mode mode) throws IOException {
-        if (mode == PatchingTaskContext.Mode.APPLY && !ENABLE_INVALIDATION) {
-            updateJar(file, GOOD_ENDSIG_PATTERN, BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
+        if (mode == PatchingTaskContext.Mode.APPLY) {
+            if (ENABLE_INVALIDATION) {
+                updateJar(file, GOOD_ENDSIG_PATTERN, BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
+            }
         } else if (mode == PatchingTaskContext.Mode.ROLLBACK) {
             updateJar(file, CRIPPLED_ENDSIG_PATTERN, BAD_BYTE_SKIP, GOOD_ENDSIG, CRIPPLED_ENDSIG);
         } else {
