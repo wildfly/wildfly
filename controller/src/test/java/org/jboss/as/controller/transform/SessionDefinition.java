@@ -6,10 +6,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.test.TestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -27,21 +27,18 @@ public class SessionDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder("jndi-name", ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setXmlName("jndi-name")
                     .setRestartAllServices()
                     .build();
     protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder("from", ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setDefaultValue(null)
-                    .setXmlName("from")
                     .setRestartAllServices()
                     .setAllowNull(true)
                     .build();
     protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder("debug", ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setXmlName("debug")
                     .setDefaultValue(new ModelNode(false))
                     .setRestartAllServices()
                     .build();
@@ -57,10 +54,6 @@ public class SessionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
-
-        final String name = "dump-session-info";
-        DefaultOperationDescriptionProvider desc = new DefaultOperationDescriptionProvider(name, getResourceDescriptionResolver(), DEBUG);
-        registry.registerOperationHandler(name, NoopOperationStepHandler.WITHOUT_RESULT, desc);
-
+        registry.registerOperationHandler(TestUtils.createOperationDefinition("dump-session-info",DEBUG), NoopOperationStepHandler.WITHOUT_RESULT);
     }
 }

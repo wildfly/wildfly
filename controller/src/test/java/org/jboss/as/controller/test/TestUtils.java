@@ -40,21 +40,21 @@ public class TestUtils {
             .setPrivateEntry()
             .build();
 
-    static AttributeDefinition createAttribute(String name, ModelType type) {
+    public static AttributeDefinition createAttribute(String name, ModelType type) {
         return SimpleAttributeDefinitionBuilder.create(name, type).build();
     }
 
-    static AttributeDefinition createMetric(String name, ModelType type) {
+    public static AttributeDefinition createMetric(String name, ModelType type) {
         return SimpleAttributeDefinitionBuilder.create(name, type).setStorageRuntime().build();
     }
 
-    static OperationDefinition createOperationDefinition(String name, AttributeDefinition... parameters) {
+    public static OperationDefinition createOperationDefinition(String name, AttributeDefinition... parameters) {
         return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
                 .setParameters(parameters)
                 .build();
     }
 
-    static OperationDefinition createOperationDefinition(String name, boolean runtimeOnly, AttributeDefinition... parameters) {
+    public static OperationDefinition createOperationDefinition(String name, boolean runtimeOnly, AttributeDefinition... parameters) {
         SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
                 .setParameters(parameters);
         if (runtimeOnly) {

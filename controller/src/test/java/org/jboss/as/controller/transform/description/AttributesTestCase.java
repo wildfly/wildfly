@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +44,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -155,7 +153,7 @@ public class AttributesTestCase {
         Assert.assertTrue(rejections.contains("reject"));
 
         dontRejectChecker.called = false;
-        rejectAttributeChecker.clear();;
+        rejectAttributeChecker.clear();
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
         add.get("reject").set(new ValueExpression("${expr}"));
         OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
@@ -229,7 +227,7 @@ public class AttributesTestCase {
         resourceModel.get("reject").set(object.clone());
 
         final RejectTwoChecker checker = new RejectTwoChecker();
-        Map<String, RejectAttributeChecker> mapChecker = new HashMap<String, RejectAttributeChecker>();
+        Map<String, RejectAttributeChecker> mapChecker = new HashMap<>();
         mapChecker.put("1", checker);
         mapChecker.put("2", checker);
 
@@ -815,7 +813,7 @@ public class AttributesTestCase {
     }
 
     private ResourceTransformationContext createContext(final TransformationTarget target) {
-        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.DEFAULT, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
+        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.TEST_RESOLVER, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
     }
 
     private Transformers getTransfomers(final TransformationTarget target) {
@@ -832,14 +830,14 @@ public class AttributesTestCase {
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 
-    private static final ModelNode success() {
+    private static ModelNode success() {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
         result.get(ModelDescriptionConstants.RESULT);
         return result;
     }
 
-    private static final ModelNode failed() {
+    private static ModelNode failed() {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.FAILED);
         result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set("failed");
