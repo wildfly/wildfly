@@ -25,8 +25,6 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.registry.CoreManagementResourceRegistrationUnitTestCase.getOpDef;
 import static org.junit.Assert.*;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -34,7 +32,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -55,11 +52,6 @@ public class ExtendWildCardRegistrationUnitTestCase {
     private static final PathElement childWild = PathElement.pathElement("child");
     private static final PathElement childExt = PathElement.pathElement("child", "ext");
     private static final PathElement childWildExt = PathElement.pathElement("child", "wild-ext");
-
-    private static final DescriptionProvider parentWildDP = new TestDescriptionProvider("parentWild");
-    private static final DescriptionProvider parentExtDP = new TestDescriptionProvider("parentExt");
-    private static final DescriptionProvider childWildDP = new TestDescriptionProvider("childWild");
-    private static final DescriptionProvider childExtDP = new TestDescriptionProvider("childExt");
 
     private static final OperationStepHandler parentWildAttr = new TestOSH();
     private static final OperationStepHandler parentExtAttr = new TestOSH();
@@ -131,14 +123,6 @@ public class ExtendWildCardRegistrationUnitTestCase {
         registration = null;
     }
 
-    //@Test
-    public void testParentDescriptionProvider() throws Exception {
-        assertSame(parentWildDP, registration.getModelDescription(PathAddress.pathAddress(parentWild)));
-        assertSame(parentExtDP, registration.getModelDescription(PathAddress.pathAddress(parentExt)));
-        assertSame(parentWildDP, parentWildReg.getModelDescription(PathAddress.EMPTY_ADDRESS));
-        assertSame(parentExtDP, parentExtReg.getModelDescription(PathAddress.EMPTY_ADDRESS));
-    }
-
     @Test
     public void testParentWildcardAttribute() throws Exception {
         assertSame(parentWildAttr, registration.getAttributeAccess(PathAddress.pathAddress(parentWild), "wildAttr").getReadHandler());
@@ -202,24 +186,6 @@ public class ExtendWildCardRegistrationUnitTestCase {
         assertNull(registration.getOperationHandler(PathAddress.pathAddress(parentExt), "na"));
         assertNull(parentWildReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, "na"));
         assertNull(parentExtReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, "na"));
-    }
-
-    //@Test
-    public void testChildDescriptionProvider() throws Exception {
-        assertSame(childWildDP, registration.getModelDescription(PathAddress.pathAddress(parentWild, childWild)));
-        assertSame(childWildDP, registration.getModelDescription(PathAddress.pathAddress(parentExt, childWild)));
-        // This one is a bit odd
-        assertSame(childWildDP, registration.getModelDescription(PathAddress.pathAddress(parentWild, childExt)));
-        assertSame(childExtDP, registration.getModelDescription(PathAddress.pathAddress(parentExt, childExt)));
-
-        assertSame(childWildDP, parentWildReg.getModelDescription(PathAddress.pathAddress(childWild)));
-        assertSame(childWildDP, parentExtReg.getModelDescription(PathAddress.pathAddress(childWild)));
-        // This one is a bit odd
-        assertSame(childWildDP, parentWildReg.getModelDescription(PathAddress.pathAddress(childExt)));
-        assertSame(childExtDP, parentExtReg.getModelDescription(PathAddress.pathAddress(childExt)));
-
-        assertSame(childWildDP, childWildReg.getModelDescription(PathAddress.EMPTY_ADDRESS));
-        assertSame(childExtDP, childExtReg.getModelDescription(PathAddress.EMPTY_ADDRESS));
     }
 
     @Test
@@ -387,19 +353,6 @@ public class ExtendWildCardRegistrationUnitTestCase {
             //
         }
 
-    }
-
-    private static class TestDescriptionProvider implements DescriptionProvider {
-        private final String desc;
-
-        public TestDescriptionProvider(String desc) {
-            this.desc = desc;
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode(desc);
-        }
     }
 
     private static class TestOSH implements OperationStepHandler {
