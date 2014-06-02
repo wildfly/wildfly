@@ -24,7 +24,7 @@
 
 package org.jboss.as.controller.test;
 
-import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.*;
+import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.TestMetricHandler;
 import static org.jboss.as.controller.test.TestUtils.createAttribute;
 import static org.jboss.as.controller.test.TestUtils.createMetric;
 
@@ -49,38 +49,6 @@ public class Subsystem1RootResource extends SimpleResourceDefinition {
     public Subsystem1RootResource() {
         super(PathElement.pathElement("subsystem", "subsystem1"), new NonResolvingResourceDescriptionResolver());
     }
-
-    /*
-     ManagementResourceRegistration profileSub1Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem1"), new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("A test subsystem 1");
-                node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.LIST);
-                node.get(ATTRIBUTES, "attr1", VALUE_TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The values");
-                node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
-                node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
-                node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
-                node.get(ATTRIBUTES, "metric1", TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "metric1", DESCRIPTION).set("A random metric");
-                node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "metric2", TYPE).set(ModelType.INT);
-                node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
-                node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
-                node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
-                node.get(CHILDREN, "type1", MIN_OCCURS).set(1);
-                node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
-                node.get(CHILDREN, "type2", DESCRIPTION).set("The children2");
-                node.get(CHILDREN, "type2", MIN_OCCURS).set(1);
-                node.get(CHILDREN, "type2", MODEL_DESCRIPTION);
-                return node;
-            }
-        });
-
-     */
 
     @Override
     public void registerAttributes(ManagementResourceRegistration profileSub1Reg) {
