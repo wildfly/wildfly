@@ -21,11 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 
@@ -33,29 +30,29 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBase {
 
-    private String[] str = new String[] {"g", "e", "l", "d", "h", "h", "k", "f", "a", "b", "j", "g", "c", "i"};
+    private static final String[] STR = new String[]{"g", "e", "l", "d", "h", "h", "k", "f", "a", "b", "j", "g", "c", "i"};
 
     ModelNode model;
+
     public ReadResourceChildOrderingTestCase() {
         model = new ModelNode();
-        for (int i = 0 ; i < str.length ; i++) {
-            model.get("test", str[i], "prop").set(str[i].toUpperCase(Locale.ENGLISH));
+        for (String aSTR : STR) {
+            model.get("test", aSTR, "prop").set(aSTR.toUpperCase(Locale.ENGLISH));
         }
     }
 
@@ -72,31 +69,20 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
-        registration.registerOperationHandler("setup", new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    createModel(context, model);
-                    context.stepCompleted();
-                }
-            }, new DescriptionProvider() {
+        registration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
+                .setPrivateEntry()
+                .build()
+                , new OperationStepHandler() {
             @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        }, false, OperationEntry.EntryType.PRIVATE);
-        ManagementResourceRegistration reg = registration.registerSubModel(PathElement.pathElement("test"), new DescriptionProvider() {
-
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode node = new ModelNode();
-                node.get(DESCRIPTION).set("a test node");
-                node.get(ATTRIBUTES, "prop", TYPE).set(ModelType.STRING);
-                node.get(ATTRIBUTES, "prop", DESCRIPTION).set("A test property");
-                return node;
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                createModel(context, model);
+                context.stepCompleted();
             }
         });
+
+        registration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver()));
+
         rootResource.getModel().set(model);
-        System.out.println(model);
     }
 
 }
