@@ -957,7 +957,8 @@ public class DeploymentManagementTestCase {
 
         Assert.assertFalse(content.getAbsolutePath(), content.exists());
         Assert.assertFalse(db.getAbsolutePath(), db.exists());
-        Assert.assertFalse(da.getAbsolutePath(), da.exists());
+        String[] children = da.list();
+        Assert.assertFalse(da.getAbsolutePath(), da.exists() && children != null && children.length > 0);
 
     }
 
