@@ -56,7 +56,7 @@ public class DomainDeploymentResourceDefinition extends DeploymentResourceDefini
                 isMaster ? DeploymentRemoveHandler.createForMaster(contentRepository) : DeploymentRemoveHandler.createForSlave(fileRepository));
     }
 
-    public static DomainDeploymentResourceDefinition createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
+    public static DomainDeploymentResourceDefinition createForServerGroup(HostFileRepository fileRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
                 new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
     }
