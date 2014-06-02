@@ -45,7 +45,7 @@ public enum ORBInitializer {
 
     // the transaction group encompasses the Interposition and InboundCurrent initializers.
     TRANSACTIONS("transactions",
-            "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
+            "com.arjuna.ats.jts.orbspecific.javaidl.interceptors.interposition.InterpositionORBInitializerImpl",
             "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
             "org.jboss.as.jdkorb.tm.TxIORInterceptorInitializer",
             "org.jboss.as.jdkorb.tm.TxServerInterceptorInitializer"),

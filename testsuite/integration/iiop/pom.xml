@@ -45,6 +45,28 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>jdkorb</groupId>
+                                            <artifactId>jdkorb</artifactId>
+                                            <version>1</version>
+                                            <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
@@ -95,7 +117,7 @@
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-                                    <argLine>-Djava.endorsed.dirs=${user.home}/.m2/repository/jdkorb/jdkorb/1 -Dcom.sun.CORBA.ORBUseDynamicStub=true</argLine>
+                                    <argLine> -Djava.endorsed.dirs=${project.build.directory}/endorsed  -Dcom.sun.CORBA.ORBUseDynamicStub=true -Dcom.arjuna.ats.arjuna.common.propertiesFile=jbossts-properties.xml</argLine>
                                 </configuration>
                             </execution>
 

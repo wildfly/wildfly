@@ -32,9 +32,12 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.arquillian.container.NetworkUtils;
+import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.Policy;
 import org.omg.CORBA.SystemException;
 import org.omg.CORBA.ORBPackage.InvalidName;
+import org.omg.CosTransactions.Current;
+import org.omg.CosTransactions.TransactionFactoryHelper;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.IdUniquenessPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
@@ -45,6 +48,9 @@ import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.internal.jts.ORBManager;
 import com.arjuna.ats.internal.jts.context.ContextPropagationManager;
 import com.arjuna.ats.jts.OTSManager;
+import com.arjuna.ats.jts.common.JTSEnvironmentBean;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
+import com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl;
 import com.arjuna.orbportability.OA;
 import com.arjuna.orbportability.ORB;
 import com.sun.corba.se.impl.orbutil.ORBConstants;
@@ -60,10 +66,8 @@ public class Util {
         Properties properties = new Properties();
         properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, "15151");
         properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, "1");
-        // FIXME why only jacorb works?
-        System.setProperty(
-                "org.omg.PortableInterceptor.ORBInitializerClass.com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
-                "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl");
+
+        new ContextPropagationManager();
 
         org.omg.CORBA.ORB sunOrb = org.omg.CORBA.ORB.init(new String[0], properties);
 
