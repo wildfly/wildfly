@@ -25,17 +25,15 @@
 package org.jboss.as.controller.test;
 
 import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.*;
-import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.createAttribute;
-import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.createMetric;
+import static org.jboss.as.controller.test.TestUtils.createAttribute;
+import static org.jboss.as.controller.test.TestUtils.createMetric;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;

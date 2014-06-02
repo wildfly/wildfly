@@ -62,9 +62,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -72,7 +70,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -92,10 +89,6 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     private final AccessType expectedRwAttributeAccess;
 
-    private static final OperationDefinition SETUP_OP_DEF = new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
-            .setPrivateEntry()
-            .build();
-
     protected AbstractGlobalOperationsTestCase() {
         super();
         this.expectedRwAttributeAccess = AccessType.READ_WRITE;
@@ -106,33 +99,10 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         this.expectedRwAttributeAccess = expectedRwAttributeAccess;
     }
 
-    static AttributeDefinition createAttribute(String name, ModelType type) {
-        return SimpleAttributeDefinitionBuilder.create(name, type).build();
-    }
-
-    static AttributeDefinition createMetric(String name, ModelType type) {
-        return SimpleAttributeDefinitionBuilder.create(name, type).setStorageRuntime().build();
-    }
-
-    static OperationDefinition createOperationDefinition(String name, AttributeDefinition... parameters) {
-        return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
-                .setParameters(parameters)
-                .build();
-    }
-
-    private static OperationDefinition createOperationDefinition(String name, boolean runtimeOnly, AttributeDefinition... parameters) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
-                .setParameters(parameters);
-        if (runtimeOnly) {
-            builder.setRuntimeOnly();
-        }
-        return builder.build();
-    }
-
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-        rootRegistration.registerOperationHandler(SETUP_OP_DEF, new OperationStepHandler() {
+        rootRegistration.registerOperationHandler(TestUtils.SETUP_OP_DEF, new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         final ModelNode model = new ModelNode();
@@ -189,13 +159,13 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         ManagementResourceRegistration profileASub2Reg = profileReg.registerSubModel(
                 new SimpleResourceDefinition(PathElement.pathElement("subsystem", "subsystem2"), new NonResolvingResourceDescriptionResolver()));
 
-        profileASub2Reg.registerReadWriteAttribute(createAttribute("long", ModelType.LONG), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false));
+        profileASub2Reg.registerReadWriteAttribute(TestUtils.createAttribute("long", ModelType.LONG), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false));
 
 
         ManagementResourceRegistration profileBSub3Reg = profileReg.registerSubModel(
                 new SimpleResourceDefinition(PathElement.pathElement("subsystem", "subsystem3"), new NonResolvingResourceDescriptionResolver()));
 
-        profileSub1Reg.registerOperationHandler(createOperationDefinition("testA1-1", createAttribute("paramA1", ModelType.INT)),
+        profileSub1Reg.registerOperationHandler(TestUtils.createOperationDefinition("testA1-1", TestUtils.createAttribute("paramA1", ModelType.INT)),
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) {
@@ -203,7 +173,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 }
         );
 
-        profileSub1Reg.registerOperationHandler(createOperationDefinition("testA1-2", createAttribute("paramA2", ModelType.STRING)),
+        profileSub1Reg.registerOperationHandler(TestUtils.createOperationDefinition("testA1-2", TestUtils.createAttribute("paramA2", ModelType.STRING)),
                 new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) {
@@ -212,7 +182,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         );
 
 
-        profileASub2Reg.registerOperationHandler(createOperationDefinition("testA2", createAttribute("paramB", ModelType.LONG)),
+        profileASub2Reg.registerOperationHandler(TestUtils.createOperationDefinition("testA2", TestUtils.createAttribute("paramB", ModelType.LONG)),
                 new OperationStepHandler() {
 
                     @Override
@@ -227,7 +197,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         ManagementResourceRegistration profileCSub5Reg = profileReg.registerSubModel(
                 new SimpleResourceDefinition(PathElement.pathElement("subsystem", "subsystem5"), new NonResolvingResourceDescriptionResolver()));
 
-        profileCSub5Reg.registerReadOnlyAttribute(createAttribute("name", ModelType.STRING), new OperationStepHandler() {
+        profileCSub5Reg.registerReadOnlyAttribute(TestUtils.createAttribute("name", ModelType.STRING), new OperationStepHandler() {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) {
@@ -244,7 +214,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         ManagementResourceRegistration profileCSub6Reg = profileReg.registerSubModel(
                 new SimpleResourceDefinition(PathElement.pathElement("subsystem", "subsystem6"), new NonResolvingResourceDescriptionResolver()));
 
-        profileCSub6Reg.registerOperationHandler(createOperationDefinition("testA", true),
+        profileCSub6Reg.registerOperationHandler(TestUtils.createOperationDefinition("testA", true),
                 new OperationStepHandler() {
 
                     @Override
