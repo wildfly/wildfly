@@ -42,5 +42,7 @@
         <module name="javax.resource.api"/>
         <module name="org.hornetq"/>
         <module name="org.jacorb"/>
+        <!-- https://bugzilla.redhat.com/show_bug.cgi?id=1087858  this is to avoid an issue on JDK 1.6-->
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
