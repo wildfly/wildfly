@@ -113,7 +113,7 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                     .addAttributes(FilterRefDefinition.PREDICATE)
                                         ).addChild(
                                                 builder(SingleSignOnDefinition.INSTANCE)
-                                                    .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE)
+                                                    .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
                                         )
                         )
                 )
