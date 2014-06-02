@@ -3,11 +3,11 @@ package org.jboss.as.controller.transform;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.test.TestUtils;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +47,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, new WriteAttributeHandlers.WriteAttributeOperationHandler(){});
+            registry.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
     }
 

@@ -33,6 +33,7 @@ import java.math.BigInteger;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -50,7 +51,6 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -144,8 +144,7 @@ public class ModelControllerResourceDefinition extends SimpleResourceDefinition 
 
     private void addAttribute(String name, ModelType type, ManagementResourceRegistration resourceRegistration) {
         AttributeDefinition attr = createAttribute(name, type, allowExpressions);
-        //resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
-        resourceRegistration.registerReadWriteAttribute(attr, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(type, true, allowExpressions));
+        resourceRegistration.registerReadWriteAttribute(attr, null, new ModelOnlyWriteAttributeHandler(attr));
     }
 
     class ComplexWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {

@@ -24,12 +24,12 @@ package org.jboss.as.host.controller.discovery;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
 
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -70,7 +70,7 @@ public class StaticDiscoveryResourceDefinition extends SimpleResourceDefinition 
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         for (final SimpleAttributeDefinition attribute : STATIC_DISCOVERY_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attribute, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(attribute));
+            resourceRegistration.registerReadWriteAttribute(attribute, null, new ModelOnlyWriteAttributeHandler(attribute));
         }
     }
 }

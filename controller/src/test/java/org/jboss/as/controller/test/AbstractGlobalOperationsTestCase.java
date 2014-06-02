@@ -62,6 +62,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -73,7 +75,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -158,8 +159,8 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
         ManagementResourceRegistration profileASub2Reg = profileReg.registerSubModel(
                 new SimpleResourceDefinition(PathElement.pathElement("subsystem", "subsystem2"), new NonResolvingResourceDescriptionResolver()));
-
-        profileASub2Reg.registerReadWriteAttribute(TestUtils.createAttribute("long", ModelType.LONG), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.LONG, false));
+        AttributeDefinition longAttr = TestUtils.createAttribute("long", ModelType.LONG);
+        profileASub2Reg.registerReadWriteAttribute(longAttr, null, new ModelOnlyWriteAttributeHandler(longAttr));
 
 
         ManagementResourceRegistration profileBSub3Reg = profileReg.registerSubModel(

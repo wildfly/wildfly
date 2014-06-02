@@ -28,6 +28,8 @@ import static org.jboss.as.controller.test.AbstractGlobalOperationsTestCase.*;
 import static org.jboss.as.controller.test.TestUtils.createAttribute;
 import static org.jboss.as.controller.test.TestUtils.createMetric;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceBuilder;
@@ -35,7 +37,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -88,7 +89,8 @@ public class Subsystem1RootResource extends SimpleResourceDefinition {
         profileSub1Reg.registerReadOnlyAttribute(new PrimitiveListAttributeDefinition.Builder("attr1", ModelType.INT).setAllowNull(false).build(), null);
 
         profileSub1Reg.registerReadOnlyAttribute(createAttribute("read-only", ModelType.INT), null);
-        profileSub1Reg.registerReadWriteAttribute(createAttribute("read-write", ModelType.INT), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.INT));
+        final AttributeDefinition attribute = createAttribute("read-write", ModelType.INT);
+        profileSub1Reg.registerReadWriteAttribute(attribute, null, new ModelOnlyWriteAttributeHandler(attribute));
         profileSub1Reg.registerMetric(createMetric("metric1", ModelType.INT), TestMetricHandler.INSTANCE);
         profileSub1Reg.registerMetric(createMetric("metric2", ModelType.INT), TestMetricHandler.INSTANCE);
 

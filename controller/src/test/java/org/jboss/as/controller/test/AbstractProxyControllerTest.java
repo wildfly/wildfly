@@ -70,8 +70,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -89,7 +91,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -680,7 +681,8 @@ public abstract class AbstractProxyControllerTest {
                 }
             });*/
             serverChildReg.registerReadOnlyAttribute(createAttribute("name", ModelType.STRING), null);
-            serverChildReg.registerReadWriteAttribute(createAttribute("value", ModelType.STRING), null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.STRING));
+            final AttributeDefinition value = createAttribute("value", ModelType.STRING);
+            serverChildReg.registerReadWriteAttribute(value, null, new ModelOnlyWriteAttributeHandler(value));
             serverChildReg.registerMetric(createMetric("metric", ModelType.STRING), GlobalOperationsTestCase.TestMetricHandler.INSTANCE);
 
             serverChildReg.registerOperationHandler(createOperationDefinition("test-op"),
