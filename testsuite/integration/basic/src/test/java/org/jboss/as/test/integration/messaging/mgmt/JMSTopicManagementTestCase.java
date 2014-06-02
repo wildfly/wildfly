@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -29,13 +32,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,13 +46,14 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -232,7 +236,7 @@ public class JMSTopicManagementTestCase {
         operation.get("queue-name").set(subscriber.get("queueName"));
 
         result = execute(operation, true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(2, result.asList().size());
 
     }
@@ -256,7 +260,7 @@ public class JMSTopicManagementTestCase {
         operation.get("subscription-name").set("testCountMessagesForSubscription");
 
         result = execute(operation, true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(2, result.asInt());
     }
 
@@ -266,7 +270,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic);
 
         final ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(2, result.asList().size());
     }
 
@@ -276,7 +280,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic);
 
         final ModelNode result = execute(getTopicOperation("list-all-subscriptions-as-json"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(ModelType.STRING, result.getType());
     }
 
@@ -286,7 +290,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic);
 
         final ModelNode result = execute(getTopicOperation("list-durable-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(1, result.asList().size());
     }
 
@@ -296,7 +300,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic);
 
         final ModelNode result = execute(getTopicOperation("list-durable-subscriptions-as-json"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(ModelType.STRING, result.getType());
     }
 
@@ -306,7 +310,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic, "foo=bar", false);
 
         final ModelNode result = execute(getTopicOperation("list-non-durable-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(1, result.asList().size());
     }
 
@@ -316,7 +320,7 @@ public class JMSTopicManagementTestCase {
         session.createSubscriber(topic, "foo=bar", false);
 
         final ModelNode result = execute(getTopicOperation("list-non-durable-subscriptions-as-json"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(ModelType.STRING, result.getType());
     }
 
@@ -327,7 +331,7 @@ public class JMSTopicManagementTestCase {
         consumerSession = null;
 
         ModelNode result = execute(getTopicOperation("list-durable-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(1, result.asList().size());
 
         ModelNode op = getTopicOperation("drop-durable-subscription");
@@ -337,7 +341,7 @@ public class JMSTopicManagementTestCase {
         Assert.assertFalse(result.isDefined());
 
         result = execute(getTopicOperation("list-durable-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(0, result.asList().size());
     }
 
@@ -349,14 +353,14 @@ public class JMSTopicManagementTestCase {
         consumerSession = null;
 
         ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(2, result.asList().size());
 
         result = execute(getTopicOperation("drop-all-subscriptions"), true);
         Assert.assertFalse(result.isDefined());
 
         result = execute(getTopicOperation("list-all-subscriptions"), true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         Assert.assertEquals(0, result.asList().size());
     }
 
@@ -372,7 +376,7 @@ public class JMSTopicManagementTestCase {
         op = getTopicOperation("read-attribute");
         op.get("name").set("entries");
         result = execute(op, true);
-        Assert.assertTrue(result.isDefined());
+        assertTrue(result.isDefined());
         for (ModelNode binding : result.asList()) {
             if (binding.asString().equals(jndiName))
                 return;
@@ -422,6 +426,42 @@ public class JMSTopicManagementTestCase {
                 return;
         }
         Assert.fail(getTopicJndiName() + " was not found");
+    }
+
+    @Test
+    public void removeJMSTopicRemovesAllMessages() throws Exception {
+        // create a durable subscriber
+        final String subscriptionName = "removeJMSTopicRemovesAllMessages";
+        // stop the consumer connection to prevent eager consumption of messages
+        consumerConn.stop();
+        TopicSubscriber consumer = consumerSession.createDurableSubscriber(topic, subscriptionName);
+        MessageProducer producer = session.createProducer(topic);
+        producer.send(session.createTextMessage("A"));
+
+        ModelNode operation = getTopicOperation("count-messages-for-subscription");
+        operation.get("client-id").set(consumerConnectionFactory.getClientID());
+        operation.get("subscription-name").set(subscriptionName);
+
+        ModelNode result = execute(operation, true);
+        assertTrue(result.isDefined());
+        Assert.assertEquals(1, result.asInt());
+
+        // remove the topic
+        adminSupport.removeJmsTopic(getTopicName());
+        try {
+            consumer.receive(5000);
+            fail("consumer is not valid after the queue is removed");
+        } catch (javax.jms.IllegalStateException e) {
+        }
+        // add the topic
+        adminSupport.createJmsTopic(getTopicName(), getTopicJndiName());
+        // and recreate the durable subscriber to check all the messages have
+        // been removed from the topic
+        consumerSession.createDurableSubscriber(topic, subscriptionName);
+
+        result = execute(operation, true);
+        assertTrue(result.isDefined());
+        Assert.assertEquals(0, result.asInt());
     }
 
     private ModelNode getTopicOperation(String operationName) {
