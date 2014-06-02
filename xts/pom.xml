@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-jacorb</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
