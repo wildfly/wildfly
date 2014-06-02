@@ -51,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.test.TestUtils.createOperationDefinition;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -697,15 +698,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         @Override
         public void registerOperations(ManagementResourceRegistration resourceRegistration) {
             super.registerOperations(resourceRegistration);
-            resourceRegistration.registerOperationHandler("core-test", new TestOperationHandler("core"), new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(OPERATION_NAME).set("core-test");
-                    node.get(DESCRIPTION).set("An op");
-                    return node;
-                }
-            });
+            resourceRegistration.registerOperationHandler(createOperationDefinition("core-test"), new TestOperationHandler("core"));
         }
     }
 
@@ -722,16 +715,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         @Override
         public void registerOperations(ManagementResourceRegistration resourceRegistration) {
             super.registerOperations(resourceRegistration);
-            resourceRegistration.registerOperationHandler("child-test", new TestOperationHandler("child"), new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(OPERATION_NAME).set("child-test");
-                    node.get(DESCRIPTION).set("An op");
-                    return node;
-                }
-            });
+            resourceRegistration.registerOperationHandler(createOperationDefinition("child-test"), new TestOperationHandler("child"));
         }
     }
 
