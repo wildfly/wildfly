@@ -261,7 +261,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final ApplyExtensionsHandler aexh = new ApplyExtensionsHandler(extensionRegistry, hostControllerInfo, ignoredDomainResourceRegistry);
             resourceRegistration.registerOperationHandler(ApplyExtensionsHandler.DEFINITION, aexh);
 
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(fileRepository,
+            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(environment, fileRepository,
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry, authorizer.getWritableAuthorizerConfiguration());
             resourceRegistration.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.DEFINITION, armdmh);
         }
@@ -289,7 +289,10 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));
+        ResourceDefinition domainDeploymentDefinition = isMaster
+                ? DomainDeploymentResourceDefinition.createForDomainMaster(contentRepo)
+                : DomainDeploymentResourceDefinition.createForDomainSlave(environment.isBackupDomainFiles(), fileRepository);
+        resourceRegistration.registerSubModel(domainDeploymentDefinition);
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
         resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(fileRepository));
 

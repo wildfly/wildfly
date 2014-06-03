@@ -82,6 +82,7 @@ import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationDomainSlaveConfigHandler;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.access.AccessConstraintResources;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.repository.ContentRepository;
@@ -108,14 +109,17 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     private final ContentRepository contentRepository;
     private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
+    protected final HostControllerEnvironment hostControllerEnvironment;
     private final LocalHostControllerInfo localHostInfo;
     private final WritableAuthorizerConfiguration authorizerConfiguration;
 
-    public ApplyRemoteMasterDomainModelHandler(final HostFileRepository fileRepository,
+    public ApplyRemoteMasterDomainModelHandler(final HostControllerEnvironment hostControllerEnvironment,
+                                               final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo,
                                                final IgnoredDomainResourceRegistry ignoredResourceRegistry,
                                                final WritableAuthorizerConfiguration authorizerConfiguration) {
+        this.hostControllerEnvironment = hostControllerEnvironment;
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
@@ -173,6 +177,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                                     deploymentHashes.put(id, hashes);
                                 }
                                 hashes.add(contentItem.get(HASH).asBytes());
+                                if (hostControllerEnvironment.isBackupDomainFiles()) {
+                                    relevantDeployments.add(pe.getValue());
+                                }
                             }
                         }
                     }

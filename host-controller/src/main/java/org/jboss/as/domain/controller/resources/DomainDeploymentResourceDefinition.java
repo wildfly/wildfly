@@ -49,11 +49,18 @@ public class DomainDeploymentResourceDefinition extends DeploymentResourceDefini
         this.addDefinition = addDefinition;
     }
 
-    public static DomainDeploymentResourceDefinition createForDomainRoot(boolean isMaster, ContentRepository contentRepository, HostFileRepository fileRepository) {
+    public static DomainDeploymentResourceDefinition createForDomainMaster(ContentRepository contentRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.DOMAIN,
                 DeploymentAttributes.DOMAIN_DEPLOYMENT_ADD_DEFINITION,
-                isMaster ? new DeploymentAddHandler(contentRepository) : new DeploymentAddHandler(),
-                isMaster ? DeploymentRemoveHandler.createForMaster(contentRepository) : DeploymentRemoveHandler.createForSlave(fileRepository));
+                new DeploymentAddHandler(contentRepository),
+                DeploymentRemoveHandler.createForMaster(contentRepository));
+    }
+
+    public static DomainDeploymentResourceDefinition createForDomainSlave(boolean backupDC, HostFileRepository fileRepository) {
+        return new DomainDeploymentResourceDefinition(DeploymentResourceParent.DOMAIN,
+                DeploymentAttributes.DOMAIN_DEPLOYMENT_ADD_DEFINITION,
+                new DeploymentAddHandler(backupDC ? fileRepository : null),
+                DeploymentRemoveHandler.createForSlave(fileRepository));
     }
 
     public static DomainDeploymentResourceDefinition createForServerGroup(HostFileRepository fileRepository) {
