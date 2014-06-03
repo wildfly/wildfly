@@ -54,7 +54,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || ThreadResourceDefinition.THREADING_READ_ATTRIBUTES.contains(name)
                     || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
                     || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
@@ -63,9 +63,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
             }
-        } catch (SecurityException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        } catch (UnsupportedOperationException e) {
+        } catch (SecurityException | UnsupportedOperationException e) {
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
@@ -102,7 +100,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.THREAD_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.THREAD_COUNT.equals(name)) {
             store.set(ManagementFactory.getThreadMXBean().getThreadCount());

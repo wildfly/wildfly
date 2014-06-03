@@ -36,7 +36,7 @@ class BufferPoolRootResourceDefinition extends SimpleResourceDefinition {
 
     private BufferPoolRootResourceDefinition() {
         super(PlatformMBeanConstants.BUFFER_POOL_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.BUFFER_POOL));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.BUFFER_POOL));
     }
 
     @Override

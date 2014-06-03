@@ -54,7 +54,7 @@ class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandle
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || RuntimeResourceDefinition.RUNTIME_READ_ATTRIBUTES.contains(name)
                     || RuntimeResourceDefinition.RUNTIME_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
@@ -62,9 +62,7 @@ class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandle
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
             }
-        } catch (SecurityException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        } catch (UnsupportedOperationException e) {
+        } catch (SecurityException | UnsupportedOperationException e) {
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
@@ -80,7 +78,7 @@ class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandle
 
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.RUNTIME_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
            String runtimeName;
@@ -130,7 +128,7 @@ class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandle
             store.set(ManagementFactory.getRuntimeMXBean().getStartTime());
         } else if (PlatformMBeanConstants.SYSTEM_PROPERTIES.equals(name)) {
             store.setEmptyObject();
-            final TreeMap<String, String> sorted = new TreeMap<String, String>(ManagementFactory.getRuntimeMXBean().getSystemProperties());
+            final TreeMap<String, String> sorted = new TreeMap<>(ManagementFactory.getRuntimeMXBean().getSystemProperties());
             for (Map.Entry<String, String> prop : sorted.entrySet()) {
                 final ModelNode propNode = store.get(prop.getKey());
                 if (prop.getValue() != null) {

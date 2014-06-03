@@ -10,7 +10,7 @@ class GarbageCollectorRootResourceDefinition extends SimpleResourceDefinition {
     static final GarbageCollectorRootResourceDefinition INSTANCE = new GarbageCollectorRootResourceDefinition();
     private GarbageCollectorRootResourceDefinition() {
         super(PlatformMBeanConstants.GARBAGE_COLLECTOR_PATH,
-                PlatformMBeanDescriptions.getResolver("garbage-collectors"));
+                PlatformMBeanUtil.getResolver("garbage-collectors"));
     }
 
     @Override

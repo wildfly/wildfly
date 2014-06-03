@@ -80,15 +80,13 @@ class BufferPoolResourceDefinition extends SimpleResourceDefinition {
 
     private BufferPoolResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(BUFFER_POOL));
+                PlatformMBeanUtil.getResolver(BUFFER_POOL));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, BufferPoolMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, BufferPoolMXBeanAttributeHandler.INSTANCE);
         for (AttributeDefinition attribute : READ_ATTRIBUTES) {
             registration.registerReadOnlyAttribute(attribute, BufferPoolMXBeanAttributeHandler.INSTANCE);
         }

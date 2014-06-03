@@ -152,7 +152,7 @@ class RuntimeResourceDefinition extends SimpleResourceDefinition {
 
     private RuntimeResourceDefinition() {
         super(RUNTIME_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.RUNTIME));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.RUNTIME));
     }
 
     @Override

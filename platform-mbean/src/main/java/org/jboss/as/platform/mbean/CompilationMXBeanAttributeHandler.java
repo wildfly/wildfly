@@ -52,7 +52,7 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || COMPILATION_READ_ATTRIBUTES.contains(name)
                     || COMPILATION_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
@@ -67,7 +67,7 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
     }
 
     static void storeResult(final String attributeName, final ModelNode store) throws OperationFailedException {
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(attributeName)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(attributeName)) {
             store.set(ManagementFactory.COMPILATION_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(attributeName)) {
             store.set(ManagementFactory.getCompilationMXBean().getName());

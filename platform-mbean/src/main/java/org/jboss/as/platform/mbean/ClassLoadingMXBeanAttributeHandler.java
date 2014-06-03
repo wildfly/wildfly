@@ -53,7 +53,7 @@ class ClassLoadingMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeH
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             context.getResult().set(ManagementFactory.CLASS_LOADING_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.TOTAL_LOADED_CLASS_COUNT.equals(name)) {
             context.getResult().set(ManagementFactory.getClassLoadingMXBean().getTotalLoadedClassCount());

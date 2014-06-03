@@ -66,7 +66,7 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
             throw PlatformMBeanLogger.ROOT_LOGGER.unknownGarbageCollector(gcName);
         }
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE, gcName);
             context.getResult().set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {

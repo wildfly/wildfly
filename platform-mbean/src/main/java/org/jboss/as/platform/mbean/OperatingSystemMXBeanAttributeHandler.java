@@ -49,7 +49,7 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || OperatingSystemResourceDefinition.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
                     || OperatingSystemResourceDefinition.OPERATING_SYSTEM_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
@@ -72,7 +72,7 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
 
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
             store.set(ManagementFactory.getOperatingSystemMXBean().getName());

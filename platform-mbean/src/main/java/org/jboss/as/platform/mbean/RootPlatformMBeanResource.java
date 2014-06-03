@@ -70,9 +70,9 @@ public class RootPlatformMBeanResource extends AbstractPlatformMBeanResource {
             return new LeafPlatformMBeanResource(PlatformMBeanConstants.RUNTIME_PATH);
         } else if (PlatformMBeanConstants.THREADING.equals(name)) {
             return new LeafPlatformMBeanResource(PlatformMBeanConstants.THREADING_PATH);
-        } else if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.BUFFER_POOL.equals(name)) {
+        } else if (PlatformMBeanConstants.BUFFER_POOL.equals(name)) {
             return new BufferPoolMXBeanResource();
-        } else if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.LOGGING.equals(name)) {
+        } else if (PlatformMBeanConstants.LOGGING.equals(name)) {
             return new LeafPlatformMBeanResource(PlatformMBeanConstants.LOGGING_PATH);
         } else {
             return null;

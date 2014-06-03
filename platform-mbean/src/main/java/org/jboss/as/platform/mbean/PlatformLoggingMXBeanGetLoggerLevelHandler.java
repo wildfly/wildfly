@@ -23,15 +23,14 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.Locale;
-
 import javax.management.JMException;
 import javax.management.JMRuntimeException;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
@@ -42,12 +41,20 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class PlatformLoggingMXBeanGetLoggerLevelHandler implements OperationStepHandler, DescriptionProvider {
+public class PlatformLoggingMXBeanGetLoggerLevelHandler implements OperationStepHandler{
+
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GET_LOGGER_LEVEL, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
+            .setParameters(CommonAttributes.LOGGER_NAME)
+            .setReplyType(ModelType.STRING)
+            .setRuntimeOnly()
+            .setReadOnly()
+            .build();
 
     public static final PlatformLoggingMXBeanGetLoggerLevelHandler INSTANCE = new PlatformLoggingMXBeanGetLoggerLevelHandler();
 
-    private static final String[] SIGNATURE = { String.class.getName() };
+    private static final String[] SIGNATURE = {String.class.getName()};
     private final ParametersValidator parametersValidator = new ParametersValidator();
+
     private PlatformLoggingMXBeanGetLoggerLevelHandler() {
         parametersValidator.registerValidator(PlatformMBeanConstants.LOGGER_NAME, new ModelTypeValidator(ModelType.STRING, false, false));
     }
@@ -79,8 +86,4 @@ public class PlatformLoggingMXBeanGetLoggerLevelHandler implements OperationStep
         context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getGetLoggerLevelDescription(locale);
-    }
 }
