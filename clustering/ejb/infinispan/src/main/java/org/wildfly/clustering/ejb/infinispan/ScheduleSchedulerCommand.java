@@ -21,22 +21,24 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ejb.Bean;
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Command that schedules a session.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand<G, I, T> extends AbstractSchedulerCommand<G, I, T> {
+public class ScheduleSchedulerCommand<I> implements Command<Void, Scheduler<I>> {
     private static final long serialVersionUID = -2606847692331278614L;
 
-    public ScheduleSchedulerCommand(Bean<G, I, T> bean) {
-        super(bean);
+    private final I id;
+
+    public ScheduleSchedulerCommand(I id) {
+        this.id = id;
     }
 
     @Override
-    public Void execute(SchedulerContext<G, I, T> context) throws Exception {
-        context.schedule(this.getBean());
+    public Void execute(Scheduler<I> scheduler) {
+        scheduler.schedule(this.id);
         return null;
     }
 }

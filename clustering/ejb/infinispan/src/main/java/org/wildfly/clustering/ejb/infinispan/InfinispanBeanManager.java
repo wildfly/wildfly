@@ -22,9 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
@@ -32,18 +30,19 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
-import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
+import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
-import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.jboss.as.clustering.infinispan.distribution.ConsistentHashLocality;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
+import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
@@ -70,7 +69,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-@Listener
+@Listener(primaryOnly = true)
 public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Batcher, KeyFilter {
 
     private final Cache<G, BeanGroupEntry<I, T>> groupCache;
@@ -87,8 +86,8 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final AtomicInteger passiveCount = new AtomicInteger();
-    private volatile SchedulerContext<G, I, T> schedulerContext;
-    private volatile CommandDispatcher<SchedulerContext<G, I, T>> dispatcher;
+    private volatile Scheduler<I> scheduler;
+    private volatile CommandDispatcher<Scheduler<I>> dispatcher;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<T> configuration, final Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration, final Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration) {
         this.beanName = configuration.getBeanName();
@@ -138,45 +137,53 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
         for (KeyAffinityService<?> service: this.affinityServices) {
             service.start();
         }
-        final List<Scheduler<Bean<G, I, T>>> schedulers = new ArrayList<>(2);
+        final List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Time timeout = this.expiration.getTimeout();
         if ((timeout != null) && (timeout.getValue() >= 0)) {
-            schedulers.add(new BeanExpirationScheduler<G, I, T>(this, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
+            schedulers.add(new BeanExpirationScheduler<>(this, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
         if (this.passivation.isEvictionAllowed()) {
-            schedulers.add(new BeanEvictionScheduler<G, I, T>(this.beanName + ".eviction", this, this.beanFactory, this.dispatcherFactory, this.passivation));
+            schedulers.add(new BeanEvictionScheduler<>(this.beanName + ".eviction", this, this.beanFactory, this.dispatcherFactory, this.passivation));
         }
-        this.schedulerContext = new SchedulerContext<G, I, T>() {
+        this.scheduler = new Scheduler<I>() {
             @Override
-            public void schedule(Bean<G, I, T> bean) {
-                for (Scheduler<Bean<G, I, T>> scheduler: schedulers) {
-                    scheduler.schedule(bean);
+            public void schedule(I id) {
+                for (Scheduler<I> scheduler: schedulers) {
+                    scheduler.schedule(id);
                 }
             }
 
             @Override
-            public void cancel(Bean<G, I, T> bean) {
-                for (Scheduler<Bean<G, I, T>> scheduler: schedulers) {
-                    scheduler.cancel(bean);
+            public void cancel(I id) {
+                for (Scheduler<I> scheduler: schedulers) {
+                    scheduler.cancel(id);
+                }
+            }
+
+            @Override
+            public void cancel(Locality locality) {
+                for (Scheduler<I> scheduler: schedulers) {
+                    scheduler.cancel(locality);
                 }
             }
 
             @Override
             public void close() {
-                for (Scheduler<?> scheduler: schedulers) {
+                for (Scheduler<I> scheduler: schedulers) {
                     scheduler.close();
                 }
             }
         };
-        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.schedulerContext);
+        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.scheduler);
         this.beanCache.addListener(this, this);
+        this.schedule(this.beanCache, new SimpleLocality(false), new ConsistentHashLocality(this.beanCache));
     }
 
     @Override
     public void stop() {
         this.beanCache.removeListener(this);
         this.dispatcher.close();
-        this.schedulerContext.close();
+        this.scheduler.close();
         for (KeyAffinityService<?> service: this.affinityServices) {
             service.stop();
         }
@@ -202,12 +209,12 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     void cancel(Bean<G, I, T> bean) {
         // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new CancelSchedulerCommand<>(bean), this.locatePrimaryOwner(bean.getId()));
+        this.dispatcher.executeOnNode(new CancelSchedulerCommand<>(bean.getId()), this.locatePrimaryOwner(bean.getId()));
     }
 
     void schedule(Bean<G, I, T> bean) {
         // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new ScheduleSchedulerCommand<>(bean), this.locatePrimaryOwner(bean.getId()));
+        this.dispatcher.executeOnNode(new ScheduleSchedulerCommand<>(bean.getId()), this.locatePrimaryOwner(bean.getId()));
     }
 
     private Node locatePrimaryOwner(I id) {
@@ -299,7 +306,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<BeanKey<I>, BeanEntry<G>> event) {
-        if (event.isPre() && event.isOriginLocal()) {
+        if (event.isPre()) {
             this.passiveCount.incrementAndGet();
             if (!this.passivation.isPersistent()) {
                 G groupId = event.getValue().getGroupId();
@@ -315,7 +322,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<BeanKey<I>, BeanEntry<G>> event) {
-        if (!event.isPre() && event.isOriginLocal()) {
+        if (!event.isPre()) {
             this.passiveCount.decrementAndGet();
             if (!this.passivation.isPersistent()) {
                 G groupId = event.getValue().getGroupId();
@@ -329,49 +336,30 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
         }
     }
 
-    @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<BeanKey<I>, BeanEntry<G>> event) {
-        if (event.isPre()) return;
-
+    @DataRehashed
+    public void dataRehashed(DataRehashedEvent<BeanKey<I>, BeanEntry<G>> event) {
         Cache<BeanKey<I>, BeanEntry<G>> cache = event.getCache();
         Address localAddress = cache.getCacheManager().getAddress();
-        ConsistentHash oldHash = event.getConsistentHashAtStart();
-        ConsistentHash newHash = event.getConsistentHashAtEnd();
-        Set<Address> oldAddresses = new HashSet<>(oldHash.getMembers());
-        // Find members that left this cache view
-        oldAddresses.removeAll(newHash.getMembers());
-        if (!oldAddresses.isEmpty()) {
-            // Iterate over beans in memory
-            for (Object cacheKey: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
-                if (this.accept(cacheKey)) {
-                    @SuppressWarnings("unchecked")
-                    BeanKey<I> key = (BeanKey<I>) cacheKey;
-                    Address oldOwner = oldHash.locatePrimaryOwner(key);
-                    // If the old owner of this bean has left the cache view...
-                    if (oldAddresses.contains(oldOwner)) {
-                        Address newOwner = newHash.locatePrimaryOwner(key);
-                        I id = key.getId();
-                        // And if we are the new primary owner of this bean...
-                        if (localAddress.equals(newOwner)) {
-                            // Then schedule expiration of this bean locally
-                            boolean started = cache.startBatch();
-                            try {
-                                BeanEntry<G> entry = this.beanFactory.findValue(id);
-                                if (entry != null) {
-                                    InfinispanEjbLogger.ROOT_LOGGER.debugf("Scheduling expiration of bean %s on behalf of previous owner: %s", id, oldOwner);
-                                    Bean<G, I, T> bean = this.beanFactory.createBean(id, entry);
-                                    this.schedulerContext.cancel(bean);
-                                    this.schedulerContext.schedule(bean);
-                                }
-                            } finally {
-                                if (started) {
-                                    cache.endBatch(false);
-                                }
-                            }
-                        } else {
-                            InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiration of bean %s will be scheduled by node %s on behalf of previous owner: %s", id, newOwner, oldOwner);
-                        }
-                    }
+        Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        if (event.isPre()) {
+            this.scheduler.cancel(newLocality);
+        } else {
+            this.schedule(cache, oldLocality, newLocality);
+        }
+    }
+
+    private void schedule(Cache<BeanKey<I>, BeanEntry<G>> cache, Locality oldLocality, Locality newLocality) {
+        // Iterate over sessions in memory
+        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+            // Cache may contain non-string keys, so ignore any others
+            if (this.accept(key)) {
+                @SuppressWarnings("unchecked")
+                I id = (I) key;
+                // If we are the new primary owner of this session
+                // then schedule expiration of this session locally
+                if (!oldLocality.isLocal(id) && newLocality.isLocal(id)) {
+                    this.scheduler.schedule(id);
                 }
             }
         }

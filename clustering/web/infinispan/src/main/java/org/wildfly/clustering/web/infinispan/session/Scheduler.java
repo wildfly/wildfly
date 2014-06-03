@@ -19,19 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ejb.Bean;
+package org.wildfly.clustering.web.infinispan.session;
+
+import org.jboss.as.clustering.infinispan.distribution.Locality;
+import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
- * Context made available to the command dispatcher used for scheduling.
+ * A scheduler for some task.
  * @author Paul Ferraro
  */
-public interface SchedulerContext<G, I, T> extends AutoCloseable {
-    void schedule(Bean<G, I, T> bean);
+public interface Scheduler extends AutoCloseable {
+    /**
+     * Schedules a task for the specified session.
+     * @param session a web session.
+     */
+    void schedule(ImmutableSession session);
 
-    void cancel(Bean<G, I, T> bean);
+    /**
+     * Cancels a previously scheduled task for the specified session
+     * @param sessionId the web session identifier
+     */
+    void cancel(String sessionId);
 
+    /**
+     * Cancels any previous scheduled tasks for session which are no longer local to the current node
+     * @param location the cache locality
+     */
+    void cancel(Locality locality);
+
+    /**
+     * Closes any resources used by this scheduler.
+     */
     @Override
     void close();
 }

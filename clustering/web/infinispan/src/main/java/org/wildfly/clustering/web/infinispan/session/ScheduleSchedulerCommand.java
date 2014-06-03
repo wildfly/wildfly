@@ -24,59 +24,32 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
  * Command that schedules a session.
  * @author Paul Ferraro
  */
-public class ScheduleSchedulerCommand extends AbstractSchedulerCommand {
+public class ScheduleSchedulerCommand implements Command<Void, Scheduler> {
     private static final long serialVersionUID = -2606847692331278614L;
 
+    private final transient ImmutableSession session;
+    private final String id;
     private final long maxInactiveInterval;
+    private final long lastAccessedTime;
 
     public ScheduleSchedulerCommand(ImmutableSession session) {
-        super(session);
+        this.session = session;
+        this.id = session.getId();
         this.maxInactiveInterval = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
+        this.lastAccessedTime = session.getMetaData().getLastAccessedTime().getTime();
     }
 
     @Override
-    public Void execute(SchedulerContext context) throws Exception {
-        context.schedule(this.getSession(new MockImmutableSessionMetaData(new Time(this.maxInactiveInterval, TimeUnit.MILLISECONDS))));
+    public Void execute(Scheduler scheduler) {
+        ImmutableSession session = (this.session != null) ? this.session : new MockImmutableSession(this.id, new SimpleSessionMetaData(null, new Date(this.lastAccessedTime), new Time(this.maxInactiveInterval, TimeUnit.MILLISECONDS)));
+        scheduler.schedule(session);
         return null;
-    }
-
-    private static class MockImmutableSessionMetaData implements ImmutableSessionMetaData {
-        private final Time maxInactiveInterval;
-
-        public MockImmutableSessionMetaData(Time maxInactiveInterval) {
-            this.maxInactiveInterval = maxInactiveInterval;
-        }
-
-        @Override
-        public boolean isNew() {
-            return false;
-        }
-
-        @Override
-        public boolean isExpired() {
-            return false;
-        }
-
-        @Override
-        public Date getCreationTime() {
-            return null;
-        }
-
-        @Override
-        public Date getLastAccessedTime() {
-            return null;
-        }
-
-        @Override
-        public long getMaxInactiveInterval(TimeUnit unit) {
-            return this.maxInactiveInterval.convert(unit);
-        }
     }
 }

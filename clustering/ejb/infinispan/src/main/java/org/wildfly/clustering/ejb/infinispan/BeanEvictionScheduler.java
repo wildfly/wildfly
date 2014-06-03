@@ -25,12 +25,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batcher;
-import org.wildfly.clustering.ejb.Bean;
 
 /**
  * Schedules a bean for eviction.
@@ -41,7 +40,7 @@ import org.wildfly.clustering.ejb.Bean;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>>, BeanEvictionContext<I> {
+public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionContext<I> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
     private final Batcher batcher;
@@ -53,8 +52,7 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>>,
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
-        BeanEvictionContext<I> context = this;
-        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, context);
+        this.dispatcher = dispatcherFactory.<BeanEvictionContext<I>>createCommandDispatcher(name, this);
     }
 
     @Override
@@ -68,16 +66,29 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>>,
     }
 
     @Override
-    public void cancel(Bean<G, I, T> bean) {
+    public void cancel(I id) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.remove(bean.getId());
+            this.evictionQueue.remove(id);
         }
     }
 
     @Override
-    public void schedule(Bean<G, I, T> bean) {
+    public void cancel(Locality locality) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.add(bean.getId());
+            Iterator<I> beans = this.evictionQueue.iterator();
+            while (beans.hasNext()) {
+                I id = beans.next();
+                if (!locality.isLocal(id)) {
+                    beans.remove();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void schedule(I id) {
+        synchronized (this.evictionQueue) {
+            this.evictionQueue.add(id);
             // Trigger eviction of oldest bean if necessary
             if (this.evictionQueue.size() > this.config.getConfiguration().getMaxSize()) {
                 Iterator<I> beans = this.evictionQueue.iterator();

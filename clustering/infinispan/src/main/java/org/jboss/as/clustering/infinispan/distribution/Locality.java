@@ -19,26 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
-
-import org.wildfly.clustering.dispatcher.Command;
+package org.jboss.as.clustering.infinispan.distribution;
 
 /**
- * Command that cancels the scheduling of a session.
+ * Facility for determining the primary ownership/location of a given cache key.
  * @author Paul Ferraro
  */
-public class CancelSchedulerCommand implements Command<Void, Scheduler> {
-    private static final long serialVersionUID = -6060731427497057763L;
-
-    private final String id;
-
-    public CancelSchedulerCommand(String sessionId) {
-        this.id = sessionId;
-    }
-
-    @Override
-    public Void execute(Scheduler scheduler) {
-        scheduler.cancel(this.id);
-        return null;
-    }
+public interface Locality {
+    /**
+     * Indicates whether the current node is the primary owner of the specified cache key.
+     * For local caches, this method will always return true.
+     * @param key a cache key
+     * @return true, if the current node is the primary owner of the specified cache key, false otherwise
+     */
+    boolean isLocal(Object key);
 }

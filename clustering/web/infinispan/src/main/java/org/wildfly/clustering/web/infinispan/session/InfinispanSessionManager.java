@@ -38,19 +38,20 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
+import org.infinispan.notifications.cachelistener.annotation.DataRehashed;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
+import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.ConsistentHashLocality;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
+import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Node;
@@ -71,7 +72,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * Generic session manager implementation - independent of cache mapping strategy.
  * @author Paul Ferraro
  */
-@Listener
+@Listener(primaryOnly = true)
 public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFilter {
     private final SessionContext context;
     private final Batcher batcher;
@@ -83,8 +84,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     private final int maxActiveSessions;
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final boolean persistent;
-    private volatile SchedulerContext schedulerContext;
-    private volatile CommandDispatcher<SchedulerContext> dispatcher;
+    private volatile Scheduler scheduler;
+    private volatile CommandDispatcher<Scheduler> dispatcher;
 
     public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
@@ -105,42 +106,50 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     @Override
     public void start() {
         this.identifierFactory.start();
-        final List<Scheduler<ImmutableSession>> schedulers = new ArrayList<>(2);
+        final List<Scheduler> schedulers = new ArrayList<>(2);
         schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions >= 0) {
             schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.batcher, this.factory, this.dispatcherFactory, this.maxActiveSessions));
         }
-        this.schedulerContext = new SchedulerContext() {
+        this.scheduler = new Scheduler() {
             @Override
             public void schedule(ImmutableSession session) {
-                for (Scheduler<ImmutableSession> scheduler: schedulers) {
+                for (Scheduler scheduler: schedulers) {
                     scheduler.schedule(session);
                 }
             }
 
             @Override
-            public void cancel(ImmutableSession session) {
-                for (Scheduler<ImmutableSession> scheduler: schedulers) {
-                    scheduler.cancel(session);
+            public void cancel(String sessionId) {
+                for (Scheduler scheduler: schedulers) {
+                    scheduler.cancel(sessionId);
+                }
+            }
+
+            @Override
+            public void cancel(Locality locality) {
+                for (Scheduler scheduler: schedulers) {
+                    scheduler.cancel(locality);
                 }
             }
 
             @Override
             public void close() {
-                for (Scheduler<?> scheduler: schedulers) {
+                for (Scheduler scheduler: schedulers) {
                     scheduler.close();
                 }
             }
         };
-        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.cache.getName() + ".schedulers", this.schedulerContext);
+        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.cache.getName() + ".schedulers", this.scheduler);
         this.cache.addListener(this, this);
+        this.schedule(this.cache, new SimpleLocality(false), new ConsistentHashLocality(this.cache));
     }
 
     @Override
     public void stop() {
         this.cache.removeListener(this);
         this.dispatcher.close();
-        this.schedulerContext.close();
+        this.scheduler.close();
         this.identifierFactory.stop();
     }
 
@@ -150,7 +159,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
 
     private void cancel(ImmutableSession session) {
         // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new CancelSchedulerCommand(session), this.locatePrimaryOwner(session));
+        this.dispatcher.executeOnNode(new CancelSchedulerCommand(session.getId()), this.locatePrimaryOwner(session));
     }
 
     void schedule(ImmutableSession session) {
@@ -272,7 +281,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<String, ?> event) {
-        if (event.isPre() && event.isOriginLocal()) {
+        if (event.isPre()) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
             ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
@@ -294,46 +303,39 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
         }
     }
 
-    @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<String, ?> event) {
-        if (event.isPre()) return;
-
+    @DataRehashed
+    public void dataRehashed(DataRehashedEvent<String, ?> event) {
         Cache<String, ?> cache = event.getCache();
         Address localAddress = cache.getCacheManager().getAddress();
-        ConsistentHash oldHash = event.getConsistentHashAtStart();
-        ConsistentHash newHash = event.getConsistentHashAtEnd();
-        Set<Address> oldAddresses = new HashSet<>(oldHash.getMembers());
-        // Find members that left this cache view
-        oldAddresses.removeAll(newHash.getMembers());
-        if (!oldAddresses.isEmpty()) {
-            // Iterate over sessions in memory
-            for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
-                // Cache may contain non-string keys, so ignore any others
-                if (this.accept(key)) {
-                    String sessionId = (String) key;
-                    Address oldOwner = oldHash.locatePrimaryOwner(sessionId);
-                    // If the old owner of this session has left the cache view...
-                    if (oldAddresses.contains(oldOwner)) {
-                        Address newOwner = newHash.locatePrimaryOwner(sessionId);
-                        // And if we are the new primary owner of this session...
-                        if (localAddress.equals(newOwner)) {
-                            // Then schedule expiration of this session locally
-                            boolean started = cache.startBatch();
-                            try {
-                                V value = this.factory.findValue(sessionId);
-                                if (value != null) {
-                                    InfinispanWebLogger.ROOT_LOGGER.debugf("Scheduling expiration of session %s on behalf of previous owner: %s", sessionId, oldOwner);
-                                    ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
-                                    this.schedulerContext.cancel(session);
-                                    this.schedulerContext.schedule(session);
-                                }
-                            } finally {
-                                if (started) {
-                                    cache.endBatch(false);
-                                }
-                            }
-                        } else {
-                            InfinispanWebLogger.ROOT_LOGGER.tracef("Expiration of session %s will be scheduled by node %s on behalf of previous owner: %s", sessionId, newOwner, oldOwner);
+        Locality oldLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtStart());
+        Locality newLocality = new ConsistentHashLocality(localAddress, event.getConsistentHashAtEnd());
+        if (event.isPre()) {
+            this.scheduler.cancel(newLocality);
+        } else {
+            this.schedule(cache, oldLocality, newLocality);
+        }
+    }
+
+    private void schedule(Cache<String, ?> cache, Locality oldLocality, Locality newLocality) {
+        // Iterate over sessions in memory
+        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+            // Cache may contain non-string keys, so ignore any others
+            if (this.accept(key)) {
+                String sessionId = (String) key;
+                // If we are the new primary owner of this session
+                // then schedule expiration of this session locally
+                if (!oldLocality.isLocal(sessionId) && newLocality.isLocal(sessionId)) {
+                    // We need to lookup the session to obtain its meta data
+                    boolean started = cache.startBatch();
+                    try {
+                        V value = this.factory.findValue(sessionId);
+                        if (value != null) {
+                            ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
+                            this.scheduler.schedule(session);
+                        }
+                    } finally {
+                        if (started) {
+                            cache.endBatch(false);
                         }
                     }
                 }

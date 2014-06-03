@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.concurrent;
+
+package org.jboss.as.clustering.infinispan.distribution;
 
 /**
- * A scheduler for some task.
+ * Simple {@link Locality} implementation that uses a static value.
  * @author Paul Ferraro
- * @param <T> the item to be scheduled.
  */
-public interface Scheduler<T> extends AutoCloseable {
-    /**
-     * Schedules some task for the specified value.
-     * @param item the item to schedule.
-     */
-    void schedule(T item);
+public class SimpleLocality implements Locality {
 
-    /**
-     * Cancels the scheduled task for the specified value.
-     * @param item the item to cancel.
-     */
-    void cancel(T item);
+    private final boolean local;
 
-    /**
-     * Closes any resources used by this scheduler.
-     */
+    public SimpleLocality(boolean local) {
+        this.local = local;
+    }
+
     @Override
-    void close();
+    public boolean isLocal(Object key) {
+        return this.local;
+    }
 }
