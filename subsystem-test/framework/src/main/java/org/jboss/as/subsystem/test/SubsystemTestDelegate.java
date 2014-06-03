@@ -1027,10 +1027,6 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        }
-
-        @Override
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         }
 

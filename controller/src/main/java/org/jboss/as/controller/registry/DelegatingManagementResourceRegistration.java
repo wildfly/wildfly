@@ -235,11 +235,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        delegate.registerMetric(attributeName, metricHandler);
-    }
-
-    @Override
     public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         delegate.registerMetric(definition, metricHandler);
     }

@@ -314,19 +314,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     /**
      * Records that the given attribute is a metric.
      *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param metricHandler the handler for attribute reads. Cannot be {@code null}
-     *
-     * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
-     */
-    @Deprecated
-    void registerMetric(String attributeName, OperationStepHandler metricHandler);
-
-    /**
-     * Records that the given attribute is a metric.
-     *
      * @param definition the attribute definition. Cannot be {@code null}
      * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *

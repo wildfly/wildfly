@@ -760,10 +760,6 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-
-        }
-
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
 
         }

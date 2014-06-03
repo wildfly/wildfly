@@ -302,11 +302,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        registerMetric(attributeName, metricHandler, null);
-    }
-
-    @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         checkPermission();
         AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);

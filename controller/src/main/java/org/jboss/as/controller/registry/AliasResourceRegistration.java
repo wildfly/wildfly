@@ -160,11 +160,6 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     }
 
     @Override
-    public void registerMetric(final String attributeName, final OperationStepHandler metricHandler) {
-        throw alreadyRegistered();
-    }
-
-    @Override
     public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         throw alreadyRegistered();
     }

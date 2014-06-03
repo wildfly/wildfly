@@ -192,11 +192,6 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        registerMetric(attributeName, metricHandler, null);
-    }
-
-    @Override
     public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {

@@ -938,13 +938,6 @@ public class ExtensionRegistry {
             subdeployments.registerReadOnlyAttribute(definition, readHandler);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-            deployments.registerMetric(attributeName, metricHandler);
-            subdeployments.registerMetric(attributeName, metricHandler);
-        }
-
         @Override
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
             deployments.registerMetric(definition, metricHandler);
