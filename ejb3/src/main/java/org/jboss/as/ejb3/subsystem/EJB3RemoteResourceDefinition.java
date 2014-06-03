@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -72,7 +73,9 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     private EJB3RemoteResourceDefinition() {
         super(EJB3SubsystemModel.REMOTE_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE),
-                EJB3RemoteServiceAdd.INSTANCE, EJB3RemoteServiceRemove.INSTANCE);
+                EJB3RemoteServiceAdd.INSTANCE, EJB3RemoteServiceRemove.INSTANCE,
+                // WFLY-3438
+                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }
 
     @Override
