@@ -230,11 +230,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        delegate.registerReadOnlyAttribute(attributeName, readHandler, flags);
-    }
-
-    @Override
     public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         delegate.registerReadOnlyAttribute(definition, readHandler);
     }

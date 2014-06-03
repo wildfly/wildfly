@@ -289,16 +289,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadOnlyAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler) {
         checkPermission();
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();

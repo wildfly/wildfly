@@ -932,13 +932,6 @@ public class ExtensionRegistry {
             subdeployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
-            subdeployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
-        }
-
         @Override
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
             deployments.registerReadOnlyAttribute(definition, readHandler);

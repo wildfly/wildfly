@@ -1023,10 +1023,6 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        }
-
-        @Override
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         }
 

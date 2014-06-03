@@ -302,23 +302,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
      * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
      *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param readHandler the handler for attribute reads. May be {@code null}
-     *                    in which case the default handling is used
-     * @param flags additional flags describing this attribute
-     * @throws IllegalArgumentException if {@code attributeName} is {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
-      */
-    @Deprecated
-    void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags);
-
-    /**
-     * Records that the given attribute can be read from but not written to, and
-     * optionally provides an operation handler for the read. The attribute is assumed to be
-     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
-     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
-     *
      * @param definition the attribute definition. Cannot be {@code null}
      * @param readHandler the handler for attribute reads. May be {@code null}
      *                    in which case the default handling is used

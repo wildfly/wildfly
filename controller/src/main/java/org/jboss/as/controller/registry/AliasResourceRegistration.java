@@ -155,11 +155,6 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     }
 
     @Override
-    public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        throw alreadyRegistered();
-    }
-
-    @Override
     public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         throw alreadyRegistered();
     }

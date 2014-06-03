@@ -756,10 +756,6 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-
-        }
-
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
 
         }
