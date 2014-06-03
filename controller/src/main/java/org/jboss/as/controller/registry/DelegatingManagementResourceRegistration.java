@@ -180,11 +180,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-        delegate.registerOperationHandler(operationName, handler, descriptionProvider);
-    }
-
-    @Override
     public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
         delegate.registerOperationHandler(operationName, handler, descriptionProvider, flags);
     }

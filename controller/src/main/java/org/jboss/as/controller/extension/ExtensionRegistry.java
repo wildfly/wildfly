@@ -869,13 +869,6 @@ public class ExtensionRegistry {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-            deployments.registerOperationHandler(operationName, handler, descriptionProvider);
-            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider);
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);

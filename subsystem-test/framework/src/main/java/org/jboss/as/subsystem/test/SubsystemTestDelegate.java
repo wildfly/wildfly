@@ -975,11 +975,6 @@ final class SubsystemTestDelegate {
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                                             DescriptionProvider descriptionProvider) {
-        }
-
-        @Override
-        public void registerOperationHandler(String operationName, OperationStepHandler handler,
                                              DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
         }
 

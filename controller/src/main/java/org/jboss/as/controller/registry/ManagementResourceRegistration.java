@@ -167,18 +167,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param operationName the operation name
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
-     * @throws IllegalArgumentException if either parameter is {@code null}
-     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
-     */
-     @Deprecated
-    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider);
-
-    /**
-     * Register an operation handler for this resource.
-     *
-     * @param operationName the operation name
-     * @param handler the operation handler
-     * @param descriptionProvider the description provider for this operation
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
      * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}

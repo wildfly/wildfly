@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -35,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -713,10 +711,6 @@ public abstract class AbstractOperationTestCase {
 
         @Override
         public void unregisterOverrideModel(String name) {
-        }
-
-        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-
         }
 
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
