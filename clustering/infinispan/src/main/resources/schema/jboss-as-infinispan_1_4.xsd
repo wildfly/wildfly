@@ -475,7 +475,7 @@
     </xs:complexType>
 
     <xs:complexType name="write-behind">
-        <xs:attribute name="flush-lock-timeout" type="xs:long" default="1">
+        <xs:attribute name="flush-lock-timeout" type="xs:long" default="5000">
             <xs:annotation>
                 <xs:documentation>
                     Timeout to acquire the lock which guards the state to be flushed to the cache store periodically.
