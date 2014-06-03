@@ -133,7 +133,9 @@ public class EjbTimerXmlPersister implements XMLElementWriter<List<TimerImpl>> {
         if (timer.getInitialExpiration() != null) {
             writer.writeAttribute(INITIAL_DATE, Long.toString(timer.getInitialExpiration().getTime()));
         }
-        writer.writeAttribute(NEXT_DATE, Long.toString(timer.getNextExpiration().getTime()));
+        if (timer.getNextExpiration() != null) {
+            writer.writeAttribute(NEXT_DATE, Long.toString(timer.getNextExpiration().getTime()));
+        }
         writer.writeAttribute(TIMER_STATE, timer.getState().name());
 
         writer.writeAttribute(SCHEDULE_EXPR_SECOND, timer.getScheduleExpression().getSecond());
