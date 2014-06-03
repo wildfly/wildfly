@@ -1015,11 +1015,6 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
-                                               OperationStepHandler writeHandler, Storage storage) {
-        }
-
-        @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
         }
 
