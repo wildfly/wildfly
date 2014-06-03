@@ -27,16 +27,16 @@ import java.util.Properties;
 public enum ModelTestControllerVersion {
     //AS releases
     MASTER (CurrentVersion.VERSION, false, null),
-    V7_1_2_FINAL ("7.1.2.Final", false, "7.1.2"),
-    V7_1_3_FINAL ("7.1.3.Final", false, "7.1.2"),
+    V7_1_2_FINAL ("7.1.2.Final", false, "7.1.2", false),
+    V7_1_3_FINAL ("7.1.3.Final", false, "7.1.2", false),
     V7_2_0_FINAL ("7.2.0.Final", false, "7.2.0"),
 
     //WILDFLY RELEASES
-    WILDFLY_8_0_0_FINAL ("8.0.0.Final", false, null),
+    WILDFLY_8_0_0_FINAL ("8.0.0.Final", false, null, false),
 
     //EAP releases
-    EAP_6_0_0 ("7.1.2.Final-redhat-1", true, "7.1.2"),
-    EAP_6_0_1 ("7.1.3.Final-redhat-4", true, "7.1.2"),
+    EAP_6_0_0 ("7.1.2.Final-redhat-1", true, "7.1.2", false),
+    EAP_6_0_1 ("7.1.3.Final-redhat-4", true, "7.1.2", false),
     EAP_6_1_0 ("7.2.0.Final-redhat-8", true, "7.2.0"),
     EAP_6_1_1 ("7.2.1.Final-redhat-10", true, "7.2.0"),
     EAP_6_2_0 ("7.3.0.Final-redhat-14", true, null)
@@ -45,10 +45,19 @@ public enum ModelTestControllerVersion {
     private final String mavenGavVersion;
     private final String testControllerVersion;
     private final boolean eap;
+    private final boolean validLegacyController;
     private ModelTestControllerVersion(String mavenGavVersion, boolean eap, String testControllerVersion) {
         this.mavenGavVersion = mavenGavVersion;
         this.testControllerVersion = testControllerVersion;
         this.eap = eap;
+        this.validLegacyController = true;
+    }
+
+    private ModelTestControllerVersion(String mavenGavVersion, boolean eap, String testControllerVersion, boolean validLegacyController) {
+        this.mavenGavVersion = mavenGavVersion;
+        this.testControllerVersion = testControllerVersion;
+        this.eap = eap;
+        this.validLegacyController = validLegacyController;
     }
 
     public String getMavenGavVersion() {
@@ -61,6 +70,10 @@ public enum ModelTestControllerVersion {
 
     public boolean isEap() {
         return eap;
+    }
+
+    public boolean hasValidLegacyController() {
+        return validLegacyController;
     }
 
     public interface CurrentVersion {
