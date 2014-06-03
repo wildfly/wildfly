@@ -668,14 +668,6 @@ public class ExtensionRegistry {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
-            assert descriptionProvider != null : "descriptionProvider is null";
-            PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-            return registerDeploymentModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
-        }
-
-        @Override
         public ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition) {
             assert resourceDefinition != null : "resourceDefinition is null";
             final ManagementResourceRegistration deploymentsReg = deploymentsRegistration;

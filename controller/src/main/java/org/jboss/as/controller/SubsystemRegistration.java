@@ -62,16 +62,6 @@ public interface SubsystemRegistration {
     /**
      * Get the deployment model node registration for this subsystem.
      *
-     * @param descriptionProvider  provider of the description of the subsystem's root deployment-level management resource
-     * @return the deployment-level model node registration
-     * @deprecated use {@link SubsystemRegistration#registerDeploymentModel(ResourceDefinition)}
-     */
-    @Deprecated
-    ManagementResourceRegistration registerDeploymentModel(DescriptionProvider descriptionProvider);
-
-    /**
-     * Get the deployment model node registration for this subsystem.
-     *
      * @param resourceDefinition factory for the provider of the description of the subsystem's root deployment-level management resource
      * @return the deployment-level model node registration
      */
