@@ -21,6 +21,10 @@
  */
 package org.jboss.as.test.integration.domain;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,23 +35,21 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.cli.operation.OperationFormatException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.deployment.trivial.ServiceActivatorDeploymentUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.as.test.integration.management.util.ModelUtil;
-import org.jboss.as.test.integration.management.util.SimpleServlet;
-import org.jboss.as.test.integration.management.util.WebUtil;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -65,15 +67,14 @@ public class DomainControllerMigrationTestCase {
     private static String[] SERVERS = new String[] {"failover-one", "failover-two", "failover-three"};
     private static String[] HOSTS = new String[] {"failover-h1", "failover-h2", "failover-h3"};
     private static int[] MGMT_PORTS = new int[] {9999, 9989, 19999};
-    private static int[] SERVER_PORT_OFFSETS = new int[] {0, 350, 550};
     private static String masterAddress = System.getProperty("jboss.test.host.master.address");
     private static String slaveAddress = System.getProperty("jboss.test.host.slave.address");
-    private static final String DEPLOYMENT_NAME = "SimpleServlet.war";
+    private static final String DEPLOYMENT_NAME = "service-activator.jar";
 
     private static DomainControllerClientConfig domainControllerClientConfig;
     private static DomainLifecycleUtil[] hostUtils = new DomainLifecycleUtil[3];
 
-    private static File warFile;
+    private static File jarFile;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
@@ -83,12 +84,9 @@ public class DomainControllerMigrationTestCase {
             hostUtils[k].start();
         }
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
-        war.addClass(SimpleServlet.class);
-        war.addAsWebResource(new StringAsset("Version1"), "page.html");
         String tempDir = System.getProperty("java.io.tmpdir");
-        warFile = new File(tempDir + File.separator + DEPLOYMENT_NAME);
-        new ZipExporterImpl(war).exportTo(warFile, true);
+        jarFile = new File(tempDir + File.separator + DEPLOYMENT_NAME);
+        ServiceActivatorDeploymentUtil.createServiceActivatorDeployment(jarFile);
 
     }
 
@@ -109,7 +107,7 @@ public class DomainControllerMigrationTestCase {
             }
         }
 
-        Assert.assertTrue(warFile.delete());
+        Assert.assertTrue(jarFile.delete());
     }
 
     private static JBossAsManagedConfiguration getHostConfiguration(int host) throws Exception {
@@ -118,16 +116,18 @@ public class DomainControllerMigrationTestCase {
         File domains = new File("target" + File.separator + "domains" + File.separator + testName);
         final File hostDir = new File(domains, "failover" + String.valueOf(host));
         final File hostConfigDir = new File(hostDir, "configuration");
-        hostConfigDir.mkdirs();
+        assert hostConfigDir.mkdirs() || hostConfigDir.isDirectory();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         final JBossAsManagedConfiguration hostConfig = new JBossAsManagedConfiguration();
         hostConfig.setHostControllerManagementAddress(host == 1 ? masterAddress : slaveAddress);
         hostConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress + " -Djboss.test.host.slave.address=" + slaveAddress);
         URL url = tccl.getResource("domain-configs/domain-standard.xml");
+        assert url != null;
         hostConfig.setDomainConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(hostConfig.getDomainConfigFile());
         url = tccl.getResource("host-configs/host-failover" + String.valueOf(host) + ".xml");
+        assert url != null;
         hostConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(hostConfig.getHostConfigFile());
         hostConfig.setDomainDirectory(hostDir.getAbsolutePath());
@@ -171,6 +171,10 @@ public class DomainControllerMigrationTestCase {
         addSystemProp.get(ModelDescriptionConstants.OP).set("add");
         addSystemProp.get(ModelDescriptionConstants.VALUE).set("test-a");
         hostUtils[0].executeForResult(addSystemProp);
+
+        // WFLY-3418 Add but don't map a deployment so we can prove the backup gets the content
+        Operation addDeployOp = buildDeploymentAddOperation();
+        hostUtils[0].executeForResult(addDeployOp);
 
         // kill the domain process controller on failover-h1
         log.info("Stopping the domain controller on failover-h1.");
@@ -242,24 +246,24 @@ public class DomainControllerMigrationTestCase {
 
         // test some management ops on failover-h3 using new domain controller on failover-h2
 
-        Operation deployOp = buildDeployOperation();
-        hostUtils[1].executeForResult(deployOp);
-
         hosts = getHosts(hostUtils[1]);
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertTrue(hosts.contains(HOSTS[2]));
         Assert.assertEquals(hosts.size(), 2);
 
+        // WFLY-3418 -- map deployment to a server group and validate it gets installed on servers
+        Operation mapDeployOp = buildDeploymentMappingOperation();
+        hostUtils[1].executeForResult(mapDeployOp);
+        checkProperty(hostUtils[1].getDomainClient(), HOSTS[1], SERVERS[1]);
+        checkProperty(hostUtils[1].getDomainClient(), HOSTS[2], SERVERS[2]);
+
         // stop failover-h3 server using new dc
-        String testUrl = new URL("http", slaveAddress, 8080 + SERVER_PORT_OFFSETS[2], "/SimpleServlet/SimpleServlet").toString();
-        Assert.assertTrue(WebUtil.testHttpURL(testUrl));
         ModelNode stopOp = new ModelNode();
         stopOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, HOSTS[2]);
         stopOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SERVER_CONFIG, SERVERS[2]);
         stopOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.STOP);
         hostUtils[1].executeForResult(stopOp);
         DomainTestUtils.waitUntilState(hostUtils[1].getDomainClient(), HOSTS[2], SERVERS[2], "STOPPED");
-        Assert.assertFalse(WebUtil.testHttpURL(testUrl));
     }
 
     private Set<String> getHosts(DomainLifecycleUtil hostUtil) throws IOException {
@@ -281,28 +285,37 @@ public class DomainControllerMigrationTestCase {
         }
     }
 
-    private Operation buildDeployOperation() throws IOException, OperationFormatException {
+    private Operation buildDeploymentAddOperation() throws IOException, OperationFormatException {
 
         ModelNode addDeploymentOp = new ModelNode();
-        addDeploymentOp.get(ModelDescriptionConstants.ADDRESS).add("deployment", "SimpleServlet.war");
+        addDeploymentOp.get(ModelDescriptionConstants.ADDRESS).add(DEPLOYMENT, DEPLOYMENT_NAME);
         addDeploymentOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         addDeploymentOp.get("content").get(0).get("input-stream-index").set(0);
-        addDeploymentOp.get(ModelDescriptionConstants.RUNTIME_NAME).set(DEPLOYMENT_NAME);
+
+        OperationBuilder ob = new OperationBuilder(addDeploymentOp, true);
+        ob.addInputStream(new FileInputStream(jarFile));
+
+        return ob.build();
+    }
+
+    private Operation buildDeploymentMappingOperation() throws IOException, OperationFormatException {
 
         ModelNode deployOp = new ModelNode();
         deployOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         deployOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
         deployOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT, DEPLOYMENT_NAME);
         deployOp.get(ModelDescriptionConstants.ENABLED).set(true);
-        ModelNode[] steps = new ModelNode[2];
-        steps[0] = addDeploymentOp;
-        steps[1] = deployOp;
-        ModelNode compositeOp = ModelUtil.createCompositeNode(steps);
 
-        OperationBuilder ob = new OperationBuilder(compositeOp, true);
-        ob.addInputStream(new FileInputStream(warFile));
+        OperationBuilder ob = new OperationBuilder(deployOp, true);
+        ob.addInputStream(new FileInputStream(jarFile));
 
         return ob.build();
+    }
+
+    private void checkProperty(ModelControllerClient client, String host, String server) throws IOException, MgmtOperationException {
+        PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, host),
+                PathElement.pathElement(SERVER, server));
+        ServiceActivatorDeploymentUtil.validateProperties(client, pathAddress);
     }
 
 }

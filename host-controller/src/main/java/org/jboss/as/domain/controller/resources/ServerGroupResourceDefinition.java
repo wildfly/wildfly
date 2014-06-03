@@ -45,7 +45,6 @@ import org.jboss.as.domain.controller.operations.ServerGroupSocketBindingGroupWr
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
-import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
@@ -91,15 +90,13 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ADD_ATTRIBUTES = new AttributeDefinition[] {PROFILE, SOCKET_BINDING_GROUP, SOCKET_BINDING_PORT_OFFSET, MANAGEMENT_SUBSYSTEM_ENDPOINT};
 
     private final boolean master;
-    private final ContentRepository contentRepo;
     private final HostFileRepository fileRepository;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    public ServerGroupResourceDefinition(final boolean master, final LocalHostControllerInfo hostInfo, final ContentRepository contentRepo,
+    public ServerGroupResourceDefinition(final boolean master, final LocalHostControllerInfo hostInfo,
                                          final HostFileRepository fileRepository, final DomainControllerRuntimeIgnoreTransformationRegistry registry) {
         super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), new ServerGroupAddHandler(master), new ServerGroupRemoveHandler(hostInfo));
         this.master = master;
-        this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
         this.runtimeIgnoreTransformationRegistry = registry;
     }
@@ -129,7 +126,7 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         DomainServerLifecycleHandlers.registerServerGroupHandlers(resourceRegistration);
         resourceRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForServerGroup(contentRepo, fileRepository));
+        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForServerGroup(fileRepository));
         resourceRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_GROUP));
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER_GROUP, null, null));
     }

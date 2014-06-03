@@ -42,6 +42,7 @@ import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -299,9 +300,12 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));
+        ResourceDefinition domainDeploymentDefinition = isMaster
+                ? DomainDeploymentResourceDefinition.createForDomainMaster(contentRepo)
+                : DomainDeploymentResourceDefinition.createForDomainSlave(environment.isBackupDomainFiles(), fileRepository);
+        resourceRegistration.registerSubModel(domainDeploymentDefinition);
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
-        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, hostControllerInfo, contentRepo, fileRepository, runtimeIgnoreTransformationRegistry));
+        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, hostControllerInfo, fileRepository, runtimeIgnoreTransformationRegistry));
 
         //TODO socket-binding-group currently lives in controller and the child RDs live in domain so they currently need passing in from here
         resourceRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(
