@@ -183,6 +183,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                                     deploymentHashes.put(id, hashes);
                                 }
                                 hashes.add(contentItem.get(HASH).asBytes());
+                                if (hostControllerEnvironment.isBackupDomainFiles()) {
+                                    relevantDeployments.add(pe.getValue());
+                                }
                             }
                         }
                     }
