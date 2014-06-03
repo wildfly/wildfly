@@ -748,10 +748,6 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-
-        }
-
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
 
         }

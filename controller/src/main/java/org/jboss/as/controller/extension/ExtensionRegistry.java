@@ -919,13 +919,6 @@ public class ExtensionRegistry {
             subdeployments.unregisterOperationHandler(operationName);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
-            subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
-        }
-
         @Override
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
             deployments.registerReadWriteAttribute(definition, readHandler, writeHandler);

@@ -270,25 +270,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
      * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
      *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param readHandler the handler for attribute reads. May be {@code null}
-     *                    in which case the default handling is used
-     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
-     * @param flags additional flags describing this attribute
-     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
-     */
-     @Deprecated
-    void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler,
-                                    EnumSet<AttributeAccess.Flag> flags);
-
-    /**
-     * Records that the given attribute can be both read from and written to, and
-     * provides operation handlers for the read and the write. The attribute is assumed to be
-     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
-     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
-     *
      * @param definition the attribute definition. Cannot be {@code null}
      * @param readHandler the handler for attribute reads. May be {@code null}
      *                    in which case the default handling is used
