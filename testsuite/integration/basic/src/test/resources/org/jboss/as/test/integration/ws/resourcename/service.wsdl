@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="service_v1"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+                  xmlns:msg="http://www.test.nl/xsd/test/messages"
+                  xmlns:tns="http://www.test.nl/xsd/test/" 
+                  targetNamespace="http://www.test.nl/xsd/test/">
+
+    <wsdl:types>
+        <xsd:schema>
+            <xsd:import	namespace="http://www.test.nl/xsd/test/messages" schemaLocation="d1/test.xsd" />
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="requestMessage">
+        <wsdl:part element="msg:requestMessage" name="request" />
+    </wsdl:message>
+
+    <wsdl:message name="responseMessage">
+        <wsdl:part element="msg:responseMessage" name="response" />
+    </wsdl:message>
+
+
+    <wsdl:portType name="service_v1_port">
+        <wsdl:operation name="testRequest">
+            <wsdl:input message="tns:requestMessage" />
+            <wsdl:output message="tns:responseMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="service_v1_binding" type="tns:service_v1_port">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="testRequest">
+            <soap:operation soapAction="http://www.test.nl/xsd/test/requestMessage"/>
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="service_v1">
+        <wsdl:port name="service_v1_port" binding="tns:service_v1_binding">
+            <soap:address location="REPLACE_WITH_ACTUAL_URL" />
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>
