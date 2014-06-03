@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:msg="http://www.test.nl/xsd/test/messages" targetNamespace="http://www.test.nl/xsd/test/messages" elementFormDefault="qualified" version="1.0.0">
+  <include schemaLocation="d1/test.xsd"/>
+</schema>
