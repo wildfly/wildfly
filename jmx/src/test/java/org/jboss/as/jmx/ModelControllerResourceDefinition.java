@@ -30,6 +30,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -51,6 +54,8 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -205,12 +210,13 @@ public class ModelControllerResourceDefinition extends SimpleResourceDefinition 
                 .build();
         final SimpleAttributeDefinition param4 = new SimpleAttributeDefinitionBuilder("param4", ModelType.INT)
                 .setDefaultValue(new ModelNode(6))
-                        //.setValidator(new IntRangeValidator(5,10,true,false)) //todo expressions & min/max dont match well
+                        //.setValidator(new IntRangeValidator(5,10,true,false)) //todo expressions & min/max dont match well WFLY-3500
                 .setAllowExpression(allowExpressions)
                 .build();
 
         final SimpleAttributeDefinition param5 = new SimpleAttributeDefinitionBuilder("param5", ModelType.INT)
                 .setAllowExpression(allowExpressions)
+                .setValidator(new IntAllowedValuesValidator(3, 5, 7))
                 .build();
 
         final OperationDefinition DEFINITION_STANDALONE = new SimpleOperationDefinitionBuilder(IntOperationWithParams.OPERATION_NAME, new NonResolvingResourceDescriptionResolver())
@@ -242,6 +248,23 @@ public class ModelControllerResourceDefinition extends SimpleResourceDefinition 
             long l = operation.get("param1").resolve().asLong() + context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("int").asInt() + operation.get("param3", "test").resolve().asInt();
             context.getResult().set(operation.get("param2").resolve().asList().get(0).asString() + l);
             context.stepCompleted();
+        }
+
+        private static class IntAllowedValuesValidator extends ModelTypeValidator implements AllowedValuesValidator{
+            private final List<ModelNode> allowedValues = new LinkedList<>();
+
+            private IntAllowedValuesValidator(int ... allowedValues) {
+                super(ModelType.INT);
+                for (int allowedValue : allowedValues) {
+                    this.allowedValues.add(new ModelNode(allowedValue));
+                }
+            }
+
+            @Override
+            public List<ModelNode> getAllowedValues() {
+                return allowedValues;
+            }
+
         }
     }
 

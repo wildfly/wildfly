@@ -82,7 +82,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.TestModelControllerService;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -571,7 +570,7 @@ public abstract class AbstractProxyControllerTest {
 
     public class MainModelControllerService extends TestModelControllerService {
 
-        private final InjectedValue<ModelController> proxy = new InjectedValue<>();
+        private final InjectedValue<ModelController> proxy = new InjectedValue<ModelController>();
 
         MainModelControllerService(final ControlledProcessState processState) {
             super(ProcessType.EMBEDDED_SERVER, new NullConfigurationPersister(), processState,
@@ -582,9 +581,7 @@ public abstract class AbstractProxyControllerTest {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
 
-            rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
-                    .setPrivateEntry()
-                    .build(), new OperationStepHandler() {
+            rootRegistration.registerOperationHandler(TestUtils.SETUP_OPERATION_DEF, new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ModelNode mainModel = new ModelNode();
@@ -625,7 +622,7 @@ public abstract class AbstractProxyControllerTest {
             );
 
 
-            rootRegistration.registerOperationHandler(TestUtils.SETUP_OP_DEF, new OperationStepHandler() {
+            rootRegistration.registerOperationHandler(TestUtils.SETUP_OPERATION_DEF, new OperationStepHandler() {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ModelNode proxyModel = new ModelNode();

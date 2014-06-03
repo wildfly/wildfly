@@ -103,7 +103,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-        rootRegistration.registerOperationHandler(TestUtils.SETUP_OP_DEF, new OperationStepHandler() {
+        rootRegistration.registerOperationHandler(TestUtils.SETUP_OPERATION_DEF, new OperationStepHandler() {
                     @Override
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         final ModelNode model = new ModelNode();

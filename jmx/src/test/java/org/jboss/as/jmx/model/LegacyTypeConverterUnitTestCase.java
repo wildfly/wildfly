@@ -299,7 +299,7 @@ public class LegacyTypeConverterUnitTestCase {
         Assert.assertEquals(node, converter.toModelNode(tabularData));
 
         //Allow plain map as well? Yeah why not!
-        Map<String, Long> map = new HashMap<>();
+        Map<String, Long> map = new HashMap<String, Long>();
         map.put("one", 1L);
         map.put("two", 2L);
         Assert.assertEquals(node, converter.toModelNode(map));
@@ -322,7 +322,7 @@ public class LegacyTypeConverterUnitTestCase {
         Assert.assertTrue(Arrays.equals(new byte[] {3,4}, (byte[])tabularData.get(new Object[] {"two"}).get("value")));
 
         //Allow plain map as well? Yeah why not!
-        Map<String, byte[]> map = new HashMap<>();
+        Map<String, byte[]> map = new HashMap<String, byte[]>();
         map.put("one", new byte[] {1,2});
         map.put("two", new byte[] {3,4});
         Assert.assertEquals(node, converter.toModelNode(map));
@@ -934,7 +934,7 @@ public class LegacyTypeConverterUnitTestCase {
     }
 
     private List<Object> createList(Object...values){
-        List<Object> list = new ArrayList<>();
+        List<Object> list = new ArrayList<Object>();
         Collections.addAll(list, values);
         return list;
     }

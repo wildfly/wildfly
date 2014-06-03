@@ -227,7 +227,7 @@ public class AttributesTestCase {
         resourceModel.get("reject").set(object.clone());
 
         final RejectTwoChecker checker = new RejectTwoChecker();
-        Map<String, RejectAttributeChecker> mapChecker = new HashMap<>();
+        Map<String, RejectAttributeChecker> mapChecker = new HashMap<String, RejectAttributeChecker>();
         mapChecker.put("1", checker);
         mapChecker.put("2", checker);
 

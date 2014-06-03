@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -252,7 +253,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(Integer.class.getName(), op.getSignature()[3].getType());
         OpenMBeanParameterInfo parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[3]);
         Assert.assertEquals(6, parameterInfo.getDefaultValue());
-        //Assert.assertEquals(5, parameterInfo.getMinValue()); //todo min & max with expressions have lots of problems
+        //Assert.assertEquals(5, parameterInfo.getMinValue()); //todo min & max with expressions have lots of problems WFLY-3500
         //Assert.assertEquals(10, parameterInfo.getMaxValue());
 
         Assert.assertEquals("param5", op.getSignature()[4].getName());
@@ -260,8 +261,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(Integer.class.getName(), op.getSignature()[4].getType());
         parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
         Assert.assertNull(parameterInfo.getDefaultValue());
-        Assert.assertNull(parameterInfo.getDefaultValue());
-        //Assert.assertEquals(new HashSet<Object>(Arrays.asList(3, 5, 7)), parameterInfo.getLegalValues()); //todo add support for allowed values to AD
+        Assert.assertEquals(new HashSet<Object>(Arrays.asList(3, 5, 7)), parameterInfo.getLegalValues()); //todo add support for allowed values to AD
 
         op = findOperation(operations, ModelControllerResourceDefinition.ComplexOperation.OPERATION_NAME);
         Assert.assertEquals(ModelControllerResourceDefinition.ComplexOperation.OPERATION_NAME, op.getName());
@@ -386,9 +386,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(String.class.getName(), op.getSignature()[4].getType());
         parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
         Assert.assertNull(parameterInfo.getDefaultValue());
-        Assert.assertNull(parameterInfo.getLegalValues());
+        Assert.assertNotNull(parameterInfo.getLegalValues());
         Assert.assertNull(parameterInfo.getDefaultValue());
-        Assert.assertNull(parameterInfo.getLegalValues());
 
         op = findOperation(operations, ModelControllerResourceDefinition.ComplexOperation.OPERATION_NAME);
         Assert.assertEquals(ModelControllerResourceDefinition.ComplexOperation.OPERATION_NAME, op.getName());
@@ -456,7 +455,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         connection.setAttribute(name, new Attribute("list", new Integer[]{110}));
         connection.setAttribute(name, new Attribute("long", 111L));
         connection.setAttribute(name, new Attribute("type", ModelType.STRING.toString()));
-        Map<String, Integer> map = new HashMap<>();
+        Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("keyA", 112);
         map.put("keyB", 113);
         connection.setAttribute(name, new Attribute("map", map));
@@ -553,7 +552,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             //expected
         }
         try {
-            Map<String, Integer> map = new HashMap<>();
+            Map<String, Integer> map = new HashMap<String, Integer>();
             map.put("keyA", 112);
             map.put("keyB", 113);
             connection.setAttribute(name, new Attribute("map", map));
@@ -637,7 +636,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         connection.setAttribute(name, new Attribute("list", new String[]{"${should.not.exist!!!!!:110}"}));
         connection.setAttribute(name, new Attribute("long", "${should.not.exist!!!!!:111}"));
         connection.setAttribute(name, new Attribute("type", "${should.not.exist!!!!!:STRING}"));
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<String, String>();
         map.put("keyA", "${should.not.exist!!!!!:112}");
         map.put("keyB", "${should.not.exist!!!!!:113}");
         connection.setAttribute(name, new Attribute("map", map));
@@ -1099,7 +1098,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     }
 
     private CompositeData createComplexData(MBeanServerConnection connection, CompositeType type, int intValue, BigDecimal bigDecimalValue) throws Exception {
-        Map<String, Object> items = new HashMap<>();
+        Map<String, Object> items = new HashMap<String, Object>();
         items.put("int-value", intValue);
         //items.put("bigint-value", bigIntegerValue);
         items.put("bigdecimal-value", bigDecimalValue);
@@ -1108,7 +1107,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     }
 
     private CompositeData createComplexData(MBeanServerConnection connection, CompositeType type, String intValue, String bigDecimalValue) throws Exception {
-        Map<String, Object> items = new HashMap<>();
+        Map<String, Object> items = new HashMap<String, Object>();
         items.put("int-value", intValue);
         //items.put("bigint-value", bigIntegerValue);
         items.put("bigdecimal-value", bigDecimalValue);

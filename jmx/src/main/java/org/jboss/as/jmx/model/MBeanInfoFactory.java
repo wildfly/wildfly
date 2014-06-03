@@ -153,7 +153,7 @@ public class MBeanInfoFactory {
     }
 
     private OpenMBeanAttributeInfo[] getAttributes() {
-        List<OpenMBeanAttributeInfo> infos = new LinkedList<>();
+        List<OpenMBeanAttributeInfo> infos = new LinkedList<OpenMBeanAttributeInfo>();
         if (providedDescription.hasDefined(ATTRIBUTES)) {
             for (final String name : providedDescription.require(ATTRIBUTES).keys()) {
                 OpenMBeanAttributeInfo attributeInfo = getAttribute(name);

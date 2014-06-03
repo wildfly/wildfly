@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelType;
  */
 public class TestUtils {
 
-    static final OperationDefinition SETUP_OP_DEF = new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
+    static final OperationDefinition SETUP_OPERATION_DEF = new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
             .setPrivateEntry()
             .build();
 
