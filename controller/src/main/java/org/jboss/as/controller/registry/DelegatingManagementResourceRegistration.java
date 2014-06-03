@@ -240,11 +240,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        delegate.registerMetric(attributeName, metricHandler, flags);
-    }
-
-    @Override
     public void unregisterAttribute(String attributeName) {
         delegate.unregisterAttribute(attributeName);
     }

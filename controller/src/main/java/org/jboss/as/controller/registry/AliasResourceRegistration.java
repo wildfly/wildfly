@@ -165,11 +165,6 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        throw alreadyRegistered();
-    }
-
-    @Override
     public void unregisterAttribute(String attributeName) {
        throw alreadyRegistered();
     }

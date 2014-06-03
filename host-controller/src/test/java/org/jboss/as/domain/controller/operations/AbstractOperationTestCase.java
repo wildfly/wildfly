@@ -764,10 +764,6 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-
-        }
-
         @Override
         public void unregisterAttribute(String attributeName) {
 

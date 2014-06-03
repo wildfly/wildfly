@@ -944,13 +944,6 @@ public class ExtensionRegistry {
             subdeployments.registerMetric(definition, metricHandler);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerMetric(attributeName, metricHandler, flags);
-            subdeployments.registerMetric(attributeName, metricHandler, flags);
-        }
-
         @Override
         public void unregisterAttribute(String attributeName) {
             deployments.unregisterAttribute(attributeName);
