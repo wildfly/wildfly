@@ -97,9 +97,9 @@
                                     <footer>${javadoc.branding}</footer>
 
                                     <includeDependencySources>true</includeDependencySources>
-                                    <dependencySourceIncludes></dependencySourceIncludes>
-                                    <dependencySourceExcludes></dependencySourceExcludes>
-                                    <groups></groups>
+                                    <dependencySourceIncludes> <!-- Filled by a script during creation of Javadoc. --> </dependencySourceIncludes>
+                                    <dependencySourceExcludes> <!-- Filled by a script during creation of Javadoc. --> </dependencySourceExcludes>
+                                    <groups> <!-- Filled by a script during creation of Javadoc. --> </groups>
                                     
                                 </configuration>
                             </execution>
