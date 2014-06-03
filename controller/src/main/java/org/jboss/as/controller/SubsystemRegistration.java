@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.CombinedTransformer;
@@ -39,17 +38,6 @@ import org.jboss.staxmapper.XMLElementWriter;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public interface SubsystemRegistration {
-
-    /**
-     * Get the model node registration for this subsystem.
-     *
-     * @param descriptionProvider provider of the description of the subsystem's root management resource
-     *
-     * @return the subsystem-level model node registration
-     * @deprecated use {@link SubsystemRegistration#registerSubsystemModel(ResourceDefinition)}
-     */
-    @Deprecated
-    ManagementResourceRegistration registerSubsystemModel(DescriptionProvider descriptionProvider);
 
     /**
      * Get the model node registration for this subsystem.

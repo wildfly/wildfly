@@ -51,7 +51,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -643,14 +642,6 @@ public class ExtensionRegistry {
 
         private SubsystemRegistrationImpl(String name) {
             this.name = name;
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
-            assert descriptionProvider != null : "descriptionProvider is null";
-            PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-            return registerSubsystemModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
         }
 
         @Override
