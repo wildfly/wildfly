@@ -39,6 +39,9 @@ public class JcaSubsystemConfiguration implements Configuration {
     /** Preform bean validation */
     private final AtomicBoolean beanValidation = new AtomicBoolean(true);
 
+    /** Preform bean validation */
+    private final AtomicBoolean tracer = new AtomicBoolean(false);
+
     /** Preform archive validation */
     private final AtomicBoolean archiveValidation = new AtomicBoolean(true);
 
@@ -75,6 +78,25 @@ public class JcaSubsystemConfiguration implements Configuration {
     public boolean getBeanValidation() {
         return beanValidation.get();
     }
+
+    /**
+     * Set if tracer should be performed
+     *
+     * @param value The value
+     */
+    public void setTracer(boolean value) {
+        tracer.set(value);
+    }
+
+    /**
+     * Should bean validation be performed
+     *
+     * @return True if validation; otherwise false
+     */
+    public boolean getTracer() {
+        return tracer.get();
+    }
+
 
     /**
      * Set if archive validation should be performed

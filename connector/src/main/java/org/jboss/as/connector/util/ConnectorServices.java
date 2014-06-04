@@ -51,6 +51,9 @@ public class ConnectorServices {
     public static final ServiceName BEAN_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "bean_validation",
             "config");
 
+    public static final ServiceName TRACER_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "tracer",
+                "config");
+
     public static final ServiceName ARCHIVE_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector",
             "archive_validation", "config");
 
