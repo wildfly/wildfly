@@ -466,7 +466,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = 52, value = "Enter Keystore password")
+    @Message(id = 52, value = "Enter Keystore password:")
     String enterKeyStorePassword();
 
     /**
@@ -530,14 +530,17 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = 60, value = "Enter your password")
+    @Message(id = 60, value = "Enter your password:")
     String enterYourPassword();
 
     /**
      * i18n version of string from Vault Tool utility
      *
+     * @deprecated do not use this message to build confirmation message
+     *
      * @return
      */
+    @Deprecated
     @Message(id = 61, value = " again: ")
     String passwordAgain();
 
@@ -700,4 +703,21 @@ public interface SecurityLogger extends BasicLogger {
      */
     @Message(id = 81, value = "Secured attribute (password) doesn't exist.")
     String cmdLineSecuredAttributeDoesNotExist();
+
+    /**
+     * Password confirmation
+     *
+     * @return
+     */
+    @Message(id = 82, value = "Enter your password again:")
+    String enterYourPasswordAgain();
+
+    /**
+     * Keystore password confirmation
+     *
+     * @return
+     */
+    @Message(id = 83, value = "Enter Keystore password again:")
+    String enterKeyStorePasswordAgain();
+
 }
