@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.jca.Constants.DISTRIBUTED_WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.JCA;
+import static org.jboss.as.connector.subsystems.jca.Constants.TRACER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
@@ -75,7 +76,7 @@ public class JcaExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jca";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -113,6 +114,7 @@ public class JcaExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_2_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_3_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -130,6 +132,7 @@ public class JcaExtension implements Extension {
 
             writeArchiveValidation(writer, node);
             writeBeanValidation(writer, node);
+            writeTracer(writer, node);
             writeWorkManagers(writer, node);
             writeDistributedWorkManagers(writer, node);
             writeBootstrapContexts(writer, node);
@@ -159,6 +162,17 @@ public class JcaExtension implements Extension {
                 if (JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().isMarshallable(node)) {
                     writer.writeEmptyElement(Element.BEAN_VALIDATION.getLocalName());
                     JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().marshallAsAttribute(node, writer);
+                }
+            }
+        }
+
+        private void writeTracer(XMLExtendedStreamWriter writer, ModelNode parentNode) throws XMLStreamException {
+            if (parentNode.hasDefined(TRACER)) {
+                ModelNode node = parentNode.get(TRACER).get(TRACER);
+
+                if (TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().isMarshallable(node)) {
+                    writer.writeEmptyElement(Element.TRACER.getLocalName());
+                    TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().marshallAsAttribute(node, writer);
                 }
             }
         }
@@ -304,6 +318,7 @@ public class JcaExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
 
                 switch (Namespace.forUri(reader.getNamespaceURI())) {
+                    case JCA_3_0:
                     case JCA_2_0:
                     case JCA_1_1:
                     case JCA_1_0: {
@@ -357,6 +372,14 @@ public class JcaExtension implements Extension {
                             }
                             case BOOTSTRAP_CONTEXTS: {
                                 parseBootstrapContexts(reader, address, list);
+                                break;
+                            }
+                            case TRACER: {
+                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ) {
+                                    list.add(parseTracer(reader, address));
+                                } else {
+                                    throw unexpectedElement(reader);
+                                }
                                 break;
                             }
                             default:
@@ -586,7 +609,8 @@ public class JcaExtension implements Extension {
                             }
                             case POLICY: {
                                 switch (readerNS) {
-                                    case JCA_2_0: {
+                                    case JCA_2_0:
+                                    case JCA_3_0: {
                                         parsePolicy(reader, distributedWorkManagerOperation);
                                         break;
                                     }
@@ -598,7 +622,8 @@ public class JcaExtension implements Extension {
                             }
                             case SELECTOR: {
                                 switch (readerNS) {
-                                    case JCA_2_0: {
+                                    case JCA_2_0:
+                                    case JCA_3_0:{
                                         parseSelector(reader, distributedWorkManagerOperation);
                                         break;
                                     }
@@ -610,7 +635,8 @@ public class JcaExtension implements Extension {
                             }
                             case TRANSPORT: {
                                 switch (readerNS) {
-                                    case JCA_2_0: {
+                                    case JCA_2_0:
+                                    case JCA_3_0:{
                                         parseTransport(reader, distributedWorkManagerOperation);
                                         break;
                                     }
@@ -770,6 +796,38 @@ public class JcaExtension implements Extension {
             requireNoContent(reader);
 
             return beanValidationOperation;
+
+        }
+
+        private ModelNode parseTracer(final XMLExtendedStreamReader reader, final ModelNode parentOperation) throws XMLStreamException {
+            final ModelNode tracerOperation = new ModelNode();
+            tracerOperation.get(OP).set(ADD);
+
+            final ModelNode tracerAddress = parentOperation.clone();
+            tracerAddress.add(TRACER, TRACER);
+            tracerAddress.protect();
+
+            tracerOperation.get(OP_ADDR).set(tracerAddress);
+
+
+            final int cnt = reader.getAttributeCount();
+            for (int i = 0; i < cnt; i++) {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ENABLED: {
+                        String value = rawAttributeText(reader, TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().getXmlName());
+                        TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().parseAndSetParameter(value, tracerOperation, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            // Handle elements
+            requireNoContent(reader);
+
+            return tracerOperation;
 
         }
 
