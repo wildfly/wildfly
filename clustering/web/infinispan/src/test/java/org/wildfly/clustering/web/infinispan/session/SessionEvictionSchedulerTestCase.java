@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan.session;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -54,7 +53,7 @@ public class SessionEvictionSchedulerTestCase {
 
         when(dispatcherFactory.createCommandDispatcher(same(name), capturedContext.capture())).thenReturn(dispatcher);
 
-        try (Scheduler<ImmutableSession> scheduler = new SessionEvictionScheduler(name, batcher, evictor, dispatcherFactory, 1)) {
+        try (Scheduler scheduler = new SessionEvictionScheduler(name, batcher, evictor, dispatcherFactory, 1)) {
             SessionEvictionContext context = capturedContext.getValue();
             
             assertSame(scheduler, context);

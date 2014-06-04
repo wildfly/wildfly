@@ -24,7 +24,6 @@ package org.wildfly.clustering.ejb.infinispan;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -43,8 +42,6 @@ public class BeanEvictionSchedulerTestCase {
         String name = "bean";
         String evictedBeanId = "evicted";
         String activeBeanId = "active";
-        Bean<Object, String, Object> evictedBean = mock(Bean.class);
-        Bean<Object, String, Object> activeBean = mock(Bean.class);
         CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
         CommandDispatcher<BeanEvictionContext<String>> dispatcher = mock(CommandDispatcher.class);
         Batcher batcher = mock(Batcher.class);
@@ -59,19 +56,16 @@ public class BeanEvictionSchedulerTestCase {
         when(config.getConfiguration()).thenReturn(passivationConfig);
         when(passivationConfig.getMaxSize()).thenReturn(1);
 
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(name, batcher, evictor, dispatcherFactory, config)) {
+        try (Scheduler<String> scheduler = new BeanEvictionScheduler<>(name, batcher, evictor, dispatcherFactory, config)) {
             BeanEvictionContext<String> context = capturedContext.getValue();
 
             assertSame(scheduler, context);
             
-            when(evictedBean.getId()).thenReturn(evictedBeanId);
-            when(activeBean.getId()).thenReturn(activeBeanId);
-
-            scheduler.schedule(evictedBean);
+            scheduler.schedule(evictedBeanId);
 
             verifyZeroInteractions(dispatcher);
 
-            scheduler.schedule(activeBean);
+            scheduler.schedule(activeBeanId);
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
 

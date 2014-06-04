@@ -29,11 +29,9 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.junit.Test;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
-import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
 
@@ -42,21 +40,18 @@ public class BeanExpirationSchedulerTestCase {
     public void testImmortal() throws InterruptedException {
         Batcher batcher = mock(Batcher.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
-        Bean<Object, String, Object> bean = mock(Bean.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "immortal";
 
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
-        when(bean.getId()).thenReturn(beanId);
-        when(bean.isExpired()).thenReturn(false);
 
         // Fun fact: the EJB specification allows a timeout value of 0, so only negative timeouts are treated as immortal
         when(config.getTimeout()).thenReturn(new Time(-1, TimeUnit.SECONDS));
         when(config.getRemoveListener()).thenReturn(listener);
 
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
-            scheduler.schedule(bean);
+        try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
+            scheduler.schedule(beanId);
 
             Thread.sleep(1000);
         }
@@ -70,7 +65,6 @@ public class BeanExpirationSchedulerTestCase {
         Batcher batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
-        Bean<Object, String, Object> bean = mock(Bean.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "expiring";
@@ -78,15 +72,11 @@ public class BeanExpirationSchedulerTestCase {
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
         when(batcher.startBatch()).thenReturn(batch);
 
-        when(bean.isExpired()).thenReturn(false);
-
         when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MILLISECONDS));
         when(config.getRemoveListener()).thenReturn(listener);
         
-        when(bean.getId()).thenReturn(beanId);
-        
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
-            scheduler.schedule(bean);
+        try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
+            scheduler.schedule(beanId);
 
             Thread.sleep(1000);
         }
@@ -99,26 +89,22 @@ public class BeanExpirationSchedulerTestCase {
     public void testCancel() throws InterruptedException {
         Batcher batcher = mock(Batcher.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
-        Bean<Object, String, Object> bean = mock(Bean.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "canceled";
 
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
-        when(bean.isExpired()).thenReturn(false);
 
         when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MINUTES));
         when(config.getRemoveListener()).thenReturn(listener);
         
-        when(bean.getId()).thenReturn(beanId);
-        
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
-            scheduler.schedule(bean);
+        try (Scheduler<String> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {
+            scheduler.schedule(beanId);
 
             Thread.sleep(1000);
 
-            scheduler.cancel(bean);
-            scheduler.schedule(bean);
+            scheduler.cancel(beanId);
+            scheduler.schedule(beanId);
         }
 
         verify(remover, never()).remove(beanId, listener);

@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.session.ImmutableSession;
  * the number of active sessions exceeds the configured maximum.
  * @author Paul Ferraro
  */
-public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, SessionEvictionContext {
+public class SessionEvictionScheduler implements Scheduler, SessionEvictionContext {
 
     private final Set<String> evictionQueue = new LinkedHashSet<>();
     private final Batcher batcher;
@@ -48,8 +48,7 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
     public SessionEvictionScheduler(String name, Batcher batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
         this.batcher = batcher;
         this.evictor = evictor;
-        SessionEvictionContext context = this;
-        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, context);
+        this.dispatcher = dispatcherFactory.<SessionEvictionContext>createCommandDispatcher(name, this);
         this.maxSize = maxSize;
     }
 
@@ -64,9 +63,9 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
     }
 
     @Override
-    public void cancel(ImmutableSession session) {
+    public void cancel(String sessionId) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.remove(session.getId());
+            this.evictionQueue.remove(sessionId);
         }
     }
 
@@ -79,6 +78,19 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
                 Iterator<String> sessions = this.evictionQueue.iterator();
                 this.dispatcher.submitOnCluster(new SessionEvictionCommand(sessions.next()));
                 sessions.remove();
+            }
+        }
+    }
+
+    @Override
+    public void cancel(Locality locality) {
+        synchronized (this.evictionQueue) {
+            Iterator<String> sessions = this.evictionQueue.iterator();
+            while (sessions.hasNext()) {
+                String sessionId = sessions.next();
+                if (!locality.isLocal(sessionId)) {
+                    sessions.remove();
+                }
             }
         }
     }
