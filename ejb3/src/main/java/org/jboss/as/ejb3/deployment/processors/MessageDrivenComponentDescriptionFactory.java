@@ -22,6 +22,10 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
+
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,12 +37,11 @@ import javax.jms.MessageListener;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ee.structure.Attachments;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -54,13 +57,10 @@ import org.jboss.metadata.ejb.spec.ActivationConfigPropertiesMetaData;
 import org.jboss.metadata.ejb.spec.ActivationConfigPropertyMetaData;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
-import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -95,6 +95,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             return;
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
+        final PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
         DeploymentDescriptorEnvironment deploymentDescriptorEnvironment = null;
 
@@ -104,14 +105,13 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             if (!assertMDBClassValidity(beanClassInfo)) {
                 continue;
             }
-            final boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = messageBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());
+            final String beanName = (nameValue == null || nameValue.asString().isEmpty()) ? ejbName : propertyReplacer.replaceProperties(nameValue.asString());
             final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
             final String beanClassName;
             final String messageListenerInterfaceName;
-            final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation, replacement);
+            final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation, propertyReplacer);
             final String messagingType;
             if (beanMetaData != null) {
                 beanClassName = override(beanClassInfo.name().toString(), beanMetaData.getEjbClass());
@@ -247,7 +247,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         addComponent(deploymentUnit, mdbComponentDescription);
     }
 
-    private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation, boolean replacement) {
+    private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation, PropertyReplacer propertyReplacer) {
         final Properties props = new Properties();
         final AnnotationValue activationConfig = messageBeanAnnotation.value("activationConfig");
         if (activationConfig == null)
@@ -255,10 +255,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         for (final AnnotationInstance propAnnotation : activationConfig.asNestedArray()) {
             String propertyName = propAnnotation.value("propertyName").asString();
             String propertyValue = propAnnotation.value("propertyValue").asString();
-            if(replacement)
-                props.put(PropertiesValueResolver.replaceProperties(propertyName), PropertiesValueResolver.replaceProperties(propertyValue));
-            else
-                props.put(propertyName, propertyValue);
+            props.put(propertyReplacer.replaceProperties(propertyName), propertyReplacer.replaceProperties(propertyValue));
         }
         return props;
     }
