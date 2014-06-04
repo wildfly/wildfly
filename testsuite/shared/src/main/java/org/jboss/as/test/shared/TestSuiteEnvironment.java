@@ -87,6 +87,8 @@ public class TestSuiteEnvironment {
         } else {
             command.add("-Djava.net.preferIPv4Stack=false");
             command.add("-Djava.net.preferIPv6Addresses=true");
+            command.add("-Djboss.default.multicast.address=" + (System.getProperty("udpGroup") != null ? System
+                    .getProperty("udpGroup") : "ff01::1"));
         }
     }
 
