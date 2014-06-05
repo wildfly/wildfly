@@ -39,6 +39,8 @@ import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Map;
 
@@ -65,6 +67,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -102,6 +105,13 @@ public abstract class EJBComponent extends BasicComponent {
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
     private final ServerSecurityManager serverSecurityManager;
+
+    private final PrivilegedAction<Principal> getCaller = new PrivilegedAction<Principal>() {
+        @Override
+        public Principal run() {
+            return serverSecurityManager.getCallerPrincipal();
+        }
+    };
 
     /**
      * Construct a new instance.
@@ -168,7 +178,16 @@ public abstract class EJBComponent extends BasicComponent {
         final ComponentView view = (ComponentView) serviceController.getValue();
         final ManagedReference instance;
         try {
-            instance = view.createInstance(contextData);
+            if(WildFlySecurityManager.isChecking()) {
+                instance = WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<ManagedReference>() {
+                    @Override
+                    public ManagedReference run() throws Exception {
+                        return view.createInstance(contextData);
+                    }
+                });
+            } else {
+                instance = view.createInstance(contextData);
+            }
         } catch (Exception e) {
             //TODO: do we need to let the exception propagate here?
             throw new RuntimeException(e);
@@ -236,7 +255,11 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public Principal getCallerPrincipal() {
-        return this.serverSecurityManager.getCallerPrincipal();
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(getCaller);
+        } else {
+            return this.serverSecurityManager.getCallerPrincipal();
+        }
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
@@ -370,7 +393,15 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
-        return this.serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+        if (WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
+                public Boolean run() {
+                    return serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+                }
+            });
+        } else {
+            return this.serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+        }
     }
 
     public boolean isStatisticsEnabled() {
