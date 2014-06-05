@@ -237,6 +237,9 @@ org.eclipse.sisu.inject (http://www.eclipse.org/sisu/org.eclipse.sisu.inject/) o
 org.eclipse.sisu.plexus (http://www.eclipse.org/sisu/org.eclipse.sisu.plexus/) org.eclipse.sisu:org.eclipse.sisu.plexus:eclipse-plugin:0.0.0.M5
     License: Eclipse Public License, Version 1.0  http://www.eclipse.org/legal/epl-v10.html (lib/org.eclipse.sisu.plexus.license)
 
+jsoup (http://jsoup.org/) org.jsoup:jsoup:jar:1.7.2
+    License: The MIT License  http://jsoup.com/license (lib/jsoup.license)
+
 SLF4J API Module (http://www.slf4j.org) org.slf4j:slf4j-api:jar:1.7.5
     License: MIT License  http://www.opensource.org/licenses/mit-license.php (lib/slf4j-api.license)
 
