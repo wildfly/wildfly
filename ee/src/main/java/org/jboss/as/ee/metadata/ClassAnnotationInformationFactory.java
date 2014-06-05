@@ -31,6 +31,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         }
     }
 
-    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index, final boolean replacement) {
+    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index, final PropertyReplacer propertyReplacer) {
 
         final List<TargetAnnotation> annotations = new ArrayList<TargetAnnotation>();
         if (multiAnnotationDotName != null) {
@@ -123,7 +124,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else {
                 classData = new ArrayList<T>(classAnnotations.size());
                 for (TargetAnnotation instance : classAnnotations) {
-                    classData.add(fromAnnotation(instance.instance(), replacement));
+                    classData.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
 
@@ -140,7 +141,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         fieldData.put(name, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance(), replacement));
+                    data.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
 
@@ -157,7 +158,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         methodData.put(identifier, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance(), replacement));
+                    data.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
             ClassAnnotationInformation<A, T> information = new ClassAnnotationInformation<A, T>(annotationType, classData, methodData, fieldData);
@@ -182,7 +183,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
     }
 
 
-    protected abstract T fromAnnotation(AnnotationInstance annotationInstance, boolean replacement);
+    protected abstract T fromAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer);
 
     protected List<TargetAnnotation> fromMultiAnnotation(AnnotationInstance multiAnnotationInstance) {
         List<TargetAnnotation> instances = new ArrayList<TargetAnnotation>();

@@ -36,6 +36,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.metadata.property.PropertyReplacers;
+
 /**
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
@@ -61,7 +63,7 @@ public class WebServiceAnnotationProcessor implements DeploymentUnitProcessor {
         }
 
         for (final ClassAnnotationInformationFactory factory : factories) {
-            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, false);
+            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, PropertyReplacers.noop());
             for (Map.Entry<String, ClassAnnotationInformation<?, ?>> entry : data.entrySet()) {
                 EEModuleClassDescription clazz = eeModuleDescription.addOrGetLocalClassDescription(entry.getKey());
                 clazz.addAnnotationInformation(entry.getValue());

@@ -21,12 +21,12 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
+import javax.ejb.Init;
+
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
-
-import javax.ejb.Init;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * @author Stuart Douglas
@@ -38,14 +38,11 @@ public class InitAnnotationInformationFactory extends ClassAnnotationInformation
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         AnnotationValue value = annotationInstance.value();
         if (value == null) {
             return null;
         }
-        if (replacement)
-            return PropertiesValueResolver.replaceProperties(value.asString());
-        else
-            return value.asString();
+        return propertyReplacer.replaceProperties(value.asString());
     }
 }

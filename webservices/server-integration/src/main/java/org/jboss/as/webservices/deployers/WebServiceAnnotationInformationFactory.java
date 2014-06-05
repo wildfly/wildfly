@@ -26,6 +26,7 @@ import javax.jws.WebService;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
@@ -38,7 +39,7 @@ public class WebServiceAnnotationInformationFactory extends
     }
 
     @Override
-    protected WebServiceAnnotationInfo fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected WebServiceAnnotationInfo fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         String nameValue = asString(annotationInstance, "name");
         String targetNamespacValue = asString(annotationInstance, "targetNamespace");
         String serviceNameValue = asString(annotationInstance, "serviceName");

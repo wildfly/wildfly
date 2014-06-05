@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.Remove;
 
@@ -39,7 +40,7 @@ public class RemoveAnnotationInformationFactory extends ClassAnnotationInformati
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         AnnotationValue value = annotationInstance.value("retainIfException");
         if(value == null) {
             return false;
