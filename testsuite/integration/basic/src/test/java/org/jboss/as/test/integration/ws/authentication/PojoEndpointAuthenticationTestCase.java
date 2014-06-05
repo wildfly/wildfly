@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,7 +84,6 @@ public class PojoEndpointAuthenticationTestCase {
     }
     
     @Test
-    @Ignore("AS7-6319")
     public void accessHelloWithBadPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
 
@@ -105,7 +103,6 @@ public class PojoEndpointAuthenticationTestCase {
         }
     }
     @Test
-    @Ignore("AS7-6319")
     public void accessHelloWithValidUser1() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
 
@@ -121,7 +118,6 @@ public class PojoEndpointAuthenticationTestCase {
     }
     
     @Test
-    @Ignore("AS7-6319")
     public void accessHelloWithValidUser2() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
 
@@ -137,7 +133,6 @@ public class PojoEndpointAuthenticationTestCase {
     }    
     
     @Test
-    @Ignore("AS7-6319")
     public void accessHelloWithUnauthorizedUser() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-pojo/POJOAuthService?wsdl");
 
