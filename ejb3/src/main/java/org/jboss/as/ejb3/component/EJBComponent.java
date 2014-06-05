@@ -40,6 +40,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Map;
 
@@ -177,7 +178,16 @@ public abstract class EJBComponent extends BasicComponent {
         final ComponentView view = (ComponentView) serviceController.getValue();
         final ManagedReference instance;
         try {
-            instance = view.createInstance(contextData);
+            if(WildFlySecurityManager.isChecking()) {
+                instance = WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<ManagedReference>() {
+                    @Override
+                    public ManagedReference run() throws Exception {
+                        return view.createInstance(contextData);
+                    }
+                });
+            } else {
+                instance = view.createInstance(contextData);
+            }
         } catch (Exception e) {
             //TODO: do we need to let the exception propagate here?
             throw new RuntimeException(e);
