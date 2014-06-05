@@ -52,6 +52,7 @@ import org.jboss.vfs.VirtualFile;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     private static final String VERSION_PROPERTIES = "org/jboss/as/jaxrs/spring-version.properties";
     private static final String VERSION_KEY = "resteasy.version";
 
-    private static final String SPRING_INT_JAR_BASE = "resteasy-spring-";
+    private static final String SPRING_INT_JAR_BASE = "resteasy-spring";
 
     public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
@@ -89,11 +90,23 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
         try {
             if (resourceRoot == null) {
+                InputStream versionStream = null;
+                URL url = null;
+                try {
+                    Properties props = new Properties();
+                    versionStream = getClass().getClassLoader().getResourceAsStream(VERSION_PROPERTIES);
+                    if (versionStream != null) {
+                        props.load(versionStream);
+                        url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR_BASE + "-" + props.get(VERSION_KEY) + ".jar");
+                    } else {
+                        url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR_BASE + ".jar");
+                    }
 
-                Properties props = new Properties();
-                props.load(getClass().getClassLoader().getResourceAsStream(VERSION_PROPERTIES));
-
-                URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR_BASE + props.get(VERSION_KEY) + ".jar");
+                } finally {
+                    if (versionStream != null) {
+                        versionStream.close();
+                    }
+                }
                 if (url == null) {
                     throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
                 }
