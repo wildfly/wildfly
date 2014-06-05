@@ -3,6 +3,7 @@
   <archive-validation enabled="${test.expr:true}" fail-on-error="${test.expr:true}" fail-on-warn="${test.expr:false}"/>
   <!--Optional:-->
   <bean-validation enabled="${test.expr:false}"/>
+  <tracer enabled="true" />
   <default-workmanager>
     <short-running-threads allow-core-timeout="${test.expr:true}">
       <!--Optional:-->
