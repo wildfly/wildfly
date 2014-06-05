@@ -26,6 +26,7 @@ import java.lang.annotation.Annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * An annotation information factory that simply returns true if the annotation is present
@@ -39,7 +40,7 @@ public class BooleanAnnotationInformationFactory<T extends Annotation> extends C
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         return true;
     }
 }

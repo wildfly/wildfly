@@ -3,6 +3,7 @@ package org.jboss.as.webservices.deployers;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.ws.api.annotation.WebContext;
 
 /**
@@ -17,7 +18,7 @@ public class WebContextAnnotationInformationFactory extends
     }
 
     @Override
-    protected WebContextAnnotationInfo fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected WebContextAnnotationInfo fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         String authMethodValue = asString(annotationInstance, "authMethod");
         String contextRootValue = asString(annotationInstance, "contextRoot");
         boolean secureWSDLAccessValue = asBoolean(annotationInstance, "secureWSDLAccessValue");

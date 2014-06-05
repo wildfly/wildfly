@@ -25,6 +25,7 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.component.session.ClusteringInfo;
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * @author Paul Ferraro
@@ -36,7 +37,7 @@ public class ClusteredAnnotationInformationFactory extends ClassAnnotationInform
     }
 
     @Override
-    protected ClusteringInfo fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
+    protected ClusteringInfo fromAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer) {
         return new ClusteringInfo();
     }
 }

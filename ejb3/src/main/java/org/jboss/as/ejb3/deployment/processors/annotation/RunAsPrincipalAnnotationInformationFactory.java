@@ -22,9 +22,9 @@
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Processes the {@link org.jboss.ejb3.annotation.RunAsPrincipal} annotation on a session bean
@@ -39,10 +39,7 @@ public class RunAsPrincipalAnnotationInformationFactory extends ClassAnnotationI
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
-        if (replacement)
-            return PropertiesValueResolver.replaceProperties(annotationInstance.value().asString());
-        else
-            return annotationInstance.value().asString();
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
+        return propertyReplacer.replaceProperties(annotationInstance.value().asString());
     }
 }

@@ -23,9 +23,9 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.cache.CacheInfo;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * @author Paul Ferraro
@@ -37,11 +37,8 @@ public class CacheAnnotationInformationFactory extends ClassAnnotationInformatio
     }
 
     @Override
-    protected CacheInfo fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
+    protected CacheInfo fromAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer) {
         String value = annotationInstance.value().asString();
-        if (replacement)
-            return new CacheInfo(PropertiesValueResolver.replaceProperties(value));
-        else
-            return new CacheInfo(value);
+        return new CacheInfo(propertyReplacer.replaceProperties(value));
     }
 }

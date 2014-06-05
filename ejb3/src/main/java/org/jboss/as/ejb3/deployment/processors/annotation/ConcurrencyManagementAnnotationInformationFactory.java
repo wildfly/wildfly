@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.ConcurrencyManagement;
 import javax.ejb.ConcurrencyManagementType;
@@ -40,7 +41,7 @@ public class ConcurrencyManagementAnnotationInformationFactory extends ClassAnno
     }
 
     @Override
-    protected ConcurrencyManagementType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected ConcurrencyManagementType fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final AnnotationValue value = annotationInstance.value();
         if(value == null) {
             return ConcurrencyManagementType.CONTAINER;
