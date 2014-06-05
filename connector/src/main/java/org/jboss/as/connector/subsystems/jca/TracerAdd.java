@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.jca;
 import java.util.List;
 
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -37,20 +37,20 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public class TracerAdd extends AbstractBoottimeAddStepHandler {
+public class TracerAdd extends AbstractAddStepHandler {
 
     public static final TracerAdd INSTANCE = new TracerAdd();
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (TracerDefinition.TracerParameters parameter : TracerDefinition.TracerParameters.values() ) {
-            parameter.getAttribute().validateAndSet(operation,model);
+        for (TracerDefinition.TracerParameters parameter : TracerDefinition.TracerParameters.values()) {
+            parameter.getAttribute().validateAndSet(operation, model);
         }
     }
 
     @Override
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         final boolean enabled = TracerDefinition.TracerParameters.TRACER_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
 
@@ -61,11 +61,9 @@ public class TracerAdd extends AbstractBoottimeAddStepHandler {
 
         final TracerService.Tracer config = new TracerService.Tracer(enabled);
         final TracerService service = new TracerService(config);
-            ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addDependency(jcaConfigServiceName, JcaSubsystemConfiguration.class, service.getJcaConfigInjector() )
-                    .addListener(verificationHandler).install();
-
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
+        serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+                .addDependency(jcaConfigServiceName, JcaSubsystemConfiguration.class, service.getJcaConfigInjector())
+                .addListener(verificationHandler).install();
 
     }
 }

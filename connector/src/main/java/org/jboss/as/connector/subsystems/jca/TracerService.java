@@ -31,6 +31,7 @@ import org.jboss.msc.value.InjectedValue;
 
 /**
  * A ResourceAdaptersService.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
@@ -38,33 +39,35 @@ final class TracerService implements Service<TracerService.Tracer> {
 
 
     private final Tracer value;
-        private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
+    private final InjectedValue<JcaSubsystemConfiguration> jcaConfig = new InjectedValue<JcaSubsystemConfiguration>();
 
 
-        /** create an instance **/
-        public TracerService(Tracer value) {
-            this.value = value;
-        }
+    /**
+     * create an instance *
+     */
+    public TracerService(Tracer value) {
+        this.value = value;
+    }
 
-        @Override
-        public Tracer getValue() throws IllegalStateException {
-            return value;
-        }
+    @Override
+    public Tracer getValue() throws IllegalStateException {
+        return value;
+    }
 
-        @Override
-        public void start(StartContext context) throws StartException {
-            jcaConfig.getValue().setTracer(value.isEnabled());
+    @Override
+    public void start(StartContext context) throws StartException {
+        jcaConfig.getValue().setTracer(value.isEnabled());
 
-        }
+    }
 
-        @Override
-        public void stop(StopContext context) {
+    @Override
+    public void stop(StopContext context) {
 
-        }
+    }
 
-        public Injector<JcaSubsystemConfiguration> getJcaConfigInjector() {
-            return jcaConfig;
-        }
+    public Injector<JcaSubsystemConfiguration> getJcaConfigInjector() {
+        return jcaConfig;
+    }
 
     public static class Tracer {
         private final boolean enabled;
