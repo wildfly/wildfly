@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
+import org.jboss.jca.core.tracer.Tracer;
 import org.jboss.jca.deployers.common.Configuration;
 
 /**
@@ -75,6 +76,25 @@ public class JcaSubsystemConfiguration implements Configuration {
     public boolean getBeanValidation() {
         return beanValidation.get();
     }
+
+    /**
+     * Set if tracer should be performed
+     *
+     * @param value The value
+     */
+    public void setTracer(boolean value) {
+        Tracer.setEnabled(value);
+    }
+
+    /**
+     * Should bean validation be performed
+     *
+     * @return True if validation; otherwise false
+     */
+    public boolean getTracer() {
+        return Tracer.isEnabled();
+    }
+
 
     /**
      * Set if archive validation should be performed
