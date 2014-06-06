@@ -240,13 +240,13 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     @Override
     public Set<String> getActiveSessions() {
         // Omit remote sessions (i.e. when using DIST mode) as well as passivated sessions
-        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING);
+        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD);
     }
 
     @Override
     public Set<String> getLocalSessions() {
         // Omit remote sessions (i.e. when using DIST mode)
-        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_LOCKING);
+        return this.getSessions(Flag.CACHE_MODE_LOCAL);
     }
 
     private Set<String> getSessions(Flag... flags) {
@@ -318,7 +318,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
 
     private void schedule(Cache<String, ?> cache, Locality oldLocality, Locality newLocality) {
         // Iterate over sessions in memory
-        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet()) {
             // Cache may contain non-string keys, so ignore any others
             if (this.accept(key)) {
                 String sessionId = (String) key;

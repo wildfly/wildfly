@@ -106,7 +106,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
                 return null;
             }
         };
-        this.invoker.invoke(this.attributeCache, attributeOperation, Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING);
+        this.invoker.invoke(this.attributeCache, attributeOperation, Flag.IGNORE_RETURN_VALUES);
     }
 
     @Override
