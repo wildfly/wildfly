@@ -50,7 +50,7 @@ public interface ServerSecurityManager {
 
     Subject getSubject();
 
-    boolean isCallerInRole(final Object mappedRoles, final Map<String, Collection<String>> roleLinks,
+    boolean isCallerInRole(final String ejbName, final Object mappedRoles, final Map<String, Collection<String>> roleLinks,
             final String... roleNames);
 
     boolean authorize(String ejbName, CodeSource ejbCodeSource, String ejbMethodIntf, Method ejbMethod, Set<Principal> methodRoles, String contextID);
