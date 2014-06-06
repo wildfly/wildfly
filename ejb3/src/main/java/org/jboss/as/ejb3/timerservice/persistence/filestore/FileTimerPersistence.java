@@ -39,6 +39,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -56,6 +57,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -146,12 +148,32 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     @Override
     public void addTimer(final TimerImpl TimerImpl) {
-        persistTimer(TimerImpl, true);
+        if(WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    persistTimer(TimerImpl, true);
+                    return null;
+                }
+            });
+        } else {
+            persistTimer(TimerImpl, true);
+        }
     }
 
     @Override
     public void persistTimer(final TimerImpl TimerImpl) {
-        persistTimer(TimerImpl, false);
+        if(WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    persistTimer(TimerImpl, false);
+                    return null;
+                }
+            });
+        } else {
+            persistTimer(TimerImpl, false);
+        }
     }
 
     private void persistTimer(final TimerImpl timer, boolean newTimer) {
