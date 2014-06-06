@@ -31,7 +31,9 @@ import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.mapping.MappingContext;
 import org.jboss.security.mapping.MappingManager;
 import org.jboss.security.mapping.MappingType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,8 +52,21 @@ public class SecurityContextThreadSetupAction implements ThreadSetupAction {
     private static final Handle TEAR_DOWN_ACTION = new Handle() {
         @Override
         public void tearDown() {
+            if(WildFlySecurityManager.isChecking()) {
+                WildFlySecurityManager.doUnchecked(TEAR_DOWN_PA);
+            } else {
+                SecurityActions.clearSecurityContext();
+                SecurityRolesAssociation.setSecurityRoles(null);
+            }
+        }
+    };
+
+    private static final PrivilegedAction<Object> TEAR_DOWN_PA = new PrivilegedAction<Object>() {
+        @Override
+        public Object run() {
             SecurityActions.clearSecurityContext();
             SecurityRolesAssociation.setSecurityRoles(null);
+            return null;
         }
     };
 
@@ -76,10 +91,24 @@ public class SecurityContextThreadSetupAction implements ThreadSetupAction {
         final MappingManager mappingManager = securityDomainContext.getMappingManager();
 
         if (mappingManager != null) {
-            // if there are mapping modules let them handle the role mapping
-            MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-            if (mc != null && mc.hasModules()) {
-                SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+            if(WildFlySecurityManager.isChecking()) {
+                WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                    @Override
+                    public Object run() {
+                        // if there are mapping modules let them handle the role mapping
+                        MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                        if (mc != null && mc.hasModules()) {
+                            SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+                        }
+                        return null;
+                    }
+                });
+            } else {
+                // if there are mapping modules let them handle the role mapping
+                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
+                if (mc != null && mc.hasModules()) {
+                    SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
+                }
             }
         }
         return TEAR_DOWN_ACTION;
