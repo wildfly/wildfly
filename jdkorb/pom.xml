@@ -77,16 +77,10 @@
     </build>
 
     <dependencies>
-    	<dependency>
-            <groupId>jdkorb</groupId>
-            <artifactId>jdkorb</artifactId>
-            <version>1</version>
-    	</dependency>
-    
-       <dependency>
-           <groupId>jdkorb</groupId>
-           <artifactId>jacorb-bridge</artifactId>
-           <version>1</version>
+        <dependency>
+            <groupId>org.jboss.openjdk-orb</groupId>
+            <artifactId>openjdk-orb</artifactId>
+            <version>7.5.0</version>
        </dependency>
 
        <dependency>
@@ -112,11 +106,6 @@
         <dependency>
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.rmi</groupId>
-            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
         </dependency>
 
         <dependency>
