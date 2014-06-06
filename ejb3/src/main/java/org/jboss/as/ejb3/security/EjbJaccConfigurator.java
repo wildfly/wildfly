@@ -24,9 +24,12 @@ package org.jboss.as.ejb3.security;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.Permission;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.jacc.EJBMethodPermission;
 import javax.security.jacc.EJBRoleRefPermission;
@@ -50,6 +53,8 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
+import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
  * Component configurator the calculates JACC roles
@@ -58,6 +63,9 @@ import org.jboss.metadata.ejb.spec.MethodInterfaceType;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 public class EjbJaccConfigurator implements ComponentConfigurator {
+
+    private static final String ANY_AUTHENTICATED_USER_ROLE = "**";
+
     @Override
     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
@@ -86,14 +94,50 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             }
         }
 
-        // process the security-role-ref.
-        Map<String, Collection<String>> securityRoles = ejbComponentDescription.getSecurityRoleLinks();
-        for (Map.Entry<String, Collection<String>> entry : securityRoles.entrySet()) {
+        Set<String> securityRoles = new HashSet<String>();
+        // get all roles from the deployments descriptor (assembly descriptor roles)
+        SecurityRolesMetaData secRolesMetaData = ejbComponentDescription.getSecurityRoles();
+        if (secRolesMetaData != null) {
+            for (SecurityRoleMetaData secRoleMetaData : secRolesMetaData) {
+                securityRoles.add(secRoleMetaData.getRoleName());
+            }
+        }
+
+        // at this point any roles specified via RolesAllowed annotation have been mapped to EJBMethodPermissions, so
+        // going through the permissions allows us to retrieve these roles.
+        // TODO there might be a better way to retrieve just annotated roles without going through all processed permissions
+        List<Map.Entry<String, Permission>> processedRoles = ejbJaccConfig.getRoles();
+        for (Map.Entry<String, Permission> entry : processedRoles) {
+            securityRoles.add(entry.getKey());
+        }
+
+        securityRoles.add(ANY_AUTHENTICATED_USER_ROLE);
+
+        // process the security-role-ref from the deployment descriptor.
+        Map<String, Collection<String>> securityRoleRefs = ejbComponentDescription.getSecurityRoleLinks();
+        for (Map.Entry<String, Collection<String>> entry : securityRoleRefs.entrySet()) {
             String roleName = entry.getKey();
             for (String roleLink : entry.getValue()) {
                 EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), roleName);
                 ejbJaccConfig.addRole(roleLink, p);
             }
+            securityRoles.remove(roleName);
+        }
+
+        // process remaining annotated declared roles that were not overridden in the descriptor.
+        Set<String> declaredRoles = ejbComponentDescription.getDeclaredRoles();
+        for (String role : declaredRoles) {
+            if (!securityRoleRefs.containsKey(role)) {
+                EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), role);
+                ejbJaccConfig.addRole(role, p);
+            }
+            securityRoles.remove(role);
+        }
+
+        // an EJBRoleRefPermission must be created for each declared role that does not appear in the security-role-ref.
+        for (String role : securityRoles) {
+            EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), role);
+            ejbJaccConfig.addRole(role, p);
         }
 
         // special handling of stateful session bean getEJBObject due how the stateful session handles acquire the

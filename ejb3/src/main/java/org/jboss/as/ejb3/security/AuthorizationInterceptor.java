@@ -112,14 +112,13 @@ public class AuthorizationInterceptor implements Interceptor {
             if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
                 methodIntfType.name(), this.viewMethod, this.getMethodRolesAsPrincipals(), this.contextID))
                 throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+            // successful authorization, let the invocation proceed
+            return context.proceed();
         }
         finally {
             // reset the previous JACC contextID.
             setContextID(previousContextID);
         }
-
-        // successful authorization, let the invocation proceed
-        return context.proceed();
     }
 
     /**

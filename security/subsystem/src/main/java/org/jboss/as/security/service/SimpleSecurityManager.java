@@ -24,10 +24,13 @@ package org.jboss.as.security.service;
 import static java.security.AccessController.doPrivileged;
 
 import javax.security.auth.Subject;
+import javax.security.jacc.EJBRoleRefPermission;
 import java.lang.reflect.Method;
 import java.security.CodeSource;
+import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,8 +63,13 @@ import org.jboss.security.SubjectInfo;
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
+import org.jboss.security.authorization.config.AuthorizationModuleEntry;
+import org.jboss.security.authorization.modules.JACCAuthorizationModule;
 import org.jboss.security.authorization.resources.EJBResource;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
+import org.jboss.security.config.ApplicationPolicy;
+import org.jboss.security.config.AuthorizationInfo;
+import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.security.identity.Identity;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
@@ -176,15 +184,15 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     /**
-     *
+     * @param ejbName The name of the EJB component where isCallerInRole was invoked.
      * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
      * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
      *                  role names, that alias represents. Can be null.
      * @param roleNames The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
-    public boolean isCallerInRole(final Object incommingMappedRoles, final Map<String, Collection<String>> roleLinks,
-                                  final String... roleNames) {
+    public boolean isCallerInRole(final String ejbName, final Object incommingMappedRoles,
+                                  final Map<String, Collection<String>> roleLinks, final String... roleNames) {
         final SecurityRolesMetaData mappedRoles = (SecurityRolesMetaData) incommingMappedRoles;
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null) {
@@ -223,21 +231,38 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                 actualRoles.addAll(mapped);
             }
         }
-        // if the actual roles matches any of the required roles, then return true
-        if (!Collections.disjoint(requiredRoles, actualRoles)) {
-            return true;
+
+        // use JACC permissions to check for role matches, including role links.
+        if (isJaccEnabled(securityContext.getSecurityDomain())) {
+            Set<Principal> rolesPrincipals = new HashSet<Principal>();
+            for (String role : actualRoles)
+                rolesPrincipals.add(new SimplePrincipal(role));
+            for (String roleName : requiredRoles) {
+                EJBRoleRefPermission permission = new EJBRoleRefPermission(ejbName, roleName);
+                ProtectionDomain pd = new ProtectionDomain (null, null, null, rolesPrincipals.toArray(new Principal[rolesPrincipals.size()]));
+                if (Policy.getPolicy().implies(pd, permission))
+                     return true;
+            }
+            return false;
         }
-        // we did not have a match between the required roles and the actual roles.
-        // let's now get the alias role names (if any) for each of the actual role
-        // and see if any of those aliases of the actual roles matches the required roles
-        if (roleLinks != null) {
-            for (final String actualRole : actualRoles) {
-                // get aliases (if any) for actual role
-                final Set<String> aliases = this.getRoleAliases(actualRole, roleLinks);
-                // if there's a match between the required role and an alias of an actual role, then
-                // return true indicating that the caller is in one of the required roles
-                if (!Collections.disjoint(requiredRoles, aliases)) {
-                    return true;
+
+        // if the actual roles matches any of the required roles, then return true
+        else {
+            if (!Collections.disjoint(requiredRoles, actualRoles)) {
+                return true;
+            }
+            // we did not have a match between the required roles and the actual roles.
+            // let's now get the alias role names (if any) for each of the actual role
+            // and see if any of those aliases of the actual roles matches the required roles
+            if (roleLinks != null) {
+                for (final String actualRole : actualRoles) {
+                    // get aliases (if any) for actual role
+                    final Set<String> aliases = this.getRoleAliases(actualRole, roleLinks);
+                    // if there's a match between the required role and an alias of an actual role, then
+                    // return true indicating that the caller is in one of the required roles
+                    if (!Collections.disjoint(requiredRoles, aliases)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -514,6 +539,27 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         ctxMap.put("Action", "authentication");
         auditEvent.setContextMap(ctxMap);
         auditManager.audit(auditEvent);
+    }
+
+    /**
+     * Determines whether JACC was enabled for the specified security domain or not.
+     *
+     * @param securityDomain the security domain being checked.
+     * @return {@code true} if JACC was enabled for the domain; {@code false} otherwise.
+     */
+    private boolean isJaccEnabled(String securityDomain) {
+        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(securityDomain);
+        if (applicationPolicy != null) {
+            AuthorizationInfo authorizationInfo = applicationPolicy.getAuthorizationInfo();
+            if (authorizationInfo != null) {
+                for (AuthorizationModuleEntry entry : authorizationInfo.getModuleEntries()) {
+                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }
