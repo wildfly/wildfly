@@ -396,11 +396,11 @@ public abstract class EJBComponent extends BasicComponent {
         if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
-                    return serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+                    return serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
                 }
             });
         } else {
-            return this.serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+            return this.serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
         }
     }
 
