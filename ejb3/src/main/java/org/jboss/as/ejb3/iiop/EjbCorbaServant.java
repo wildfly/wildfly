@@ -42,7 +42,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.jdkorb.csiv2.idl.SASCurrent;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.as.jdkorb.rmi.RmiIdlUtil;
 import org.jboss.as.jdkorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.naming.context.NamespaceContextSelector;

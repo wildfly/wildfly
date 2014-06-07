@@ -20,34 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jdkorb.csiv2.idl;
+package org.jboss.as.jdkorb.security;
 
-import org.omg.CORBA.CurrentOperations;
+import org.jboss.iiop.ssl.SSLPolicyValueHelper;
+import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
+import org.omg.CORBA.Any;
+import org.omg.CORBA.LocalObject;
+import org.omg.CORBA.Policy;
+import org.omg.CORBA.PolicyError;
+import org.omg.PortableInterceptor.PolicyFactory;
 
-/**
- * Generated from IDL interface "SASCurrent".
- *
- * @author JacORB IDL compiler V 2.3.0 (JBoss patch 4), 06-Jun-2007
- * @version generated at Apr 17, 2011 3:27:19 PM
- */
+public class SSLPolicyFactory extends LocalObject implements PolicyFactory {
 
-public interface SASCurrentOperations extends CurrentOperations {
+    public SSLPolicyFactory() {
+    }
 
-    boolean context_received();
+    public Policy create_policy(int type, Any value) throws PolicyError {
+        if (type != SSL_POLICY_TYPE.value)
+            throw new PolicyError();
 
-    boolean client_authentication_info_received();
+        return new SSLPolicyImpl(SSLPolicyValueHelper.extract(value));
 
-    byte[] get_incoming_username();
-
-    byte[] get_incoming_password();
-
-    byte[] get_incoming_target_name();
-
-    org.omg.CSI.IdentityToken get_incoming_identity();
-
-    int get_incoming_identity_token_type();
-
-    byte[] get_incoming_principal_name();
-
-    void reject_incoming_context();
+    }
 }

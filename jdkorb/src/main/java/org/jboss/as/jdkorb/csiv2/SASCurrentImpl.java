@@ -22,7 +22,7 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.csiv2.idl.SASCurrent;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.CSI.IdentityToken;
 

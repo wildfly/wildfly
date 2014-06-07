@@ -12,7 +12,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
-import org.jboss.as.jdkorb.csiv2.idl.SASCurrent;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.security.auth.callback.SecurityAssociationCallback;
 import org.jboss.security.auth.spi.AbstractServerLoginModule;
 

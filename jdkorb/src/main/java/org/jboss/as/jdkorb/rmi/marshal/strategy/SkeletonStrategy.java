@@ -24,7 +24,6 @@ package org.jboss.as.jdkorb.rmi.marshal.strategy;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 
-import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.UnknownException;
@@ -36,6 +35,7 @@ import org.jboss.as.jdkorb.rmi.RMIIIOPViolationException;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStream;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamReader;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamWriter;
+import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 
 /**
  * A <code>SkeletonStrategy</code> for a given method knows how to
