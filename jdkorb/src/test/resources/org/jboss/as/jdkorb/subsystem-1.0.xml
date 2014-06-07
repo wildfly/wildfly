@@ -1,11 +1,10 @@
-<subsystem xmlns="urn:jboss:domain:jacorb:1.3">
+<subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
     <orb name="JBoss" print-version="off" use-imr="off" use-bom="off"  cache-typecodes="off"
         cache-poa-names="off" giop-minor-version ="2" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
         <connection retries="5" retry-interval="500" client-timeout="0" server-timeout="0"
             max-server-connections="500" max-managed-buf-size="24" outbuf-size="2048"
             outbuf-cache-timeout="-1"/>
-        <!--  set security=identity -->
-        <initializers security="identity" transactions="spec"/>
+        <initializers security="off" transactions="spec"/>
     </orb>
     <poa monitoring="off" queue-wait="on" queue-min="10" queue-max="100">
         <request-processors pool-size="10" max-threads="32"/>
