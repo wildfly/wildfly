@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AttributeDef;
 import org.omg.CORBA.AttributeDefOperations;
@@ -97,7 +97,7 @@ public class AttributeDefImpl
     }
 
     public void type_def(IDLType arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public AttributeMode mode() {
@@ -105,7 +105,7 @@ public class AttributeDefImpl
     }
 
     public void mode(AttributeMode arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

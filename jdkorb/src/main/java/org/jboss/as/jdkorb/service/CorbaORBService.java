@@ -28,8 +28,8 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBSubsystemConstants;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -55,18 +55,19 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class CorbaORBService implements Service<ORB> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "orb-service");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jdkorb", "orb-service");
 
     private static final Properties properties = new Properties();
 
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
-    private final InjectedValue<SocketBinding> jacORBSocketBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> jdkORBSocketBindingInjector = new InjectedValue<SocketBinding>();
 
-    private final InjectedValue<SocketBinding> jacORBSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
+    private final InjectedValue<SocketBinding> jdkORBSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
 
     private volatile ORB orb;
 
@@ -75,7 +76,7 @@ public class CorbaORBService implements Service<ORB> {
      * Creates an instance of {@code CorbaORBService} with the specified {@code ORBImplementation} and initializers.
      * </p>
      *
-     * @param props a {@code Properties} instance containing the JacORB subsystem configuration properties.
+     * @param props a {@code Properties} instance containing the JdkORB subsystem configuration properties.
      */
     public CorbaORBService(Properties props) {
         if (props != null) {
@@ -85,23 +86,21 @@ public class CorbaORBService implements Service<ORB> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
 
         try {
             // set the ORBClass and ORBSingleton class as system properties.
-            properties.setProperty(ORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
-            properties.setProperty(ORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
-            SecurityActions.setSystemProperty(ORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
-            SecurityActions.setSystemProperty(ORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
+            properties.setProperty(JdkORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
+            properties.setProperty(JdkORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
+            SecurityActions.setSystemProperty(JdkORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
+            SecurityActions.setSystemProperty(JdkORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
 
-            final String persistentServerId = properties.getProperty(ORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID);
+            final String persistentServerId = properties.getProperty(JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID);
 
-            // set the JacORB IIOP and IIOP/SSL ports from the respective socket bindings.
-            if (this.jacORBSocketBindingInjector.getValue()!= null) {
-                InetSocketAddress address = this.jacORBSocketBindingInjector.getValue().getSocketAddress();
-//                properties.setProperty(ORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
-//                properties.setProperty(ORBSubsystemConstants.ORB_PORT, String.valueOf(address.getPort()));
+            // set the JdkORB IIOP and IIOP/SSL ports from the respective socket bindings.
+            if (this.jdkORBSocketBindingInjector.getValue()!= null) {
+                InetSocketAddress address = this.jdkORBSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.INITIAL_HOST_PROPERTY, address.getAddress().getHostAddress());
@@ -110,26 +109,13 @@ public class CorbaORBService implements Service<ORB> {
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
             }
-            if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
-                InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
-                properties.setProperty(ORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
-                if (!properties.containsKey(ORBSubsystemConstants.ORB_ADDRESS)) {
-                    properties.setProperty(ORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
+            if (this.jdkORBSSLSocketBindingInjector.getValue() != null) {
+                InetSocketAddress address = this.jdkORBSSLSocketBindingInjector.getValue().getSocketAddress();
+                properties.setProperty(JdkORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
+                if (!properties.containsKey(JdkORBSubsystemConstants.ORB_ADDRESS)) {
+                    properties.setProperty(JdkORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
                 }
             }
-
-            // configure the naming service initial reference.
-//            String rootContext = properties.getProperty(ORBSubsystemConstants.NAMING_ROOT_CONTEXT);
-//            String host = properties.getProperty(ORBSubsystemConstants.ORB_ADDRESS);
-//            String port = properties.getProperty(ORBSubsystemConstants.ORB_PORT);
-//            properties.setProperty(ORBSubsystemConstants.JACORB_NAME_SERVICE_INIT_REF,
-//                    "corbaloc::" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port + "/" + rootContext);
-
-            // export the naming service corbaloc if necessary.
-//            String exportCorbalocProperty = properties.getProperty(ORBSubsystemConstants.NAMING_EXPORT_CORBALOC, "on");
-//            if (exportCorbalocProperty.equalsIgnoreCase("on")) {
-//                properties.setProperty(ORBSubsystemConstants.JACORB_NAME_SERVICE_MAP_KEY, rootContext);
-//            }
 
             // initialize the ORB - the thread context classloader needs to be adjusted as the ORB classes are loaded via reflection.
             ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -156,12 +142,12 @@ public class CorbaORBService implements Service<ORB> {
 
         CorbaUtils.setOrbProperties(properties);
 
-        ORBLogger.ROOT_LOGGER.corbaORBServiceStarted();
+        JdkORBLogger.ROOT_LOGGER.corbaORBServiceStarted();
     }
 
     @Override
     public void stop(StopContext context) {
-        ORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
         // stop the ORB asynchronously.
         final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
         try {
@@ -180,26 +166,26 @@ public class CorbaORBService implements Service<ORB> {
 
     /**
      * <p>
-     * Obtains a reference to the JacORB IIOP socket binding injector. This injector is used to inject a {@code ServiceBinding}
+     * Obtains a reference to the JdkORB IIOP socket binding injector. This injector is used to inject a {@code ServiceBinding}
      * containing the IIOP socket properties.
      * </p>
      *
-     * @return a reference to the {@code Injector<SocketBinding>} used to inject the JacORB IIOP socket properties.
+     * @return a reference to the {@code Injector<SocketBinding>} used to inject the JdkORB IIOP socket properties.
      */
-    public Injector<SocketBinding> getJacORBSocketBindingInjector() {
-        return this.jacORBSocketBindingInjector;
+    public Injector<SocketBinding> getJdkORBSocketBindingInjector() {
+        return this.jdkORBSocketBindingInjector;
     }
 
     /**
      * <p>
-     * Obtains a reference to the JacORB IIOP/SSL socket binding injector. This injector is used to inject a
+     * Obtains a reference to the JdkORB IIOP/SSL socket binding injector. This injector is used to inject a
      * {@code ServiceBinding} containing the IIOP/SSL socket properties.
      * </p>
      *
-     * @return a reference to the {@code Injector<SocketBinding>} used to inject the JacORB IIOP/SSL socket properties.
+     * @return a reference to the {@code Injector<SocketBinding>} used to inject the JdkORB IIOP/SSL socket properties.
      */
-    public Injector<SocketBinding> getJacORBSSLSocketBindingInjector() {
-        return this.jacORBSSLSocketBindingInjector;
+    public Injector<SocketBinding> getJdkORBSSLSocketBindingInjector() {
+        return this.jdkORBSSLSocketBindingInjector;
     }
 
     /**
@@ -217,8 +203,8 @@ public class CorbaORBService implements Service<ORB> {
     /**
      * <p>
      * Gets the value of the specified ORB property. All ORB properties can be queried using this method. This includes
-     * the properties that have been explicitly set by this service prior to creating the ORB and all JacORB properties
-     * that have been specified in the JacORB subsystem configuration.
+     * the properties that have been explicitly set by this service prior to creating the ORB and all JdkORB properties
+     * that have been specified in the JdkORB subsystem configuration.
      * </p>
      *
      * @param key the property key.

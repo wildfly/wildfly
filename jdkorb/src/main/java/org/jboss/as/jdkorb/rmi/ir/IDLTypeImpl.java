@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.TCKind;
@@ -80,11 +80,11 @@ abstract class IDLTypeImpl
             try {
                 return (LocalIDLType) repository._lookup_id(typeCode.id());
             } catch (BadKind ex) {
-                throw ORBMessages.MESSAGES.badKindForTypeCode(tcKind.value());
+                throw JdkORBMessages.MESSAGES.badKindForTypeCode(tcKind.value());
             }
         }
 
-        throw ORBMessages.MESSAGES.badKindForTypeCode(tcKind.value());
+        throw JdkORBMessages.MESSAGES.badKindForTypeCode(tcKind.value());
     }
 
     // Protected -----------------------------------------------------

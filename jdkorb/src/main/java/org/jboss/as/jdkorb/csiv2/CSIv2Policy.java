@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
-import org.jboss.as.jdkorb.ORBSubsystemConstants;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.LocalObject;
@@ -71,18 +71,18 @@ public class CSIv2Policy extends LocalObject implements Policy {
      * @param codec    the {@code Codec} used to encode the metadata when creating the tagged components.
      */
     public CSIv2Policy(IORSecurityConfigMetaData metadata, Codec codec) {
-        ORBLogger.ROOT_LOGGER.debugIORSecurityConfigMetaData(metadata);
+        JdkORBLogger.ROOT_LOGGER.debugIORSecurityConfigMetaData(metadata);
 
         // convert the ior metadata to a cached security tagged component.
         try {
             // get the singleton orb.
             ORB orb = ORB.init();
-            String sslPortString = CorbaORBService.getORBProperty(ORBSubsystemConstants.ORB_SSL_PORT);
+            String sslPortString = CorbaORBService.getORBProperty(JdkORBSubsystemConstants.ORB_SSL_PORT);
             int sslPort = sslPortString == null ? 0 : Integer.parseInt(sslPortString);
             this.sslTaggedComponent = CSIv2Util.createSSLTaggedComponent(metadata, codec, sslPort, orb);
             this.secTaggedComponent = CSIv2Util.createSecurityTaggedComponent(metadata, codec, sslPort, orb);
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 

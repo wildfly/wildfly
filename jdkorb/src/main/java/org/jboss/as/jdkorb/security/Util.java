@@ -30,7 +30,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.security.JSSESecurityDomain;
 
 /**
@@ -46,16 +46,16 @@ class Util {
             sslCtx = SSLContext.getInstance("TLS");
             KeyManager[] keyManagers = securityDomain.getKeyManagers();
             if (keyManagers == null)
-                throw ORBMessages.MESSAGES.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
+                throw JdkORBMessages.MESSAGES.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
             TrustManager[] trustManagers = securityDomain.getTrustManagers();
             sslCtx.init(keyManagers, trustManagers, null);
             return sslCtx;
         } catch (NoSuchAlgorithmException e) {
-            throw ORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JdkORBMessages.MESSAGES.failedToGetSSLContext(e);
         } catch (KeyManagementException e) {
-            throw ORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JdkORBMessages.MESSAGES.failedToGetSSLContext(e);
         } catch (SecurityException e) {
-            throw ORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JdkORBMessages.MESSAGES.failedToGetSSLContext(e);
         }
     }
 }

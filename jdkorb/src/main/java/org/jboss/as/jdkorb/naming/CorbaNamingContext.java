@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.ORBLogger;
+import org.jboss.as.jdkorb.JdkORBLogger;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.Binding;
@@ -174,7 +174,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.names.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            ORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
+            JdkORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -219,7 +219,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.contexts.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            ORBLogger.ROOT_LOGGER.debugBoundContext(n.toString());
+            JdkORBLogger.ROOT_LOGGER.debugBoundContext(n.toString());
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -301,7 +301,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 byte[] oid = rootPoa.activate_object(new BindingIteratorImpl(rest));
                 o = rootPoa.id_to_reference(oid);
             } catch (Exception e) {
-                ORBLogger.ROOT_LOGGER.logInternalError(e);
+                JdkORBLogger.ROOT_LOGGER.logInternalError(e);
                 throw new INTERNAL(e.toString());
             }
 
@@ -331,7 +331,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             return NamingContextExtHelper.narrow(this.poa.create_reference_with_id(oid.getBytes(),
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
         } catch (Exception e) {
-            ORBLogger.ROOT_LOGGER.failedToCreateNamingContext(e);
+            JdkORBLogger.ROOT_LOGGER.failedToCreateNamingContext(e);
             return null;
         }
     }
@@ -362,7 +362,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
 
             // do the rebinding in this context
             this.names.put(n, obj);
-            ORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
+            JdkORBLogger.ROOT_LOGGER.debugBoundName(n.toString());
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
@@ -408,7 +408,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             }
 
             this.contexts.put(n, obj);
-            ORBLogger.ROOT_LOGGER.debugBoundContext(n.baseNameComponent().id);
+            JdkORBLogger.ROOT_LOGGER.debugBoundContext(n.baseNameComponent().id);
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
@@ -478,7 +478,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if (this.names.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.names.remove(n);
                 ref._release();
-                ORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
+                JdkORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
             } else if (this.contexts.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.contexts.remove(n);
                 ref._release();
@@ -487,9 +487,9 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 if (oid != null)
                     contextImpls.remove(oid);
 
-                ORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
+                JdkORBLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
             } else {
-                ORBLogger.ROOT_LOGGER.failedToUnbindObject(n.toString());
+                JdkORBLogger.ROOT_LOGGER.failedToUnbindObject(n.toString());
                 throw new NotFound(NotFoundReason.not_context, n.components());
             }
         } else {
@@ -521,13 +521,6 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public String to_url(String addr, String sn) throws InvalidAddress, InvalidName {
-//        org.jacorb.orb.util.CorbaLoc corbaLoc;
-//        try {
-//            corbaLoc = new org.jacorb.orb.util.CorbaLoc((org.jacorb.orb.ORB) orb, addr);
-//            return corbaLoc.toCorbaName(sn);
-//        } catch (IllegalArgumentException ia) {
-//            throw new InvalidAddress();
-//        }
         return null;
     }
 
@@ -575,7 +568,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if (oidBytes != null)
                 oid = new String(oidBytes);
         } catch (Exception e) {
-            ORBLogger.ROOT_LOGGER.failedToObtainIdFromObject(e);
+            JdkORBLogger.ROOT_LOGGER.failedToObtainIdFromObject(e);
         }
         return oid;
     }

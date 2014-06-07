@@ -29,7 +29,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * A ForeignTransaction, a marker for when we would have to import a
@@ -45,31 +45,31 @@ public class ForeignTransaction implements Transaction {
 
     public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
             SecurityException, SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void rollback() throws IllegalStateException, SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public int getStatus() throws SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 
     public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException,
             SystemException {
-        throw ORBMessages.MESSAGES.foreignTransaction();
+        throw JdkORBMessages.MESSAGES.foreignTransaction();
     }
 }

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * Exception analysis.
@@ -56,7 +56,7 @@ public class ExceptionAnalysis extends ValueAnalysis {
 
         if (!Exception.class.isAssignableFrom(cls) ||
                 RuntimeException.class.isAssignableFrom(cls))
-            throw ORBMessages.MESSAGES.badRMIIIOPExceptionType(cls.getName(), "1.2.6");
+            throw JdkORBMessages.MESSAGES.badRMIIIOPExceptionType(cls.getName(), "1.2.6");
 
         // calculate exceptionRepositoryId
         StringBuffer b = new StringBuffer("IDL:");

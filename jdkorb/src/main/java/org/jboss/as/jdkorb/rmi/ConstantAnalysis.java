@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 
 
@@ -49,7 +49,7 @@ public class ConstantAnalysis
 
         if (type == Void.TYPE ||
                 !type.isPrimitive() && type != java.lang.String.class)
-            throw ORBMessages.MESSAGES.badConstantType(type.getName());
+            throw JdkORBMessages.MESSAGES.badConstantType(type.getName());
 
         this.type = type;
         this.value = value;

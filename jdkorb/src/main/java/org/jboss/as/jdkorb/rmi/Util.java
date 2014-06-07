@@ -42,7 +42,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 
 /**
@@ -196,7 +196,7 @@ public class Util {
         else if (type == Double.class)
             any.insert_double(((Double) primitive).doubleValue());
         else
-            throw ORBMessages.MESSAGES.notAPrimitive(type.getName());
+            throw JdkORBMessages.MESSAGES.notAPrimitive(type.getName());
     }
 
     /**
@@ -207,7 +207,7 @@ public class Util {
      */
     public static String javaToIDLName(String name) {
         if (name == null || "".equals(name) || name.indexOf('.') != -1)
-            throw ORBMessages.MESSAGES.nameCannotBeNullEmptyOrQualified();
+            throw JdkORBMessages.MESSAGES.nameCannotBeNullEmptyOrQualified();
 
         StringBuffer res = new StringBuffer(name.length());
 
@@ -239,7 +239,7 @@ public class Util {
      */
     public static String getIRIdentifierOfClass(Class cls) {
         if (cls.isPrimitive())
-            throw ORBMessages.MESSAGES.primitivesHaveNoIRIds();
+            throw JdkORBMessages.MESSAGES.primitivesHaveNoIRIds();
 
         String result = (String) classIRIdentifierCache.get(cls);
         if (result != null)
@@ -452,7 +452,7 @@ public class Util {
             try {
                 dos.writeLong(getClassHashCode(superClass));
             } catch (IOException ex) {
-                throw ORBMessages.MESSAGES.unexpectedException(ex);
+                throw JdkORBMessages.MESSAGES.unexpectedException(ex);
             }
         }
 
@@ -474,7 +474,7 @@ public class Util {
         try {
             dos.writeInt(hasWriteObject ? 2 : 1);
         } catch (IOException ex) {
-            throw ORBMessages.MESSAGES.unexpectedException(ex);
+            throw JdkORBMessages.MESSAGES.unexpectedException(ex);
         }
 
         // Step 3
@@ -496,14 +496,14 @@ public class Util {
                 dos.writeUTF(getSignature(f.getType()));
             }
         } catch (IOException ex) {
-            throw ORBMessages.MESSAGES.unexpectedException(ex);
+            throw JdkORBMessages.MESSAGES.unexpectedException(ex);
         }
 
         // Convert to byte[]
         try {
             dos.flush();
         } catch (IOException ex) {
-            throw ORBMessages.MESSAGES.unexpectedException(ex);
+            throw JdkORBMessages.MESSAGES.unexpectedException(ex);
         }
         byte[] bytes = baos.toByteArray();
 
@@ -512,7 +512,7 @@ public class Util {
         try {
             digest = MessageDigest.getInstance("SHA");
         } catch (NoSuchAlgorithmException ex) {
-            throw ORBMessages.MESSAGES.unavailableSHADigest(ex);
+            throw JdkORBMessages.MESSAGES.unavailableSHADigest(ex);
         }
         digest.update(bytes);
         byte[] sha = digest.digest();
@@ -554,7 +554,7 @@ public class Util {
                 return "S";
             if (cls == Boolean.TYPE)
                 return "Z";
-            throw ORBMessages.MESSAGES.unknownPrimitiveType(cls.getName());
+            throw JdkORBMessages.MESSAGES.unknownPrimitiveType(cls.getName());
         }
 
         return "L" + cls.getName().replace('.', '/') + ";";
@@ -598,7 +598,7 @@ public class Util {
             return "float";
         if (type == Double.TYPE)
             return "double";
-        throw ORBMessages.MESSAGES.notAPrimitive(type.getName());
+        throw JdkORBMessages.MESSAGES.notAPrimitive(type.getName());
     }
 
 

@@ -21,40 +21,39 @@
  */
 package org.jboss.as.jdkorb.deployment;
 
+import org.jboss.as.jdkorb.rmi.ExceptionAnalysis;
+import org.jboss.as.jdkorb.rmi.InterfaceAnalysis;
+import org.jboss.as.jdkorb.rmi.ValueAnalysis;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.module.ModuleDependency;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
 
 /**
+ * Processor responsible for marking a deployment as using IIOP
+ *
  * @author Stuart Douglas
  */
-public class JacORBDependencyProcessor implements DeploymentUnitProcessor {
-    public static final ModuleIdentifier CORBA_ID = ModuleIdentifier.create("org.omg.api");
-    public static final ModuleIdentifier JAVAX_RMI_API_ID = ModuleIdentifier.create("javax.rmi.api");
-    public static final ModuleIdentifier JDKORB_ID = ModuleIdentifier.create("javax.orb.api");
-    //public static final ModuleIdentifier JDKORB_ID = ModuleIdentifier.create("org.jacorb");
-
+public class JdkORBMarkerProcessor implements DeploymentUnitProcessor{
     @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CORBA_ID, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_RMI_API_ID, false, false, false, false));
-        //we need to add jacorb, as the orb is initialized from the context class loader of the deployment
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JDKORB_ID, false, false, false, false));
+        //for now we mark all subsystems as using IIOP if the jdkorb subsystem is installed
+        JdkORBDeploymentMarker.mark(deploymentUnit);
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
+        //clear data from the relevant caches
+        Module module = context.getAttachment(Attachments.MODULE);
+        if(module == null) {
+            return;
+        }
+        ExceptionAnalysis.clearCache(module.getClassLoader());
+        InterfaceAnalysis.clearCache(module.getClassLoader());
+        ValueAnalysis.clearCache(module.getClassLoader());
     }
+
 }

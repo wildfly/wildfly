@@ -22,7 +22,7 @@
 package org.jboss.as.jdkorb.rmi;
 
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * Analysis class for primitive types.
@@ -54,7 +54,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
      */
     public static PrimitiveAnalysis getPrimitiveAnalysis(final Class cls) {
         if (cls == null)
-            throw ORBMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw JdkORBMessages.MESSAGES.cannotAnalyzeNullClass();
 
         if (cls == Void.TYPE)
             return voidAnalysis;
@@ -75,7 +75,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
         if (cls == Double.TYPE)
             return doubleAnalysis;
 
-        throw ORBMessages.MESSAGES.notAPrimitive(cls.getName());
+        throw JdkORBMessages.MESSAGES.notAPrimitive(cls.getName());
     }
 
 }

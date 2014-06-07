@@ -21,8 +21,8 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IRObject;
 import org.omg.CORBA.IRObjectOperations;
@@ -57,7 +57,7 @@ abstract class IRObjectImpl implements IRObjectOperations {
     }
 
     public void destroy() {
-        throw ORBMessages.MESSAGES.cannotDestroyRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotDestroyRMIIIOPMapping();
     }
 
     public abstract IRObject getReference();
@@ -75,7 +75,7 @@ abstract class IRObjectImpl implements IRObjectOperations {
         try {
             poa.deactivate_object(poa.reference_to_id(getReference()));
         } catch (UserException ex) {
-            ORBLogger.ROOT_LOGGER.warnCouldNotDeactivateIRObject(ex);
+            JdkORBLogger.ROOT_LOGGER.warnCouldNotDeactivateIRObject(ex);
         }
     }
 
@@ -113,13 +113,13 @@ abstract class IRObjectImpl implements IRObjectOperations {
             org.omg.CORBA.Object ref = repository.poa.id_to_reference(id);
             return ref;
         } catch (WrongPolicy ex) {
-            ORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            JdkORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
         } catch (ServantAlreadyActive ex) {
-            ORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            JdkORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
         } catch (ObjectAlreadyActive ex) {
-            ORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            JdkORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
         } catch (ObjectNotActive ex) {
-            ORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            JdkORBLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
         }
         return null;
     }

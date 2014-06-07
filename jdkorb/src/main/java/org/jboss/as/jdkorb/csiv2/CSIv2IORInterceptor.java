@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
-import org.jboss.as.jdkorb.ORBSubsystemConstants;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
@@ -69,7 +69,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
      * @param codec the {@code Codec} used to encode the IOR security components.
      */
     public CSIv2IORInterceptor(Codec codec) {
-        String sslPortString = CorbaORBService.getORBProperty(ORBSubsystemConstants.ORB_SSL_PORT);
+        String sslPortString = CorbaORBService.getORBProperty(JdkORBSubsystemConstants.ORB_SSL_PORT);
         int sslPort = sslPortString == null ? 0 : Integer.parseInt(sslPortString);
         try {
             // build default SSL component with minimum SSL options.
@@ -87,7 +87,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
                 iorSecurityConfigMetaData = new IORSecurityConfigMetaData();
             defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(iorSecurityConfigMetaData, codec, sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 
@@ -103,12 +103,12 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
         try {
             csiv2Policy = (CSIv2Policy) info.get_effective_policy(CSIv2Policy.TYPE);
         } catch (BAD_PARAM e) {
-            ORBLogger.ROOT_LOGGER.csiv2PolicyNotFoundInIORInfo();
+            JdkORBLogger.ROOT_LOGGER.csiv2PolicyNotFoundInIORInfo();
         } catch (Exception e) {
-            ORBLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
+            JdkORBLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
         }
 
-        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(ORBSubsystemConstants.INTEROP_IONA));
+        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JdkORBSubsystemConstants.INTEROP_IONA));
         if (csiv2Policy != null) {
             // if csiv2Policy effective, stuff a copy of the TaggedComponents already created by the CSIv2Policy into the IOR's IIOP profile.
             TaggedComponent sslComponent = csiv2Policy.getSSLTaggedComponent();

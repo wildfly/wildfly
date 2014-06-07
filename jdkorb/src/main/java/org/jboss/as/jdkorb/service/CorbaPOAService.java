@@ -25,8 +25,8 @@ package org.jboss.as.jdkorb.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -52,10 +52,11 @@ import org.omg.PortableServer.ThreadPolicyValue;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class CorbaPOAService implements Service<POA> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "poa-service");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jdkorb", "poa-service");
 
     public static final ServiceName ROOT_SERVICE_NAME = SERVICE_NAME.append("rootpoa");
 
@@ -142,7 +143,7 @@ public class CorbaPOAService implements Service<POA> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
         ORB orb = this.orbInjector.getOptionalValue();
         POA parentPOA = this.parentPOAInjector.getOptionalValue();
@@ -152,7 +153,7 @@ public class CorbaPOAService implements Service<POA> {
             try {
                 this.poa = POAHelper.narrow(orb.resolve_initial_references(this.poaName));
             } catch (Exception e) {
-                throw ORBMessages.MESSAGES.errorResolvingInitRef(this.poaName, e);
+                throw JdkORBMessages.MESSAGES.errorResolvingInitRef(this.poaName, e);
             }
         }
         // if a parent POA has been injected, we use it to create the policies and then the POA itself.
@@ -161,10 +162,10 @@ public class CorbaPOAService implements Service<POA> {
                 Policy[] poaPolicies = this.createPolicies(parentPOA);
                 this.poa = parentPOA.create_POA(this.poaName, null, poaPolicies);
             } catch (Exception e) {
-                throw ORBMessages.MESSAGES.errorCreatingPOAFromParent(e);
+                throw JdkORBMessages.MESSAGES.errorCreatingPOAFromParent(e);
             }
         } else {
-            throw ORBMessages.MESSAGES.invalidPOACreationArgs();
+            throw JdkORBMessages.MESSAGES.invalidPOACreationArgs();
         }
 
         // check if the POA should be bound to JNDI under java:/jboss.
@@ -176,13 +177,13 @@ public class CorbaPOAService implements Service<POA> {
         try {
             this.poa.the_POAManager().activate();
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.errorActivatingPOA(e);
+            throw JdkORBMessages.MESSAGES.errorActivatingPOA(e);
         }
     }
 
     @Override
     public void stop(StopContext context) {
-        ORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
 
         // destroy parent POAs, letting they destroy their children POAs in the process.
         if (this.poa.the_parent() == null)

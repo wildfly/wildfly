@@ -34,8 +34,8 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.jdkorb.ORBExtension;
-import org.jboss.as.jdkorb.ORBSubsystemParser;
+import org.jboss.as.jdkorb.JdkORBExtension;
+import org.jboss.as.jdkorb.JdkORBSubsystemParser;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -56,7 +56,7 @@ import org.junit.Test;
 public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public JdkORBSubsystemTestCase() {
-        super(ORBExtension.SUBSYSTEM_NAME, new ORBExtension());
+        super(JdkORBExtension.SUBSYSTEM_NAME, new JdkORBExtension());
     }
 
     @Override
@@ -78,7 +78,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
         String subsystemXml =
-                "<subsystem xmlns=\"" +ORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" +JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
                 "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
@@ -92,14 +92,14 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(1, addr.size());
         PathElement element = addr.getElement(0);
         Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(ORBExtension.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(JdkORBExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     @Test
     public void testParseSubsystemWithBadChild() throws Exception {
         // try parsing a XML with an invalid element.
         String subsystemXml =
-                "<subsystem xmlns=\"" + ORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
                 "   <invalid/>" +
                 "</subsystem>";
         try {
@@ -126,7 +126,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystemWithBadAttribute() throws Exception {
         String subsystemXml =
-                "<subsystem xmlns=\"" + ORBSubsystemParser.Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
+                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
                 "</subsystem>";
         try {
             super.parse(subsystemXml);
@@ -139,7 +139,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testDescribeHandler() throws Exception {
         // parse the subsystem xml and install into the first controller.
         String subsystemXml =
-                "<subsystem xmlns=\"" + ORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new AdditionalInitialization(){
@@ -159,7 +159,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         describeOp.get(OP).set(DESCRIBE);
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, ORBExtension.SUBSYSTEM_NAME)).toModelNode());
+                        PathElement.pathElement(SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
         servicesA.shutdown();
 

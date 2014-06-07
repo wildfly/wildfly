@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
@@ -81,7 +81,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void type_def(IDLType arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public short access() {
@@ -89,7 +89,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void access(short arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Description describe() {

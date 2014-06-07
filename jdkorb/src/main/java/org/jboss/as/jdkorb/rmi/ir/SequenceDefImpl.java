@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
@@ -72,7 +72,7 @@ class SequenceDefImpl
             element_type_def = IDLTypeImpl.getIDLType(type().content_type(),
                     repository);
         } catch (BadKind ex) {
-            throw ORBMessages.MESSAGES.badKindForTypeCode(type().kind().value());
+            throw JdkORBMessages.MESSAGES.badKindForTypeCode(type().kind().value());
         }
 
         getReference();
@@ -91,7 +91,7 @@ class SequenceDefImpl
     }
 
     public void bound(int arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public TypeCode element_type() {
@@ -108,7 +108,7 @@ class SequenceDefImpl
     }
 
     public void element_type_def(IDLType arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

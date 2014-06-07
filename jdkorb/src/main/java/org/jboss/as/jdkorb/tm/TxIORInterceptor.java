@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.tm;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.ORB;
@@ -76,7 +76,7 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
             taggedComponentData = codec.encode_value(any);
             info.add_ior_component(new TaggedComponent(TAG_OTS_POLICY, taggedComponentData));
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.errorEncodingContext(e);
+            throw JdkORBMessages.MESSAGES.errorEncodingContext(e);
         }
     }
 }

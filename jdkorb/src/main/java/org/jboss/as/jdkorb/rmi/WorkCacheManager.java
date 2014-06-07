@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 
 /**
@@ -91,7 +91,7 @@ class WorkCacheManager {
             constructor = cls.getDeclaredConstructor(new Class[]{Class.class});
             initializer = cls.getDeclaredMethod("doAnalyze");
         } catch (NoSuchMethodException ex) {
-            throw ORBMessages.MESSAGES.unexpectedException(ex);
+            throw JdkORBMessages.MESSAGES.unexpectedException(ex);
         }
         workDone = new HashMap<Class, SoftReference<ContainerAnalysis>>();
         workInProgress = new HashMap<InProgressKey, ContainerAnalysis>();

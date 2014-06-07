@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.ConstantDefOperations;
@@ -81,7 +81,7 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
     }
 
     public void type_def(IDLType arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Any value() {
@@ -89,7 +89,7 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
     }
 
     public void value(Any arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

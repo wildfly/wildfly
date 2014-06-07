@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 
 /**
@@ -103,7 +103,7 @@ public class InterfaceAnalysis extends ContainerAnalysis {
     protected void analyzeOperations() throws RMIIIOPViolationException {
 
         if (!cls.isInterface())
-            throw ORBMessages.MESSAGES.notAnInterface(cls.getName());
+            throw JdkORBMessages.MESSAGES.notAnInterface(cls.getName());
 
         abstractInterface = RmiIdlUtil.isAbstractInterface(cls);
         calculateAllTypeIds();

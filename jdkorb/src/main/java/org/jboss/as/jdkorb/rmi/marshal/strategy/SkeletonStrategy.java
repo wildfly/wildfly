@@ -29,7 +29,7 @@ import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.UnknownException;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.rmi.ExceptionAnalysis;
 import org.jboss.as.jdkorb.rmi.RMIIIOPViolationException;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStream;
@@ -215,9 +215,9 @@ public class SkeletonStrategy {
                             {org.omg.CORBA.portable.OutputStream.class, clz};
                     writeMethod = helperClass.getMethod("write", paramTypes);
                 } catch (ClassNotFoundException e) {
-                    throw ORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw JdkORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw ORBMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
+                    throw JdkORBMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
                 }
 
             } else {
@@ -227,7 +227,7 @@ public class SkeletonStrategy {
                     this.reposId = ExceptionAnalysis.getExceptionAnalysis(clz)
                             .getExceptionRepositoryId();
                 } catch (RMIIIOPViolationException e) {
-                    throw ORBMessages.MESSAGES.cannotObtainExceptionRepositoryID(clz.getName(),  e);
+                    throw JdkORBMessages.MESSAGES.cannotObtainExceptionRepositoryID(clz.getName(),  e);
                 }
             }
         }
@@ -247,9 +247,9 @@ public class SkeletonStrategy {
                 try {
                     writeMethod.invoke(null, new Object[]{out, excep});
                 } catch (IllegalAccessException e) {
-                    throw ORBMessages.MESSAGES.unexpectedException(e);
+                    throw JdkORBMessages.MESSAGES.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw ORBMessages.MESSAGES.errorMarshaling(IDLEntity.class, e.getTargetException());
+                    throw JdkORBMessages.MESSAGES.errorMarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 out.write_string(reposId);

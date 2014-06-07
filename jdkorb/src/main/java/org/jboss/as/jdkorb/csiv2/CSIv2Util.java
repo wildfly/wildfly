@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
-import org.jboss.as.jdkorb.ORBSubsystemConstants;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
@@ -130,7 +130,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSSLTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec, int sslPort,
                                                            ORB orb) {
         if (metadata == null) {
-            ORBLogger.ROOT_LOGGER.createSSLTaggedComponentWithNullMetaData();
+            JdkORBLogger.ROOT_LOGGER.createSSLTaggedComponentWithNullMetaData();
             return null;
         }
 
@@ -144,7 +144,7 @@ public final class CSIv2Util {
             byte[] componentData = codec.encode_value(any);
             tc = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
         return tc;
     }
@@ -168,7 +168,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSecurityTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec,
                                                                 int sslPort, ORB orb) {
         if (metadata == null) {
-            ORBLogger.ROOT_LOGGER.createSecurityTaggedComponentWithNullMetaData();
+            JdkORBLogger.ROOT_LOGGER.createSecurityTaggedComponentWithNullMetaData();
             return null;
         }
 
@@ -187,7 +187,7 @@ public final class CSIv2Util {
             byte[] b = codec.encode_value(any);
             tc = new TaggedComponent(TAG_CSI_SEC_MECH_LIST.value, b);
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
         return tc;
     }
@@ -354,7 +354,7 @@ public final class CSIv2Util {
             tc = new TaggedComponent(TAG_NULL_TAG.value, new byte[0]);
         } else {
             // my ip address.
-            String host = CorbaORBService.getORBProperty(ORBSubsystemConstants.ORB_ADDRESS);
+            String host = CorbaORBService.getORBProperty(JdkORBSubsystemConstants.ORB_ADDRESS);
 
             // this will create only one transport address.
             TransportAddress[] taList = createTransportAddress(host, sslPort);
@@ -368,7 +368,7 @@ public final class CSIv2Util {
                 byte[] b = codec.encode_value(any);
                 tc = new TaggedComponent(TAG_TLS_SEC_TRANS.value, b);
             } catch (InvalidTypeForEncoding e) {
-                throw ORBMessages.MESSAGES.unexpectedException(e);
+                throw JdkORBMessages.MESSAGES.unexpectedException(e);
             }
         }
 
@@ -479,7 +479,7 @@ public final class CSIv2Util {
             Oid oid = new Oid(GSSUPMechOID.value.substring(4));
             retval = oid.getDER();
         } catch (GSSException e) {
-            ORBLogger.ROOT_LOGGER.caughtExceptionEncodingGSSUPMechOID(e);
+            JdkORBLogger.ROOT_LOGGER.caughtExceptionEncodingGSSUPMechOID(e);
         }
         return retval;
     }
@@ -796,10 +796,10 @@ public final class CSIv2Util {
             return null;
         } catch (org.omg.IOP.CodecPackage.TypeMismatch e) {
             // unexpected exception in codec
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.FormatMismatch e) {
             // unexpected exception in codec
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 

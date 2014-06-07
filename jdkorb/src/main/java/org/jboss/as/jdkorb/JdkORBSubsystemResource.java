@@ -41,27 +41,27 @@ import org.jboss.dmr.ModelNode;
  * @author Tomaz Cerar
  * @created 6.1.12 23:00
  */
-public class ORBSubsystemResource extends SimpleResourceDefinition {
-    public static final ORBSubsystemResource INSTANCE = new ORBSubsystemResource();
+public class JdkORBSubsystemResource extends SimpleResourceDefinition {
+    public static final JdkORBSubsystemResource INSTANCE = new JdkORBSubsystemResource();
 
-    private ORBSubsystemResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ORBExtension.SUBSYSTEM_NAME),
-                ORBExtension.getResourceDescriptionResolver(ORBExtension.SUBSYSTEM_NAME),
-                ORBSubsystemAdd.INSTANCE,
+    private JdkORBSubsystemResource() {
+        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME),
+                JdkORBExtension.getResourceDescriptionResolver(JdkORBExtension.SUBSYSTEM_NAME),
+                JdkORBSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        OperationStepHandler attributeHander = new JacorbReloadRequiredWriteAttributeHandler(ORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
-        for (AttributeDefinition attr : ORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+        OperationStepHandler attributeHander = new JdkorbReloadRequiredWriteAttributeHandler(JdkORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
+        for (AttributeDefinition attr : JdkORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
     }
 
-    private static class JacorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-        public JacorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
+    private static class JdkorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+        public JdkorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
             super(definitions);
         }
 
@@ -69,8 +69,8 @@ public class ORBSubsystemResource extends SimpleResourceDefinition {
         protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
                 ModelNode oldValue, Resource model) throws OperationFailedException {
             //Make sure that security=on becomes security=identity
-            if (attributeName.equals(ORBSubsystemConstants.ORB_INIT_SECURITY) && newValue.asString().equals("on")) {
-                newValue.set(ORBSubsystemConstants.IDENTITY);
+            if (attributeName.equals(JdkORBSubsystemConstants.ORB_INIT_SECURITY) && newValue.asString().equals("on")) {
+                newValue.set(JdkORBSubsystemConstants.IDENTITY);
             }
             super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
         }

@@ -22,7 +22,7 @@
 package org.jboss.as.jdkorb.rmi;
 
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * Analysis class for classes. These define IDL types.
@@ -67,7 +67,7 @@ public class ClassAnalysis extends AbstractAnalysis {
 
     private static String javaNameOfClass(Class cls) {
         if (cls == null)
-            throw ORBMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw JdkORBMessages.MESSAGES.cannotAnalyzeNullClass();
 
         String s = cls.getName();
 
