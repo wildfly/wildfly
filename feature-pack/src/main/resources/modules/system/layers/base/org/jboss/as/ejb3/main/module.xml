@@ -41,10 +41,7 @@
 	<module name="javax.orb.api"/>
         <!-- For message inflow -->
         <module name="javax.resource.api"/>
-        <module name="javax.rmi.api"/>
         <module name="org.hibernate"/>
-        <!-- FIXME moved up temporarily - repair javax.rmi.api
-	<module name="javax.orb.api"/> -->
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ee.spi"/>

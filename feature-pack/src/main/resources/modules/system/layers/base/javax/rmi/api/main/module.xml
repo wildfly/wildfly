@@ -26,21 +26,15 @@
     <resources>
         <artifact name="${org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec}"/>
     </resources>
-
-    <dependencies>
-        <module name="org.omg.api"/>
-        <module name="javax.orb.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.jboss.as.jdkorb"/>
-
-
-        <!-- These must be below the org.omg.api import-->
-        <system>
-            <paths>
-                <path name="sun/misc"/>
-                <path name="org/omg/SendingContext"/>
-                <path name="org/omg/CORBA"/>
-            </paths>
-        </system>
+       <dependencies>
+        <module name="javax.orb.api" export="false">
+            <exports>
+                <include-set>
+                    <path name="javax/rmi"/>
+		    <path name="javax/rmi/CORBA"/>
+		    <path name="org/jboss/javax/rmi"/>
+                </include-set>
+            </exports>
+        </module>
     </dependencies>
 </module>

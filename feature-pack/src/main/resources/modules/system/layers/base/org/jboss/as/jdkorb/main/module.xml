@@ -33,7 +33,6 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.rmi.api"/>
         <module name="javax.transaction.api"/>
 	<module name="javax.orb.api"/>
         <module name="org.jboss.as.controller"/>
