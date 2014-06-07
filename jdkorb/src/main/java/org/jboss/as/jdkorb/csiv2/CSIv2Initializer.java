@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jacorb.security.ssl.SSLPolicyFactory;
-import org.jacorb.ssl.SSL_POLICY_TYPE;
+import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.security.SSLPolicyFactory;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;

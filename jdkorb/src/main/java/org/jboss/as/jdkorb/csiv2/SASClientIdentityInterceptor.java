@@ -25,7 +25,6 @@ package org.jboss.as.jdkorb.csiv2;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
-import org.jacorb.orb.MinorCodes;
 import org.jboss.as.jdkorb.ORBLogger;
 import org.jboss.as.jdkorb.ORBMessages;
 import org.jboss.security.RunAs;
@@ -222,15 +221,14 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                throw ORBMessages.MESSAGES.unexpectedContextErrorInSASReply(MinorCodes.SAS_CSS_FAILURE,
-                        CompletionStatus.COMPLETED_YES);
+                throw ORBMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -248,9 +246,9 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
+            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
+            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         }
     }
 

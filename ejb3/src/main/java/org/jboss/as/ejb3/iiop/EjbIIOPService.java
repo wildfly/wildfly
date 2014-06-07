@@ -34,9 +34,9 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
 
-import org.jacorb.ssl.SSLPolicyValue;
-import org.jacorb.ssl.SSLPolicyValueHelper;
-import org.jacorb.ssl.SSL_POLICY_TYPE;
+import org.jboss.iiop.ssl.SSLPolicyValue;
+import org.jboss.iiop.ssl.SSLPolicyValueHelper;
+import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;

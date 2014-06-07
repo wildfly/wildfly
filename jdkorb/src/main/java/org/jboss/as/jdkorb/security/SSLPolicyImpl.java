@@ -20,40 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jdkorb.csiv2.idl;
+package org.jboss.as.jdkorb.security;
 
-import org.omg.CORBA.TypeCode;
-import org.omg.CORBA.portable.InputStream;
-import org.omg.CORBA.portable.OutputStream;
-import org.omg.CORBA.portable.Streamable;
+import org.jboss.iiop.ssl.SSLPolicy;
+import org.jboss.iiop.ssl.SSLPolicyValue;
+import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
+import org.omg.CORBA.LocalObject;
+import org.omg.CORBA.Policy;
 
-/**
- * Generated from IDL interface "SASCurrent".
- *
- * @author JacORB IDL compiler V 2.3.0 (JBoss patch 4), 06-Jun-2007
- * @version generated at Apr 17, 2011 3:27:19 PM
- */
-@SuppressWarnings("unused")
-public final class SASCurrentHolder implements Streamable {
+public class SSLPolicyImpl extends LocalObject implements SSLPolicy {
+    private SSLPolicyValue value;
 
-    public SASCurrent value;
-
-    public SASCurrentHolder() {
+    public SSLPolicyImpl(SSLPolicyValue value) {
+        this.value = value;
     }
 
-    public SASCurrentHolder(final SASCurrent initial) {
-        value = initial;
+    public SSLPolicyValue value() {
+        return value;
     }
 
-    public TypeCode _type() {
-        return SASCurrentHelper.type();
+    public int policy_type() {
+        return SSL_POLICY_TYPE.value;
     }
 
-    public void _read(final InputStream in) {
-        value = SASCurrentHelper.read(in);
+    public Policy copy() {
+        return new SSLPolicyImpl(value);
     }
 
-    public void _write(final OutputStream _out) {
-        SASCurrentHelper.write(_out, value);
+    public void destroy() {
+    }
+
+    public String toString() {
+        return "SSLPolicy[" + ((value == SSLPolicyValue.SSL_NOT_REQUIRED) ? "SSL_NOT_REQUIRED" : "SSL_REQUIRED") + "]";
     }
 }

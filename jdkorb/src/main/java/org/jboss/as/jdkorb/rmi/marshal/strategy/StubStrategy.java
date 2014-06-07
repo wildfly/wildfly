@@ -32,7 +32,6 @@ import java.rmi.UnexpectedException;
 
 import javax.rmi.PortableRemoteObject;
 
-import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA_2_3.portable.InputStream;
@@ -41,6 +40,7 @@ import org.jboss.as.jdkorb.ORBMessages;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStream;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamReader;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamWriter;
+import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
