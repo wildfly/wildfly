@@ -22,7 +22,7 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.iiop.csiv2.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
@@ -53,7 +53,7 @@ public class SASClientInitializer extends LocalObject implements ORBInitializer 
             // the SASCurrent still needs to be initialized. Its initialization is deferred to post_init, as it needs
             // to call resolve_initial_references.
         } catch (InvalidName e) {
-            throw ORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
+            throw JdkORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
         }
     }
 
@@ -81,7 +81,7 @@ public class SASClientInitializer extends LocalObject implements ORBInitializer 
             // Initialize the SASCurrent implementation.
             sasCurrentImpl.init(serverInterceptor);
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 }

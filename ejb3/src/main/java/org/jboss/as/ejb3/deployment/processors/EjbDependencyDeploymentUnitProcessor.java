@@ -82,7 +82,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         //we always have to add this, as even non-ejb deployments may still lookup IIOP ejb's
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_SUBSYSTEM, false, false, true, false));
 
-        if (JdkORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (JdkORBDeploymentMarker.isJdkORBDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JDKORB, false, false, false, false));
         }

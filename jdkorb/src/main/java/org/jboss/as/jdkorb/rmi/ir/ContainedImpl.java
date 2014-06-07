@@ -23,7 +23,7 @@ package org.jboss.as.jdkorb.rmi.ir;
 
 import java.nio.charset.StandardCharsets;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.Container;
 import org.omg.CORBA.ContainerHelper;
@@ -60,7 +60,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void id(java.lang.String id) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String name() {
@@ -68,7 +68,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void name(java.lang.String name) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String version() {
@@ -76,7 +76,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void version(java.lang.String version) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public Container defined_in() {
@@ -95,7 +95,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
 
     public void move(Container new_container,
                      String new_name, String new_version) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     /**

@@ -22,7 +22,7 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.iiop.csiv2.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
@@ -49,7 +49,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
             SASCurrent sasCurrent = new SASCurrentImpl();
             info.register_initial_reference("SASCurrent", sasCurrent);
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
+            throw JdkORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
         }
     }
 
@@ -87,7 +87,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
 //                          }
 //                       });
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 }

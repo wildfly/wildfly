@@ -38,7 +38,7 @@ import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.ORB;
 
 /**
- * The jacorb subsystem is using message IDs in the range 16300-16499. This file is using the subset 16300-16399 for
+ * The jdkorb subsystem is using message IDs in the range 16300-16499. This file is using the subset 16300-16399 for
  * logger messages.
  * See http://http://community.jboss.org/wiki/LoggingIds for the full list of currently reserved JBAS message id blocks.
  *
@@ -46,12 +46,12 @@ import org.omg.CORBA.ORB;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 @MessageLogger(projectCode = "JBAS")
-public interface ORBLogger extends BasicLogger {
+public interface JdkORBLogger extends BasicLogger {
 
-    ORBLogger ROOT_LOGGER = Logger.getMessageLogger(ORBLogger.class, ORBLogger.class.getPackage().getName());
+    JdkORBLogger ROOT_LOGGER = Logger.getMessageLogger(JdkORBLogger.class, JdkORBLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
-    @Message(id = 16300, value = "Activating JacORB Subsystem")
+    @Message(id = 16300, value = "Activating JdkORB Subsystem")
     void activatingSubsystem();
 
     @LogMessage(level = DEBUG)

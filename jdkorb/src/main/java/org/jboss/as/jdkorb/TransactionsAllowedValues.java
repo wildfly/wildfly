@@ -24,7 +24,7 @@ package org.jboss.as.jdkorb;
 
 /**
  * <p>
- * Enumeration of the allowed jacorb subsystem configuration values.
+ * Enumeration of the allowed jdkorb subsystem configuration values.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>

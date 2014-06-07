@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * <p>
- * Enumeration of the SSL configuration values. Each enum contains the corresponding JacORB value, which is represented
+ * Enumeration of the SSL configuration values. Each enum contains the corresponding JdkORB value, which is represented
  * as an int.
  * </p>
  *
@@ -38,15 +38,15 @@ enum SSLConfigValue {
     NONE("None", "0"), SERVERAUTH("ServerAuth", "20"), CLIENTAUTH("ClientAuth", "40"), MUTUALAUTH("MutualAuth", "60");
 
     private String name;
-    private String jacorbValue;
+    private String jdkorbValue;
 
-    SSLConfigValue(String name, String jacorbValue) {
+    SSLConfigValue(String name, String jdkorbValue) {
         this.name = name;
-        this.jacorbValue = jacorbValue;
+        this.jdkorbValue = jdkorbValue;
     }
 
-    public String getJacorbValue() {
-        return this.jacorbValue;
+    public String getJdkorbValue() {
+        return this.jdkorbValue;
     }
 
     private static Map<String, SSLConfigValue> MAP;
@@ -54,7 +54,7 @@ enum SSLConfigValue {
     static {
         final Map<String, SSLConfigValue> map = new HashMap<String, SSLConfigValue>();
         for (SSLConfigValue configValue : values()) {
-            map.put(configValue.getJacorbValue(), configValue);
+            map.put(configValue.getJdkorbValue(), configValue);
         }
         MAP = map;
     }

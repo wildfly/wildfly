@@ -36,7 +36,7 @@ import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStream;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamReader;
 import org.jboss.as.jdkorb.rmi.marshal.CDRStreamWriter;
@@ -163,7 +163,7 @@ public class StubStrategy {
                         new ExceptionReader(clz, excepIds[i]);
                 exceptionMap.put(exceptionReader.getReposId(), exceptionReader);
             } catch (ClassNotFoundException e) {
-                throw ORBMessages.MESSAGES.errorLoadingClass(excepTypes[i], e);
+                throw JdkORBMessages.MESSAGES.errorLoadingClass(excepTypes[i], e);
             }
         }
 
@@ -175,7 +175,7 @@ public class StubStrategy {
             try {
                 retvalRemoteInterface = cl.loadClass(retvalType.substring(1));
             } catch (ClassNotFoundException e) {
-                throw ORBMessages.MESSAGES.errorLoadingClass(retvalType.substring(1), e);
+                throw JdkORBMessages.MESSAGES.errorLoadingClass(retvalType.substring(1), e);
             }
         }
     }
@@ -190,7 +190,7 @@ public class StubStrategy {
         int len = params.length;
 
         if (len != paramWriters.length) {
-            throw ORBMessages.MESSAGES.errorMashalingParams();
+            throw JdkORBMessages.MESSAGES.errorMashalingParams();
         }
         for (int i = 0; i < len; i++) {
             Object param = params[i];
@@ -318,13 +318,13 @@ public class StubStrategy {
                     java.lang.reflect.Method idMethod = helperClass.getMethod("id", (Class[])null);
                     this.reposId = (String) idMethod.invoke(null, (Object[])null);
                 } catch (ClassNotFoundException e) {
-                    throw ORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw JdkORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw ORBMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
+                    throw JdkORBMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
                 } catch (IllegalAccessException e) {
-                    throw ORBMessages.MESSAGES.unexpectedException(e);
+                    throw JdkORBMessages.MESSAGES.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw ORBMessages.MESSAGES.unexpectedException(e.getTargetException());
+                    throw JdkORBMessages.MESSAGES.unexpectedException(e.getTargetException());
                 }
             } else {
                 // This ExceptionReader does not correspond to an IDL-defined
@@ -345,9 +345,9 @@ public class StubStrategy {
                 try {
                     return (Exception) readMethod.invoke(null, new Object[]{in});
                 } catch (IllegalAccessException e) {
-                    throw ORBMessages.MESSAGES.unexpectedException(e);
+                    throw JdkORBMessages.MESSAGES.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw ORBMessages.MESSAGES.errorUnmarshaling(IDLEntity.class, e.getTargetException());
+                    throw JdkORBMessages.MESSAGES.errorUnmarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 in.read_string(); // read and discard the repository id

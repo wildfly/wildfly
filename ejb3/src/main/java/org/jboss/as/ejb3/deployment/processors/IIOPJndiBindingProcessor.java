@@ -65,7 +65,7 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
         }
 
         //do not bind if jacORB not present
-        if (!JdkORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!JdkORBDeploymentMarker.isJdkORBDeployment(deploymentUnit)) {
             return;
         }
 

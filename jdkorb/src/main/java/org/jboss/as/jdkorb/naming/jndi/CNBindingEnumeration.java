@@ -33,7 +33,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CosNaming.BindingIterator;
 import org.omg.CosNaming.BindingIteratorHolder;
 import org.omg.CosNaming.BindingListHolder;
@@ -72,7 +72,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             try {
                 batchsize = Integer.parseInt(batch);
             } catch (NumberFormatException e) {
-                throw ORBMessages.MESSAGES.illegalBatchSize(batch);
+                throw JdkORBMessages.MESSAGES.illegalBatchSize(batch);
             }
         }
         _ctx = ctx;
@@ -195,7 +195,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             counter = 0; // reset
         } catch (Exception e) {
             more = false;
-            NamingException ne = ORBMessages.MESSAGES.errorGettingBindingList();
+            NamingException ne = JdkORBMessages.MESSAGES.errorGettingBindingList();
             ne.setRootCause(e);
             throw ne;
         }
@@ -222,7 +222,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
-            NamingException ne = ORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
+            NamingException ne = JdkORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
             ne.setRootCause(e);
             throw ne;
         }

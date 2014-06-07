@@ -28,7 +28,7 @@ package org.jboss.as.jdkorb.naming.jndi;
 import java.net.MalformedURLException;
 import java.io.UnsupportedEncodingException;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * Utilities for dealing with URLs.
@@ -50,7 +50,7 @@ public final class UrlUtil {
             return decode(s, "8859_1");
         } catch (UnsupportedEncodingException e) {
             // ISO-Latin-1 should always be available?
-            throw ORBMessages.MESSAGES.unavailableISOLatin1Decoder();
+            throw JdkORBMessages.MESSAGES.unavailableISOLatin1Decoder();
         }
     }
 
@@ -78,7 +78,7 @@ public final class UrlUtil {
                             Integer.parseInt(s.substring(i, i + 2), 16);
 
                 } catch (Exception e) {
-                    throw ORBMessages.MESSAGES.invalidURIEncoding(s);
+                    throw JdkORBMessages.MESSAGES.invalidURIEncoding(s);
                 }
                 i++;  // skip first hex char; for loop will skip second one
             } else {

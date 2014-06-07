@@ -22,8 +22,9 @@
 
 package org.jboss.as.jdkorb.service;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.naming.CorbaNamingContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -43,10 +44,11 @@ import org.omg.PortableServer.POA;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class CorbaNamingService implements Service<NamingContextExt> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jacorb", "naming-service");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("jdkorb", "naming-service");
 
     private final InjectedValue<POA> rootPOAInjector = new InjectedValue<POA>();
 
@@ -58,7 +60,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
         ORB orb = orbInjector.getValue();
         POA rootPOA = rootPOAInjector.getValue();
@@ -70,10 +72,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
             // create and initialize the root context instance according to the configuration.
             CorbaNamingContext ns = new CorbaNamingContext();
-            //Configuration configuration = ((org.jacorb.orb.ORB) orb).getConfiguration();
-            boolean doPurge = false; //configuration.getAttribute("jacorb.naming.purge", "off").equals("on");
-            boolean noPing = false; //configuration.getAttribute("jacorb.naming.noping", "off").equals("on");
-            ns.init(namingPOA, doPurge, noPing);
+            ns.init(namingPOA, false, false);
 
             // create and activate the root context.
             byte[] rootContextId = "root".getBytes();
@@ -81,24 +80,25 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
 
+            //exporting the name service initial reference
             ((com.sun.corba.se.impl.orb.ORBImpl) orb).
             register_initial_reference(
-            "NameService", namingPOA.servant_to_reference(ns) );
+            JdkORBSubsystemConstants.JDKORB_NAME_SERVICE_INIT_REF, namingPOA.servant_to_reference(ns));
 
         } catch (Exception e) {
-            throw ORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
+            throw JdkORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
         }
 
         // bind the corba naming service to JNDI.
         CorbaServiceUtil.bindObject(context.getChildTarget(), "corbanaming", namingService);
 
-        ORBLogger.ROOT_LOGGER.corbaNamingServiceStarted();
-        ORBLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
+        JdkORBLogger.ROOT_LOGGER.corbaNamingServiceStarted();
+        JdkORBLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
     }
 
     @Override
     public void stop(StopContext context) {
-        ORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        JdkORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
     }
 
     @Override

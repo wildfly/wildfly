@@ -32,8 +32,9 @@ import java.util.Map;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public enum ORBInitializer {
+public enum JdkORBInitializer {
 
     UNKNOWN("", ""),
 
@@ -66,7 +67,7 @@ public enum ORBInitializer {
      * @param initializerName    the name that identifies the initializer group.
      * @param initializerClasses an array containing the fully-qualified name of the initializers that compose the group.
      */
-    ORBInitializer(final String initializerName, final String... initializerClasses) {
+    JdkORBInitializer(final String initializerName, final String... initializerClasses) {
         this.initializerName = initializerName;
         this.initializerClasses = initializerClasses;
     }
@@ -94,11 +95,11 @@ public enum ORBInitializer {
     }
 
     // a map that caches all available initializer groups by name.
-    private static final Map<String, ORBInitializer> MAP;
+    private static final Map<String, JdkORBInitializer> MAP;
 
     static {
-        final Map<String, ORBInitializer> map = new HashMap<String, ORBInitializer>();
-        for (ORBInitializer element : values()) {
+        final Map<String, JdkORBInitializer> map = new HashMap<String, JdkORBInitializer>();
+        for (JdkORBInitializer element : values()) {
             final String name = element.getInitializerName();
             if (name != null)
                 map.put(name, element);
@@ -115,8 +116,8 @@ public enum ORBInitializer {
      * @return the {@code ORBInitializer} identified by the name. If no implementation can be found, the
      *         {@code ORBInitializer.UNKNOWN} type is returned.
      */
-    static ORBInitializer fromName(final String initializerName) {
-        final ORBInitializer element = MAP.get(initializerName);
+    static JdkORBInitializer fromName(final String initializerName) {
+        final JdkORBInitializer element = MAP.get(initializerName);
         return element == null ? UNKNOWN : element;
     }
 

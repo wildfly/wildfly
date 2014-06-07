@@ -23,8 +23,8 @@ package org.jboss.as.jdkorb.tm;
 
 import javax.transaction.Transaction;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -89,7 +89,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
                     tx = ForeignTransaction.INSTANCE;
                 }
             } catch (InvalidSlot e) {
-                throw ORBMessages.MESSAGES.errorGettingSlotInTxInterceptor(e);
+                throw JdkORBMessages.MESSAGES.errorGettingSlotInTxInterceptor(e);
             }
 
         }
@@ -105,7 +105,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
     }
 
     public void receive_request_service_contexts(ServerRequestInfo ri) {
-        ORBLogger.ROOT_LOGGER.traceReceiveRequestServiceContexts(ri.operation());
+        JdkORBLogger.ROOT_LOGGER.traceReceiveRequestServiceContexts(ri.operation());
         try {
             ServiceContext sc = ri.get_request_service_context(txContextId);
             Any any = codec.decode_value(sc.context_data, PropagationContextHelper.type());
@@ -113,11 +113,11 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
         } catch (BAD_PARAM e) {
             // no service context with txContextId: do nothing
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JdkORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JdkORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (InvalidSlot e) {
-            throw ORBMessages.MESSAGES.errorSettingSlotInTxInterceptor(e);
+            throw JdkORBMessages.MESSAGES.errorSettingSlotInTxInterceptor(e);
         }
     }
 

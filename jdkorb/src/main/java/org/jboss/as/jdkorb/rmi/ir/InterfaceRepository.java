@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.rmi.AttributeAnalysis;
 import org.jboss.as.jdkorb.rmi.ConstantAnalysis;
 import org.jboss.as.jdkorb.rmi.ContainerAnalysis;
@@ -217,12 +217,12 @@ public class InterfaceRepository {
     private TypeCode getConstantTypeCode(Class cls)
             throws IRConstructionException {
         if (cls == null)
-            throw ORBMessages.MESSAGES.invalidNullClass();
+            throw JdkORBMessages.MESSAGES.invalidNullClass();
 
         TypeCode ret = constantTypeCodeMap.get(cls);
 
         if (ret == null)
-            throw ORBMessages.MESSAGES.badClassForConstant(cls.getName());
+            throw JdkORBMessages.MESSAGES.badClassForConstant(cls.getName());
         return ret;
     }
 
@@ -241,7 +241,7 @@ public class InterfaceRepository {
     private TypeCode getTypeCode(Class cls)
             throws IRConstructionException, RMIIIOPViolationException {
         if (cls == null)
-            throw ORBMessages.MESSAGES.invalidNullClass();
+            throw JdkORBMessages.MESSAGES.invalidNullClass();
 
         TypeCode ret = (TypeCode) typeCodeMap.get(cls);
 
@@ -264,7 +264,7 @@ public class InterfaceRepository {
                 ret = (TypeCode) typeCodeMap.get(cls);
 
                 if (ret == null)
-                    throw ORBMessages.MESSAGES.unknownTypeCodeForClass(cls.getName());
+                    throw JdkORBMessages.MESSAGES.unknownTypeCodeForClass(cls.getName());
                 else
                     return ret;
             }
@@ -284,12 +284,12 @@ public class InterfaceRepository {
     private void addTypeCode(Class cls, TypeCode typeCode)
             throws IRConstructionException {
         if (cls == null)
-            throw ORBMessages.MESSAGES.invalidNullClass();
+            throw JdkORBMessages.MESSAGES.invalidNullClass();
 
         TypeCode tc = (TypeCode) typeCodeMap.get(cls);
 
         if (tc != null)
-            throw ORBMessages.MESSAGES.duplicateTypeCodeForClass(cls.getName());
+            throw JdkORBMessages.MESSAGES.duplicateTypeCodeForClass(cls.getName());
 
         typeCodeMap.put(cls, typeCode);
     }
@@ -421,7 +421,7 @@ public class InterfaceRepository {
 
             // Warn if it does not conform to the specification.
             if (!"RMI:javax.rmi.CORBA.ClassDesc:B7C4E3FC9EBDC311:CFBF02CF5294176B".equals(val.id()))
-                ORBLogger.ROOT_LOGGER.warnClassDescDoesNotConformToSpec();
+                JdkORBLogger.ROOT_LOGGER.warnClassDescDoesNotConformToSpec();
 
             javaxRmiCORBAClassDesc = val;
         }
@@ -482,7 +482,7 @@ public class InterfaceRepository {
         if (contained instanceof LocalContainer)
             next = (LocalContainer) contained;
         else if (contained != null)
-            throw ORBMessages.MESSAGES.collisionWhileCreatingPackage();
+            throw JdkORBMessages.MESSAGES.collisionWhileCreatingPackage();
 
         if (next == null) {
             String id = "IDL:" + previous + ":1.0";
@@ -498,7 +498,7 @@ public class InterfaceRepository {
             next = (LocalContainer) c._lookup(base); // Better be there now...
         } else // Check that next _is_ a module
             if (next.def_kind() != DefinitionKind.dk_Module)
-                throw ORBMessages.MESSAGES.collisionWhileCreatingPackage();
+                throw JdkORBMessages.MESSAGES.collisionWhileCreatingPackage();
 
         return ensurePackageExists(next, previous, remainder);
     }
@@ -664,7 +664,7 @@ public class InterfaceRepository {
     private ValueBoxDefImpl addArray(Class cls)
             throws RMIIIOPViolationException, IRConstructionException {
         if (!cls.isArray())
-            throw ORBMessages.MESSAGES.classIsNotArray(cls.getName());
+            throw JdkORBMessages.MESSAGES.classIsNotArray(cls.getName());
 
         ValueBoxDefImpl vbDef;
 
@@ -711,7 +711,7 @@ public class InterfaceRepository {
                 typeName = "double";
                 typeCode = orb.get_primitive_tc(TCKind.tk_double);
             } else {
-                throw ORBMessages.MESSAGES.unknownPrimitiveType(compType.getName());
+                throw JdkORBMessages.MESSAGES.unknownPrimitiveType(compType.getName());
             }
 
             moduleName = "org.omg.boxedRMI";

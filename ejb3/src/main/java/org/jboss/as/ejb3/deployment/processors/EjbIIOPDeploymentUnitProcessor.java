@@ -95,7 +95,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!JdkORBDeploymentMarker.isJacORBDeployment(deploymentUnit)) {
+        if (!JdkORBDeploymentMarker.isJdkORBDeployment(deploymentUnit)) {
             return;
         }
 

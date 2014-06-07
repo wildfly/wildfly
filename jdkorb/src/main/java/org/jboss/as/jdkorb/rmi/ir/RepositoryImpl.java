@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.ArrayDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedHelper;
@@ -89,7 +89,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
             try {
                 getPOA().deactivate_object(getAnonymousObjectId(i));
             } catch (org.omg.CORBA.UserException ex) {
-                ORBLogger.ROOT_LOGGER.warnCouldNotDeactivateAnonIRObject(ex);
+                JdkORBLogger.ROOT_LOGGER.warnCouldNotDeactivateAnonIRObject(ex);
             }
         }
 
@@ -119,23 +119,23 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
     }
 
     public StringDef create_string(int bound) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public WstringDef create_wstring(int bound) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public SequenceDef create_sequence(int bound, org.omg.CORBA.IDLType element_type) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public ArrayDef create_array(int length, org.omg.CORBA.IDLType element_type) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     public FixedDef create_fixed(short digits, short scale) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
 

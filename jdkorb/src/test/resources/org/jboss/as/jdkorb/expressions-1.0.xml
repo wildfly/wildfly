@@ -1,6 +1,6 @@
 <subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
     <orb name="${test.exp:JBoss}" print-version="${test.exp:off}" use-imr="${test.exp:off}" use-bom="${test.exp:off}"  cache-typecodes="${test.exp:off}"
-        cache-poa-names="${test.exp:off}" giop-minor-version ="${test.exp:2}" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
+        cache-poa-names="${test.exp:off}" giop-minor-version ="${test.exp:2}" socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
         <connection retries="${test.exp:5}" retry-interval="${test.exp:500}" client-timeout="${test.exp:0}" server-timeout="${test.exp:0}"
             max-server-connections="${test.exp:500}" max-managed-buf-size="${test.exp:24}" outbuf-size="${test.exp:2048}"
             outbuf-cache-timeout="${test.exp:-1}"/>

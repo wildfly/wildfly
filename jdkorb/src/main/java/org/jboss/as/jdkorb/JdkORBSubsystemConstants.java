@@ -24,19 +24,19 @@ package org.jboss.as.jdkorb;
 
 /**
  * <p>
- * Collection of constants used in the JacORB subsystem.
+ * Collection of constants used in the JdkORB subsystem.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-public final class ORBSubsystemConstants {
+public final class JdkORBSubsystemConstants {
 
     /**
      * <p>
      * Private constructor as required by the {@code Singleton} pattern.
      * </p>
      */
-    private ORBSubsystemConstants() {
+    private JdkORBSubsystemConstants() {
     }
 
     // subsystem configuration constants (elements and attributes).
@@ -109,14 +109,9 @@ public final class ORBSubsystemConstants {
     public static final String ORB_INITIALIZER_PREFIX = "org.omg.PortableInterceptor.ORBInitializerClass.";
 
     // JdkORB implementation classes and standard interceptors.
-    public static final String JACORB_ORB_CLASS = "org.jacorb.orb.ORB";
-    public static final String JacORB_ORB_SINGLETON_CLASS = "org.jacorb.orb.ORBSingleton";
-    //public static final String JACORB_STD_INITIALIZER_KEY = ORB_INITIALIZER_PREFIX + "standard_init";
-    //public static final String JACORB_STD_INITIALIZER_VALUE = "org.jdkorb.orb.standardInterceptors.IORInterceptorInitializer";
-    public static final String JACORB_SSL_SOCKET_FACTORY = "jacorb.ssl.socket_factory";
-    public static final String JACORB_SSL_SERVER_SOCKET_FACTORY = "jacorb.ssl.server_socket_factory";
+    public static final String JDKORB_SSL_SOCKET_FACTORY = "jdkorb.ssl.socket_factory";
+    public static final String JDKORB_SSL_SERVER_SOCKET_FACTORY = "jdkorb.ssl.server_socket_factory";
 
-    // JacORB configuration properties that are built and set by the ORB service.
-    public static final String JACORB_NAME_SERVICE_INIT_REF = "ORBInitRef.NameService";
-    public static final String JACORB_NAME_SERVICE_MAP_KEY = "jacorb.orb.objectKeyMap.NameService";
+    // JdkORB configuration properties that are built and set by the ORB service.
+    public static final String JDKORB_NAME_SERVICE_INIT_REF = "NameService";
 }

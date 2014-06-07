@@ -35,7 +35,7 @@ public class JdkORBDeploymentMarker {
         deployment.putAttachment(ATTACHMENT_KEY, true);
     }
 
-    public static boolean isJacORBDeployment(final DeploymentUnit deploymentUnit) {
+    public static boolean isJdkORBDeployment(final DeploymentUnit deploymentUnit) {
         final Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
         return val != null && val;
     }

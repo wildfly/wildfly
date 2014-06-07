@@ -62,8 +62,8 @@
                    <configuration>
                       <artifactItems>
                          <artifactItem>
-                            <groupId>org.jacorb</groupId>
-                            <artifactId>jacorb</artifactId>
+                            <groupId>org.jboss.openjdk-orb</groupId>
+                            <artifactId>openjdk-orb</artifactId>
                             <type>jar</type>
                             <overWrite>true</overWrite>
                             <outputDirectory>${project.build.directory}/endorsed</outputDirectory>
@@ -80,7 +80,6 @@
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
             <artifactId>openjdk-orb</artifactId>
-            <version>7.5.0</version>
        </dependency>
 
        <dependency>

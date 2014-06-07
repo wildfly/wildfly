@@ -37,7 +37,7 @@ import java.util.Properties;
 import javax.naming.ConfigurationException;
 import javax.naming.Context;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.ORB;
 
 /**
@@ -105,11 +105,11 @@ public class CorbaUtils {
         } catch (InvocationTargetException e) {
             Throwable realException = e.getTargetException();
             // realException.printStackTrace();
-            ConfigurationException ce = ORBMessages.MESSAGES.problemInvokingPortableRemoteObjectToStub();
+            ConfigurationException ce = JdkORBMessages.MESSAGES.problemInvokingPortableRemoteObjectToStub();
             ce.setRootCause(realException);
             throw ce;
         } catch (IllegalAccessException e) {
-            ConfigurationException ce = ORBMessages.MESSAGES.cannotInvokePortableRemoteObjectToStub();
+            ConfigurationException ce = JdkORBMessages.MESSAGES.cannotInvokePortableRemoteObjectToStub();
             ce.setRootCause(e);
             throw ce;
         }
@@ -130,14 +130,14 @@ public class CorbaUtils {
             // realException.printStackTrace();
 
             if (!(realException instanceof java.rmi.RemoteException)) {
-                ConfigurationException ce = ORBMessages.MESSAGES.problemInvokingStubConnect();
+                ConfigurationException ce = JdkORBMessages.MESSAGES.problemInvokingStubConnect();
                 ce.setRootCause(realException);
                 throw ce;
             }
             // ignore RemoteException because stub might have already
             // been connected
         } catch (IllegalAccessException e) {
-            ConfigurationException ce = ORBMessages.MESSAGES.cannotInvokeStubConnect();
+            ConfigurationException ce = JdkORBMessages.MESSAGES.cannotInvokeStubConnect();
             ce.setRootCause(e);
             throw ce;
         }
@@ -256,7 +256,7 @@ public class CorbaUtils {
         try {
             connectMethod = corbaStubClass.getMethod("connect", new Class[]{org.omg.CORBA.ORB.class});
         } catch (NoSuchMethodException e) {
-            throw ORBMessages.MESSAGES.noMethodDefForStubConnect();
+            throw JdkORBMessages.MESSAGES.noMethodDefForStubConnect();
         }
 
         // Get javax.rmi.PortableRemoteObject method
@@ -267,7 +267,7 @@ public class CorbaUtils {
             toStubMethod = proClass.getMethod("toStub", new Class[]{java.rmi.Remote.class});
 
         } catch (NoSuchMethodException e) {
-            throw ORBMessages.MESSAGES.noMethodDefForPortableRemoteObjectToStub();
+            throw JdkORBMessages.MESSAGES.noMethodDefForPortableRemoteObjectToStub();
         }
     }
 

@@ -34,7 +34,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.jdkorb.ORBSubsystemConstants.SECURITY;
+import static org.jboss.as.jdkorb.JdkORBSubsystemConstants.SECURITY;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -55,22 +55,23 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * <p>
- * This class implements a parser for the JacORB subsystem.
+ * This class implements a parser for the JdkORB subsystem.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
+public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
         XMLElementWriter<SubsystemMarshallingContext> {
 
-    static final ORBSubsystemParser INSTANCE = new ORBSubsystemParser();
+    static final JdkORBSubsystemParser INSTANCE = new JdkORBSubsystemParser();
 
     /**
      * <p>
      * Private constructor required by the {@code Singleton} pattern.
      * </p>
      */
-    private ORBSubsystemParser() {
+    private JdkORBSubsystemParser() {
     }
 
     @Override
@@ -80,7 +81,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, ORBExtension.SUBSYSTEM_NAME);
+        subsystem.get(OP_ADDR).add(SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME);
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
@@ -98,63 +99,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the JacORB subsystem configuration according to the XSD version 1.0.
-     * </p>
-     *
-     * @param namespace the expected {@code Namespace} of the parsed elements.
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that will hold the parsed subsystem configuration.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void readElement_1_0(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            // check the element namespace.
-            if (Namespace.JdkORB_1_0 != Namespace.forUri(reader.getNamespaceURI()))
-                throw unexpectedElement(reader);
-
-            final Element element = Element.forName(reader.getLocalName());
-            // there can be multiple property elements.
-            if (!encountered.add(element) && element != Element.PROPERTY) {
-                throw duplicateNamedElement(reader, element.getLocalName());
-            }
-            switch (element) {
-                case ORB: {
-                    this.parseORBConfig_1_0(reader, node);
-                    break;
-                }
-                case POA: {
-                    this.parsePOAConfig(namespace, reader, node);
-                    break;
-                }
-                case INTEROP: {
-                    this.parseInteropConfig(reader, node);
-                    break;
-                }
-                case SECURITY: {
-                    this.parseSecurityConfig_1_0(reader, node);
-                    break;
-                }
-                case PROPERTY: {
-                    ModelNode propertiesNode = node.get(ORBSubsystemConstants.PROPERTIES);
-                    this.parseGenericProperty_1_0(reader, propertiesNode);
-                    break;
-                }
-                case ORB_INITIALIZERS: {
-                    this.parseORBInitializersConfig_1_0(reader, node);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parses the JacORB subsystem configuration according to the XSD version 1.1 or higher.
+     * Parses the JdkORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
      * @param namespace the expected {@code Namespace} of the parsed elements.
@@ -207,52 +152,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code orb} section of the JacORB subsystem configuration according to the XSD version 1.0.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that will hold the parsed ORB configuration.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void parseORBConfig_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-
-        // parse the orb config attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.NAME, Attribute.ORB_PRINT_VERSION,
-                Attribute.ORB_GIOP_MINOR_VERSION, Attribute.ORB_USE_BOM, Attribute.ORB_USE_IMR, Attribute.ORB_CACHE_POA_NAMES,
-                Attribute.ORB_CACHE_TYPECODES);
-        this.parseAttributes(reader, node, expectedAttributes, null);
-
-        // parse the orb config elements.
-        EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            // check the element namespace.
-            if (Namespace.JdkORB_1_0 != Namespace.forUri(reader.getNamespaceURI()))
-                throw unexpectedElement(reader);
-
-            final Element element = Element.forName(reader.getLocalName());
-            // check for duplicate elements.
-            if (!encountered.add(element)) {
-                throw duplicateNamedElement(reader, element.getLocalName());
-            }
-            switch (element) {
-                case ORB_CONNECTION: {
-                    this.parseORBConnectionConfig(reader, node);
-                    break;
-                }
-                case NAMING: {
-                    this.parseNamingConfig(reader, node);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parses the {@code orb} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
+     * Parses the {@code orb} section of the JdkORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
      * @param namespace the expected {@code Namespace} of the parsed elements.
@@ -303,7 +203,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the ORB {@code connection} section of the JacORB subsystem configuration.
+     * Parses the ORB {@code connection} section of the JdkORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -323,33 +223,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the ORB {@code initializers} section of the JacORB subsystem configuration according to the XSD version 1.0.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that will hold the parsed ORB initializers configuration.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void parseORBInitializersConfig_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        requireNoAttributes(reader);
-        // read the element text - a comma-separated list of initializers.
-        String initializersList = reader.getElementText();
-        if (initializersList != null) {
-            String[] initializers = initializersList.split(",");
-            // read each configured initializer and set the appropriate values in the model node.
-            for (String initializer : initializers) {
-                SimpleAttributeDefinition definition = (SimpleAttributeDefinition) ORBSubsystemDefinitions.valueOf(initializer);
-                if (definition != null && ORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
-                    node.get(definition.getName()).set("on");
-                else
-                    throw ORBMessages.MESSAGES.invalidInitializerConfig(initializer, reader.getLocation());
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parses the ORB {@code initializers} section of the JacORB subsystem configuration according to the XSD version 1.1 or
+     * Parses the ORB {@code initializers} section of the JdkORB subsystem configuration according to the XSD version 1.1 or
      * higher.
      * </p>
      *
@@ -372,7 +246,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code poa} section of the JacORB subsystem configuration.
+     * Parses the {@code poa} section of the JdkORB subsystem configuration.
      * </p>
      *
      * @param namespace the expected {@code Namespace} of the parsed elements.
@@ -418,7 +292,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code naming} section of the JacORB subsystem configuration.
+     * Parses the {@code naming} section of the JdkORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -435,7 +309,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code interop} section of the JacORB subsystem configuration.
+     * Parses the {@code interop} section of the JdkORB subsystem configuration.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -454,60 +328,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.0.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that will hold the parsed security configuration.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void parseSecurityConfig_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL,
-                Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS,
-                Attribute.SECURITY_CLIENT_REQUIRES, Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES,
-                Attribute.SECURITY_USE_DOMAIN_SF, Attribute.SECURITY_USE_DOMAIN_SSF);
-
-        EnumSet<Attribute> parsedAttributes = EnumSet.noneOf(Attribute.class);
-
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            requireNoNamespaceAttribute(reader, i);
-            String attrValue = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            // check for unexpected attributes.
-            if (!expectedAttributes.contains(attribute))
-                throw unexpectedAttribute(reader, i);
-            // check for duplicate attributes.
-            if (!parsedAttributes.add(attribute)) {
-                throw duplicateAttribute(reader, attribute.getLocalName());
-            }
-
-            switch (attribute) {
-            // check the attributes that need to be converted from int to string.
-                case SECURITY_CLIENT_SUPPORTS:
-                case SECURITY_CLIENT_REQUIRES:
-                case SECURITY_SERVER_SUPPORTS:
-                case SECURITY_SERVER_REQUIRES:
-                    SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
-                    if (value == null)
-                        throw ORBMessages.MESSAGES.invalidSSLConfig(attrValue, reader.getLocation());
-                    attrValue = value.toString();
-                default:
-                    SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) ORBSubsystemDefinitions
-                            .valueOf(attribute.getLocalName()));
-                    // a null definition represents an attribute that has been deprecated and is no longer used.
-                    if (definition != null)
-                        definition.parseAndSetParameter(attrValue, node, reader);
-            }
-        }
-
-        // the security element doesn't have child elements.
-        requireNoContent(reader);
-    }
-
-    /**
-     * <p>
-     * Parses the {@code security} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
+     * Parses the {@code security} section of the JdkORB subsystem configuration according to the XSD version 1.1 or higher.
      * </p>
      *
      * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
@@ -526,7 +347,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Parses the {@code properties} section of the JacORB subsystem configuration.
+     * Parses the {@code properties} section of the JdkORB subsystem configuration.
      * </p>
      *
      * @param namespace the expected {@code Namespace} of the parsed elements.
@@ -548,7 +369,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
             switch (element) {
                 case PROPERTY: {
                     // parse the property element.
-                    this.parseGenericProperty(reader, node.get(ORBSubsystemConstants.PROPERTIES));
+                    this.parseGenericProperty(reader, node.get(JdkORBSubsystemConstants.PROPERTIES));
                     break;
                 }
                 default: {
@@ -556,47 +377,6 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
                 }
             }
         }
-    }
-
-    /**
-     * <p>
-     * Parses a {@code property} element according to the XSD version 1.0 and adds the key/value pair to the specified
-     * {@code ModelNode}.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that contains all parsed ORB properties.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void parseGenericProperty_1_0(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        String name = null;
-        String val = null;
-        EnumSet<Attribute> required = EnumSet.of(Attribute.PROP_KEY, Attribute.PROP_VALUE);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case PROP_KEY: {
-                    name = value;
-                    break;
-                }
-                case PROP_VALUE: {
-                    val = value;
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-        node.add(name, val);
-        requireNoContent(reader);
     }
 
     /**
@@ -625,7 +405,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
                     break;
                 }
                 case PROP_VALUE: {
-                    val = ORBSubsystemDefinitions.PROPERTIES.parse(value, reader.getLocation());
+                    val = JdkORBSubsystemDefinitions.PROPERTIES.parse(value, reader.getLocation());
                     break;
                 }
                 default:
@@ -674,7 +454,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
                 throw duplicateAttribute(reader, attribute.getLocalName());
             }
             requiredAttributes.remove(attribute);
-            ((SimpleAttributeDefinition) ORBSubsystemDefinitions.valueOf(attribute.getLocalName())).parseAndSetParameter(
+            ((SimpleAttributeDefinition) JdkORBSubsystemDefinitions.valueOf(attribute.getLocalName())).parseAndSetParameter(
                     attrValue, node, reader);
         }
 
@@ -706,7 +486,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         this.writeSecurityConfig(writer, node);
 
         // write all defined generic properties.
-        String properties = ORBSubsystemConstants.PROPERTIES;
+        String properties = JdkORBSubsystemConstants.PROPERTIES;
         if (node.hasDefined(properties)) {
             this.writeGenericProperties(writer, node.get(properties));
         }
@@ -715,7 +495,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Writes the {@code orb} section of the JacORB subsystem configuration using the contents of the provided {@code ModelNode}
+     * Writes the {@code orb} section of the JdkORB subsystem configuration using the contents of the provided {@code ModelNode}
      * .
      * </p>
      *
@@ -725,29 +505,29 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      */
     private void writeORBConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
 
-        boolean writeORB = this.isWritable(node, ORBSubsystemDefinitions.ORB_ATTRIBUTES);
-        boolean writeORBConnection = this.isWritable(node, ORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
-        boolean writeORBInitializer = this.isWritable(node, ORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
+        boolean writeORB = this.isWritable(node, JdkORBSubsystemDefinitions.ORB_ATTRIBUTES);
+        boolean writeORBConnection = this.isWritable(node, JdkORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
+        boolean writeORBInitializer = this.isWritable(node, JdkORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
 
         // if no connection or initializers properties are available, just write the orb properties (if any) in an empty
         // element.
         if (!writeORBConnection && !writeORBInitializer) {
             if (writeORB) {
-                writer.writeEmptyElement(ORBSubsystemConstants.ORB);
-                this.writeAttributes(writer, node, ORBSubsystemDefinitions.ORB_ATTRIBUTES);
+                writer.writeEmptyElement(JdkORBSubsystemConstants.ORB);
+                this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.ORB_ATTRIBUTES);
             }
         }
         // otherwise write the orb element with the appropriate sub-elements.
         else {
-            writer.writeStartElement(ORBSubsystemConstants.ORB);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.ORB_ATTRIBUTES);
+            writer.writeStartElement(JdkORBSubsystemConstants.ORB);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.ORB_ATTRIBUTES);
             if (writeORBConnection) {
-                writer.writeEmptyElement(ORBSubsystemConstants.ORB_CONN);
-                this.writeAttributes(writer, node, ORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
+                writer.writeEmptyElement(JdkORBSubsystemConstants.ORB_CONN);
+                this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.ORB_CONN_ATTRIBUTES);
             }
             if (writeORBInitializer) {
-                writer.writeEmptyElement(ORBSubsystemConstants.ORB_INIT);
-                this.writeAttributes(writer, node, ORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
+                writer.writeEmptyElement(JdkORBSubsystemConstants.ORB_INIT);
+                this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES);
             }
             writer.writeEndElement();
         }
@@ -755,7 +535,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Writes the {@code poa} section of the JacORB subsystem configuration using the contents of the provided {@code ModelNode}
+     * Writes the {@code poa} section of the JdkORB subsystem configuration using the contents of the provided {@code ModelNode}
      * .
      * </p>
      *
@@ -765,29 +545,29 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      */
     private void writePOAConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
 
-        boolean writePOA = this.isWritable(node, ORBSubsystemDefinitions.POA_ATTRIBUTES);
-        boolean writePOARP = this.isWritable(node, ORBSubsystemDefinitions.POA_RP_ATTRIBUTES);
+        boolean writePOA = this.isWritable(node, JdkORBSubsystemDefinitions.POA_ATTRIBUTES);
+        boolean writePOARP = this.isWritable(node, JdkORBSubsystemDefinitions.POA_RP_ATTRIBUTES);
 
         // if no request processor properties are available, just write the poa properties (if any) in an empty element.
         if (!writePOARP) {
             if (writePOA) {
-                writer.writeEmptyElement(ORBSubsystemConstants.POA);
-                this.writeAttributes(writer, node, ORBSubsystemDefinitions.POA_ATTRIBUTES);
+                writer.writeEmptyElement(JdkORBSubsystemConstants.POA);
+                this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.POA_ATTRIBUTES);
             }
         }
         // otherwise write the poa element with the appropriate sub-elements.
         else {
-            writer.writeStartElement(ORBSubsystemConstants.POA);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.POA_ATTRIBUTES);
-            writer.writeEmptyElement(ORBSubsystemConstants.POA_RP);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.POA_RP_ATTRIBUTES);
+            writer.writeStartElement(JdkORBSubsystemConstants.POA);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.POA_ATTRIBUTES);
+            writer.writeEmptyElement(JdkORBSubsystemConstants.POA_RP);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.POA_RP_ATTRIBUTES);
             writer.writeEndElement();
         }
     }
 
     /**
      * <p>
-     * Writes the {@code naming} section of the JacORB subsystem configuration using the contents of the provided
+     * Writes the {@code naming} section of the JdkORB subsystem configuration using the contents of the provided
      * {@code ModelNode}.
      * </p>
      *
@@ -796,16 +576,16 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      * @throws XMLStreamException if an error occurs while writing the interop configuration.
      */
     private void writeNamingConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        boolean writeNaming = this.isWritable(node, ORBSubsystemDefinitions.NAMING_ATTRIBUTES);
+        boolean writeNaming = this.isWritable(node, JdkORBSubsystemDefinitions.NAMING_ATTRIBUTES);
         if (writeNaming) {
-            writer.writeEmptyElement(ORBSubsystemConstants.NAMING);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.NAMING_ATTRIBUTES);
+            writer.writeEmptyElement(JdkORBSubsystemConstants.NAMING);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.NAMING_ATTRIBUTES);
         }
     }
 
     /**
      * <p>
-     * Writes the {@code interop} section of the JacORB subsystem configuration using the contents of the provided
+     * Writes the {@code interop} section of the JdkORB subsystem configuration using the contents of the provided
      * {@code ModelNode}.
      * </p>
      *
@@ -814,16 +594,16 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      * @throws XMLStreamException if an error occurs while writing the interop configuration.
      */
     private void writeInteropConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        boolean writeInterop = this.isWritable(node, ORBSubsystemDefinitions.INTEROP_ATTRIBUTES);
+        boolean writeInterop = this.isWritable(node, JdkORBSubsystemDefinitions.INTEROP_ATTRIBUTES);
         if (writeInterop) {
-            writer.writeEmptyElement(ORBSubsystemConstants.INTEROP);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.INTEROP_ATTRIBUTES);
+            writer.writeEmptyElement(JdkORBSubsystemConstants.INTEROP);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.INTEROP_ATTRIBUTES);
         }
     }
 
     /**
      * <p>
-     * Writes the {@code security} section of the JacORB subsystem configuration using the contents of the provided
+     * Writes the {@code security} section of the JdkORB subsystem configuration using the contents of the provided
      * {@code ModelNode}.
      * </p>
      *
@@ -832,10 +612,10 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      * @throws XMLStreamException if an error occurs while writing the security configuration.
      */
     private void writeSecurityConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        boolean writeSecurity = this.isWritable(node, ORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
+        boolean writeSecurity = this.isWritable(node, JdkORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
         if (writeSecurity) {
             writer.writeEmptyElement(SECURITY);
-            this.writeAttributes(writer, node, ORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
+            this.writeAttributes(writer, node, JdkORBSubsystemDefinitions.SECURITY_ATTRIBUTES);
         }
     }
 
@@ -849,11 +629,11 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
      * @throws javax.xml.stream.XMLStreamException if an error occurs while writing the property elements.
      */
     private void writeGenericProperties(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(ORBSubsystemConstants.PROPERTIES);
+        writer.writeStartElement(JdkORBSubsystemConstants.PROPERTIES);
         for (Property prop : node.asPropertyList()) {
-            writer.writeEmptyElement(ORBSubsystemConstants.PROPERTY);
-            writer.writeAttribute(ORBSubsystemConstants.NAME, prop.getName());
-            writer.writeAttribute(ORBSubsystemConstants.PROPERTY_VALUE, prop.getValue().asString());
+            writer.writeEmptyElement(JdkORBSubsystemConstants.PROPERTY);
+            writer.writeAttribute(JdkORBSubsystemConstants.NAME, prop.getName());
+            writer.writeAttribute(JdkORBSubsystemConstants.PROPERTY_VALUE, prop.getValue().asString());
         }
         writer.writeEndElement();
     }
@@ -899,7 +679,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Enumeration of available JacORB subsystem namespaces.
+     * Enumeration of available JdkORB subsystem namespaces.
      * </p>
      *
      * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
@@ -964,7 +744,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Enumeration of the JacORB subsystem XML configuration elements.
+     * Enumeration of the JdkORB subsystem XML configuration elements.
      * </p>
      *
      * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
@@ -974,17 +754,17 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         UNKNOWN(null),
 
         // elements used to configure the ORB.
-        ORB(ORBSubsystemConstants.ORB), ORB_CONNECTION(ORBSubsystemConstants.ORB_CONN), ORB_INITIALIZERS(
-                ORBSubsystemConstants.ORB_INIT),
+        ORB(JdkORBSubsystemConstants.ORB), ORB_CONNECTION(JdkORBSubsystemConstants.ORB_CONN), ORB_INITIALIZERS(
+                JdkORBSubsystemConstants.ORB_INIT),
 
         // elements used to configure the POA.
-        POA(ORBSubsystemConstants.POA), POA_REQUEST_PROC(ORBSubsystemConstants.POA_RP),
+        POA(JdkORBSubsystemConstants.POA), POA_REQUEST_PROC(JdkORBSubsystemConstants.POA_RP),
 
         // elements used to configure the naming service, ORB interoperability and ORB security.
-        NAMING(ORBSubsystemConstants.NAMING), INTEROP(ORBSubsystemConstants.INTEROP), SECURITY(ORBSubsystemConstants.SECURITY),
+        NAMING(JdkORBSubsystemConstants.NAMING), INTEROP(JdkORBSubsystemConstants.INTEROP), SECURITY(JdkORBSubsystemConstants.SECURITY),
 
         // elements used to configure generic properties.
-        PROPERTIES(ORBSubsystemConstants.PROPERTIES), PROPERTY(ORBSubsystemConstants.PROPERTY);
+        PROPERTIES(JdkORBSubsystemConstants.PROPERTIES), PROPERTY(JdkORBSubsystemConstants.PROPERTY);
 
         private final String name;
 
@@ -1041,7 +821,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
 
     /**
      * <p>
-     * Enumeration of the JacORB subsystem XML configuration attributes.
+     * Enumeration of the JdkORB subsystem XML configuration attributes.
      * </p>
      *
      * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
@@ -1051,62 +831,62 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         UNKNOWN(null),
 
         // attributes of the orb element.
-        NAME(ORBSubsystemConstants.NAME), ORB_PRINT_VERSION(ORBSubsystemConstants.ORB_PRINT_VERSION), ORB_USE_IMR(
-                ORBSubsystemConstants.ORB_USE_IMR), ORB_USE_BOM(ORBSubsystemConstants.ORB_USE_BOM), ORB_CACHE_TYPECODES(
-                ORBSubsystemConstants.ORB_CACHE_TYPECODES), ORB_CACHE_POA_NAMES(ORBSubsystemConstants.ORB_CACHE_POA_NAMES), ORB_GIOP_MINOR_VERSION(
-                ORBSubsystemConstants.ORB_GIOP_MINOR_VERSION), ORB_SOCKET_BINDING(ORBSubsystemConstants.ORB_SOCKET_BINDING), ORB_SSL_SOCKET_BINDING(
-                ORBSubsystemConstants.ORB_SSL_SOCKET_BINDING), PERSISTENT_SERVER_ID(
-                ORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID),
+        NAME(JdkORBSubsystemConstants.NAME), ORB_PRINT_VERSION(JdkORBSubsystemConstants.ORB_PRINT_VERSION), ORB_USE_IMR(
+                JdkORBSubsystemConstants.ORB_USE_IMR), ORB_USE_BOM(JdkORBSubsystemConstants.ORB_USE_BOM), ORB_CACHE_TYPECODES(
+                JdkORBSubsystemConstants.ORB_CACHE_TYPECODES), ORB_CACHE_POA_NAMES(JdkORBSubsystemConstants.ORB_CACHE_POA_NAMES), ORB_GIOP_MINOR_VERSION(
+                JdkORBSubsystemConstants.ORB_GIOP_MINOR_VERSION), ORB_SOCKET_BINDING(JdkORBSubsystemConstants.ORB_SOCKET_BINDING), ORB_SSL_SOCKET_BINDING(
+                JdkORBSubsystemConstants.ORB_SSL_SOCKET_BINDING), PERSISTENT_SERVER_ID(
+                JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID),
 
         // attributes of the connection element.
-        ORB_CONN_RETRIES(ORBSubsystemConstants.ORB_CONN_RETRIES), ORB_CONN_RETRY_INTERVAL(
-                ORBSubsystemConstants.ORB_CONN_RETRY_INTERVAL), ORB_CONN_CLIENT_TIMEOUT(
-                ORBSubsystemConstants.ORB_CONN_CLIENT_TIMEOUT), ORB_CONN_SERVER_TIMEOUT(
-                ORBSubsystemConstants.ORB_CONN_SERVER_TIMEOUT), ORB_CONN_MAX_SERVER_CONNECTIONS(
-                ORBSubsystemConstants.ORB_CONN_MAX_SERVER_CONNECTIONS), ORB_CONN_MAX_MANAGED_BUF_SIZE(
-                ORBSubsystemConstants.ORB_CONN_MAX_MANAGED_BUF_SIZE), ORB_CONN_OUTBUF_SIZE(
-                ORBSubsystemConstants.ORB_CONN_OUTBUF_SIZE), ORB_CONN_OUTBUF_CACHE_TIMEOUT(
-                ORBSubsystemConstants.ORB_CONN_OUTBUF_CACHE_TIMEOUT),
+        ORB_CONN_RETRIES(JdkORBSubsystemConstants.ORB_CONN_RETRIES), ORB_CONN_RETRY_INTERVAL(
+                JdkORBSubsystemConstants.ORB_CONN_RETRY_INTERVAL), ORB_CONN_CLIENT_TIMEOUT(
+                JdkORBSubsystemConstants.ORB_CONN_CLIENT_TIMEOUT), ORB_CONN_SERVER_TIMEOUT(
+                JdkORBSubsystemConstants.ORB_CONN_SERVER_TIMEOUT), ORB_CONN_MAX_SERVER_CONNECTIONS(
+                JdkORBSubsystemConstants.ORB_CONN_MAX_SERVER_CONNECTIONS), ORB_CONN_MAX_MANAGED_BUF_SIZE(
+                JdkORBSubsystemConstants.ORB_CONN_MAX_MANAGED_BUF_SIZE), ORB_CONN_OUTBUF_SIZE(
+                JdkORBSubsystemConstants.ORB_CONN_OUTBUF_SIZE), ORB_CONN_OUTBUF_CACHE_TIMEOUT(
+                JdkORBSubsystemConstants.ORB_CONN_OUTBUF_CACHE_TIMEOUT),
 
         // attributes of the initializers element.
-        ORB_INIT_SECURITY(ORBSubsystemConstants.ORB_INIT_SECURITY), ORB_INIT_TRANSACTIONS(
-                ORBSubsystemConstants.ORB_INIT_TRANSACTIONS),
+        ORB_INIT_SECURITY(JdkORBSubsystemConstants.ORB_INIT_SECURITY), ORB_INIT_TRANSACTIONS(
+                JdkORBSubsystemConstants.ORB_INIT_TRANSACTIONS),
 
         // attributes of the poa element.
-        POA_MONITORING(ORBSubsystemConstants.POA_MONITORING), POA_QUEUE_WAIT(ORBSubsystemConstants.POA_QUEUE_WAIT), POA_QUEUE_MIN(
-                ORBSubsystemConstants.POA_QUEUE_MIN), POA_QUEUE_MAX(ORBSubsystemConstants.POA_QUEUE_MAX),
+        POA_MONITORING(JdkORBSubsystemConstants.POA_MONITORING), POA_QUEUE_WAIT(JdkORBSubsystemConstants.POA_QUEUE_WAIT), POA_QUEUE_MIN(
+                JdkORBSubsystemConstants.POA_QUEUE_MIN), POA_QUEUE_MAX(JdkORBSubsystemConstants.POA_QUEUE_MAX),
 
         // attributes of the request-processor element.
-        POA_REQUEST_PROC_POOL_SIZE(ORBSubsystemConstants.POA_RP_POOL_SIZE), POA_REQUEST_PROC_MAX_THREADS(
-                ORBSubsystemConstants.POA_RP_MAX_THREADS),
+        POA_REQUEST_PROC_POOL_SIZE(JdkORBSubsystemConstants.POA_RP_POOL_SIZE), POA_REQUEST_PROC_MAX_THREADS(
+                JdkORBSubsystemConstants.POA_RP_MAX_THREADS),
 
-        // attributes of the naming element - the ORB service will build the relevant JacORB properties from these values.
-        NAMING_EXPORT_CORBALOC(ORBSubsystemConstants.NAMING_EXPORT_CORBALOC), NAMING_ROOT_CONTEXT(
-                ORBSubsystemConstants.NAMING_ROOT_CONTEXT),
+        // attributes of the naming element - the ORB service will build the relevant JdkORB properties from these values.
+        NAMING_EXPORT_CORBALOC(JdkORBSubsystemConstants.NAMING_EXPORT_CORBALOC), NAMING_ROOT_CONTEXT(
+                JdkORBSubsystemConstants.NAMING_ROOT_CONTEXT),
 
         // attributes of the interop element.
-        INTEROP_SUN(ORBSubsystemConstants.INTEROP_SUN), INTEROP_COMET(ORBSubsystemConstants.INTEROP_COMET), INTEROP_IONA(
-                ORBSubsystemConstants.INTEROP_IONA), INTEROP_CHUNK_RMI_VALUETYPES(
-                ORBSubsystemConstants.INTEROP_CHUNK_RMI_VALUETYPES), INTEROP_LAX_BOOLEAN_ENCODING(
-                ORBSubsystemConstants.INTEROP_LAX_BOOLEAN_ENCODING), INTEROP_INDIRECTION_ENCODING_DISABLE(
-                ORBSubsystemConstants.INTEROP_INDIRECTION_ENCODING_DISABLE), INTEROP_STRICT_CHECK_ON_TC_CREATION(
-                ORBSubsystemConstants.INTEROP_STRICT_CHECK_ON_TC_CREATION),
+        INTEROP_SUN(JdkORBSubsystemConstants.INTEROP_SUN), INTEROP_COMET(JdkORBSubsystemConstants.INTEROP_COMET), INTEROP_IONA(
+                JdkORBSubsystemConstants.INTEROP_IONA), INTEROP_CHUNK_RMI_VALUETYPES(
+                JdkORBSubsystemConstants.INTEROP_CHUNK_RMI_VALUETYPES), INTEROP_LAX_BOOLEAN_ENCODING(
+                JdkORBSubsystemConstants.INTEROP_LAX_BOOLEAN_ENCODING), INTEROP_INDIRECTION_ENCODING_DISABLE(
+                JdkORBSubsystemConstants.INTEROP_INDIRECTION_ENCODING_DISABLE), INTEROP_STRICT_CHECK_ON_TC_CREATION(
+                JdkORBSubsystemConstants.INTEROP_STRICT_CHECK_ON_TC_CREATION),
 
         // attributes of the security element.
-        SECURITY_SUPPORT_SSL(ORBSubsystemConstants.SECURITY_SUPPORT_SSL), SECURITY_SECURITY_DOMAIN(
-                ORBSubsystemConstants.SECURITY_SECURITY_DOMAIN), SECURITY_ADD_COMPONENT_INTERCEPTOR(
-                ORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR), SECURITY_CLIENT_SUPPORTS(
-                ORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS), SECURITY_CLIENT_REQUIRES(
-                ORBSubsystemConstants.SECURITY_CLIENT_REQUIRES), SECURITY_SERVER_SUPPORTS(
-                ORBSubsystemConstants.SECURITY_SERVER_SUPPORTS), SECURITY_SERVER_REQUIRES(
-                ORBSubsystemConstants.SECURITY_SERVER_REQUIRES),
-        // if enabled the ORB service will configure JacORB to use the JBoss SSL socket factory classes by building the
+        SECURITY_SUPPORT_SSL(JdkORBSubsystemConstants.SECURITY_SUPPORT_SSL), SECURITY_SECURITY_DOMAIN(
+                JdkORBSubsystemConstants.SECURITY_SECURITY_DOMAIN), SECURITY_ADD_COMPONENT_INTERCEPTOR(
+                JdkORBSubsystemConstants.SECURITY_ADD_COMP_VIA_INTERCEPTOR), SECURITY_CLIENT_SUPPORTS(
+                JdkORBSubsystemConstants.SECURITY_CLIENT_SUPPORTS), SECURITY_CLIENT_REQUIRES(
+                JdkORBSubsystemConstants.SECURITY_CLIENT_REQUIRES), SECURITY_SERVER_SUPPORTS(
+                JdkORBSubsystemConstants.SECURITY_SERVER_SUPPORTS), SECURITY_SERVER_REQUIRES(
+                JdkORBSubsystemConstants.SECURITY_SERVER_REQUIRES),
+        // if enabled the ORB service will configure JdkORB to use the JBoss SSL socket factory classes by building the
         // appropriate properties.
-        SECURITY_USE_DOMAIN_SF(ORBSubsystemConstants.SECURITY_USE_DOMAIN_SF), SECURITY_USE_DOMAIN_SSF(
-                ORBSubsystemConstants.SECURITY_USE_DOMAIN_SSF),
+        SECURITY_USE_DOMAIN_SF(JdkORBSubsystemConstants.SECURITY_USE_DOMAIN_SF), SECURITY_USE_DOMAIN_SSF(
+                JdkORBSubsystemConstants.SECURITY_USE_DOMAIN_SSF),
 
         // attributes of the generic property element.
-        PROP_KEY(ORBSubsystemConstants.PROPERTY_KEY), PROP_VALUE(ORBSubsystemConstants.PROPERTY_VALUE);
+        PROP_KEY(JdkORBSubsystemConstants.PROPERTY_KEY), PROP_VALUE(JdkORBSubsystemConstants.PROPERTY_VALUE);
 
         private final String name;
 

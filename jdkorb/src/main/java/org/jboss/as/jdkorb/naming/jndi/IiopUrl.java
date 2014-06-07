@@ -32,7 +32,7 @@ import java.util.Vector;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 
 /**
  * Extract components of an "iiop" or "iiopname" URL.
@@ -91,13 +91,13 @@ public final class IiopUrl {
             } else {
                 int dot = hostPortVers.indexOf('.');
                 if (dot < 0) {
-                    throw ORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
+                    throw JdkORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
                 }
                 try {
                     major = Integer.parseInt(hostPortVers.substring(0, dot));
                     minor = Integer.parseInt(hostPortVers.substring(dot + 1, at));
                 } catch (NumberFormatException e) {
-                    throw ORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
+                    throw JdkORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
                 }
                 start = at + 1;  // skip '@' sign
             }
@@ -110,7 +110,7 @@ public final class IiopUrl {
             if (hostPortVers.startsWith("[", start)) {  // at IPv6 literal
                 int brac = hostPortVers.indexOf(']', start + 1);
                 if (brac < 0 || brac > slash) {
-                    throw ORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
+                    throw JdkORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
                 }
 
                 // include brackets
@@ -132,7 +132,7 @@ public final class IiopUrl {
                     port = Integer.parseInt(hostPortVers.
                             substring(start, slash));
                 } else {
-                    throw ORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
+                    throw JdkORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
                 }
             }
             start = slash;
@@ -173,7 +173,7 @@ public final class IiopUrl {
             oldFormat = true;
             addrStart = 7;
         } else {
-            throw ORBMessages.MESSAGES.invalidURL("iiop/iiopname", url);
+            throw JdkORBMessages.MESSAGES.invalidURL("iiop/iiopname", url);
         }
         int addrEnd = url.indexOf('/', addrStart);
         if (addrEnd < 0) {

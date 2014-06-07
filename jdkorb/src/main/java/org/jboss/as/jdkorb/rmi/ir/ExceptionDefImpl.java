@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ConstantDef;
@@ -249,7 +249,7 @@ class ExceptionDefImpl
     }
 
     public void members(StructMember[] arg) {
-        throw ORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JdkORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
     }
 
     // Package protected ---------------------------------------------

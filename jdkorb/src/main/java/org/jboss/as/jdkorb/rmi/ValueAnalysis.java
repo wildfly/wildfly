@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.ValueBase;
 
@@ -107,16 +107,16 @@ public class ValueAnalysis extends ContainerAnalysis {
         super.doAnalyze();
 
         if (cls == String.class)
-            throw ORBMessages.MESSAGES.cannotAnalyzeStringType();
+            throw JdkORBMessages.MESSAGES.cannotAnalyzeStringType();
 
         if (cls == Class.class)
-            throw ORBMessages.MESSAGES.cannotAnalyzeClassType();
+            throw JdkORBMessages.MESSAGES.cannotAnalyzeClassType();
 
         if (Remote.class.isAssignableFrom(cls))
-            throw ORBMessages.MESSAGES.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
+            throw JdkORBMessages.MESSAGES.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
 
         if (cls.getName().indexOf('$') != -1)
-            throw ORBMessages.MESSAGES.valueTypeCantBeProxy(cls.getName());
+            throw JdkORBMessages.MESSAGES.valueTypeCantBeProxy(cls.getName());
 
         externalizable = Externalizable.class.isAssignableFrom(cls);
 
@@ -150,7 +150,7 @@ public class ValueAnalysis extends ContainerAnalysis {
                 try {
                     serialPersistentFields = (ObjectStreamField[]) spf.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw ORBMessages.MESSAGES.unexpectedException(ex);
+                    throw JdkORBMessages.MESSAGES.unexpectedException(ex);
                 }
 
                 // Mark this in the fields array

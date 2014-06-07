@@ -420,7 +420,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         recoveryManagerServiceServiceBuilder.addDependencies(deps);
 
         if (jts) {
-            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
+            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jdkorb", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
         }
 
         controllers.add(recoveryManagerServiceServiceBuilder
@@ -458,7 +458,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //if jts is enabled we need the ORB
         if (jts) {
-            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
+            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jdkorb", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
             transactionManagerServiceServiceBuilder.addDependency(CorbaNamingService.SERVICE_NAME);
         }
 

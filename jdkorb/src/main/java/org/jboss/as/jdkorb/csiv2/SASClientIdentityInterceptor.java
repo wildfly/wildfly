@@ -25,8 +25,8 @@ package org.jboss.as.jdkorb.csiv2;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.security.RunAs;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -117,10 +117,10 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                 return;
             }
 
-            if (ORBLogger.ROOT_LOGGER.isTraceEnabled()) {
+            if (JdkORBLogger.ROOT_LOGGER.isTraceEnabled()) {
                 StringBuilder tmp = new StringBuilder();
                 CSIv2Util.toString(secMech, tmp);
-                ORBLogger.ROOT_LOGGER.trace(tmp);
+                JdkORBLogger.ROOT_LOGGER.trace(tmp);
             }
 
             // these "null tokens" will be changed if needed.
@@ -150,7 +150,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                     try {
                         encapsulatedEncodedName = codec.encode_value(any);
                     } catch (InvalidTypeForEncoding e) {
-                        throw ORBMessages.MESSAGES.unexpectedException(e);
+                        throw JdkORBMessages.MESSAGES.unexpectedException(e);
                     }
 
                     // create identity token.
@@ -199,7 +199,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                 ri.add_request_service_context(sc, true /*replace existing context*/);
             }
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 
@@ -217,18 +217,18 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
             // At this point contextBody should contain a CompleteEstablishContext message, which does not require any
             // treatment. ContextError messages should arrive via receive_exception().
 
-            ORBLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
+            JdkORBLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                throw ORBMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
+                throw JdkORBMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -242,13 +242,13 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
             // At this point contextBody may contain either a CompleteEstablishContext message or a ContextError message.
             // Neither message requires any treatment. We decoded the contextbody just to check that it contains a
             // well-formed message.
-            ORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
+            JdkORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         }
     }
 

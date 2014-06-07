@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
-import org.jboss.as.jdkorb.ORBSubsystemConstants;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -190,7 +190,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         try {
             encapsulatedErrorToken = codec.encode_value(any);
         } catch (InvalidTypeForEncoding e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
 
         // initialize msgBodyCtxError.
@@ -323,7 +323,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
     @Override
     public void receive_request(ServerRequestInfo ri) {
-        ORBLogger.ROOT_LOGGER.traceReceiveRequest(ri.operation());
+        JdkORBLogger.ROOT_LOGGER.traceReceiveRequest(ri.operation());
 
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
@@ -351,7 +351,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                     // should not happen, as stateful context requests are always negotiated down to stateless in this implementation.
                     long contextId = contextBody.in_context_msg().client_context_id;
                     threadLocal.sasReply = createMsgCtxError(contextId, 4 /* major status: no context */);
-                    throw ORBMessages.MESSAGES.missingSASContext();
+                    throw JdkORBMessages.MESSAGES.missingSASContext();
                 } else if (contextBody.discriminator() == MTEstablishContext.value) {
                     EstablishContext message = contextBody.establish_msg();
                     threadLocal.contextId = message.client_context_id;
@@ -359,26 +359,26 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
 
                     if (message.client_authentication_token != null && message.client_authentication_token.length > 0) {
-                        ORBLogger.ROOT_LOGGER.authTokenReceived();
+                        JdkORBLogger.ROOT_LOGGER.authTokenReceived();
                         InitialContextToken authToken = CSIv2Util.decodeInitialContextToken(
                                 message.client_authentication_token, codec);
                         if (authToken == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw ORBMessages.MESSAGES.errorDecodingInitContextToken();
+                            throw JdkORBMessages.MESSAGES.errorDecodingInitContextToken();
                         }
                         threadLocal.incomingUsername = authToken.username;
                         threadLocal.incomingPassword = authToken.password;
                         threadLocal.incomingTargetName = CSIv2Util.decodeGssExportedName(authToken.target_name);
                         if (threadLocal.incomingTargetName == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw ORBMessages.MESSAGES.errorDecodingTargetInContextToken();
+                            throw JdkORBMessages.MESSAGES.errorDecodingTargetInContextToken();
                         }
 
 
                         threadLocal.authenticationTokenReceived = true;
                     }
                     if (message.identity_token != null) {
-                        ORBLogger.ROOT_LOGGER.identityTokenReceived();
+                        JdkORBLogger.ROOT_LOGGER.identityTokenReceived();
                         threadLocal.incomingIdentity = message.identity_token;
                         if (message.identity_token.discriminator() == ITTPrincipalName.value) {
                             // Extract the RFC2743-encoded name from CDR encapsulation.
@@ -391,7 +391,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
                             if (threadLocal.incomingPrincipalName == null) {
                                 threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                                throw ORBMessages.MESSAGES.errorDecodingPrincipalName();
+                                throw JdkORBMessages.MESSAGES.errorDecodingPrincipalName();
                             }
                         }
                     }
@@ -403,15 +403,15 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JdkORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JdkORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
         }
     }
 
     @Override
     public void send_reply(ServerRequestInfo ri) {
-        ORBLogger.ROOT_LOGGER.traceSendReply(ri.operation());
+        JdkORBLogger.ROOT_LOGGER.traceSendReply(ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         if (threadLocal.sasReply != null) {
@@ -419,14 +419,14 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw ORBMessages.MESSAGES.unexpectedException(e);
+                throw JdkORBMessages.MESSAGES.unexpectedException(e);
             }
         }
     }
 
     @Override
     public void send_exception(ServerRequestInfo ri) {
-        ORBLogger.ROOT_LOGGER.traceSendException(ri.operation());
+        JdkORBLogger.ROOT_LOGGER.traceSendException(ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         // The check below was added for interoperability  with IONA's ASP 6.0, which throws an
@@ -435,13 +435,13 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         // accept (CompleteEstablishContext) reply together with an exception.
         //
         // The CSIv2 spec does not explicitly disallow an SAS accept in an IIOP exception reply.
-        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(ORBSubsystemConstants.INTEROP_IONA));
+        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JdkORBSubsystemConstants.INTEROP_IONA));
         if (threadLocal.sasReply != null && !interopIONA) {
             try {
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw ORBMessages.MESSAGES.unexpectedException(e);
+                throw JdkORBMessages.MESSAGES.unexpectedException(e);
             }
         }
     }

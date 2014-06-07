@@ -46,7 +46,7 @@ import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.NO_PERMISSION;
 
 /**
- * The jacorb subsystem is using message IDs in the range 16300-16499. This file is using the subset 16400-16499 for
+ * The jdkorb subsystem is using message IDs in the range 16300-16499. This file is using the subset 16400-16499 for
  * exception messages.
  * See http://http://community.jboss.org/wiki/LoggingIds for the full list of currently reserved JBAS message id blocks.
  *
@@ -54,9 +54,9 @@ import org.omg.CORBA.NO_PERMISSION;
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
 @MessageBundle(projectCode = "JBAS")
-public interface ORBMessages {
+public interface JdkORBMessages {
 
-    ORBMessages MESSAGES = Messages.getBundle(ORBMessages.class);
+    JdkORBMessages MESSAGES = Messages.getBundle(JdkORBMessages.class);
 
     @Message(id = 16400, value = "SSL support has been enabled but no security domain has been specified")
     OperationFailedException noSecurityDomainSpecified();
@@ -335,8 +335,8 @@ public interface ORBMessages {
     StartException errorActivatingPOA(@Param Throwable cause);
 
     @Message(id = 16494, value = "Cannot use the value 'client' for 'security'. Instead set 'security' to be 'off' and set both the " +
-                "'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.CSIv2Initializer' " +
-                "and 'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.SASClientInitializer' properties to be \"\"")
+                "'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jdkorb.csiv2.CSIv2Initializer' " +
+                "and 'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jdkorb.csiv2.SASClientInitializer' properties to be \"\"")
     String cannotUseSecurityClient();
 
 }

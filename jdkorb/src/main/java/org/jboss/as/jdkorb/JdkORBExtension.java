@@ -23,8 +23,8 @@
 package org.jboss.as.jdkorb;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
-import static org.jboss.as.jdkorb.ORBSubsystemConstants.IDENTITY;
-import static org.jboss.as.jdkorb.ORBSubsystemConstants.SECURITY;
+import static org.jboss.as.jdkorb.JdkORBSubsystemConstants.IDENTITY;
+import static org.jboss.as.jdkorb.JdkORBSubsystemConstants.SECURITY;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -52,32 +52,33 @@ import org.jboss.dmr.ModelType;
 
 /**
  * <p>
- * The JacORB extension implementation.
+ * The JdkORB extension implementation.
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class ORBExtension implements Extension {
+public class JdkORBExtension implements Extension {
 
-    private static final ORBSubsystemParser PARSER = ORBSubsystemParser.INSTANCE;
+    private static final JdkORBSubsystemParser PARSER = JdkORBSubsystemParser.INSTANCE;
 
     public static final String SUBSYSTEM_NAME = "jdkorb";
 
-    private static final String RESOURCE_NAME = ORBExtension.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = JdkORBExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ORBExtension.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JdkORBExtension.class.getClassLoader(), true, false);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(ORBSubsystemResource.INSTANCE);
+        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JdkORBSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
 
@@ -89,7 +90,7 @@ public class ORBExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ORBSubsystemParser.Namespace.JdkORB_1_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JdkORBSubsystemParser.Namespace.JdkORB_1_0.getUriString(), PARSER);
     }
 
     /**
@@ -100,7 +101,7 @@ public class ORBExtension implements Extension {
     protected static void registerTransformers(final SubsystemRegistration subsystem) {
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
         final Set<String> expressionKeys = new HashSet<String>();
-        for(final AttributeDefinition def : ORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
+        for(final AttributeDefinition def : JdkORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
             if(def.isAllowExpression()) {
                 expressionKeys.add(def.getName());
             }
@@ -112,13 +113,13 @@ public class ORBExtension implements Extension {
 
                 @Override
                 public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return ORBMessages.MESSAGES.cannotUseSecurityClient();
+                    return JdkORBMessages.MESSAGES.cannotUseSecurityClient();
                 }
 
                 @Override
                 protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
                         TransformationContext context) {
-                    return attributeValue.getType() == ModelType.STRING && attributeValue.asString().equals(ORBSubsystemConstants.CLIENT);
+                    return attributeValue.getType() == ModelType.STRING && attributeValue.asString().equals(JdkORBSubsystemConstants.CLIENT);
                 }
             }, SECURITY)
             .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
@@ -138,7 +139,7 @@ public class ORBExtension implements Extension {
     }
 
     private static ModelNode replaceSecurityClient(ModelNode model) {
-        if (model.hasDefined(SECURITY) && model.get(SECURITY).asString().equals(ORBSubsystemConstants.CLIENT)) {
+        if (model.hasDefined(SECURITY) && model.get(SECURITY).asString().equals(JdkORBSubsystemConstants.CLIENT)) {
             //security=CLIENT in the new model == security=OFF plus these extra initializers in the old model
             //Since the write-attribute is restart-required I am not doing anything for the write-attribute operation
             model.get(SECURITY).set("off");

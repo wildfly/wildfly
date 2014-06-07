@@ -25,8 +25,8 @@ package org.jboss.as.jdkorb.csiv2;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
-import org.jboss.as.jdkorb.ORBLogger;
-import org.jboss.as.jdkorb.ORBMessages;
+import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.JdkORBMessages;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
@@ -159,7 +159,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
         }
         //} catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
             catch (Exception e) {
-            throw ORBMessages.MESSAGES.unexpectedException(e);
+            throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }
     }
 
@@ -176,18 +176,18 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
 
             // At this point contextBody should contain a CompleteEstablishContext message, which does not require any
             // treatment. ContextError messages should arrive via receive_exception().
-            ORBLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
+            JdkORBLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                throw ORBMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
+                throw JdkORBMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -201,14 +201,14 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
             // At this point contextBody may contain either a CompleteEstablishContext message or a ContextError message.
             // Neither message requires any treatment. We decoded the context body just to check that it contains
             // a well-formed message.
-            ORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
+            JdkORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
 
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw ORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);        }
+            throw JdkORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);        }
     }
 
     @Override
