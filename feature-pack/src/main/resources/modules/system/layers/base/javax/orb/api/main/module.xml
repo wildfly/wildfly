@@ -28,6 +28,5 @@
     
     <dependencies>
       <module name="sun.jdk"/>
-      <module name="javax.rmi.api"/>
     </dependencies>
 </module>
