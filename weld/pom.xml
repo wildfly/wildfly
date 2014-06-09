@@ -211,8 +211,23 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ejb-spi</artifactId>
         </dependency>
     </dependencies>
 </project>

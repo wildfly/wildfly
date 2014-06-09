@@ -114,7 +114,7 @@
         <version.javax.mail>1.5.1</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
-        <version.jaxen>1.1.3</version.jaxen>
+        <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA</version.jboss.jaxbintros>
         <version.joda-time>1.6.2</version.joda-time>
         <version.junit>4.11</version.junit>
@@ -131,7 +131,7 @@
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.maven>3.2.1</version.org.apache.maven>
         <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
+        <version.org.apache.myfaces.core>2.1.12</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
         <version.org.apache.santuario>1.5.6</version.org.apache.santuario>
@@ -268,6 +268,7 @@
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver> <!-- Apache xml-resolver -->
+        <version.xml-apis>1.4.01</version.xml-apis>
         <version.xom>1.2.5</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
@@ -1614,6 +1615,10 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1655,6 +1660,18 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-beanutils</artifactId>
+                        <groupId>commons-beanutils</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>javax.servlet</artifactId>
+                        <groupId>servlet-api</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1770,6 +1787,10 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2242,6 +2263,14 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>commons-httpclient</groupId>
+                        <artifactId>commons-httpclient</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -2253,6 +2282,10 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ca.juliusdavies</groupId>
+                        <artifactId>not-yet-commons-ssl</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2334,6 +2367,38 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-collections</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-codec</groupId>
+                        <artifactId>commons-codec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-digester</groupId>
+                        <artifactId>commons-digester</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.myfaces.core</groupId>
+                        <artifactId>myfaces-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2787,6 +2852,11 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -2895,8 +2965,8 @@
                 <version>${version.org.jboss.jboss-common-core}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2945,6 +3015,10 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                        <artifactId>shrinkwrap-resolver-depchain</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2996,10 +3070,10 @@
               <artifactId>arquillian-junit-container</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
               <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
+                  <exclusion>
+                      <groupId>commons-logging</groupId>
+                      <artifactId>commons-logging</artifactId>
+                  </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3073,12 +3147,6 @@
               <groupId>org.jboss.arquillian.testng</groupId>
               <artifactId>arquillian-testng-container</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
-              <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -3142,8 +3210,20 @@
                 <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.ironjacamar</groupId>
+                        <artifactId>ironjacamar-spec-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.resource</groupId>
+                        <artifactId>jboss-connector-api_1.5_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3247,6 +3327,11 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3343,6 +3428,10 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3355,6 +3444,10 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3792,6 +3885,14 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.web</groupId>
+                        <artifactId>jbossweb</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3990,6 +4091,10 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4055,6 +4160,14 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4150,6 +4263,18 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-beanutils</groupId>
+                        <artifactId>commons-beanutils</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jboss.jaxbintros</groupId>
+                        <artifactId>jboss-jaxb-intros</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4368,6 +4493,22 @@
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>picketbox-spi-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4494,6 +4635,12 @@
                 <groupId>xml-resolver</groupId>
                 <artifactId>xml-resolver</artifactId>
                 <version>${version.xml-resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>${version.xml-apis}</version>
             </dependency>
 
             <dependency>

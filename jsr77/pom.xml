@@ -65,6 +65,14 @@
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ee</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.spec.javax.management.j2ee</groupId>
             <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
         </dependency>
