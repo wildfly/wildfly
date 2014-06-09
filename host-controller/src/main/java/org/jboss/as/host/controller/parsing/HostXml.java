@@ -927,6 +927,7 @@ public class HostXml extends CommonXml {
                         }
                         case DOMAIN_1_5: {
                             parseRemoteDomainController2_0(reader, address, expectedNs, list, false);
+                            break;
                         }
                         default: {
                             parseRemoteDomainController2_0(reader, address, expectedNs, list, true);
