@@ -16,17 +16,6 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-rem Read an optional configuration file.
-if "x%DOMAIN_CONF%" == "x" (
-   set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
-)
-if exist "%DOMAIN_CONF%" (
-   echo Calling "%DOMAIN_CONF%"
-   call "%DOMAIN_CONF%" %*
-) else (
-   echo Config file not found "%DOMAIN_CONF%"
-)
-
 pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
@@ -45,6 +34,17 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
    echo       JBOSS_HOME: "%JBOSS_HOME%"
    echo.
+)
+
+rem Read an optional configuration file.
+if "x%DOMAIN_CONF%" == "x" (
+   set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
+)
+if exist "%DOMAIN_CONF%" (
+   echo Calling "%DOMAIN_CONF%"
+   call "%DOMAIN_CONF%" %*
+) else (
+   echo Config file not found "%DOMAIN_CONF%"
 )
 
 set DIRNAME=
