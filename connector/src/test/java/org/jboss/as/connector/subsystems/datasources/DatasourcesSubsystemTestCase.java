@@ -50,6 +50,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -133,6 +134,13 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+        public void testTransformerWF8() throws Exception {
+            testTransformer("datasources-full-no-tracking.xml", ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, ModelVersion.create(2, 0, 0));
+        }
+
+
+
 
     /**
      * Tests transformation of model from latest version into one passed into modelVersion parameter.
@@ -141,48 +149,34 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     private void testTransformer(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource(subsystemXml);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+        LegacyKernelServicesInitializer initializer =builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion);
+        if (controllerVersion.equals(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL)) {
+            initializer.addMavenResourceURL("org.wildfly:wildfly-connector:" + controllerVersion.getMavenGavVersion());
+        } else {
+            initializer.addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion());
+        }
+        initializer.addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
                 .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
-                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
-                    @Override
-                    public ModelNode fixModel(ModelNode modelNode) {
-                        //Replace the value used in the xml
-                        modelNode.get(Constants.XA_DATASOURCE, "complexXaDs_Pool").remove(Constants.JTA.getName());
-                        //These two are true in the original model but get removed by the transformers, so they default to false. Set them to true
-                        modelNode.get(Constants.XA_DATASOURCE, "complexXaDs_Pool", Constants.STATISTICS_ENABLED.getName()).set(true);
-                        modelNode.get(Constants.DATA_SOURCE, "complexDs_Pool", Constants.STATISTICS_ENABLED.getName()).set(true);
-                        return modelNode;
 
-                    }
-                });
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
-
-            @Override
-            public ModelNode fixModel(ModelNode modelNode) {
-                Assert.assertTrue(modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
-                //Replace the value used in the xml
-                modelNode.get(Constants.XA_DATASOURCE, "complexXaDs_Pool").remove(Constants.JTA.getName());
-                //modelNode.get(Constants.DATA_SOURCE, "complexDs_Pool").get(Constants.STATISTICS_ENABLED.getName()).set(false);
-                //modelNode.get(Constants.XA_DATASOURCE, "complexXaDs_Pool").get(Constants.STATISTICS_ENABLED.getName()).set(false);
-                return modelNode;
-
-            }
-        });
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                        .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), FAILED_TRANSFORMER_2_0_0)
+                        .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_2_0_0)
+        );
     }
 
 
@@ -262,6 +256,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
             .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED))
             .build();
+
+    private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_2_0_0 =
+                FailedOperationTransformationConfig.ChainedConfig.createBuilder(Constants.TRACKING)
+                .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED))
+                .build();
 
     private static class NonWritableChainedConfig extends FailedOperationTransformationConfig.ChainedConfig {
 
