@@ -142,7 +142,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case LOGGING_1_1:
                 case LOGGING_1_2:
                 case LOGGING_1_3:
-                case LOGGING_2_0: {
+                case LOGGING_2_0:
+                case LOGGING_3_0:  {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ADD_LOGGING_API_DEPENDENCIES:{

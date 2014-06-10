@@ -50,7 +50,7 @@
     <!-- This is the standard full-ha profile from the original domain.xml -->
     <profiles>
         <profile name="full-ha">
-            <subsystem xmlns="urn:jboss:domain:logging:2.0">
+            <subsystem xmlns="urn:jboss:domain:logging:3.0">
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
                     <formatter>
@@ -215,7 +215,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector 
+                      ~                 the socketbinding referenced by the EJB remoting connector
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -468,7 +468,7 @@
                                     <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                                 </login-module>
                             </login-module-stack>
-                            <!-- 
+                            <!--
                                 For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
                                 the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule
                              -->
@@ -521,8 +521,8 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:weld:2.0"/>
         </profile>
-        
-        <!-- 
+
+        <!--
             This is the standard full-ha profile from the original domain.xml with adjustments made to be able to start up
             7.1.x slaves.
             The batch, io and undertow subsystems have been removed, and the web subsystem has been added.
@@ -532,8 +532,8 @@
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
                     <formatter>
-                        <!--  
-                           This does not exist on 7.1.x, use pattern-formatter instead                        
+                        <!--
+                           This does not exist on 7.1.x, use pattern-formatter instead
                         <named-formatter name="COLOR-PATTERN"/>
                          -->
                         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
@@ -541,8 +541,8 @@
                 </console-handler>
                 <periodic-rotating-file-handler name="FILE" autoflush="true">
                     <formatter>
-                        <!--  
-                           This does not exist on 7.1.x, use pattern-formatter instead                        
+                        <!--
+                           This does not exist on 7.1.x, use pattern-formatter instead
                         <named-formatter name="PATTERN"/>
                          -->
                         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
@@ -577,7 +577,7 @@
                     </handlers>
                 </root-logger>
                 <!--
-                This does not exist on 7.1.x 
+                This does not exist on 7.1.x
                 <formatter name="PATTERN">
                     <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
@@ -606,7 +606,7 @@
             <subsystem xmlns="urn:jboss:domain:ee:2.0">
                 <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
                 <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
-                <!-- 
+                <!--
                   This does not exist on 7.1.x
                 <concurrent>
                     <default-context-service/>
@@ -649,7 +649,7 @@
                         <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
                     </data-stores>
                 </timer-service>
-                <!-- This does not exist on 7.1.x, use the standard remoting one instead 
+                <!-- This does not exist on 7.1.x, use the standard remoting one instead
                 <remote connector-ref="http-remoting-connector" thread-pool-name="default"/>
                  -->
                  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
@@ -689,7 +689,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector 
+                      ~                 the socketbinding referenced by the EJB remoting connector
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true" statistics-enabled="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics-enabled="true">
@@ -745,7 +745,7 @@
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
                     <protocol type="PING"/>
-                     <!-- 
+                     <!--
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                      <protocol type="MERGE3"/>
@@ -754,13 +754,13 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD_ALL"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
                      -->
                     <protocol type="pbcast.NAKACK"/>
-                    <!--  
+                    <!--
                         UNICAST3 does not exist in 7.1.x, so use UNICAST2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
@@ -776,7 +776,7 @@
                 <stack name="tcp">
                     <transport type="TCP" socket-binding="jgroups-tcp"/>
                     <protocol type="MPING" socket-binding="jgroups-mping"/>
-                     <!-- 
+                     <!--
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                      <protocol type="MERGE3"/>
@@ -785,13 +785,13 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
                      -->
                     <protocol type="pbcast.NAKACK"/>
-                    <!--  
+                    <!--
                         UNICAST3 does not exist in 7.1.x, so use UNICAST2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
@@ -891,7 +891,7 @@
                             </entries>
                         </connection-factory>
                         <!--
-                        This does not exist on 7.1.x 
+                        This does not exist on 7.1.x
                         <connection-factory name="ServletConnectionFactory">
                             <connectors>
                                 <connector-ref connector-name="servlet"/>
@@ -940,7 +940,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0">
-                <!-- This does not exist on 7.1.x, set up a standard connector instead 
+                <!-- This does not exist on 7.1.x, set up a standard connector instead
                 <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
                  -->
                  <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -974,7 +974,7 @@
                          <authentication-jaspi>
                             <login-module-stack name="lm-stack">
                                 <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
-                                <!-- System properties are rejected, just hardcode the paths 
+                                <!-- System properties are rejected, just hardcode the paths
                                     <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
                                     <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                                  -->
@@ -982,7 +982,7 @@
                                     <module-option name="rolesProperties" value="/application-roles.properties"/>
                                 </login-module>
                             </login-module-stack>
-                            <!-- 
+                            <!--
                                 For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
                                 the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule. Also the 'module' attribue is
                                 not supported
@@ -991,7 +991,7 @@
                                          flag="optional">
                             </auth-module>
                         </authentication-jaspi>
-                    </security-domain>                    
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
@@ -1021,26 +1021,26 @@
                         <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
                     </pre-handler-chain>
                 </endpoint-config>
-                <!-- This does not exist on 7.1.x 
+                <!-- This does not exist on 7.1.x
                 <client-config name="Standard-Client-Config"/>
                  -->
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
-        </profile>    
-        
-        
-        <!-- 
+        </profile>
+
+
+        <!--
             This is the standard full-ha profile from the original domain.xml with adjustments made to be able to start up
             7.2.x slaves.
-            The batch, io and undertow subsystems have been removed, and the web subsystem has been added.            
-        -->                
+            The batch, io and undertow subsystems have been removed, and the web subsystem has been added.
+        -->
         <profile name="full-ha-7.2.x">
             <subsystem xmlns="urn:jboss:domain:logging:2.0">
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
                     <formatter>
-                        <!--  
-                           This does not exist on 7.2.x, use pattern-formatter instead                        
+                        <!--
+                           This does not exist on 7.2.x, use pattern-formatter instead
                         <named-formatter name="COLOR-PATTERN"/>
                          -->
                         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
@@ -1048,8 +1048,8 @@
                 </console-handler>
                 <periodic-rotating-file-handler name="FILE" autoflush="true">
                     <formatter>
-                        <!--  
-                           This does not exist on 7.2.x, use pattern-formatter instead                        
+                        <!--
+                           This does not exist on 7.2.x, use pattern-formatter instead
                         <named-formatter name="PATTERN"/>
                          -->
                         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
@@ -1113,7 +1113,7 @@
             <subsystem xmlns="urn:jboss:domain:ee:2.0">
                 <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
                 <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
-                <!-- 
+                <!--
                   This does not exist on 7.2.x
                 <concurrent>
                     <default-context-service/>
@@ -1128,7 +1128,7 @@
                     <stateless>
                         <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
                     </stateless>
-                    <!-- 
+                    <!--
                      passivation-disabled-cache-ref is not understood on 7.2.x
                     <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered" passivation-disabled-cache-ref="simple"/>
                      -->
@@ -1160,7 +1160,7 @@
                         <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
                     </data-stores>
                 </timer-service>
-                <!-- This does not exist on 7.1.x, use the standard remoting one instead 
+                <!-- This does not exist on 7.1.x, use the standard remoting one instead
                 <remote connector-ref="http-remoting-connector" thread-pool-name="default"/>
                  -->
                  <remote connector-ref="remoting-connector" thread-pool-name="default"/>
@@ -1200,7 +1200,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector 
+                      ~                 the socketbinding referenced by the EJB remoting connector
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true" statistics-enabled="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics-enabled="true">
@@ -1261,7 +1261,7 @@
                     <protocol type="FD_ALL"/>
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="pbcast.NAKACK2"/>
-                    <!--  
+                    <!--
                         UNICAST3 does not exist in 7.2.x, so use UNICAST2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
@@ -1282,7 +1282,7 @@
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="pbcast.NAKACK2"/>
-                    <!--  
+                    <!--
                         UNICAST3 does not exist in 7.2.x, so use UNICAST2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
@@ -1381,7 +1381,7 @@
                                 <entry name="java:/ConnectionFactory"/>
                             </entries>
                         </connection-factory>
-                        <!-- This does not exist on 7.2.x 
+                        <!-- This does not exist on 7.2.x
                         <connection-factory name="ServletConnectionFactory">
                             <connectors>
                                 <connector-ref connector-name="servlet"/>
@@ -1430,7 +1430,7 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0">
-                <!-- This does not exist on 7.1.x, set up a standard connector instead 
+                <!-- This does not exist on 7.1.x, set up a standard connector instead
                 <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
                  -->
                  <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
@@ -1467,7 +1467,7 @@
                                     <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                                 </login-module>
                             </login-module-stack>
-                            <!-- 
+                            <!--
                                 For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
                                 the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule. Also the 'module' attribue is
                                 not supported
@@ -1510,16 +1510,16 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
         </profile>
-        
+
     </profiles>
     <!--
-      ~ 
+      ~
       ~          Named interfaces that can be referenced elsewhere in the configuration. The configuration
       ~          for how to associate these logical names with an actual network interface can either
       ~          be specified here or can be declared on a per-host basis in the equivalent element in host.xml.
-      ~ 
+      ~
       ~          These default configurations require the binding specification to be done in host.xml.
-      ~     
+      ~
       -->
     <interfaces>
         <interface name="management"/>
@@ -1615,7 +1615,7 @@
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
-        </socket-binding-group>        
+        </socket-binding-group>
         <socket-binding-group name="full-ha-sockets-7.2.x" default-interface="public">
             <!-- Needed for server groups using the 'full-ha-7.1.x' profile  -->
             <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
@@ -1638,7 +1638,7 @@
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
-        </socket-binding-group>      
+        </socket-binding-group>
     </socket-binding-groups>
     <server-groups>
         <server-group name="main-server-group" profile="full-ha">
