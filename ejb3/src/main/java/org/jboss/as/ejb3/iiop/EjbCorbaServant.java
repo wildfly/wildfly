@@ -61,6 +61,7 @@ import org.jboss.security.SimplePrincipal;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.ORB;
+import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.InvokeHandler;
 import org.omg.CORBA.portable.OutputStream;
@@ -185,19 +186,21 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         this.home = home;
         this.securityDomain = securityDomain;
 
-        SASCurrent sasCurrent = null;
-//        try {
-//            sasCurrent = (SASCurrent) this.orb.resolve_initial_references("SASCurrent");
-//        } catch (InvalidName invalidName) {
-//            sasCurrent = null;
-//        }
+        SASCurrent sasCurrent;
+        try {
+            Object o=this.orb.resolve_initial_references("SASCurrent");
+            sasCurrent = (SASCurrent) o;
+        } catch (InvalidName invalidName) {
+            sasCurrent = null;
+        }
        this.sasCurrent = sasCurrent;
         org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent = null;
-//        try {
-//            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
-//        } catch (InvalidName invalidName) {
-//            inboundTxCurrent = null;
-//        }
+        try {
+            Object o = this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
+            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) o;
+        } catch (InvalidName invalidName) {
+            inboundTxCurrent = null;
+        }
         this.inboundTxCurrent = inboundTxCurrent;
     }
 

@@ -103,8 +103,6 @@ public class CorbaORBService implements Service<ORB> {
                 InetSocketAddress address = this.jdkORBSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
-                properties.setProperty(ORBConstants.INITIAL_HOST_PROPERTY, address.getAddress().getHostAddress());
-                properties.setProperty(ORBConstants.INITIAL_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_NAME_SERVICE_NAME, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);

@@ -247,8 +247,6 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
     private void setupInitializers(Properties props) {
         List<String> orbInitializers = new ArrayList<String>();
 
-        orbInitializers.add("org.jboss.as.jdkorb.fixme.MockInitializer");
-
         // check which groups of initializers are to be installed.
         String installSecurity = (String) props.remove(JdkORBSubsystemConstants.ORB_INIT_SECURITY);
         if (installSecurity.equalsIgnoreCase("identity")) {
