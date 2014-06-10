@@ -22,11 +22,17 @@
 
 package org.jboss.as.messaging.deployment;
 
+import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.enterprise.inject.spi.ProcessInjectionTarget;
+
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.weld.injection.ForwardingInjectionTarget;
 
 /**
  * CDI extension to provide injection of JMSContext resources.
@@ -35,8 +41,32 @@ import javax.enterprise.inject.spi.Extension;
  */
 public class JMSCDIExtension implements Extension {
 
+    private final PropertyReplacer propertyReplacer;
+
+    public JMSCDIExtension(PropertyReplacer propertyReplacer) {
+        this.propertyReplacer = propertyReplacer;
+    }
+
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
         AnnotatedType<JMSContextProducer> producer = bm.createAnnotatedType(JMSContextProducer.class);
         bbd.addAnnotatedType(producer);
+    }
+
+    public void wrapInjectionTarget(@Observes ProcessInjectionTarget<JMSContextProducer> event)
+    {
+        final InjectionTarget<JMSContextProducer> injectionTarget = event.getInjectionTarget();
+        event.setInjectionTarget(new ForwardingInjectionTarget<JMSContextProducer>() {
+
+            @Override
+            public void inject(JMSContextProducer instance, CreationalContext<JMSContextProducer> ctx) {
+                super.inject(instance, ctx);
+                instance.setPropertyReplacer(propertyReplacer);
+            }
+
+            @Override
+            protected InjectionTarget<JMSContextProducer> delegate() {
+                return injectionTarget;
+            }
+        });
     }
 }
