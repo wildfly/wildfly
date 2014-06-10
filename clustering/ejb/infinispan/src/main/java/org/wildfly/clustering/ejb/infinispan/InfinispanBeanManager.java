@@ -355,7 +355,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
             // Cache may contain non-string keys, so ignore any others
             if (this.accept(key)) {
                 @SuppressWarnings("unchecked")
-                I id = (I) key;
+                I id = ((BeanKey<I>) key).getId();
                 // If we are the new primary owner of this session
                 // then schedule expiration of this session locally
                 if (!oldLocality.isLocal(id) && newLocality.isLocal(id)) {
