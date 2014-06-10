@@ -205,20 +205,19 @@ enclosed in the appropriate comment syntax for the file format. We also
 recommend that a file or class name and description of purpose be included
 on the same "printed page" as the copyright notice for easier
 identification within third-party archives.</p>
-<div class="codehilite"><pre>   <span class="p">:::</span><span class="n">text</span>
-   <span class="n">Copyright</span> <span class="p">[</span><span class="n">yyyy</span><span class="p">]</span> <span class="p">[</span><span class="n">name</span> <span class="n">of</span> <span class="n">copyright</span> <span class="n">owner</span><span class="p">]</span>
+<div class="codehilite"><pre>Copyright [yyyy] [name of copyright owner]
 
-   <span class="n">Licensed</span> <span class="n">under</span> <span class="n">the</span> <span class="n">Apache</span> <span class="n">License</span><span class="p">,</span> <span class="n">Version</span> 2<span class="p">.</span>0 <span class="p">(</span><span class="n">the</span> &quot;<span class="n">License</span>&quot;<span class="p">);</span>
-   <span class="n">you</span> <span class="n">may</span> <span class="n">not</span> <span class="n">use</span> <span class="n">this</span> <span class="n">file</span> <span class="n">except</span> <span class="n">in</span> <span class="n">compliance</span> <span class="n">with</span> <span class="n">the</span> <span class="n">License</span><span class="p">.</span>
-   <span class="n">You</span> <span class="n">may</span> <span class="n">obtain</span> <span class="n">a</span> <span class="n">copy</span> <span class="n">of</span> <span class="n">the</span> <span class="n">License</span> <span class="n">at</span>
+Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-       <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="p">.</span><span class="n">apache</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">licenses</span><span class="o">/</span><span class="n">LICENSE</span><span class="o">-</span>2<span class="p">.</span>0
+    http://www.apache.org/licenses/LICENSE-2.0
 
-   <span class="n">Unless</span> <span class="n">required</span> <span class="n">by</span> <span class="n">applicable</span> <span class="n">law</span> <span class="n">or</span> <span class="n">agreed</span> <span class="n">to</span> <span class="n">in</span> <span class="n">writing</span><span class="p">,</span> <span class="n">software</span>
-   <span class="n">distributed</span> <span class="n">under</span> <span class="n">the</span> <span class="n">License</span> <span class="n">is</span> <span class="n">distributed</span> <span class="n">on</span> <span class="n">an</span> &quot;<span class="n">AS</span> <span class="n">IS</span>&quot; <span class="n">BASIS</span><span class="p">,</span>
-   <span class="n">WITHOUT</span> <span class="n">WARRANTIES</span> <span class="n">OR</span> <span class="n">CONDITIONS</span> <span class="n">OF</span> <span class="n">ANY</span> <span class="n">KIND</span><span class="p">,</span> <span class="n">either</span> <span class="n">express</span> <span class="n">or</span> <span class="n">implied</span><span class="p">.</span>
-   <span class="n">See</span> <span class="n">the</span> <span class="n">License</span> <span class="k">for</span> <span class="n">the</span> <span class="n">specific</span> <span class="n">language</span> <span class="n">governing</span> <span class="n">permissions</span> <span class="n">and</span>
-   <span class="n">limitations</span> <span class="n">under</span> <span class="n">the</span> <span class="n">License</span><span class="p">.</span>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 </pre></div></div></div>
       <div class="clear"></div>
     </div>
@@ -233,6 +232,7 @@ identification within third-party archives.</p>
 <li><a href="http://ace.apache.org/" title="Centralized life cycle management and deployment of OSGi based and related modular software artifacts for distribution.">ACE</a></li>
 <li><a href="http://activemq.apache.org/" title="Distributed Messaging System">ActiveMQ</a></li>
 <li><a href="http://airavata.apache.org/" title="Workflow and Computational Job Management Middleware">Airavata</a></li>
+<li><a href="http://ambari.apache.org/" title="Hadoop cluster management">Ambari</a></li>
 <li><a href="http://ant.apache.org/" title="Java-based build tool">Ant</a></li>
 <li><a href="http://any23.apache.org/" title="Anything to Triples">Any23</a></li>
 <li><a href="http://apr.apache.org/" title="Apache Portable Runtime libraries">APR</a></li>
@@ -248,6 +248,7 @@ identification within third-party archives.</p>
 <li><a href="http://cassandra.apache.org/" title="Highly scalable second-generation distributed database">Cassandra</a></li>
 <li><a href="http://cayenne.apache.org/" title="User-friendly Java ORM with Tools">Cayenne</a></li>
 <li><a href="http://chemistry.apache.org/" title="CMIS (Content Managment Interoperability Services) Clients and Servers">Chemistry</a></li>
+<li><a href="http://chukwa.apache.org/" title="Open source data collection system for monitoring large distributed systems.">Chukwa</a></li>
 <li><a href="http://clerezza.apache.org/" title="Semantically linked data for OSGi">Clerezza</a></li>
 <li><a href="http://click.apache.org/" title="User-friendly page and component oriented web framework">Click</a></li>
 <li><a href="http://cloudstack.apache.org/" title="Infrastructure as a Service solution">CloudStack</a></li>
@@ -259,12 +260,13 @@ identification within third-party archives.</p>
 <li><a href="http://creadur.apache.org/" title="Comprehension and auditing of software distributions">Creadur</a></li>
 <li><a href="http://crunch.apache.org/" title="Simple and Efficient MapReduce Pipelines">Crunch</a></li>
 <li><a href="http://ctakes.apache.org/" title="Natural language processing (NLP) tool for information extraction from electronic medical record clinical free-text">cTAKES</a></li>
+<li><a href="http://curator.apache.org/" title="Java libraries that make using Apache ZooKeeper easier">Curator</a></li>
 <li><a href="http://cxf.apache.org/" title="Service Framework">CXF</a></li>
 <li><a href="http://db.apache.org/" title="Database access">DB</a></li>
 <li><a href="http://deltacloud.apache.org/" title="RESTful cloud management interface">Deltacloud</a></li>
+<li><a href="http://directmemory.apache.org/" title="An off-heap cache for the Java Virtual Machine">DirectMemory</a></li>
 <li><a href="http://directory.apache.org/" title="Apache Directory Server">Directory</a></li>
 <li><a href="http://empire-db.apache.org/" title="Relational Data Persistence">Empire-db</a></li>
-<li><a href="http://esme.apache.org/" title="Enterprise Social Messaging Environment">ESME</a></li>
 <li><a href="http://etch.apache.org/" title="Cross-platform, language- and transport-independent RPC-like messaging framework">Etch</a></li>
 <li><a href="http://felix.apache.org/" title="OSGi Framework and components.">Felix</a></li>
 <li><a href="http://flex.apache.org/" title="Application framework for expressive web applications that deploy to all major browsers, desktops and devices.">Flex</a></li>
@@ -282,8 +284,10 @@ identification within third-party archives.</p>
 <li><a href="http://isis.apache.org/" title="Framework for rapidly developing domain-driven apps in Java">Isis</a></li>
 <li><a href="http://jackrabbit.apache.org/" title="Content Repository for Java">Jackrabbit</a></li>
 <li><a href="http://james.apache.org/" title="Java Apache Mail Enterprise Server">James</a></li>
+<li><a href="http://jclouds.apache.org/" title="Java cloud APIs and abstractions">jclouds</a></li>
 <li><a href="http://jena.apache.org/" title="Java framework for building Semantic Web applications">Jena</a></li>
 <li><a href="http://jmeter.apache.org/" title="Java performance and functional testing">JMeter</a></li>
+<li><a href="http://jspwiki.apache.org/" title="Leading open source WikiWiki engine, feature-rich and built around standard J2EE components (Java, servlets, JSP). ">JSPWiki</a></li>
 <li><a href="http://juddi.apache.org/" title="Java implementation of the Universal Description, Discovery, and Integration specification">jUDDI</a></li>
 <li><a href="http://kafka.apache.org/" title="Distributed publish-subscribe messaging system">Kafka</a></li>
 <li><a href="http://karaf.apache.org/" title="Server-side OSGi distribution">Karaf</a></li>
@@ -291,10 +295,13 @@ identification within third-party archives.</p>
 <li><a href="http://libcloud.apache.org/" title="Unified interface to the cloud">Libcloud</a></li>
 <li><a href="http://logging.apache.org/" title="Cross-language logging services">Logging</a></li>
 <li><a href="http://lucene.apache.org/" title="Search engine library">Lucene</a></li>
+<li><a href="http://lucenenet.apache.org/" title="Search engine library targeted at .NET runtime users.">Lucene.Net</a></li>
 <li><a href="http://lucy.apache.org/" title="Search engine library for dynamic languages">Lucy</a></li>
 <li><a href="http://mahout.apache.org/" title="Scalable machine learning library">Mahout</a></li>
 <li><a href="http://manifoldcf.apache.org/" title="Framework for connecting source content repositories to target repositories or indexes.">ManifoldCF</a></li>
+<li><a href="http://marmotta.apache.org/" title="An Open Platform for Linked Data">Marmotta</a></li>
 <li><a href="http://maven.apache.org/" title="Java project management and comprehension tools">Maven</a></li>
+<li><a href="http://mesos.apache.org/" title="a cluster manager that provides efficient resource isolation and sharing across distributed applications">Mesos</a></li>
 <li><a href="http://mina.apache.org/" title="Multipurpose Infrastructure for Network Application">MINA</a></li>
 <li><a href="http://mrunit.apache.org/" title="Java library that helps developers unit test Apache Hadoop map reduce jobs">MRUnit</a></li>
 <li><a href="http://myfaces.apache.org/" title="JavaServer(tm) Faces implementation and components">MyFaces</a></li>
@@ -329,7 +336,7 @@ identification within third-party archives.</p>
 <li><a href="http://spamassassin.apache.org/" title="Mail filter to identify spam">SpamAssassin</a></li>
 <li><a href="http://sqoop.apache.org/" title="Bulk Data Transfer for Hadoop and Structured Datastores">Sqoop</a></li>
 <li><a href="http://stanbol.apache.org/" title="Reusable components for semantic content management">Stanbol</a></li>
-<li><a href="http://stdcxx.apache.org/" title="Apache C++ Standard Library">STDCXX</a></li>
+<li><a href="http://steve.apache.org/" title="Apache's Python based single transferable vote software system">STeVe</a></li>
 <li><a href="http://struts.apache.org/" title="Model 2 framework for building Java web applications">Struts</a></li>
 <li><a href="http://subversion.apache.org/" title="Version Control">Subversion</a></li>
 <li><a href="http://synapse.apache.org/" title="Enterprise Service Bus and Mediation Framework">Synapse</a></li>
@@ -347,7 +354,7 @@ identification within third-party archives.</p>
 <li><a href="http://uima.apache.org/" title="Framework and annotators for unstructured information analysis">UIMA</a></li>
 <li><a href="http://vcl.apache.org/" title="Virtual Computing Lab">VCL</a></li>
 <li><a href="http://velocity.apache.org/" title="A Java Templating Engine">Velocity</a></li>
-<li><a href="http://ws.apache.org/">Web Services</a></li>
+<li><a href="http://ws.apache.org/" title="Projects related to Web Services">Web Services</a></li>
 <li><a href="http://whirr.apache.org/" title="Libraries for running Cloud Services">Whirr</a></li>
 <li><a href="http://wicket.apache.org/" title="Component-based Java Web Application Framework.">Wicket</a></li>
 <li><a href="http://wink.apache.org/" title="RESTful Web services Framework">Wink</a></li>
@@ -363,6 +370,7 @@ identification within third-party archives.</p>
         <h4>Foundation</h4>
         <ul>
           <li><a href="/foundation/faq.html">FAQ</a></li> 
+          <li><a href="/foundation/glossary.html">Glossary</a></li> 
           <li><a href="/licenses/" title="Overview of the Apache Licenese">Licenses</a></li> 
           <li><a href="/foundation/marks/" title="Apache marks policies and listing">Trademarks</a></li>  
           <li><a href="/foundation/news.html" title="Official news feed of Foundation announcements">News</a></li> 

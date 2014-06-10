@@ -47,6 +47,10 @@
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.mod_cluster</groupId>
+            <artifactId>mod_cluster-container-spi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

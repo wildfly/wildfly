@@ -181,7 +181,13 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
