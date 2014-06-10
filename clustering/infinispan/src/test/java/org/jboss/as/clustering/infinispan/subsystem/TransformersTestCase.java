@@ -108,6 +108,16 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    public void testTransformer800() throws Exception {
+        testTransformer_2_0_0(
+                ModelTestControllerVersion.WILDFLY_8_0_0_FINAL,
+                "org.wildfly:wildfly-clustering-infinispan:" + ModelTestControllerVersion.WILDFLY_8_0_0_FINAL.getMavenGavVersion(),
+                "org.infinispan:infinispan-core:6.0.1.Final",
+                "org.infinispan:infinispan-cachestore-jdbc:6.0.1.Final"
+        );
+    }
+
+    @Test
     public void testTransformer600() throws Exception {
         testTransformer_1_3_0(
                 ModelTestControllerVersion.EAP_6_0_0,
@@ -251,6 +261,29 @@ public class TransformersTestCase extends OperationTestCaseBase {
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
     }
+
+
+    /**
+     * Tests whether:
+     * - flush-lock-timeout is converted (WFLY-3435)
+     */
+    public void testTransformer_2_0_0(ModelTestControllerVersion controllerVersion, String... mavenResourceURLs) throws Exception {
+        ModelVersion version = ModelVersion.create(2, 0, 0);
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(getSubsystemXml());
+
+        // initialise the legacy services
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(mavenResourceURLs)
+        ;
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+    }
+
 
     /*
      * Check transformation from current model version to 1.4.0 model version.
@@ -701,7 +734,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * - virtual nodes attribute
      *
      * This is required when comparing current model with the current controller booted with legacy operations,
-     * as the statistics attribute of ache-container and cache add operations are discarded.
+     * as the statistics attribute of cache-container and cache add operations are discarded.
      */
     private static class FixReverseControllerModel140 implements ModelFixer {
         @Override
