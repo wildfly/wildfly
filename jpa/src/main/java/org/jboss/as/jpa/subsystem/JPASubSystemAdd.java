@@ -33,7 +33,6 @@ import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.platform.PlatformImpl;
 import org.jboss.as.jpa.processor.JPAAnnotationProcessor;
-import org.jboss.as.jpa.processor.JPAClassFileTransformerProcessor;
 import org.jboss.as.jpa.processor.JPADependencyProcessor;
 import org.jboss.as.jpa.processor.JPAInterceptorProcessor;
 import org.jboss.as.jpa.processor.JPAJarJBossAllParser;
@@ -106,8 +105,6 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                 // injects JPA dependencies into an application
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JPA, new JPADependencyProcessor());
 
-                // handle ClassFileTransformer
-                processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.FIRST_MODULE_USE, Phase.FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER, new JPAClassFileTransformerProcessor());
                 // registers listeners/interceptors on session beans
                 processorTarget.addDeploymentProcessor(JPAExtension.SUBSYSTEM_NAME, Phase.FIRST_MODULE_USE, Phase.FIRST_MODULE_USE_INTERCEPTORS, new JPAInterceptorProcessor());
                 // begin pu service install and deploying a persistence provider

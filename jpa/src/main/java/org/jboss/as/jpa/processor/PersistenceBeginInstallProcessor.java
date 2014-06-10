@@ -22,10 +22,17 @@
 
 package org.jboss.as.jpa.processor;
 
+import org.jboss.as.jpa.classloader.JPADelegatingClassFileTransformer;
+import org.jboss.as.jpa.config.Configuration;
+import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.module.DelegatingClassFileTransformer;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.Platform;
 
 /**
@@ -40,10 +47,13 @@ public class PersistenceBeginInstallProcessor implements DeploymentUnitProcessor
     public PersistenceBeginInstallProcessor(Platform platform) {
         this.platform = platform;
     }
+
     /**
      * {@inheritDoc}
      */
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        setClassLoaderTransformer(phaseContext.getDeploymentUnit());
 
         // deploy any persistence providers found in deployment
         PersistenceProviderHandler.deploy(phaseContext, platform);
@@ -57,6 +67,27 @@ public class PersistenceBeginInstallProcessor implements DeploymentUnitProcessor
      */
     public void undeploy(final DeploymentUnit deploymentUnit) {
         PersistenceProviderHandler.undeploy(deploymentUnit);
+    }
+
+    private static void setClassLoaderTransformer(DeploymentUnit deploymentUnit) {
+        // (AS7-2233) each persistence unit can use a persistence provider, that might need
+        // to use ClassTransformers.  Providers that need class transformers will add them
+        // during the call to CreateContainerEntityManagerFactory.
+
+        DelegatingClassFileTransformer transformer = deploymentUnit.getAttachment(DelegatingClassFileTransformer.ATTACHMENT_KEY);
+
+        if ( transformer != null) {
+            for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
+                PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
+                if (holder != null) {
+                    for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                        if (Configuration.needClassFileTransformer(pu)) {
+                            transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
