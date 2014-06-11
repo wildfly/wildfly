@@ -53,8 +53,8 @@ public class LdapGroupSearcherFactory {
 
     static LdapSearcher<LdapEntry[], LdapEntry> createForGroupToPrincipal(final String baseDn, final String groupDnAttribute,
             final String groupNameAttribute, final String principalAttribute, final boolean recursive,
-            final GroupName searchBy) {
-        return new GroupToPrincipalSearcher(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
+            final GroupName searchBy, final boolean preferOriginalConnection) {
+        return new GroupToPrincipalSearcher(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy, preferOriginalConnection);
     }
 
     static LdapSearcher<LdapEntry[], LdapEntry> createForPrincipalToGroup(final String groupAttribute, final String groupNameAttribute, final boolean preferOriginalConnection) {
@@ -97,9 +97,10 @@ public class LdapGroupSearcherFactory {
         private final String filterString;
         private final boolean recursive;
         private final GroupName searchBy;
+        private final boolean preferOriginalConnection;
 
         private GroupToPrincipalSearcher(final String baseDn, final String groupDnAttribute, final String groupNameAttribute,
-                final String principalAttribute, final boolean recursive, final GroupName searchBy) {
+                final String principalAttribute, final boolean recursive, final GroupName searchBy, final boolean preferOriginalConnection) {
             this.baseDn = baseDn;
             this.groupDnAttribute = groupDnAttribute;
             this.groupNameAttribute = groupNameAttribute;
@@ -107,6 +108,7 @@ public class LdapGroupSearcherFactory {
             this.filterString = String.format("(%s={0})", principalAttribute);
             this.recursive = recursive;
             this.searchBy = searchBy;
+            this.preferOriginalConnection = preferOriginalConnection;
 
             if (SECURITY_LOGGER.isTraceEnabled()) {
                 SECURITY_LOGGER.tracef("GroupToPrincipalSearcher baseDn=%s", baseDn);
@@ -116,14 +118,29 @@ public class LdapGroupSearcherFactory {
                 SECURITY_LOGGER.tracef("GroupToPrincipalSearcher filterString=%s", filterString);
                 SECURITY_LOGGER.tracef("GroupToPrincipalSearcher recursive=%b", recursive);
                 SECURITY_LOGGER.tracef("GroupToPrincipalSearcher searchBy=%s", searchBy);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher preferOriginalConnection=%b", preferOriginalConnection);
             }
         }
 
         @Override
-        public LdapEntry[] search(LdapConnectionHandler connectionHandler, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(LdapConnectionHandler originalConnectionHandler, LdapEntry entry) throws IOException, NamingException {
             SearchControls searchControls = createSearchControl(recursive, attributeArray); // TODO - Can we create this in
                                                                                             // advance?
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
+
+            LdapConnectionHandler connectionHandler = originalConnectionHandler;
+            URI referralAddress = null;
+            if ((referralAddress = entry.getReferralUri()) != null && preferOriginalConnection==false) {
+                connectionHandler = connectionHandler.findForReferral(referralAddress);
+                if (connectionHandler == null) {
+                    SECURITY_LOGGER.tracef("Unable to obtain connection handler for referral URI %s", referralAddress);
+                    return foundEntries.toArray(new LdapEntry[foundEntries.size()]);
+                }
+            } else {
+                // Be sure it is back to null to prevent leaking into LdapEntry for results that may be used for an iterative search.
+                referralAddress = null;
+            }
+
             Object[] searchParameter = getSearchParameter(entry);
             boolean trace = SECURITY_LOGGER.isTraceEnabled();
             if (trace) {
@@ -138,7 +155,7 @@ public class LdapGroupSearcherFactory {
                 SearchResult current = searchResults.next();
                 Attributes attributes = current.getAttributes();
                 if (attributes != null) {
-                    LdapEntry newEntry = convertToLdapEntry(current, attributes);
+                    LdapEntry newEntry = convertToLdapEntry(current, attributes, referralAddress);
                     SECURITY_LOGGER.tracef("Adding %s", newEntry);
                     foundEntries.add(newEntry);
                 } else {
@@ -149,7 +166,7 @@ public class LdapGroupSearcherFactory {
             return foundEntries.toArray(new LdapEntry[foundEntries.size()]);
         }
 
-        private LdapEntry convertToLdapEntry(SearchResult searchResult, Attributes attributes) throws NamingException {
+        private LdapEntry convertToLdapEntry(SearchResult searchResult, Attributes attributes, final URI referralAddress) throws NamingException {
             String simpleName = null;
             String distinguishedName = null;
 
@@ -174,7 +191,7 @@ public class LdapGroupSearcherFactory {
                 }
             }
 
-            return new LdapEntry(simpleName, distinguishedName);
+            return new LdapEntry(simpleName, distinguishedName, referralAddress);
         }
 
         private Object[] getSearchParameter(final LdapEntry entry) {

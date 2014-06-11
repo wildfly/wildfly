@@ -71,6 +71,13 @@ public abstract class BaseLdapGroupSearchResource extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition PREFER_ORIGINAL_CONNECTION =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PREFER_ORIGINAL_CONNECTION, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
     protected BaseLdapGroupSearchResource(final GroupSearchType searchType,
             final ResourceDescriptionResolver descriptionResolver, final OperationStepHandler addHandler,
             final OperationStepHandler removeHandler) {

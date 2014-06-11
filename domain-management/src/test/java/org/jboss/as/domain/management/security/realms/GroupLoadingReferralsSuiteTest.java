@@ -90,7 +90,7 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
                 .build().build();
     }
 
-    private ModelNode createGroupToPrincipal(final String realmName, final String connectionName, final String usersBaseDn) {
+    private ModelNode createGroupToPrincipal(final String realmName, final String connectionName, final String usersBaseDn, final boolean preferOriginalConnection) {
         return securityRealmBuilder(realmName, connectionName, usersBaseDn)
             .authorization().ldap()
             .setConnection(connectionName)
@@ -104,6 +104,7 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
             .setPrincipalAttribute("uniqueMember")
             .setIterative(true)
             .setRecursive(true)
+            .setPreferOriginalConnection(preferOriginalConnection)
             .build().build().build().build();
     }
 
@@ -131,9 +132,9 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
          * Add additional security realms.
          */
 
-        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN));
-        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_THROW, MASTER_THROW_CONNECTION, G2P_USERS_BASE_DN));
-        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW_CONTEXT, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN_REFERRAL));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN, true));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_THROW, MASTER_THROW_CONNECTION, G2P_USERS_BASE_DN, true));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW_CONTEXT, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN_REFERRAL, false));
 
         bootOperations.add(createPrincipalToGroup(PRINCIPAL_TO_GROUP_FOLLOW_ORIGINAL, MASTER_FOLLOW_CONNECTION, true));
         // It is not possible to use FOLLOW and also desire to use the referral connection as without the exception
