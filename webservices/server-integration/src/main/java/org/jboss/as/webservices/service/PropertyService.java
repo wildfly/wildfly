@@ -25,19 +25,16 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 
 /**
- * A service for setting a property into an endpoint / client config.
+ * A service for getting a property to be stored in endpoint / client config.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class PropertyService<T extends AbstractCommonConfig> implements Service<String> {
+public final class PropertyService implements Service<PropertyService> {
 
-    private InjectedValue<T> abstractCommonConfig = new InjectedValue<T>();
-    private final String propValue;
     private final String propName;
+    private final String propValue;
 
     public PropertyService(String propName, String propValue) {
         this.propValue = propValue;
@@ -45,29 +42,26 @@ public final class PropertyService<T extends AbstractCommonConfig> implements Se
     }
 
     @Override
-    public String getValue() {
+    public PropertyService getValue() {
+        return this;
+    }
+
+    public String getPropName() {
+        return propName;
+    }
+
+    public String getPropValue() {
         return propValue;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-        synchronized (commonConfig) {  //JBWS-3707
-            commonConfig.setProperty(propName, propValue);
-        }
+        //NOOP
     }
 
     @Override
     public void stop(final StopContext context) {
-        final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-        synchronized (commonConfig) {  //JBWS-3707
-            if (commonConfig.getProperties().containsKey(propName)) {
-                commonConfig.getProperties().remove(propName);
-            }
-        }
+        //NOOP
     }
 
-    public InjectedValue<T> getAbstractCommonConfig() {
-        return abstractCommonConfig;
-    }
 }

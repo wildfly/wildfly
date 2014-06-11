@@ -21,6 +21,13 @@
  */
 package org.jboss.as.webservices.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jboss.as.webservices.dmr.ListInjector;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -29,6 +36,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
  * A service for setting a ws client / endpoint config.
@@ -41,6 +49,9 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
     private final ServerConfig serverConfig;
     private final String configName;
     private final boolean client;
+    private final List<UnifiedHandlerChainMetaData> preHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
+    private final List<UnifiedHandlerChainMetaData> postHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
+    private final List<PropertyService> properties = new ArrayList<PropertyService>(1);
     private volatile AbstractCommonConfig config;
 
     public ConfigService(ServerConfig serverConfig, String configName, boolean client) {
@@ -56,15 +67,20 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
 
     @Override
     public void start(final StartContext context) throws StartException {
+        Map<String, String> props = null;
+        if (!properties.isEmpty()) {
+            props = new HashMap<String, String>(properties.size(), 1);
+            for (PropertyService ps : properties) {
+                props.put(ps.getPropName(), ps.getPropValue());
+            }
+        }
         if (client) {
-            ClientConfig clientConfig = new ClientConfig();
-            clientConfig.setConfigName(configName);
-            serverConfig.addClientConfig(clientConfig);
+            ClientConfig clientConfig = new ClientConfig(configName, preHandlerChains, postHandlerChains, props, null);
+            serverConfig.registerClientConfig(clientConfig);
             config = clientConfig;
         } else {
-            EndpointConfig endpointConfig = new EndpointConfig();
-            endpointConfig.setConfigName(configName);
-            serverConfig.addEndpointConfig(endpointConfig);
+            EndpointConfig endpointConfig = new EndpointConfig(configName, preHandlerChains, postHandlerChains, props, null);
+            serverConfig.registerEndpointConfig(endpointConfig);
             config = endpointConfig;
         }
     }
@@ -72,9 +88,22 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
     @Override
     public void stop(final StopContext context) {
         if (client) {
-            serverConfig.getClientConfigs().remove(config);
+            serverConfig.unregisterClientConfig((ClientConfig)config);
         } else {
-            serverConfig.getEndpointConfigs().remove(config);
+            serverConfig.unregisterEndpointConfig((EndpointConfig)config);
         }
     }
+
+    public Injector<UnifiedHandlerChainMetaData> getPreHandlerChainsInjector() {
+        return new ListInjector<UnifiedHandlerChainMetaData>(preHandlerChains);
+    }
+
+    public Injector<UnifiedHandlerChainMetaData> getPostHandlerChainsInjector() {
+        return new ListInjector<UnifiedHandlerChainMetaData>(postHandlerChains);
+    }
+
+    public Injector<PropertyService> getPropertiesInjector() {
+        return new ListInjector<PropertyService>(properties);
+    }
+
 }

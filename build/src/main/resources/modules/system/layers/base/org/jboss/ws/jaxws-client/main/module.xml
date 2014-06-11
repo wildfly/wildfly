@@ -36,6 +36,7 @@
         <module name="javax.api" />
         <module name="javax.servlet.api" />
         <module name="javax.xml.bind.api" />
+        <module name="javax.security.auth.message.api"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="javax.xml.ws.api" />
         <module name="org.jboss.ws.api" />
@@ -49,7 +50,7 @@
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" services="import">
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" services="import">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF"/>
@@ -65,6 +66,7 @@
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.security" />
         <module name="org.jboss.logging" />
+        <module name="org.picketbox"/>
         <module name="org.springframework.spring" optional="true">
           <imports>
             <include path="META-INF"/>

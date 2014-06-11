@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,18 +21,25 @@
  */
 package org.jboss.as.webservices.config;
 
-import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.wsf.spi.management.WebServerInfo;
+/**
+ * Exception indicating the required operation is disabled (temporarly or pemanently) and hence coudn't be performed.
+ *
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ */
+public final class DisabledOperationException extends RuntimeException {
 
-public class WebServerInfoImpl implements WebServerInfo {
+    private static final long serialVersionUID = 1773053642986195568L;
 
-    private final CommonWebServer webServer;
-
-    public WebServerInfoImpl(CommonWebServer webServer) {
-        this.webServer = webServer;
+    public DisabledOperationException() {
+        super();
     }
 
-    public int getPort(String protocol, boolean secure) {
-        return webServer.getPort(protocol, secure);
+    public DisabledOperationException(String message) {
+        super(message);
     }
+
+    public DisabledOperationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

@@ -29,11 +29,6 @@ import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.AttributeDefinition;
@@ -158,10 +153,10 @@ public final class WSExtension implements Extension {
               .build();
 
         ResourceDefinition subsystemResource = ResourceBuilder.Factory.createSubsystemRoot(SUBSYSTEM_PATH, getResourceDescriptionResolver(), WSSubsystemAdd.INSTANCE, WSSubsystemRemove.INSTANCE)
-                .addReadWriteAttribute(Attributes.WSDL_HOST, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_HOST))
-                .addReadWriteAttribute(Attributes.WSDL_PORT, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_PORT))
-                .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_SECURE_PORT))
-                .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new ReloadRequiredWriteAttributeHandler(Attributes.MODIFY_WSDL_ADDRESS))
+                .addReadWriteAttribute(Attributes.WSDL_HOST, null, new WSServerConfigAttributeHandler(Attributes.WSDL_HOST))
+                .addReadWriteAttribute(Attributes.WSDL_PORT, null, new WSServerConfigAttributeHandler(Attributes.WSDL_PORT))
+                .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new WSServerConfigAttributeHandler(Attributes.WSDL_SECURE_PORT))
+                .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new WSServerConfigAttributeHandler(Attributes.MODIFY_WSDL_ADDRESS))
                 .build();
         ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(subsystemResource);
         subsystemRegistration.registerSubModel(epConfigsDef);
