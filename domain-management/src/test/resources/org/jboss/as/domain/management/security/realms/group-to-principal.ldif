@@ -209,4 +209,12 @@ cn: Group Eight
 uid: GroupEight
 uniqueMember: uid=TestUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
 
+# A referral of an entire context
+dn: ou=RemoteLdap,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: referral
+objectClass: extensibleObject
+ou: RemoteLdap
+ref: ldap://localhost:11391/ou=users,dc=group-to-principal,dc=wildfly,dc=org
+
 

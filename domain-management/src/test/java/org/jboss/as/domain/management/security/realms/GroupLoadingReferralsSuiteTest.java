@@ -55,11 +55,13 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
      */
 
     // Distinguished Names
-    private static final String GROUPS_BASE_DN = "ou=users,dc=group-to-principal,dc=wildfly,dc=org";
-    private static final String GROUPS_GROUPS_DN = "ou=groups,dc=group-to-principal,dc=wildfly,dc=org";
+    private static final String G2P_USERS_BASE_DN = "ou=users,dc=group-to-principal,dc=wildfly,dc=org";
+    private static final String G2P_GROUPS_BASE_DN = "ou=groups,dc=group-to-principal,dc=wildfly,dc=org";
+    private static final String G2P_USERS_BASE_DN_REFERRAL = "ou=RemoteLdap,ou=users,dc=group-to-principal,dc=wildfly,dc=org";
     // Realm Names
     static final String GROUP_TO_PRINCIPAL_FOLLOW = "GroupToPrincipalFollow";
     static final String GROUP_TO_PRINCIPAL_THROW = "GroupToPrincipalThrow";
+    static final String GROUP_TO_PRINCIPAL_FOLLOW_CONTEXT = "GroupToPrincipalFollowContext";
 
     /*
      * Principal To Group Attributes
@@ -88,17 +90,17 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
                 .build().build();
     }
 
-    private ModelNode createGroupToPrincipal(final String realmName, final String connectionName) {
-        return securityRealmBuilder(realmName, connectionName, GROUPS_BASE_DN)
+    private ModelNode createGroupToPrincipal(final String realmName, final String connectionName, final String usersBaseDn) {
+        return securityRealmBuilder(realmName, connectionName, usersBaseDn)
             .authorization().ldap()
             .setConnection(connectionName)
             .usernameFilter()
-            .setBaseDn(GROUPS_BASE_DN)
+            .setBaseDn(G2P_USERS_BASE_DN)
             .setRecursive(false)
             .setAttribute(USERNAME_FILTER)
             .build()
             .groupToPrincipal()
-            .setBaseDn(GROUPS_GROUPS_DN)
+            .setBaseDn(G2P_GROUPS_BASE_DN)
             .setPrincipalAttribute("uniqueMember")
             .setIterative(true)
             .setRecursive(true)
@@ -110,7 +112,7 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
             .authorization().ldap()
             .setConnection(connectionName)
             .usernameFilter()
-            .setBaseDn(GROUPS_BASE_DN)
+            .setBaseDn(G2P_USERS_BASE_DN)
             .setRecursive(false)
             .setAttribute(USERNAME_FILTER)
             .build()
@@ -129,8 +131,9 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
          * Add additional security realms.
          */
 
-        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW, MASTER_FOLLOW_CONNECTION));
-        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_THROW, MASTER_THROW_CONNECTION));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_THROW, MASTER_THROW_CONNECTION, G2P_USERS_BASE_DN));
+        bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW_CONTEXT, MASTER_FOLLOW_CONNECTION, G2P_USERS_BASE_DN_REFERRAL));
 
         bootOperations.add(createPrincipalToGroup(PRINCIPAL_TO_GROUP_FOLLOW_ORIGINAL, MASTER_FOLLOW_CONNECTION, true));
         // It is not possible to use FOLLOW and also desire to use the referral connection as without the exception
@@ -183,6 +186,16 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
     @Test
     public void groupToPrincipalFollow_User() throws Exception {
         verifyGroupMembership(GROUP_TO_PRINCIPAL_FOLLOW, "ReferralUserSeven", "passwordSeven", "GroupEight");
+    }
+
+    /**
+     * Verify that a user can be authenticated and the groups loaded where the base context searched results in a referral, user
+     * and the groups are both on the second LDAP server.
+     *
+     */
+    @Test
+    public void groupToPrincipalFollow_Context() throws Exception {
+        verifyGroupMembership(GROUP_TO_PRINCIPAL_FOLLOW_CONTEXT, "TestUserEight", "passwordEight", "GroupNine", "GroupTen");
     }
 
     // Group To Principal, Throw
