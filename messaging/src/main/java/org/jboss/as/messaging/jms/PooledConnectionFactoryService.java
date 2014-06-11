@@ -502,7 +502,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
         // when its ResourceAdapter is started
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
         Validation validation = new ValidationImpl(Defaults.VALIDATE_ON_MATCH, null, null, false);
-        return new ConnectionDefinitionImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, Defaults.SHARABLE, Defaults.ENLISTMENT,Defaults.CONNECTABLE, Defaults.TRACKING, pool, timeOut, validation, security, recovery, isXA);
+        // do no track
+        return new ConnectionDefinitionImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, Defaults.SHARABLE, Defaults.ENLISTMENT, Defaults.CONNECTABLE, false, pool, timeOut, validation, security, recovery, isXA);
     }
 
     private static Connector createConnector15(ResourceAdapter ra) {
