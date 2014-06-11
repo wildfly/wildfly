@@ -36,6 +36,7 @@
         <module name="com.sun.jsf-impl"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.jsf"/>
         <module name="org.jboss.as.web-common"/>
         <module name="javax.servlet.api"/>
         <module name="javax.enterprise.api"/>
