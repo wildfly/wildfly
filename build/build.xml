@@ -283,10 +283,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-threads"/>
         </module-def>
 
-        <module-def name="org.jboss.com.sun.httpserver">
-            <maven-resource group="org.jboss.com.sun.httpserver" artifact="httpserver"/>
-        </module-def>
-
         <module-def name="org.jboss.common-beans">
             <maven-resource group="org.jboss.common" artifact="jboss-common-beans"/>
         </module-def>
