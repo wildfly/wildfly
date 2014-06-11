@@ -10,7 +10,7 @@ Usage:
 
  --help (-h)     - prints (this) basic description of the command line utility.
 
- --version       - prints the version info of the JBoss AS release, JVM and
+ --version       - prints the version info of the JBoss EAP release, JVM and
                    system environment.
 
  --controller    - the default controller host and port to connect to when

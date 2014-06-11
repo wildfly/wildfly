@@ -1,6 +1,6 @@
 ****************************************************************************************************
 
-   JBoss Application Server Testsuite
+   Red Hat JBoss Enterprise Application Platform Testsuite
 
    Usage:
 
@@ -15,12 +15,12 @@
          <params> = parameters changing the configuration like database, IP stack, etc.
 
    Params:
-     -Dds.db=<database>          Configures the AS to use given database.
+     -Dds.db=<database>          Configures the JBoss EAP to use given database.
                                  Additional properties to be provided:
                                  -Dds.jdbc.url, -Dds.jdbc.user, -Dds.jdbc.user
 
      -Dipv6                      Configures the testsuite to run with IPv6.
 
      -Dtest=<test classes mask>  Runs matching tests.
-                                 The group needs to be specified to let it prepare proper AS config.
+                                 The group needs to be specified to let it prepare proper JBoss EAP config.
 ****************************************************************************************************

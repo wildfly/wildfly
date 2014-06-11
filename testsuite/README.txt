@@ -1,7 +1,7 @@
-AS7 testsuite
---------------
+JBoss EAP 6 testsuite
+----------------------
 
-This directory contains the AS7 testsuite in its new format, as described in https://docspace.corp.redhat.com/docs/DOC-74146
+This directory contains the JBoss EAP 6 testsuite in its new format, as described in https://docspace.corp.redhat.com/docs/DOC-74146
 
 Some points to note:
 
@@ -32,7 +32,7 @@ For each logical grouping of tests X (e.g. basic integration, clustering, compat
 
    src/test/resources/test-configs/ - holds all files to be copied into custom configurations
    src/test/scripts - holds ant build scripts for tasks which require execution of maven-antrun-plugin (e.g building configs)
-   src/test/xslt - holds XSLT stylesheets for making changes to AS XML-based configuration files
+   src/test/xslt - holds XSLT stylesheets for making changes to JBoss EAP XML-based configuration files
 
 
 3. Defined profiles
@@ -147,7 +147,7 @@ on the command line, such as:
 7. Changing the database
 ------------------------
 
-The prototype also contains a profile which shows how the default database for AS 7 can be changed.
+The prototype also contains a profile which shows how the default database for JBoss EAP 6 can be changed.
 
 > mvn clean test -Dds=mysql51 <module targets> <test targets>
 

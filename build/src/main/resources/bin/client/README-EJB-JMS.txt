@@ -1,5 +1,5 @@
-jboss-client.jar is a combined client jar for JBoss AS7, for use in non-maven environments. This jar should be used
-with standalone clients only, not with deployments are that deployed to an AS7 instance.
+jboss-client.jar is a combined client jar for JBoss EAP 6, for use in non-maven environments. This jar should be used
+with standalone clients only, not with deployments are that deployed to an JBoss EAP 6 instance.
 
 This jar contains the classes required for remote JMS and EJB usage, and consists of the following shaded artifacts:
 

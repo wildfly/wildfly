@@ -1,7 +1,7 @@
-JBoss Modular Application Server Build
---------------------------------------
+JBoss Modular Enterprise Application Platform Build
+---------------------------------------------------
 
-This module contains a number of profiles each dedicated to a custom AS7 build.
+This module contains a number of profiles each dedicated to a custom JBoss EAP 6 build.
 
 Defining the Subsystems
 -----------------------
@@ -27,7 +27,7 @@ Given the above input the Ant task will generate a subsystem definition file
 	    </subsystems>
 	</config>
 
-which is then passed to the Ant macros that are used for the ordinary AS7 build.
+which is then passed to the Ant macros that are used for the ordinary JBoss EAP 6 build.
 
 Reducing the set of System Modules
 ----------------------------------

@@ -19,7 +19,7 @@ DESCRIPTION
   The command is used to add and remove modules.
 
   When a module is added, the corresponding to the module name directory
-  structure will be created in the AS7 module repository. The JAR files
+  structure will be created in the JBoss EAP 6 module repository. The JAR files
   specified as resources will be copied to the module's directory. Unless
   module.xml file was specified as an argument, it will be automatically
   generated.

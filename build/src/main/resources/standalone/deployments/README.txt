@@ -1,23 +1,23 @@
-The standalone/deployments directory in the JBoss Application Server
+The standalone/deployments directory in the Red Hat JBoss Enterprise Application Platform
 distribution is the location end users can place their deployment content
 (e.g. war, ear, jar, sar files) to have it automatically deployed into the server
 runtime.
 
 Users, particularly those running production systems, are encouraged to use the
-JBoss AS management APIs to upload and deploy deployment content instead of
+JBoss EAP management APIs to upload and deploy deployment content instead of
 relying on the deployment scanner subsystem that periodically scans this
-directory.  See the JBoss AS documentation for details.
+directory.  See the JBoss EAP documentation for details.
 
 DEPLOYMENT MODES
 
-The filesystem deployment scanner in AS 7 and later works differently from
-previous JBoss AS releases. The scanner can operate in one of two different
+The filesystem deployment scanner in JBoss EAP 6 and later works differently from
+previous JBoss EAP releases. The scanner can operate in one of two different
 modes, depending on whether it will directly monitor the deployment content
 in order to decide to deploy (or redeploy) it.
 
 1) Auto-deploy mode: The scanner will directly monitor the deployment content,
 automatically deploying new content and redeploying content whose timestamp
-has changed. This is similiar to the behavior of previous AS releases, although
+has changed. This is similiar to the behavior of previous JBoss EAP releases, although
 there are differences:
 
 a) A change in any file in an exploded deployment triggers redeploy. Because
@@ -107,74 +107,74 @@ The relevant marker file types are:
 
 Basic workflows:
 
-All examples assume variable $AS points to the root of the JBoss AS distribution.
+All examples assume variable $EAP_HOME points to the root of the JBoss EAP distribution.
 Windows users: the examples below use Unix shell commands; see the "Windows
 Notes" below.
 
 A) Add new zipped content and deploy it:
 
-1. cp target/example.war $AS/standalone/deployments
-2. (Manual mode only) touch $AS/standalone/deployments/example.war.dodeploy
+1. cp target/example.war $EAP_HOME/standalone/deployments
+2. (Manual mode only) touch $EAP_HOME/standalone/deployments/example.war.dodeploy
 
 B) Add new unzipped content and deploy it:
 
-1. cp -r target/example.war/ $AS/standalone/deployments
-2. (Manual mode only) touch $AS/standalone/deployments/example.war.dodeploy
+1. cp -r target/example.war/ $EAP_HOME/standalone/deployments
+2. (Manual mode only) touch $EAP_HOME/standalone/deployments/example.war.dodeploy
 
 C) Undeploy currently deployed content:
 
-1. rm $AS/standalone/deployments/example.war.deployed
+1. rm $EAP_HOME/standalone/deployments/example.war.deployed
 
 D) Auto-deploy mode only: Undeploy currently deployed content:
 
-1. rm $AS/standalone/deployments/example.war
+1. rm $EAP_HOME/standalone/deployments/example.war
 
 Note that this approach is not recommended with unzipped content as the server
 maintains no other copy of unzipped content and deleting it without first
 triggering an undeploy temporarily results in a live application with
 potentially critical resources no longer available. For unzipped content use
-the 'rm $AS/standalone/deployments/example.war.deployed' approach.
+the 'rm $EAP_HOME/standalone/deployments/example.war.deployed' approach.
 
 E) Replace currently deployed zipped content with a new version and deploy it:
 
-1. cp target/example.war/ $AS/standalone/deployments
-2. (Manual mode only) touch $AS/standalone/deployments/example.war.dodeploy
+1. cp target/example.war/ $EAP_HOME/standalone/deployments
+2. (Manual mode only) touch $EAP_HOME/standalone/deployments/example.war.dodeploy
 
 F) Manual mode only: Replace currently deployed unzipped content with a new
    version and deploy it:
 
-1. rm $AS/standalone/deployments/example.war.deployed
-2. wait for $AS/standalone/deployments/example.war.undeployed file to appear
-3. cp -r target/example.war/ $AS/standalone/deployments
-4. touch $AS/standalone/deployments/example.war.dodeploy
+1. rm $EAP_HOME/standalone/deployments/example.war.deployed
+2. wait for $EAP_HOME/standalone/deployments/example.war.undeployed file to appear
+3. cp -r target/example.war/ $EAP_HOME/standalone/deployments
+4. touch $EAP_HOME/standalone/deployments/example.war.dodeploy
 
 G) Auto-deploy mode only: Replace currently deployed unzipped content with a
    new version and deploy it:
 
-1. touch $AS/standalone/deployments/example.war.skipdeploy
-2. cp -r target/example.war/ $AS/standalone/deployments
-3. rm $AS/standalone/deployments/example.war.skipdeploy
+1. touch $EAP_HOME/standalone/deployments/example.war.skipdeploy
+2. cp -r target/example.war/ $EAP_HOME/standalone/deployments
+3. rm $EAP_HOME/standalone/deployments/example.war.skipdeploy
 
 H) Manual mode only: Live replace portions of currently deployed unzipped
    content without redeploying:
 
-1. cp -r target/example.war/foo.html $AS/standalone/deployments/example.war
+1. cp -r target/example.war/foo.html $EAP_HOME/standalone/deployments/example.war
 
 I) Auto-deploy mode only: Live replace portions of currently deployed unzipped
    content without redeploying:
 
-1. touch $AS/standalone/deployments/example.war.skipdeploy
-2. cp -r target/example.war/foo.html $AS/standalone/deployments/example.war
+1. touch $EAP_HOME/standalone/deployments/example.war.skipdeploy
+2. cp -r target/example.war/foo.html $EAP_HOME/standalone/deployments/example.war
 
 J) Manual or auto-deploy mode: Redeploy currently deployed content (i.e. bounce
    it with no content change):
 
-1. touch $AS/standalone/deployments/example.war.dodeploy
+1. touch $EAP_HOME/standalone/deployments/example.war.dodeploy
 
 K) Auto-deploy mode only: Redeploy currently deployed content (i.e. bounce
    it with no content change):
 
-1. touch $AS/standalone/deployments/example.war
+1. touch $EAP_HOME/standalone/deployments/example.war
 
 
 Windows Notes:

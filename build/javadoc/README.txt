@@ -1,9 +1,9 @@
 
 
-How to create Public JBoss AS API aggregated JavaDoc
-====================================================
+How to create Public JBoss EAP API aggregated JavaDoc
+=====================================================
 
-1) Rebuild AS to get the modules into <AS>/build/target .
+1) Rebuild JBoss EAP to get the modules into <EAP>/build/target .
 
 2) run ./extractPublicApiArtifactsList.sh
 This will print out a list of artifacts in this format:
@@ -29,11 +29,11 @@ This will print out a list of javadoc groups in XML format:
 
     Put these group definitions into build/pom.xml to the "javadocDist" profile.
 
-5) cd <AS>/build;
-   mvn javadoc:aggregate -PjavadocDist -Djavadoc.branding='JBoss Enterprise Application Platform 6.0.0.GA';
+5) cd <EAP>/build;
+   mvn javadoc:aggregate -PjavadocDist -Djavadoc.branding='Red Hat JBoss Enterprise Application Platform 6.0.0.GA';
    ("javadoc.branding" will be used for page titles, headers, footers etc. Default is "JBoss Application Server public API - ${version}".)
 
-This may fail because of AS7-4557 - Javadoc tool fails on certain AS dependencies' sources.
+This may fail because of AS7-4557 - Javadoc tool fails on certain JBoss EAP dependencies' sources.
 Workaround: Find which artifacts cause this issue and remove them from the set of <include>'s.
 
 6) Another Javadoc bug is AS7-4719: MissingResourceException, key doclet.Same_package_name_used

@@ -1,5 +1,5 @@
-JBoss Application Server 
-========================
+Red Hat JBoss Enterprise Application Platform 
+=============================================
 http://www.jboss.org/jbossas/
 
 * Fast Startup
@@ -24,7 +24,7 @@ If you use Windows and don't have Maven 3
 
 > build.bat
 
-Starting and Stopping JBoss
+Starting and Stopping JBoss EAP
 ------------------------------------------
 Change to the bin directory after a successful build
 
@@ -52,11 +52,11 @@ Running the Testsuite
 --------------------
 The testsuite module contains several submodules including the following:
 
-* "smoke" -- core tests that should be run as part of every build of the AS. Failures here will fail the build.
-* "api" -- tests of features that involve end user use of the public JBoss AS 7 API. Should be run with no failures before any major commits.
-* "cluster" -- tests of the AS 7 HA clustering features. Should be run with no failures before any major commits.
+* "smoke" -- core tests that should be run as part of every build of the JBoss EAP. Failures here will fail the build.
+* "api" -- tests of features that involve end user use of the public JBoss EAP 6 API. Should be run with no failures before any major commits.
+* "cluster" -- tests of the JBoss EAP 6 HA clustering features. Should be run with no failures before any major commits.
 * "domain" -- tests of the domain management features. Should be run with no failures before any major commits.
-* "integration" -- tests of an AS 7 standalone server's internals. Should be run with no failures before any major commits.
+* "integration" -- tests of an JBoss EAP 6 standalone server's internals. Should be run with no failures before any major commits.
 * "spec" -- tests of features that only involve end user use of the Java EE 6 spec APIs. Should be run with no failures before any major commits.
 * "benchmark" -- tests used to compare performance against other releases or previous builds
 * "stress" -- tests of the server's ability to perform properly while under stress 
