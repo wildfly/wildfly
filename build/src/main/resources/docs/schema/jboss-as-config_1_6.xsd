@@ -990,6 +990,18 @@
                                     </xs:documentation>
                                 </xs:annotation>
                             </xs:attribute>
+                            <xs:attribute name="prefer-original-connection" type="xs:boolean" default="true">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        After a referral has been followed should the original LDAP connection defined for
+                                        group loading be used or should the connection from the last referral be used instead.
+
+                                        By default each attempt to load a group will revery back to the original connection as defined
+                                        in the configuration, however setting this attribute to false will cause subsequent searches to
+                                        use the connection of the last referral.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:attribute>                            
                         </xs:extension>
                     </xs:complexContent>
                 </xs:complexType>
