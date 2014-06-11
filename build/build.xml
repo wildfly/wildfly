@@ -1454,7 +1454,7 @@
         </module-def>
 
         <module-def name="org.picketlink.federation.bindings">
-            <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7"/>
+            <maven-resource group="org.picketlink.distribution" artifact="picketlink-wildfly8"/>
         </module-def>
 
         <module-def name="org.picketlink.federation">
