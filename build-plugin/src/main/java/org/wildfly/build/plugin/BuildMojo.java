@@ -82,6 +82,7 @@ import java.util.zip.ZipFile;
 @Mojo(name = "build", requiresDependencyResolution = ResolutionScope.RUNTIME)
 @Execute(phase = LifecyclePhase.COMPILE)
 public class BuildMojo extends AbstractMojo {
+    private static final boolean OS_WINDOWS = System.getProperty("os.name").contains("indows");
 
     int folderCount = 0;
 
@@ -151,10 +152,12 @@ public class BuildMojo extends AbstractMojo {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 String relative = baseDir.relativize(dir).toString();
-                for(FilePermission perm : build.getFilePermissions()) {
-                    if(perm.includeFile(relative)) {
-                        Files.setPosixFilePermissions(dir, perm.getPermission());
-                        continue;
+                if (!OS_WINDOWS) {
+                    for (FilePermission perm : build.getFilePermissions()) {
+                        if (perm.includeFile(relative)) {
+                            Files.setPosixFilePermissions(dir, perm.getPermission());
+                            continue;
+                        }
                     }
                 }
                 return FileVisitResult.CONTINUE;
@@ -163,10 +166,12 @@ public class BuildMojo extends AbstractMojo {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 String relative = baseDir.relativize(file).toString();
-                for(FilePermission perm : build.getFilePermissions()) {
-                    if(perm.includeFile(relative)) {
-                        Files.setPosixFilePermissions(file, perm.getPermission());
-                        continue;
+                if (!OS_WINDOWS) {
+                    for (FilePermission perm : build.getFilePermissions()) {
+                        if (perm.includeFile(relative)) {
+                            Files.setPosixFilePermissions(file, perm.getPermission());
+                            continue;
+                        }
                     }
                 }
                 if(build.getUnix().includeFile(relative)) {
@@ -455,7 +460,9 @@ public class BuildMojo extends AbstractMojo {
                             copyFile(new ByteArrayInputStream(data.getBytes("UTF-8")), targetFile.toFile());
                         } else {
                             copyFile(file.toFile(), targetFile.toFile());
-                            Files.setPosixFilePermissions(targetFile, Files.getPosixFilePermissions(file));
+                            if (!OS_WINDOWS) {
+                                Files.setPosixFilePermissions(targetFile, Files.getPosixFilePermissions(file));
+                            }
                         }
                         return FileVisitResult.CONTINUE;
                     } catch (Exception e) {
@@ -663,7 +670,9 @@ public class BuildMojo extends AbstractMojo {
                     }
                     Path targetFile = path.resolve(relative);
                     copyFile(file.toFile(), targetFile.toFile());
-                    Files.setPosixFilePermissions(targetFile, Files.getPosixFilePermissions(file));
+                    if (!OS_WINDOWS) {
+                        Files.setPosixFilePermissions(targetFile, Files.getPosixFilePermissions(file));
+                    }
                     return FileVisitResult.CONTINUE;
                 }
 
