@@ -171,7 +171,6 @@
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.22.GA</version.org.jboss.jboss-common-core>
-        <version.org.jboss.com.sun.httpserver>1.0.1.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>2.0.1.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>1.0.5.Final</version.org.jboss.genericjms>
@@ -4312,18 +4311,6 @@
                 <groupId>org.jboss.classfilewriter</groupId>
                 <artifactId>jboss-classfilewriter</artifactId>
                 <version>${version.org.jboss.classfilewriter}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.com.sun.httpserver</groupId>
-                <artifactId>httpserver</artifactId>
-                <version>${version.org.jboss.com.sun.httpserver}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>junit</groupId>
-                        <artifactId>junit</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
