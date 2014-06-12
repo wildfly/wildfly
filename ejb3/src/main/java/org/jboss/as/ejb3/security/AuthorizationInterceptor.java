@@ -134,14 +134,13 @@ public class AuthorizationInterceptor implements Interceptor {
                     throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
                 }
             }
+            // successful authorization, let the invocation proceed
+            return context.proceed();
         }
         finally {
             // reset the previous JACC contextID.
             setContextID(previousContextID);
         }
-
-        // successful authorization, let the invocation proceed
-        return context.proceed();
     }
 
     /**
