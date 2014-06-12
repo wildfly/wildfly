@@ -44,6 +44,9 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
             builder.rejectChildResource(BackupForResourceDefinition.PATH);
+        } else {
+            BackupSiteResourceDefinition.buildTransformation(version, builder);
+            BackupForResourceDefinition.buildTransformation(version, builder);
         }
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);

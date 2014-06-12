@@ -50,9 +50,9 @@ import org.jgroups.Global;
 public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
-    public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + "." +"LocalDescriptions";
+    public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    // Temporary workaround for JGRP-1475
+    // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
     static {
         PrivilegedAction<Void> action = new PrivilegedAction<Void>() {

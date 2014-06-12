@@ -68,6 +68,8 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
         if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.rejectChildResource(RelayResourceDefinition.PATH);
+        } else {
+            RelayResourceDefinition.buildTransformation(version, builder);
         }
 
         TransportResourceDefinition.buildTransformation(version, builder);
