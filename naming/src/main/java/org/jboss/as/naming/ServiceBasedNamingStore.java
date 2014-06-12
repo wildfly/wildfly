@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author John Bailey
@@ -127,8 +130,19 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (controller != null) {
                 final Object object = controller.getValue();
                 if (dereference && object instanceof ManagedReferenceFactory) {
-                    final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
-                    return managedReference != null ? managedReference.getInstance() : null;
+                    if(WildFlySecurityManager.isChecking()) {
+                        //WFLY-3487 JNDI lookups should be executed in a clean access control context
+                        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                            @Override
+                            public Object run() {
+                                final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                                return managedReference != null ? managedReference.getInstance() : null;
+                            }
+                        });
+                    } else {
+                        final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                        return managedReference != null ? managedReference.getInstance() : null;
+                    }
                 } else {
                     return object;
                 }
