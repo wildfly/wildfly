@@ -60,9 +60,16 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         if (componentDescriptions == null || componentDescriptions.isEmpty()) {
             return;
         }
+        final String defaultSecurityDomain;
+        if(eeModuleDescription.getDefaultSecurityDomain() == null) {
+            defaultSecurityDomain = this.defaultSecurityDomainName;
+        } else {
+            defaultSecurityDomain = eeModuleDescription.getDefaultSecurityDomain();
+        }
+
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
-                ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(this.defaultSecurityDomainName);
+                ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(defaultSecurityDomain);
             }
         }
     }
