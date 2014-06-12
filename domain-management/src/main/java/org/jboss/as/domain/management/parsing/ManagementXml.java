@@ -2234,8 +2234,7 @@ public class ManagementXml {
         list.add(childAdd);
     }
 
-    private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
-            final ModelNode addOp) throws XMLStreamException {
+    private static void parseGroupToPrincipalAttributes_1_5(final XMLExtendedStreamReader reader, final ModelNode addOp) throws XMLStreamException {
         boolean baseDnFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -2266,6 +2265,56 @@ public class ManagementXml {
 
         if (baseDnFound == false) {
             throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+    }
+
+    private static void parseGroupToPrincipalAttributes_1_6(final XMLExtendedStreamReader reader, final ModelNode addOp) throws XMLStreamException {
+        boolean baseDnFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BASE_DN: {
+                        baseDnFound = true;
+                        GroupToPrincipalResourceDefinition.BASE_DN.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        GroupToPrincipalResourceDefinition.RECURSIVE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SEARCH_BY:
+                        GroupToPrincipalResourceDefinition.SEARCH_BY.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    case PREFER_ORIGINAL_CONNECTION:
+                        GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (baseDnFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+    }
+
+    private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp) throws XMLStreamException {
+
+        switch (expectedNs) {
+            case DOMAIN_1_5:
+                parseGroupToPrincipalAttributes_1_5(reader, addOp);
+                break;
+            default:
+                parseGroupToPrincipalAttributes_1_6(reader, addOp);
+                break;
         }
 
         boolean elementFound = false;
@@ -3365,6 +3414,7 @@ public class ManagementXml {
                     GroupToPrincipalResourceDefinition.SEARCH_BY.marshallAsAttribute(groupToPrincipal, writer);
                     GroupToPrincipalResourceDefinition.BASE_DN.marshallAsAttribute(groupToPrincipal, writer);
                     GroupToPrincipalResourceDefinition.RECURSIVE.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.marshallAsAttribute(groupToPrincipal, writer);
                     writer.writeStartElement(Element.MEMBERSHIP_FILTER.getLocalName());
                     GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.marshallAsAttribute(groupToPrincipal, writer);
                     writer.writeEndElement();
