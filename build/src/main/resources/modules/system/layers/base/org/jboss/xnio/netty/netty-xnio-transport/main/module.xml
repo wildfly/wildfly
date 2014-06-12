@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.xnio.netty:netty-xnio-transport}"/>
     </resources>
 
     <dependencies>

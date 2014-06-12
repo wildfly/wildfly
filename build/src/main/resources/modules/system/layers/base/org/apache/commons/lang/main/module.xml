@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${commons-lang:commons-lang}"/>
     </resources>
 
     <dependencies>

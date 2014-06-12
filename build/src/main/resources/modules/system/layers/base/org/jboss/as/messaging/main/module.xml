@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-messaging}"/>
     </resources>
 
     <dependencies>
@@ -54,7 +54,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
@@ -63,7 +63,6 @@
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.security"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.jboss.metadata"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.remote-naming"/>

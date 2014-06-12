@@ -31,6 +31,6 @@
     <dependencies>
     </dependencies>
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.glassfish:javax.json}"/>
     </resources>
 </module>

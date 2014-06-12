@@ -35,7 +35,7 @@
     </exports>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-jdr}"/>
         <resource-root path="resources"/>
     </resources>
 

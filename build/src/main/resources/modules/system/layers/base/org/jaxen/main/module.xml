@@ -33,7 +33,7 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${jaxen:jaxen}"/>
     </resources>
 
 </module>

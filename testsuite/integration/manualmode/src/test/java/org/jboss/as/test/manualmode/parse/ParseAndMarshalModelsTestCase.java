@@ -869,8 +869,8 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/standalone/configuration/" + profile
+                System.getProperty("jboss.inst", "../../.."),
+                "standalone/configuration/" + profile
         );
     }
 
@@ -901,16 +901,16 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/src/main/resources/docs/examples/configs" + File.separator + name
+                System.getProperty("jboss.inst", "../../.."),
+                "docs/examples/configs" + File.separator + name
         );
     }
 
 
     private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/docs/examples/configs" + File.separator + name
+                System.getProperty("jboss.inst", "../../.."),
+                "docs/examples/configs" + File.separator + name
         );
     }
 
@@ -918,15 +918,15 @@ public class ParseAndMarshalModelsTestCase {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/src/main/resources/domain/configuration"
+                System.getProperty("jboss.inst", "../../.."),
+                "domain/configuration"
         );
     }
 
     private File getDomainConfigDir() throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/domain/configuration"
+                System.getProperty("jboss.inst", "../../.."),
+                "domain/configuration"
         );
     }
 

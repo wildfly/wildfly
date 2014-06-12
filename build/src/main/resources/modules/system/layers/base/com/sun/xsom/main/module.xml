@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${com.sun.xsom:xsom}"/>
     </resources>
 
     <dependencies>

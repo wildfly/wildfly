@@ -32,7 +32,7 @@
     </exports>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-jaxrs}"/>
     </resources>
 
     <dependencies>
@@ -47,7 +47,8 @@
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>

@@ -28,7 +28,11 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.security:jboss-negotiation-common}"/>
+        <artifact name="${org.jboss.security:jboss-negotiation-extras}"/>
+        <artifact name="${org.jboss.security:jboss-negotiation-net}"/>
+        <artifact name="${org.jboss.security:jboss-negotiation-ntlm}"/>
+        <artifact name="${org.jboss.security:jboss-negotiation-spnego}"/>
     </resources>
 
     <dependencies>

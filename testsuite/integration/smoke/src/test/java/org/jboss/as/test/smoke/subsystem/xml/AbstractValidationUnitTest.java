@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -221,16 +220,24 @@ public class AbstractValidationUnitTest {
         } catch (IOException e) {
             url = null;
         }
+        String fileName = xsdName;
+        int index = fileName.lastIndexOf("/");
+        if(index == -1) {
+            index = fileName.lastIndexOf("\\");
+        }
+        if(index != -1) {
+            fileName = fileName.substring(index + 1);
+        }
         // Search
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (url == null)
-            url = classLoader.getResource("docs/schema" + xsdName);
+            url = classLoader.getResource("docs/schema/" + fileName);
         if (url == null)
-            url = classLoader.getResource("docs/" + xsdName);
+            url = classLoader.getResource("docs/" + fileName);
         if (url == null)
-            url = classLoader.getResource("schema/" + xsdName);
+            url = classLoader.getResource("schema/" + fileName);
         if (url == null)
-            url = classLoader.getResource(xsdName);
+            url = classLoader.getResource(fileName);
         assertNotNull(xsdName + " not found", url);
         return url;
     }

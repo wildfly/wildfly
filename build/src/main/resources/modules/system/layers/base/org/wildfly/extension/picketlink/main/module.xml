@@ -15,7 +15,7 @@
         Franklin St, Fifth Floor, Boston, MA ~ 02110-1301 USA, or see the FSF site:
         http://www.fsf.org. -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.wildfly.extension.picketlink">
+<module xmlns="urn:jboss:module:1.3" name="org.wildfly.extension.picketlink">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -25,7 +25,7 @@
     </exports>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-picketlink}"/>
     </resources>
 
     <dependencies>
@@ -39,7 +39,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.as.web-common"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.web"/>
 
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>

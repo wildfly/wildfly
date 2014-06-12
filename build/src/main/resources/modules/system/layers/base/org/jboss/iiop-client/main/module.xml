@@ -26,7 +26,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss:jboss-iiop-client}"/>
     </resources>
 
     <dependencies>

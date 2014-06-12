@@ -81,7 +81,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : UndertowRootDefinition.ATTRIBUTES) {
+        for (AttributeDefinition def : UndertowRootDefinition.INSTANCE.getAttributes()) {
             def.validateAndSet(operation, model);
         }
     }

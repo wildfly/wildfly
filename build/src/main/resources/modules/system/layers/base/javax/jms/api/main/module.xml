@@ -28,6 +28,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec}"/>
     </resources>
 </module>

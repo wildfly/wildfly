@@ -31,6 +31,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.spec.javax.xml.ws:jboss-jaxws-api_2.2_spec}"/>
     </resources>
 </module>
