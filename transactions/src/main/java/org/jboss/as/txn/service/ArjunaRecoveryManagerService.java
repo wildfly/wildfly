@@ -99,8 +99,13 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         recoveryExtensions.add(AtomicActionRecoveryModule.class.getName());
         recoveryExtensions.add(TORecoveryModule.class.getName());
 
-        final List<String> expiryScanners = new ArrayList<String>();
-        expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
+        final List<String> expiryScanners;
+        if (System.getProperty("RecoveryEnvironmentBean.expiryScannerClassNames") != null) {
+            expiryScanners = recoveryEnvironmentBean.getExpiryScannerClassNames();
+        } else {
+            expiryScanners = new ArrayList<String>();
+            expiryScanners.add(ExpiredTransactionStatusManagerScanner.class.getName());
+        }
 
 
         if (!jts) {
