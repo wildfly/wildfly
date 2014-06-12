@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Resource description for the addressable resource
@@ -56,6 +58,12 @@ public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefi
             .addParameter(STRING_KEYED_TABLE)
             .addParameter(BINARY_KEYED_TABLE)
             .build();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        JDBCStoreResourceDefinition.buildTransformation(version, builder);
+    }
 
     MixedKeyedJDBCStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.MIXED_KEYED_JDBC_STORE), new MixedKeyedJDBCStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);

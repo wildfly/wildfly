@@ -22,8 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/local-cache=*
@@ -38,7 +40,11 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition {
         return PathElement.pathElement(ModelKeys.LOCAL_CACHE, name);
     }
 
-    // attributes
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        CacheResourceDefinition.buildTransformation(version, builder);
+    }
 
     LocalCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
         super(ModelKeys.LOCAL_CACHE, LocalCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);

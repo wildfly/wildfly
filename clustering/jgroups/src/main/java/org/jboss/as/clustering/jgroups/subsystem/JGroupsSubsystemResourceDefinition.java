@@ -22,6 +22,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -30,6 +31,9 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -51,6 +55,14 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DEFAULT_STACK };
 
     private final boolean allowRuntimeOnlyRegistration;
+
+    static TransformationDescription buildTransformers(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        StackResourceDefinition.buildTransformation(version, builder);
+
+        return builder.build();
+    }
 
     // registration
     JGroupsSubsystemResourceDefinition(boolean allowRuntimeOnlyRegistration) {

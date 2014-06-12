@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -29,6 +30,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -60,6 +62,17 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition EXPORT_NATIVE_CONFIGURATION = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, JGroupsExtension.getResourceDescriptionResolver("stack"))
             .setReplyType(ModelType.STRING)
             .build();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.rejectChildResource(RelayResourceDefinition.PATH);
+        }
+
+        TransportResourceDefinition.buildTransformation(version, builder);
+        ProtocolResourceDefinition.buildTransformation(version, builder);
+    }
 
     // registration
     public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
