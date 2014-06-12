@@ -52,26 +52,26 @@ public class VaultInteractiveSession {
 
         while (encDir == null || encDir.length() == 0) {
             encDir = console
-                    .readLine(SecurityLogger.ROOT_LOGGER.enterEncryptionDirectory());
+                    .readLine(SecurityLogger.ROOT_LOGGER.enterEncryptionDirectory() + " ");
         }
 
         while (keystoreURL == null || keystoreURL.length() == 0) {
-            keystoreURL = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreURL());
+            keystoreURL = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreURL() + " ");
         }
 
-        char[] keystorePasswd = getSensitiveValue(SecurityLogger.ROOT_LOGGER.enterKeyStorePassword());
+        char[] keystorePasswd = getSensitiveValue(SecurityLogger.ROOT_LOGGER.enterKeyStorePassword(), SecurityLogger.ROOT_LOGGER.enterKeyStorePasswordAgain());
 
         try {
             while (salt == null || salt.length() != 8) {
-                salt = console.readLine(SecurityLogger.ROOT_LOGGER.enterSalt());
+                salt = console.readLine(SecurityLogger.ROOT_LOGGER.enterSalt() + " ");
             }
 
-            String ic = console.readLine(SecurityLogger.ROOT_LOGGER.enterIterationCount());
+            String ic = console.readLine(SecurityLogger.ROOT_LOGGER.enterIterationCount() + " ");
             iterationCount = Integer.parseInt(ic);
             vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount);
 
             while (keystoreAlias == null || keystoreAlias.length() == 0) {
-                keystoreAlias = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreAlias());
+                keystoreAlias = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreAlias() + " ");
             }
 
             System.out.println(SecurityLogger.ROOT_LOGGER.initializingVault());
@@ -88,15 +88,18 @@ public class VaultInteractiveSession {
         }
     }
 
-    public static char[] getSensitiveValue(String passwordPrompt) {
+    public static char[] getSensitiveValue(String passwordPrompt, String confirmationPrompt) {
         while (true) {
             if (passwordPrompt == null)
                 passwordPrompt = SecurityLogger.ROOT_LOGGER.enterYourPassword();
+            if (confirmationPrompt == null) {
+                confirmationPrompt = SecurityLogger.ROOT_LOGGER.enterYourPasswordAgain();
+            }
 
             Console console = System.console();
 
-            char[] passwd = console.readPassword(passwordPrompt + ": ");
-            char[] passwd1 = console.readPassword(passwordPrompt + SecurityLogger.ROOT_LOGGER.passwordAgain());
+            char[] passwd = console.readPassword(passwordPrompt + " ");
+            char[] passwd1 = console.readPassword(confirmationPrompt + " ");
             boolean noMatch = !Arrays.equals(passwd, passwd1);
             if (noMatch)
                 System.out.println(SecurityLogger.ROOT_LOGGER.passwordsDoNotMatch());

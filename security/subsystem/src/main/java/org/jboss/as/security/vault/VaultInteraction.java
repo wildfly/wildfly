@@ -56,17 +56,17 @@ public class VaultInteraction {
             switch (choice) {
                 case 0:
                     System.out.println("Task: Store a secured attribute");
-                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter secured attribute value (such as password)");
+                    char[] attributeValue = VaultInteractiveSession.getSensitiveValue("Please enter secured attribute value (such as password):", "Please enter secured attribute value (such as password) again:");
                     String vaultBlock = null;
 
                     while (vaultBlock == null || vaultBlock.length() == 0) {
-                        vaultBlock = console.readLine("Enter Vault Block:");
+                        vaultBlock = console.readLine("Enter Vault Block: ");
                     }
 
                     String attributeName = null;
 
                     while (attributeName == null || attributeName.length() == 0) {
-                        attributeName = console.readLine("Enter Attribute Name:");
+                        attributeName = console.readLine("Enter Attribute Name: ");
                     }
                     try {
                         vaultNISession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
@@ -80,13 +80,13 @@ public class VaultInteraction {
                         vaultBlock = null;
 
                         while (vaultBlock == null || vaultBlock.length() == 0) {
-                            vaultBlock = console.readLine("Enter Vault Block:");
+                            vaultBlock = console.readLine("Enter Vault Block: ");
                         }
 
                         attributeName = null;
 
                         while (attributeName == null || attributeName.length() == 0) {
-                            attributeName = console.readLine("Enter Attribute Name:");
+                            attributeName = console.readLine("Enter Attribute Name: ");
                         }
                         if (!vaultNISession.checkSecuredAttribute(vaultBlock, attributeName))
                             System.out.println("No value has been store for (" + vaultBlock + ", " + attributeName + ")");
