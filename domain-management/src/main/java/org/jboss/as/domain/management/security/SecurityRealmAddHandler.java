@@ -512,8 +512,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             String principalAttribute = GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
             boolean recursive = GroupToPrincipalResourceDefinition.RECURSIVE.resolveModelAttribute(context, groupToPrincipal).asBoolean();
             GroupName searchBy = GroupName.valueOf(GroupToPrincipalResourceDefinition.SEARCH_BY.resolveModelAttribute(context, groupToPrincipal).asString());
+            boolean preferOriginalConnection = GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, groupToPrincipal).asBoolean();
 
-            groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
+            groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy, preferOriginalConnection);
         } else {
             ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
             groupCache = principalToGroup.get(CACHE);
