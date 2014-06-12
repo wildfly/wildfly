@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -49,6 +49,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
+import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 
@@ -183,41 +184,32 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         } else {
             classLoader = module.getClassLoader();
         }
-        final ArchiveDeployment dep = this.newDeployment(unit.getName(), classLoader);
 
+        ArchiveDeployment parentDep = null;
         if (unit.getParent() != null) {
-            final String parentDeploymentName = unit.getParent().getName();
             final Module parentModule = unit.getParent().getAttachment(Attachments.MODULE);
             if (parentModule == null) {
                 throw WSLogger.ROOT_LOGGER.classLoaderResolutionFailed(deploymentRoot);
             }
-            final ClassLoader parentClassLoader = parentModule.getClassLoader();
-
             WSLogger.ROOT_LOGGER.tracef("Creating new unified WS deployment model for %s", unit.getParent());
-            final ArchiveDeployment parentDep = this.newDeployment(parentDeploymentName, parentClassLoader);
-            dep.setParent(parentDep);
+            parentDep = this.newDeployment(null, unit.getParent().getName(), parentModule.getClassLoader(), null);
         }
 
-        if (root != null) {
-            dep.setRootFile(new VirtualFileAdaptor(root));
-        } else {
-            dep.setRootFile(new ResourceLoaderAdapter(classLoader));
-        }
-        dep.setRuntimeClassLoader(classLoader);
+        final UnifiedVirtualFile uvf = root != null ? new VirtualFileAdaptor(root) : new ResourceLoaderAdapter(classLoader);
+        final ArchiveDeployment dep = this.newDeployment(parentDep, unit.getName(), classLoader, uvf);
+
         //add an AnnotationInfo attachment that uses composite jandex index
         dep.addAttachment(AnnotationsInfo.class, new JandexAnnotationsInfo(unit));
 
         return dep;
     }
 
-    /**
-     * Creates new archive deployment.
-     *
-     * @param name deployment name
-     * @param loader deployment loader
-     * @return new archive deployment
-     */
-    private ArchiveDeployment newDeployment(final String name, final ClassLoader loader) {
-        return (ArchiveDeployment) this.deploymentModelFactory.newDeployment(name, loader);
+    private ArchiveDeployment newDeployment(final ArchiveDeployment parent, final String name, final ClassLoader loader, final UnifiedVirtualFile rootFile) {
+        if (parent != null) {
+            return (ArchiveDeployment) this.deploymentModelFactory.newDeployment(parent, name, loader, rootFile);
+        } else {
+            return (ArchiveDeployment) this.deploymentModelFactory.newDeployment(name, loader, rootFile);
+        }
+
     }
 }
