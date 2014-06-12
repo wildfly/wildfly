@@ -180,6 +180,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
+    public static final String DEFAULT_SERVLET_NAME = "default";
 
     private DeploymentInfo deploymentInfo;
 
@@ -618,15 +619,20 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
                     } else {
                         if (servlet.getServletClass() == null) {
-                            throw UndertowMessages.MESSAGES.servletClassNotDefined(servlet.getServletName());
-                        }
-                        Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
-                        ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
-                        if (creator != null) {
-                            InstanceFactory<Servlet> factory = createInstanceFactory(creator);
-                            s = new ServletInfo(servlet.getName(), servletClass, factory);
+                            if (DEFAULT_SERVLET_NAME.equals(servlet.getName())) {
+                                s = new ServletInfo(servlet.getName(), DefaultServlet.class);
+                            } else {
+                                throw UndertowMessages.MESSAGES.servletClassNotDefined(servlet.getServletName());
+                            }
                         } else {
-                            s = new ServletInfo(servlet.getName(), servletClass);
+                            Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
+                            ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
+                            if (creator != null) {
+                                InstanceFactory<Servlet> factory = createInstanceFactory(creator);
+                                s = new ServletInfo(servlet.getName(), servletClass, factory);
+                            } else {
+                                s = new ServletInfo(servlet.getName(), servletClass);
+                            }
                         }
                     }
                     s.setAsyncSupported(servlet.isAsyncSupported())
@@ -685,7 +691,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             //we explicitly add the default servlet, to allow it to be mapped
             if (!mergedMetaData.getServlets().containsKey(ServletPathMatches.DEFAULT_SERVLET_NAME)) {
-                ServletInfo defaultServlet = Servlets.servlet("default", DefaultServlet.class);
+                ServletInfo defaultServlet = Servlets.servlet(DEFAULT_SERVLET_NAME, DefaultServlet.class);
                 handleServletMappings(is22OrOlder, seenMappings, servletMappings, defaultServlet);
 
                 d.addServlet(defaultServlet);
