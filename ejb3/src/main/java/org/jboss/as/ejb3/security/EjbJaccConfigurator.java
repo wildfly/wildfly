@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.security;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.Permission;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -93,28 +94,48 @@ public class EjbJaccConfigurator implements ComponentConfigurator {
             }
         }
 
-        Set<String> descriptorRoles = new HashSet<String>();
+        Set<String> securityRoles = new HashSet<String>();
+        // get all roles from the deployments descriptor (assembly descriptor roles)
         SecurityRolesMetaData secRolesMetaData = ejbComponentDescription.getSecurityRoles();
         if (secRolesMetaData != null) {
             for (SecurityRoleMetaData secRoleMetaData : secRolesMetaData) {
-                descriptorRoles.add(secRoleMetaData.getRoleName());
+                securityRoles.add(secRoleMetaData.getRoleName());
             }
         }
-        descriptorRoles.add(ANY_AUTHENTICATED_USER_ROLE);
 
-        // process the security-role-ref.
-        Map<String, Collection<String>> securityRoles = ejbComponentDescription.getSecurityRoleLinks();
-        for (Map.Entry<String, Collection<String>> entry : securityRoles.entrySet()) {
+        // at this point any roles specified via RolesAllowed annotation have been mapped to EJBMethodPermissions, so
+        // going through the permissions allows us to retrieve these roles.
+        // TODO there might be a better way to retrieve just annotated roles without going through all processed permissions
+        List<Map.Entry<String, Permission>> processedRoles = ejbJaccConfig.getRoles();
+        for (Map.Entry<String, Permission> entry : processedRoles) {
+            securityRoles.add(entry.getKey());
+        }
+
+        securityRoles.add(ANY_AUTHENTICATED_USER_ROLE);
+
+        // process the security-role-ref from the deployment descriptor.
+        Map<String, Collection<String>> securityRoleRefs = ejbComponentDescription.getSecurityRoleLinks();
+        for (Map.Entry<String, Collection<String>> entry : securityRoleRefs.entrySet()) {
             String roleName = entry.getKey();
             for (String roleLink : entry.getValue()) {
                 EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), roleName);
                 ejbJaccConfig.addRole(roleLink, p);
             }
-            descriptorRoles.remove(roleName);
+            securityRoles.remove(roleName);
+        }
+
+        // process remaining annotated declared roles that were not overridden in the descriptor.
+        Set<String> declaredRoles = ejbComponentDescription.getDeclaredRoles();
+        for (String role : declaredRoles) {
+            if (!securityRoleRefs.containsKey(role)) {
+                EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), role);
+                ejbJaccConfig.addRole(role, p);
+            }
+            securityRoles.remove(role);
         }
 
         // an EJBRoleRefPermission must be created for each declared role that does not appear in the security-role-ref.
-        for (String role : descriptorRoles) {
+        for (String role : securityRoles) {
             EJBRoleRefPermission p = new EJBRoleRefPermission(ejbComponentDescription.getEJBName(), role);
             ejbJaccConfig.addRole(role, p);
         }
