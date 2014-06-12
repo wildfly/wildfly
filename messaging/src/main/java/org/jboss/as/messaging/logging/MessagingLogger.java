@@ -28,6 +28,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.annotations.Message.INHERIT;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.jms.IllegalStateRuntimeException;
 import javax.xml.stream.XMLStreamException;
@@ -781,4 +782,7 @@ public interface MessagingLogger extends BasicLogger {
      */
     @Message(id = 73, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
     String canNotRemoveLastJNDIName(String jndiName);
+
+    @Message(id = 74, value = "Invalid parameter key: %s, the allowed keys are %s.")
+    OperationFailedException invalidParameterName(String parameterName, Set<String> allowedKeys);
 }

@@ -80,9 +80,7 @@
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
-               <in-vm-acceptor name="in-vm" server-id="0">
-                  <param key="direct-deliver" value="true"/>
-               </in-vm-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0" />
                <acceptor name="myacceptor">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
                   <param key="batch-delay" value="50"/>

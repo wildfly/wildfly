@@ -45,7 +45,6 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -183,21 +182,5 @@ class TransportConfigOperationHandlers {
             }
         }
         configuration.setConnectorConfigurations(connectors);
-    }
-
-    static class BasicTransportConfigAdd extends HornetQReloadRequiredHandlers.AddStepHandler {
-
-        private final AttributeDefinition[] attributes;
-
-        BasicTransportConfigAdd(final AttributeDefinition[] attributes) {
-            this.attributes = attributes;
-        }
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            for (final AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, model);
-            }
-        }
     }
 }
