@@ -564,6 +564,7 @@ final class SubsystemTestDelegate {
         }
 
         public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
+            Assume.assumeTrue("No legacy controller to test against",version.hasValidLegacyController());
             //Ignore this test if it is eap
             if (version.isEap()) {
                 Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());
