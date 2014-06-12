@@ -291,7 +291,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 66, value = "Failed to configure handler %s")
     RuntimeException failedToConfigureHandlerClass(String handlerClass, @Cause Exception e);
 
-    @Message(id = 67, value = "Could not find the port number listening for protocol %s")
+    @Message(id = 67, value = "Servlet class not defined for servlet %s")
     IllegalArgumentException servletClassNotDefined(final String servletName);
 
     @LogMessage(level = ERROR)
