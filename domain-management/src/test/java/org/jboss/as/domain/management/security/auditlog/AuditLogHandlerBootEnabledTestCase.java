@@ -55,7 +55,7 @@ import org.junit.Test;
  */
 public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerTestCase {
     public AuditLogHandlerBootEnabledTestCase() {
-        super(true);
+        super(true, true);
     }
 
     @Test

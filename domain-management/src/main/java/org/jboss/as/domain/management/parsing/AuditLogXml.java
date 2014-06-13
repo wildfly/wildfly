@@ -374,7 +374,17 @@ public class AuditLogXml {
             case UDP:
             case TCP:
             case TLS:{
-                parseSyslogAuditLogHandlerProtocol1_5(reader, add.get(OP_ADDR), expectedNs, list, element);
+                switch (expectedNs) {
+                //< 1.5 does not end up here
+                case DOMAIN_1_5:
+                case DOMAIN_1_6:
+                    parseSyslogAuditLogHandlerProtocol1_5(reader, add.get(OP_ADDR), expectedNs, list, element);
+                    break;
+                default:
+                    parseSyslogAuditLogHandlerProtocol1_7(reader, add.get(OP_ADDR), expectedNs, list, element);
+                    break;
+                }
+
                 break;
             }
             default:
@@ -447,6 +457,74 @@ public class AuditLogXml {
         }
     }
 
+    private void parseSyslogAuditLogHandlerProtocol1_7(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, final Element protocolElement) throws XMLStreamException {
+        PathAddress protocolAddress = PathAddress.pathAddress(address.clone().add(ModelDescriptionConstants.PROTOCOL, protocolElement.getLocalName()));
+        ModelNode add = Util.createAddOperation(protocolAddress);
+        list.add(add);
+        final int tcpCount = reader.getAttributeCount();
+        for (int i = 0; i < tcpCount; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case HOST: {
+                    SyslogAuditLogProtocolResourceDefinition.Udp.HOST.parseAndSetParameter(value, add, reader);
+                    break;
+                }
+                case PORT: {
+                    SyslogAuditLogProtocolResourceDefinition.Udp.PORT.parseAndSetParameter(value, add, reader);
+                    break;
+                }
+                case MESSAGE_TRANSFER : {
+                    if (protocolElement != Element.UDP) {
+                        SyslogAuditLogProtocolResourceDefinition.Tcp.MESSAGE_TRANSFER.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                }
+                case RECONNECT_TIMEOUT:
+                    if (protocolElement != Element.UDP) {
+                        SyslogAuditLogProtocolResourceDefinition.Tcp.RECONNECT_TIMEOUT.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (protocolElement != Element.TLS) {
+            requireNoContent(reader);
+        } else {
+            boolean seenTrustStore = false;
+            boolean seenClientCertStore = false;
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                requireNamespace(reader, expectedNs);
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                case TRUSTSTORE:{
+                    if (seenTrustStore) {
+                        throw duplicateNamedElement(reader, Element.TRUSTSTORE.getLocalName());
+                    }
+                    seenTrustStore = true;
+                    parseSyslogTlsKeystore(reader, protocolAddress, expectedNs, list, SyslogAuditLogProtocolResourceDefinition.Tls.TlsKeyStore.TRUSTSTORE_ELEMENT, false);
+                    break;
+                }
+                case CLIENT_CERT_STORE : {
+                    if (seenClientCertStore) {
+                        throw duplicateNamedElement(reader, Element.CLIENT_CERT_STORE.getLocalName());
+                    }
+                    seenClientCertStore = true;
+                    parseSyslogTlsKeystore(reader, protocolAddress, expectedNs, list, SyslogAuditLogProtocolResourceDefinition.Tls.TlsKeyStore.CLIENT_CERT_ELEMENT, true);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
     private void parseSyslogTlsKeystore(final XMLExtendedStreamReader reader, final PathAddress address, final Namespace expectedNs, final List<ModelNode> list, final PathElement storeAddress, final boolean hasKeyPassword) throws XMLStreamException {
         ModelNode add = Util.createAddOperation(address.append(storeAddress));
         list.add(add);
@@ -671,12 +749,14 @@ public class AuditLogXml {
             SyslogAuditLogProtocolResourceDefinition.Tcp.HOST.marshallAsAttribute(protocolContents, writer);
             SyslogAuditLogProtocolResourceDefinition.Tcp.PORT.marshallAsAttribute(protocolContents, writer);
             SyslogAuditLogProtocolResourceDefinition.Tcp.MESSAGE_TRANSFER.marshallAsAttribute(protocolContents, writer);
+            SyslogAuditLogProtocolResourceDefinition.Tcp.RECONNECT_TIMEOUT.marshallAsAttribute(protocolContents, writer);
             writer.writeEndElement();
         } else if (type.equals(ModelDescriptionConstants.TLS)) {
             writer.writeStartElement(type);
             SyslogAuditLogProtocolResourceDefinition.Tls.HOST.marshallAsAttribute(protocolContents, writer);
             SyslogAuditLogProtocolResourceDefinition.Tls.PORT.marshallAsAttribute(protocolContents, writer);
             SyslogAuditLogProtocolResourceDefinition.Tls.MESSAGE_TRANSFER.marshallAsAttribute(protocolContents, writer);
+            SyslogAuditLogProtocolResourceDefinition.Tcp.RECONNECT_TIMEOUT.marshallAsAttribute(protocolContents, writer);
 
             if (protocolContents.hasDefined(AUTHENTICATION)) {
                 writeAuditLogSyslogTlsProtocolKeyStore(writer, protocolContents.get(AUTHENTICATION), TRUSTSTORE);

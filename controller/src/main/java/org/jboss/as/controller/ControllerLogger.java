@@ -515,6 +515,14 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13416, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
     void cancellingOperation(String operation, int id, String thread);
 
+    @LogMessage(level = Level.INFO)
+    @Message(id = 13417, value = "Attempting reconnect to syslog handler '%s; after timeout of %d seconds")
+    void attemptingReconnectToSyslog(String name, int timeout);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 13418, value = "Reconnecting to syslog handler '%s failed")
+    void reconnectToSyslogFailed(String name, @Cause Throwable e);
+
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 
 }

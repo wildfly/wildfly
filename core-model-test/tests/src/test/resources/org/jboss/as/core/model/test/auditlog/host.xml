@@ -41,13 +41,13 @@
                   <udp/>
                </syslog-handler>
                <syslog-handler name="syslog-tcp" formatter="json-two" max-failure-count="${tcp.max-failure-count:30}" syslog-format="${tcp.format:RFC5424}" max-length="${tcp.max-length:3064}" truncate="${tcp.truncate:true}">
-                  <tcp host="${tcp.host:testhost}" port="${tcp.port:1514}" message-transfer="${tcp.transfer:OCTET_COUNTING}" />
+                  <tcp host="${tcp.host:testhost}" port="${tcp.port:1514}" message-transfer="${tcp.transfer:OCTET_COUNTING}" reconnect-timeout="${tcp.reconnect-timeout:10}"/>
                </syslog-handler>
                <syslog-handler name="syslog-tcp-default" formatter="json-one">
                   <tcp/>
                </syslog-handler>
                <syslog-handler name="syslog-tls" formatter="json-two" max-failure-count="${tls.max-failure-count:30}" syslog-format="${tls.format:RFC3164}" max-length="${tls.max-length:3064}" truncate="${tls.truncate:true}">
-                    <tls host="${tls.host:testhost}" port="${tls.port:1514}" message-transfer="${tls.transfer:NON_TRANSPARENT_FRAMING}">
+                    <tls host="${tls.host:testhost}" port="${tls.port:1514}" message-transfer="${tls.transfer:NON_TRANSPARENT_FRAMING}" reconnect-timeout="${tls.reconnect-timeout:10}">
                         <truststore path="${tls.truststore-path:truststore}"
                                     relative-to="jboss.server.data.dir"
                                     keystore-password="${tls.truststore-keystore-password:blah}"/>

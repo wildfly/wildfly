@@ -517,7 +517,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         List<AuditLogHandler> getHandlersForLogging(){
             List<AuditLogHandler> list = new ArrayList<AuditLogHandler>();
             for (Map.Entry<String, AuditLogHandler> handlerEntry : sharedConfiguration.getConfiguredHandlers().entrySet()) {
-                if (!handlerEntry.getValue().isDisabledDueToFailures() && hasHandlerReference(handlerEntry.getKey())) {
+                if (handlerEntry.getValue().isActive() && hasHandlerReference(handlerEntry.getKey())) {
                     list.add(handlerEntry.getValue());
                 }
             }
