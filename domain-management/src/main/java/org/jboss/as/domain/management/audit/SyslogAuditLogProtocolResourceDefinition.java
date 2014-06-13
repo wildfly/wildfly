@@ -51,8 +51,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -170,7 +170,13 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
             .setAllowExpression(true)
             .build();
 
-        private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{HOST, PORT, MESSAGE_TRANSFER};
+        public static final SimpleAttributeDefinition RECONNECT_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECONNECT_TIMEOUT, ModelType.INT)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(-1))
+            .setAllowExpression(true)
+            .build();
+
+        private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{HOST, PORT, MESSAGE_TRANSFER, RECONNECT_TIMEOUT};
 
 
         Tcp(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
@@ -187,7 +193,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
     public static class Tls extends Tcp {
         public static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.PROTOCOL, ModelDescriptionConstants.TLS);
 
-        private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{HOST, PORT, MESSAGE_TRANSFER};
+        private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{HOST, PORT, MESSAGE_TRANSFER, RECONNECT_TIMEOUT};
 
         Tls(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
             super(auditLogger, pathManager, ATTRIBUTES, PATH_ELEMENT,

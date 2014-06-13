@@ -36,10 +36,10 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -516,7 +516,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         List<AuditLogHandler> getHandlersForLogging(){
             List<AuditLogHandler> list = new ArrayList<>();
             for (Map.Entry<String, AuditLogHandler> handlerEntry : sharedConfiguration.getConfiguredHandlers().entrySet()) {
-                if (!handlerEntry.getValue().isDisabledDueToFailures() && hasHandlerReference(handlerEntry.getKey())) {
+                if (handlerEntry.getValue().isActive() && hasHandlerReference(handlerEntry.getKey())) {
                     list.add(handlerEntry.getValue());
                 }
             }

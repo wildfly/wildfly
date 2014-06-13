@@ -3191,4 +3191,12 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 353, value = "No response handler for request %s")
     IOException responseHandlerNotFound(int id);
 
+    @LogMessage(level = Level.INFO)
+    @Message(id = 354, value = "Attempting reconnect to syslog handler '%s; after timeout of %d seconds")
+    void attemptingReconnectToSyslog(String name, int timeout);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 355, value = "Reconnecting to syslog handler '%s failed")
+    void reconnectToSyslogFailed(String name, @Cause Throwable e);
+
 }

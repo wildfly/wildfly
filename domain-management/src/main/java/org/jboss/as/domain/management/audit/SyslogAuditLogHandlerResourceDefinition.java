@@ -214,6 +214,7 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
             handler.setMessageTransfer(
                     SyslogAuditLogHandler.MessageTransfer.valueOf(
                             SyslogAuditLogProtocolResourceDefinition.Tcp.MESSAGE_TRANSFER.resolveModelAttribute(context, protocol.getModel()).asString()));
+            handler.setReconnectTimeout(SyslogAuditLogProtocolResourceDefinition.Tcp.RECONNECT_TIMEOUT.resolveModelAttribute(context, protocol.getModel()).asInt());
         }
         if (transport == SyslogAuditLogHandler.Transport.TLS) {
             final Set<ResourceEntry> tlsStores = protocol.getChildren(AUTHENTICATION);

@@ -294,6 +294,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String READ_TRANSFORMED_RESOURCE_OPERATION = "read-transformed-resource";
     public static final String REALM = "realm";
+    public static final String RECONNECT_TIMEOUT = "reconnect-timeout";
     public static final String RECURSIVE = "recursive";
     public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String RECYCLE = "recycle";
