@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.TransactionManager;
 
+import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
 import org.jboss.msc.service.Service;
@@ -48,20 +49,27 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
+    // This can be removed after the getBatchConfigurationProperties() is removed from jBeret
+    private static final Properties PROPS = new Properties();
+
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
     private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
 
+    private final JobRepository jobRepository;
+    private final ClassLoader classLoader;
     private BatchEnvironment batchEnvironment = null;
-    private Properties properties = null;
-    private ClassLoader classLoader = null;
+
+    public BatchEnvironmentService(final ClassLoader classLoader, final JobRepository jobRepository) {
+        this.classLoader = classLoader;
+        this.jobRepository = jobRepository;
+    }
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
-        final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoader,
-                beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
-                transactionManagerInjector.getOptionalValue(), properties);
+        final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(beanManagerInjector.getOptionalValue(),
+                executorServiceInjector.getValue(), transactionManagerInjector.getOptionalValue());
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -71,18 +79,12 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     public synchronized void stop(final StopContext context) {
         WildFlyBatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
         BatchEnvironmentFactory.getInstance().remove(classLoader);
-        properties = null;
-        classLoader = null;
         batchEnvironment = null;
     }
 
     @Override
     public synchronized BatchEnvironment getValue() throws IllegalStateException, IllegalArgumentException {
         return batchEnvironment;
-    }
-
-    public synchronized void setClassLoader(final ClassLoader classLoader) {
-        this.classLoader = classLoader;
     }
 
     public InjectedValue<BeanManager> getBeanManagerInjector() {
@@ -93,30 +95,21 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return executorServiceInjector;
     }
 
-    public synchronized void setProperties(final Properties properties) {
-        this.properties = properties;
-    }
-
     public InjectedValue<TransactionManager> getTransactionManagerInjector() {
         return transactionManagerInjector;
     }
 
-    private static class WildFlyBatchEnvironment implements BatchEnvironment {
+    private class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
         private final ExecutorService executorService;
         private final TransactionManager transactionManager;
-        private final Properties properties;
-        private final ClassLoader classLoader;
 
-        WildFlyBatchEnvironment(final ClassLoader classLoader, final BeanManager beanManager,
-                                final ExecutorService executorService, final TransactionManager transactionManager,
-                                final Properties properties) {
-            this.classLoader = classLoader;
+        WildFlyBatchEnvironment(final BeanManager beanManager,
+                                final ExecutorService executorService, final TransactionManager transactionManager) {
             artifactFactory = (beanManager == null ? null : new WildFlyArtifactFactory(beanManager));
             this.executorService = executorService;
             this.transactionManager = transactionManager;
-            this.properties = properties;
         }
 
         @Override
@@ -189,8 +182,19 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         }
 
         @Override
+        public JobRepository getJobRepository() {
+            return jobRepository;
+        }
+
+        /**
+         * {@inheritDoc}
+         * @deprecated this is no longer used in jBeret and will be removed
+         * @return
+         */
+        @Override
+        @Deprecated
         public Properties getBatchConfigurationProperties() {
-            return properties;
+            return PROPS;
         }
 
         private ContextHandle createContextHandle() {

@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import javax.transaction.TransactionManager;
 
+import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
 import org.wildfly.jberet._private.WildFlyBatchLogger;
@@ -73,6 +74,17 @@ public class BatchEnvironmentFactory {
         }
 
         @Override
+        public JobRepository getJobRepository() {
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
+        }
+
+        /**
+         * {@inheritDoc}
+         * @deprecated this is no longer used in jBeret and will be removed
+         * @return
+         */
+        @Override
+        @Deprecated
         public Properties getBatchConfigurationProperties() {
             throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }

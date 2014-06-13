@@ -39,7 +39,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.wildfly.jberet.BatchConfiguration.JobRepositoryType;
+import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
