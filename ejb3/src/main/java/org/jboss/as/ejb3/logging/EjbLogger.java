@@ -2978,4 +2978,10 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 453, value = "Failed to persist timer %s for object %s")
     void failedToPersistTimer(String id, String timedObjectId, @Cause Exception e);
+
+    @Message(id = 454, value = "Only one instance on <container-transaction> with an ejb-name of * can be present.")
+    DeploymentUnitProcessingException mustOnlyBeSingleContainerTransactionElementWithWildcard();
+
+    @Message(id = 455, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
+    DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
 }

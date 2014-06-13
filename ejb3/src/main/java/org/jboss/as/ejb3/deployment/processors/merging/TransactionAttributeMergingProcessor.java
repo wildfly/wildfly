@@ -132,8 +132,25 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
 
         EjbJarMetaData ejbJarMetadata = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetadata != null) {
+
+            boolean wildcardAttributeSet = false;
+            boolean wildcardTimeoutSet = false;
+            ContainerTransactionMetaData global = null;
             final AssemblyDescriptorMetaData assemblyDescriptor = ejbJarMetadata.getAssemblyDescriptor();
-            if (assemblyDescriptor != null) {
+            if(assemblyDescriptor != null) {
+                final ContainerTransactionsMetaData globalTransactions = assemblyDescriptor.getContainerTransactionsByEjbName("*");
+
+                if (globalTransactions != null) {
+                    if (globalTransactions.size() > 1) {
+                        throw EjbLogger.ROOT_LOGGER.mustOnlyBeSingleContainerTransactionElementWithWildcard();
+                    }
+                    global = globalTransactions.iterator().next();
+                    for(MethodMetaData method : global.getMethods()) {
+                        if(!method.getMethodName().equals("*")) {
+                            throw EjbLogger.ROOT_LOGGER.wildcardContainerTransactionElementsMustHaveWildcardMethodName();
+                        }
+                    }
+                }
                 final ContainerTransactionsMetaData containerTransactions = assemblyDescriptor.getContainerTransactionsByEjbName(componentDescription.getEJBName());
                 if (containerTransactions != null) {
                     for (final ContainerTransactionMetaData containerTx : containerTransactions) {
@@ -145,10 +162,14 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                             final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                             if (methodName.equals("*")) {
-                                if (txAttr != null)
+                                if (txAttr != null){
+                                    wildcardAttributeSet = true;
                                     componentDescription.getTransactionAttributes().setAttribute(methodIntf, null, txAttr);
-                                if (timeout != null)
+                                }
+                                if (timeout != null) {
+                                    wildcardTimeoutSet = true;
                                     componentDescription.getTransactionTimeouts().setAttribute(methodIntf, null, timeout);
+                                }
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
@@ -166,6 +187,23 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                                 }
                             }
                         }
+                    }
+                }
+            }
+            if(global != null) {
+                if(!wildcardAttributeSet && global.getTransAttribute() != null) {
+                    for(MethodMetaData method : global.getMethods()) {
+                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        componentDescription.getTransactionAttributes().setAttribute(methodIntf, null, global.getTransAttribute());
+                    }
+                }
+                final Integer timeout = timeout(global);
+                if(!wildcardTimeoutSet && timeout != null) {
+                    for(MethodMetaData method : global.getMethods()) {
+                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        componentDescription.getTransactionTimeouts().setAttribute(methodIntf, null, timeout);
                     }
                 }
             }
