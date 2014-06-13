@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.NameNotFoundException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
@@ -210,6 +211,8 @@ public class LdapGroupSearcherFactory {
         private final String groupAttribute; // The attribute on the principal that references the group it is a member of.
         private final String groupNameAttribute; // The attribute on the group that is it's simple name.
         private final boolean preferOriginalConnection; // After a referral should we still prefer the original connection?
+        private static final boolean IGNORE_NONEXISTENT_ROLE =
+              Boolean.valueOf(System.getProperty("org.jboss.as.domain.management.security.LdapGroupSearcherService.IGNORE_NONEXISTENT_ROLE", "false")).booleanValue();
 
         private PrincipalToGroupSearcher(final String groupAttribute, final String groupNameAttribute, final boolean preferOriginalConnection) {
             this.groupAttribute = groupAttribute;
@@ -282,6 +285,10 @@ public class LdapGroupSearcherFactory {
                                 SECURITY_LOGGER.trace("No groupNameAttribute to load simpleName");
                             }
                             foundEntries.add(new LdapEntry(simpleName, distingushedName, groupReferralAddress));
+                        } catch (NameNotFoundException e) {
+                            SECURITY_LOGGER.tracef("Failed to query roleNameAttrName: %s", e.getMessage());
+                            if( !this.IGNORE_NONEXISTENT_ROLE )
+                                throw e;
                         } catch (LdapReferralException e) {
                             Object info = e.getReferralInfo();
                             try {
