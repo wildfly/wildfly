@@ -37,7 +37,7 @@
     <artifactId>wildfly-dist</artifactId>
     <version>9.0.0.Alpha1-SNAPSHOT</version>
     <name>WildFly: Distribution</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
