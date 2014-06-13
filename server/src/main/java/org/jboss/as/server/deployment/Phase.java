@@ -385,8 +385,8 @@ public enum Phase {
     public static final int CONFIGURE_DEFERRED_PHASE                    = 0x0300;
 
     // FIRST_MODULE_USE
-    public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x0100; // need to be before POST_MODULE_REFLECTION_INDEX
-                                                                                         // and anything that could load class definitions
+    // need to be before POST_MODULE_REFLECTION_INDEX
+    // and anything that could load class definitions
     public static final int FIRST_MODULE_USE_INTERCEPTORS               = 0x0200;
     public static final int FIRST_MODULE_USE_PERSISTENCE_PREPARE        = 0x0300;
     public static final int FIRST_MODULE_USE_DSXML_DEPLOYMENT           = 0x0400;
