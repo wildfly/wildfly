@@ -322,7 +322,7 @@
                 <xs:documentation>Sets the cache eviction strategy. Available options are 'UNORDERED', 'FIFO', 'LRU', 'LIRS' and 'NONE' (to disable eviction).</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="max-entries" type="xs:int" default="10000">
+        <xs:attribute name="max-entries" type="xs:int" default="-1">
             <xs:annotation>
                 <xs:documentation>Maximum number of entries in a cache instance. If selected value is not a power of two the actual value will default to the least power of two larger than selected value. -1 means no limit.</xs:documentation>
             </xs:annotation>
@@ -340,7 +340,7 @@
                 <xs:documentation>Maximum lifespan of a cache entry, after which the entry is expired cluster-wide, in milliseconds. -1 means the entries never expire.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="interval" type="xs:long" default="5000">
+        <xs:attribute name="interval" type="xs:long" default="60000">
             <xs:annotation>
                 <xs:documentation>Interval (in milliseconds) between subsequent runs to purge expired entries from memory and any cache stores. If you wish to disable the periodic eviction process altogether, set wakeupInterval to -1.</xs:documentation>
             </xs:annotation>
