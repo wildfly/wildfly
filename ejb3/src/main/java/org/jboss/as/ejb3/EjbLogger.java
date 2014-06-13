@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.XidTransactionID;
@@ -594,6 +595,12 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 14268, value = "Failure in caller transaction.")
     void failureInCallerTransaction(@Cause Throwable cause);
+
+    @Message(id = 14269, value = "Only one instance on <container-transaction> with an ejb-name of * can be present.")
+    DeploymentUnitProcessingException mustOnlyBeSingleContainerTransactionElementWithWildcard();
+
+    @Message(id = 14270, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
+    DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
 
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
