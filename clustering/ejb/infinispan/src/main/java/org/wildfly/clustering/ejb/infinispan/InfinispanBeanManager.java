@@ -291,7 +291,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
     @Override
     public int getActiveCount() {
         int size = 0;
-        for (Object key: this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+        for (Object key: this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet()) {
             if (this.accept(key)) {
                 size += 1;
             }
@@ -351,7 +351,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     private void schedule(Cache<BeanKey<I>, BeanEntry<G>> cache, Locality oldLocality, Locality newLocality) {
         // Iterate over sessions in memory
-        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet()) {
             // Cache may contain non-string keys, so ignore any others
             if (this.accept(key)) {
                 @SuppressWarnings("unchecked")

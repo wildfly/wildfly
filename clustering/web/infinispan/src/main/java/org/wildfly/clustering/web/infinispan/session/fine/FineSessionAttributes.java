@@ -53,7 +53,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
 
     @Override
     public Object removeAttribute(String name) {
-        return this.attributes.remove(name) ? this.marshaller.read(this.invoker.invoke(this.cache, new Remover.RemoveOperation<SessionAttributeCacheKey, V>(this.createKey(name)), Flag.SKIP_LOCKING)) : null;
+        return this.attributes.remove(name) ? this.marshaller.read(this.invoker.invoke(this.cache, new Remover.RemoveOperation<SessionAttributeCacheKey, V>(this.createKey(name)))) : null;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
                 return cache.put(key, value);
             }
         };
-        return this.marshaller.read(this.invoker.invoke(this.cache, operation, this.attributes.add(name) ? new Flag[] { Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING } : new Flag[] { Flag.SKIP_LOCKING }));
+        return this.marshaller.read(this.invoker.invoke(this.cache, operation, this.attributes.add(name) ? new Flag[] { Flag.IGNORE_RETURN_VALUES } : new Flag[0]));
     }
 
     @Override
@@ -80,7 +80,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         Object attribute = this.marshaller.read(value);
         // If the object is mutable, we need to indicate that the attribute should be replicated
         if (MutableDetector.isMutable(attribute)) {
-            new CacheEntryMutator<>(this.cache, this.invoker, key, value, Flag.SKIP_LOCKING).mutate();
+            new CacheEntryMutator<>(this.cache, this.invoker, key, value).mutate();
         }
         return attribute;
     }

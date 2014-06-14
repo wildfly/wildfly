@@ -64,11 +64,11 @@ public class CoarseSSOFactory<I, D, L> implements SSOFactory<CoarseSSOEntry<I, D
         CoarseAuthenticationEntry<I, D, L> entry = new CoarseAuthenticationEntry<>();
         CoarseAuthenticationEntry<I, D, L> existingEntry = this.invoker.invoke(this.authenticationCache, new CreateOperation<>(id, entry));
         if (existingEntry != null) {
-            Map<D, String> value = this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.SKIP_LOCKING);
+            Map<D, String> value = this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)));
             return new CoarseSSOEntry<>(existingEntry, value);
         }
         Map<D, String> map = new HashMap<>();
-        Map<D, String> existingMap = this.invoker.invoke(this.sessionsCache, new CreateOperation<>(new CoarseSessionsKey(id), map), Flag.SKIP_LOCKING);
+        Map<D, String> existingMap = this.invoker.invoke(this.sessionsCache, new CreateOperation<>(new CoarseSessionsKey(id), map));
         return new CoarseSSOEntry<>(entry, (existingMap != null) ? existingMap : map);
     }
 
@@ -76,13 +76,13 @@ public class CoarseSSOFactory<I, D, L> implements SSOFactory<CoarseSSOEntry<I, D
     public CoarseSSOEntry<I, D, L> findValue(String id) {
         CoarseAuthenticationEntry<I, D, L> entry = this.invoker.invoke(this.authenticationCache, new FindOperation<String, CoarseAuthenticationEntry<I, D, L>>(id));
         if (entry == null) return null;
-        Map<D, String> map =  this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.SKIP_LOCKING);
+        Map<D, String> map =  this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)));
         return new CoarseSSOEntry<>(entry, map);
     }
 
     @Override
     public void remove(String id) {
         this.invoker.invoke(this.authenticationCache, new RemoveOperation<String, CoarseAuthenticationEntry<I, D, L>>(id), Flag.IGNORE_RETURN_VALUES);
-        this.invoker.invoke(this.sessionsCache, new RemoveOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING);
+        this.invoker.invoke(this.sessionsCache, new RemoveOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.IGNORE_RETURN_VALUES);
     }
 }
