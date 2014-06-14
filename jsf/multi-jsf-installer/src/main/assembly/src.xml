@@ -22,7 +22,6 @@
       <filtered>true</filtered>
       <includes>
         <include>${jsf-impl-name}*.xml</include>
-        <include>injection-module.xml</include>
       </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
     </fileSet>
