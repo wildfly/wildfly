@@ -342,6 +342,29 @@
                            </configuration>
                        </execution>
                    </executions>
+                    <!-- WFLY-3361 - use external xalan for XML transformations to
+                    ensure consistent behaviour on all platrforms.-->
+                   <dependencies>
+                       <dependency>
+                           <groupId>xalan</groupId>
+                           <artifactId>xalan</artifactId>
+                           <version>2.7.1</version>
+                       </dependency>
+                   </dependencies>
+               </plugin>
+
+               <!-- WFLY-3361 - use external xalan for XML transformations to
+               ensure consistent behaviour on all platrforms.-->
+               <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                   <dependencies>
+                       <dependency>
+                           <groupId>xalan</groupId>
+                           <artifactId>xalan</artifactId>
+                           <version>2.7.1</version>
+                       </dependency>
+                   </dependencies>
                </plugin>
 
                 <!--
@@ -1302,41 +1325,6 @@
                 </plugins>
             </build>
         </profile>
-
-	<!-- WFLY-3361 Remove empty xmlns attributes from server configs which XSLT transformation on IBM JDK could produce. -->
-	<profile>
-	    <id>ibmjdk.cleanBlankNs.profile</id>
-            <activation>
-                <property>
-                    <name>java.vendor</name>
-                    <value>IBM Corporation</value>
-               </property>
-            </activation>
-	    <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <version>1.5.2</version>
-                        <executions>
-                            <execution>
-                                <id>ibmjdk.clean.blank.namespaces</id>
-                                <phase>test-compile</phase>
-                                <goals><goal>replace</goal></goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <includes>
-                                        <include>**/standalone/configuration/standalone*.xml</include>
-                                        <include>**/domain/configuration/domain.xml</include>
-                                    </includes>
-                                    <token>xmlns=\"\"</token>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-	    </build>
-	</profile>
 
     </profiles>
 </project>

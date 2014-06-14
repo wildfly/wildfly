@@ -8,7 +8,7 @@
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $messaging)]
    						  /*[local-name()='hornetq-server']">
         <xsl:copy>
-            <xsl:element name="failover-on-shutdown">true</xsl:element>
+            <xsl:element name="failover-on-shutdown" namespace="{namespace-uri()}">true</xsl:element>
             <xsl:apply-templates select="node()"/>
         </xsl:copy>
     </xsl:template>
