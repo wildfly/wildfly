@@ -31,7 +31,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -74,20 +74,19 @@ import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
 
 /**
- * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
+ * A {@link AbstractAddStepHandler} to handle the add operation for the EJB
  * remote service, in the EJB subsystem
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
+public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
     static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
     private EJB3RemoteServiceAdd() {
     }
 
-    // TODO why is this a boottime-only handler?
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         newControllers.addAll(installRuntimeServices(context, model, verificationHandler));
         // add ejb remote transactions repository service
         final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
