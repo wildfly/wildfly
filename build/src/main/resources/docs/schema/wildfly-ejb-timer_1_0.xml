@@ -54,7 +54,7 @@
         <xs:attribute name="timer-id" type="xs:string" use="required"/>
         <xs:attribute name="initial-date" use="required"/>
         <xs:attribute name="repeat-interval" use="required"/>
-        <xs:attribute name="next-date" use="required"/>
+        <xs:attribute name="next-date" use="optional"/>
         <xs:attribute name="previous-run" use="optional"/>
         <xs:attribute name="timer-state" use="required"/>
     </xs:complexType>

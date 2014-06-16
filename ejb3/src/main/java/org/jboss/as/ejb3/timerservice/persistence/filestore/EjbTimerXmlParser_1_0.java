@@ -210,7 +210,6 @@ public class EjbTimerXmlParser_1_0 implements XMLElementReader<List<TimerImpl>> 
         final Set<String> required = new HashSet<>(Arrays.asList(new String[]{
                 TIMED_OBJECT_ID,
                 TIMER_ID,
-                NEXT_DATE,
                 TIMER_STATE,
                 SCHEDULE_EXPR_SECOND,
                 SCHEDULE_EXPR_MINUTE,
