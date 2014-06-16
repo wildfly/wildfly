@@ -21,12 +21,10 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 
 import java.io.File;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.CurrentOperationIdHolder;
@@ -55,8 +53,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
-import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
@@ -71,7 +67,6 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
     private final TransactionalOperationExecutor txOperationExecutor;
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
     private final File tempDir;
 
