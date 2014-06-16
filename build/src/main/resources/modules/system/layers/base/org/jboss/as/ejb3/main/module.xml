@@ -26,7 +26,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-ejb3}"/>
         <resource-root path="timers" />
     </resources>
 
@@ -84,7 +84,9 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>
         <!-- the EE metadata -->
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.ejb"/>
+        <module name="org.jboss.metadata.ear"/>
         <!-- Access to the ModuleClassLoader -->
         <module name="org.jboss.modules"/>
         <!-- Access to ServiceName -->

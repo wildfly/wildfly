@@ -28,7 +28,10 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-impl}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-core-impl}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-deployers-common}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-validator}"/>
     </resources>
 
     <dependencies>

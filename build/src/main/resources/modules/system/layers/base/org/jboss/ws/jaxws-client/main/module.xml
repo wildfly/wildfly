@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-client}"/>
     </resources>
 
     <dependencies>

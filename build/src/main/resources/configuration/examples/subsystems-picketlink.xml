@@ -2,34 +2,34 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <subsystems>
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
-      <subsystem>configuration/subsystems/ee.xml</subsystem>
-      <subsystem supplement="full">configuration/subsystems/ejb3.xml</subsystem>
-      <subsystem>configuration/subsystems/io.xml</subsystem>
-      <subsystem>configuration/subsystems/infinispan.xml</subsystem>
-      <subsystem>configuration/subsystems/jacorb.xml</subsystem>
-      <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem>configuration/subsystems/jca.xml</subsystem>
-      <subsystem>configuration/subsystems/jdr.xml</subsystem>
-      <subsystem>configuration/subsystems/jmx.xml</subsystem>
-      <subsystem>configuration/subsystems/jpa.xml</subsystem>
-      <subsystem>configuration/subsystems/jsf.xml</subsystem>
-      <subsystem>configuration/subsystems/jsr77.xml</subsystem>
-      <subsystem>configuration/subsystems/mail.xml</subsystem>
-      <subsystem>configuration/subsystems/messaging.xml</subsystem>
-      <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/picketlink-federation.xml</subsystem>
-      <subsystem>configuration/subsystems/picketlink-identity-management.xml</subsystem>
-      <subsystem>configuration/subsystems/pojo.xml</subsystem>
-      <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
-      <subsystem>configuration/subsystems/sar.xml</subsystem>
-      <subsystem supplement="standalone">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem>configuration/subsystems/undertow.xml</subsystem>
-      <subsystem>configuration/subsystems/webservices.xml</subsystem>
-      <subsystem>configuration/subsystems/weld.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
+      <subsystem>datasources.xml</subsystem>
+      <subsystem>deployment-scanner.xml</subsystem>
+      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="full">ejb3.xml</subsystem>
+      <subsystem>io.xml</subsystem>
+      <subsystem>infinispan.xml</subsystem>
+      <subsystem>jacorb.xml</subsystem>
+      <subsystem>jaxrs.xml</subsystem>
+      <subsystem>jca.xml</subsystem>
+      <subsystem>jdr.xml</subsystem>
+      <subsystem>jmx.xml</subsystem>
+      <subsystem>jpa.xml</subsystem>
+      <subsystem>jsf.xml</subsystem>
+      <subsystem>jsr77.xml</subsystem>
+      <subsystem>mail.xml</subsystem>
+      <subsystem>messaging.xml</subsystem>
+      <subsystem>naming.xml</subsystem>
+      <subsystem>picketlink-federation.xml</subsystem>
+      <subsystem>picketlink-identity-management.xml</subsystem>
+      <subsystem>pojo.xml</subsystem>
+      <subsystem>remoting.xml</subsystem>
+      <subsystem>resource-adapters.xml</subsystem>
+      <subsystem>sar.xml</subsystem>
+      <subsystem supplement="standalone">security.xml</subsystem>
+      <subsystem>transactions.xml</subsystem>
+      <subsystem>undertow.xml</subsystem>
+      <subsystem>webservices.xml</subsystem>
+      <subsystem>weld.xml</subsystem>
    </subsystems>
 </config>

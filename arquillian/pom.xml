@@ -51,7 +51,6 @@
     </modules>
 
     <packaging>pom</packaging>
-
     <dependencies>
         <dependency>
            <groupId>org.jboss.arquillian.core</groupId>
@@ -61,6 +60,26 @@
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
            <scope>test</scope>
+        </dependency>
+        <!-- Super Hack to get things to run in the correct order-->
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-dist</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-build</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-build</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

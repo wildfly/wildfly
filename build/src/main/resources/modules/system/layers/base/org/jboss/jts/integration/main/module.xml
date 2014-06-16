@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.narayana.jts:narayana-jts-integration}"/>
     </resources>
 
     <dependencies>

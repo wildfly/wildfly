@@ -140,7 +140,7 @@
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-2</version.org.apache.xerces>
-        <version.org.bouncycastle>1.50</version.org.bouncycastle>
+        <version.org.bouncycastle>1.46</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
         <version.org.codehaus.plexus.plexus-utils>3.0.15</version.org.codehaus.plexus.plexus-utils>
@@ -285,7 +285,7 @@
         <linkXRef>false</linkXRef>
 
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
-        <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
+        <wildfly.build.output.dir>dist/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
         <wildfly.core.build.output.dir>build/target/${server.output.dir.prefix}-core-${jboss.as.release.version}</wildfly.core.build.output.dir>
 
         <!--
@@ -302,7 +302,8 @@
     <modules>
         <module>build</module>
         <module>build-config</module>
-        <module>build-modular</module>
+        <module>core-build</module>
+        <module>build-plugin</module>
         <module>controller</module>
         <module>controller-client</module>
         <module>core-security</module>
@@ -788,6 +789,11 @@
                         </dependency>
                     </dependencies>
                 </plugin>
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-build-plugin</artifactId>
+                    <version>${project.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -885,7 +891,27 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-build</artifactId>
+                <type>zip</type>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-build</artifactId>
+                <type>zip</type>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-build-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-build-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -923,6 +949,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-infinispan</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -935,6 +967,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-server</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -959,6 +997,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-spi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -976,12 +1020,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-cmp</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-config-assembly</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1043,6 +1081,13 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-domain-management</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-dist</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -1110,6 +1155,10 @@
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-spi</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1240,6 +1289,16 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-picketlink</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.picketlink</groupId>
+                        <artifactId>picketlink-idm-simple-schema</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketlink.distribution</groupId>
+                        <artifactId>picketlink-wildfly8</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1367,6 +1426,13 @@
                         <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-web-build</artifactId>
+                <type>zip</type>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -3490,13 +3556,13 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
+                <artifactId>bcprov-jdk16</artifactId>
                 <version>${version.org.bouncycastle}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15on</artifactId>
+                <artifactId>bcmail-jdk16</artifactId>
                 <version>${version.org.bouncycastle}</version>
             </dependency>
 
@@ -6066,6 +6132,10 @@
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-frontend-jaxws</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.ws.projects</groupId>
+                        <artifactId>jaxws-undertow-httpspi</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -6611,7 +6681,6 @@
                 <module>client/jms</module>
                 <module>client/shade</module>
                 <module>clustering</module>
-                <module>config-assembly</module>
                 <module>connector</module>
                 <module>core-model-test</module>
                 <module>core-security</module>
@@ -6644,6 +6713,7 @@
                 <module>system-jmx</module>
                 <module>transactions</module>
                 <module>undertow</module>
+                <module>web-build</module>
                 <module>web-common</module>
                 <module>webservices</module>
                 <module>weld</module>

@@ -28,7 +28,9 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.shrinkwrap:shrinkwrap-api}"/>
+        <artifact name="${org.jboss.shrinkwrap:shrinkwrap-spi}"/>
+        <artifact name="${org.jboss.shrinkwrap:shrinkwrap-impl-base}"/>
     </resources>
 
     <dependencies>

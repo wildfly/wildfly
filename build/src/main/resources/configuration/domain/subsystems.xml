@@ -3,120 +3,120 @@
 <config>
    <subsystems name="default">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/batch.xml</subsystem>
-      <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/ee.xml</subsystem>
-      <subsystem>configuration/subsystems/ejb3.xml</subsystem>
-      <subsystem>configuration/subsystems/io.xml</subsystem>
-      <subsystem>configuration/subsystems/infinispan.xml</subsystem>
-      <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem>configuration/subsystems/jca.xml</subsystem>
-      <subsystem>configuration/subsystems/jdr.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
-      <subsystem>configuration/subsystems/jpa.xml</subsystem>
-      <subsystem>configuration/subsystems/jsf.xml</subsystem>
-      <subsystem>configuration/subsystems/mail.xml</subsystem>
-      <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/pojo.xml</subsystem>
-      <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
-      <subsystem>configuration/subsystems/sar.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem>configuration/subsystems/undertow.xml</subsystem>
-      <subsystem>configuration/subsystems/webservices.xml</subsystem>
-      <subsystem>configuration/subsystems/weld.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
+      <subsystem>batch.xml</subsystem>
+      <subsystem>datasources.xml</subsystem>
+      <subsystem>ee.xml</subsystem>
+      <subsystem>ejb3.xml</subsystem>
+      <subsystem>io.xml</subsystem>
+      <subsystem>infinispan.xml</subsystem>
+      <subsystem>jaxrs.xml</subsystem>
+      <subsystem>jca.xml</subsystem>
+      <subsystem>jdr.xml</subsystem>
+      <subsystem supplement="domain">jmx.xml</subsystem>
+      <subsystem>jpa.xml</subsystem>
+      <subsystem>jsf.xml</subsystem>
+      <subsystem>mail.xml</subsystem>
+      <subsystem>naming.xml</subsystem>
+      <subsystem>pojo.xml</subsystem>
+      <subsystem>remoting.xml</subsystem>
+      <subsystem>resource-adapters.xml</subsystem>
+      <subsystem>sar.xml</subsystem>
+      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>transactions.xml</subsystem>
+      <subsystem>undertow.xml</subsystem>
+      <subsystem>webservices.xml</subsystem>
+      <subsystem>weld.xml</subsystem>
    </subsystems>
    <subsystems name="ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/batch.xml</subsystem>
-      <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/ee.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/ejb3.xml</subsystem>
-      <subsystem>configuration/subsystems/io.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/infinispan.xml</subsystem>
-      <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem>configuration/subsystems/jca.xml</subsystem>
-      <subsystem>configuration/subsystems/jdr.xml</subsystem>
-      <subsystem>configuration/subsystems/jgroups.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
-      <subsystem>configuration/subsystems/jpa.xml</subsystem>
-      <subsystem>configuration/subsystems/jsf.xml</subsystem>
-      <subsystem>configuration/subsystems/mail.xml</subsystem>
-      <subsystem>configuration/subsystems/mod_cluster.xml</subsystem>
-      <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/pojo.xml</subsystem>
-      <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
-      <subsystem>configuration/subsystems/sar.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/undertow.xml</subsystem>
-      <subsystem>configuration/subsystems/webservices.xml</subsystem>
-      <subsystem>configuration/subsystems/weld.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
+      <subsystem>batch.xml</subsystem>
+      <subsystem>datasources.xml</subsystem>
+      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="ha">ejb3.xml</subsystem>
+      <subsystem>io.xml</subsystem>
+      <subsystem supplement="ha">infinispan.xml</subsystem>
+      <subsystem>jaxrs.xml</subsystem>
+      <subsystem>jca.xml</subsystem>
+      <subsystem>jdr.xml</subsystem>
+      <subsystem>jgroups.xml</subsystem>
+      <subsystem supplement="domain">jmx.xml</subsystem>
+      <subsystem>jpa.xml</subsystem>
+      <subsystem>jsf.xml</subsystem>
+      <subsystem>mail.xml</subsystem>
+      <subsystem>mod_cluster.xml</subsystem>
+      <subsystem>naming.xml</subsystem>
+      <subsystem>pojo.xml</subsystem>
+      <subsystem>remoting.xml</subsystem>
+      <subsystem>resource-adapters.xml</subsystem>
+      <subsystem>sar.xml</subsystem>
+      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>transactions.xml</subsystem>
+      <subsystem supplement="ha">undertow.xml</subsystem>
+      <subsystem>webservices.xml</subsystem>
+      <subsystem>weld.xml</subsystem>
    </subsystems>
    <subsystems name="full">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/batch.xml</subsystem>
-      <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/ee.xml</subsystem>
-      <subsystem supplement="full">configuration/subsystems/ejb3.xml</subsystem>
-      <subsystem>configuration/subsystems/io.xml</subsystem>
-      <subsystem>configuration/subsystems/infinispan.xml</subsystem>
-      <subsystem>configuration/subsystems/jacorb.xml</subsystem>
-      <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem>configuration/subsystems/jca.xml</subsystem>
-      <subsystem>configuration/subsystems/jdr.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
-      <subsystem>configuration/subsystems/jpa.xml</subsystem>
-      <subsystem>configuration/subsystems/jsf.xml</subsystem>
-      <subsystem>configuration/subsystems/jsr77.xml</subsystem>
-      <subsystem>configuration/subsystems/mail.xml</subsystem>
-      <subsystem>configuration/subsystems/messaging.xml</subsystem>
-      <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/pojo.xml</subsystem>
-      <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
-      <subsystem>configuration/subsystems/sar.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem>configuration/subsystems/undertow.xml</subsystem>
-      <subsystem>configuration/subsystems/webservices.xml</subsystem>
-      <subsystem>configuration/subsystems/weld.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
+      <subsystem>batch.xml</subsystem>
+      <subsystem>datasources.xml</subsystem>
+      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="full">ejb3.xml</subsystem>
+      <subsystem>io.xml</subsystem>
+      <subsystem>infinispan.xml</subsystem>
+      <subsystem>jacorb.xml</subsystem>
+      <subsystem>jaxrs.xml</subsystem>
+      <subsystem>jca.xml</subsystem>
+      <subsystem>jdr.xml</subsystem>
+      <subsystem supplement="domain">jmx.xml</subsystem>
+      <subsystem>jpa.xml</subsystem>
+      <subsystem>jsf.xml</subsystem>
+      <subsystem>jsr77.xml</subsystem>
+      <subsystem>mail.xml</subsystem>
+      <subsystem>messaging.xml</subsystem>
+      <subsystem>naming.xml</subsystem>
+      <subsystem>pojo.xml</subsystem>
+      <subsystem>remoting.xml</subsystem>
+      <subsystem>resource-adapters.xml</subsystem>
+      <subsystem>sar.xml</subsystem>
+      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>transactions.xml</subsystem>
+      <subsystem>undertow.xml</subsystem>
+      <subsystem>webservices.xml</subsystem>
+      <subsystem>weld.xml</subsystem>
    </subsystems>
    <subsystems name="full-ha">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
-      <subsystem>configuration/subsystems/batch.xml</subsystem>
-      <subsystem>configuration/subsystems/datasources.xml</subsystem>
-      <subsystem>configuration/subsystems/ee.xml</subsystem>
-      <subsystem supplement="full-ha">configuration/subsystems/ejb3.xml</subsystem>
-      <subsystem>configuration/subsystems/io.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/infinispan.xml</subsystem>
-      <subsystem>configuration/subsystems/jacorb.xml</subsystem>
-      <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
-      <subsystem>configuration/subsystems/jca.xml</subsystem>
-      <subsystem>configuration/subsystems/jdr.xml</subsystem>
-      <subsystem>configuration/subsystems/jgroups.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/jmx.xml</subsystem>
-      <subsystem>configuration/subsystems/jpa.xml</subsystem>
-      <subsystem>configuration/subsystems/jsf.xml</subsystem>
-      <subsystem>configuration/subsystems/jsr77.xml</subsystem>
-      <subsystem>configuration/subsystems/mail.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/messaging.xml</subsystem>
-      <subsystem>configuration/subsystems/mod_cluster.xml</subsystem>
-      <subsystem>configuration/subsystems/naming.xml</subsystem>
-      <subsystem>configuration/subsystems/pojo.xml</subsystem>
-      <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
-      <subsystem>configuration/subsystems/sar.xml</subsystem>
-      <subsystem supplement="domain">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/transactions.xml</subsystem>
-      <subsystem supplement="ha">configuration/subsystems/undertow.xml</subsystem>
-      <subsystem>configuration/subsystems/webservices.xml</subsystem>
-      <subsystem>configuration/subsystems/weld.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
+      <subsystem>batch.xml</subsystem>
+      <subsystem>datasources.xml</subsystem>
+      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="full-ha">ejb3.xml</subsystem>
+      <subsystem>io.xml</subsystem>
+      <subsystem supplement="ha">infinispan.xml</subsystem>
+      <subsystem>jacorb.xml</subsystem>
+      <subsystem>jaxrs.xml</subsystem>
+      <subsystem>jca.xml</subsystem>
+      <subsystem>jdr.xml</subsystem>
+      <subsystem>jgroups.xml</subsystem>
+      <subsystem supplement="domain">jmx.xml</subsystem>
+      <subsystem>jpa.xml</subsystem>
+      <subsystem>jsf.xml</subsystem>
+      <subsystem>jsr77.xml</subsystem>
+      <subsystem>mail.xml</subsystem>
+      <subsystem supplement="ha">messaging.xml</subsystem>
+      <subsystem>mod_cluster.xml</subsystem>
+      <subsystem>naming.xml</subsystem>
+      <subsystem>pojo.xml</subsystem>
+      <subsystem>remoting.xml</subsystem>
+      <subsystem>resource-adapters.xml</subsystem>
+      <subsystem>sar.xml</subsystem>
+      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>transactions.xml</subsystem>
+      <subsystem supplement="ha">undertow.xml</subsystem>
+      <subsystem>webservices.xml</subsystem>
+      <subsystem>weld.xml</subsystem>
    </subsystems>
 </config>

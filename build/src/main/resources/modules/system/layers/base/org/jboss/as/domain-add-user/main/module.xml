@@ -31,7 +31,6 @@
     <main-class name="org.jboss.as.domain.management.security.adduser.AddUser"/>
 
     <resources>
-        <!-- Insert resources here -->
     </resources>
 
     <dependencies>
