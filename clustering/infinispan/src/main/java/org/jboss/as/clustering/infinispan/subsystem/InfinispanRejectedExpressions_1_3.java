@@ -43,7 +43,6 @@ public class InfinispanRejectedExpressions_1_3 {
             CacheContainerResourceDefinition.ALIASES,
             CacheContainerResourceDefinition.EVICTION_EXECUTOR,
             CacheContainerResourceDefinition.LISTENER_EXECUTOR,
-            CacheContainerResourceDefinition.NAME,
             CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR
     };
 
