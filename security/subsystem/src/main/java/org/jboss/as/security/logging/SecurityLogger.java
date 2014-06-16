@@ -722,4 +722,12 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Enter Keystore password again:")
     String enterKeyStorePasswordAgain();
 
+    /**
+     * Keystore parameter type checking
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "'%s' parameter type or length is incorrect")
+    IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
+
 }
