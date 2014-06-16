@@ -27,11 +27,13 @@ import java.util.Map;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Superclass for EE annotation processors that attach their information to the EEClassDescription via {@link ClassAnnotationInformation}
@@ -45,14 +47,14 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final Boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         if (index == null || eeModuleDescription == null) {
             return;
         }
 
         final List<ClassAnnotationInformationFactory> factories = annotationInformationFactories();
         for (final ClassAnnotationInformationFactory factory : factories) {
-            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, replacement);
+            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, propertyReplacer);
             for (Map.Entry<String, ClassAnnotationInformation<?, ?>> entry : data.entrySet()) {
                 EEModuleClassDescription clazz = eeModuleDescription.addOrGetLocalClassDescription(entry.getKey());
                 clazz.addAnnotationInformation(entry.getValue());

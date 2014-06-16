@@ -86,6 +86,12 @@ import javax.jms.TopicConnectionFactory;
                 ),
                 @JMSConnectionFactoryDefinition(
                         name="java:comp/env/myFactory2"
+                ),
+                @JMSConnectionFactoryDefinition(
+                        name="java:comp/env/myFactory5",
+                        interfaceName = "javax.jms.QueueConnectionFactory",
+                        user = "${VAULT::messaging::userName::1}",
+                        password = "${VAULT::messaging::password::1}"
                 )
         }
 )
@@ -101,6 +107,7 @@ import javax.jms.TopicConnectionFactory;
         maxPoolSize = 4,
         minPoolSize = 3
 )
+
 @Stateless
 public class MessagingBean {
 
@@ -144,6 +151,16 @@ public class MessagingBean {
     @Resource(lookup = "java:app/myFactory4")
     private TopicConnectionFactory factory4;
 
+    // Use a @JMSConnectionFactoryDefinition inside a @JMSConnectionFactoryDefinitions
+    // with vaulted attributes for the user credentials
+    @Resource(lookup = "java:comp/env/myFactory5")
+    private ConnectionFactory factory5;
+
+    // Use a jms-connection-factory from the deployment descriptor
+    // with vaulted attributes for the user credentials
+    @Resource(lookup = "java:app/myFactory6")
+    private TopicConnectionFactory factory6;
+
     public void checkInjectedResources() {
         assertNotNull(queue1);
         assertNotNull(queue2);
@@ -155,11 +172,30 @@ public class MessagingBean {
         assertNotNull(factory2);
         assertNotNull(factory3);
         assertNotNull(factory4);
-
+        assertNotNull(factory5);
+        assertNotNull(factory6);
 
         JMSContext context = factory3.createContext("guest", "guest", AUTO_ACKNOWLEDGE);
         JMSConsumer consumer = context.createConsumer(queue4);
         assertNotNull(consumer);
         consumer.close();
+    }
+
+    public void checkAnnotationBasedDefinitionsWithVaultedAttributes() {
+        assertNotNull(factory5);
+
+        // verify authentication using vaulted attributes works fine
+        JMSContext context = factory5.createContext();
+        assertNotNull(context);
+        context.close();
+    }
+
+    public void checkDeploymendDescriptorBasedDefinitionsWithVaultedAttributes() {
+        assertNotNull(factory6);
+
+        // verify authentication using vaulted attributes works fine
+        JMSContext context = factory6.createContext();
+        assertNotNull(context);
+        context.close();
     }
 }

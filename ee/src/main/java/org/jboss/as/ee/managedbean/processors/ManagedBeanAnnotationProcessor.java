@@ -82,7 +82,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
         final PropertyReplacer replacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         if(compositeIndex == null) {
             return;
@@ -106,7 +105,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : (replacement ? replacer.replaceProperties(nameValue.asString()) : nameValue.asString());
+            final String beanName = (nameValue == null || nameValue.asString().isEmpty()) ? beanClassName : replacer.replaceProperties(nameValue.asString());
             final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
 
             // Add the view

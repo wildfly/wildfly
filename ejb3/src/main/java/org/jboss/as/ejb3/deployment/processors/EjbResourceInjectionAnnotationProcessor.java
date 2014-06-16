@@ -32,9 +32,9 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -48,6 +48,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBs;
@@ -81,11 +82,11 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(EJB_ANNOTATION_NAME);
 
-        final Boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
-            final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(annotation, replacement);
+            final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(annotation, propertyReplacer);
             if (annotationTarget instanceof FieldInfo) {
                 processField(deploymentUnit, annotationWrapper, (FieldInfo) annotationTarget, moduleDescription);
             } else if (annotationTarget instanceof MethodInfo) {
@@ -101,7 +102,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
                 final AnnotationValue annotationValue = annotation.value();
                 final AnnotationInstance[] ejbAnnotations = annotationValue.asNestedArray();
                 for (AnnotationInstance ejbAnnotation : ejbAnnotations) {
-                    final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(ejbAnnotation, replacement);
+                    final EJBResourceWrapper annotationWrapper = new EJBResourceWrapper(ejbAnnotation, propertyReplacer);
                     processClass(deploymentUnit, annotationWrapper, (ClassInfo) annotationTarget, moduleDescription);
                 }
             } else {
@@ -200,10 +201,10 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
         private final String beanName;
         private final String lookup;
         private final String description;
-        private final boolean replacement;
+        private final PropertyReplacer propertyReplacer;
 
-        private EJBResourceWrapper(final AnnotationInstance annotation, final boolean replacement) {
-            this.replacement = replacement;
+        public EJBResourceWrapper(AnnotationInstance annotation, PropertyReplacer propertyReplacer) {
+            this.propertyReplacer = propertyReplacer;
             name = stringValueOrNull(annotation, "name");
             beanInterface = classValueOrNull(annotation, "beanInterface");
             beanName = stringValueOrNull(annotation, "beanName");
@@ -238,12 +239,12 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
 
         private String stringValueOrNull(final AnnotationInstance annotation, final String attribute) {
             final AnnotationValue value = annotation.value(attribute);
-            return value != null ? (replacement ? PropertiesValueResolver.replaceProperties(value.asString()) : value.asString()) : null;
+            return (value != null) ? propertyReplacer.replaceProperties(value.asString()) : null;
         }
 
         private String classValueOrNull(final AnnotationInstance annotation, final String attribute) {
             final AnnotationValue value = annotation.value(attribute);
-            return value != null ? value.asClass().name().toString() : null;
+            return (value != null) ? value.asClass().name().toString() : null;
         }
     }
 }

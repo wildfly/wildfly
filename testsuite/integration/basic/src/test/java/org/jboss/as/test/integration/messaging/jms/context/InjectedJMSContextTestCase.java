@@ -31,15 +31,11 @@ import java.util.UUID;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.JMSSessionMode;
 import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TemporaryQueue;

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,27 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.component.deployers;
+package org.jboss.as.test.integration.messaging.jms.context.auxiliary;
 
-import java.lang.annotation.Annotation;
-
-import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.metadata.property.PropertyReplacer;
+import javax.ejb.Stateless;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.jms.Destination;
+import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSContext;
+import javax.jms.JMSPasswordCredential;
 
 /**
- * An annotation information factory that simply returns true if the annotation is present
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  *
- * @author Stuart Douglas
+ * Use the RemoteConnectionFactory Connection Factory that requires authentication.
  */
-public class BooleanAnnotationInformationFactory<T extends Annotation> extends ClassAnnotationInformationFactory<T, Boolean> {
+@Stateless
+public class VaultedMessageProducer {
 
-    public BooleanAnnotationInformationFactory(final Class<T> annotationType) {
-        super(annotationType, null);
-    }
+    @Inject
+    @JMSConnectionFactory("java:jboss/exported/jms/RemoteConnectionFactory")
+    @JMSPasswordCredential(userName = "${VAULT::messaging::userName::1}", password = "${VAULT::messaging::password::1}")
+    private JMSContext context;
 
-    @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
-        return true;
+    public void sendToDestination(Destination destination, String text) {
+        context.createProducer()
+                .send(destination, text);
     }
 }

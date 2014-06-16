@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.messaging.jms.definitions;
+package org.jboss.as.test.integration.messaging.jms.context;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -32,12 +32,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.shrinkwrap.api.ArchivePaths.create;
+import static org.jboss.as.test.shared.TimeoutUtil.adjust;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import javax.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,7 +52,9 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.messaging.jms.context.auxiliary.VaultedMessageProducer;
 import org.jboss.as.test.integration.security.common.VaultHandler;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -57,10 +66,10 @@ import org.junit.runner.RunWith;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(JMSResourceDefinitionsTestCase.StoreVaultedPropertyTask.class)
-public class JMSResourceDefinitionsTestCase {
+@ServerSetup(VaultedInjectedJMSContextTestCase.StoreVaultedPropertyTask.class)
+public class VaultedInjectedJMSContextTestCase {
 
-    static final String VAULT_LOCATION = JMSResourceDefinitionsTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "security/jms-vault/";
+    static final String VAULT_LOCATION = VaultedInjectedJMSContextTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() + "security/jms-vault/";
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
@@ -79,10 +88,7 @@ public class JMSResourceDefinitionsTestCase {
 
             addVaultConfiguration(managementClient);
 
-            // for annotation-based JMS definitions
-            updatePropertyReplacement(managementClient, "annotation-property-replacement", true);
-            // for deployment descriptor-based JMS definitions
-            updatePropertyReplacement(managementClient, "spec-descriptor-property-replacement", true);
+            updateAnnotationPropertyReplacement(managementClient, true);
         }
 
         @Override
@@ -92,8 +98,7 @@ public class JMSResourceDefinitionsTestCase {
             // remove temporary files
             vaultHandler.cleanUp();
 
-            updatePropertyReplacement(managementClient, "annotation-property-replacement", false);
-            updatePropertyReplacement(managementClient, "spec-descriptor-property-replacement", false);
+            updateAnnotationPropertyReplacement(managementClient, false);
         }
 
 
@@ -119,46 +124,44 @@ public class JMSResourceDefinitionsTestCase {
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
         }
 
-        private void updatePropertyReplacement(ManagementClient managementClient, String propertyReplacement, boolean value) throws IOException {
+        private void updateAnnotationPropertyReplacement(ManagementClient managementClient, boolean value) throws IOException {
             ModelNode op;
             op = new ModelNode();
             op.get(OP_ADDR).add("subsystem", "ee");
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(NAME).set(propertyReplacement);
+            op.get(NAME).set("annotation-property-replacement");
             op.get(VALUE).set(value);
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
         }
     }
 
+    @Resource(mappedName = "/JmsXA")
+    private ConnectionFactory factory;
+
     @EJB
-    private MessagingBean bean;
+    private VaultedMessageProducer producerBean;
 
     @Deployment
-    public static JavaArchive createArchive() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
-                .addPackage(MessagingBean.class.getPackage())
-                .addAsManifestResource(
-                        MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
-                .addAsManifestResource(
-                        EmptyAsset.INSTANCE,
-                        create("beans.xml"));
-        System.out.println("archive = " + archive.toString(true));
-        return archive;
+    public static JavaArchive createTestArchive() {
+        return ShrinkWrap.create(JavaArchive.class, "VaultedInjectedJMSContextTestCase.jar")
+                .addClass(TimeoutUtil.class)
+                .addPackage(VaultedMessageProducer.class.getPackage())
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
-    public void testInjectedDefinitions() throws JMSException {
-        bean.checkInjectedResources();
-    }
+    public void sendMessage() throws JMSException {
+        String text = UUID.randomUUID().toString();
 
-    @Test
-    public void testAnnotationBasedDefinitionsWithVaultedAttributes() throws JMSException {
-        bean.checkAnnotationBasedDefinitionsWithVaultedAttributes();
-    }
+        try (JMSContext context = factory.createContext()) {
 
-    @Test
-    public void testDeploymendDescriptorBasedDefinitionsWithVaultedAttributes() throws JMSException {
-        bean.checkDeploymendDescriptorBasedDefinitionsWithVaultedAttributes();
-    }
+            TemporaryQueue tempQueue = context.createTemporaryQueue();
 
+            producerBean.sendToDestination(tempQueue, text);
+
+            JMSConsumer consumer = context.createConsumer(tempQueue);
+            String reply = consumer.receiveBody(String.class, adjust(2000));
+            assertEquals(text, reply);
+        }
+    }
 }

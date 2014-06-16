@@ -22,15 +22,23 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ee.structure.Attachments;
-import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -46,15 +54,8 @@ import org.jboss.metadata.ejb.spec.GenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean32MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.lang.reflect.Modifier;
-import java.util.List;
-
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 
 /**
  * User: jpai
@@ -110,7 +111,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
-        final boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
@@ -127,7 +128,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             }
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());
+            final String beanName = (nameValue == null || nameValue.asString().isEmpty()) ? ejbName : propertyReplacer.replaceProperties(nameValue.asString());
             final SessionBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, SessionBeanMetaData.class);
             final SessionBeanComponentDescription.SessionBeanType sessionBeanType;
             final String beanClassName;

@@ -25,6 +25,7 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.AccessTimeout;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +42,7 @@ public class AccessTimeoutAnnotationInformationFactory extends ClassAnnotationIn
     }
 
     @Override
-    protected AccessTimeoutDetails fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected AccessTimeoutDetails fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final long timeout = annotationInstance.value().asLong();
         AnnotationValue unitAnnVal = annotationInstance.value("unit");
         final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.MILLISECONDS;
