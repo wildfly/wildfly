@@ -313,7 +313,7 @@ public interface ControllerLogger extends BasicLogger {
      */
     @LogMessage(level = ERROR)
     @Message(id = 16, value = "Received no final outcome response for operation %s with address %s from remote " +
-            "process at address %s. The result of this operation will only include the remote process' preliminary response to" +
+            "process at address %s. The result of this operation will only include the remote process' preliminary response to " +
             "the request.")
     void noFinalProxyOutcomeReceived(ModelNode op, ModelNode opAddress, ModelNode proxyAddress);
 
