@@ -42,6 +42,8 @@ import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Richard Achmatowicz
+ * @author Radoslav Husar
  */
 public class InfinispanTransformers {
 
@@ -54,6 +56,7 @@ public class InfinispanTransformers {
         registerTransformers130(subsystem);
         registerTransformers140(subsystem);
         registerTransformers141(subsystem);
+        registerTransformers200(subsystem);
     }
 
     /**
@@ -63,6 +66,7 @@ public class InfinispanTransformers {
      * - expression support was added to most attributes in 1.4, except for CLUSTER, DEFAULT_CACHE and MODE for which it was already enabled in 1.3
      * - attribute STATISTICS was added in 2.0
      * - shared state cache children backup and backup-for are rejected
+     * - default value of flush-lock-timeout is converted (WFLY-3435)
      * <p/>
      * Chaining of transformers is used in cases where two transformers are required for the same operation.
      *
@@ -299,6 +303,7 @@ public class InfinispanTransformers {
 
         parent.addChildResource(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH)
                 .getAttributeBuilder()
+                .setValueConverter(FlushLockTimeoutConverter.INSTANCE, StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT)
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT, StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE, StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT, StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE)
@@ -316,6 +321,7 @@ public class InfinispanTransformers {
      * - use of the VIRTUAL_NODES attribute was again allowed in 1.4.1, with a value conversion applied
      * - attribute STATISTICS was added in 2.0
      * - shared state cache children backup and backup-for are rejected
+     * - default value of flush-lock-timeout is converted (WFLY-3435)
      *
      * @param subsystem the subsystems registration
      */
@@ -364,6 +370,8 @@ public class InfinispanTransformers {
      * Register the transformers for transforming from current to 1.4.0 management api version, including:
      * - attribute STATISTICS was added in 2.0
      * - shared state cache children backup and backup-for are rejected
+     * - default value of flush-lock-timeout is converted (WFLY-3435)
+     *
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers141(final SubsystemRegistration subsystem) {
@@ -393,25 +401,131 @@ public class InfinispanTransformers {
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
             .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
         ;
-        cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+
+        //binaryKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH);
+        binaryKeyedJdbcStoreBuilder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
-        cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        registerStoreTransformerChildren200(binaryKeyedJdbcStoreBuilder);
+
+        //stringKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH);
+        stringKeyedJdbcStoreBuilder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
-        cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH).getAttributeBuilder()
+        registerStoreTransformerChildren(stringKeyedJdbcStoreBuilder);
+
+        //mixedKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH);
+        mixedKeyedJdbcStoreBuilder.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), JDBCStoreResourceDefinition.DIALECT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, JDBCStoreResourceDefinition.DIALECT)
         ;
+        registerStoreTransformerChildren200(mixedKeyedJdbcStoreBuilder);
+
         if (mode.isReplicated() || mode.isDistributed()) {
             cacheBuilder.rejectChildResource(BackupSiteResourceDefinition.BACKUP_PATH);
             cacheBuilder.rejectChildResource(BackupForResourceDefinition.BACKUP_FOR_PATH);
         }
+
+        registerCacheResourceChildren200(cacheBuilder, false);
     }
 
-    /*
+
+    /**
+     * Register the transformers for transforming from current to 2.0.0 management api version, in which:
+     * - default value of flush-lock-timeout is converted (WFLY-3435)
+     *
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers200(final SubsystemRegistration subsystem) {
+
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH);
+
+        final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH);
+        registerCacheResourceChildren200(localCacheBuilder, true);
+
+        final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH);
+        registerCacheResourceChildren200(invalidationCacheBuilder, true);
+
+        ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        registerCacheResourceChildren200(replicatedCacheBuilder, true);
+
+        ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        registerCacheResourceChildren200(distributedCacheBuilder, true);
+
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(2, 0, 0));
+
+    }
+
+    private static void registerCacheResourceChildren200(final ResourceTransformationDescriptionBuilder cacheBuilder, boolean registerJdbc) {
+
+        // Store transformers
+        if (registerJdbc) {
+            registerJdbcStoreTransformers200(cacheBuilder);
+        }
+
+        //fileStore=FILE_STORE
+        ResourceTransformationDescriptionBuilder fileStoreBuilder = cacheBuilder.addChildResource(FileStoreResourceDefinition.FILE_STORE_PATH);
+        registerStoreTransformerChildren200(fileStoreBuilder);
+
+        //store=STORE
+        ResourceTransformationDescriptionBuilder storeBuilder = cacheBuilder.addChildResource(CustomStoreResourceDefinition.STORE_PATH);
+        registerStoreTransformerChildren200(storeBuilder);
+
+        //remote-store=REMOTE_STORE
+        ResourceTransformationDescriptionBuilder remoteStoreBuilder = cacheBuilder.addChildResource(RemoteStoreResourceDefinition.REMOTE_STORE_PATH);
+        registerStoreTransformerChildren200(remoteStoreBuilder);
+
+    }
+
+    private static void registerJdbcStoreTransformers200(ResourceTransformationDescriptionBuilder cacheBuilder) {
+
+        //binaryKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH);
+        registerStoreTransformerChildren200(binaryKeyedJdbcStoreBuilder);
+
+        //stringKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH);
+        registerStoreTransformerChildren200(stringKeyedJdbcStoreBuilder);
+
+        //mixedKeyedJdbcStore
+        ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH);
+        registerStoreTransformerChildren200(mixedKeyedJdbcStoreBuilder);
+
+    }
+
+    private static void registerStoreTransformerChildren200(ResourceTransformationDescriptionBuilder parent) {
+
+        parent.addChildResource(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH)
+                .getAttributeBuilder()
+                .setValueConverter(FlushLockTimeoutConverter.INSTANCE, StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT)
+                .end();
+
+    }
+
+    /**
+     * Converter that explicitly sets the flush-lock-timeout to 5000 (ms) in case it is undefined and would default
+     * to 1 (ms) on older controllers.
+     */
+    static class FlushLockTimeoutConverter extends AttributeConverter.DefaultAttributeConverter {
+
+        static final FlushLockTimeoutConverter INSTANCE = new FlushLockTimeoutConverter();
+
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            if (!attributeValue.isDefined()) {
+                attributeValue.set(StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.getDefaultValue());
+            }
+        }
+    }
+
+    /**
      * Required to prevent conversion of values which are expressions.
      */
     static class VirtualNodesCheckerAndConverter extends DefaultCheckersAndConverter {
@@ -425,10 +539,7 @@ public class InfinispanTransformers {
 
         @Override
         protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (checkForExpression(attributeValue)) {
-                return true;
-            }
-            return false;
+            return checkForExpression(attributeValue);
         }
 
         @Override
