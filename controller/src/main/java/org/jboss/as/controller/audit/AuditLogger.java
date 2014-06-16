@@ -23,11 +23,15 @@
 package org.jboss.as.controller.audit;
 
 import java.net.InetAddress;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -62,6 +66,7 @@ public interface AuditLogger {
      * An audit logger that doesn't log.
      */
     ManagedAuditLogger NO_OP_LOGGER = new ManagedAuditLogger() {
+        private final Map<String, AuditLogEventFormatter> formatters = Collections.synchronizedMap(new HashMap<String, AuditLogEventFormatter>());
         @Override
         public boolean isLogReadOnly() {
             return false;
@@ -99,15 +104,17 @@ public interface AuditLogger {
 
         @Override
         public void removeFormatter(String name) {
+            formatters.remove(name);
         }
 
         @Override
-        public void addFormatter(AuditLogItemFormatter formatter) {
+        public void addFormatter(AuditLogEventFormatter formatter) {
+            formatters.put(formatter.getName(), formatter);
         }
 
         @Override
-        public JsonAuditLogItemFormatter getJsonFormatter(String name) {
-            return null;
+        public <T extends AuditLogEventFormatter> T getFormatter(Class<T> type, String name) {
+            return type.cast(formatters.get(name));
         }
 
         @Override
@@ -186,5 +193,16 @@ public interface AuditLogger {
         @Override
         public void updateSyslogHandlerAppName(String name, String appName) {
         }
+
+        @Override
+        public AuditLogEventFormatter updateFormatter(AuditLogEventFormatter formatter) {
+            return formatter;
+        }
+
+        @Override
+        public boolean fallbackToFlatClasspath() {
+            return true;
+        }
     };
+
 }

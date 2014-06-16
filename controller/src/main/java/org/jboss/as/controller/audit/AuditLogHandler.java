@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
 
 /**
  *  All methods on this class should be called with {@link ManagedAuditLoggerImpl}'s lock taken.
@@ -45,7 +46,7 @@ abstract class AuditLogHandler {
     protected final String name;
     private volatile String formatterName;
     private final Set<PathAddress> references = new HashSet<PathAddress>();
-    private AuditLogItemFormatter formatter;
+    private AuditLogEventFormatter formatter;
 
     AuditLogHandler(String name, String formatterName, int maxFailureCount){
         this.name = name;
@@ -57,7 +58,7 @@ abstract class AuditLogHandler {
         return name;
     }
 
-    void setFormatter(AuditLogItemFormatter formatter) {
+    void setFormatter(AuditLogEventFormatter formatter) {
         this.formatter = formatter;
     }
 
@@ -73,7 +74,7 @@ abstract class AuditLogHandler {
         this.formatterName = formatterName;
     }
 
-    void writeLogItem(AuditLogItem item) {
+    void writeLogItem(AuditLogItemImpl item) {
         try {
             initialize();
             String formattedItem = item.format(formatter);

@@ -33,6 +33,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -988,6 +989,11 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 89, value = "No operation was found that has been holding the operation execution write lock for long than [%d] seconds")
     String noNonProgressingOperationFound(long timeout);
 
+    @Message(id = 90, value = "Formatter names must be unique. There is already a handler called '%s' at %s")
+    OperationFailedException formatterAlreadyExists(String value, PathAddress addr);
+
+    @Message(id = 91, value = "Could not find formatter resource at %s")
+    OperationFailedException couldNotFindFormatter(PathAddress address);
     /**
      * Information message saying the username and password must be different.
      *
@@ -1281,7 +1287,6 @@ public interface DomainManagementLogger extends BasicLogger {
      */
     @Message(id = Message.NONE, value = "Using realm '%s' as discovered from the existing property files.")
     String discoveredRealm(final String realmName);
-
 
 
     //PUT YOUR NUMBERED MESSAGES ABOVE THE id=NONE ones!

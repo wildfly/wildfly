@@ -1227,6 +1227,7 @@
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="unbounded">
             <xs:element name="json-formatter" type="json-audit-log-formatterType"/>
+            <xs:element name="custom-formatter" type="custom-audit-log-formatterType"/>
         </xs:choice>
    </xs:complexType>
 
@@ -1239,9 +1240,7 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                <xs:documentation>
-                  The name of the formatter. Must be unique across all types of formatter
-                  (there is only the JSON formatter at present but more are planned for the
-                  future)
+                  The name of the formatter. Must be unique across all types of formatter.
                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -1306,6 +1305,38 @@
               </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+   </xs:complexType>
+
+   <xs:complexType name="custom-audit-log-formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration for a custom audit log formatter
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="properties" type="properties"/>
+        </xs:choice>        
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+               <xs:documentation>
+                  The name of the formatter. Must be unique across all types of formatter
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="code" type="xs:string" use="required">
+            <xs:annotation>
+               <xs:documentation>
+                The name of a class implementing org.jboss.as.controller.audit.spi.CustomAuditLogEventFormatterFactory, used to instantiate a custom formatter.
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="module" type="xs:string" use="required">
+            <xs:annotation>
+               <xs:documentation>
+                  The module containing the custom formatter factory implementation.
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
    </xs:complexType>
 
     <xs:complexType name="audit-log-handlersType">

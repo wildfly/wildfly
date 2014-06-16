@@ -116,7 +116,14 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
 
     protected ManagedAuditLogger getAuditLogger(){
         if (auditLogger == null){
-            auditLogger = new ManagedAuditLoggerImpl("8.0.0", true);
+            auditLogger = new ManagedAuditLoggerImpl("8.0.0", true) {
+
+                @Override
+                public boolean fallbackToFlatClasspath() {
+                    return true;
+                }
+
+            };
         }
         return auditLogger;
     }
@@ -216,6 +223,10 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
         return Util.createRemoveOperation(createFileHandlerAddress(handlerName));
     }
 
+    protected ModelNode createUpdateFileHandlerFormatterOperation(String handlerName, String formatterName) {
+        return Util.getWriteAttributeOperation(createFileHandlerAddress(handlerName),
+                ModelDescriptionConstants.FORMATTER, new ModelNode(formatterName));
+    }
     protected PathAddress createFileHandlerAddress(String handlerName){
         return AUDIT_ADDR.append(PathElement.pathElement(ModelDescriptionConstants.FILE_HANDLER, handlerName));
     }
@@ -229,6 +240,39 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
                 PathElement.pathElement(ModelDescriptionConstants.JSON_FORMATTER, formatterName));
     }
 
+    protected ModelNode createAddCustomFormatterOperation(String formatterName, String className) {
+        ModelNode op = Util.createAddOperation(createCustomFormatterAddress(formatterName));
+        op.get(ModelDescriptionConstants.MODULE).set("not.used.in.flat.classpath.testing");
+        op.get(ModelDescriptionConstants.CODE).set(className);
+        return op;
+    }
+
+    protected PathAddress createCustomFormatterAddress(String formatterName) {
+        return AUDIT_ADDR.append(
+                PathElement.pathElement(ModelDescriptionConstants.CUSTOM_FORMATTER, formatterName));
+    }
+
+    protected ModelNode createRemoveCustomFormatterOperation(String formatterName) {
+        return Util.createRemoveOperation(createCustomFormatterAddress(formatterName));
+    }
+
+    protected ModelNode createAddCustomFormatterPropertyOperation(String formatterName, String propertyName, String propertyValue) {
+        ModelNode op = Util.createAddOperation(createCustomFormatterPropertyAddress(formatterName, propertyName));
+        op.get(ModelDescriptionConstants.VALUE).set(propertyValue);
+        return op;
+    }
+
+    protected ModelNode createUpdateCustomFormatterPropertyOperation(String formatterName, String propertyName, String propertyValue) {
+        return Util.getWriteAttributeOperation(createCustomFormatterPropertyAddress(formatterName, propertyName), ModelDescriptionConstants.VALUE, new ModelNode(propertyValue));
+    }
+
+    protected ModelNode createRemoveCustomFormatterPropertyOperation(String formatterName, String propertyName) {
+        return Util.createRemoveOperation(createCustomFormatterPropertyAddress(formatterName, propertyName));
+    }
+
+    protected PathAddress createCustomFormatterPropertyAddress(String formatterName, String propertyName) {
+        return createCustomFormatterAddress(formatterName).append(ModelDescriptionConstants.PROPERTY, propertyName);
+    }
 
     protected ModelNode createAddSyslogHandlerUdpOperation(String handlerName, String formatterName, InetAddress addr, int port, SyslogHandler.SyslogType syslogFormat, int maxLength){
         ModelNode composite = new ModelNode();
