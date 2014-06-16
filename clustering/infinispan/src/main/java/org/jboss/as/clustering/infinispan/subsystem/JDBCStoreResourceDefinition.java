@@ -77,8 +77,6 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             .setXmlName(Attribute.PREFIX.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-//          .setDefaultValue(new ModelNode().set("ispn_bucket"))
-//          .setDefaultValue(new ModelNode().set("ispn_entry"))
             .build();
 
     static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)

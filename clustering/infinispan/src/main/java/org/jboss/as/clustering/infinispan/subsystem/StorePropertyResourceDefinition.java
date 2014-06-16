@@ -49,8 +49,7 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
     }
 
     // attributes
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
-            .setXmlName("value")
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelKeys.VALUE, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();

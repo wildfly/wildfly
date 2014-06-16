@@ -135,7 +135,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
 
         // get the transport
         ModelNode transport = stack.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).clone();
-        String transportName = transport.get(ModelKeys.TYPE).asString();
+        String transportName = TransportResourceDefinition.TYPE.resolveModelAttribute(context, transport).asString();
         ResourceDefinition transportDefinition = getProtocolMetricResourceDefinition(context, channelName, transportName);
 
         List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();

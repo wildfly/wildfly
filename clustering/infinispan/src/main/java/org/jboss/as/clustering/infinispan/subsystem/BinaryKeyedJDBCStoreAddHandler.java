@@ -41,10 +41,5 @@ public class BinaryKeyedJDBCStoreAddHandler extends JDBCStoreAddHandler {
         for (AttributeDefinition attribute: BinaryKeyedJDBCStoreResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
-            // now check for binary-keyed-table passed as optional parameter in order to create the resource
-//            if (operation.get("binary-keyed-table").isDefined()) {
-//                ModelNode binaryTable = operation.get("binary-keyed-table") ;
-//                // process this table DMR description
-//            }
     }
 }

@@ -42,8 +42,8 @@ public class TransactionMetricsHandler extends AbstractRuntimeOnlyHandler {
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         // Address is of the form: /subsystem=infinispan/cache-container=*/*-cache=*/transaction=TRANSACTION
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String containerName = address.getElement(1).getValue();
-        String cacheName = address.getElement(2).getValue();
+        String containerName = address.getElement(address.size() - 3).getValue();
+        String cacheName = address.getElement(address.size() - 2).getValue();
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         TransactionMetric metric = TransactionMetric.forName(name);

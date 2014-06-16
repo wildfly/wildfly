@@ -56,8 +56,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         return PathElement.pathElement(ModelKeys.PROPERTY, name);
     }
 
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
-            .setXmlName("value")
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelKeys.VALUE, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();

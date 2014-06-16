@@ -41,10 +41,5 @@ public class StringKeyedJDBCStoreAddHandler extends JDBCStoreAddHandler {
         for (AttributeDefinition attribute: StringKeyedJDBCStoreResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
-            // now check for string-keyed-table passed as optional parameter, in order to create the resource
-//            if (operation.get("string-keyed-table").isDefined()) {
-//                ModelNode stringTable = operation.get("string-keyed-table") ;
-//                // process this table DMR description
-//            }
     }
 }

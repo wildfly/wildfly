@@ -41,7 +41,5 @@ public class MixedKeyedJDBCStoreAddHandler extends JDBCStoreAddHandler {
         for (AttributeDefinition attribute: MixedKeyedJDBCStoreResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
-        // now check for string-keyed and binary-keyed-table passed as optional parameter
-        // now check for string-keyed-table passed as optional parameter
     }
 }
