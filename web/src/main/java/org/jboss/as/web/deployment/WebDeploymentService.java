@@ -21,6 +21,7 @@
  */
 package org.jboss.as.web.deployment;
 
+
 import static org.jboss.as.web.WebLogger.WEB_LOGGER;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
@@ -39,6 +40,7 @@ import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
+import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -174,6 +176,7 @@ public class WebDeploymentService implements Service<StandardContext> {
         WEB_LOGGER.unregisterWebapp(context.getName());
         try {
             context.stop();
+            clearRealmCache();
         } catch (LifecycleException e) {
             WEB_LOGGER.stopContextFailed(e);
         }
@@ -183,6 +186,13 @@ public class WebDeploymentService implements Service<StandardContext> {
             WEB_LOGGER.destroyContextFailed(e);
         }
 
+    }
+
+    private void clearRealmCache() {
+        Realm currentRealm = realm.getValue();
+        if(currentRealm != null && currentRealm instanceof JBossWebRealm) {
+            ((JBossWebRealm)currentRealm).clearAuthenticationCache(injectionContainer.getDefaultClassLoader());
+        }
     }
 
     /**

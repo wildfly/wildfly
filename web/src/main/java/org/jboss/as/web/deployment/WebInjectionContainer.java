@@ -58,6 +58,10 @@ public class WebInjectionContainer implements InstanceManager {
                         ConcurrentReferenceHashMap.ReferenceType.STRONG, EnumSet.of(Option.IDENTITY_COMPARISONS));
     }
 
+    ClassLoader getDefaultClassLoader() {
+        return this.classloader;
+    }
+
     public void addInstantiator(String className, ComponentInstantiator instantiator) {
         webComponentInstantiatorMap.put(className, instantiator);
         serviceNames.addAll(instantiator.getServiceNames());

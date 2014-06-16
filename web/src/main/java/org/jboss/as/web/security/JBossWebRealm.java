@@ -70,6 +70,7 @@ import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.callback.CallbackHandlerPolicyContextHandler;
 import org.jboss.security.auth.callback.DigestCallbackHandler;
 import org.jboss.security.auth.certs.SubjectDNMapping;
+import org.jboss.security.authentication.JBossCachedAuthenticationManager;
 import org.jboss.security.authorization.ResourceKeys;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
@@ -794,6 +795,12 @@ public class JBossWebRealm extends RealmBase {
             auditEvent.setContextMap(ctxMap);
             auditEvent.setUnderlyingException(e);
             auditManager.audit(auditEvent);
+        }
+    }
+
+    public void clearAuthenticationCache(final ClassLoader moduleLoader) {
+        if (authenticationManager != null && authenticationManager instanceof JBossCachedAuthenticationManager) {
+            ((JBossCachedAuthenticationManager)authenticationManager).releaseModuleEntries(moduleLoader);
         }
     }
 }
