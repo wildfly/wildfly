@@ -30,12 +30,12 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import junit.framework.Assert;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Test;
 
 /**
@@ -58,12 +58,12 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
 
         ModelNode validated = ld.validateOperation(op);
         assertEquals(op.get("test").get(0), validated.get(0));
-        assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), validated.get(1));
+        assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).asString())), validated.get(1));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
         assertEquals(op.get("test").get(0), model.get("test").get(0));
-        assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), model.get("test").get(1));
+        assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).asString())), model.get("test").get(1));
 
         ld = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.PROPERTY)
                 .setAllowExpression(true)
@@ -124,6 +124,7 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
             copyWithOtherValidator.validateOperation(operation);
             fail("the operation must not be validated");
         } catch (OperationFailedException e) {
+            //
         }
     }
 }

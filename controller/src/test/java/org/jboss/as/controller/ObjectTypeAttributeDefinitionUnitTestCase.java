@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,12 +51,12 @@ public class ObjectTypeAttributeDefinitionUnitTestCase {
 
         ModelNode validated = ld.validateOperation(op);
         Assert.assertEquals(op.get("test", "a"), validated.get("a"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test", "b").asString()), validated.get("b"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test", "b").asString())), validated.get("b"));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
         Assert.assertEquals(op.get("test", "a"), model.get("test", "a"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test", "b").asString()), model.get("test", "b"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test", "b").asString())), model.get("test", "b"));
 
         op = new ModelNode();
         op.get("test", "a").set("${test:1}");

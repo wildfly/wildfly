@@ -34,6 +34,7 @@ import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,7 +123,7 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
         Assert.assertEquals("one", props.get(PROP_ONE, VALUE).asString());
 
         add = Util.createAddOperation(getSystemPropertyAddress(PROP_TWO));
-        add.get(VALUE).setExpression("${" + PROP_ONE + "}");
+        add.get(VALUE).set(new ValueExpression("${" + PROP_ONE + "}"));
         if (!standalone) {
             add.get(BOOT_TIME).set(true);
         }
@@ -255,7 +256,7 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
 
         write = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, getSystemPropertyAddress(PROP_TWO));
         write.get(NAME).set(VALUE);
-        write.get(VALUE).setExpression("${" + PROP_ONE + "}");
+        write.get(VALUE).set(new ValueExpression("${" + PROP_ONE + "}"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(write));
         props = readSystemPropertiesParentModel(kernelServices);
         Assert.assertEquals(2, props.keys().size());

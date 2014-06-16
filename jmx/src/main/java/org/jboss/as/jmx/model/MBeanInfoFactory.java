@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +153,7 @@ public class MBeanInfoFactory {
     }
 
     private OpenMBeanAttributeInfo[] getAttributes() {
-        List<OpenMBeanAttributeInfo> infos = new ArrayList<OpenMBeanAttributeInfo>();
+        List<OpenMBeanAttributeInfo> infos = new LinkedList<OpenMBeanAttributeInfo>();
         if (providedDescription.hasDefined(ATTRIBUTES)) {
             for (final String name : providedDescription.require(ATTRIBUTES).keys()) {
                 OpenMBeanAttributeInfo attributeInfo = getAttribute(name);

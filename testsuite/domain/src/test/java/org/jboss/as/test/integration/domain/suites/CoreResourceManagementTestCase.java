@@ -90,6 +90,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -1068,7 +1069,7 @@ public class CoreResourceManagementTestCase {
         ModelNode op = new ModelNode();
         op.get(OP).set("resolve-expression");
         op.get(OP_ADDR).set(address);
-        op.get("expression").setExpression("${" + propName + "}");
+        op.get("expression").set(new ValueExpression("${" + propName + "}"));
         return op;
     }
 }

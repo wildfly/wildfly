@@ -47,6 +47,7 @@ import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * Converts between Open MBean types/data and ModelController types/data
@@ -238,7 +239,7 @@ class TypeConverters {
             }
             if (expressions) {
                 if (possibleExpression) {
-                    return new ModelNode().setExpression((String)o);
+                    return new ModelNode().set(new ValueExpression((String)o));
                 }
                 return valueAccessor.toModelNodeFromString((String)o);
             } else {
@@ -246,7 +247,7 @@ class TypeConverters {
                     if (valueAccessor != StringValueAccessor.INSTANCE) {
                         throw JmxLogger.ROOT_LOGGER.expressionCannotBeConvertedIntoTargeteType(valueAccessor.getOpenType());
                     }
-                    return new ModelNode().setExpression((String)o);
+                    return new ModelNode().set(new ValueExpression((String)o));
                 }
                 return valueAccessor.toModelNode(o);
             }

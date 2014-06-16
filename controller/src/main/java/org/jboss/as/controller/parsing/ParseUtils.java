@@ -37,6 +37,7 @@ import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
@@ -449,7 +450,7 @@ public final class ParseUtils {
     public static ModelNode parsePossibleExpression(String value) {
         ModelNode result = new ModelNode();
         if (isExpression(value)) {
-            result.setExpression(value);
+            result.set(new ValueExpression(value));
         }
         else {
             result.set(value);

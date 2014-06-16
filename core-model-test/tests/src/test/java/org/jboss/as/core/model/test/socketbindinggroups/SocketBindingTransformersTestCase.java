@@ -52,6 +52,7 @@ import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
 import org.jboss.as.core.model.test.util.TransformersTestParameter;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -126,7 +127,7 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
         mappings.get(1).get(field).set(expression);
         write.get(VALUE).set(mappings);
         ModelNode expected = getClientMappings();
-        expected.get(1).get(field).setExpression(expression);
+        expected.get(1).get(field).set(new ValueExpression(expression));
 
         checkOutcome(mainServices.executeOperation(write.clone()));
 
@@ -148,7 +149,7 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
         mappings.get(1).get(field).set(expression);
         add.get(CLIENT_MAPPINGS).set(mappings);
         ModelNode expected = getClientMappings();
-        expected.get(1).get(field).setExpression(expression);
+        expected.get(1).get(field).set(new ValueExpression(expression));
 
         checkOutcome(mainServices.executeOperation(add.clone()));
         ModelNode model = mainServices.readWholeModel(false).get(address);

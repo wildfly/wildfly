@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,13 +58,13 @@ public class ObjectListAttributeDefinitionUnitTestCase {
         ModelNode validated = ld.validateOperation(op);
         Assert.assertEquals(op.get("test").get(0), validated.get(0));
         Assert.assertEquals(op.get("test").get(1).get("a"), validated.get(1).get("a"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).get("b").asString()), validated.get(1).get("b"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).get("b").asString())), validated.get(1).get("b"));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
         Assert.assertEquals(op.get("test").get(0), model.get("test").get(0));
         Assert.assertEquals(op.get("test").get(1).get("a"), model.get("test").get(1).get("a"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).get("b").asString()), model.get("test").get(1).get("b"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test").get(1).get("b").asString())), model.get("test").get(1).get("b"));
 
         op = new ModelNode();
         one = op.get("test").add();

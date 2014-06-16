@@ -59,6 +59,7 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -336,7 +337,7 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
                     ModelNode value = nestedProp.getValue();
                     if (value.getType() == ModelType.STRING && value.asString().startsWith("$") && value.asString().endsWith("}")) {
                         ModelNode fixed = new ModelNode();
-                        fixed.setExpression(value.asString());
+                        fixed.set(new ValueExpression(value.asString()));
                         modelNode.get("binding", property.getName(), nestedProp.getName()).set(fixed);
                     }
                 }

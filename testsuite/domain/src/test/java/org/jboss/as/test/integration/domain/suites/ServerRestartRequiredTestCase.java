@@ -61,6 +61,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -154,7 +155,7 @@ public class ServerRestartRequiredTestCase {
         final ModelNode socketBindingAdd = new ModelNode();
         socketBindingAdd.get(OP).set(ADD);
         socketBindingAdd.get(OP_ADDR).set(socketBinding);
-        socketBindingAdd.get(PORT).setExpression("${my.custom.socket}");
+        socketBindingAdd.get(PORT).set(new ValueExpression("${my.custom.socket}"));
 
         // Don't rollback server failures, rather mark them as restart-required
         socketBindingAdd.get(OPERATION_HEADERS).get(ROLLOUT_PLAN)

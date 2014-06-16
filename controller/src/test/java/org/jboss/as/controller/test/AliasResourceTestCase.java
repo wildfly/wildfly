@@ -51,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.test.TestUtils.createOperationDefinition;
 
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -67,17 +68,16 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadAttributeHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -686,7 +686,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
         @Override
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-            resourceRegistration.registerReadWriteAttribute(READ_WRITE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true));
+            resourceRegistration.registerReadWriteAttribute(READ_WRITE, null, new ReloadRequiredWriteAttributeHandler(READ_WRITE));
             resourceRegistration.registerReadOnlyAttribute(READ_ONLY, null);
             resourceRegistration.registerReadOnlyAttribute(RUNTIME, new CoreRuntimeHandler());
             resourceRegistration.registerReadWriteAttribute(READ_WRITE_ALIAS, TestAttributeAliasHandler.READ_WRITE_ALIAS, TestAttributeAliasHandler.READ_WRITE_ALIAS);
@@ -697,15 +697,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         @Override
         public void registerOperations(ManagementResourceRegistration resourceRegistration) {
             super.registerOperations(resourceRegistration);
-            resourceRegistration.registerOperationHandler("core-test", new TestOperationHandler("core"), new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(OPERATION_NAME).set("core-test");
-                    node.get(DESCRIPTION).set("An op");
-                    return node;
-                }
-            });
+            resourceRegistration.registerOperationHandler(createOperationDefinition("core-test"), new TestOperationHandler("core"));
         }
     }
 
@@ -716,22 +708,13 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
         @Override
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-            resourceRegistration.registerReadWriteAttribute(READ_WRITE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, false));
+            resourceRegistration.registerReadWriteAttribute(READ_WRITE, null, new ReloadRequiredWriteAttributeHandler(READ_WRITE));
         }
 
         @Override
         public void registerOperations(ManagementResourceRegistration resourceRegistration) {
             super.registerOperations(resourceRegistration);
-            resourceRegistration.registerOperationHandler("child-test", new TestOperationHandler("child"), new DescriptionProvider() {
-
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    ModelNode node = new ModelNode();
-                    node.get(OPERATION_NAME).set("child-test");
-                    node.get(DESCRIPTION).set("An op");
-                    return node;
-                }
-            });
+            resourceRegistration.registerOperationHandler(createOperationDefinition("child-test"), new TestOperationHandler("child"));
         }
     }
 

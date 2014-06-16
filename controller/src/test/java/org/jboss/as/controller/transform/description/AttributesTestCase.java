@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +44,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -64,6 +62,7 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker.Def
 import org.jboss.as.controller.transform.description.RejectAttributeChecker.DefaultRejectAttributeChecker;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,7 +100,7 @@ public class AttributesTestCase {
     @Test
     public void testRejectExpressions() throws Exception {
         //Set up the model
-        resourceModel.get("reject").setExpression("${expr}");
+        resourceModel.get("reject").set(new ValueExpression("${expr}"));
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, "reject").end();
@@ -116,11 +115,11 @@ public class AttributesTestCase {
         Assert.assertTrue(model.hasDefined("reject"));
 
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
-        add.get("reject").setExpression("${expr}");
+        add.get("reject").set(new ValueExpression("${expr}"));
         OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
         Assert.assertTrue(transformedAdd.rejectOperation(success()));
 
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().setExpression("${expr}"));
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().set(new ValueExpression("${expr}")));
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertTrue(transformedWrite.rejectOperation(success()));
     }
@@ -128,7 +127,7 @@ public class AttributesTestCase {
     @Test
     public void testCustomRejectChecker() throws Exception {
         //Set up the model
-        resourceModel.get("reject").setExpression("${expr}");
+        resourceModel.get("reject").set(new ValueExpression("${expr}"));
         DontRejectChecker dontRejectChecker = new DontRejectChecker();
         CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
@@ -154,9 +153,9 @@ public class AttributesTestCase {
         Assert.assertTrue(rejections.contains("reject"));
 
         dontRejectChecker.called = false;
-        rejectAttributeChecker.clear();;
+        rejectAttributeChecker.clear();
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
-        add.get("reject").setExpression("${expr}");
+        add.get("reject").set(new ValueExpression("${expr}"));
         OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
         Assert.assertTrue(transformedAdd.rejectOperation(success()));
         Assert.assertTrue(dontRejectChecker.called);
@@ -167,7 +166,7 @@ public class AttributesTestCase {
 
         dontRejectChecker.called = false;
         rejectAttributeChecker.clear();
-        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().setExpression("${expr}"));
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().set(new ValueExpression("${expr}")));
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertTrue(transformedWrite.rejectOperation(success()));
         Assert.assertTrue(dontRejectChecker.called);
@@ -336,7 +335,7 @@ public class AttributesTestCase {
     @Test
     public void testDiscardNotHappeningWithExpressions() throws Exception {
         //Set up the model
-        resourceModel.get("discard").setExpression("${xxx}");
+        resourceModel.get("discard").set(new ValueExpression("${xxx}"));
 
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
             builder.getAttributeBuilder().setDiscard(new DefaultDiscardAttributeChecker(false, false) {
@@ -352,16 +351,16 @@ public class AttributesTestCase {
         final Resource toto = resource.getChild(PATH);
         Assert.assertNotNull(toto);
         final ModelNode model = toto.getModel();
-        Assert.assertEquals(new ModelNode().setExpression("${xxx}"), model.get("discard"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression("${xxx}")), model.get("discard"));
 
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
-        add.get("discard").setExpression("${xxx}");
+        add.get("discard").set(new ValueExpression("${xxx}"));
         OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
         Assert.assertFalse(transformedAdd.rejectOperation(success()));
         Assert.assertEquals(add, transformedAdd.getTransformedOperation());
 
-        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode().setExpression("${xxx}")),
-                "discard", new ModelNode().setExpression("${xxx}"));
+        checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "discard", new ModelNode().set(new ValueExpression("${xxx}"))),
+                "discard", new ModelNode().set(new ValueExpression("${xxx}")));
     }
 
     @Test
@@ -597,7 +596,7 @@ public class AttributesTestCase {
 
         //Check that expressions get rejected
         resourceModel.clear();
-        resourceModel.get("one").setExpression("${test}");
+        resourceModel.get("one").set(new ValueExpression("${test}"));
         resourceModel.get("two").set("b");
         resourceModel.get("three").set("TRES");
         resourceModel.get("four");
@@ -621,7 +620,7 @@ public class AttributesTestCase {
 
         rejectAttributeChecker.clear();
         final ModelNode add2 = Util.createAddOperation(PathAddress.pathAddress(PATH));
-        add2.get("one").setExpression("${test}");
+        add2.get("one").set(new ValueExpression("${test}"));
         add2.get("two").set("b");
         add2.get("three").set("TRES");
         add2.get("four");
@@ -633,8 +632,8 @@ public class AttributesTestCase {
         Assert.assertEquals(1, rejections.size());
         Assert.assertTrue(rejections.contains("one"));
 
-        rejectAttributeChecker.clear();;
-        OperationTransformer.TransformedOperation write = transformOperation(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode().setExpression("${test}")));
+        rejectAttributeChecker.clear();
+        OperationTransformer.TransformedOperation write = transformOperation(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode().set(new ValueExpression("${test}"))));
         Assert.assertTrue(write.rejectOperation(success()));
         rejections = rejectAttributeChecker.getRejections();
         Assert.assertEquals(1, rejections.size());
@@ -814,7 +813,7 @@ public class AttributesTestCase {
     }
 
     private ResourceTransformationContext createContext(final TransformationTarget target) {
-        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.DEFAULT, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
+        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.TEST_RESOLVER, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
     }
 
     private Transformers getTransfomers(final TransformationTarget target) {
@@ -831,14 +830,14 @@ public class AttributesTestCase {
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 
-    private static final ModelNode success() {
+    private static ModelNode success() {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
         result.get(ModelDescriptionConstants.RESULT);
         return result;
     }
 
-    private static final ModelNode failed() {
+    private static ModelNode failed() {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.FAILED);
         result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set("failed");
