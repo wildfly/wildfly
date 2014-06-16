@@ -27,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.transaction.TransactionManager;
 
+import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
 
@@ -72,6 +73,17 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     }
 
     @Override
+    public JobRepository getJobRepository() {
+        return delegate.getJobRepository();
+    }
+
+    /**
+     * {@inheritDoc}
+     * @deprecated this is no longer used in jBeret and will be removed
+     * @return
+     */
+    @Override
+    @Deprecated
     public Properties getBatchConfigurationProperties() {
         return delegate.getBatchConfigurationProperties();
     }

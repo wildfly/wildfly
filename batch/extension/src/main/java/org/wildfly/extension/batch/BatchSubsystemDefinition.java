@@ -56,8 +56,8 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.batch.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
-import org.wildfly.jberet.BatchConfiguration;
-import org.wildfly.jberet.BatchConfiguration.JobRepositoryType;
+import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
+import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 
 class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
@@ -202,11 +202,9 @@ class BatchSubsystemDefinition extends SimpleResourceDefinition {
                 }
             }, OperationContext.Stage.RUNTIME);
 
-            // Create the BatchEnvironment
-            final BatchConfiguration batchConfiguration = BatchConfiguration.getInstance();
             // Determine the repository type
             final String repositoryType = JOB_REPOSITORY_TYPE.resolveModelAttribute(context, model).asString();
-            batchConfiguration.setJobRepositoryType(repositoryType);
+            JobRepositoryFactory.getInstance().setJobRepositoryType(repositoryType);
         }
     }
 }
