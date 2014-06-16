@@ -83,12 +83,16 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
     private static final List<String> defaultDependencies = new ArrayList<String>();
 
+    private static final Set<String> optionalDeps = new HashSet<>();
+
     static {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.osgi.core");
         defaultDependencies.add("org.wildfly.security.manager");
+
+        optionalDeps.add("org.osgi.core");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -168,9 +172,16 @@ public class JMXProtocolPackager implements DeploymentPackager {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
-                StringBuffer depspec = new StringBuffer("" + itdep.next());
+                StringBuffer depspec = new StringBuffer();
                 while (itdep.hasNext()) {
-                    depspec.append("," + itdep.next());
+                    ModuleIdentifier dep = itdep.next();
+                    depspec.append(dep);
+                    if(optionalDeps.contains(dep.getName())) {
+                        depspec.append(" optional");
+                    }
+                    if(itdep.hasNext()) {
+                        depspec.append("," );
+                    }
                 }
                 builder.addManifestHeader("Dependencies", depspec.toString());
                 return builder.openStream();
@@ -252,8 +263,12 @@ public class JMXProtocolPackager implements DeploymentPackager {
         String value = attributes.getValue("Dependencies");
         StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
         for (String dep : defaultDependencies) {
-            if (moduleDeps.indexOf(dep) < 0)
+            if (moduleDeps.indexOf(dep) < 0) {
                 moduleDeps.append("," + dep);
+            }
+            if(optionalDeps.contains(dep)) {
+                moduleDeps.append(" optional");
+            }
         }
 
         log.debugf("Add dependencies: %s", moduleDeps);

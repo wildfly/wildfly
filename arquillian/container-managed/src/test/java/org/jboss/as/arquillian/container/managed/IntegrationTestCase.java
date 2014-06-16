@@ -26,6 +26,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,6 +36,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("We don't have a dependency on the full server, just the core, to avoid nasty circular dep")
 public class IntegrationTestCase {
 
     @Deployment

@@ -31,6 +31,7 @@ import org.jboss.arquillian.testenricher.osgi.BundleAssociation;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.Service;
@@ -45,7 +46,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
 
 /**
@@ -55,6 +55,8 @@ import org.osgi.framework.BundleReference;
  */
 class ArquillianConfig implements Service<ArquillianConfig> {
 
+    private static final Logger log = Logger.getLogger(ArquillianConfig.class);
+
     static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
 
     private final ArquillianService arqService;
@@ -62,7 +64,10 @@ class ArquillianConfig implements Service<ArquillianConfig> {
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<String>();
 
-    private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    /**
+     * this is really of type BundleContext, but osgi may not be present
+     */
+    private final InjectedValue<Object> injectedBundleContext = new InjectedValue<Object>();
     private ServiceTarget serviceTarget;
 
     static ServiceName getServiceName(DeploymentUnit depUnit) {
@@ -78,7 +83,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
-        builder.addDependency(DependencyType.OPTIONAL, ServiceName.parse("jbosgi.framework.CREATE"), BundleContext.class, injectedBundleContext);
+        builder.addDependency(DependencyType.OPTIONAL, ServiceName.parse("jbosgi.framework.CREATE"), Object.class, injectedBundleContext);
         builder.addDependency(depController.getName());
         return builder;
     }
@@ -95,7 +100,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return Collections.unmodifiableList(testClasses);
     }
 
-    BundleContext getBundleContext() {
+    Object getBundleContext() {
         return injectedBundleContext.getOptionalValue();
     }
 
@@ -105,7 +110,12 @@ class ArquillianConfig implements Service<ArquillianConfig> {
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
-        BundleAssociation.setBundle(getAssociatedBundle(module));
+        try {
+            BundleAssociation.setBundle((Bundle) getAssociatedBundle(module));
+        } catch (Throwable t) {
+            log.warn("Could not set bundle context");
+            log.debug("Could not set bundle context", t);
+        }
 
         Class<?> testClass = module.getClassLoader().loadClass(className);
 
@@ -113,9 +123,13 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         return testClass;
     }
 
-    static Bundle getAssociatedBundle(Module module) {
-        ModuleClassLoader classLoader = module != null ? module.getClassLoader() : null;
-        return classLoader instanceof BundleReference ? ((BundleReference)classLoader).getBundle() : null;
+    static Object getAssociatedBundle(Module module) {
+        try {
+            ModuleClassLoader classLoader = module != null ? module.getClassLoader() : null;
+            return classLoader instanceof BundleReference ? ((BundleReference)classLoader).getBundle() : null;
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     @Override

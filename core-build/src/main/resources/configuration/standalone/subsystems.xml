@@ -3,5 +3,6 @@
 <config>
    <subsystems>
       <subsystem>logging.xml</subsystem>
+      <subsystem>jmx.xml</subsystem>
    </subsystems>
 </config>
