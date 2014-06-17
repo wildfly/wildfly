@@ -277,20 +277,19 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
-                    MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
+                    FlushableDataOutput output = null;
                     try {
-                        final FlushableDataOutput output = responseContext.writeMessage(response);
-                        try {
-                            output.write(ModelControllerProtocol.PARAM_RESPONSE);
-                            result.writeExternal(output);
-                            output.writeByte(ManagementProtocol.RESPONSE_END);
-                            output.close();
-                        } finally {
-                            StreamUtils.safeClose(output);
-                            latch.countDown();
-                        }
+                        MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
+                        output = responseContext.writeMessage(response);
+                        output.write(ModelControllerProtocol.PARAM_RESPONSE);
+                        result.writeExternal(output);
+                        output.writeByte(ManagementProtocol.RESPONSE_END);
+                        output.close();
                     } catch (IOException e) {
                         exceptionHolder.exception = e;
+                    } finally {
+                        StreamUtils.safeClose(output);
+                        latch.countDown();
                     }
                 }
             }, false);

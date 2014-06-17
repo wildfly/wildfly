@@ -495,10 +495,11 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
             @Override
             public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
-                MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
-                final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
-                final FlushableDataOutput output = context.writeMessage(header);
+                FlushableDataOutput output = null;
                 try {
+                    MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());
+                    final ManagementResponseHeader header = ManagementResponseHeader.create(context.getRequestHeader());
+                    output = context.writeMessage(header);
                     // response type
                     output.writeByte(responseType);
                     // operation result
