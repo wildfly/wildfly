@@ -51,7 +51,7 @@ public class ValidateRealmState implements State {
     public State execute() {
         String enteredRealm = stateValues.getRealm();
         if (enteredRealm.length() == 0) {
-            return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.realmMustBeSpecified(), new PromptRealmState(theConsole, stateValues));
+            return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.realmMustBeSpecified(), new PromptRealmState(theConsole, stateValues), stateValues);
         }
 
         if (stateValues.getFileMode() != FileMode.UNDEFINED) {

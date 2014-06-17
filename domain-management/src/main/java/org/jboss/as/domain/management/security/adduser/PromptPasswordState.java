@@ -78,7 +78,7 @@ public class PromptPasswordState implements State {
                 theConsole.printf(DomainManagementLogger.ROOT_LOGGER.passwordPrompt());
                 char[] tempChar = theConsole.readPassword(" : ");
                 if (tempChar == null || tempChar.length == 0) {
-                    return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noPasswordExiting());
+                    return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noPasswordExiting(), stateValues);
                 }
                 stateValues.setPassword(new String(tempChar));
 

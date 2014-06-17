@@ -82,7 +82,7 @@ public class ValidatePasswordState extends AbstractValidationState {
                             return confirmWeakPassword(result);
                         }
                         if (rejectResult) {
-                            return new ErrorState(theConsole, result.getMessage(), getRetryState());
+                            return new ErrorState(theConsole, result.getMessage(), getRetryState(), stateValues);
                         }
                         break;
                     default:
