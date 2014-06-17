@@ -146,13 +146,6 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("deprecation")
-    public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-        registerOperationHandler(operationName, handler, descriptionProvider, false);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @SuppressWarnings("deprecation")
     public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
         registerOperationHandler(operationName, handler, descriptionProvider, false, EntryType.PUBLIC, flags);
     }

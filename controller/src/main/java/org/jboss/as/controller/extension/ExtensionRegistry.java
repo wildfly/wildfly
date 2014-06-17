@@ -51,7 +51,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -646,14 +645,6 @@ public class ExtensionRegistry {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
-            assert descriptionProvider != null : "descriptionProvider is null";
-            PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-            return registerSubsystemModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
-        }
-
-        @Override
         public ManagementResourceRegistration registerSubsystemModel(ResourceDefinition resourceDefinition) {
             assert resourceDefinition != null : "resourceDefinition is null";
 
@@ -665,14 +656,6 @@ public class ExtensionRegistry {
                 profileReg = getDummyRegistration();
             }
             return profileReg.registerSubModel(resourceDefinition);
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
-            assert descriptionProvider != null : "descriptionProvider is null";
-            PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
-            return registerDeploymentModel(new SimpleResourceDefinition(pathElement, descriptionProvider));
         }
 
         @Override
@@ -886,13 +869,6 @@ public class ExtensionRegistry {
 
         @Override
         @SuppressWarnings("deprecation")
-        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-            deployments.registerOperationHandler(operationName, handler, descriptionProvider);
-            subdeployments.registerOperationHandler(operationName, handler, descriptionProvider);
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
@@ -943,20 +919,6 @@ public class ExtensionRegistry {
             subdeployments.unregisterOperationHandler(operationName);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-            deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
-            subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
-            subdeployments.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
-        }
-
         @Override
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
             deployments.registerReadWriteAttribute(definition, readHandler, writeHandler);
@@ -970,37 +932,16 @@ public class ExtensionRegistry {
             subdeployments.registerReadOnlyAttribute(attributeName, readHandler, storage);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
-            subdeployments.registerReadOnlyAttribute(attributeName, readHandler, flags);
-        }
-
         @Override
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
             deployments.registerReadOnlyAttribute(definition, readHandler);
             subdeployments.registerReadOnlyAttribute(definition, readHandler);
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-            deployments.registerMetric(attributeName, metricHandler);
-            subdeployments.registerMetric(attributeName, metricHandler);
-        }
-
         @Override
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
             deployments.registerMetric(definition, metricHandler);
             subdeployments.registerMetric(definition, metricHandler);
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-            deployments.registerMetric(attributeName, metricHandler, flags);
-            subdeployments.registerMetric(attributeName, metricHandler, flags);
         }
 
         @Override

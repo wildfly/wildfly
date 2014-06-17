@@ -167,18 +167,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param operationName the operation name
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
-     * @throws IllegalArgumentException if either parameter is {@code null}
-     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
-     */
-     @Deprecated
-    void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider);
-
-    /**
-     * Register an operation handler for this resource.
-     *
-     * @param operationName the operation name
-     * @param handler the operation handler
-     * @param descriptionProvider the description provider for this operation
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
      * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
@@ -278,41 +266,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
 
     /**
      * Records that the given attribute can be both read from and written to, and
-     * provides operation handlers for the read and the write.
-     *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param readHandler the handler for attribute reads. May be {@code null}
-     *                    in which case the default handling is used
-     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
-     * @param storage the storage type for this attribute
-     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
-     */
-    @Deprecated
-    void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage);
-
-    /**
-     * Records that the given attribute can be both read from and written to, and
-     * provides operation handlers for the read and the write. The attribute is assumed to be
-     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
-     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
-     *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param readHandler the handler for attribute reads. May be {@code null}
-     *                    in which case the default handling is used
-     * @param writeHandler the handler for attribute writes. Cannot be {@code null}
-     * @param flags additional flags describing this attribute
-     * @throws IllegalArgumentException if {@code attributeName} or {@code writeHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerReadWriteAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler, org.jboss.as.controller.OperationStepHandler)}
-     */
-     @Deprecated
-    void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler,
-                                    EnumSet<AttributeAccess.Flag> flags);
-
-    /**
-     * Records that the given attribute can be both read from and written to, and
      * provides operation handlers for the read and the write. The attribute is assumed to be
      * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
      * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
@@ -349,23 +302,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
      * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
      *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param readHandler the handler for attribute reads. May be {@code null}
-     *                    in which case the default handling is used
-     * @param flags additional flags describing this attribute
-     * @throws IllegalArgumentException if {@code attributeName} is {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerReadOnlyAttribute(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
-      */
-    @Deprecated
-    void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags);
-
-    /**
-     * Records that the given attribute can be read from but not written to, and
-     * optionally provides an operation handler for the read. The attribute is assumed to be
-     * {@link org.jboss.as.controller.registry.AttributeAccess.Storage#CONFIGURATION} unless parameter
-     * {@code flags} includes {@link org.jboss.as.controller.registry.AttributeAccess.Flag#STORAGE_RUNTIME}.
-     *
      * @param definition the attribute definition. Cannot be {@code null}
      * @param readHandler the handler for attribute reads. May be {@code null}
      *                    in which case the default handling is used
@@ -378,19 +314,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     /**
      * Records that the given attribute is a metric.
      *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param metricHandler the handler for attribute reads. Cannot be {@code null}
-     *
-     * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
-     */
-    @Deprecated
-    void registerMetric(String attributeName, OperationStepHandler metricHandler);
-
-    /**
-     * Records that the given attribute is a metric.
-     *
      * @param definition the attribute definition. Cannot be {@code null}
      * @param metricHandler the handler for attribute reads. Cannot be {@code null}
      *
@@ -398,19 +321,6 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
      */
     void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler);
-
-    /**
-     * Records that the given attribute is a metric.
-     *
-     * @param attributeName the name of the attribute. Cannot be {@code null}
-     * @param metricHandler the handler for attribute reads. Cannot be {@code null}
-     * @param flags additional flags describing this attribute
-     *
-     * @throws IllegalArgumentException if {@code attributeName} or {@code metricHandler} are {@code null}
-     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
-     * @deprecated use {@link ManagementResourceRegistration#registerMetric(org.jboss.as.controller.AttributeDefinition, org.jboss.as.controller.OperationStepHandler)}
-     */
-    void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags);
 
 
     /**

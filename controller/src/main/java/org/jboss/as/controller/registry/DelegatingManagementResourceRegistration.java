@@ -180,11 +180,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-        delegate.registerOperationHandler(operationName, handler, descriptionProvider);
-    }
-
-    @Override
     public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
         delegate.registerOperationHandler(operationName, handler, descriptionProvider, flags);
     }
@@ -225,16 +220,6 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        delegate.registerReadWriteAttribute(attributeName, readHandler, writeHandler, storage);
-    }
-
-    @Override
-    public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        delegate.registerReadWriteAttribute(attributeName, readHandler, writeHandler, flags);
-    }
-
-    @Override
     public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
         delegate.registerReadWriteAttribute(definition, readHandler, writeHandler);
     }
@@ -245,28 +230,13 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     }
 
     @Override
-    public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        delegate.registerReadOnlyAttribute(attributeName, readHandler, flags);
-    }
-
-    @Override
     public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         delegate.registerReadOnlyAttribute(definition, readHandler);
     }
 
     @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        delegate.registerMetric(attributeName, metricHandler);
-    }
-
-    @Override
     public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         delegate.registerMetric(definition, metricHandler);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        delegate.registerMetric(attributeName, metricHandler, flags);
     }
 
     @Override

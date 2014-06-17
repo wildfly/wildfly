@@ -162,23 +162,6 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? AttributeAccess.Storage.RUNTIME : AttributeAccess.Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.READ_WRITE, storage, readHandler, writeHandler, null, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadWriteAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler, final OperationStepHandler writeHandler) {
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
         final String attributeName = definition.getName();
@@ -198,33 +181,11 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? AttributeAccess.Storage.RUNTIME : AttributeAccess.Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.READ_ONLY, storage, readHandler, null, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadOnlyAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler) {
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
         final String attributeName = definition.getName();
         AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? AttributeAccess.Storage.RUNTIME : AttributeAccess.Storage.CONFIGURATION;
         AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.READ_ONLY, storage, readHandler, null, definition, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        registerMetric(attributeName, metricHandler, null);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        AttributeAccess aa = new AttributeAccess(AttributeAccess.AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);
         if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
             throw alreadyRegistered("attribute", attributeName);
         }

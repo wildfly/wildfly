@@ -975,11 +975,6 @@ final class SubsystemTestDelegate {
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                                             DescriptionProvider descriptionProvider) {
-        }
-
-        @Override
-        public void registerOperationHandler(String operationName, OperationStepHandler handler,
                                              DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
         }
 
@@ -1020,15 +1015,6 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
-                                               OperationStepHandler writeHandler, Storage storage) {
-        }
-
-        @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        }
-
-        @Override
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
         }
 
@@ -1037,23 +1023,11 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        }
-
-        @Override
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         }
 
         @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        }
-
-        @Override
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
-        }
-
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         }
 
         @Override

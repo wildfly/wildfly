@@ -267,25 +267,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        checkPermission();
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadWriteAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler, final OperationStepHandler writeHandler) {
         checkPermission();
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
@@ -308,16 +289,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadOnlyAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler) {
         checkPermission();
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
@@ -328,20 +299,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             throw alreadyRegistered("attribute", attributeName);
         }
         registerAttributeAccessConstraints(definition);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        registerMetric(attributeName, metricHandler, null);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
     }
 
     @Override
