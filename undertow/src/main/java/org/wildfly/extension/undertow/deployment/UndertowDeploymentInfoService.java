@@ -505,6 +505,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
             d.setDeploymentName(deploymentName);
+            d.setHostName(host.getValue().getName());
             final ServletContainerService servletContainer = container.getValue();
             try {
                 //TODO: make the caching limits configurable
