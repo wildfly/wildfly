@@ -604,89 +604,98 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     list.add(mapping);
                 }
             }
+            if (jspServlet != null) {
+                List<ServletMappingMetaData> list = servletMappings.get(jspServlet.getName());
+                if(list != null && ! list.isEmpty()) {
+                    for (final ServletMappingMetaData mapping : list) {
+                        for(String urlPattern : mapping.getUrlPatterns()) {
+                            jspServlet.addMapping(urlPattern);
+                        }
+                        seenMappings.addAll(mapping.getUrlPatterns());
+                    }
+                }
+            }
 
             final List<JBossServletMetaData> servlets = new ArrayList<JBossServletMetaData>();
             for (JBossServletMetaData servlet : mergedMetaData.getServlets()) {
                 servlets.add(servlet);
             }
 
-            if (servlets != null) {
-                for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
-                    final ServletInfo s;
+            for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
+                final ServletInfo s;
 
-                    if (servlet.getJspFile() != null) {
-                        s = new ServletInfo(servlet.getName(), JspServlet.class);
-                        s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
-                    } else {
-                        if (servlet.getServletClass() == null) {
-                            if (DEFAULT_SERVLET_NAME.equals(servlet.getName())) {
-                                s = new ServletInfo(servlet.getName(), DefaultServlet.class);
-                            } else {
-                                throw UndertowMessages.MESSAGES.servletClassNotDefined(servlet.getServletName());
-                            }
+                if (servlet.getJspFile() != null) {
+                    s = new ServletInfo(servlet.getName(), JspServlet.class);
+                    s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
+                } else {
+                    if (servlet.getServletClass() == null) {
+                        if (DEFAULT_SERVLET_NAME.equals(servlet.getName())) {
+                            s = new ServletInfo(servlet.getName(), DefaultServlet.class);
                         } else {
-                            Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
-                            ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
-                            if (creator != null) {
-                                InstanceFactory<Servlet> factory = createInstanceFactory(creator);
-                                s = new ServletInfo(servlet.getName(), servletClass, factory);
-                            } else {
-                                s = new ServletInfo(servlet.getName(), servletClass);
-                            }
+                            throw UndertowMessages.MESSAGES.servletClassNotDefined(servlet.getServletName());
+                        }
+                    } else {
+                        Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
+                        ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
+                        if (creator != null) {
+                            InstanceFactory<Servlet> factory = createInstanceFactory(creator);
+                            s = new ServletInfo(servlet.getName(), servletClass, factory);
+                        } else {
+                            s = new ServletInfo(servlet.getName(), servletClass);
                         }
                     }
-                    s.setAsyncSupported(servlet.isAsyncSupported())
-                            .setJspFile(servlet.getJspFile())
-                            .setEnabled(servlet.isEnabled());
-                    if (servlet.getRunAs() != null) {
-                        s.setRunAs(servlet.getRunAs().getRoleName());
-                    }
-                    if (servlet.getLoadOnStartupSet()) {//todo why not cleanup api and just use int everywhere
-                        s.setLoadOnStartup(servlet.getLoadOnStartupInt());
-                    }
-
-                    if (servlet.getExecutorName() != null) {
-                        s.setExecutor(executorsByName.get(servlet.getExecutorName()).getValue());
-                    }
-
-                    handleServletMappings(is22OrOlder, seenMappings, servletMappings, s);
-                    if (servlet.getInitParam() != null) {
-                        for (ParamValueMetaData initParam : servlet.getInitParam()) {
-                            if (!s.getInitParams().containsKey(initParam.getParamName())) {
-                                s.addInitParam(initParam.getParamName(), initParam.getParamValue());
-                            }
-                        }
-                    }
-                    if (servlet.getServletSecurity() != null) {
-                        ServletSecurityInfo securityInfo = new ServletSecurityInfo();
-                        s.setServletSecurityInfo(securityInfo);
-                        securityInfo.setEmptyRoleSemantic(servlet.getServletSecurity().getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
-                                .setTransportGuaranteeType(transportGuaranteeType(servlet.getServletSecurity().getTransportGuarantee()))
-                                .addRolesAllowed(servlet.getServletSecurity().getRolesAllowed());
-                        if (servlet.getServletSecurity().getHttpMethodConstraints() != null) {
-                            for (HttpMethodConstraintMetaData method : servlet.getServletSecurity().getHttpMethodConstraints()) {
-                                securityInfo.addHttpMethodSecurityInfo(
-                                        new HttpMethodSecurityInfo()
-                                                .setEmptyRoleSemantic(method.getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
-                                                .setTransportGuaranteeType(transportGuaranteeType(method.getTransportGuarantee()))
-                                                .addRolesAllowed(method.getRolesAllowed())
-                                                .setMethod(method.getMethod()));
-                            }
-                        }
-                    }
-                    if (servlet.getSecurityRoleRefs() != null) {
-                        for (final SecurityRoleRefMetaData ref : servlet.getSecurityRoleRefs()) {
-                            s.addSecurityRoleRef(ref.getRoleName(), ref.getRoleLink());
-                        }
-                    }
-
-                    if (servlet.getMultipartConfig() != null) {
-                        MultipartConfigMetaData mp = servlet.getMultipartConfig();
-                        s.setMultipartConfig(Servlets.multipartConfig(mp.getLocation(), mp.getMaxFileSize(), mp.getMaxRequestSize(), mp.getFileSizeThreshold()));
-                    }
-
-                    d.addServlet(s);
                 }
+                s.setAsyncSupported(servlet.isAsyncSupported())
+                        .setJspFile(servlet.getJspFile())
+                        .setEnabled(servlet.isEnabled());
+                if (servlet.getRunAs() != null) {
+                    s.setRunAs(servlet.getRunAs().getRoleName());
+                }
+                if (servlet.getLoadOnStartupSet()) {//todo why not cleanup api and just use int everywhere
+                    s.setLoadOnStartup(servlet.getLoadOnStartupInt());
+                }
+
+                if (servlet.getExecutorName() != null) {
+                    s.setExecutor(executorsByName.get(servlet.getExecutorName()).getValue());
+                }
+
+                handleServletMappings(is22OrOlder, seenMappings, servletMappings, s);
+                if (servlet.getInitParam() != null) {
+                    for (ParamValueMetaData initParam : servlet.getInitParam()) {
+                        if (!s.getInitParams().containsKey(initParam.getParamName())) {
+                            s.addInitParam(initParam.getParamName(), initParam.getParamValue());
+                        }
+                    }
+                }
+                if (servlet.getServletSecurity() != null) {
+                    ServletSecurityInfo securityInfo = new ServletSecurityInfo();
+                    s.setServletSecurityInfo(securityInfo);
+                    securityInfo.setEmptyRoleSemantic(servlet.getServletSecurity().getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
+                        .setTransportGuaranteeType(transportGuaranteeType(servlet.getServletSecurity().getTransportGuarantee()))
+                        .addRolesAllowed(servlet.getServletSecurity().getRolesAllowed());
+                    if (servlet.getServletSecurity().getHttpMethodConstraints() != null) {
+                        for (HttpMethodConstraintMetaData method : servlet.getServletSecurity().getHttpMethodConstraints()) {
+                        securityInfo.addHttpMethodSecurityInfo(
+                                new HttpMethodSecurityInfo()
+                                    .setEmptyRoleSemantic(method.getEmptyRoleSemantic() == EmptyRoleSemanticType.DENY ? DENY : PERMIT)
+                                    .setTransportGuaranteeType(transportGuaranteeType(method.getTransportGuarantee()))
+                                    .addRolesAllowed(method.getRolesAllowed())
+                                    .setMethod(method.getMethod()));
+                        }
+                    }
+                }
+                if (servlet.getSecurityRoleRefs() != null) {
+                    for (final SecurityRoleRefMetaData ref : servlet.getSecurityRoleRefs()) {
+                        s.addSecurityRoleRef(ref.getRoleName(), ref.getRoleLink());
+                    }
+                }
+
+                if (servlet.getMultipartConfig() != null) {
+                    MultipartConfigMetaData mp = servlet.getMultipartConfig();
+                    s.setMultipartConfig(Servlets.multipartConfig(mp.getLocation(), mp.getMaxFileSize(), mp.getMaxRequestSize(), mp.getFileSizeThreshold()));
+                }
+
+                d.addServlet(s);
             }
 
             //we explicitly add the default servlet, to allow it to be mapped
