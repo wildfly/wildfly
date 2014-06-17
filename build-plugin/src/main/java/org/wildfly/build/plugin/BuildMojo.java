@@ -253,14 +253,18 @@ public class BuildMojo extends AbstractMojo {
                         if (artifact == null) {
                             throw new RuntimeException("Could not extract resources from artifact " + artifactName + " contents " + artifactMap);
                         }
-                        ZipFile zip = new ZipFile(artifact.getFile());
                         try {
-                            if (extractSchema) {
-                                extractSchemaFromZip(zip, schemaTarget);
+                            ZipFile zip = new ZipFile(artifact.getFile());
+                            try {
+                                if (extractSchema) {
+                                    extractSchemaFromZip(zip, schemaTarget);
+                                }
+                                extractTemplatesFromZip(zip);
+                            } finally {
+                                safeClose(zip);
                             }
-                            extractTemplatesFromZip(zip);
-                        } finally {
-                            safeClose(zip);
+                        } catch (Throwable t) {
+                            throw new RuntimeException("Could not extract resources from " + artifactName, t);
                         }
                         if (copyModuleArtifacts) {
                             String artifactFileName = artifact.getFile().getName();
