@@ -48,5 +48,9 @@
         <module name="org.jboss.threads"/>
         <!-- Needed to load up com.ibm.security.auth.PolicyFile as part of rbac on IBM JDK -->
         <module name="ibm.jdk" export="true" optional="true"/>
+        <!-- Needed to load up com.sun.security.auth.PolicyFile.
+             Not exported because org.jboss.as.domain-management already exports it and that should suffice
+             for use in other core modules -->
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
