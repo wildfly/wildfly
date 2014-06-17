@@ -79,7 +79,7 @@ public class PromptPasswordState implements State {
                 theConsole.printf(MESSAGES.passwordPrompt());
                 char[] tempChar = theConsole.readPassword(" : ");
                 if (tempChar == null || tempChar.length == 0) {
-                    return new ErrorState(theConsole, MESSAGES.noPasswordExiting());
+                    return new ErrorState(theConsole, MESSAGES.noPasswordExiting(), stateValues);
                 }
                 stateValues.setPassword(new String(tempChar));
 

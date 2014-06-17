@@ -78,7 +78,7 @@ public class PropertyFilePrompt implements State {
                 }
                 return new PropertyFileFinder(theConsole, stateValues);
             default:
-                return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
+                return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this, stateValues);
         }
     }
 
