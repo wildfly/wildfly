@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:build:1.0" extract-schema="false" copy-module-artifacts="false">
+<build xmlns="urn:wildfly:build:1.0" extract-schema="false" copy-module-artifacts="true">
     <servers>
         <server>
             <path name="${server.dir}"/>
