@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 package org.jboss.as.test.integration.domain.suites;
 
@@ -26,13 +28,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
-import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
-import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
-import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRuntimeNameTestCase;
-import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
-import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
-import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
+import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
+import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
+import org.jboss.as.test.integration.domain.management.cli.WildCardReadsTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -45,13 +43,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        JmsTestCase.class,
-        DeployAllServerGroupsTestCase.class,
-        DeploySingleServerGroupTestCase.class,
-        DomainDeploymentOverlayTestCase.class,
-        RolloutPlanTestCase.class,
-        DomainDeployWithRuntimeNameTestCase.class,
-        DataSourceTestCase.class
+    BasicOpsTestCase.class,
+    UndeployWildcardDomainTestCase.class,
+    WildCardReadsTestCase.class
 })
 public class CLITestSuite {
 

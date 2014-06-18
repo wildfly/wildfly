@@ -240,7 +240,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource( "deploymentoverlay/wildcard-override.xml")).getBytes());
+        op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource("deploymentoverlay/wildcard-override.xml")).getBytes());
 
         steps.add(op);
 

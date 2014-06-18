@@ -43,7 +43,7 @@ import org.junit.Test;
  */
 public class WildCardReadsTestCase extends AbstractCliTestBase {
 
-    private static final String OP_PATTERN = "/profile=default/subsystem=infinispan/cache-container=web/distributed-cache=dist/eviction=%s:%s";
+    private static final String OP_PATTERN = "/profile=default/subsystem=io/worker=%s:%s";
     private static final String READ_OP_DESC_OP = ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION + "(name=%s)";
     private static final String READ_RES_DESC_OP = ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION + "(access-control=combined-descriptions,operations=true,recursive=true)";
     private static final String EVICTION = "EVICTION";
