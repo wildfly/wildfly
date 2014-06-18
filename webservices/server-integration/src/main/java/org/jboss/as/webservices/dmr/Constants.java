@@ -55,4 +55,5 @@ interface Constants {
     String HANDLER_NAME="handler-name";
     String HANDLER_CLASS="handler-class";
     String VALUE = "value";
+    String STATISTICS_ENABLED = "statistics-enabled";
 }

@@ -27,6 +27,7 @@ import java.util.Map;
 /**
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 enum Namespace {
 
@@ -38,6 +39,8 @@ enum Namespace {
     WEBSERVICES_1_1("urn:jboss:domain:webservices:1.1"),
 
     WEBSERVICES_1_2("urn:jboss:domain:webservices:1.2"),
+
+    WEBSERVICES_1_3("urn:jboss:domain:webservices:1.3"),
 
     JAVAEE("http://java.sun.com/xml/ns/javaee"),
 

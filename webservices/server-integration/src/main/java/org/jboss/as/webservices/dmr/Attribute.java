@@ -27,6 +27,7 @@ import java.util.Map;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 enum Attribute {
     UNKNOWN(null),
@@ -36,6 +37,7 @@ enum Attribute {
     VALUE(Constants.VALUE),
     CLASS(Constants.CLASS),
     PROTOCOL_BINDINGS(Constants.PROTOCOL_BINDINGS),
+    STATISTICS_ENABLED(Constants.STATISTICS_ENABLED),
     ;
 
     private final String name;

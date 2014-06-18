@@ -50,121 +50,83 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
-final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
+class WSSubsystem11Reader implements XMLElementReader<List<ModelNode>> {
 
-    private static final WSSubsystemReader INSTANCE = new WSSubsystemReader();
+    private static final WSSubsystem11Reader INSTANCE = new WSSubsystem11Reader();
 
-    private WSSubsystemReader() {
-        // forbidden instantiation
+    protected WSSubsystem11Reader() {
+
     }
 
-    static WSSubsystemReader getInstance() {
+    static WSSubsystem11Reader getInstance() {
         return INSTANCE;
     }
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-        // no attributes
-        requireNoAttributes(reader);
-
         final PathAddress address = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
         final ModelNode subsystem = Util.createAddOperation(address);
-
-        final List<ModelNode> endpointConfigs = new ArrayList<ModelNode>();
-        final List<ModelNode> clientConfigs = new ArrayList<ModelNode>();
-
+        list.add(subsystem);
+        readAttributes(reader, subsystem);
         // elements
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case WEBSERVICES_1_1: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element != Element.ENDPOINT_CONFIG && !encountered.add(element)) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case MODIFY_WSDL_ADDRESS: {
+                    if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
                     }
-                    switch (element) {
-                        case MODIFY_WSDL_ADDRESS: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_HOST: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_PORT: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_SECURE_PORT: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case ENDPOINT_CONFIG: {
-                            readConfig(reader, address, endpointConfigs, false);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
-                    }
+                    final String value = parseElementNoAttributes(reader);
+                    Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
                     break;
                 }
-                case WEBSERVICES_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element != Element.ENDPOINT_CONFIG && element != Element.CLIENT_CONFIG && !encountered.add(element)) {
+                case WSDL_HOST: {
+                    if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
                     }
-                    switch (element) {
-                        case MODIFY_WSDL_ADDRESS: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_HOST: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_PORT: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case WSDL_SECURE_PORT: {
-                            final String value = parseElementNoAttributes(reader);
-                            Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
-                            break;
-                        }
-                        case ENDPOINT_CONFIG: {
-                            readConfig(reader, address, endpointConfigs, false);
-                            break;
-                        }
-                        case CLIENT_CONFIG: {
-                            readConfig(reader, address, clientConfigs, true);
-                            break;
-                        }
-                        default: {
-                            throw unexpectedElement(reader);
-                        }
+                    final String value = parseElementNoAttributes(reader);
+                    Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                }
+                case WSDL_PORT: {
+                    if (!encountered.add(element)) {
+                        throw unexpectedElement(reader);
                     }
+                    final String value = parseElementNoAttributes(reader);
+                    Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                }
+                case WSDL_SECURE_PORT: {
+                    if (!encountered.add(element)) {
+                        throw unexpectedElement(reader);
+                    }
+                    final String value = parseElementNoAttributes(reader);
+                    Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
+                    break;
+                }
+                case ENDPOINT_CONFIG: {
+                    List<ModelNode> configs = readConfig(reader, address, false);
+                    list.addAll(configs);
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    handleUnknownElement(reader, address, element, list);
                 }
             }
         }
-
-        list.add(subsystem);
-        list.addAll(endpointConfigs);
-        list.addAll(clientConfigs);
+        //TODO：check required element
     }
 
+    protected void handleUnknownElement(final XMLExtendedStreamReader reader, final PathAddress parentAddress, Element element, List<ModelNode> list) throws XMLStreamException {
+        throw unexpectedElement(reader);
+    }
+
+    protected void readAttributes(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        requireNoAttributes(reader);
+    }
     private String parseElementNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
         // no attributes
         requireNoAttributes(reader);
@@ -172,7 +134,8 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         return reader.getElementText().trim();
     }
 
-    private void readConfig(final XMLExtendedStreamReader reader, final PathAddress parentAddress, final List<ModelNode> operationList, final boolean client) throws XMLStreamException {
+    protected List<ModelNode> readConfig(final XMLExtendedStreamReader reader, final PathAddress parentAddress, final boolean client) throws XMLStreamException {
+        final List<ModelNode> configs = new ArrayList<ModelNode>();
         String configName = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -189,7 +152,7 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         }
         final PathAddress address = parentAddress.append(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName);
         final ModelNode node = Util.createAddOperation(address);
-        operationList.add(node);
+        configs.add(node);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
@@ -199,16 +162,16 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
             }
             switch (element) {
                 case PRE_HANDLER_CHAIN: {
-                    parseHandlerChain(reader, operationList, true, address);
+                    parseHandlerChain(reader, configs, true, address);
                     break;
                 }
                 case POST_HANDLER_CHAIN: {
-                    parseHandlerChain(reader, operationList, false, address);
+                    parseHandlerChain(reader, configs, false, address);
                     break;
                 }
                 case PROPERTY: {
                     final ModelNode operation = parseProperty(reader, address);
-                    operationList.add(operation);
+                    configs.add(operation);
                     break;
                 }
                 default: {
@@ -216,6 +179,7 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
                 }
             }
         }
+        return configs;
     }
 
     private ModelNode parseProperty(final XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
