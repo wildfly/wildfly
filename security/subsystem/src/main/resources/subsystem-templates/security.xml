@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config default-supplement="default">
    <extension-module>org.jboss.as.security</extension-module>
    <subsystem xmlns="urn:jboss:domain:security:1.2">
        <security-domains>
@@ -14,6 +14,12 @@
                    </login-module>
                </authentication>
            </security-domain>
+           <?ADDITIONAL_SECURITY_DOMAINS?>
+           <?messaging-domain?>
+       </security-domains>
+   </subsystem>
+   <supplement name="default">
+       <replacement placeholder="ADDITIONAL_SECURITY_DOMAINS">
            <security-domain name="jboss-web-policy" cache-type="default">
                <authorization>
                    <policy-module code="Delegating" flag="required"/>
@@ -24,16 +30,7 @@
                    <policy-module code="Delegating" flag="required"/>
                </authorization>
            </security-domain>
-           
-           <?messaging-domain?>
-       </security-domains>
-   </subsystem>
-   <supplement name="standalone">
-      <replacement placeholder="@@realm-users-roles-users@@" attributeValue="${jboss.server.config.dir}/application-users.properties"/>
-      <replacement placeholder="@@realm-users-roles-roles@@" attributeValue="${jboss.server.config.dir}/application-roles.properties"/>
+       </replacement>
    </supplement>
-   <supplement name="domain">
-      <replacement placeholder="@@realm-users-roles-users@@" attributeValue="${jboss.domain.config.dir}/application-users.properties"/>
-      <replacement placeholder="@@realm-users-roles-roles@@" attributeValue="${jboss.domain.config.dir}/application-roles.properties"/>
-   </supplement>
+   <supplement name="web-build"/>
 </config>
