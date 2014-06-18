@@ -42,8 +42,8 @@ import org.junit.Test;
 public class RbacSoakTest extends AbstractRbacTestCase {
     private static final Logger log = Logger.getLogger(RbacSoakTest.class);
 
-    private static final int numClients = Integer.parseInt(System.getProperty("jboss.test.rbac.soak.clients"));
-    private static final int numIterations = Integer.parseInt(System.getProperty("jboss.test.rbac.soak.iterations"));
+    private static final int numClients = Integer.parseInt(System.getProperty("jboss.test.rbac.soak.clients","10"));
+    private static final int numIterations = Integer.parseInt(System.getProperty("jboss.test.rbac.soak.iterations", "5"));
 
     @BeforeClass
     public static void setupDomain() throws Exception {
