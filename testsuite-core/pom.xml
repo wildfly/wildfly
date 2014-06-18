@@ -230,21 +230,21 @@
                </plugin>
 
                <!--
-                   A build of target/jbossas which is shared by all modules.
+                   A build of target/wildfly-core which is shared by all modules.
                    Modules and bundles are not copied as they are read-only (see surefire props).
                -->
                <plugin>
                    <groupId>org.apache.maven.plugins</groupId>
                    <artifactId>maven-resources-plugin</artifactId>
                    <executions combine.children="append">
-                       <!-- Copy the AS into current_submodule/target/jbossas . This is executed recursively in submodules. -->
+                       <!-- Copy the AS into current_submodule/target/wildfly-core . This is executed recursively in submodules. -->
                        <execution>
                            <id>ts.copy-jbossas.groups</id>
                            <inherited>true</inherited>
                            <phase>generate-test-resources</phase>
                            <goals><goal>copy-resources</goal></goals>
                            <configuration>
-                               <outputDirectory>${basedir}/target/jbossas</outputDirectory>
+                               <outputDirectory>${basedir}/target/wildfly-core</outputDirectory>
                                <overwrite>true</overwrite>
                                <resources>
                                    <resource>
@@ -278,8 +278,8 @@
                                <transformationSets>
                                    <!-- IPs. -->
                                    <transformationSet>
-                                       <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                       <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                       <dir>${basedir}/target/wildfly-core/standalone/configuration</dir>
+                                       <outputDir>${basedir}/target/wildfly-core/standalone/configuration</outputDir>
                                        <stylesheet>${xslt.scripts.dir}/changeIPAddresses.xsl</stylesheet>
                                        <includes>
                                            <include>standalone*.xml</include>
@@ -305,8 +305,8 @@
                                <transformationSets>
                                    <!-- IPs. -->
                                    <transformationSet>
-                                       <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                       <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                       <dir>${basedir}/target/wildfly-core/standalone/configuration</dir>
+                                       <outputDir>${basedir}/target/wildfly-core/standalone/configuration</outputDir>
                                        <stylesheet>${xslt.scripts.dir}/enableTrace.xsl</stylesheet>
                                        <includes>
                                            <include>standalone*.xml</include>
@@ -359,7 +359,7 @@
                            <jboss.options>${surefire.system.args} ${jvm.args.jacoco}</jboss.options>
                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                            <jboss.dist>${jboss.dist}</jboss.dist>
-                           <jboss.home>${basedir}/target/jbossas</jboss.home>
+                           <jboss.home>${basedir}/target/wildfly-core</jboss.home>
                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                            <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                        </systemPropertyVariables>
@@ -441,8 +441,8 @@
                                 <configuration>
                                     <transformationSets>
                                         <transformationSet>
-                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                            <dir>${basedir}/target/wildfly-core/standalone/configuration</dir>
+                                            <outputDir>${basedir}/target/wildfly-core/standalone/configuration</outputDir>
                                             <stylesheet>${xslt.scripts.dir}/addSAMLTokenTimeout.xsl</stylesheet>
                                             <includes>
                                                 <include>standalone*.xml</include>
