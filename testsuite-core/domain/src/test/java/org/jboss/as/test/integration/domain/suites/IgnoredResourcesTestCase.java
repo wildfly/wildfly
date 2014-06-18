@@ -87,7 +87,7 @@ public class IgnoredResourcesTestCase {
         }
 
         // Modify the ignored profile
-        ModelNode mod = createOpNode("profile=ignored/subsystem=naming", "add");
+        ModelNode mod = createOpNode("profile=ignored/subsystem=io", "add");
         executeOperation(mod, domainMasterLifecycleUtil.getDomainClient());
 
         // Resource still should not exist on slave
@@ -149,7 +149,7 @@ public class IgnoredResourcesTestCase {
         ModelNode result = executeOperation(op, domainMasterLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
             if ("org.jboss.as.jsr77".equals(profile.asString())) {
-                Assert.fail("found extension 'org.jboss.as.jsr77'");
+                Assert.fail("found extension 'org.jboss.as.threads'");
             }
         }
 
@@ -157,12 +157,12 @@ public class IgnoredResourcesTestCase {
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
             if ("org.jboss.as.jsr77".equals(profile.asString())) {
-                Assert.fail("found extension 'org.jboss.as.jsr77'");
+                Assert.fail("found extension 'org.jboss.as.threads'");
             }
         }
 
         // Add the ignored extension
-        ModelNode mod = createOpNode("extension=org.jboss.as.jsr77", "add");
+        ModelNode mod = createOpNode("extension=org.jboss.as.threads", "add");
         mod.get("port").set(12345);
         executeOperation(mod, domainMasterLifecycleUtil.getDomainClient());
 
@@ -170,7 +170,7 @@ public class IgnoredResourcesTestCase {
         result = executeOperation(op, domainSlaveLifecycleUtil.getDomainClient());
         for (ModelNode profile : result.asList()) {
             if ("org.jboss.as.jsr77".equals(profile.asString())) {
-                Assert.fail("found extension 'org.jboss.as.jsr77'");
+                Assert.fail("found extension 'org.jboss.as.threads'");
             }
         }
 

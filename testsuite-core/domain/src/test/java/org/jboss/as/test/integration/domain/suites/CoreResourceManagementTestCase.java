@@ -614,13 +614,13 @@ public class CoreResourceManagementTestCase {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode serverAddTf = getAddThreadFactoryOperation(
-                new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads").add("thread-factory", "test-pool-123abc"));
+                new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "io").add("worker", "default"));
 
         ModelNode desc = validateFailedResponse(masterClient.execute(serverAddTf));
         String errorCode = getNotAuthorizedErrorCode();
         Assert.assertTrue(desc.toString() + " does not contain " + errorCode, desc.toString().contains(errorCode));
 
-        ModelNode slaveThreeAddress = new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads").add("thread-factory", "test-pool-123abc");
+        ModelNode slaveThreeAddress = new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "io").add("worker", "default");
         serverAddTf = getAddThreadFactoryOperation(slaveThreeAddress);
 
         desc = validateFailedResponse(masterClient.execute(serverAddTf));
@@ -629,22 +629,22 @@ public class CoreResourceManagementTestCase {
 
     @Test
     public void testCannotInvokeManagedMasterServerOperationsInDomainComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "master").add("server", "main-one").add("subsystem", "io"));
     }
 
     @Test
     public void testCannotInvokeManagedSlaveServerOperationsInDomainComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite(new ModelNode().add("host", "slave").add("server", "main-three").add("subsystem", "io"));
     }
 
     @Test
     public void testCannotInvokeManagedMasterServerOperationsInServerComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite("master", "main-one", new ModelNode().add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite("master", "main-one", new ModelNode().add("subsystem", "io"));
     }
 
     @Test
     public void testCannotInvokeManagedSlaveServerOperationsInServerComposite() throws Exception {
-        testCannotInvokeManagedServerOperationsComposite("slave", "main-three", new ModelNode().add("subsystem", "threads"));
+        testCannotInvokeManagedServerOperationsComposite("slave", "main-three", new ModelNode().add("subsystem", "io"));
     }
 
     @Test
@@ -875,7 +875,7 @@ public class CoreResourceManagementTestCase {
         goodServerOp.get(OP).set(READ_RESOURCE_OPERATION);
         goodServerOp.get(OP_ADDR).set(stepAddress);
         composite.get(STEPS).add(goodServerOp);
-        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("thread-factory", "test-pool-123abc")));
+        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("worker", "default")));
 
         ModelNode result = masterClient.execute(composite);
 
@@ -918,7 +918,7 @@ public class CoreResourceManagementTestCase {
         goodServerOp.get(OP).set(READ_RESOURCE_OPERATION);
         goodServerOp.get(OP_ADDR).set(stepAddress);
         composite.get(STEPS).add(goodServerOp);
-        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("thread-factory", "test-pool-123abc")));
+        composite.get(STEPS).add(getAddThreadFactoryOperation(stepAddress.clone().add("worker", "default")));
 
         ModelNode result = masterClient.execute(composite);
 

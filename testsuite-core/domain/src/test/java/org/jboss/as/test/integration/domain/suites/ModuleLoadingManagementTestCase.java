@@ -67,7 +67,7 @@ public class ModuleLoadingManagementTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(ReadEnvironmentVariablesTestCase.class.getSimpleName());
+        testSupport = DomainTestSuite.createSupport(ModuleLoadingManagementTestCase.class.getSimpleName());
 
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
     }
@@ -114,7 +114,7 @@ public class ModuleLoadingManagementTestCase {
 
         DomainClient domainClient = domainMasterLifecycleUtil.getDomainClient();
         ModelNode op = Util.createEmptyOperation("list-resource-loader-paths", HOST_PA);
-        op.get(MODULE).set("org.hibernate");
+        op.get(MODULE).set("org.jboss.dmr");
 
         ModelNode response = domainClient.execute(op);
         List<ModelNode> hostResult = validateResponse(response).asList();
@@ -124,7 +124,7 @@ public class ModuleLoadingManagementTestCase {
         }
 
         op = Util.createEmptyOperation("list-resource-loader-paths", SERVER_PA);
-        op.get(MODULE).set("org.hibernate");
+        op.get(MODULE).set("org.jboss.dmr");
 
         response = domainClient.execute(op);
         List<ModelNode> serverResult = validateResponse(response).asList();
