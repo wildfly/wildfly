@@ -88,12 +88,29 @@ public class LoggingExtension implements Extension {
             ModuleIdentifier.create("org.slf4j.impl"),
     };
 
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+    /**
+     * Returns a resource description resolver that uses common descriptions for some attributes.
+     *
+     * @param keyPrefix the prefix to be appended to the {@link #SUBSYSTEM_NAME}
+     *
+     * @return the resolver
+     */
+    static LoggingResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
         return new LoggingResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, LoggingExtension.class.getClassLoader());
+    }
+
+    /**
+     * Returns a standard resource description resolver requiring the resource or operation to have all attributes
+     * defined in the local description,
+     *
+     * @return the resolver
+     */
+    static StandardResourceDescriptionResolver getStandardResourceDescriptionResolver() {
+        return new StandardResourceDescriptionResolver(SUBSYSTEM_NAME, RESOURCE_NAME, LoggingExtension.class.getClassLoader());
     }
 
     @Override
