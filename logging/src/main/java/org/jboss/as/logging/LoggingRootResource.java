@@ -131,7 +131,7 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             .setAllowExpression(false)
             .build();
 
-    static final SimpleOperationDefinition READ_LOG_FILE = new SimpleOperationDefinitionBuilder("read-log-file", LoggingExtension.getResourceDescriptionResolver())
+    static final SimpleOperationDefinition READ_LOG_FILE = new SimpleOperationDefinitionBuilder("read-log-file", LoggingExtension.getStandardResourceDescriptionResolver())
             .addAccessConstraint(VIEW_SERVER_LOGS)
             .setParameters(NAME, CommonAttributes.ENCODING, LINES, SKIP, TAIL)
             .setReplyType(ModelType.LIST)
@@ -140,7 +140,7 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             .setRuntimeOnly()
             .build();
 
-    static final SimpleOperationDefinition LIST_LOG_FILES = new SimpleOperationDefinitionBuilder("list-log-files", LoggingExtension.getResourceDescriptionResolver())
+    static final SimpleOperationDefinition LIST_LOG_FILES = new SimpleOperationDefinitionBuilder("list-log-files", LoggingExtension.getStandardResourceDescriptionResolver())
             .addAccessConstraint(VIEW_SERVER_LOGS)
             .setReplyType(ModelType.LIST)
             .setReplyParameters(FILE_NAME, FILE_SIZE, LAST_MODIFIED_DATE)
