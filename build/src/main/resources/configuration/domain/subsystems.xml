@@ -23,7 +23,7 @@
       <subsystem>remoting.xml</subsystem>
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem>undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
@@ -53,7 +53,7 @@
       <subsystem>remoting.xml</subsystem>
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
@@ -84,7 +84,7 @@
       <subsystem>remoting.xml</subsystem>
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem>undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
@@ -117,7 +117,7 @@
       <subsystem>remoting.xml</subsystem>
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem supplement="domain">security.xml</subsystem>
+      <subsystem>security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem supplement="ha">undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>
