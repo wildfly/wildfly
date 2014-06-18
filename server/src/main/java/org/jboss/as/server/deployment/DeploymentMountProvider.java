@@ -26,7 +26,10 @@ package org.jboss.as.server.deployment;
 import java.io.Closeable;
 import java.io.IOException;
 import java.security.AccessController;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
@@ -36,6 +39,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
@@ -70,8 +74,10 @@ public interface DeploymentMountProvider {
 
     static class Factory {
         public static void addService(final ServiceTarget serviceTarget) {
-            serviceTarget.addService(DeploymentMountProvider.SERVICE_NAME,
-                    new ServerDeploymentRepositoryImpl())
+            ServerDeploymentRepositoryImpl service = new ServerDeploymentRepositoryImpl();
+            org.jboss.as.server.Services.addServerExecutorDependency(
+                    serviceTarget.addService(DeploymentMountProvider.SERVICE_NAME, service),
+                    service.injectedExecutorService, false)
                     .install();
         }
 
@@ -79,7 +85,10 @@ public interface DeploymentMountProvider {
          * Default implementation of {@link DeploymentMountProvider}.
          */
         private static class ServerDeploymentRepositoryImpl implements DeploymentMountProvider, Service<DeploymentMountProvider> {
+
+            private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
             private volatile TempFileProvider tempFileProvider;
+            private volatile ScheduledExecutorService scheduledExecutorService;
 
             /**
              * Creates a new ServerDeploymentRepositoryImpl.
@@ -108,6 +117,8 @@ public interface DeploymentMountProvider {
                 try {
                     final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), true, null, "%G - %t", null, null, AccessController.getContext());
                     tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory), true);
+                    scheduledExecutorService =  Executors.newScheduledThreadPool(2, threadFactory);
+                    tempFileProvider = TempFileProvider.create("temp", scheduledExecutorService, true);
                 } catch (IOException e) {
                     throw ServerMessages.MESSAGES.failedCreatingTempProvider();
                 }
@@ -115,10 +126,36 @@ public interface DeploymentMountProvider {
             }
 
             @Override
-            public void stop(StopContext context) {
-                VFSUtils.safeClose(tempFileProvider);
-
-                ServerLogger.ROOT_LOGGER.debugf("%s stopped", DeploymentMountProvider.class.getSimpleName());
+            public void stop(final StopContext context) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            VFSUtils.safeClose(tempFileProvider);
+                        } finally {
+                            try {
+                                ScheduledExecutorService ses = scheduledExecutorService;
+                                scheduledExecutorService = null;
+                                if (ses != null) {
+                                    ses.shutdown();
+                                }
+                                ServerLogger.ROOT_LOGGER.debugf("%s stopped", DeploymentMountProvider.class.getSimpleName());
+                            } finally {
+                                context.complete();
+                            }
+                        }
+                    }
+                };
+                final ExecutorService executorService = injectedExecutorService.getValue();
+                try {
+                    try {
+                        executorService.execute(r);
+                    } catch (RejectedExecutionException e) {
+                        r.run();
+                    }
+                } finally {
+                    context.asynchronous();
+                }
             }
 
 
