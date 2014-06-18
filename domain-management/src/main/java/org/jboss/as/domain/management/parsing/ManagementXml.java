@@ -2006,7 +2006,6 @@ public class ManagementXml {
         ModelNode childAdd = new ModelNode();
         childAdd.get(OP).set(ADD);
 
-        boolean forceFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -2016,7 +2015,6 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case FORCE:
-                        forceFound = true;
                         BaseLdapUserSearchResource.FORCE.parseAndSetParameter(value, childAdd, reader);
                         break;
                     default: {
@@ -2024,10 +2022,6 @@ public class ManagementXml {
                     }
                 }
             }
-        }
-
-        if (forceFound == false) {
-            throw missingRequired(reader, Collections.singleton(Attribute.FORCE));
         }
 
         ModelNode address = ldapAddress.clone().add(USERNAME_TO_DN);
