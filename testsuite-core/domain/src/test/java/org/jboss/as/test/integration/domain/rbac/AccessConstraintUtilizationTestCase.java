@@ -27,15 +27,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
-import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.access.management.AccessConstraintKey;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.test.integration.domain.suites.SimpleRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
@@ -45,7 +42,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.extension.undertow.UndertowExtension;
 
 /**
  * Test of the access constraint utilization resources.
@@ -108,25 +104,28 @@ public class AccessConstraintUtilizationTestCase extends AbstractRbacTestCase {
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SNAPSHOTS.getKey(), false, false, true),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.SYSTEM_PROPERTY.getKey(), true, true, true),
         // A few subsystem ones
-        new ExpectedDef(getSensKey(UndertowExtension.SUBSYSTEM_NAME, "web-access-log"), true, false, false),
-        new ExpectedDef(getSensKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security"), false, true, false),
-        new ExpectedDef(getSensKey(ResourceAdaptersExtension.SUBSYSTEM_NAME, "resource-adapter-security"), false, true, false),
+        //this is not part of core
+        //new ExpectedDef(getSensKey(UndertowExtension.SUBSYSTEM_NAME, "web-access-log"), true, false, false),
+        //new ExpectedDef(getSensKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security"), false, true, false),
+        //new ExpectedDef(getSensKey(ResourceAdaptersExtension.SUBSYSTEM_NAME, "resource-adapter-security"), false, true, false),
         /* server only
         new ExpectedDef(getSensKey(JdrReportExtension.SUBSYSTEM_NAME, "jdr"), false, false, true),
         */
-        new ExpectedDef(getSensKey(MessagingExtension.SUBSYSTEM_NAME, "messaging-management"), false, true, false),
+        //new ExpectedDef(getSensKey(MessagingExtension.SUBSYSTEM_NAME, "messaging-management"), false, true, false),
         /* N/A on standalone */
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.DOMAIN_CONTROLLER.getKey(), false, true, true),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.DOMAIN_NAMES.getKey(), false, true, false),
         new ExpectedDef(SensitiveTargetAccessConstraintDefinition.JVM.getKey(), false, true, true),
         /* */
         new ExpectedDef(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getKey(), true, false, true),
-        new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source"), true, false, false),
+       /* not part of core
+            new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "data-source"), true, false, false),
         new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "xa-data-source"), true, false, false),
         new ExpectedDef(getAppKey(DataSourcesExtension.SUBSYSTEM_NAME, "jdbc-driver"), true, false, false),
         new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "queue"), true, false, false),
         new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-queue"), true, false, false),
         new ExpectedDef(getAppKey(MessagingExtension.SUBSYSTEM_NAME, "jms-topic"), true, false, false)
+        */
     };
 
     @Test

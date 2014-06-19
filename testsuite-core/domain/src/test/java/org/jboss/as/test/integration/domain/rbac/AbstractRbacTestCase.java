@@ -91,11 +91,11 @@ public abstract class AbstractRbacTestCase {
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
     private static final String TEST = "test.war";
     private static final String REPLACEMENT = "test.war.v2";
-    private static final String SECURITY_DOMAIN = "subsystem=io/buffer-pool=default";
+    private static final String SECURITY_DOMAIN = "subsystem=1/rbac-sensitive=other";
     private static final String HTTP_BINDING = "socket-binding-group=sockets-a/socket-binding=http";
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
     private static final String PROFILE_A = "profile=profile-a";
-    private static final String EXAMPLE_WORKER = "subsystem=io/worker=default";
+    private static final String EXAMPLE_CONSTRAINED = "subsystem=1/rbac-constrained=default";
     private static final String GENERIC_SERVER_CONFIG_ADDRESS = "host=master/server-config=*";
 
     private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
@@ -245,8 +245,8 @@ public abstract class AbstractRbacTestCase {
     }
 
     protected void checkSensitiveAttribute(ModelControllerClient client, String host, String server, boolean expectSuccess, String... roles) throws IOException {
-        String dsAddress = host == null ? PROFILE_A + "/" + EXAMPLE_WORKER
-                : "host=" + host + "server=" + server + "/" + EXAMPLE_WORKER;
+        String dsAddress = host == null ? PROFILE_A + "/" + EXAMPLE_CONSTRAINED
+                : "host=" + host + "server=" + server + "/" + EXAMPLE_CONSTRAINED;
         ModelNode attrValue = readResource(client, dsAddress, host, server, Outcome.SUCCESS, roles).get(RESULT, PASSWORD);
         ModelNode correct = new ModelNode();
         if (expectSuccess) {

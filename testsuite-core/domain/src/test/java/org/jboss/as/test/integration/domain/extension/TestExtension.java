@@ -22,27 +22,19 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Fake extension to use in testing extension management.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
 public class TestExtension implements Extension {
 
@@ -57,37 +49,18 @@ public class TestExtension implements Extension {
         SubsystemRegistration one = context.registerSubsystem("1", 1, 1, 1);
         one.registerXMLElementWriter(parserOne);
         ManagementResourceRegistration mrrOne = one.registerSubsystemModel(new RootResourceDefinition("1"));
+        mrrOne.registerSubModel(new ConstrainedResource(PathElement.pathElement("rbac-constrained")));
+        mrrOne.registerSubModel(new SensitiveResource(PathElement.pathElement("rbac-sensitive")));
+
 
         SubsystemRegistration two = context.registerSubsystem("2", 2, 2, 2);
         two.registerXMLElementWriter(parserTwo);
         ManagementResourceRegistration mrrTwo = two.registerSubsystemModel(new RootResourceDefinition("2"));
-
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping("1", parserOne.getNamespace(), parserOne);
         context.setSubsystemXmlMapping("2", parserTwo.getNamespace(), parserTwo);
-    }
-
-    private static class Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        private final String namespace;
-
-        private Parser(String namespace) {
-            this.namespace = namespace;
-        }
-
-        @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-        }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(namespace, false);
-            streamWriter.writeEndElement();
-        }
     }
 }

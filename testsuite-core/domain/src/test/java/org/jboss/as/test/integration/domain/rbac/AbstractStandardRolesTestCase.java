@@ -231,14 +231,14 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
     }
 
     private void addSecurityDomain(ModelControllerClient client, String name, Outcome expected, String... roles) throws IOException {
-        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=" + name, ADD);
+        ModelNode op = createOpNode("profile=profile-a/subsystem=1/rbac-sensitive=" + name, ADD);
         op.get("cache-type").set(DEFAULT);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expected);
     }
 
     private void removeSecurityDomain(ModelControllerClient client, String name, Outcome expected, String... roles) throws IOException {
-        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=" + name, REMOVE);
+        ModelNode op = createOpNode("profile=profile-a/subsystem=1/rbac-sensitive=" + name, REMOVE);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expected);
     }

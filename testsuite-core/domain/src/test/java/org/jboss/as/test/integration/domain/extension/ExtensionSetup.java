@@ -22,19 +22,25 @@
 
 package org.jboss.as.test.integration.domain.extension;
 
-import org.jboss.as.controller.Extension;
-import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
-import org.jboss.as.test.integration.management.extension.blocker.BlockerExtension;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.StreamExporter;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
+import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
+import org.jboss.as.test.integration.management.extension.blocker.BlockerExtension;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.StreamExporter;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * @author Emanuel Muckenhuber
@@ -47,6 +53,28 @@ public class ExtensionSetup {
         StreamExporter exporter = createResourceRoot(TestExtension.class, ExtensionSetup.class.getPackage(), EmptySubsystemParser.class.getPackage());
         Map<String, StreamExporter> content = Collections.singletonMap("test-extension.jar", exporter);
         support.addTestModule(TestExtension.MODULE_NAME, moduleXml, content);
+    }
+
+    public static void addExtensionAndSubsystem(final DomainTestSupport support) throws IOException, MgmtOperationException {
+        DomainClient masterClient = support.getDomainMasterLifecycleUtil().getDomainClient();
+        PathAddress profileAddress = PathAddress.pathAddress("profile", "profile-a");
+
+        PathAddress subsystemAddress = profileAddress.append("subsystem", "1");
+
+        ModelNode addExtension = Util.createAddOperation(PathAddress.pathAddress("extension", TestExtension.MODULE_NAME));
+        DomainTestUtils.executeForResult(addExtension, masterClient);
+
+        ModelNode addSubsystem = Util.createAddOperation(subsystemAddress);
+        addSubsystem.get("name").set("dummy name");
+        DomainTestUtils.executeForResult(addSubsystem, masterClient);
+
+        ModelNode addResource = Util.createAddOperation(subsystemAddress.append("rbac-sensitive","other"));
+        DomainTestUtils.executeForResult(addResource, masterClient);
+
+        addResource = Util.createAddOperation(subsystemAddress.append("rbac-constrained","default"));
+        addResource.get("password").set("sa");
+        addResource.get("security-domain").set("other");
+        DomainTestUtils.executeForResult(addResource, masterClient);
     }
 
     public static void initializeTransformersExtension(final DomainTestSupport support) throws IOException {

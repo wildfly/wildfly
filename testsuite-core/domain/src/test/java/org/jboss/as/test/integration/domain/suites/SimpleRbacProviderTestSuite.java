@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.domain.rbac.AccessConstraintUtilizationTestCase;
@@ -108,6 +109,8 @@ public class SimpleRbacProviderTestSuite {
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             // Start!
             testSupport.start();
+            ExtensionSetup.initializeTestExtension(testSupport);
+            ExtensionSetup.addExtensionAndSubsystem(testSupport);
             return testSupport;
         } catch (Exception e) {
             throw new RuntimeException(e);

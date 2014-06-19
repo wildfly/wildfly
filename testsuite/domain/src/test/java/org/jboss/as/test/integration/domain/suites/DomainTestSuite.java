@@ -42,11 +42,7 @@ import org.junit.runners.Suite;
         DeploymentManagementTestCase.class,
         DeploymentOverlayTestCase.class,
         ModelPersistenceTestCase.class,
-        OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ServerRestartRequiredTestCase.class,
-        ValidateAddressOperationTestCase.class,
-        ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {
 
