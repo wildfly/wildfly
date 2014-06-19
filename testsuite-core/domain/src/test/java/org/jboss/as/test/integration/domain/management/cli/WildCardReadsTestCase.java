@@ -43,10 +43,10 @@ import org.junit.Test;
  */
 public class WildCardReadsTestCase extends AbstractCliTestBase {
 
-    private static final String OP_PATTERN = "/profile=default/subsystem=io/worker=%s:%s";
+    private static final String OP_PATTERN = "/profile=default/subsystem=remoting/configuration=%s:%s";
     private static final String READ_OP_DESC_OP = ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION + "(name=%s)";
     private static final String READ_RES_DESC_OP = ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION + "(access-control=combined-descriptions,operations=true,recursive=true)";
-    private static final String EVICTION = "EVICTION";
+    private static final String ENDPOINT = "endpoint";
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -67,12 +67,12 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
      */
     @Test
     public void testLenientReadOperationDescription() throws IOException {
-        cli.sendLine(String.format(OP_PATTERN, EVICTION, ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION));
+        cli.sendLine(String.format(OP_PATTERN, ENDPOINT, ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION));
         CLIOpResult opResult = cli.readAllAsOpResult();
         Assert.assertTrue(opResult.isIsOutcomeSuccess());
         for (ModelNode node : opResult.getResponseNode().get(ModelDescriptionConstants.RESULT).asList()) {
             String opPart = String.format(READ_OP_DESC_OP, node.asString());
-            cli.sendLine(String.format(OP_PATTERN, EVICTION, opPart));
+            cli.sendLine(String.format(OP_PATTERN, ENDPOINT, opPart));
             opResult = cli.readAllAsOpResult();
             Assert.assertTrue(opResult.isIsOutcomeSuccess());
             ModelNode specific = opResult.getResponseNode().get(ModelDescriptionConstants.RESULT);
@@ -88,7 +88,7 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
      */
     @Test
     public void testReadResourceDescriptionNoGenericRegistration() throws IOException {
-        cli.sendLine(String.format(OP_PATTERN, EVICTION, READ_RES_DESC_OP));
+        cli.sendLine(String.format(OP_PATTERN, ENDPOINT, READ_RES_DESC_OP));
         CLIOpResult opResult = cli.readAllAsOpResult();
         Assert.assertTrue(opResult.isIsOutcomeSuccess());
         ModelNode specific = opResult.getResponseNode().get(ModelDescriptionConstants.RESULT);
