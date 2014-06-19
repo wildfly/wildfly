@@ -48,6 +48,10 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
     private static ModuleIdentifier CDI_BEAN_VALIDATION_ID = ModuleIdentifier.create("org.hibernate.validator.cdi");
+    private static ModuleIdentifier JAVAX_ENTERPRISE_API = ModuleIdentifier.create("javax.enterprise.api");
+    private static ModuleIdentifier JAVAX_INJECT_API = ModuleIdentifier.create("javax.inject.api");
+
+
 
     /**
      * Add dependencies for modules required for weld deployments, if managed weld configurations are attached to the deployment
@@ -57,11 +61,13 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        addDependency(moduleSpecification, moduleLoader, JAVAX_ENTERPRISE_API);
+        addDependency(moduleSpecification, moduleLoader, JAVAX_INJECT_API);
 
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             return; // Skip if there are no beans.xml files in the deployment
         }
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDependency(moduleSpecification, moduleLoader, JAVAX_PERSISTENCE_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_CORE_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
@@ -79,7 +85,7 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                ModuleIdentifier moduleIdentifier) {
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
     }
 
     @Override

@@ -374,6 +374,8 @@ public enum Phase {
     public static final int DEPENDENCIES_BATCH                          = 0x1B00;
     public static final int DEPENDENCIES_CLUSTERING                     = 0x1C00;
     public static final int DEPENDENCIES_LOGGING                        = 0x1D00;
+    public static final int DEPENDENCIES_MAIL                           = 0x1E00;
+    public static final int DEPENDENCIES_JSR77                          = 0x1F00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;

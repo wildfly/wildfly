@@ -42,6 +42,11 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
 
     public static final ModuleIdentifier JBOSSWS_API = ModuleIdentifier.create("org.jboss.ws.api");
     public static final ModuleIdentifier JBOSSWS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
+    public static final ModuleIdentifier[] JAVAEE_APIS = {
+            ModuleIdentifier.create("javax.jws.api"),
+            ModuleIdentifier.create("javax.xml.soap.api"),
+            ModuleIdentifier.create("javax.xml.ws.api")
+    };
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
@@ -49,6 +54,9 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
         moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
+        for(ModuleIdentifier api : JAVAEE_APIS) {
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
+        }
     }
 
     public void undeploy(final DeploymentUnit context) {

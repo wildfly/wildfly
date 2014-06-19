@@ -59,6 +59,7 @@ class MailSubsystemAdd extends AbstractBoottimeAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MAIL_SESSION_DEFINITION_ANNOTATION, new MailSessionDefinitionAnnotationParser());
+                processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MAIL, new MailDependenciesProcessor());
                 processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_MAIL_SESSION_REF, new MailSessionDeploymentDescriptorParser());
             }
         }, OperationContext.Stage.RUNTIME);

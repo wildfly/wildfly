@@ -48,6 +48,9 @@ public class SecurityDependencyProcessor implements DeploymentUnitProcessor {
             ModuleName.PICKETBOX.getSlot());
     public static final ModuleIdentifier REMOTING_LOGIN_MODULE = ModuleIdentifier.create("org.jboss.as.security");
 
+    public static final ModuleIdentifier AUTH_MESSAGE_API = ModuleIdentifier.create("javax.security.auth.message.api");
+    public static final ModuleIdentifier JACC_API = ModuleIdentifier.create("javax.security.jacc.api");
+
     /** {@inheritDoc} */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -59,6 +62,10 @@ public class SecurityDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleDependency remoting = new ModuleDependency(moduleLoader, REMOTING_LOGIN_MODULE, false, false, false, false);
         remoting.addImportFilter(PathFilters.is(RemotingLoginModule.class.getName().replace(".","/")), true);
         moduleSpecification.addSystemDependency(remoting);
+
+
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JACC_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, AUTH_MESSAGE_API, false, false, true, false));
     }
 
     /** {@inheritDoc} */

@@ -25,8 +25,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
 import javax.sql.DataSource;
 
 @Stateful
@@ -34,12 +32,6 @@ public class ResourceManagerConnectionFactoryIncrementorBean implements Incremen
 
     @Resource
     private DataSource dataSource;
-
-    @Resource
-    private QueueConnectionFactory queueConnectionFactory;
-
-    @Resource
-    private TopicConnectionFactory topicConnectionFactory;
 
     private final AtomicInteger count = new AtomicInteger(0);
 
