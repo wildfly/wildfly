@@ -253,7 +253,7 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
     }
 
 
-    private void parseDatabaseDataStore(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseDatabaseDataStore(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
         String name = null;
 
         final ModelNode databaseDataStore = new ModelNode();

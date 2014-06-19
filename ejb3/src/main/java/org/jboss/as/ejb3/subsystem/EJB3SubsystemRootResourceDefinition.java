@@ -311,7 +311,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
-
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

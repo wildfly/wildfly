@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.persistence.database.DatabaseTimerPersistence;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -81,10 +82,12 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         }
         final String partition = DatabaseDataStoreResourceDefinition.PARTITION.resolveModelAttribute(context, model).asString();
 
-
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
 
-        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database, partition);
+        int refreshInterval = DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.resolveModelAttribute(context, model).asInt();
+        boolean allowExecution = DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.resolveModelAttribute(context, model).asBoolean();
+
+        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database, partition, refreshInterval, allowExecution);
         final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(name);
         final ServiceBuilder<DatabaseTimerPersistence> builder = context.getServiceTarget().addService(serviceName, databaseTimerPersistence);
 
@@ -95,6 +98,7 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         return builder
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, databaseTimerPersistence.getModuleLoader())
                 .addDependency(ContextNames.bindInfoFor(jndiName).getBinderServiceName(), ManagedReferenceFactory.class, databaseTimerPersistence.getDataSourceInjectedValue())
+                .addDependency(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, java.util.Timer.class, databaseTimerPersistence.getTimerInjectedValue())
                 .install();
     }
 

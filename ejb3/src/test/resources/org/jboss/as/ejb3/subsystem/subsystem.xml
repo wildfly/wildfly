@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:2.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:3.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -29,7 +29,7 @@
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
         <data-stores>
             <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
-            <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition"/>
+            <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}" database="hsql" partition="mypartition" allow-execution="true" refresh-interval="100"/>
         </data-stores>
     </timer-service>
     <remote connector-ref="remoting-connector" thread-pool-name="default">
