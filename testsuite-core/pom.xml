@@ -69,7 +69,6 @@
 
     <modules>
         <module>shared</module>
-        <module>domain</module>
     </modules>
 
 
@@ -154,27 +153,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Arquillian bill of materials, used to configure Arquillian versions -->
-            <!-- <dependency>
-                 <groupId>org.jboss.arquillian</groupId>
-                 <artifactId>arquillian-bom</artifactId>
-                 <version>${version.org.jboss.arquillian.core}</version>
-                 <scope>import</scope>
-                 <type>pom</type>
-             </dependency>-->
-            <dependency>
-                <groupId>com.sun</groupId>
-                <artifactId>tools</artifactId>
-                <version>1.7</version>
-                <scope>system</scope>
-                <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                <!-- since jdk7 also on MAC this is proper path -->
-            </dependency>
-            <dependency>
-                <groupId>org.syslog4j</groupId>
-                <artifactId>syslog4j</artifactId>
-                <version>${version.org.syslog4j}</version>
-            </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-core-testsuite-shared</artifactId>
@@ -184,39 +162,20 @@
     </dependencyManagement>
 
     <dependencies>
-
-        <!--<dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-build</artifactId>
-            <type>pom</type>
-        </dependency>-->
-        <!-- Needed for @Resource(lookup=). -->
-        <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.2_spec</artifactId>
-        </dependency>
-        <!--  <dependency>
-              <groupId>org.jboss.arquillian.junit</groupId>
-              <artifactId>arquillian-junit-container</artifactId>
-              <scope>test</scope>
-          </dependency>
-          <dependency>
-              <groupId>org.jboss.arquillian.testenricher</groupId>
-              <artifactId>arquillian-testenricher-initialcontext</artifactId>
-          </dependency>
-          <dependency>
-              <groupId>org.wildfly</groupId>
-              <artifactId>wildfly-arquillian-container-managed</artifactId>
-              <version>${version.arquillian_wildfly}</version>
-          </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-host-controller</artifactId>
         </dependency>
     </dependencies>
 
@@ -377,7 +336,7 @@
                         <failIfNoTests>false</failIfNoTests>
                         <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
                         <systemPropertyVariables>
-                            <jboss.options>${surefire.system.args} ${jvm.args.jacoco}</jboss.options>
+                            <jboss.options>${surefire.system.args}</jboss.options>
                             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                             <jboss.dist>${jboss.dist}</jboss.dist>
                             <jboss.home>${basedir}/target/wildfly-core</jboss.home>
@@ -414,31 +373,6 @@
                         </execution>
                     </executions>
                 </plugin>
-
-                <!-- Don't create source jars - nothing to do. -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <!-- Don't run checkstyle - nothing in src/java. -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>check-style</id>
-                            <phase>none</phase>
-                        </execution>
-                    </executions>
-                </plugin>
-
                 <!-- Don't install - nothing to do. -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -456,6 +390,29 @@
 
 
     <profiles>
+        <profile>
+            <id>domain.core.test</id>
+            <activation>
+                <property>
+                    <name>ts.domain</name>
+                </property>
+            </activation>
+            <modules>
+                <module>domain</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>all-modules.module.profile</id>
+            <activation>
+                <property>
+                    <name>allTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>domain</module>
+            </modules>
+        </profile>
 
         <!--
           Debugging profiles.
@@ -614,84 +571,6 @@
             <properties>
                 <jvm.args.securityManagerOther>${security.manager.other}</jvm.args.securityManagerOther>
             </properties>
-        </profile>
-
-
-        <profile>
-            <id>help</id>
-            <activation>
-                <property>
-                    <name>ts.help</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <!-- Testsuite debugging info. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-help-plugin</artifactId>
-                        <inherited>true</inherited>
-                        <executions>
-                            <execution>
-                                <id>help.active-profiles</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>active-profiles</goal>
-                                </goals>
-                                <configuration>
-                                    <output>target/help.active-profiles.txt</output>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>help.effective-pom</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>effective-pom</goal>
-                                </goals>
-                                <configuration>
-                                    <output>target/help.effective-pom.txt</output>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>help.effective-settings</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>effective-settings</goal>
-                                </goals>
-                                <configuration>
-                                    <output>target/help.effective-settings.txt</output>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>help.system</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>system</goal>
-                                </goals>
-                                <configuration>
-                                    <output>target/help.system.txt</output>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.kuali.maven.plugins</groupId>
-                        <artifactId>properties-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>write-project-properties</goal>
-                                </goals>
-                                <configuration>
-                                    <outputFile>target/help.properties.txt</outputFile>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
     </profiles>
