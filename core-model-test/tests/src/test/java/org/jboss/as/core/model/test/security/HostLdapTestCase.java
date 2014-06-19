@@ -47,4 +47,15 @@ public class HostLdapTestCase extends AbstractCoreModelTest {
         ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "ldap-host.xml"), marshalled);
     }
 
+    @Test
+    public void testNoForceConfiguration() throws Exception {
+        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.HOST)
+                .setXmlResource("ldap-host-noforce.xml")
+                .validateDescription()
+                .build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+
+        String marshalled = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "ldap-host-noforce.xml"), marshalled);
+    }
 }
