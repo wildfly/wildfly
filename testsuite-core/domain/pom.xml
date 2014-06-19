@@ -63,8 +63,7 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared</artifactId>
-            <scope>compile</scope>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
         </dependency>
     </dependencies>
 

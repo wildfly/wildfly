@@ -54,7 +54,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.logging.syslogserver.BlockedSyslogServerEventHandler;
-import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.dmr.ModelNode;
 import org.productivity.java.syslog4j.server.SyslogServer;
 import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
@@ -135,7 +135,7 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
         SyslogServer.shutdown();
 
         // start and set syslog server
-        final String host = Utils.getHost(managementClient);
+        final String host = CoreUtils.getHost(managementClient);
         SyslogServerConfigIF config = getSyslogConfig();
         config.setUseStructuredData(true);
         config.setHost(host);
@@ -154,20 +154,20 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
 
         // Reference the first audit logger for now
         ModelNode op = Util.createAddOperation(AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR);
-        Utils.applyUpdate(op, managementClient.getControllerClient());
+        CoreUtils.applyUpdate(op, managementClient.getControllerClient());
 
         op = Util.getWriteAttributeOperation(AUDIT_LOG_LOGGER_ADDR, LOG_READ_ONLY, false);
-        Utils.applyUpdate(op, managementClient.getControllerClient());
+        CoreUtils.applyUpdate(op, managementClient.getControllerClient());
 
     }
 
     private void addSyslogHandler(ManagementClient managementClient, PathAddress syslogHandlerAddress, String host,
             String appName, Facility facility) throws Exception {
         ModelNode op = createSyslogHandlerAddComposite(syslogHandlerAddress, host, appName, facility);
-        Utils.applyUpdate(op, managementClient.getControllerClient());
+        CoreUtils.applyUpdate(op, managementClient.getControllerClient());
         List<ModelNode> protocolSettings = addProtocolSettings(syslogHandlerAddress);
         if (protocolSettings != null) {
-            Utils.applyUpdates(protocolSettings, managementClient.getControllerClient());
+            CoreUtils.applyUpdates(protocolSettings, managementClient.getControllerClient());
         }
 
     }
@@ -213,7 +213,7 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
         removeResource(managementClient, AUDIT_SYSLOG_HANDLER_ADDR2);
         removeResource(managementClient, AUDIT_SYSLOG_HANDLER_ADDR);
 
-        Utils.applyUpdate(Util.getWriteAttributeOperation(AUDIT_LOG_LOGGER_ADDR, LOG_READ_ONLY, false),
+        CoreUtils.applyUpdate(Util.getWriteAttributeOperation(AUDIT_LOG_LOGGER_ADDR, LOG_READ_ONLY, false),
                 managementClient.getControllerClient());
     }
 
@@ -228,7 +228,7 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
             op = Util.createRemoveOperation(address);
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            Utils.applyUpdate(op, managementClient.getControllerClient());
+            CoreUtils.applyUpdate(op, managementClient.getControllerClient());
         }
 
     }

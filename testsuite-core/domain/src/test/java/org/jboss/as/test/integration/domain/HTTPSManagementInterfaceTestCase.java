@@ -32,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.test.integration.management.util.CustomCLIExecutor.MANAGEMENT_HTTPS_PORT;
 import static org.jboss.as.test.integration.management.util.CustomCLIExecutor.MANAGEMENT_HTTP_PORT;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
+import static org.jboss.as.test.integration.security.common.CoreUtils.makeCallWithHttpClient;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -55,9 +55,9 @@ import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
@@ -133,7 +133,7 @@ public class HTTPSManagementInterfaceTestCase {
         operation.get("security-realm").set(MANAGEMENT_WEB_REALM);
         operation.get("http-upgrade-enabled").set(true);
         operation.get("secure-port").set(MANAGEMENT_HTTPS_PORT);
-        Utils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
+        CoreUtils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
     }
 
     @After
@@ -141,7 +141,7 @@ public class HTTPSManagementInterfaceTestCase {
 
         ModelNode operation = createOpNode("host=master/core-service=management/management-interface=http-interface",
                 ModelDescriptionConstants.REMOVE);
-        Utils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
+        CoreUtils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
     }
 
     /**
@@ -298,7 +298,7 @@ public class HTTPSManagementInterfaceTestCase {
                 ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
         operation.get(NAME).set("secure-interface");
         operation.get(VALUE).set("secure-management");
-        Utils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
+        CoreUtils.applyUpdate(operation, domainMasterLifecycleUtil.getDomainClient());
 
     }
 
@@ -355,7 +355,7 @@ public class HTTPSManagementInterfaceTestCase {
         WORK_DIR.mkdirs();
         Assert.assertTrue(WORK_DIR.exists());
         Assert.assertTrue(WORK_DIR.isDirectory());
-        Utils.createKeyMaterial(WORK_DIR);
+        CoreUtils.createKeyMaterial(WORK_DIR);
     }
 
     private static HttpClient getHttpClient(File keystoreFile) {

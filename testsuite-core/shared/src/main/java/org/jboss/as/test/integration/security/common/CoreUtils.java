@@ -1,29 +1,29 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 package org.jboss.as.test.integration.security.common;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,55 +36,34 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-
-import javax.security.auth.Subject;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.ProtocolException;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -97,36 +76,16 @@ import org.jboss.util.Base64;
  * @author Jan Lanik
  * @author Josef Cacek
  */
-public class Utils extends CoreUtils{
+public class CoreUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final Logger LOGGER = Logger.getLogger(CoreUtils.class);
 
     public static final String UTF_8 = "UTF-8";
-
-    /** The REDIRECT_STRATEGY for Apache HTTP Client */
-    public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
-        @Override
-        public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
-            boolean isRedirect = false;
-            try {
-                isRedirect = super.isRedirected(request, response, context);
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            if (!isRedirect) {
-                final int responseCode = response.getStatusLine().getStatusCode();
-                isRedirect = (responseCode == 301 || responseCode == 302);
-            }
-            return isRedirect;
-        }
-    };
 
     /**
      * Return MD5 hash of the given string value, encoded with given {@link Coding}. If the value or coding is <code>null</code>
      * then original value is returned.
      *
-     * @param value
-     * @param coding
      * @return encoded MD5 hash of the string or original value if some of parameters is null
      */
     public static String hashMD5(String value, Coding coding) {
@@ -165,17 +124,11 @@ public class Utils extends CoreUtils{
             byte b = bytes[i];
             // top 4 bits
             char c = (char) ((b >> 4) & 0xf);
-            if (c > 9)
-                c = (char) ((c - 10) + 'a');
-            else
-                c = (char) (c + '0');
+            if (c > 9) { c = (char) ((c - 10) + 'a'); } else { c = (char) (c + '0'); }
             sb.append(c);
             // bottom 4 bits
             c = (char) (b & 0xf);
-            if (c > 9)
-                c = (char) ((c - 10) + 'a');
-            else
-                c = (char) (c + '0');
+            if (c > 9) { c = (char) ((c - 10) + 'a'); } else { c = (char) (c + '0'); }
             sb.append(c);
         }
         return sb.toString();
@@ -240,7 +193,7 @@ public class Utils extends CoreUtils{
      *
      * @param response
      * @return
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public static String getContent(HttpResponse response) throws IOException {
         return EntityUtils.toString(response.getEntity());
@@ -263,8 +216,7 @@ public class Utils extends CoreUtils{
             HttpResponse response = httpclient.execute(httpget);
 
             HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -292,8 +244,7 @@ public class Utils extends CoreUtils{
 
             response = httpclient.execute(httpost);
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             statusLine = response.getStatusLine();
 
@@ -306,8 +257,7 @@ public class Utils extends CoreUtils{
             response = httpclient.execute(httpGet);
 
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
@@ -343,7 +293,7 @@ public class Utils extends CoreUtils{
     /**
      * Exports given archive to the given folder.
      *
-     * @param archive archive to export (not-<code>null</code>)
+     * @param archive    archive to export (not-<code>null</code>)
      * @param folderPath
      */
     public static void saveArchiveToFolder(Archive<?> archive, String folderPath) {
@@ -354,11 +304,11 @@ public class Utils extends CoreUtils{
 
     /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link ManagementClient#getMgmtAddress()}. Returned value can be converted to canonical hostname if
+     * {@link org.jboss.as.arquillian.container.ManagementClient#getMgmtAddress()}. Returned value can be converted to canonical hostname if
      * useCanonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
      * for instance "::1")
      *
-     * @param mgmtClient management client instance (may be <code>null</code>)
+     * @param mgmtClient       management client instance (may be <code>null</code>)
      * @param useCanonicalHost
      * @return
      */
@@ -375,7 +325,7 @@ public class Utils extends CoreUtils{
 
     /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link ManagementClient#getMgmtAddress()}. Returned value is formatted to use in URLs (i.e. if it's IPv6 address, then
+     * {@link org.jboss.as.arquillian.container.ManagementClient#getMgmtAddress()}. Returned value is formatted to use in URLs (i.e. if it's IPv6 address, then
      * square brackets are placed around - e.g. "[::1]")
      *
      * @param mgmtClient management client instance (may be <code>null</code>)
@@ -389,13 +339,12 @@ public class Utils extends CoreUtils{
      * Requests given URL and checks if the returned HTTP status code is the
      * expected one. Returns HTTP response body
      *
-     * @param URL url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     * @param url                url to which the request should be made
+     * @param httpClient         httpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
-     * @throws ClientProtocolException
-     * @throws IOException
-     * @throws URISyntaxException
+     * @throws java.io.IOException
+     * @throws java.net.URISyntaxException
      */
     public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode)
             throws IOException, URISyntaxException {
@@ -416,281 +365,91 @@ public class Utils extends CoreUtils{
         return httpResponseBody;
     }
 
-    /**
-     * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
-     * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and username is provided, then a new
-     * request is created with the provided credentials (basic authentication).
-     *
-     * @param url URL to which the request should be made
-     * @param user Username (may be null)
-     * @param pass Password (may be null)
-     * @param expectedStatusCode expected status code returned from the requested server
-     * @return HTTP response body
-     * @throws IOException
-     * @throws URISyntaxException
-     */
-    public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode) throws IOException,
-            URISyntaxException {
-        LOGGER.info("Requesting URL " + url);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
-            final HttpGet httpGet = new HttpGet(url.toURI());
-            HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            }
-            HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, pass);
-            httpClient.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()), credentials);
-
-            response = httpClient.execute(httpGet);
-            statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
-        }
-    }
-
-    /**
-     * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
-     * expected one. If the server returns {@link HttpServletResponse#SC_UNAUTHORIZED} and an username is provided, then the
-     * given user is authenticated against Kerberos and a new request is executed under the new subject.
-     *
-     * @param uri URI to which the request should be made
-     * @param user Username
-     * @param pass Password
-     * @param expectedStatusCode expected status code returned from the requested server
-     * @return HTTP response body
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeCallWithKerberosAuthn(final URI uri, final String user, final String pass,
-            final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
-        LOGGER.info("Requesting URI: " + uri);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        try {
-            httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
-            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
-
-            final HttpGet httpGet = new HttpGet(uri);
-            final HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final HttpEntity entity = response.getEntity();
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            }
-            if (entity != null)
-                EntityUtils.consume(entity);
-
-            // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
-            // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
-
-            // 2. Perform the work as authenticated Subject.
-            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
-                public String run() throws Exception {
-                    final HttpResponse response = httpClient.execute(httpGet);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-                    return EntityUtils.toString(response.getEntity());
-                }
-            });
-            lc.logout();
-            return responseBody;
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
-        }
-    }
-
-    /**
-     * Creates request against SPNEGO protected web-app with FORM fallback. It tries to login using SPNEGO first - if it fails,
-     * FORM is used.
-     *
-     * @param contextUrl
-     * @param page
-     * @param user
-     * @param pass
-     * @param expectedStatusCode
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeHttpCallWithFallback(final String contextUrl, final String page, final String user,
-            final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
-            LoginException {
-        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
-        final String url = strippedContextUrl + page;
-        LOGGER.info("Requesting URL: " + url);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
-        String unauthorizedPageBody = null;
-        try {
-            httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, new JBossNegotiateSchemeFactory(true));
-            httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1, null), new NullHCCredentials());
-
-            final HttpGet httpGet = new HttpGet(url);
-            final HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
-
-            // Use our custom configuration to avoid reliance on external config
-            Configuration.setConfiguration(new Krb5LoginConfiguration());
-            // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
-            lc.login();
-
-            // 2. Perform the work as authenticated Subject.
-            final String responseBody = Subject.doAs(lc.getSubject(), new PrivilegedExceptionAction<String>() {
-                public String run() throws Exception {
-                    final HttpResponse response = httpClient.execute(httpGet);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-                    return EntityUtils.toString(response.getEntity());
-                }
-            });
-            lc.logout();
-            return responseBody;
-        } catch (LoginException e) {
-            assertNotNull(unauthorizedPageBody);
-            assertTrue(unauthorizedPageBody.contains("j_security_check"));
-
-            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("j_username", user));
-            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            final HttpResponse response = httpClient.execute(httpPost);
-            int statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
-        }
-    }
-
-    /**
-     * Creates request against SPNEGO protected web-app with FORM fallback. It doesn't try to login using SPNEGO - it uses FORM
-     * authn directly.
-     *
-     * @param contextUrl
-     * @param page
-     * @param user
-     * @param pass
-     * @param expectedStatusCode
-     * @return
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws PrivilegedActionException
-     * @throws LoginException
-     */
-    public static String makeHttpCallWoSPNEGO(final String contextUrl, final String page, final String user, final String pass,
-            final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
-        final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
-        final String url = strippedContextUrl + page;
-        LOGGER.info("Requesting URL: " + url);
-        final DefaultHttpClient httpClient = new DefaultHttpClient();
-        httpClient.setRedirectStrategy(REDIRECT_STRATEGY);
-        String unauthorizedPageBody = null;
-        try {
-            final HttpGet httpGet = new HttpGet(url);
-            HttpResponse response = httpClient.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode || StringUtils.isEmpty(user)) {
-                assertEquals("Unexpected HTTP response status code.", expectedStatusCode, statusCode);
-                return EntityUtils.toString(response.getEntity());
-            }
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
-
-            LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
-            unauthorizedPageBody = EntityUtils.toString(response.getEntity());
-
-            assertNotNull(unauthorizedPageBody);
-            LOGGER.info(unauthorizedPageBody);
-            assertTrue(unauthorizedPageBody.contains("j_security_check"));
-
-            HttpPost httpPost = new HttpPost(strippedContextUrl + "/j_security_check");
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("j_username", user));
-            nameValuePairs.add(new BasicNameValuePair("j_password", pass));
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-            response = httpClient.execute(httpPost);
-            statusCode = response.getStatusLine().getStatusCode();
-            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
-            return EntityUtils.toString(response.getEntity());
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpClient.getConnectionManager().shutdown();
-        }
-    }
 
     /**
      * Sets or removes (in case value==null) a system property. It's only a helper method, which avoids
      * {@link NullPointerException} thrown from {@link System#setProperty(String, String)} method, when the value is
      * <code>null</code>.
      *
-     * @param key property name
+     * @param key   property name
      * @param value property value
      * @return the previous string value of the system property
      */
     public static String setSystemProperty(final String key, final String value) {
         return value == null ? System.clearProperty(key) : System.setProperty(key, value);
+    }
+
+    /**
+     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the returned value is IPv6 address then
+     * square brackets around are stripped.
+     *
+     * @param managementClient
+     * @return
+     */
+    public static final String getHost(final ManagementClient managementClient) {
+        return stripSquareBrackets(managementClient.getMgmtAddress());
+    }
+
+    /**
+     * Returns canonical hostname retrieved from management address of the givem {@link org.jboss.as.arquillian.container.ManagementClient}.
+     *
+     * @param managementClient
+     * @return
+     */
+    public static final String getCannonicalHost(final ManagementClient managementClient) {
+        return getCannonicalHost(managementClient.getMgmtAddress());
+    }
+
+    /**
+     * Returns canonical hostname form of the given address.
+     *
+     * @param address hosname or IP address
+     * @return
+     */
+    public static final String getCannonicalHost(final String address) {
+        String host = stripSquareBrackets(address);
+        try {
+            host = InetAddress.getByName(host).getCanonicalHostName();
+        } catch (UnknownHostException e) {
+            LOGGER.warn("Unable to get canonical host name", e);
+        }
+        return host.toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * Returns given URI with the replaced hostname. If the URI or host is null, then the original URI is returned.
+     *
+     * @param uri
+     * @param host
+     * @return
+     * @throws java.net.URISyntaxException
+     */
+    public static final URI replaceHost(final URI uri, final String host) throws URISyntaxException {
+        final String origHost = uri == null ? null : uri.getHost();
+        final String newHost = NetworkUtils.formatPossibleIpv6Address(host);
+        if (origHost == null || newHost == null || newHost.equals(origHost)) {
+            return uri;
+        }
+        return new URI(uri.toString().replace(origHost, newHost));
+    }
+
+    /**
+     * Returns servlet URL, as concatenation of webapp URL and servlet path.
+     *
+     * @param webAppURL        web application context URL (e.g. injected by Arquillian)
+     * @param servletPath      Servlet path starting with slash (must be not-<code>null</code>)
+     * @param mgmtClient       Management Client (may be null)
+     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
+     * @return
+     * @throws java.net.URISyntaxException
+     */
+    public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
+                                          boolean useCanonicalHost) throws URISyntaxException {
+        URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
+        if (useCanonicalHost) {
+            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
+        }
+        return resultURI;
     }
 
     /**
@@ -717,9 +476,9 @@ public class Utils extends CoreUtils{
     /**
      * Generates content of jboss-web.xml file as a ShrinkWrap asset with the given security domain name and given valve class.
      *
-     * @param securityDomain security domain name (not-<code>null</code>)
+     * @param securityDomain  security domain name (not-<code>null</code>)
      * @param valveClassNames valve class (e.g. an Authenticator) which should be added to jboss-web file (may be
-     *        <code>null</code>)
+     *                        <code>null</code>)
      * @return Asset instance
      */
     public static Asset getJBossWebXmlAsset(final String securityDomain, final String... valveClassNames) {
@@ -758,14 +517,14 @@ public class Utils extends CoreUtils{
 
     /**
      * Creates content of users.properties and/or roles.properties files for given array of role names.
-     * <p>
+     * <p/>
      * For instance if you provide 2 roles - "role1", "role2" then the result will be:
-     *
+     * <p/>
      * <pre>
      * role1=role1
      * role2=role2
      * </pre>
-     *
+     * <p/>
      * If you use it as users.properties and roles.properties, then <code>roleName == userName == password</code>
      *
      * @param roles role names (used also as user names and passwords)
@@ -792,28 +551,13 @@ public class Utils extends CoreUtils{
         return StringUtils.strip(str, "[]");
     }
 
-    /**
-     * Fixes/replaces LDAP bind address in the CreateTransport annotation of ApacheDS.
-     *
-     * @param createLdapServer
-     * @param address
-     */
-    public static void fixApacheDSTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
-        final CreateTransport[] createTransports = createLdapServer.transports();
-        for (int i = 0; i < createTransports.length; i++) {
-            final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
-            // localhost is a default used in original CreateTransport annotation. We use it as a fallback.
-            mgCreateTransport.setAddress(address != null ? address : "localhost");
-            createTransports[i] = mgCreateTransport;
-        }
-    }
 
     /**
      * Copies server and clients keystores and truststores from this package to
      * the given folder. Server truststore has accepted certificate from client keystore and vice-versa
      *
      * @param workingFolder folder to which key material should be copied
-     * @throws IOException copying of keystores fails
+     * @throws java.io.IOException      copying of keystores fails
      * @throws IllegalArgumentException workingFolder is null or it's not a directory
      */
     public static void createKeyMaterial(final File workingFolder) throws IOException, IllegalArgumentException {
@@ -833,11 +577,10 @@ public class Utils extends CoreUtils{
 
     /**
      * Copies a resource file from current package to location denoted by given
-     * {@link File} instance.
+     * {@link java.io.File} instance.
      *
      * @param file
-     *
-     * @throws IOException
+     * @throws java.io.IOException
      */
     private static void createTestResource(File file) throws IOException {
         FileOutputStream fos = null;
@@ -855,7 +598,7 @@ public class Utils extends CoreUtils{
     }
 
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
-            String vaultConfig) {
+                                            String vaultConfig) {
         return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
                 vaultConfig);
     }
@@ -864,15 +607,10 @@ public class Utils extends CoreUtils{
      * Replace keystore paths and passwords variables in original configuration file with given values
      * and set ${hostname} variable from system property: node0
      *
-     * @param originalFile String
-     * @param keystoreFile File
-     * @param trustStoreFile File
-     * @param keystorePassword String
-     * @param vaultConfig - path to vault settings
      * @return String content
      */
     public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
-            String vaultConfig) {
+                                            String vaultConfig) {
         String hostname = System.getProperty("node0");
 
         // expand possible IPv6 address
@@ -911,7 +649,7 @@ public class Utils extends CoreUtils{
     /**
      * Makes HTTP call without authentication. Returns response body as a String.
      *
-     * @param uri requested URL
+     * @param uri                requested URL
      * @param expectedStatusCode expected status code - it's checked after the request is executed
      * @throws Exception
      */
@@ -931,7 +669,7 @@ public class Utils extends CoreUtils{
     /**
      * Returns param/value pair in form "urlEncodedName=urlEncodedValue". It can be used for instance in HTTP get queries.
      *
-     * @param paramName parameter name
+     * @param paramName  parameter name
      * @param paramValue parameter value
      * @return "[urlEncodedName]=[urlEncodedValue]" string
      */

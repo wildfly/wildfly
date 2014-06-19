@@ -31,7 +31,6 @@ import java.util.Set;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
-import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -71,28 +70,24 @@ public class UndeployWildcardDomainTestCase {
 
         // deployment1
         WebArchive war = ShrinkWrap.create(WebArchive.class, "cli-test-app1.war");
-        war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version0"), "page.html");
         cliTestApp1War = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(cliTestApp1War, true);
 
         // deployment2
         war = ShrinkWrap.create(WebArchive.class, "cli-test-app2.war");
-        war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
         cliTestApp2War = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(cliTestApp2War, true);
 
         // deployment3
         war = ShrinkWrap.create(WebArchive.class, "cli-test-another.war");
-        war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version2"), "page.html");
         cliTestAnotherWar = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(cliTestAnotherWar, true);
 
         // deployment4
         war = ShrinkWrap.create(WebArchive.class, "cli-test-app3.war");
-        war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version3"), "page.html");
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "cli-test-app.ear");
         ear.add(war, new BasicPath("/"), ZipExporter.class);

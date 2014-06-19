@@ -66,7 +66,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
 import org.jboss.as.test.integration.security.common.config.realm.Authorization;
 import org.jboss.as.test.integration.security.common.config.realm.LdapAuthentication;
@@ -208,7 +207,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             }
             updates.add(compositeOp);
         }
-        Utils.applyUpdates(updates, modelControllerClient);
+        CoreUtils.applyUpdates(updates, modelControllerClient);
     }
 
     protected void tearDown(ModelControllerClient modelControllerClient, String containerId) throws Exception {
@@ -241,7 +240,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
                 updates.add(ldapOp);
             }
         }
-        Utils.applyUpdates(updates, modelControllerClient);
+        CoreUtils.applyUpdates(updates, modelControllerClient);
         this.securityRealms = null;
     }
 

@@ -47,7 +47,6 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
-import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.shared.staxmapper.XMLExtendedStreamWriterFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -130,7 +129,7 @@ public abstract class AbstractMgmtTestBase {
         if (brokenWar != null) return brokenWar;
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "deployment2.war");
-        war.addClass(SimpleServlet.class);
+        //war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(new StringAsset("Malformed"), "web.xml");
         brokenWar = new File(System.getProperty("java.io.tmpdir") + File.separator + "malformedDeployment.war");
         brokenWar.deleteOnExit();
