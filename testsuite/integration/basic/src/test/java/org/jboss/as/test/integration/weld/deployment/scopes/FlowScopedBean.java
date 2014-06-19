@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.deployment.scopes;
 
+import java.io.Serializable;
 import javax.faces.flow.FlowScoped;
 
 @FlowScoped("myFlow")
-public class FlowScopedBean {
+public class FlowScopedBean implements Serializable {
 }
