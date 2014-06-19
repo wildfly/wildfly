@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2010, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.webservices.deployers;
+package org.jboss.as.txn.deployment;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -33,33 +33,30 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * A DUP that sets the dependencies required for using WS classes in WS deployments
+ * Looks for usage of the @Transactional CDI interceptor (JTA 1.2) or the @TransactionScoped CDI context (JTA 1.2)
+ * and adds the org.jboss.jts module dependency if they are found.
  *
- * @author alessio.soldano@jboss.com
- * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * Also adds the transaction API to deployments
+ *
+ * @author Paul Robinson
  */
-public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
+public class TransactionDependenciesProcessor implements DeploymentUnitProcessor {
 
-    public static final ModuleIdentifier JBOSSWS_API = ModuleIdentifier.create("org.jboss.ws.api");
-    public static final ModuleIdentifier JBOSSWS_SPI = ModuleIdentifier.create("org.jboss.ws.spi");
-    public static final ModuleIdentifier[] JAVAEE_APIS = {
-            ModuleIdentifier.create("javax.jws.api"),
-            ModuleIdentifier.create("javax.xml.soap.api"),
-            ModuleIdentifier.create("javax.xml.ws.api")
-    };
+    public static final ModuleIdentifier JTS_MODULE = ModuleIdentifier.create("org.jboss.jts");
+    public static final ModuleIdentifier TRANSACTION_API = ModuleIdentifier.create("javax.transaction.api");
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
-        for(ModuleIdentifier api : JAVAEE_APIS) {
-            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
-        }
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, TRANSACTION_API, false, false, true, false));
     }
 
-    public void undeploy(final DeploymentUnit context) {
-    }
+    @Override
+    public void undeploy(DeploymentUnit context) {
 
+    }
 }

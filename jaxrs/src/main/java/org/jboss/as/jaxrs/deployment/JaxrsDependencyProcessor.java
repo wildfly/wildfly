@@ -46,12 +46,16 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
     public static final ModuleIdentifier RESTEASY_HIBERNATE_VALIDATOR = ModuleIdentifier.create("org.jboss.resteasy.resteasy-hibernatevalidator-provider");
     public static final ModuleIdentifier RESTEASY_JAXRS = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxrs");
     public static final ModuleIdentifier RESTEASY_JAXB = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jaxb-provider");
+
     public static final ModuleIdentifier RESTEASY_JACKSON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jackson-provider");
     public static final ModuleIdentifier RESTEASY_JETTISON = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jettison-provider");
+
     public static final ModuleIdentifier RESTEASY_JSAPI = ModuleIdentifier.create("org.jboss.resteasy.resteasy-jsapi");
     public static final ModuleIdentifier RESTEASY_MULTIPART = ModuleIdentifier.create("org.jboss.resteasy.resteasy-multipart-provider");
     public static final ModuleIdentifier RESTEASY_YAML = ModuleIdentifier.create("org.jboss.resteasy.resteasy-yaml-provider");
     public static final ModuleIdentifier JAXB_API = ModuleIdentifier.create("javax.xml.bind.api");
+
+    public static final ModuleIdentifier JAXRS_API = ModuleIdentifier.create("javax.ws.rs.api");
 
     /**
      * We include this so that jackson annotations will be available, otherwise they will be ignored which leads
@@ -65,6 +69,7 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+        addDependency(moduleSpecification, moduleLoader, JAXRS_API);
         addDependency(moduleSpecification, moduleLoader, JAXB_API);
 
         if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {

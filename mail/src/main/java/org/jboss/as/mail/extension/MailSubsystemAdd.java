@@ -23,15 +23,24 @@
 package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
 
 /**
  * Handler responsible for adding the mail subsystem resource to the model
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-class MailSubsystemAdd extends AbstractAddStepHandler {
+class MailSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final MailSubsystemAdd INSTANCE = new MailSubsystemAdd();
 
@@ -45,5 +54,14 @@ class MailSubsystemAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
         model.get(MailSubsystemModel.MAIL_SESSION);
+    }
+
+    @Override
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        context.addStep(new AbstractDeploymentChainStep() {
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(MailExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_MAIL, new MailDependenciesProcessor());
+            }
+        }, OperationContext.Stage.RUNTIME);
     }
 }

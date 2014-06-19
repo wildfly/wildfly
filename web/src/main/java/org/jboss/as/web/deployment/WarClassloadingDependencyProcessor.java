@@ -43,8 +43,10 @@ import org.jboss.modules.ModuleLoader;
  */
 public class WarClassloadingDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JAVAX_EE_API = ModuleIdentifier.create("javaee.api");
     private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
+
+    private static final ModuleIdentifier SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
+    private static final ModuleIdentifier JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
 
     static {
@@ -69,7 +71,8 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         // Add module dependencies on Java EE apis
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAVAX_EE_API, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SERVLET_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSP_API, false, false, true, false));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
 

@@ -328,6 +328,7 @@ public enum Phase {
     public static final int DEPENDENCIES_WAR_MODULE                     = 0x0700;
     public static final int DEPENDENCIES_CLASS_PATH                     = 0x0800;
     public static final int DEPENDENCIES_EXTENSION_LIST                 = 0x0900;
+    public static final int DEPENDENCIES_TRANSACTIONS                   = 0x1100;
     public static final int DEPENDENCIES_WELD                           = 0x0A00;
     public static final int DEPENDENCIES_SEAM                           = 0x0A01;
     public static final int DEPENDENCIES_WS                             = 0x0C00;
@@ -339,13 +340,17 @@ public enum Phase {
     public static final int DEPENDENCIES_JPA                            = 0x1000;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
+    public static final int DEPENDENCIES_JMS                            = 0x1400;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
     public static final int DEPENDENCIES_JAXR                           = 0x1600;
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
     public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
-    public static final int DEPENDENCIES_LOGGING                        = 0x1D00; // out of order to be consistent with WildFly
+    public static final int DEPENDENCIES_CLUSTERING                     = 0x1C00;
+    public static final int DEPENDENCIES_LOGGING                        = 0x1D00;
+    public static final int DEPENDENCIES_MAIL                           = 0x1E00;
+    public static final int DEPENDENCIES_JSR77                          = 0x1F00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;

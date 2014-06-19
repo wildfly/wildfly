@@ -28,6 +28,7 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.messaging.deployment.MessagingDependencyProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlParsingDeploymentUnitProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -59,6 +60,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MESSAGING_XML_RESOURCES, new MessagingXmlParsingDeploymentUnitProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JMS, new MessagingDependencyProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_MESSAGING_XML_RESOURCES, new MessagingXmlInstallDeploymentUnitProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
