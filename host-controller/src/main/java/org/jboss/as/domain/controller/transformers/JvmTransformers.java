@@ -21,25 +21,26 @@
 */
 package org.jboss.as.domain.controller.transformers;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.AGENT_LIB;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.AGENT_PATH;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENVIRONMENT_VARIABLES;
-import static org.jboss.as.host.controller.model.jvm.JvmAttributes.LAUNCH_COMMAND;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENV_CLASSPATH_IGNORED;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.HEAP_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.JAVA_AGENT;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.JAVA_HOME;
+import static org.jboss.as.host.controller.model.jvm.JvmAttributes.LAUNCH_COMMAND;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_HEAP_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_PERMGEN_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.OPTIONS;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.PERMGEN_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.STACK_SIZE;
 
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 
 /**
@@ -51,14 +52,24 @@ import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 class JvmTransformers {
 
     static void registerTransformers120(TransformersSubRegistration parent) {
-        TransformersSubRegistration reg = parent.registerSubResource(JvmResourceDefinition.GLOBAL.getPathElement(), ResourceTransformer.DEFAULT);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(JvmResourceDefinition.GLOBAL.getPathElement())
+                .getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, LAUNCH_COMMAND)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, LAUNCH_COMMAND)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AGENT_PATH, HEAP_SIZE, JAVA_HOME, MAX_HEAP_SIZE,
+                        PERMGEN_SIZE, MAX_PERMGEN_SIZE,
+                        STACK_SIZE, OPTIONS, ENVIRONMENT_VARIABLES, ENV_CLASSPATH_IGNORED, AGENT_LIB, JAVA_AGENT)
+                .end();
+        TransformationDescription.Tools.register(builder.build(), parent);
+    }
 
-        RejectExpressionValuesTransformer rejectExpression = new RejectExpressionValuesTransformer(AGENT_PATH, HEAP_SIZE, JAVA_HOME, MAX_HEAP_SIZE,
-                PERMGEN_SIZE, MAX_PERMGEN_SIZE,
-                STACK_SIZE, OPTIONS, ENVIRONMENT_VARIABLES, LAUNCH_COMMAND, ENV_CLASSPATH_IGNORED, AGENT_LIB, JAVA_AGENT);
-
-        reg.registerOperationTransformer(ADD, rejectExpression);
-        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpression.getWriteAttributeTransformer());
+    static void registerTransformers14_21(TransformersSubRegistration parent) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(JvmResourceDefinition.GLOBAL.getPathElement())
+                .getAttributeBuilder()
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, LAUNCH_COMMAND)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, LAUNCH_COMMAND)
+                .end();
+        TransformationDescription.Tools.register(builder.build(), parent);
     }
 
 
