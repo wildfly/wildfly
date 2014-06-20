@@ -26,7 +26,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.undertow</extension-module>
-    <subsystem xmlns="urn:jboss:domain:undertow:1.1">
+    <subsystem xmlns="urn:jboss:domain:undertow:2.0">
         <buffer-cache name="default" />
         <server name="default-server">
             <http-listener name="default" socket-binding="http" />
