@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.smoke.mgmt;
+package org.wildfly.core.test.standalone.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -36,15 +36,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import javax.inject.Inject;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Test validating that subsystems register a "describe" operation in order to be able
@@ -52,14 +50,13 @@ import org.junit.runner.RunWith;
  *
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class DescribeOperationUnitTestCase {
 
     private static final Set<String> ignored = new HashSet<String>();
 
-    @ContainerResource
-    private ManagementClient managementClient;
+    @Inject
+    private static ManagementClient managementClient;
 
     static {
         // Only a few subsystems are NOT supposed to work in the domain mode

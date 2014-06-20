@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.smoke.mgmt;
+package org.wildfly.core.test.standalone.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
@@ -54,11 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import javax.inject.Inject;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -66,18 +62,19 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Basic management operation unit test.
  *
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class BasicOperationsUnitTestCase {
 
-    @ContainerResource
-    private ManagementClient managementClient;
+    @Inject
+    private static ManagementClient managementClient;
 
     @Test
     public void testSocketBindingsWildcards() throws IOException {
@@ -114,8 +111,8 @@ public class BasicOperationsUnitTestCase {
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.hasDefined(RESULT));
 
-        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
-        Assert.assertTrue(web.hasDefined("worker"));
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "logging");
+        Assert.assertTrue(web.hasDefined("logger"));
     }
 
     @Test
@@ -192,7 +189,7 @@ public class BasicOperationsUnitTestCase {
     public void testHttpSocketBinding() throws IOException {
         final ModelNode address = new ModelNode();
         address.add("socket-binding-group", "*");
-        address.add("socket-binding", "http");
+        address.add("socket-binding", "management-http");
         address.protect();
 
         final ModelNode operation = new ModelNode();
@@ -205,21 +202,21 @@ public class BasicOperationsUnitTestCase {
         final List<ModelNode> steps = getSteps(result.get(RESULT));
         Assert.assertEquals(1, steps.size());
         final ModelNode httpBinding = steps.get(0);
-        Assert.assertEquals(8080, httpBinding.get(RESULT, "port").resolve().asInt());
+        Assert.assertEquals(9990, httpBinding.get(RESULT, "port").resolve().asInt());
 
     }
 
     @Test
     public void testSimpleReadAttribute() throws IOException {
         final ModelNode address = new ModelNode();
-        address.add("subsystem", "deployment-scanner");
-        address.add("scanner", "default");
+        address.add("subsystem", "logging");
+        address.add("console-handler", "CONSOLE");
 
-        final ModelNode operation = createReadAttributeOperation(address, "path");
+        final ModelNode operation = createReadAttributeOperation(address, "level");
         final ModelNode result = managementClient.getControllerClient().execute(operation);
         assertSuccessful(result);
 
-        Assert.assertEquals("deployments", result.get(RESULT).asString());
+        Assert.assertEquals("INFO", result.get(RESULT).asString());
     }
 
     @Test

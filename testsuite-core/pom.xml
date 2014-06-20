@@ -69,6 +69,8 @@
 
     <modules>
         <module>shared</module>
+        <module>test-runner</module>
+        <module>standalone</module>
     </modules>
 
 
@@ -340,7 +342,6 @@
                             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                             <jboss.dist>${jboss.dist}</jboss.dist>
                             <jboss.home>${basedir}/target/wildfly-core</jboss.home>
-                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                         </systemPropertyVariables>
                         <!-- Arquillian's config files. -->
