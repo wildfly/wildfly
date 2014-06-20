@@ -210,6 +210,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
+            synchronized (this) {
+                knownTimerIds.get(timerEntity.getTimedObjectId()).add(timerEntity.getId());
+            }
             connection = dataSource.getConnection();
             statement = connection.prepareStatement(createTimer);
             statementParameters(timerEntity, statement);
@@ -611,8 +614,13 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                                     EjbLogger.ROOT_LOGGER.timerReinstatementFailed(resultSet.getString(2), resultSet.getString(1), e);
                                 }
                             }
-                            for (String timer : existing) {
-                                listener.timerRemoved(timer);
+
+                            synchronized (DatabaseTimerPersistence.this) {
+                                Set<String> timers = knownTimerIds.get(timedObjectId);
+                                for (String timer : existing) {
+                                    timers.remove(timer);
+                                    listener.timerRemoved(timer);
+                                }
                             }
                         } catch (SQLException e) {
                             EjbLogger.ROOT_LOGGER.failedToRefreshTimers(timedObjectId);

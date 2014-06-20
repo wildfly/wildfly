@@ -1216,7 +1216,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
         @Override
         public void timerRemoved(String timerId) {
-            TimerServiceImpl.this.cancelTimeout(TimerServiceImpl.this.getTimer(timerId));
+            TimerImpl timer = TimerServiceImpl.this.getTimer(timerId);
+            if(timer != null) {
+                TimerServiceImpl.this.cancelTimeout(timer);
+            }
         }
 
         @Override
