@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
@@ -34,8 +33,6 @@ import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRunti
 import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
-import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
-import org.jboss.as.test.integration.domain.management.cli.WildCardReadsTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -48,16 +45,13 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    BasicOpsTestCase.class,
-    DeployAllServerGroupsTestCase.class,
-    DomainDeploymentOverlayTestCase.class,
-    DeploySingleServerGroupTestCase.class,
-    UndeployWildcardDomainTestCase.class,
-    JmsTestCase.class,
-    DataSourceTestCase.class,
-    RolloutPlanTestCase.class,
-    DomainDeployWithRuntimeNameTestCase.class,
-    WildCardReadsTestCase.class
+        JmsTestCase.class,
+        DeployAllServerGroupsTestCase.class,
+        DeploySingleServerGroupTestCase.class,
+        DomainDeploymentOverlayTestCase.class,
+        RolloutPlanTestCase.class,
+        DomainDeployWithRuntimeNameTestCase.class,
+        DataSourceTestCase.class
 })
 public class CLITestSuite {
 

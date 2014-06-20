@@ -46,6 +46,12 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
         </dependency>
         <dependency>

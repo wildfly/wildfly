@@ -1,0 +1,15 @@
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.test.extension">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="test-extension.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+    </dependencies>
+</module>

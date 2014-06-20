@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
@@ -77,7 +75,7 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
         if (warFile!=null) {
-            Assert.assertTrue(warFile.delete());
+            warFile.delete();
         }
 
         CLITestSuite.stopSupport();
