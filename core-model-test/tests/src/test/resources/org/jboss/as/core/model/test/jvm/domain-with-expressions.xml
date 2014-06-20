@@ -3,7 +3,7 @@
 <domain xmlns="urn:jboss:domain:3.0">
     <server-groups>
         <server-group name="test" profile="test">
-            <jvm name="default" java-home="${mytest.java-home:javaHome}" env-classpath-ignored="${mytest.env-classpath-ignored:true}">
+            <jvm name="full" java-home="${mytest.java-home:javaHome}" env-classpath-ignored="${mytest.env-classpath-ignored:true}">
                 <heap size="${mytest.heap.size:heapSize}" max-size="${mytest.max.heap.size:maxHeapSize}"/>
                 <permgen size="${mytest.permgen.size:permgenSize}" max-size="${mytest.max.permgen.size:maxPermGenSize}"/>
                 <stack size="${mytest.stack.size:stackSize}"/>
@@ -11,12 +11,17 @@
                 <agent-path value="${mytest.agent-path:agentPath}"/>
                 <java-agent value="${mytest.java-agent:javaAgent}"/>
                 <jvm-options>
-                    <option value="${mytest.option:option1}"/>
+                    <option value="${mytest.option1:option1}"/>
+                    <option value="${mytest.option2:option2}"/>
+                    <option value="${mytest.option3:option3}"/>
                 </jvm-options>
                 <environment-variables>
-                    <variable name="name1" value="${mytest.value:value1}"/>
+                    <variable name="name1" value="${mytest.value1:value1}"/>
+                    <variable name="name2" value="${mytest.value2:value2}"/>
                 </environment-variables>
+                <launch-command prefix="${mytest.value:command-prefix}"/>
              </jvm>
+             <!-- Needed for the add operation -->
              <socket-binding-group ref="test-sockets"/>
          </server-group>
     </server-groups>
