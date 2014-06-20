@@ -130,6 +130,7 @@ public enum Attribute {
     PROTOCOL("protocol"),
     PROVIDER("provider"),
     REALM("realm"),
+    RECONNECT_TIMEOUT("reconnect-timeout"),
     RECURSIVE("recursive"),
     REF("ref"),
     REFERRALS("referrals"),

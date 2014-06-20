@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  *  All methods on this class should be called with {@link ManagedAuditLoggerImpl}'s lock taken.
@@ -74,17 +74,14 @@ abstract class AuditLogHandler {
     }
 
     void writeLogItem(AuditLogItem item) {
+        FailureCountHandler fch = getFailureCountHandler();
         try {
             initialize();
             String formattedItem = item.format(formatter);
             writeLogItem(formattedItem);
-            failureCount = 0;
+            fch.success();
         } catch (Throwable t) {
-            failureCount++;
-            ControllerLogger.MGMT_OP_LOGGER.logHandlerWriteFailed(t, name);
-            if (isDisabledDueToFailures()) {
-                ControllerLogger.MGMT_OP_LOGGER.disablingLogHandlerDueToFailures(failureCount, name);
-            }
+            fch.failure(t);
         }
     }
 
@@ -93,7 +90,15 @@ abstract class AuditLogHandler {
         stop();
     }
 
+    boolean isActive() {
+        return !hasTooManyFailures();
+    }
+
     boolean isDisabledDueToFailures() {
+        return hasTooManyFailures();
+    }
+
+    boolean hasTooManyFailures() {
         return maxFailureCount > 0 && failureCount >= maxFailureCount;
     }
 
@@ -116,8 +121,45 @@ abstract class AuditLogHandler {
         return failureCount;
     }
 
+    FailureCountHandler getFailureCountHandler() {
+        return new StandardFailureCountHandler();
+    }
+
     abstract boolean isDifferent(AuditLogHandler other);
     abstract void initialize();
     abstract void stop();
     abstract void writeLogItem(String formattedItem) throws IOException;
+
+    interface FailureCountHandler {
+        void success();
+        void failure(Throwable t);
+    }
+
+    class StandardFailureCountHandler implements FailureCountHandler {
+        @Override
+        public void success() {
+            failureCount = 0;
+        }
+
+        @Override
+        public void failure(Throwable t) {
+            failureCount++;
+            ControllerLogger.MGMT_OP_LOGGER.logHandlerWriteFailed(t, name);
+            if (hasTooManyFailures()) {
+                ControllerLogger.MGMT_OP_LOGGER.disablingLogHandlerDueToFailures(failureCount, name);
+            }
+        }
+    }
+
+    class ReconnectFailureCountHandler implements FailureCountHandler {
+        @Override
+        public void success() {
+            failureCount = 0;
+        }
+
+        @Override
+        public void failure(Throwable t) {
+            ControllerLogger.MGMT_OP_LOGGER.reconnectToSyslogFailed(name, t);
+        }
+    }
 }
