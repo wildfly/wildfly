@@ -59,7 +59,7 @@ public class SegmentsAndVirtualNodeConverter  {
      * Helper methods
      */
     public static String virtualNodesToSegments(String virtualNodesValue) {
-        int segments = SEGMENTS_DEFAULT ;
+        int segments = SEGMENTS_DEFAULT;
         try {
             segments =  virtualNodesToSegments(Integer.parseInt(virtualNodesValue));
         }
@@ -70,7 +70,7 @@ public class SegmentsAndVirtualNodeConverter  {
     }
 
     public static String segmentsToVirtualNodes(String segmentsValue) {
-        int virtualNodes = VIRTUAL_NODES_DEFAULT ;
+        int virtualNodes = VIRTUAL_NODES_DEFAULT;
         try {
             virtualNodes =  segmentsToVirtualNodes(Integer.parseInt(segmentsValue));
         }
@@ -81,19 +81,19 @@ public class SegmentsAndVirtualNodeConverter  {
     }
 
     public static ModelNode virtualNodesToSegments(ModelNode virtualNodes) {
-        int segments = SEGMENTS_DEFAULT ;
+        int segments = SEGMENTS_DEFAULT;
         if (virtualNodes.isDefined()) {
            segments = virtualNodesToSegments(virtualNodes.asInt());
         }
-        return new ModelNode(segments) ;
+        return new ModelNode(segments);
     }
 
     public static ModelNode segmentsToVirtualNodes(ModelNode segments) {
-        int virtualNodes = VIRTUAL_NODES_DEFAULT ;
+        int virtualNodes = VIRTUAL_NODES_DEFAULT;
         if (segments.isDefined()) {
            virtualNodes = segmentsToVirtualNodes(segments.asInt());
         }
-        return new ModelNode(virtualNodes) ;
+        return new ModelNode(virtualNodes);
     }
 }
 

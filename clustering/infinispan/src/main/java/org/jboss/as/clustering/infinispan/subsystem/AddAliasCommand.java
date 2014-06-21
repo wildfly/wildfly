@@ -59,7 +59,7 @@ public class AddAliasCommand implements OperationStepHandler {
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(CacheContainerResourceDefinition.ALIASES.getName()).clone();
 
-        ModelNode newValue = addNewAliasToList(currentValue, newAlias) ;
+        ModelNode newValue = addNewAliasToList(currentValue, newAlias);
 
         // now set the new ALIAS attribute
         final ModelNode syntheticOp = new ModelNode();

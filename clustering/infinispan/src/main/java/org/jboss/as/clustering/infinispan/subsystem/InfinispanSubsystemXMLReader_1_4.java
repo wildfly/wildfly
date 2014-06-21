@@ -59,7 +59,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanExtension.SUBSYSTEM_PATH);
+        PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH);
         ModelNode subsystem = Util.createAddOperation(subsystemAddress);
 
         // command to add the subsystem
@@ -706,7 +706,7 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     break;
                 }
                 case PATH: {
-                    FileStoreResourceDefinition.PATH.parseAndSetParameter(value, store, reader);
+                    FileStoreResourceDefinition.RELATIVE_PATH.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {

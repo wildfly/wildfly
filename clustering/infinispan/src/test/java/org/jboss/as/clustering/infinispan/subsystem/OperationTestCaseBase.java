@@ -197,7 +197,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     protected static PathAddress getCacheContainerAddress(String containerName) {
-        return PathAddress.pathAddress(InfinispanExtension.SUBSYSTEM_PATH).append(ModelKeys.CACHE_CONTAINER, containerName);
+        return PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH).append(ModelKeys.CACHE_CONTAINER, containerName);
     }
 
     protected static PathAddress getCacheAddress(String containerName, String cacheType, String cacheName) {

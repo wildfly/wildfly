@@ -133,7 +133,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
     private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
         if (xmlFile.endsWith("1_0.xml") || xmlFile.endsWith("1_1.xml") || xmlFile.endsWith("1_2.xml") || xmlFile.endsWith("1_3.xml") || xmlFile.endsWith("1_4.xml")) {
-            for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.CONTAINER_PATH.getKey()).asPropertyList()) {
+            for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
                         containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
 

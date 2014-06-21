@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigOperationHandlers.CacheConfigAdd;
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -42,46 +42,34 @@ import org.jboss.dmr.ModelType;
  */
 public class BackupForResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement BACKUP_FOR_PATH = PathElement.pathElement(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
+    static final PathElement PATH = PathElement.pathElement(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition REMOTE_CACHE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_CACHE, ModelType.STRING, true)
-                    .setXmlName(Attribute.REMOTE_CACHE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition REMOTE_CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_CACHE, ModelType.STRING, true)
+            .setXmlName(Attribute.REMOTE_CACHE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
 
-    static final SimpleAttributeDefinition REMOTE_SITE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_SITE, ModelType.STRING, true)
-                    .setXmlName(Attribute.REMOTE_SITE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition REMOTE_SITE = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_SITE, ModelType.STRING, true)
+            .setXmlName(Attribute.REMOTE_SITE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
 
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REMOTE_CACHE, REMOTE_SITE };
 
-    static final AttributeDefinition[] BACKUP_FOR_ATTRIBUTES = { REMOTE_CACHE, REMOTE_SITE };
-
-    public BackupForResourceDefinition() {
-        super(BACKUP_FOR_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP_FOR),
-                new CacheConfigAdd(BACKUP_FOR_ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    BackupForResourceDefinition() {
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP_FOR),
+                new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(BACKUP_FOR_ATTRIBUTES);
-        for (AttributeDefinition attr : BACKUP_FOR_ATTRIBUTES) {
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }

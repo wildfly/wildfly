@@ -124,7 +124,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
     @Test
     @BMRule(name="Test remove rollback operation",
-            targetClass="org.jboss.as.clustering.jgroups.subsystem.ProtocolStackRemove",
+            targetClass="org.jboss.as.clustering.jgroups.subsystem.StackRemoveHandler",
             targetMethod="performRuntime",
             targetLocation="AT EXIT",
             action="traceln(\"Injecting rollback fault via Byteman\");$1.setRollbackOnly()")

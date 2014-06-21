@@ -29,7 +29,7 @@ import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
-import org.jboss.as.clustering.infinispan.subsystem.CacheConfigOperationHandlers.CacheConfigAdd;
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -58,7 +58,11 @@ import org.jboss.msc.service.ServiceName;
  */
 public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement BACKUP_PATH = PathElement.pathElement(ModelKeys.BACKUP);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.BACKUP, name);
+    }
 
     static final SimpleAttributeDefinition FAILURE_POLICY = new SimpleAttributeDefinitionBuilder(ModelKeys.BACKUP_FAILURE_POLICY, ModelType.STRING, true)
             .setXmlName(Attribute.BACKUP_FAILURE_POLICY.getLocalName())
@@ -66,66 +70,64 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(BackupFailurePolicy.class, true, true))
             .setDefaultValue(new ModelNode().set(BackupFailurePolicy.WARN.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition STRATEGY = new SimpleAttributeDefinitionBuilder(ModelKeys.BACKUP_STRATEGY, ModelType.STRING, true)
             .setXmlName(Attribute.STRATEGY.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new EnumValidator<>(BackupStrategy.class, true, true))
             .setDefaultValue(new ModelNode().set(BackupStrategy.ASYNC.name()))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition REPLICATION_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.TIMEOUT, ModelType.STRING, true)
             .setXmlName(Attribute.TIMEOUT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(10000L))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.ENABLED, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.ENABLED.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(true))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition TAKE_OFFLINE_AFTER_FAILURES = new SimpleAttributeDefinitionBuilder(ModelKeys.TAKE_BACKUP_OFFLINE_AFTER_FAILURES, ModelType.INT, true)
             .setXmlName(Attribute.TAKE_BACKUP_OFFLINE_AFTER_FAILURES.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(0))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition TAKE_OFFLINE_MIN_WAIT = new SimpleAttributeDefinitionBuilder(ModelKeys.TAKE_BACKUP_OFFLINE_MIN_WAIT, ModelType.INT, true)
             .setXmlName(Attribute.TAKE_BACKUP_OFFLINE_MIN_WAIT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(0))
-            .build()
-    ;
+            .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { FAILURE_POLICY, STRATEGY, REPLICATION_TIMEOUT, ENABLED, TAKE_OFFLINE_AFTER_FAILURES, TAKE_OFFLINE_MIN_WAIT };
 
         // operations
     static final OperationDefinition BACKUP_BRING_SITE_ONLINE = new SimpleOperationDefinitionBuilder(ModelKeys.BRING_SITE_ONLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
             .setRuntimeOnly()
-            .build()
-    ;
+            .build();
+
     static final OperationDefinition BACKUP_TAKE_SITE_OFFLINE = new SimpleOperationDefinitionBuilder(ModelKeys.TAKE_SITE_OFFLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
             .setRuntimeOnly()
-            .build()
-    ;
+            .build();
+
     static final OperationDefinition BACKUP_SITE_STATUS = new SimpleOperationDefinitionBuilder(ModelKeys.SITE_STATUS, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
             .setRuntimeOnly()
             .setReadOnly()
-            .build()
-    ;
+            .build();
 
     private final boolean runtimeRegistration;
 
     BackupSiteResourceDefinition(final boolean runtimeRegistration) {
-        super(BACKUP_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new CacheConfigAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(WILDCARD_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
 

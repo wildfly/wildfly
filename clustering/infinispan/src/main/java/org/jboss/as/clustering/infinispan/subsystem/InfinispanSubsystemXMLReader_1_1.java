@@ -729,7 +729,7 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
                     break;
                 }
                 case PATH: {
-                    FileStoreResourceDefinition.PATH.parseAndSetParameter(value, store, reader);
+                    FileStoreResourceDefinition.RELATIVE_PATH.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
