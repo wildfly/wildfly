@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.xts;
+package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -29,8 +29,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -42,18 +40,13 @@ import org.jboss.narayana.compensations.api.TxCompensate;
 import org.jboss.narayana.compensations.api.TxConfirm;
 import org.jboss.narayana.compensations.api.TxLogged;
 
-import javax.ejb.TransactionAttribute;
-import javax.jws.WebService;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
-public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcessor {
+public class CompensationsDependenciesDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier XTS_MODULE = ModuleIdentifier.create("org.jboss.xts");
+    private static final ModuleIdentifier COMPENSATIONS_MODULE = ModuleIdentifier.create("org.jboss.narayana.compensations");
 
     private static final Class[] COMPENSATABLE_ANNOTATIONS = {
             Compensatable.class,
@@ -73,8 +66,8 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
             return;
         }
 
-        if (isCompensationAnnotationPresent(compositeIndex) || isTransactionalEndpointPresent(compositeIndex)) {
-            addXTSModuleDependency(unit);
+        if (isCompensationAnnotationPresent(compositeIndex)) {
+            addCompensationsModuleDependency(unit);
         }
     }
 
@@ -93,30 +86,10 @@ public class XTSDependenciesDeploymentProcessor implements DeploymentUnitProcess
         return false;
     }
 
-    private boolean isTransactionalEndpointPresent(final CompositeIndex compositeIndex) {
-        final List<AnnotationInstance> annotations = new ArrayList<>();
-        annotations.addAll(compositeIndex.getAnnotations(DotName.createSimple(Transactional.class.getName())));
-        annotations.addAll(compositeIndex.getAnnotations(DotName.createSimple(TransactionAttribute.class.getName())));
-
-        for (final AnnotationInstance annotation : annotations) {
-            final Object target = annotation.target();
-
-            if (target instanceof ClassInfo) {
-                final ClassInfo classInfo = (ClassInfo) target;
-
-                if (classInfo.annotations().get(DotName.createSimple(WebService.class.getName())) != null) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private void addXTSModuleDependency(final DeploymentUnit unit) {
+    private void addCompensationsModuleDependency(final DeploymentUnit unit) {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, XTS_MODULE, false, false, false, false));
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, COMPENSATIONS_MODULE, false, false, false, false));
     }
 
 }

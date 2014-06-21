@@ -55,5 +55,6 @@
         <module name="org.jboss.as.jacorb"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.modules"/>
+        <module name="org.jboss.narayana.compensations"/>
     </dependencies>
 </module>
