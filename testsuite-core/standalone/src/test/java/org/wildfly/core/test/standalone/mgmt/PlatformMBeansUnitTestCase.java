@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.smoke.mgmt;
+package org.wildfly.core.test.standalone.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -36,24 +36,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 
 import java.util.HashSet;
 import java.util.Set;
-
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import javax.inject.Inject;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Test validating that the platform mbean resources exist and are reachable.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class PlatformMBeansUnitTestCase {
 
     private static final Set<String> ignored = new HashSet<String>();
@@ -63,7 +60,7 @@ public class PlatformMBeansUnitTestCase {
         ignored.add("deployment-scanner");
     }
 
-    @ContainerResource
+    @Inject
     private ManagementClient managementClient;
 
     @Test
