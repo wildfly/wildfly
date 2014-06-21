@@ -47,22 +47,10 @@ public class EmptyCompEnvTestCase {
     @OperateOnDeployment("empty")
     private URL empty;
 
-
-    @ArquillianResource
-    @OperateOnDeployment("single")
-    private URL single;
-
     @Deployment(name = "empty")
     public static WebArchive empty() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "empty.war");
         war.addClasses(HttpRequest.class, EmptyServlet.class);
-        return war;
-    }
-
-    @Deployment(name = "single")
-    public static WebArchive single() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
-        war.addClasses(HttpRequest.class, SingleServlet.class);
         return war;
     }
 
@@ -77,10 +65,4 @@ public class EmptyCompEnvTestCase {
         assertEquals("ok", result);
     }
 
-    @Test
-    @OperateOnDeployment("single")
-    public void testSingleList() throws Exception {
-        String result = performCall(single, "simple");
-        assertEquals("ok", result);
-    }
 }

@@ -21,6 +21,31 @@
  */
 package org.jboss.as.test.integration.web.security.servlet3;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
+import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -32,32 +57,6 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
-import org.jboss.as.test.categories.CommonCriteria;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 /**
  * Unit Test the programmatic login feature of Servlet 3
@@ -65,11 +64,12 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 @ServerSetup(WebSecurityProgrammaticLoginTestCase.SecurityDomainSetup.class)
 @Category(CommonCriteria.class)
 public class WebSecurityProgrammaticLoginTestCase {
 
-    @ArquillianResource
+    @ContainerResource
     private ManagementClient managementClient;
 
     @Deployment(testable = true)
@@ -116,21 +116,10 @@ public class WebSecurityProgrammaticLoginTestCase {
     protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
-            // test hitting programmatic login servlet
-            HttpGet httpget = new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass);
 
-            System.out.println("executing request" + httpget.getRequestLine());
-            HttpResponse response = httpclient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-
-            System.out.println("----------------------------------------");
-            StatusLine statusLine = response.getStatusLine();
-            System.out.println(statusLine);
-            if (entity != null) {
-                System.out.println("Response content length: " + entity.getContentLength());
-            }
-            assertEquals(expectedStatusCode, statusLine.getStatusCode());
-            EntityUtils.consume(entity);
+            HttpResponse res =  httpclient.execute(new HttpGet(managementClient.getWebUri() + "/" + getContextPath() + "/login/?username=" + user + "&password=" + pass));
+            Assert.assertEquals(expectedStatusCode, res.getStatusLine().getStatusCode());
+            System.out.println("Response content length: " + EntityUtils.toString(res.getEntity()));
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
