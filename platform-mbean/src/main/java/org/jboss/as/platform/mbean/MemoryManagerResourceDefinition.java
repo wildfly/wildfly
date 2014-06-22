@@ -66,15 +66,13 @@ class MemoryManagerResourceDefinition extends SimpleResourceDefinition {
 
     private MemoryManagerResourceDefinition() {
         super(PathElement.pathElement(NAME.getName()),
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_MANAGER));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, MemoryManagerMXBeanAttributeHandler.INSTANCE);
-        }
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, MemoryManagerMXBeanAttributeHandler.INSTANCE);
 
         for (AttributeDefinition attribute : METRICS) {
             registration.registerMetric(attribute, MemoryManagerMXBeanAttributeHandler.INSTANCE);

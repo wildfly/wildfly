@@ -120,11 +120,13 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.RELATIVE_TO)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1,4))
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.PATH)
             .setDefaultValue(new ModelNode().set("var"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1,4))
             .setAllowNull(true)
             .setAllowExpression(true).build();
 
@@ -336,4 +338,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             }
         }
     }
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
+    }
+
 }

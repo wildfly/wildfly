@@ -33,6 +33,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec}"/>
     </resources>
 </module>

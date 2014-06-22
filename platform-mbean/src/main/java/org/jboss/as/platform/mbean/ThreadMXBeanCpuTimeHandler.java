@@ -23,26 +23,35 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Executes the {@link java.lang.management.ThreadMXBean#getThreadCpuTime(long)} method.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanCpuTimeHandler implements OperationStepHandler, DescriptionProvider {
+public class ThreadMXBeanCpuTimeHandler implements OperationStepHandler {
+
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GET_THREAD_CPU_TIME, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
+            .setParameters(CommonAttributes.ID)
+            .setReplyType(ModelType.LONG)
+            .setRuntimeOnly()
+            .setReadOnly()
+            .build();
 
     public static final ThreadMXBeanCpuTimeHandler INSTANCE = new ThreadMXBeanCpuTimeHandler();
 
     private final ParametersValidator validator = new ParametersValidator();
+
     private ThreadMXBeanCpuTimeHandler() {
         validator.registerValidator(PlatformMBeanConstants.ID, new LongRangeValidator(1));
     }
@@ -60,10 +69,5 @@ public class ThreadMXBeanCpuTimeHandler implements OperationStepHandler, Descrip
         }
 
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getThreadCpuTimeOperation(locale);
     }
 }

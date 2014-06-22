@@ -22,10 +22,11 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
-import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
-import org.jboss.as.connector.dynamicresource.operations.ClearWorkManagerStatisticsHandler;
+import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
+import org.jboss.as.connector.dynamicresource.ClearWorkManagerStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeReadHandler;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeWriteHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
@@ -33,12 +34,12 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtens
 import org.jboss.as.connector.subsystems.resourceadapters.WorkManagerRuntimeAttributeReadHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.WorkManagerRuntimeAttributeWriteHandler;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -87,13 +88,14 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                     for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
                         if (cm.getPool() != null) {
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
+                            poolStats.setEnabled(false);
                             final ServiceController<?> bootstrapContextController = controller.getServiceContainer().getService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
                             WorkManager wm = null;
                             if (bootstrapContextController != null) {
                                 wm = (WorkManager) ((CloneableBootstrapContext) bootstrapContextController.getValue()).getWorkManager();
                             }
                             if ((wm != null && wm.getStatistics() != null) || poolStats.getNames().size() != 0) {
-                                DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics", poolStats);
+
                                 PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
                                 PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
                                 PathElement peRa = PathElement.pathElement(Constants.RESOURCEADAPTER_NAME, raName);
@@ -179,21 +181,23 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     }
                                     if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null && deploymentMD.getConnector().getResourceAdapter().getStatistics() != null) {
                                         StatisticsPlugin raStats = deploymentMD.getConnector().getResourceAdapter().getStatistics();
-                                        for (String statName : raStats.getNames()) {
-                                            raRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(raStats));
+                                        raStats.setEnabled(false);
+                                        PoolMetrics.ParametrizedPoolMetricsHandler handler = new PoolMetrics.ParametrizedPoolMetricsHandler(raStats);
+                                        for (AttributeDefinition attribute : StatisticsResourceDefinition.getAttributesFromPlugin(raStats)){
+                                            raRegistration.registerMetric(attribute, handler);
                                         }
+                                        //adding enable/disable for pool stats
+                                        OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(raStats);
+                                        OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(raStats);
+                                        raRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
                                     }
                                     if (poolStats.getNames().size() != 0 && raRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
-                                        ManagementResourceRegistration cdSubRegistration = raRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
+                                        ManagementResourceRegistration cdSubRegistration = raRegistration.registerSubModel(new StatisticsResourceDefinition(peCD, CommonAttributes.RESOURCE_NAME, poolStats));
                                         final Resource cdResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
                                         if (!raResource.hasChild(peCD))
                                             raResource.registerChild(peCD, cdResource);
-
-                                        for (String statName : poolStats.getNames()) {
-                                            cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
-                                        }
-                                        cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
                                     }
 
                                     if (wm.getStatistics() != null) {

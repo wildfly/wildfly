@@ -94,7 +94,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             enableNode.get(OP_ADDR).add(DATASOURCE, name);
             updates.add(enableNode);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     /**
@@ -123,7 +123,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             updates.add(op);
         }
 
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     // Protected methods -----------------------------------------------------

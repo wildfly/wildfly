@@ -35,7 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -99,7 +99,7 @@ public class ReadMasterDomainModelUtil {
             PathAddress address = PathAddress.pathAddress(element);
             Resource original = domainRoot.getChild(element);
             if (original == null) {
-                throw HostControllerMessages.MESSAGES.noResourceFor(address);
+                throw HostControllerLogger.ROOT_LOGGER.noResourceFor(address);
             }
             Resource resource = transformers.transformResource(context, PathAddress.EMPTY_ADDRESS, original, true);
             util.describe(address, resource, util.describedResources, true);
@@ -140,7 +140,7 @@ public class ReadMasterDomainModelUtil {
             PathAddress address = PathAddress.pathAddress(element);
             Resource original = context.readResourceFromRoot(address);
             if (original == null) {
-                throw HostControllerMessages.MESSAGES.noResourceFor(address);
+                throw HostControllerLogger.ROOT_LOGGER.noResourceFor(address);
             }
             //TODO Look into why we need to get the child of the transformed resource
             Resource resource = transformers.transformResource(context, address, original, true).getChild(element);

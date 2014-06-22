@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -30,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -81,7 +81,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
             syntheticOp.get(attributeName).set(newValue);
             attributeDefinition.validateAndSet(syntheticOp, submodel);
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.unknownAttribute(attributeName)));
         }
         if (updateRuntime) {
             // Require a reload
@@ -105,7 +105,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                 final String attributeName = definition.getName();
                 final boolean has = model.hasDefined(attributeName);
                 if(! has && isRequired(definition, model)) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
+                    throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.required(attributeName)));
                 }
                 if(has) {
                     // Just ignore 'false'
@@ -128,7 +128,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
                                 }
                             }
                         }
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidAttributeCombo(attributeName, sb)));
+                        throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidAttributeCombo(attributeName, sb)));
                     }
                 }
             }

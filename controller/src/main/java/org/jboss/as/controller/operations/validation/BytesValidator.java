@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -67,10 +66,10 @@ public class BytesValidator extends ModelTypeValidator implements MinMaxValidato
         if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
             byte[] val = value.asBytes();
             if (val.length < min) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinSize(val.length, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMinSize(val.length, parameterName, min)));
             }
             else if (val.length > max) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxSize(val.length, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMaxSize(val.length, parameterName, max)));
             }
         }
     }

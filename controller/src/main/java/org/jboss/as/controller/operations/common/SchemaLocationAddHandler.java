@@ -19,10 +19,10 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 
 import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -93,7 +93,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler {
             String uriString = uri.asString();
             for (Property prop : locations.asPropertyList()) {
                 if (uriString.equals(prop.getName())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaAlreadyRegistered(uriString, prop.getValue().asString())));
+                    throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.schemaAlreadyRegistered(uriString, prop.getValue().asString())));
                 }
             }
         }

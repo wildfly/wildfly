@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -32,5 +30,5 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Paul Ferraro
  */
 public interface SessionManagerFactoryBuilder {
-    ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
+    ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration metaData);
 }

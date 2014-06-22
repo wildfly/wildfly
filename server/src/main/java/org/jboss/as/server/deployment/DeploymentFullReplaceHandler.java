@@ -26,6 +26,7 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONT
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.PERSISTENT;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
@@ -46,7 +47,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -95,7 +96,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 //        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
 //        boolean exists = root.hasChild(deploymentPath);
 //        if (!exists) {
-//            throw ServerMessages.MESSAGES.noSuchDeployment(name);
+//            throw ServerLogger.ROOT_LOGGER.noSuchDeployment(name);
 //        }
 
         final ModelNode deploymentModel = context.readResourceForUpdate(PathAddress.pathAddress(deploymentPath)).getModel();
@@ -134,7 +135,16 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         // deploymentModel.get(NAME).set(name); // already there
         deploymentModel.get(RUNTIME_NAME.getName()).set(runtimeName);
         deploymentModel.get(CONTENT).set(content);
-        // ENABLED stays as is
+        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
+        if (!operation.hasDefined(PERSISTENT.getName())) {
+            operation.get(PERSISTENT.getName()).set(true);
+        }
+        PERSISTENT.validateAndSet(operation, deploymentModel);
+
+        // ENABLED stays as is if not present in operation
+        if (operation.hasDefined(ENABLED.getName())) {
+            ENABLED.validateAndSet(operation, deploymentModel);
+        }
 
         // Do the runtime part if the deployment is enabled
         if (ENABLED.resolveModelAttribute(context, deploymentModel).asBoolean()) {
@@ -162,7 +172,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash) throws OperationFailedException {
         if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
         }
         return new DeploymentHandlerUtil.ContentItem(hash);
     }

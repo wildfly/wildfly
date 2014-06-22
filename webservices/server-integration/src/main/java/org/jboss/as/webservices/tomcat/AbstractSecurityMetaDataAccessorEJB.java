@@ -21,14 +21,12 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.WSLogger;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -187,7 +185,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     private void ensureSameDomains(final String oldSecurityDomain, final String newSecurityDomain) {
         final boolean domainsDiffer = !oldSecurityDomain.equals(newSecurityDomain);
         if (domainsDiffer)
-            throw MESSAGES.multipleSecurityDomainsDetected(oldSecurityDomain, newSecurityDomain);
+            throw WSLogger.ROOT_LOGGER.multipleSecurityDomainsDetected(oldSecurityDomain, newSecurityDomain);
     }
 
 }

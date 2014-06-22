@@ -24,21 +24,22 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -55,32 +56,37 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
+import org.wildfly.clustering.spi.LocalServiceInstaller;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+
 
 /**
- * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
+ * A {@link AbstractAddStepHandler} to handle the add operation for the EJB
  * remote service, in the EJB subsystem
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
+public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
     static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
     private EJB3RemoteServiceAdd() {
     }
 
-    // TODO why is this a boottime-only handler?
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         newControllers.addAll(installRuntimeServices(context, model, verificationHandler));
         // add ejb remote transactions repository service
         final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
@@ -125,6 +131,17 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             registryInstallerBuilder.addListener(verificationHandler);
         }
         services.add(registryInstallerBuilder.install());
+
+        // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
+        Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+        PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
+        if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))) {
+            // Install services that would normally be installed by this container/cache
+            ModuleIdentifier moduleId = Module.forClass(this.getClass()).getIdentifier();
+            for (LocalServiceInstaller installer: ServiceLoader.load(LocalServiceInstaller.class, LocalServiceInstaller.class.getClassLoader())) {
+                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, moduleId);
+            }
+        }
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
@@ -187,6 +204,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         if ("xnio".equals(optionType)) {
             return Options.class.getName();
         }
-        throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(optionType);
+        throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(optionType);
     }
 }

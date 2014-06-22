@@ -45,6 +45,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -63,6 +64,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
@@ -102,7 +104,7 @@ public class CommonAttributes {
             CLASS_NAME,
             JNDINAME,
             USE_JAVA_CONTEXT,
-            ENABLED,
+            ENABLED, CONNECTABLE, TRACKING,
             MAX_POOL_SIZE,
             INITIAL_POOL_SIZE,
             MIN_POOL_SIZE,

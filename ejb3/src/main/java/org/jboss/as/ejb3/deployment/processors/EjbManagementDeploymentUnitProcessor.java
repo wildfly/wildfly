@@ -23,7 +23,6 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
@@ -78,7 +77,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
                     installManagementResource(configuration, deploymentUnit);
                 }
             } catch (RuntimeException e) {
-                throw MESSAGES.failedToInstallManagementResource(e, configuration.getComponentName());
+                throw EjbLogger.ROOT_LOGGER.failedToInstallManagementResource(e, configuration.getComponentName());
             }
         }
     }

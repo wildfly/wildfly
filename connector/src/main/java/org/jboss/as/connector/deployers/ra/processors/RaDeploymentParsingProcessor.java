@@ -23,14 +23,13 @@
 package org.jboss.as.connector.deployers.ra.processors;
 
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Locale;
 
 import org.jboss.as.connector.deployers.Util;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -114,14 +113,14 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
                 raParser.setSystemPropertiesResolved(resolveProperties);
                 result = raParser.parse(xmlStream);
                 if (result == null)
-                    throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
+                    throw ConnectorLogger.ROOT_LOGGER.failedToParseServiceXml(serviceXmlFile);
             }
             File root = file.getPhysicalFile();
             URL url = root.toURI().toURL();
             return new ConnectorXmlDescriptor(result, root, url, deploymentName);
 
         } catch (Exception e) {
-            throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
+            throw ConnectorLogger.ROOT_LOGGER.failedToParseServiceXml(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

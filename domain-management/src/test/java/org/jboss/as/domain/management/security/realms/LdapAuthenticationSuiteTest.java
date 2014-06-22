@@ -40,11 +40,13 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -66,29 +68,39 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
     private static final String USER_ONE_PASSWORD = "one_password";
     private static final String USER_TWO = "user_two";
     private static final String USER_TWO_PASSWORD = "two_password";
+    private static final String USER_THREE = "referral_user_three";
+    private static final String USER_THREE_PASSWORD = "three_password";
+
+    private static boolean initialised;
+
+    @BeforeClass
+    public static void startLdapServer() throws Exception {
+        initialised = LdapTestSuite.startLdapServers(false);
+    }
+
+    @AfterClass
+    public static void stopLdapServer() throws Exception {
+        if (initialised) {
+            LdapTestSuite.stopLdapServers();
+        }
+    }
 
     @Test
     public void testConnection() throws Exception {
-        ConnectionManager connectionManager = getConnectionManager(CONNECTION_NAME);
+        LdapConnectionManager connectionManager = getConnectionManager(MASTER_CONNECTION_NAME);
         assertNotNull("Connection Manager.", connectionManager);
         // Configured Credentials.
         DirContext connection = (DirContext) connectionManager.getConnection();
         assertNotNull("Connection with configured credentials.", connection);
         connection.close();
         // Supplied Credentials.
-        connection = (DirContext) connectionManager.getConnection("uid=UserOne,dc=simple,dc=wildfly,dc=org","one_password");
-        assertNotNull("Connection with configured credentials.", connection);
-        connection.close();
+        connectionManager.verifyIdentity("uid=UserOne,dc=simple,dc=wildfly,dc=org","one_password");
 
         // Bad Supplied Credentials.
         try {
-            connectionManager.getConnection("uid=UserOne,dc=simple,dc=wildfly,dc=org","bad_password");
+            connectionManager.verifyIdentity("uid=UserOne,dc=simple,dc=wildfly,dc=org","bad_password");
             fail("Expected exception not thrown.");
         } catch (Exception ignored) {}
-    }
-
-    private ConnectionManager getConnectionManager(final String name) {
-        return (ConnectionManager) getContainer().getService(LdapConnectionManagerService.ServiceUtil.createServiceName(name)).getValue();
     }
 
     @Test
@@ -173,6 +185,18 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
         }
     }
 
+    @Test
+    public void testVerifyIgnoredReferral() throws Exception {
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+
+        NameCallback ncb = new NameCallback("Username", USER_THREE);
+        RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
+        VerifyPasswordCallback vpc = new VerifyPasswordCallback(USER_THREE_PASSWORD);
+
+        cbh.handle(new Callback[] { ncb, rcb, vpc });
+        assertFalse("Password Not Verified", vpc.isVerified());
+    }
+
     /*
      * Custom Realm, also filter by additional attribute.
      */
@@ -233,7 +257,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
         // We define a second realm here as well.
         bootOperations.add(SecurityRealmAddBuilder.builder(ADVANCED_REALM)
                 .authentication().ldap()
-                .setConnection(CONNECTION_NAME)
+                .setConnection(MASTER_CONNECTION_NAME)
                 .setBaseDn(BASE_DN)
                 .setAdvancedFilter(ADVANCED_FILTER)
                 .build().build().build());
@@ -243,7 +267,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
     protected void initialiseRealm(SecurityRealmAddBuilder builder) throws Exception {
         builder.authentication()
                 .ldap()
-                .setConnection(CONNECTION_NAME)
+                .setConnection(MASTER_CONNECTION_NAME)
                 .setBaseDn(BASE_DN)
                 .setUsernameFilter(USERNAME_FILTER)
                 .build().build();

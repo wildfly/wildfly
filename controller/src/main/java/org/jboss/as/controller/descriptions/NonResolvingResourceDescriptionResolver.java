@@ -118,4 +118,8 @@ public class NonResolvingResourceDescriptionResolver extends StandardResourceDes
         return operationName;
     }
 
+    @Override
+    public StandardResourceDescriptionResolver getChildResolver(String key) {
+        return new NonResolvingResourceDescriptionResolver();
+    }
 }

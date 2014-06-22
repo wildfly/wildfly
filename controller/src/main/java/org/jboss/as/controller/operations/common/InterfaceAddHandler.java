@@ -19,13 +19,13 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -68,11 +68,11 @@ public class InterfaceAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.required(attributeName)));
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attributeName)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalid(attributeName)));
             }
             definition.validateAndSet(operation, subModel);
         } else {

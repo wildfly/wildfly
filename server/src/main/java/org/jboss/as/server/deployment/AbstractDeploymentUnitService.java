@@ -25,7 +25,7 @@ package org.jboss.as.server.deployment;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;

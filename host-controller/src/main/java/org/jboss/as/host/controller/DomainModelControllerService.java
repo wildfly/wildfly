@@ -33,9 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.DOMAIN_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +99,7 @@ import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
@@ -284,7 +284,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
+    public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers,
+                                   final Long remoteConnectionId, final DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation,
+                                   boolean registerProxyController) throws SlaveRegistrationException {
         if (!hostControllerInfo.isMasterDomainController()) {
             throw SlaveRegistrationException.forHostIsNotMaster();
         }
@@ -304,15 +306,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         SlaveHostPinger pinger = remoteConnectionId == null ? null : new SlaveHostPinger(hostName, handler, pingScheduler, remoteConnectionId);
         hostRegistrationMap.put(hostName, new HostRegistration(remoteConnectionId, handler, pinger));
 
-        // Create the proxy controller
-        final TransformingProxyController hostControllerClient = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST, true);
-
-        modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         runtimeIgnoreTransformationRegistry.registerHost(hostName, runtimeIgnoreTransformation);
-        hostProxies.put(hostName, hostControllerClient);
-//        if (pinger != null) {
-//            pinger.schedulePing(SlaveHostPinger.STD_TIMEOUT, SlaveHostPinger.STD_INTERVAL);
-//        }
+
+        if (registerProxyController) {
+            // Create the proxy controller
+            final TransformingProxyController hostControllerClient = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST, true);
+
+            modelNodeRegistration.registerProxyController(pe, hostControllerClient);
+            hostProxies.put(hostName, hostControllerClient);
+        }
     }
 
     @Override
@@ -328,10 +330,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 if (hostRegistration.pinger != null) {
                     hostRegistration.pinger.cancel();
                 }
-                hostProxies.remove(id);
+                boolean registered = hostProxies.remove(id) != null;
                 runtimeIgnoreTransformationRegistry.unregisterHost(id);
                 modelNodeRegistration.unregisterProxyController(PathElement.pathElement(HOST, id));
-                DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
+                if (registered) {
+                    DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
+                }
             }
         }
 
@@ -350,7 +354,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = serverControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(1);
         if (modelNodeRegistration.getProxyController(pa) != null) {
-            throw MESSAGES.serverNameAlreadyRegistered(pe.getValue());
+            throw HostControllerLogger.ROOT_LOGGER.serverNameAlreadyRegistered(pe.getValue());
         }
         ROOT_LOGGER.registeringServer(pe.getValue());
         // Register the proxy
@@ -382,7 +386,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         ModelNode rsp = getValue().execute(operation, null, null, null);
         if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {
             ModelNode msgNode = rsp.get(FAILURE_DESCRIPTION);
-            String msg = msgNode.isDefined() ? msgNode.toString() : MESSAGES.failedProfileOperationsRetrieval();
+            String msg = msgNode.isDefined() ? msgNode.toString() : HostControllerLogger.ROOT_LOGGER.failedProfileOperationsRetrieval();
             throw new RuntimeException(msg);
         }
         return rsp.require(RESULT);
@@ -396,7 +400,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public HostFileRepository getRemoteFileRepository() {
         if (hostControllerInfo.isMasterDomainController()) {
-            throw MESSAGES.cannotAccessRemoteFileRepository();
+            throw HostControllerLogger.ROOT_LOGGER.cannotAccessRemoteFileRepository();
         }
         return remoteFileRepository;
     }
@@ -414,8 +418,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType, authorizer);
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
+        HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType, authorizer, modelControllerResource);
         VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
         CoreManagementResourceDefinition.registerDomainResource(rootResource, authorizer.getWritableAuthorizerConfiguration());
         this.modelNodeRegistration = rootRegistration;
@@ -464,13 +468,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     // Block for the ServerInventory
                     establishServerInventory(inventoryFuture);
 
-                    if ((discoveryOptions != null) && !discoveryOptions.isEmpty()) {
-                        connectToDomainMaster(serviceTarget, currentRunningMode);
-                    } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
+                    boolean discoveryConfigured = (discoveryOptions != null) && !discoveryOptions.isEmpty();
+                    if (currentRunningMode != RunningMode.ADMIN_ONLY) {
+                        if (discoveryConfigured) {
+                            connectToDomainMaster(serviceTarget, currentRunningMode);
+                        } else {
                             // Invalid configuration; no way to get the domain config
                             ROOT_LOGGER.noDomainControllerConfigurationProvided(currentRunningMode,
                                     CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY);
                             System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                        }
                     } else {
                         // We're in admin-only mode. See how we handle access control config
                         switch (hostControllerInfo.getAdminOnlyDomainConfigPolicy()) {
@@ -478,16 +485,28 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                 // our current setup is good
                                 break;
                             case FETCH_FROM_MASTER:
-                                connectToDomainMaster(serviceTarget, currentRunningMode);
+                                if (discoveryConfigured) {
+                                    connectToDomainMaster(serviceTarget, currentRunningMode);
+                                } else {
+                                    // Invalid configuration; no way to get the domain config
+                                    ROOT_LOGGER.noDomainControllerConfigurationProvidedForAdminOnly(
+                                            ModelDescriptionConstants.ADMIN_ONLY_POLICY,
+                                            AdminOnlyDomainConfigPolicy.REQUIRE_LOCAL_CONFIG,
+                                            CommandLineConstants.CACHED_DC, RunningMode.ADMIN_ONLY);
+                                    System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                                    break;
+                                }
                                 break;
-                            default:
+                            case REQUIRE_LOCAL_CONFIG:
                                 // Invalid configuration; no way to get the domain config
                                 ROOT_LOGGER.noAccessControlConfigurationAvailable(currentRunningMode,
                                         ModelDescriptionConstants.ADMIN_ONLY_POLICY,
                                         AdminOnlyDomainConfigPolicy.REQUIRE_LOCAL_CONFIG,
-                                        CommandLineConstants.ADMIN_ONLY, currentRunningMode);
+                                        CommandLineConstants.CACHED_DC, currentRunningMode);
                                 System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
                                 break;
+                            default:
+                                throw new IllegalStateException(hostControllerInfo.getAdminOnlyDomainConfigPolicy().toString());
                         }
                     }
 
@@ -516,7 +535,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     if (ok) {
                         InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry),
+                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry, environment.getDomainTempDir()),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
                                 HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
@@ -529,7 +548,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (ok) {
                 // Install the server > host operation handler
                 ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME,
-                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver);
+                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver, environment.getDomainTempDir());
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -592,11 +611,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         // the current impl is the latter. Don't change this without a discussion first, as the
         // current semantic is a reasonable one.
         try {
-            if (currentRunningMode == RunningMode.ADMIN_ONLY) {
-                masterDomainControllerClient.fetchDomainWideConfiguration();
-            } else {
-                masterDomainControllerClient.register();
-            }
+            masterDomainControllerClient.register();
         } catch (Exception e) {
             //We could not connect to the host
             ROOT_LOGGER.cannotConnectToMaster(e);
@@ -604,7 +619,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ROOT_LOGGER.fetchConfigFromDomainMasterFailed(currentRunningMode,
                         ModelDescriptionConstants.ADMIN_ONLY_POLICY,
                         AdminOnlyDomainConfigPolicy.REQUIRE_LOCAL_CONFIG,
-                        CommandLineConstants.ADMIN_ONLY);
+                        CommandLineConstants.CACHED_DC);
 
             }
             System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
@@ -690,7 +705,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         try {
             client.shutdown(exitCode);
         } catch (IOException e) {
-            throw MESSAGES.errorClosingDownHost(e);
+            throw HostControllerLogger.ROOT_LOGGER.errorClosingDownHost(e);
         }
     }
 
@@ -1001,5 +1016,5 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 OperationStepHandler step) {
             return internalExecute(operation, handler, control, attachments, step, true);
         }
-    };
+    }
 }

@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller.mgmt;
 
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -62,20 +63,22 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     private final ServerToHostProtocolHandler.OperationExecutor operationExecutor;
     private final DomainController domainController;
     private final ExpressionResolver expressionResolver;
+    private final File tempDir;
 
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("server-registration-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
     private volatile ExecutorService registrations;
 
-    ServerToHostOperationHandlerFactoryService(ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController, ExpressionResolver expressionResolver) {
+    ServerToHostOperationHandlerFactoryService(ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController, ExpressionResolver expressionResolver, File tempDir) {
         this.executorService = executorService;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
         this.expressionResolver = expressionResolver;
+        this.tempDir = tempDir;
     }
 
     public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController,
-            ExpressionResolver expressionResolver) {
-        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, operationExecutor, domainController, expressionResolver);
+            ExpressionResolver expressionResolver, File tempDir) {
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, operationExecutor, domainController, expressionResolver, tempDir);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
             .addDependency(serverInventoryName, ServerInventory.class, serverToHost.serverInventory)
             .install();
@@ -106,6 +109,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     @Override
     public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler channelHandler = new ManagementChannelHandler(channel, executorService);
+        channelHandler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         final ServerToHostProtocolHandler registrationHandler = new ServerToHostProtocolHandler(serverInventory.getValue(), operationExecutor, domainController, channelHandler, registrations, expressionResolver);
         channelHandler.addHandlerFactory(new ManagementPongRequestHandler());
         channelHandler.addHandlerFactory(registrationHandler);

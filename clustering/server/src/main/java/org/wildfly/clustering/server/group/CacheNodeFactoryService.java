@@ -21,54 +21,49 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.group.Node;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.spi.ChannelServiceNames;
 
 /**
  * {@link CacheNodeFactory} implementation that delegates node creation to the channel node factory
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryService extends AbstractService<CacheNodeFactory> implements CacheNodeFactory {
+public class CacheNodeFactoryService implements Service<CacheNodeFactory> {
 
-    private final Value<ChannelNodeFactory> factory;
-
-    public CacheNodeFactoryService(Value<ChannelNodeFactory> factory) {
-        this.factory = factory;
+    public static ServiceBuilder<CacheNodeFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+        CacheNodeFactoryService service = new CacheNodeFactoryService();
+        return target.addService(name, service)
+                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(containerName), ChannelNodeFactory.class, service.factory)
+        ;
     }
 
-    @Override
-    public Node createNode(Address address) {
-        return this.factory.getValue().createNode(toJGroupsAddress(address));
-    }
+    private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
 
-    @Override
-    public void invalidate(Collection<Address> addresses) {
-        if (!addresses.isEmpty()) {
-            List<org.jgroups.Address> jgroupsAddresses = new ArrayList<>(addresses.size());
-            for (Address address: addresses) {
-                jgroupsAddresses.add(toJGroupsAddress(address));
-            }
-            this.factory.getValue().invalidate(jgroupsAddresses);
-        }
+    private volatile CacheNodeFactory value = null;
+
+    private CacheNodeFactoryService() {
+        // Hide
     }
 
     @Override
     public CacheNodeFactory getValue() {
-        return this;
+        return this.value;
     }
 
-    private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if (address instanceof JGroupsAddress) {
-            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
-            return jgroupsAddress.getJGroupsAddress();
-        }
-        throw new IllegalArgumentException(address.toString());
+    @Override
+    public void start(StartContext context) {
+        this.value = new CacheNodeFactoryImpl(this.factory.getValue());
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        this.value = null;
     }
 }

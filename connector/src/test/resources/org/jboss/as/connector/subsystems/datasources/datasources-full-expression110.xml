@@ -1,7 +1,7 @@
 <subsystem xmlns="urn:jboss:domain:datasources:1.1">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
-                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}">
+                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}" >
             <connection-url>
                 ${test.expr:jdbc:h2:mem:test;DB_CLOSE_DELAY=-1}
             </connection-url>

@@ -22,20 +22,22 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
@@ -44,9 +46,9 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
+public class SessionExpirationScheduler implements Scheduler {
 
-    final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
+    final Map<String, Future<?>> expirationFutures = Collections.synchronizedMap(new HashMap<String, Future<?>>());
     final Batcher batcher;
     final Remover<String> remover;
     private final ScheduledExecutorService executor;
@@ -72,8 +74,8 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
     }
 
     @Override
-    public void cancel(ImmutableSession session) {
-        Future<?> future = this.expirationFutures.remove(session.getId());
+    public void cancel(String sessionId) {
+        Future<?> future = this.expirationFutures.remove(sessionId);
         if (future != null) {
             future.cancel(false);
         }
@@ -83,15 +85,34 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
     public void schedule(ImmutableSession session) {
         long timeout = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
         if (timeout > 0) {
+            long lastAccessed = session.getMetaData().getLastAccessedTime().getTime();
+            long delay = Math.max(lastAccessed + timeout - System.currentTimeMillis(), 0);
             String id = session.getId();
+            Runnable task = new ExpirationTask(id);
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
-            this.expirationFutures.put(id, this.executor.schedule(new ExpirationTask(id), timeout, TimeUnit.MILLISECONDS));
+            this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+        }
+    }
+
+    @Override
+    public void cancel(Locality locality) {
+        synchronized (this.expirationFutures) {
+            Iterator<Map.Entry<String, Future<?>>> entries = this.expirationFutures.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<String, Future<?>> entry = entries.next();
+                String sessionId = entry.getKey();
+                if (!locality.isLocal(sessionId)) {
+                    entry.getValue().cancel(false);
+                    entries.remove();
+                }
+            }
         }
     }
 
     @Override
     public void close() {
         this.executor.shutdown();
+        this.expirationFutures.clear();
     }
 
     private class ExpirationTask implements Runnable {

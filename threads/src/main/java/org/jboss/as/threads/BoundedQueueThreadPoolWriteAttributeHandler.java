@@ -72,7 +72,7 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
             pool.setAllowCoreTimeout(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT.resolveModelAttribute(context, model).asBoolean());
         } else if (!forRollback) {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedBoundedQueueThreadPoolAttribute(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedBoundedQueueThreadPoolAttribute(attributeName);
         }
     }
 
@@ -82,7 +82,7 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw ThreadsMessages.MESSAGES.boundedQueueThreadPoolServiceNotFound(serviceName);
+            throw ThreadsLogger.ROOT_LOGGER.boundedQueueThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

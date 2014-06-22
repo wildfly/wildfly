@@ -31,6 +31,7 @@ import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 
 /**
@@ -40,7 +41,7 @@ import java.util.Map;
  */
 public class ServiceContainerHelper {
     // Mapping of service controller mode changes that appropriate for toggling to a given controller state
-    private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<State, Map<Mode, Mode>>(State.class);
+    private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<>(State.class);
     static {
         Map<Mode, Mode> map = new EnumMap<>(Mode.class);
         map.put(Mode.NEVER, Mode.ACTIVE);
@@ -53,12 +54,21 @@ public class ServiceContainerHelper {
         modeToggle.put(State.DOWN, map);
 
         map = new EnumMap<>(Mode.class);
-        for (Mode mode: Mode.values()) {
-            if (mode != Mode.REMOVE) {
-                map.put(mode, Mode.REMOVE);
-            }
+        for (Mode mode: EnumSet.complementOf(EnumSet.of(Mode.REMOVE))) {
+            map.put(mode, Mode.REMOVE);
         }
         modeToggle.put(State.REMOVED, map);
+    }
+
+    /**
+     * Returns the value of the specified service, if the service exists and is started.
+     * @param registry the service registry
+     * @param name the service name
+     * @return the service value, if the service exists and is started, null otherwise
+     */
+    public static <T> T findValue(ServiceRegistry registry, ServiceName name) {
+        ServiceController<T> service = findService(registry, name);
+        return ((service != null) && (service.getState() == State.UP)) ? service.getValue() : null;
     }
 
     /**

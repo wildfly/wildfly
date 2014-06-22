@@ -26,8 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.rmi.AttributeAnalysis;
 import org.jboss.as.jacorb.rmi.ConstantAnalysis;
 import org.jboss.as.jacorb.rmi.ContainerAnalysis;
@@ -217,12 +216,12 @@ public class InterfaceRepository {
     private TypeCode getConstantTypeCode(Class cls)
             throws IRConstructionException {
         if (cls == null)
-            throw JacORBMessages.MESSAGES.invalidNullClass();
+            throw JacORBLogger.ROOT_LOGGER.invalidNullClass();
 
         TypeCode ret = constantTypeCodeMap.get(cls);
 
         if (ret == null)
-            throw JacORBMessages.MESSAGES.badClassForConstant(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.badClassForConstant(cls.getName());
         return ret;
     }
 
@@ -241,7 +240,7 @@ public class InterfaceRepository {
     private TypeCode getTypeCode(Class cls)
             throws IRConstructionException, RMIIIOPViolationException {
         if (cls == null)
-            throw JacORBMessages.MESSAGES.invalidNullClass();
+            throw JacORBLogger.ROOT_LOGGER.invalidNullClass();
 
         TypeCode ret = (TypeCode) typeCodeMap.get(cls);
 
@@ -264,7 +263,7 @@ public class InterfaceRepository {
                 ret = (TypeCode) typeCodeMap.get(cls);
 
                 if (ret == null)
-                    throw JacORBMessages.MESSAGES.unknownTypeCodeForClass(cls.getName());
+                    throw JacORBLogger.ROOT_LOGGER.unknownTypeCodeForClass(cls.getName());
                 else
                     return ret;
             }
@@ -284,12 +283,12 @@ public class InterfaceRepository {
     private void addTypeCode(Class cls, TypeCode typeCode)
             throws IRConstructionException {
         if (cls == null)
-            throw JacORBMessages.MESSAGES.invalidNullClass();
+            throw JacORBLogger.ROOT_LOGGER.invalidNullClass();
 
         TypeCode tc = (TypeCode) typeCodeMap.get(cls);
 
         if (tc != null)
-            throw JacORBMessages.MESSAGES.duplicateTypeCodeForClass(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.duplicateTypeCodeForClass(cls.getName());
 
         typeCodeMap.put(cls, typeCode);
     }
@@ -482,7 +481,7 @@ public class InterfaceRepository {
         if (contained instanceof LocalContainer)
             next = (LocalContainer) contained;
         else if (contained != null)
-            throw JacORBMessages.MESSAGES.collisionWhileCreatingPackage();
+            throw JacORBLogger.ROOT_LOGGER.collisionWhileCreatingPackage();
 
         if (next == null) {
             String id = "IDL:" + previous + ":1.0";
@@ -498,7 +497,7 @@ public class InterfaceRepository {
             next = (LocalContainer) c._lookup(base); // Better be there now...
         } else // Check that next _is_ a module
             if (next.def_kind() != DefinitionKind.dk_Module)
-                throw JacORBMessages.MESSAGES.collisionWhileCreatingPackage();
+                throw JacORBLogger.ROOT_LOGGER.collisionWhileCreatingPackage();
 
         return ensurePackageExists(next, previous, remainder);
     }
@@ -664,7 +663,7 @@ public class InterfaceRepository {
     private ValueBoxDefImpl addArray(Class cls)
             throws RMIIIOPViolationException, IRConstructionException {
         if (!cls.isArray())
-            throw JacORBMessages.MESSAGES.classIsNotArray(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.classIsNotArray(cls.getName());
 
         ValueBoxDefImpl vbDef;
 
@@ -711,7 +710,7 @@ public class InterfaceRepository {
                 typeName = "double";
                 typeCode = orb.get_primitive_tc(TCKind.tk_double);
             } else {
-                throw JacORBMessages.MESSAGES.unknownPrimitiveType(compType.getName());
+                throw JacORBLogger.ROOT_LOGGER.unknownPrimitiveType(compType.getName());
             }
 
             moduleName = "org.omg.boxedRMI";

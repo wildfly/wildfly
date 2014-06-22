@@ -58,6 +58,8 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
+
+        CLITestSuite.createSupport(RolloutPlanTestCase.class.getSimpleName());
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
         war.addClass(RolloutPlanTestServlet.class);
         String tempDir = System.getProperty("java.io.tmpdir");
@@ -108,6 +110,8 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         waitUntilState("main-two", "DISABLED");
 
         AbstractCliTestBase.closeCLI();
+
+        CLITestSuite.stopSupport();
     }
 
     @After

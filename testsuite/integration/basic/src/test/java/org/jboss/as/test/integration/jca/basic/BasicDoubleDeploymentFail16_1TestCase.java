@@ -89,7 +89,7 @@ public class BasicDoubleDeploymentFail16_1TestCase extends ContainerResourceMgmt
             final ModelNode result = executeOperation(operationListToCompositeOperation(operations),false);
             Assert.assertTrue(!Operations.isSuccessfulOutcome(result));
             final String failureDescription = result.get("result").get("step-1").get("failure-description").asString();
-            Assert.assertTrue(failureDescription.startsWith("JBAS014803: Duplicate resource"));
+            Assert.assertTrue(failureDescription.startsWith("WFLYCTL0212: Duplicate resource"));
         }
 
         @Override

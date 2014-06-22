@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IDLType;
 import org.omg.CORBA.IDLTypeHelper;
@@ -62,7 +62,7 @@ class ValueBoxDefImpl extends TypedefDefImpl implements ValueBoxDefOperations {
             original_type_def = IDLTypeImpl.getIDLType(type().content_type(),
                     repository);
         } catch (BadKind ex) {
-            throw JacORBMessages.MESSAGES.badKindForTypeCode(type().kind().value());
+            throw JacORBLogger.ROOT_LOGGER.badKindForTypeCode(type().kind().value());
         }
 
         getReference();
@@ -73,7 +73,7 @@ class ValueBoxDefImpl extends TypedefDefImpl implements ValueBoxDefOperations {
     }
 
     public void original_type_def(IDLType arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     /**

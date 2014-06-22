@@ -45,13 +45,10 @@ import org.jboss.msc.service.ServiceName;
  */
 class SecurityRoleAdd extends AbstractAddStepHandler {
 
-    static final SecurityRoleAdd INSTANCE = new SecurityRoleAdd();
+    static final SecurityRoleAdd INSTANCE = new SecurityRoleAdd(SecurityRoleDefinition.ATTRIBUTES);
 
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for(final AttributeDefinition attribute : SecurityRoleDefinition.ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
-        }
+    private SecurityRoleAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.metadata.model;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.webservices.logging.WSLogger;
 
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
@@ -57,7 +57,7 @@ abstract class AbstractDeployment {
         final String className = ep.getClassName();
         if (urlPatternToClassMapping.keySet().contains((urlPattern))) {
             final String clazz = urlPatternToClassMapping.get(urlPattern);
-            throw MESSAGES.sameUrlPatternRequested(clazz, urlPattern, ep.getClassName());
+            throw WSLogger.ROOT_LOGGER.sameUrlPatternRequested(clazz, urlPattern, ep.getClassName());
         } else {
             urlPatternToClassMapping.put(urlPattern, className);
             pojoEndpoints.add(ep);

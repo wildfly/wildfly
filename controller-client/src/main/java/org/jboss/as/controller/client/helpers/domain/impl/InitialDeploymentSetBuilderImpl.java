@@ -22,10 +22,9 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.InitialDeploymentSetBuilder;
 
 
@@ -59,7 +58,7 @@ public class InitialDeploymentSetBuilderImpl extends DeploymentPlanBuilderImpl i
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         long period = timeUnit.toMillis(timeout);
         if (currentSet.isShutdown() && period != currentSet.getGracefulShutdownTimeout()) {
-            throw MESSAGES.gracefulShutdownAlreadyConfigured(currentSet.getGracefulShutdownTimeout());
+            throw ControllerClientLogger.ROOT_LOGGER.gracefulShutdownAlreadyConfigured(currentSet.getGracefulShutdownTimeout());
         }
         DeploymentSetPlanImpl newSet = currentSet.setGracefulTimeout(period);
         return new InitialDeploymentSetBuilderImpl(this, newSet);

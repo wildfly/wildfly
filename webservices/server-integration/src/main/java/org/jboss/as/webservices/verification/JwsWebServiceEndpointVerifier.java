@@ -22,8 +22,6 @@
 
 package org.jboss.as.webservices.verification;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -34,6 +32,7 @@ import javax.jws.WebMethod;
 
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.webservices.logging.WSLogger;
 
 /**
  * Verifies the structural correctness of JSR-181 style web services.
@@ -149,7 +148,7 @@ public final class JwsWebServiceEndpointVerifier {
 
         @Override
         public void logFailure() {
-            ROOT_LOGGER.finalizeMethodNotAllowed(endpointClass);
+            WSLogger.ROOT_LOGGER.finalizeMethodNotAllowed(endpointClass);
         }
 
     }
@@ -162,7 +161,7 @@ public final class JwsWebServiceEndpointVerifier {
 
         @Override
         public void logFailure() {
-            ROOT_LOGGER.webMethodMustNotBeStaticOrFinal(failedMethod);
+            WSLogger.ROOT_LOGGER.webMethodMustNotBeStaticOrFinal(failedMethod);
         }
 
     }
@@ -175,7 +174,7 @@ public final class JwsWebServiceEndpointVerifier {
 
         @Override
         public void logFailure() {
-            ROOT_LOGGER.webMethodMustBePublic(failedMethod);
+            WSLogger.ROOT_LOGGER.webMethodMustBePublic(failedMethod);
         }
 
     }
@@ -188,7 +187,7 @@ public final class JwsWebServiceEndpointVerifier {
 
         @Override
         public void logFailure() {
-            ROOT_LOGGER.webServiceMethodNotFound(endpointClass, failedMethod);
+            WSLogger.ROOT_LOGGER.webServiceMethodNotFound(endpointClass, failedMethod);
         }
 
     }
@@ -204,7 +203,7 @@ public final class JwsWebServiceEndpointVerifier {
 
         @Override
         public void logFailure() {
-            ROOT_LOGGER.accessibleWebServiceMethodNotFound(endpointClass, failedMethod, securityException);
+            WSLogger.ROOT_LOGGER.accessibleWebServiceMethodNotFound(endpointClass, failedMethod, securityException);
         }
 
     }

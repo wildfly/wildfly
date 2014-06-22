@@ -29,7 +29,7 @@ import java.net.UnknownHostException;
 import java.util.UUID;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -125,7 +125,7 @@ public abstract class ProcessEnvironment {
                 InetAddress localhost = InetAddressUtil.getLocalHost();
                 result = UUID.nameUUIDFromBytes(localhost.getAddress()).toString();
             } catch (UnknownHostException e) {
-                throw ControllerMessages.MESSAGES.cannotResolveProcessUUID(e);
+                throw ControllerLogger.ROOT_LOGGER.cannotResolveProcessUUID(e);
             }
         } else {
             result = unresolvedName;

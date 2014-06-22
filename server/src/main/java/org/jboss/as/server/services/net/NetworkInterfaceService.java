@@ -38,8 +38,7 @@ import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.OverallInterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.network.NetworkInterfaceBinding;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -93,7 +92,7 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
             throw new StartException(e);
         }
         if (this.interfaceBinding == null) {
-            throw ServerMessages.MESSAGES.failedToResolveInterface(name);
+            throw ServerLogger.ROOT_LOGGER.failedToResolveInterface(name);
         }
         log.debugf("NetworkInterfaceService matched interface binding: %s\n", interfaceBinding);
     }

@@ -21,19 +21,26 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+
+import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
+import org.jgroups.JChannel;
+import org.jgroups.jmx.JmxConfigurator;
 
 /**
  * Provides a channel for use by dependent services.
@@ -48,13 +55,22 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         return SERVICE_NAME.append(id);
     }
 
-    private final Value<ChannelFactory> factory;
+    public static ServiceBuilder<Channel> build(ServiceTarget target, String id, String stack) {
+        ChannelService service = new ChannelService(id);
+        return target.addService(getServiceName(id), service)
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, service.factory)
+                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
+        ;
+    }
+
+    private final InjectedValue<MBeanServer> server = new InjectedValue<>();
+    private final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
     private final String id;
+
     private volatile Channel channel;
 
-    public ChannelService(String id, Value<ChannelFactory> factory) {
+    private ChannelService(String id) {
         this.id = id;
-        this.factory = factory;
     }
 
     @Override
@@ -70,13 +86,14 @@ public class ChannelService implements Service<Channel>, ChannelListener {
             this.channel.addChannelListener(this);
             // Don't connect the channel here
             // This will be done by Infinispan (see AS7-5904)
+            JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.id);
         } catch (Exception e) {
             throw new StartException(e);
         }
 
-        if  (ROOT_LOGGER.isTraceEnabled())  {
+        if (ROOT_LOGGER.isTraceEnabled())  {
             String output = this.channel.getProtocolStack().printProtocolSpec(true);
-            ROOT_LOGGER.tracef("JGroups channel named %s created with configuration:\n %s", this.id, output);
+            ROOT_LOGGER.tracef("JGroups channel %s created with configuration:\n %s", this.id, output);
         }
     }
 
@@ -85,6 +102,11 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         if (this.channel != null) {
             this.channel.removeChannelListener(this);
             this.channel.close();
+            try {
+                JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.id);
+            } catch (Exception e) {
+                ROOT_LOGGER.debug(e.getMessage(), e);
+            }
         }
         this.channel = null;
     }
@@ -103,7 +125,7 @@ public class ChannelService implements Service<Channel>, ChannelListener {
             String name = channel.getName(address);
             if ((name != null) && name.equals(localName) && !address.equals(localAddress)) {
                 channel.close();
-                throw JGroupsMessages.MESSAGES.duplicateNodeName(this.factory.getValue().getProtocolStackConfiguration().getEnvironment().getNodeName());
+                throw JGroupsLogger.ROOT_LOGGER.duplicateNodeName(this.factory.getValue().getProtocolStackConfiguration().getEnvironment().getNodeName());
             }
         }
     }

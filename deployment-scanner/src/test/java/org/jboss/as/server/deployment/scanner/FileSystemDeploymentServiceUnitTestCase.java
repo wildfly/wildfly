@@ -5,15 +5,16 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +52,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -1007,8 +1009,6 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
-        byte[] newbytes = ts.controller.deployed.get("foo.war");
-        assertFalse(Arrays.equals(newbytes, bytes));
     }
 
     @Test
@@ -1036,6 +1036,97 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(dodeploy.exists());
         assertFalse(deployed.exists());
 
+    }
+
+    @Test
+    public void testUndeployDeployExternalDeployment() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+
+        //Undeploy externally
+        assertTrue(undeployed.createNewFile());
+        undeployed.setLastModified(war.lastModified());
+        assertTrue(deployed.delete());
+        ts.controller.deployed.clear();
+        ts.controller.added.clear();
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+
+        //Deploy externally loaded deployment
+        ts.controller.added.put("foo.war", bytes);
+        ts.controller.deployed.put("foo.war", bytes);
+        ts.controller.externallyDeployed.add("foo.war");
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+    }
+
+    @Test
+    public void testUndeployDeploy() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+
+        //Undeploy externally
+        assertTrue(undeployed.createNewFile());
+        undeployed.setLastModified(war.lastModified());
+        assertTrue(deployed.delete());
+        ts.controller.deployed.clear();
+        ts.controller.added.clear();
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+
+        //Deploy externally the current deployment
+        ts.controller.added.put("foo.war", bytes);
+        ts.controller.deployed.put("foo.war", bytes);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
     }
 
     // FIXME remove this marker used to make it easy to find these tests in the IDE
@@ -1697,6 +1788,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         private final List<Response> responses = new ArrayList<Response>(1);
         private final Map<String, byte[]> added = new HashMap<String, byte[]>();
         private final Map<String, byte[]> deployed = new HashMap<String, byte[]>();
+        private final Set<String> externallyDeployed = new HashSet<String>();
 
         @Override
         public ModelNode execute(ModelNode operation) throws IOException {
@@ -1884,6 +1976,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
             result.setEmptyObject();
             for (String deployment : added.keySet()) {
                 result.get(deployment, ENABLED).set(deployed.containsKey(deployment));
+                result.get(deployment, PERSISTENT).set(externallyDeployed.contains(deployment));
             }
             return content;
         }

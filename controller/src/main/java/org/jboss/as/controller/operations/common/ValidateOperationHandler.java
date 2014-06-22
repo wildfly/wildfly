@@ -21,7 +21,6 @@
 */
 package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -31,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Collections;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationDefinition;
@@ -130,7 +130,7 @@ public class ValidateOperationHandler implements OperationStepHandler {
         } else {
             try {
                 if (authorize(context, op, operation).getDecision() == Decision.DENY) {
-                    context.getFailureDescription().set(MESSAGES.managementResourceNotFoundMessage(addr));
+                    context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.managementResourceNotFoundMessage(addr));
                 } else {
                     new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);
                 }

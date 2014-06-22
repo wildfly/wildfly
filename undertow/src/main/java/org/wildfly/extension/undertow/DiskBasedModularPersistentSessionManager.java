@@ -30,6 +30,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.IoUtils;
 
 import java.io.File;
@@ -73,11 +74,11 @@ public class DiskBasedModularPersistentSessionManager extends AbstractPersistent
         baseDir = new File(pathManager.getValue().resolveRelativePathEntry(path, pathRelativeTo));
         if (!baseDir.exists()) {
             if (!baseDir.mkdirs()) {
-                throw UndertowMessages.MESSAGES.failedToCreatePersistentSessionDir(baseDir);
+                throw UndertowLogger.ROOT_LOGGER.failedToCreatePersistentSessionDir(baseDir);
             }
         }
         if (!baseDir.isDirectory()) {
-            throw UndertowMessages.MESSAGES.invalidPersistentSessionDir(baseDir);
+            throw UndertowLogger.ROOT_LOGGER.invalidPersistentSessionDir(baseDir);
         }
     }
 

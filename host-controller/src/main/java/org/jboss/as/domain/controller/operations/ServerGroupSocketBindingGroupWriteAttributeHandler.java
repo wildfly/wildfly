@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
@@ -73,7 +73,7 @@ public class ServerGroupSocketBindingGroupWriteAttributeHandler extends ModelOnl
             context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(ServerGroupResourceDefinition.SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
         } catch (Exception e) {
             if (master) {
-                throw DomainControllerMessages.MESSAGES.noSocketBindingGroupCalled(socketBindingGroup);
+                throw DomainControllerLogger.ROOT_LOGGER.noSocketBindingGroupCalled(socketBindingGroup);
             } else {
                 //We are a slave HC and we don't have the socket-binding-group required, so put the slave and the server into reload-required
                 context.reloadRequired();

@@ -33,7 +33,7 @@ import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
 import org.jboss.jca.common.api.metadata.common.CommonValidation;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
+import org.jboss.jca.common.api.metadata.common.v12.CommonConnDef;
 import org.jboss.jca.common.api.validator.ValidateException;
 
 
@@ -71,6 +71,10 @@ public class ModifiableConnDef implements CommonConnDef {
 
     private final Boolean enlistment;
 
+    private final Boolean connectable;
+
+    private final Boolean tracking;
+
 
     /**
      * Create a new ConnectionDefinition.
@@ -90,7 +94,8 @@ public class ModifiableConnDef implements CommonConnDef {
      */
     public ModifiableConnDef(Map<String, String> configProperties, String className, String jndiName,
                              String poolName, Boolean enabled, Boolean useJavaContext, Boolean useCcm, CommonPool pool, CommonTimeOut timeOut,
-                             CommonValidation validation, CommonSecurity security, Recovery recovery, Boolean sharable, Boolean enlistment) throws ValidateException {
+                             CommonValidation validation, CommonSecurity security, Recovery recovery, Boolean sharable, Boolean enlistment,
+                             final Boolean connectable, final Boolean tracking) throws ValidateException {
         super();
         if (configProperties != null) {
             this.configProperties = new ConcurrentHashMap<String, String>(configProperties.size());
@@ -111,6 +116,8 @@ public class ModifiableConnDef implements CommonConnDef {
         this.recovery = recovery;
         this.sharable = sharable;
         this.enlistment = enlistment;
+        this.connectable = connectable;
+        this.tracking = tracking;
 
     }
 
@@ -403,5 +410,15 @@ public class ModifiableConnDef implements CommonConnDef {
     @Override
     public Boolean isEnlistment() {
         return enlistment;
+    }
+
+    @Override
+    public Boolean isConnectable() {
+        return connectable;
+    }
+
+    @Override
+    public Boolean isTracking() {
+        return tracking;
     }
 }

@@ -21,8 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -36,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
@@ -59,6 +56,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -128,6 +126,10 @@ public abstract class AbstractOperationTestCase {
 
         public int getHttpManagementPort() {
             return 0;
+        }
+
+        public String getHttpManagementSecureInterface() {
+            return null;
         }
 
         public int getHttpManagementSecurePort() {
@@ -410,11 +412,11 @@ public abstract class AbstractOperationTestCase {
             while (i.hasNext()) {
                 final PathElement element = i.next();
                 if (element.isMultiTarget()) {
-                    throw MESSAGES.cannotWriteTo("*");
+                    throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
                 }
                 if (!i.hasNext()) {
                     if (model.hasChild(element)) {
-                        throw MESSAGES.duplicateResourceAddress(relativeAddress);
+                        throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(relativeAddress);
                     } else {
                         model.registerChild(element, toAdd);
                         model = toAdd;
@@ -429,7 +431,7 @@ public abstract class AbstractOperationTestCase {
                                 break;
                             }
                         }
-                        throw MESSAGES.resourceNotFound(ancestor, relativeAddress);
+                        throw ControllerLogger.ROOT_LOGGER.resourceNotFound(ancestor, relativeAddress);
                     }
                 }
             }
@@ -711,10 +713,6 @@ public abstract class AbstractOperationTestCase {
         public void unregisterOverrideModel(String name) {
         }
 
-        public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
-
-        }
-
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
 
         }
@@ -750,14 +748,6 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-
-        }
-
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-
-        }
-
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
 
         }
@@ -766,23 +756,11 @@ public abstract class AbstractOperationTestCase {
 
         }
 
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-
-        }
-
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
 
         }
 
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-
-        }
-
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
-
-        }
-
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
 
         }
 

@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.NoSuchElementException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -180,7 +181,7 @@ public abstract class RestartParentResourceHandlerBase implements OperationStepH
                 removeServices(context, serviceName, invalidatedParentModel);
                 recreateParentService(context, address, parentModel, null);
             } catch (OperationFailedException e) {
-                throw ControllerMessages.MESSAGES.failedToRecoverServices(e);
+                throw ControllerLogger.ROOT_LOGGER.failedToRecoverServices(e);
             }
         }
     }

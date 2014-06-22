@@ -25,8 +25,7 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.SERVER_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
@@ -42,7 +41,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given address is matches
@@ -61,7 +60,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
 
     public InetAddressMatchInterfaceCriteria(final InetAddress address) {
         if (address == null)
-            throw MESSAGES.nullVar("address");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("address");
         this.resolved = address;
         this.address = resolved.getHostAddress();
     }
@@ -76,7 +75,7 @@ public class InetAddressMatchInterfaceCriteria extends AbstractInterfaceCriteria
      */
     public InetAddressMatchInterfaceCriteria(final String address) {
         if (address == null || address.isEmpty() || address.trim().isEmpty()) {
-            throw MESSAGES.nullVar("address");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("address");
         }
         this.address = address;
     }

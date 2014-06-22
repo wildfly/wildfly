@@ -34,7 +34,6 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_PORT;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
@@ -59,6 +58,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -138,7 +138,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
         for(ModelNode connectorRef:connectorRefs.asList()){
             final String connectorName = connectorRef.asString();
             if(!availableConnectors.contains(connectorName)){
-                throw MESSAGES.wrongConnectorRefInBroadCastGroup(broadCastGroup,connectorName,availableConnectors);
+                throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(broadCastGroup, connectorName, availableConnectors);
             }
         }
     }

@@ -32,7 +32,7 @@ import java.rmi.UnexpectedException;
 
 import javax.rmi.PortableRemoteObject;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
@@ -164,7 +164,7 @@ public class StubStrategy {
                         new ExceptionReader(clz, excepIds[i]);
                 exceptionMap.put(exceptionReader.getReposId(), exceptionReader);
             } catch (ClassNotFoundException e) {
-                throw JacORBMessages.MESSAGES.errorLoadingClass(excepTypes[i], e);
+                throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(excepTypes[i], e);
             }
         }
 
@@ -176,7 +176,7 @@ public class StubStrategy {
             try {
                 retvalRemoteInterface = cl.loadClass(retvalType.substring(1));
             } catch (ClassNotFoundException e) {
-                throw JacORBMessages.MESSAGES.errorLoadingClass(retvalType.substring(1), e);
+                throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(retvalType.substring(1), e);
             }
         }
     }
@@ -191,7 +191,7 @@ public class StubStrategy {
         int len = params.length;
 
         if (len != paramWriters.length) {
-            throw JacORBMessages.MESSAGES.errorMashalingParams();
+            throw JacORBLogger.ROOT_LOGGER.errorMashalingParams();
         }
         for (int i = 0; i < len; i++) {
             Object param = params[i];
@@ -322,13 +322,13 @@ public class StubStrategy {
                             helperClass.getMethod("id", null);
                     this.reposId = (String) idMethod.invoke(null, null);
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw JacORBMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
+                    throw JacORBLogger.ROOT_LOGGER.noReadMethodInHelper(helperClassName, e);
                 } catch (IllegalAccessException e) {
-                    throw JacORBMessages.MESSAGES.unexpectedException(e);
+                    throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw JacORBMessages.MESSAGES.unexpectedException(e.getTargetException());
+                    throw JacORBLogger.ROOT_LOGGER.unexpectedException(e.getTargetException());
                 }
             } else {
                 // This ExceptionReader does not correspond to an IDL-defined
@@ -349,9 +349,9 @@ public class StubStrategy {
                 try {
                     return (Exception) readMethod.invoke(null, new Object[]{in});
                 } catch (IllegalAccessException e) {
-                    throw JacORBMessages.MESSAGES.unexpectedException(e);
+                    throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw JacORBMessages.MESSAGES.errorUnmarshaling(IDLEntity.class, e.getTargetException());
+                    throw JacORBLogger.ROOT_LOGGER.errorUnmarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 in.read_string(); // read and discard the repository id

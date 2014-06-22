@@ -29,15 +29,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
+import org.jboss.msc.service.StartException;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,11 +59,12 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         serviceRegistry = registry;
     }
 
-    void acquire() {
-        // does nothing
-    }
-
-    void release() {
+    /**
+     * Log a report of any problematic container state changes and reset container state change history
+     * so another run of this method or of {@link #awaitContainerStateChangeReport(long, java.util.concurrent.TimeUnit)}
+     * will produce a report not including any changes included in a report returned by this run.
+     */
+    void logContainerStateChangesAndReset() {
         ContainerStateChangeReport changeReport = createContainerStateChangeReport(true);
 
         if (changeReport != null) {
@@ -75,31 +79,72 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         controller.removeListener(this);
     }
 
-    void awaitUninterruptibly() {
-        boolean interruped = false;
+    /**
+     * Await service container stability ignoring thread interruption.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    void awaitStabilityUninterruptibly(long timeout, TimeUnit timeUnit) throws TimeoutException {
+        boolean interrupted = false;
         try {
+            long toWait = timeUnit.toMillis(timeout);
+            long msTimeout = System.currentTimeMillis() + toWait;
             while (true) {
+                if (interrupted) {
+                    toWait = msTimeout - System.currentTimeMillis();
+                }
                 try {
-                    monitor.awaitStability(failed, problems);
+                    if (toWait <= 0 || !monitor.awaitStability(toWait, TimeUnit.MILLISECONDS, failed, problems)) {
+                        throw new TimeoutException();
+                    }
                     break;
                 } catch (InterruptedException e) {
-                    interruped = true;
+                    interrupted = true;
                 }
             }
         } finally {
-            if (interruped) {
+            if (interrupted) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    void await() throws InterruptedException {
-        monitor.awaitStability(failed, problems);
+    /**
+     * Await service container stability.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @throws java.lang.InterruptedException if the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    void awaitStability(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        if (!monitor.awaitStability(timeout, timeUnit, failed, problems)) {
+            throw new TimeoutException();
+        }
     }
 
-    ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
-        monitor.awaitStability(failed, problems);
-        return createContainerStateChangeReport(false);
+    /**
+     * Await service container stability and then report on container state changes. Does not reset change history,
+     * so another run of this method with no intervening call to {@link #logContainerStateChangesAndReset()}
+     * will produce a report including any changes included in a report returned by the first run.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @return a change report, or {@code null} if there is nothing to report
+     *
+     * @throws java.lang.InterruptedException if the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    ContainerStateChangeReport awaitContainerStateChangeReport(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        if (monitor.awaitStability(timeout, timeUnit, failed, problems)) {
+            return createContainerStateChangeReport(false);
+        }
+        throw new TimeoutException();
     }
 
     /**
@@ -164,33 +209,35 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     private synchronized String createChangeReportLogMessage(ContainerStateChangeReport changeReport) {
 
         final StringBuilder msg = new StringBuilder();
-        msg.append(MESSAGES.serviceStatusReportHeader());
+        msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportHeader());
         if (!changeReport.getMissingServices().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportDependencies());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportDependencies());
             for (Map.Entry<ServiceName, MissingDependencyInfo> entry : changeReport.getMissingServices().entrySet()) {
                 if (!entry.getValue().isUnavailable()) {
-                    msg.append(MESSAGES.serviceStatusReportMissing(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportMissing(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 } else {
-                    msg.append(MESSAGES.serviceStatusReportUnavailable(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportUnavailable(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 }
             }
         }
         if (!changeReport.getNoLongerMissingServices().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportCorrected());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportCorrected());
             for (Map.Entry<ServiceName, Boolean> entry : changeReport.getNoLongerMissingServices().entrySet()) {
                 if (entry.getValue()) {
-                    msg.append(MESSAGES.serviceStatusReportAvailable(entry.getKey()));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportAvailable(entry.getKey()));
                 } else {
-                    msg.append(MESSAGES.serviceStatusReportNoLongerRequired(entry.getKey()));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportNoLongerRequired(entry.getKey()));
                 }
             }
         }
         if (!changeReport.getFailedControllers().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportFailed());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportFailed());
             for (ServiceController<?> controller : changeReport.getFailedControllers()) {
                 msg.append("      ").append(controller.getName());
-                if (controller.getStartException() != null) {
-                    msg.append(": ").append(controller.getStartException().toString());
+                //noinspection ThrowableResultOfMethodCallIgnored
+                final StartException startException = controller.getStartException();
+                if (startException != null) {
+                    msg.append(": ").append(startException.toString());
                 }
                 msg.append('\n');
             }
@@ -244,7 +291,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 ret.append(", ");
                 ++count;
             }
-            ret.append(MESSAGES.andNMore(serviceNames.size() - 3));
+            ret.append(ControllerLogger.ROOT_LOGGER.andNMore(serviceNames.size() - 3));
             ret.append(" ]");
             return ret.toString();
         }

@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-jaxr}"/>
     </resources>
 
     <dependencies>

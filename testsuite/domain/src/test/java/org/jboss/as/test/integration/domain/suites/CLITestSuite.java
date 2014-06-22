@@ -21,13 +21,11 @@
  */
 package org.jboss.as.test.integration.domain.suites;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
@@ -35,8 +33,6 @@ import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRunti
 import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
-import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
-import org.jboss.as.test.integration.domain.management.cli.WildCardReadsTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -49,20 +45,16 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    BasicOpsTestCase.class,
-    DeployAllServerGroupsTestCase.class,
-    DomainDeploymentOverlayTestCase.class,
-    DeploySingleServerGroupTestCase.class,
-    UndeployWildcardDomainTestCase.class,
-    JmsTestCase.class,
-    DataSourceTestCase.class,
-    RolloutPlanTestCase.class,
-    DomainDeployWithRuntimeNameTestCase.class,
-    WildCardReadsTestCase.class
+        JmsTestCase.class,
+        DeployAllServerGroupsTestCase.class,
+        DeploySingleServerGroupTestCase.class,
+        DomainDeploymentOverlayTestCase.class,
+        RolloutPlanTestCase.class,
+        DomainDeployWithRuntimeNameTestCase.class,
+        DataSourceTestCase.class
 })
 public class CLITestSuite {
 
-    private static DomainTestSupport domainSupport;
     public static final Map<String, String[]> hostServers = new HashMap<String, String[]>();
     public static final Map<String, String> hostAddresses = new HashMap<String, String>();
     public static final Map<String, String[]> serverGroups = new HashMap<String, String[]>();
@@ -70,13 +62,43 @@ public class CLITestSuite {
     public static final Map<String, String[]> serverProfiles = new HashMap<String, String[]>();
     public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
 
+    private static boolean initializedLocally = false;
+    private static volatile DomainTestSupport support;
+
+    // This can only be called from tests as part of this suite
+    public static synchronized DomainTestSupport createSupport(final String testName) {
+        if(support == null) {
+            start(testName);
+        }
+        return support;
+    }
+
+    // This can only be called from tests as part of this suite
+    public static synchronized void stopSupport() {
+        if(! initializedLocally) {
+            stop();
+        }
+    }
+
+    private static synchronized void start(final String name) {
+        try {
+            support = DomainTestSupport.createAndStartDefaultSupport(name);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static synchronized void stop() {
+        if(support != null) {
+            support.stop();
+            support = null;
+        }
+    }
+
     @BeforeClass
     public static void initSuite() throws Exception {
-        DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(CLITestSuite.class.getSimpleName(),
-                "domain-configs"+ File.separatorChar+"domain-standard.xml", "host-configs"+File.separatorChar+"host-master.xml",
-                "host-configs"+File.separatorChar+"host-slave.xml");
-        domainSupport = DomainTestSupport.create(configuration);
-        domainSupport.start();
+        initializedLocally = true;
+        start(CLITestSuite.class.getSimpleName());
 
         hostServers.put("master", new String[]{"main-one", "main-two", "other-one"});
         hostServers.put("slave", new String[]{"main-three", "main-four", "other-two"});
@@ -108,7 +130,7 @@ public class CLITestSuite {
 
     @AfterClass
     public static void tearDownSuite() {
-        domainSupport.stop();
+        stop();
     }
 
     public static void addServer(String serverName, String hostName, String groupName, String profileName, int portOffset, boolean status) {

@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import static org.jboss.as.server.ServerMessages.MESSAGES;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,7 @@ import org.jboss.as.controller.HashUtil;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.repository.LocalDeploymentFileRepository;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -82,7 +81,7 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     public CompositeContentRepository getValue() throws IllegalStateException, IllegalArgumentException {
         final RemoteFileRepositoryExecutor executor = this.remoteFileRepositoryExecutor;
         if (executor == null) {
-            throw MESSAGES.couldNotFindHcFileRepositoryConnection();
+            throw ServerLogger.ROOT_LOGGER.couldNotFindHcFileRepositoryConnection();
         }
         return this;
     }
@@ -134,7 +133,7 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     private File getFile(final String relativePath, final byte repoId) {
         final RemoteFileRepositoryExecutor executor = this.remoteFileRepositoryExecutor;
         if (executor == null) {
-            throw MESSAGES.couldNotFindHcFileRepositoryConnection();
+            throw ServerLogger.ROOT_LOGGER.couldNotFindHcFileRepositoryConnection();
         }
         return remoteFileRepositoryExecutor.getFile(relativePath, repoId, localDeploymentFolder);
     }

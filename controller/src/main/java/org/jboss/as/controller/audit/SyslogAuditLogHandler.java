@@ -25,14 +25,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.KeyStore;
+import java.util.logging.ErrorManager;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import org.jboss.as.controller.interfaces.InetAddressUtil;
 
+import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.logmanager.ExtLogRecord;
 import org.jboss.logmanager.Level;
@@ -68,6 +70,9 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     private volatile String tlsClientCertStoreRelativeTo;
     private volatile String tlsClientCertStorePassword;
     private volatile String tlsClientCertStoreKeyPassword;
+    private volatile TransportErrorManager errorManager;
+    private volatile int reconnectTimeout = -1;
+    private volatile long lastErrorTime = -1;
 
     public SyslogAuditLogHandler(String name, String formatterName, int maxFailureCount, PathManagerService pathManager) {
         super(name, formatterName, maxFailureCount);
@@ -157,6 +162,21 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         this.tlsClientCertStoreKeyPassword = tlsClientCertStoreKeyPassword;
     }
 
+    public void setReconnectTimeout(int reconnectTimeout) {
+        this.reconnectTimeout = reconnectTimeout;
+    }
+
+    @Override
+    boolean isActive() {
+        if (hasTooManyFailures()) {
+            if (reconnectTimeout >= 0) {
+                long end = lastErrorTime + reconnectTimeout * 1000;
+                return System.currentTimeMillis() > end;
+            }
+            return false;
+        }
+        return true;
+    }
 
     @Override
     void initialize() {
@@ -189,6 +209,9 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
 
             //Common for all protocols
             handler.setSyslogType(syslogType);
+
+            errorManager = new TransportErrorManager();
+            handler.setErrorManager(errorManager);
 
             if (transport != Transport.UDP){
                 if (messageTransfer == MessageTransfer.NON_TRANSPARENT_FRAMING) {
@@ -252,9 +275,34 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
 
     }
 
+    private boolean isReconnect() {
+        return hasTooManyFailures() && isActive();
+    }
+
+    FailureCountHandler getFailureCountHandler() {
+        return isReconnect() ? new ReconnectFailureCountHandler() : super.getFailureCountHandler();
+    }
+
     @Override
     void writeLogItem(String formattedItem) throws IOException {
-        handler.publish(new ExtLogRecord(Level.WARN, formattedItem, SyslogAuditLogHandler.class.getName()));
+        boolean reconnect =  isReconnect();
+        if (!reconnect) {
+            handler.publish(new ExtLogRecord(Level.WARN, formattedItem, SyslogAuditLogHandler.class.getName()));
+            errorManager.getAndThrowError();
+        } else {
+            ControllerLogger.MGMT_OP_LOGGER.attemptingReconnectToSyslog(name, reconnectTimeout);
+            try {
+                //Reinitialise the delegating syslog handler
+                stop();
+                initialize();
+                handler.publish(new ExtLogRecord(Level.WARN, formattedItem, SyslogAuditLogHandler.class.getName()));
+                errorManager.getAndThrowError();
+                lastErrorTime = -1;
+            } catch (Exception e) {
+                lastErrorTime = System.currentTimeMillis();
+                errorManager.throwAsIoOrRuntimeException(e);
+            }
+        }
     }
 
     @Override
@@ -390,4 +438,35 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
     }
 
+    private class TransportErrorManager extends ErrorManager {
+        private volatile Exception error;
+
+        public TransportErrorManager() {
+        }
+
+        @Override
+        public synchronized void error(String msg, Exception ex, int code) {
+            error = ex;
+            lastErrorTime = System.currentTimeMillis();
+        }
+
+        void getAndThrowError() throws IOException {
+            Exception error = this.error;
+            this.error = null;
+
+            if (error != null) {
+                throwAsIoOrRuntimeException(error);
+            }
+        }
+
+        void throwAsIoOrRuntimeException(Throwable t) throws IOException {
+            if (t instanceof IOException) {
+                throw (IOException)error;
+            }
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException)error;
+            }
+            throw new RuntimeException(error);
+        }
+    }
 }

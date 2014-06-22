@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.util.Date;
 
 import javax.ejb.ScheduleExpression;
@@ -44,6 +42,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
@@ -182,7 +181,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                         }
                     });
                 } else {
-                    throw MESSAGES.timerIsActive(timer.getId());
+                    throw EjbLogger.ROOT_LOGGER.timerIsActive(timer.getId());
                 }
             }
         });
@@ -356,12 +355,15 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
         void executeRuntime(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final String opName = operation.require(ModelDescriptionConstants.OP).asString();
             if (!opName.equals(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION)) {
-                throw MESSAGES.unknownOperations(opName);
+                throw EjbLogger.ROOT_LOGGER.unknownOperations(opName);
             }
 
             final TimerImpl timer = getTimer(context, operation);
 
-            readAttribute(timer, context.getResult());
+            if(timer != null) {
+                //the timer can expire at any point, so protect against an NPE
+                readAttribute(timer, context.getResult());
+            }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 

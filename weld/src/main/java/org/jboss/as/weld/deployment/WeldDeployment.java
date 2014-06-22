@@ -34,7 +34,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
@@ -50,6 +50,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Abstract implementation of {@link CDI11Deployment}.
@@ -214,8 +215,8 @@ public class WeldDeployment implements CDI11Deployment {
 
     @Override
     public synchronized BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
+        ClassLoader moduleClassLoader = WildFlySecurityManager.getClassLoaderPrivileged(beanClass);
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            ClassLoader moduleClassLoader = bda.getClassLoader();
             if (bda.getBeanClasses().contains(beanClass.getName()) && moduleClassLoader != null && moduleClassLoader.equals(beanClass.getClassLoader())) {
                 return bda;
             }
@@ -225,8 +226,8 @@ public class WeldDeployment implements CDI11Deployment {
          * not come from a BDA. Let's try to find an existing BDA that uses the same classloader
          * (and thus has the required accessibility to other BDAs)
          */
-        if (additionalBeanDeploymentArchivesByClassloader.containsKey(beanClass.getClassLoader())) {
-            return additionalBeanDeploymentArchivesByClassloader.get(beanClass.getClassLoader());
+        if (additionalBeanDeploymentArchivesByClassloader.containsKey(moduleClassLoader)) {
+            return additionalBeanDeploymentArchivesByClassloader.get(moduleClassLoader);
         }
         return null;
     }

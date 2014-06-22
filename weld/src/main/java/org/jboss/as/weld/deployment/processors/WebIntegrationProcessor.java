@@ -38,7 +38,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.WeldStartService;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -46,6 +47,7 @@ import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.servlet.ConversationFilter;
 import org.jboss.weld.servlet.WeldInitialListener;
 import org.jboss.weld.servlet.WeldTerminalListener;
@@ -110,6 +112,9 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
             WeldLogger.DEPLOYMENT_LOGGER.debug("Not installing Weld web tier integration as no merged web metadata found");
             return;
         }
+
+        final ServiceName weldStartService = (deploymentUnit.getParent() != null ? deploymentUnit.getParent() : deploymentUnit).getServiceName().append(WeldStartService.SERVICE_NAME);
+        warMetaData.addAdditionalDependency(weldStartService);
 
         List<ListenerMetaData> listeners = webMetaData.getListeners();
         if (listeners == null) {

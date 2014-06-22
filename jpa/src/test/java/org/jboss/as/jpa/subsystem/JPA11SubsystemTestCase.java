@@ -40,6 +40,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -128,12 +129,12 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelNode op = Util.getWriteAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
                 CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE,
-                new ModelNode().setExpression("${xxxx:SHALLOW}"));
+                new ModelNode().set(new ValueExpression("${xxxx:SHALLOW}")));
         ModelTestUtils.checkFailed(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
 
         op = Util.getWriteAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)),
                 CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE,
-                new ModelNode().setExpression("SHALLOW"));
+                new ModelNode().set(new ValueExpression("SHALLOW")));
         ModelTestUtils.checkFailed(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
 
         op = Util.getUndefineAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)), CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);

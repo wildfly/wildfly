@@ -23,10 +23,9 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.List;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -36,7 +35,7 @@ public class ParametersOfValidator implements ParameterValidator, MinMaxValidato
 
     public ParametersOfValidator(final ParametersValidator delegate) {
         if (delegate == null)
-            throw MESSAGES.nullVar("delegate");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("delegate");
         this.delegate = delegate;
     }
 
@@ -45,7 +44,7 @@ public class ParametersOfValidator implements ParameterValidator, MinMaxValidato
         try {
             delegate.validate(value);
         } catch (OperationFailedException e) {
-            final ModelNode failureDescription = new ModelNode().add(MESSAGES.validationFailed(parameterName));
+            final ModelNode failureDescription = new ModelNode().add(ControllerLogger.ROOT_LOGGER.validationFailed(parameterName));
             failureDescription.add(e.getFailureDescription());
             throw new OperationFailedException(e.getMessage(), e.getCause(), failureDescription);
         }

@@ -26,17 +26,13 @@ import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.messaging.CommonAttributes.BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
@@ -44,6 +40,10 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
+import static org.jboss.as.messaging.test.MessagingDependencies.getHornetQDependencies;
+import static org.jboss.as.messaging.test.MessagingDependencies.getMessagingGAV;
+import static org.jboss.as.messaging.test.ModelFixers.FIXER_1_1_0;
+import static org.jboss.as.messaging.test.ModelFixers.FIXER_1_2_0;
 import static org.jboss.as.messaging.test.TransformerUtils.concat;
 import static org.jboss.as.messaging.test.TransformerUtils.createChainedConfig;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_0;
@@ -84,6 +84,7 @@ import org.jboss.as.messaging.DiscoveryGroupDefinition;
 import org.jboss.as.messaging.DivertDefinition;
 import org.jboss.as.messaging.GroupingHandlerDefinition;
 import org.jboss.as.messaging.HTTPAcceptorDefinition;
+import org.jboss.as.messaging.HTTPConnectorDefinition;
 import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
@@ -100,7 +101,6 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -225,11 +225,11 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testMessageCounterEnabled() throws Exception {
-        standardSubsystemTest("subsystem_2_0_message_counter.xml");
+        standardSubsystemTest("subsystem_2_0_message_counter.xml", false);
     }
     protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
-        String transformed = original.replace("message-counter-enabled", "statistics-enabled");
-        ModelTestUtils.compareXml(transformed, marshalled);
+        // XML from messaging 2.0 does not have the same output than 3.0
+        return;
     }
 
     private void clusteredTo120Test(ModelVersion version120, KernelServices mainServices, boolean clustered) throws OperationFailedException {
@@ -318,7 +318,13 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR), TransportParamDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR), TransportParamDefinition.PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.ACCEPTOR)),
@@ -441,7 +447,13 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR), pathElement(CommonAttributes.PARAM)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH, pathElement(CommonAttributes.PARAM)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
@@ -491,7 +503,13 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR), TransportParamDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH, TransportParamDefinition.PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
@@ -509,9 +527,9 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource(xmlFileName);
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(getMessagingGAV(controllerVersion))
                 .configureReverseControllerCheck(null, fixer)
-                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
+                .addMavenResourceURL(getHornetQDependencies(controllerVersion));
         return builder;
     }
 
@@ -520,9 +538,9 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_2_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(getMessagingGAV(controllerVersion))
                 .configureReverseControllerCheck(null, fixer)
-                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
+                .addMavenResourceURL(getHornetQDependencies(controllerVersion));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -531,38 +549,4 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         checkSubsystemModelTransformation(mainServices, messagingVersion);
     }
 
-    private static final ModelFixer FIXER_1_1_0 = new ModelFixer() {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // Since AS7-5417, messaging's paths resources are always created.
-            // however for legacy version, they were only created if the path attributes were different from the defaults.
-            // The 'empty' hornetq-server does not set any messaging's path so we discard them to "fix" the model and
-            // compare the current and legacy versions
-            for (String serverWithDefaultPath  : new String[] {"empty", "stuff"}) {
-                if (modelNode.get(HORNETQ_SERVER).has(serverWithDefaultPath)) {
-                    modelNode.get(HORNETQ_SERVER, serverWithDefaultPath, PATH).set(new ModelNode());
-                }
-            }
-            return modelNode;
-        }
-    };
-
-    private static final ModelFixer FIXER_1_2_0 = new ModelFixer() {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // Since AS7-5417, messaging's paths resources are always created.
-            // however for legacy version, they were only created if the path attributes were different from the defaults.
-            // The 'empty' hornetq-server does not set any messaging's path so we discard them to "fix" the model and
-            // compare the current and legacy versions
-            for (String serverWithDefaultPath  : new String[] {"empty", "stuff"}) {
-                if (modelNode.get(HORNETQ_SERVER).has(serverWithDefaultPath)) {
-                    modelNode.get(HORNETQ_SERVER, serverWithDefaultPath, PATH).set(new ModelNode());
-                }
-            }
-            if (modelNode.get(HORNETQ_SERVER).has("default")) {
-                modelNode.get(HORNETQ_SERVER, "default", BRIDGE, "bridge1", FAILOVER_ON_SERVER_SHUTDOWN.getName()).set(true);
-            }
-            return modelNode;
-        }
-    };
 }

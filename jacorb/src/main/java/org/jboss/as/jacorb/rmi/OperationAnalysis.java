@@ -28,8 +28,7 @@ import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 
-import org.jboss.as.jacorb.JacORBMessages;
-
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Operation analysis.
@@ -79,8 +78,7 @@ public class OperationAnalysis  extends AbstractAnalysis {
                 a.add(ExceptionAnalysis.getExceptionAnalysis(ex[i])); // map this
         }
         if (!gotRemoteException && Remote.class.isAssignableFrom(method.getDeclaringClass()))
-            throw JacORBMessages.MESSAGES.badRMIIIOPMethodSignature(getJavaName(), method.getDeclaringClass().getName(),
-                    "1.2.3");
+            throw JacORBLogger.ROOT_LOGGER.badRMIIIOPMethodSignature(getJavaName(), method.getDeclaringClass().getName(), "1.2.3");
         final ExceptionAnalysis[] exceptions = new ExceptionAnalysis[a.size()];
         mappedExceptions = (ExceptionAnalysis[]) a.toArray(exceptions);
 

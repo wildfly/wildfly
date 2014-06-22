@@ -51,8 +51,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 
@@ -164,7 +163,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
                     if (ENABLED.resolveModelAttribute(context, otherDepl).asBoolean()) {
                         String otherRuntimeName = getRuntimeName(reName, otherDepl);
                         if (runtimeName.equals(otherRuntimeName)) {
-                            throw ServerMessages.MESSAGES.runtimeNameMustBeUnique(reName, runtimeName);
+                            throw ServerLogger.ROOT_LOGGER.runtimeNameMustBeUnique(reName, runtimeName);
                         }
                     }
                 }
@@ -188,10 +187,10 @@ public class DeploymentAddHandler implements OperationStepHandler {
                     ServerLogger.DEPLOYMENT_LOGGER.reportAdminOnlyMissingDeploymentContent(HashUtil.bytesToHexString(hash), deploymentName);
 
                 } else {
-                    throw ServerMessages.MESSAGES.noSuchDeploymentContentAtBoot(HashUtil.bytesToHexString(hash), deploymentName);
+                    throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContentAtBoot(HashUtil.bytesToHexString(hash), deploymentName);
                 }
             } else {
-                throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+                throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
             }
         }
         return new DeploymentHandlerUtil.ContentItem(hash);

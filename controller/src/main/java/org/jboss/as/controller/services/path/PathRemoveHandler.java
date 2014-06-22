@@ -19,14 +19,14 @@
 package org.jboss.as.controller.services.path;
 
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.READ_ONLY;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -79,7 +79,7 @@ public class PathRemoveHandler implements OperationStepHandler {
         final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         if (model.get(READ_ONLY.getName()).asBoolean(false)) {
-            throw ControllerMessages.MESSAGES.cannotRemoveReadOnlyPath(name);
+            throw ControllerLogger.ROOT_LOGGER.cannotRemoveReadOnlyPath(name);
         }
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);

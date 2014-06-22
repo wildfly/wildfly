@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition.Provider;
 import org.jboss.dmr.ModelNode;
 
@@ -87,7 +87,7 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
                 public Void run() throws OperationFailedException {
                     final ModelChecker checker = new ModelChecker(context, context.readResource(PathAddress.EMPTY_ADDRESS));
                     if (checker.isRbacEnabled() && (checker.doRoleMappingsExist() == false)) {
-                        throw MESSAGES.inconsistentRbacConfiguration();
+                        throw DomainManagementLogger.ROOT_LOGGER.inconsistentRbacConfiguration();
                     }
 
                     context.stepCompleted();

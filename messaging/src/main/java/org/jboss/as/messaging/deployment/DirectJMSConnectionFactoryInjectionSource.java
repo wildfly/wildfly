@@ -47,7 +47,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttribute;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryConfigProperties;

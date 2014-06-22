@@ -134,7 +134,7 @@ public class InterleavedSubsystemTestCase {
         }
 
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
             /*ManagementResourceRegistration extensions = rootRegistration.registerSubModel(PathElement.pathElement(EXTENSION), ModelControllerImplUnitTestCase.DESC_PROVIDER);

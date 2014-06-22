@@ -23,20 +23,28 @@
 package org.jboss.as.messaging;
 
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.jboss.as.messaging.QueueDefinition.forwardToRuntimeQueue;
+import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.EnumSet;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -52,29 +60,69 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     public static final String LIST_SCHEDULED_MESSAGES = "list-scheduled-messages";
     public static final String LIST_SCHEDULED_MESSAGES_AS_JSON = "list-scheduled-messages-as-json";
 
+    private static final AttributeDefinition MESSAGE_ID = create(CommonAttributes.MESSAGE_ID, LONG)
+            .build();
+
+    private static class TypeValidator extends ModelTypeValidator implements AllowedValuesValidator {
+
+
+        private TypeValidator() {
+            super(ModelType.INT);
+        }
+
+        @Override
+        public List<ModelNode> getAllowedValues() {
+            List<ModelNode> values = new ArrayList<>();
+            values.add(new ModelNode(0));
+            values.add(new ModelNode(2));
+            values.add(new ModelNode(3));
+            values.add(new ModelNode(4));
+            values.add(new ModelNode(5));
+            values.add(new ModelNode(6));
+            return values;
+        }
+    };
+
     private QueueControlHandler() {
-        super(new ModelTypeValidator(ModelType.LONG));
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        super.registerOperations(registry);
+    protected AttributeDefinition getMessageIDAttributeDefinition() {
+        return MESSAGE_ID;
+    }
 
-        final EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
+    @Override
+    protected AttributeDefinition[] getReplyMessageParameterDefinitions() {
+        return new AttributeDefinition[] {
+                createNonEmptyStringAttribute("messageID"),
+                createNonEmptyStringAttribute("userID"),
+                createNonEmptyStringAttribute("address"),
+                create("type", INT)
+                        .setValidator(new TypeValidator())
+                        .build(),
+                create("durable", INT)
+                        .build(),
+                create("expiration", LONG)
+                        .build(),
+                create("priority", INT)
+                        .setValidator(PRIORITY_VALIDATOR)
+                        .build()
+        };
+    }
 
-        registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListScheduledMessages(locale);
-            }
-        }, flags);
+    @Override
+    public void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        super.registerOperations(registry, resolver);
 
-        registry.registerOperationHandler(LIST_SCHEDULED_MESSAGES_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_SCHEDULED_MESSAGES_AS_JSON, "queue", ModelType.STRING, true);
-            }
-        }, flags);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(getReplyMessageParameterDefinitions())
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SCHEDULED_MESSAGES_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
     }
 
     /*
@@ -124,15 +172,12 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
         // no-op
     }
 
-
-    @Override
-    public boolean isJMS() {
-        return false;
-    }
-
     @Override
     protected DelegatingQueueControl<QueueControl> getQueueControl(HornetQServer hqServer, String queueName) {
         final QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
+        if (control == null) {
+            return null;
+        }
         return new DelegatingQueueControl<QueueControl>() {
 
             public QueueControl getDelegate() {

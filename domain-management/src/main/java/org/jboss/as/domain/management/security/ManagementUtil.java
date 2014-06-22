@@ -24,7 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -85,7 +85,7 @@ public class ManagementUtil {
         UserDomainCallbackHandler cbh = getUserDomainCallbackHandler(context, operation);
         if (cbh != null) {
             PathAddress authAddress = getXmlAuthenticationAddress(operation);
-            Resource root = forRollback ? context.getOriginalRootResource() : context.getRootResource();
+            Resource root = forRollback ? context.getOriginalRootResource() : context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
             ModelNode userMap;
             try {
                 Resource authResource = root.navigate(authAddress);

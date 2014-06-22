@@ -65,7 +65,7 @@ import org.junit.runner.RunWith;
 /**
  * Tests for {@link org.jboss.security.auth.spi.DatabaseServerLoginModule}. It uses embedded H2 database as a datastore for
  * users and roles.
- * 
+ *
  * @author Jan Lanik
  * @author Josef Cacek
  */
@@ -94,7 +94,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Creates WAR for test login module with default settings.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP1)
@@ -104,7 +104,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Creates WAR for test login module with MD5 hashing enabled.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP2)
@@ -114,7 +114,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Creates WAR for test login module with MD5 hashing enabled - Base64 coding used.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP3)
@@ -124,7 +124,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Creates WAR for test login module with MD5 hashing enabled - HEX coding used.
-     * 
+     *
      * @return
      */
     @Deployment(name = DEP4)
@@ -172,7 +172,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Tests access to a protected servlet.
-     * 
+     *
      * @param url
      * @throws MalformedURLException
      * @throws ClientProtocolException
@@ -194,7 +194,7 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} (WAR) for given deployment name.
-     * 
+     *
      * @param deployment
      * @return
      */
@@ -218,14 +218,14 @@ public class DatabaseLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -246,7 +246,7 @@ public class DatabaseLoginModuleTestCase {
 
         /**
          * Generates common login module options.
-         * 
+         *
          * @param deployment
          * @return
          */

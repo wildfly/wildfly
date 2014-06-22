@@ -26,7 +26,6 @@ import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUPING_HANDLER_
 import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUP_TIMEOUT;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.REAPER_PERIOD;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.TIMEOUT;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
 
@@ -42,6 +41,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -56,9 +56,10 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class GroupingHandlerAdd extends AbstractAddStepHandler {
 
-    public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd();
+    public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd(GroupingHandlerDefinition.ATTRIBUTES);
 
-    private GroupingHandlerAdd() {
+    private GroupingHandlerAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
         if (hqService != null) {
             final HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
             if (hqServer.getGroupingHandler() != null) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
+                throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
             }
             // the groupingHandler is added as a child of the hornetq-server resource. Requires a reload to restart the hornetq server with the grouping-handler
             if (context.isNormalServer()) {

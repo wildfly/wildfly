@@ -29,6 +29,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
@@ -39,9 +40,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link org.jboss.invocation.Interceptor} which manages {@link javax.transaction.Synchronization} semantics on an entity bean.
@@ -91,7 +90,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                         final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
                         component.getCache().release(instance, true);
                         lock.unlock();
-                        throw MESSAGES.instanceWasRemoved(component.getComponentName(), primaryKey);
+                        throw EjbLogger.ROOT_LOGGER.instanceWasRemoved(component.getComponentName(), primaryKey);
                     }
                 }
 
@@ -214,7 +213,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 }
                 releaseInstance(componentInstance, success);
             } catch (Exception e) {
-                EJB3_LOGGER.exceptionReleasingEntity(e);
+                EjbLogger.ROOT_LOGGER.exceptionReleasingEntity(e);
             } finally {
                 componentInstance.getLock().popOwner();
             }
@@ -229,9 +228,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
          *
          * @param instance The Entity component instance involved in the transaction
          * @param t        The {@link Throwable throwable}
-         * @return
          */
-        private Error handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
+        private void handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
             ROOT_LOGGER.discardingEntityComponent(instance, t);
             try {
                 // discard the Entity instance

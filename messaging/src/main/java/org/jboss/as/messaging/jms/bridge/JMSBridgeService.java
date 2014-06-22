@@ -22,8 +22,7 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -31,7 +30,7 @@ import java.util.concurrent.RejectedExecutionException;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.jms.bridge.JMSBridge;
-import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -56,7 +55,7 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
-            throw MESSAGES.nullVar("bridge");
+            throw MessagingLogger.ROOT_LOGGER.nullVar("bridge");
         }
         this.moduleName = moduleName;
         this.bridgeName = bridgeName;
@@ -80,7 +79,7 @@ class JMSBridgeService implements Service<JMSBridge> {
 
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MESSAGES.failedToCreate(e, "JMS Bridge"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "JMS Bridge"));
                 }
             }
         };

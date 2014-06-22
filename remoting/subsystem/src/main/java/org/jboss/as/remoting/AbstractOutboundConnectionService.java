@@ -22,7 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
 
@@ -32,6 +31,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -102,7 +102,7 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
                     NameCallback ncb = (NameCallback) current;
                     ncb.setName("anonymous");
                 } else {
-                    throw MESSAGES.unsupportedCallback(current);
+                    throw RemotingLogger.ROOT_LOGGER.unsupportedCallback(current);
                 }
             }
         }

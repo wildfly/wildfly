@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.annotation.ManagedBean;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -56,8 +57,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -82,7 +82,6 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
         final PropertyReplacer replacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         if(compositeIndex == null) {
             return;
@@ -95,7 +94,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         for (AnnotationInstance instance : instances) {
             AnnotationTarget target = instance.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation("@ManagedBean", target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@ManagedBean", target);
             }
             final ClassInfo classInfo = (ClassInfo) target;
             // skip if it's not a valid managed bean class
@@ -106,7 +105,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : (replacement ? replacer.replaceProperties(nameValue.asString()) : nameValue.asString());
+            final String beanName = (nameValue == null || nameValue.asString().isEmpty()) ? beanClassName : replacer.replaceProperties(nameValue.asString());
             final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
 
             // Add the view

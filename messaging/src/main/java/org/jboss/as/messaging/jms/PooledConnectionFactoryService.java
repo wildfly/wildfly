@@ -24,7 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import static java.util.Collections.EMPTY_LIST;
 import static org.jboss.as.messaging.BinderServiceUtil.installAliasBinderService;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.MessagingServices.getHornetQServiceName;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 
@@ -51,7 +50,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.JGroupsChannelLocator;
-import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
@@ -313,7 +312,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             createService(serviceTarget, context.getController().getServiceContainer());
         }
         catch (Exception e) {
-            throw MESSAGES.failedToCreate(e, "resource adapter");
+            throw MessagingLogger.ROOT_LOGGER.failedToCreate(e, "resource adapter");
         }
 
     }
@@ -338,7 +337,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             for (String connector : connectors) {
                 TransportConfiguration tc = hornetQService.getValue().getConfiguration().getConnectorConfigurations().get(connector);
                 if(tc == null) {
-                    throw MESSAGES.connectorNotDefined(connector);
+                    throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(connector);
                 }
                 if (connectorClassname.length() > 0) {
                     connectorClassname.append(",");

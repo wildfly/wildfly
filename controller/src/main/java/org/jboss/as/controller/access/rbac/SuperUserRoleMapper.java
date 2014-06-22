@@ -25,7 +25,7 @@ package org.jboss.as.controller.access.rbac;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
@@ -77,7 +77,7 @@ public class SuperUserRoleMapper implements RoleMapper {
          */
 
         if (isSuperUser && hasRole == false) {
-            throw ControllerMessages.MESSAGES.unknownRole(runAsRole);
+            throw ControllerLogger.ROOT_LOGGER.unknownRole(runAsRole);
         }
 
         return hasRole && isSuperUser;

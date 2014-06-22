@@ -29,6 +29,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.hibernate.javax.persistence:hibernate-jpa-2.1-api}"/>
     </resources>
 </module>

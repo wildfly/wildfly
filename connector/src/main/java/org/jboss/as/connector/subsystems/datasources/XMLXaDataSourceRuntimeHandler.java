@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Map;
 
-import org.jboss.as.connector.logging.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -32,8 +32,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
 import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
 
 /**
  * Runtime attribute handler for XA XML datasources
@@ -59,7 +59,7 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
         if (attributeName.equals(ModelDescriptionConstants.VALUE)) {
             setStringIfNotNull(context, dataSource.getXaDataSourceProperty().get(propName));
         } else {
-            throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
+            throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
     }
 
@@ -484,8 +484,18 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
+        } else if (attributeName.equals(Constants.CONNECTABLE.getName())) {
+            //Just set to false
+            context.getResult().set(false);
+        } else if (attributeName.equals(Constants.STATISTICS_ENABLED.getName())) {
+            //Just set to false
+            context.getResult().set(false);
+
+        } else if (attributeName.equals(Constants.TRACKING.getName())) {
+            //Just return w/o setting a result
+            return;
         } else {
-            throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
+            throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
 
     }

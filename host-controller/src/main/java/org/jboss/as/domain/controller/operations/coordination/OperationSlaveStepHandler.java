@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -114,7 +114,7 @@ public class OperationSlaveStepHandler {
         if (domainOp != null) {
             // Only require an existing registration if the domain op is not ignored
             if (originalRegistration == null) {
-                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(originalAddress)));
+                throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.noSuchResourceType(originalAddress)));
             }
             addBasicStep(context, domainOp);
         }
@@ -140,7 +140,7 @@ public class OperationSlaveStepHandler {
         if(stepHandler != null) {
             context.addStep(operation, stepHandler, OperationContext.Stage.MODEL);
         } else {
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
+            throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }
     }
 

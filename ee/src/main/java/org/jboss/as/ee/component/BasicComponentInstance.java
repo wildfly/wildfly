@@ -30,14 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * An abstract base component instance.
@@ -100,7 +99,7 @@ public class BasicComponentInstance implements ComponentInstance {
     public Interceptor getInterceptor(final Method method) throws IllegalStateException {
         Interceptor interceptor = methodMap.get(method);
         if (interceptor == null) {
-            throw MESSAGES.methodNotFound(method);
+            throw EeLogger.ROOT_LOGGER.methodNotFound(method);
         }
         return interceptor;
     }
@@ -140,7 +139,7 @@ public class BasicComponentInstance implements ComponentInstance {
     @Override
     public void setInstanceData(Object key, Object value) {
         if(constructionFinished) {
-            throw EeMessages.MESSAGES.instanceDataCanOnlyBeSetDuringConstruction();
+            throw EeLogger.ROOT_LOGGER.instanceDataCanOnlyBeSetDuringConstruction();
         }
         instanceData.put(key, value);
     }

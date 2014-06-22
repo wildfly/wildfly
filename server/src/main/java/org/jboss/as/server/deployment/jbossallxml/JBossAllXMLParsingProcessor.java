@@ -36,7 +36,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -100,7 +100,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         for(Map.Entry<QName, Object> entry : context.getParseResults().entrySet()) {
             final AttachmentKey attachmentKey = namespaceAttachments.get(entry.getKey());
             if(usedNamespaces.containsKey(attachmentKey)) {
-                throw ServerMessages.MESSAGES.equivalentNamespacesInJBossXml(entry.getKey(), usedNamespaces.get(attachmentKey));
+                throw ServerLogger.ROOT_LOGGER.equivalentNamespacesInJBossXml(entry.getKey(), usedNamespaces.get(attachmentKey));
             }
             usedNamespaces.put(attachmentKey, entry.getKey());
             deploymentUnit.putAttachment(attachmentKey, entry.getValue());
@@ -150,7 +150,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
                 safeClose(streamReader);
             }
         } catch (XMLStreamException e) {
-            throw ServerMessages.MESSAGES.errorLoadingJBossXmlFile(file.getPath(), e);
+            throw ServerLogger.ROOT_LOGGER.errorLoadingJBossXmlFile(file.getPath(), e);
         }
     }
 

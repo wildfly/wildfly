@@ -22,11 +22,15 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_THREAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUSIVE_RUNNING_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTION_STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL_SIGNIFICANT;
@@ -34,9 +38,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -53,6 +59,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -68,6 +75,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -80,6 +88,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -133,6 +142,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
     private final Map<OperationId, AuthorizationResponseImpl> authorizations =
             new ConcurrentHashMap<OperationId, AuthorizationResponseImpl>();
+    private final ModelNode blockingTimeoutConfig;
+    private volatile BlockingTimeout blockingTimeout;
+    private final long startTime = System.nanoTime();
+    private volatile long exclusiveStartTime = -1;
+
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -161,14 +175,27 @@ final class OperationContextImpl extends AbstractOperationContext {
             Collections.synchronizedMap(new HashMap<PathAddress, ModelNode>());
 
     private final Integer operationId;
+    private final String operationName;
+    private final ModelNode operationAddress;
+    private final AccessMechanism accessMechanism;
+    private final ActiveOperationResource activeOperationResource;
+    private final BooleanHolder done = new BooleanHolder();
 
-    OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
+    private volatile ExecutionStatus executionStatus = ExecutionStatus.EXECUTING;
+
+    OperationContextImpl(final Integer operationId, final String operationName, final ModelNode operationAddress, final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
-                            final OperationMessageHandler messageHandler, final OperationAttachments attachments,
-                            final Resource model, final ModelController.OperationTransactionControl transactionControl,
-                            final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                            final Integer operationId, final HostServerGroupTracker hostServerGroupTracker) {
+                         final OperationMessageHandler messageHandler, final OperationAttachments attachments,
+                         final Resource model, final ModelController.OperationTransactionControl transactionControl,
+                         final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
+                         final HostServerGroupTracker hostServerGroupTracker,
+                         final ModelNode blockingTimeoutConfig,
+                         final AccessMechanism accessMechanism) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
+        this.operationId = operationId;
+        this.operationName = operationName;
+        this.operationAddress = operationAddress.isDefined()
+                ? operationAddress : ModelControllerImpl.EMPTY_ADDRESS;
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -177,8 +204,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
-        this.operationId = operationId;
         this.hostServerGroupTracker = hostServerGroupTracker;
+        this.blockingTimeoutConfig = blockingTimeoutConfig != null && blockingTimeoutConfig.isDefined() ? blockingTimeoutConfig : null;
+        this.activeOperationResource = new ActiveOperationResource();
+        this.accessMechanism = accessMechanism;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -193,27 +222,51 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    void awaitModelControllerContainerMonitor() throws InterruptedException {
+    void awaitServiceContainerStability() throws InterruptedException, TimeoutException {
         if (affectsRuntime) {
             MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
-            // First wait until any removals we've initiated have begun processing, otherwise
-            // the ContainerStateMonitor may not have gotten the notification causing it to untick
-            waitForRemovals();
-            ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport();
-            // If any services are missing, add a verification handler to see if we caused it
-            if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
-                ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
-                addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
+            long timeout = getBlockingTimeout().getBlockingTimeout();
+            ExecutionStatus originalExecutionStatus = executionStatus;
+            try {
+                // First wait until any removals we've initiated have begun processing, otherwise
+                // the ContainerStateMonitor may not have gotten the notification causing it to untick
+                executionStatus = ExecutionStatus.AWAITING_STABILITY;
+                waitForRemovals();
+                ContainerStateMonitor.ContainerStateChangeReport changeReport =
+                        modelController.awaitContainerStateChangeReport(timeout, TimeUnit.MILLISECONDS);
+                // If any services are missing, add a verification handler to see if we caused it
+                if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
+                    ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
+                    addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
+                }
+            } catch (TimeoutException te) {
+                getBlockingTimeout().timeoutDetected();
+                // Deliberate log and throw; we want to log this but the caller method passes a slightly different
+                // message to the user as part of the operation response
+                MGMT_OP_LOGGER.timeoutExecutingOperation(timeout / 1000, containerMonitorStep.operationId.name, containerMonitorStep.address);
+                throw te;
+            } finally {
+                executionStatus = originalExecutionStatus;
             }
         }
     }
 
     @Override
-    protected void waitForRemovals() throws InterruptedException {
+    protected void waitForRemovals() throws InterruptedException, TimeoutException {
         if (affectsRuntime && !cancelled) {
             synchronized (realRemovingControllers) {
-                while (!realRemovingControllers.isEmpty() && !cancelled) {
-                    realRemovingControllers.wait();
+                long waitTime = getBlockingTimeout().getBlockingTimeout();
+                long end = System.currentTimeMillis() + waitTime;
+                boolean wait = !realRemovingControllers.isEmpty() && !cancelled;
+                while (wait && waitTime > 0) {
+                    realRemovingControllers.wait(waitTime);
+                    wait = !realRemovingControllers.isEmpty() && !cancelled;
+                    waitTime = end - System.currentTimeMillis();
+                }
+
+                if (wait) {
+                    getBlockingTimeout().timeoutDetected();
+                    throw new TimeoutException();
                 }
             }
         }
@@ -243,7 +296,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         //if (currentStage != Stage.MODEL) {
         //    throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
@@ -264,7 +317,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null || currentStage == Stage.DONE) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         authorize(false, Collections.<ActionEffect>emptySet());
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
@@ -286,17 +339,14 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
-            throw MESSAGES.serviceRegistryRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRegistryRuntimeOperationsOnly();
         }
         authorize(false, modify ? READ_WRITE_RUNTIME : READ_RUNTIME);
-        if (modify && !affectsRuntime) {
-            takeWriteLock();
-            affectsRuntime = true;
-            acquireContainerMonitor();
-            awaitContainerMonitor();
+        if (modify) {
+            ensureWriteLockForRuntime();
         }
         return new OperationContextServiceRegistry(modelController.getServiceRegistry());
     }
@@ -308,18 +358,13 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
-        if (!affectsRuntime) {
-            takeWriteLock();
-            affectsRuntime = true;
-            acquireContainerMonitor();
-            awaitContainerMonitor();
-        }
+        ensureWriteLockForRuntime();
         ServiceController<?> controller = modelController.getServiceRegistry().getService(name);
         if (controller != null) {
             doRemove(controller);
@@ -359,18 +404,13 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
-        if (!affectsRuntime) {
-            takeWriteLock();
-            affectsRuntime = true;
-            acquireContainerMonitor();
-            awaitContainerMonitor();
-        }
+        ensureWriteLockForRuntime();
         if (controller != null) {
             doRemove(controller);
         }
@@ -378,6 +418,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private void doRemove(final ServiceController<?> controller) {
         final Step removalStep = activeStep;
+        removalStep.hasRemovals = true;
         controller.addListener(new AbstractServiceListener<Object>() {
             public void listenerAdded(final ServiceController<?> controller) {
                 synchronized (realRemovingControllers) {
@@ -412,125 +453,96 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceTargetRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceTargetRuntimeOperationsOnly();
         }
-        if (!affectsRuntime) {
-            takeWriteLock();
-            affectsRuntime = true;
-            acquireContainerMonitor();
-            awaitContainerMonitor();
-        }
+        ensureWriteLockForRuntime();
         return serviceTarget;
+    }
+
+    Resource.ResourceEntry getActiveOperationResource() {
+        return activeOperationResource;
     }
 
     private void takeWriteLock() {
         if (lockStep == null) {
             if (currentStage == Stage.DONE) {
-                throw MESSAGES.invalidModificationAfterCompletedStep();
+                throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
+            ExecutionStatus originalStatus = executionStatus;
             try {
-                modelController.acquireLock(operationId, respectInterruption, this);
+                executionStatus = ExecutionStatus.AWAITING_OTHER_OPERATION;
+                // BES 2014/04/22 Ignore blocking timeout here. We risk some bug causing the
+                // lock to never be released. But we gain multiple ops being able to wait until they get
+                // a chance to run with no need to guess how long op 2 will take so we can
+                // let op 3 block for the time needed for both 1 and 2
+//                int timeout = blockingTimeout.getBlockingTimeout();
+//                if (timeout < 1) {
+                    modelController.acquireLock(operationId, respectInterruption);
+//                } else {
+//                    // Wait longer than the standard amount to get a chance to execute
+//                    // after whatever was holding the lock times out
+//                    timeout += 10;
+//                    if (!modelController.acquireLock(operationId, respectInterruption, timeout)) {
+//                        throw MESSAGES.operationTimeoutAwaitingControllerLock(timeout);
+//                    }
+//                }
+                exclusiveStartTime = System.nanoTime();
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
-                throw MESSAGES.operationCancelledAsynchronously();
+                throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
+            } finally {
+                executionStatus = originalStatus;
             }
         }
     }
 
-    private void acquireContainerMonitor() {
-        if (containerMonitorStep == null) {
-            if (currentStage == Stage.DONE) {
-                throw MESSAGES.invalidModificationAfterCompletedStep();
-            }
-            modelController.acquireContainerMonitor();
-            containerMonitorStep = activeStep;
-        }
-    }
-
-    private void awaitContainerMonitor() {
-        try {
-            modelController.awaitContainerMonitor(respectInterruption);
-        } catch (InterruptedException e) {
-            if (currentStage != Stage.DONE && resultAction != ResultAction.ROLLBACK) {
-                // We're not on the way out, so we've been cancelled on the way in
-                cancelled = true;
-            }
-            Thread.currentThread().interrupt();
-            throw MESSAGES.operationCancelledAsynchronously();
-        }
-    }
-
-    public ModelNode readModel(final PathAddress requestAddress) {
-        authorize(false, READ_CONFIG);
-        final PathAddress address = activeStep.address.append(requestAddress);
-        assert isControllingThread();
-        Stage currentStage = this.currentStage;
-        if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
-        }
-        Resource model = this.model;
-        for (final PathElement element : address) {
-            model = requireChild(model, element, address);
-        }
-        // recursively read the model
-        return Resource.Tools.readModel(model);
-    }
-
-    public ModelNode readModelForUpdate(final PathAddress requestAddress) {
-        assert isControllingThread();
-
-        readOnly = false;
-
-        final PathAddress address = activeStep.address.append(requestAddress);
-        Stage currentStage = this.currentStage;
-        if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
-        }
-        if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
-        }
-        rejectUserDomainServerUpdates();
-        checkHostServerGroupTracker(address);
-        authorize(false, READ_WRITE_CONFIG);
-        if (!isModelAffected()) {
+    private void ensureWriteLockForRuntime() {
+        if (!affectsRuntime) {
             takeWriteLock();
-            model = model.clone();
-        }
-        affectsModel.put(address, NULL);
-        Resource model = this.model;
-        final Iterator<PathElement> i = address.iterator();
-        while (i.hasNext()) {
-            final PathElement element = i.next();
-            if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
-            }
-            if (! i.hasNext()) {
-                final String key = element.getKey();
-                if(! model.hasChild(element)) {
-                    final PathAddress parent = address.subAddress(0, address.size() -1);
-                    final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
-                    if(!childrenNames.contains(key)) {
-                        throw MESSAGES.noChildType(key);
-                    }
-                    final Resource newModel = Resource.Factory.create();
-                    model.registerChild(element, newModel);
-                    model = newModel;
-                } else {
-                    model = requireChild(model, element, address);
+            affectsRuntime = true;
+            if (containerMonitorStep == null) {
+                if (currentStage == Stage.DONE) {
+                    throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
                 }
-            } else {
-                model = requireChild(model, element, address);
+                containerMonitorStep = activeStep;
+                int timeout = getBlockingTimeout().getBlockingTimeout();
+                ExecutionStatus origStatus = executionStatus;
+                try {
+                    executionStatus = ExecutionStatus.AWAITING_STABILITY;
+                    modelController.awaitContainerStability(timeout, TimeUnit.MILLISECONDS, respectInterruption);
+                } catch (InterruptedException e) {
+                    if (resultAction != ResultAction.ROLLBACK) {
+                        // We're not on the way out, so we've been cancelled on the way in
+                        cancelled = true;
+                    }
+                    Thread.currentThread().interrupt();
+                    throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
+                } catch (TimeoutException te) {
+
+                    getBlockingTimeout().timeoutDetected();
+                    // This is the first step trying to await stability for this op, so if it's
+                    // unstable some previous step must have messed it up and it can't recover.
+                    // So this process must restart.
+                    // The previous op should have set this in {@code releaseStepLocks}; doing it again
+                    // here is just a 2nd line of defense
+                    processState.setRestartRequired();// don't use our restartRequired() method as this is not reversible in rollback
+
+                    // Deliberate log and throw; we want this logged, we need to notify user, and I want slightly
+                    // different messages for both so just throwing a RuntimeException to get the automatic handling
+                    // in AbstractOperationContext.executeStep is not what I wanted
+                    ControllerLogger.MGMT_OP_LOGGER.timeoutAwaitingInitialStability(timeout / 1000, activeStep.operationId.name, activeStep.operationId.address);
+                    setRollbackOnly();
+                    throw new OperationFailedRuntimeException(ControllerLogger.ROOT_LOGGER.timeoutAwaitingInitialStability());
+                } finally {
+                    executionStatus = origStatus;
+                }
             }
         }
-        if(model == null) {
-            throw new IllegalStateException();
-        }
-        return model.getModel();
     }
 
     public Resource readResource(final PathAddress requestAddress) {
@@ -550,7 +562,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         //Clone the operation to preserve all the headers
         ModelNode operation = activeStep.operation.clone();
@@ -562,9 +574,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             // See if the problem was addressability
             AuthorizationResult addressResult = authorize(opId, operation, false, ADDRESS);
             if (addressResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+                throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
             }
-            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
         Resource model = this.model;
         final Iterator<PathElement> iterator = address.iterator();
@@ -577,7 +589,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     final PathAddress parent = address.subAddress(0, address.size() -1);
                     final Set<String> childrenTypes = modelController.getRootRegistration().getChildNames(parent);
                     if(! childrenTypes.contains(element.getKey())) {
-                        throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+                        throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
                     }
                     // Return an empty model
                     return Resource.Factory.create();
@@ -612,10 +624,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
 
         // WFLY-3017 See if this write means a persistent config change
@@ -638,7 +650,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         Resource resource = this.model;
         for (PathElement element : address) {
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
             }
             resource = requireChild(resource, element, address);
         }
@@ -686,13 +698,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
         if (absoluteAddress.size() == 0) {
-            throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+            throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(absoluteAddress);
         }
 
         boolean runtimeOnly = toAdd.isRuntime();
@@ -716,17 +728,17 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
             }
             if (! i.hasNext()) {
                 final String key = element.getKey();
                 if(model.hasChild(element)) {
-                    throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+                    throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(absoluteAddress);
                 } else {
                     final PathAddress parent = absoluteAddress.subAddress(0, absoluteAddress.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
-                        throw MESSAGES.noChildType(key);
+                        throw ControllerLogger.ROOT_LOGGER.noChildType(key);
                     }
                     model.registerChild(element, toAdd);
                     model = toAdd;
@@ -741,7 +753,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             break;
                         }
                     }
-                    throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
+                    throw ControllerLogger.ROOT_LOGGER.resourceNotFound(ancestor, absoluteAddress);
                 }
             }
         }
@@ -756,10 +768,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
 
         // WFLY-3017 See if this write means a persistent config change
@@ -783,7 +795,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotRemove("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotRemove("*");
             }
             if (! i.hasNext()) {
                 model = model.removeChild(element);
@@ -797,14 +809,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public void acquireControllerLock() {
         takeWriteLock();
-    }
-
-    @Override
-    public Resource getRootResource() {
-        // TODO limit children
-        authorize(false, READ_CONFIG);
-        final Resource readOnlyModel = this.model;
-        return readOnlyModel.clone();
     }
 
     @Override
@@ -840,11 +844,10 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
+        boolean interrupted = false;
         try {
-            if (this.lockStep == step) {
-                modelController.releaseLock(operationId);
-                lockStep = null;
-            }
+            // Get container stability before releasing controller lock to ensure another
+            // op doesn't get in and destabilize the container.
             if (this.containerMonitorStep == step) {
                 // Note: If we allow this thread to be interrupted, an op that has been cancelled
                 // because of minor user impatience can release the controller lock while the
@@ -853,17 +856,39 @@ final class OperationContextImpl extends AbstractOperationContext {
                 // will not be cancellable. I (BES 2012/01/24) chose the former as the lesser evil.
                 // Any subsequent step that calls getServiceRegistry/getServiceTarget/removeService
                 // is going to have to await the monitor uninterruptibly anyway before proceeding.
+                long timeout = getBlockingTimeout().getBlockingTimeout();
                 try {
-                    modelController.awaitContainerMonitor(true);
+                    modelController.awaitContainerStability(timeout, TimeUnit.MILLISECONDS, true);
                 }  catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    interrupted = true;
                     MGMT_OP_LOGGER.interruptedWaitingStability();
+                } catch (TimeoutException te) {
+                    // If we can't attain stability on the way out after rollback ops have run,
+                    // we can no longer have any sense of MSC state or how the model relates to the runtime and
+                    // we need to start from a fresh service container.
+                    processState.setRestartRequired(); // don't use our restartRequired() method as this is not reversible in rollback
+                    // Just log; this doesn't change the result of the op. And if we're not stable here
+                    // it's almost certain we never stabilized during execution or we are rolling back and destabilized there.
+                    // Either one means there is already a failure message associated with this op.
+                    MGMT_OP_LOGGER.timeoutCompletingOperation(timeout, activeStep.operationId.name, activeStep.operationId.address);
                 }
             }
+
+            if (this.lockStep == step) {
+                modelController.releaseLock(operationId);
+                exclusiveStartTime = -1;
+                lockStep = null;
+            }
         } finally {
-            if (this.containerMonitorStep == step) {
-                modelController.releaseContainerMonitor();
-                containerMonitorStep = null;
+            try {
+                if (this.containerMonitorStep == step) {
+                    modelController.logContainerStateChangesAndReset();
+                    containerMonitorStep = null;
+                }
+            } finally {
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
@@ -884,7 +909,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     break;
                 }
             }
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(missing);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(missing);
         }
     }
 
@@ -897,7 +922,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @SuppressWarnings("unchecked")
     public <V> V getAttachment(final AttachmentKey<V> key) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.get(key));
     }
@@ -910,7 +935,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V attach(final AttachmentKey<V> key, final V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.put(key, value));
     }
@@ -918,7 +943,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.putIfAbsent(key, value));
     }
@@ -926,7 +951,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V detach(final AttachmentKey<V> key) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.remove(key));
     }
@@ -973,7 +998,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (authResp == null) {
             // Non-existent resource type or operation. This is permitted but will fail
             // later for reasons unrelated to authz
-            return authResp;
+            return null;
         }
         Environment callEnvironment = getCallEnvironment();
         if (authResp.getResourceResult(ActionEffect.ADDRESS) == null) {
@@ -1027,6 +1052,22 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     Resource getModel() {
         return model;
+    }
+
+    @Override
+    ResultAction executeOperation() {
+        try {
+            return super.executeOperation();
+        } finally {
+            synchronized (done) {
+                if (done.done) {
+                    // late cancellation; clear the thread status
+                    Thread.interrupted();
+                } else {
+                    done.done = true;
+                }
+            }
+        }
     }
 
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
@@ -1090,7 +1131,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (isModelUpdateRejectionRequired()) {
             ModelNode op = activeStep.operation;
             if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
-                throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
+                throw ControllerLogger.ROOT_LOGGER.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
             }
         }
     }
@@ -1107,22 +1148,22 @@ final class OperationContextImpl extends AbstractOperationContext {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
             if (activeStep.address.size() > 0) {
-                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+                throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
             } else {
                 // WFLY-2037 -- the root resource isn't hidden; if we hit this it means the user isn't authorized
-                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, accessResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, accessResult.getExplanation());
             }
         }
         AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, allAttributes, actionEffects);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
     }
 
     private void authorizeAdd(boolean runtimeOnly) {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
         }
         final Set<Action.ActionEffect> writeEffect = runtimeOnly ? WRITE_RUNTIME : WRITE_CONFIG;
         AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, true, writeEffect);
@@ -1134,7 +1175,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             authResult = authResp.validateAddAttributeEffects(opName, writeEffect);
             authResp.addOperationResult(opName, authResult);
             if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
             }
         }
     }
@@ -1295,6 +1336,17 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
+    private BlockingTimeout getBlockingTimeout() {
+        if (blockingTimeout == null) {
+            synchronized (this) {
+                if (blockingTimeout == null) {
+                    blockingTimeout = new BlockingTimeout(blockingTimeoutConfig);
+                }
+            }
+        }
+        return blockingTimeout;
+    }
+
     class ContextServiceTarget implements ServiceTarget {
 
         private final ModelControllerImpl modelController;
@@ -1328,22 +1380,28 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw new UnsupportedOperationException();
         }
 
+        @SuppressWarnings("deprecation")
         public ServiceTarget addListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
 
-        public ServiceTarget addListener(final ServiceListener<Object>... listeners) {
+        @SafeVarargs
+        @SuppressWarnings("deprecation")
+        public final ServiceTarget addListener(final ServiceListener<Object>... listeners) {
             throw new UnsupportedOperationException();
         }
 
+        @SuppressWarnings("deprecation")
         public ServiceTarget addListener(final Collection<ServiceListener<Object>> listeners) {
             throw new UnsupportedOperationException();
         }
 
+        @SuppressWarnings("deprecation")
         public ServiceTarget removeListener(final ServiceListener<Object> listener) {
             throw new UnsupportedOperationException();
         }
 
+        @SuppressWarnings("deprecation")
         public Set<ServiceListener<Object>> getListeners() {
             throw new UnsupportedOperationException();
         }
@@ -1472,36 +1530,50 @@ final class OperationContextImpl extends AbstractOperationContext {
             return this;
         }
 
+        @SuppressWarnings("deprecation")
         public ServiceBuilder<T> addListener(final ServiceListener<? super T> listener) {
             realBuilder.addListener(listener);
             return this;
         }
 
-        public ServiceBuilder<T> addListener(final ServiceListener<? super T>... listeners) {
+        @SafeVarargs
+        @SuppressWarnings("deprecation")
+        public final ServiceBuilder<T> addListener(final ServiceListener<? super T>... listeners) {
             realBuilder.addListener(listeners);
             return this;
         }
 
+        @SuppressWarnings("deprecation")
         public ServiceBuilder<T> addListener(final Collection<? extends ServiceListener<? super T>> listeners) {
             realBuilder.addListener(listeners);
             return this;
         }
 
         public ServiceController<T> install() throws ServiceRegistryException, IllegalStateException {
-            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-            synchronized (map) {
+            synchronized (realRemovingControllers) {
                 boolean intr = false;
                 try {
-                    while (map.containsKey(name)) {
+                    boolean containsKey = realRemovingControllers.containsKey(name);
+                    long timeout = getBlockingTimeout().getBlockingTimeout();
+                    long waitTime = timeout;
+                    long end = System.currentTimeMillis() + waitTime;
+                    while (containsKey && waitTime > 0) {
                         try {
-                            map.wait();
+                            realRemovingControllers.wait(waitTime);
                         } catch (InterruptedException e) {
                             intr = true;
                             if (respectInterruption) {
                                 cancelled = true;
-                                throw MESSAGES.serviceInstallCancelled();
+                                throw ControllerLogger.ROOT_LOGGER.serviceInstallCancelled();
                             } // else keep waiting and mark the thread interrupted at the end
                         }
+                        containsKey = realRemovingControllers.containsKey(name);
+                        waitTime = end - System.currentTimeMillis();
+                    }
+
+                    if (containsKey) {
+                        // We timed out
+                        throw ControllerLogger.ROOT_LOGGER.serviceInstallTimedOut(timeout, name);
                     }
 
                     // If a step removed this ServiceName before, it's no longer responsible
@@ -1551,9 +1623,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             for (Map.Entry<Step, Map<ServiceName, Set<ServiceName>>> entry : missingByStep.entrySet()) {
                 Step step = entry.getKey();
                 if (!step.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
-                    StringBuilder sb = new StringBuilder(MESSAGES.removingServiceUnsatisfiedDependencies());
+                    StringBuilder sb = new StringBuilder(ControllerLogger.ROOT_LOGGER.removingServiceUnsatisfiedDependencies());
                     for (Map.Entry<ServiceName, Set<ServiceName>> removed : entry.getValue().entrySet()) {
-                        sb.append(MESSAGES.removingServiceUnsatisfiedDependencies(removed.getKey().getCanonicalName()));
+                        sb.append(ControllerLogger.ROOT_LOGGER.removingServiceUnsatisfiedDependencies(removed.getKey().getCanonicalName()));
                         boolean first = true;
                         for (ServiceName dependent : removed.getValue()) {
                             if (!first) {
@@ -1637,7 +1709,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         private void checkModeTransition(Mode mode) {
             if (mode == Mode.REMOVE) {
-                throw MESSAGES.useOperationContextRemoveService();
+                throw ControllerLogger.ROOT_LOGGER.useOperationContextRemoveService();
             }
         }
 
@@ -1665,10 +1737,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             return controller.getAliases();
         }
 
+        @SuppressWarnings("deprecation")
         public void addListener(ServiceListener<? super S> serviceListener) {
             controller.addListener(serviceListener);
         }
 
+        @SuppressWarnings("deprecation")
         public void removeListener(ServiceListener<? super S> serviceListener) {
             controller.removeListener(serviceListener);
         }
@@ -1894,5 +1968,66 @@ final class OperationContextImpl extends AbstractOperationContext {
             DescriptionProvider realProvider = super.getModelDescription(relativeAddress);
             return new CachingDescriptionProvider(fullAddress, realProvider);
         }
+    }
+
+    private class ActiveOperationResource extends PlaceholderResource.PlaceholderResourceEntry implements Cancellable {
+
+        private ActiveOperationResource() {
+            super(ACTIVE_OPERATION, operationId.toString());
+        }
+
+        @Override
+        public boolean isModelDefined() {
+            return true;
+        }
+
+        @Override
+        public ModelNode getModel() {
+            final ModelNode model = new ModelNode();
+
+            model.get(OP).set(operationName);
+            model.get(OP_ADDR).set(operationAddress);
+
+            model.get(CALLER_THREAD).set(initiatingThread.getName());
+            ModelNode accessMechanismNode = model.get(ACCESS_MECHANISM);
+            if (accessMechanism != null) {
+                accessMechanismNode.set(accessMechanismNode.toString());
+            }
+            model.get(EXECUTION_STATUS).set(getExecutionStatus());
+            model.get(RUNNING_TIME).set(System.nanoTime() - startTime);
+            long exclusive = exclusiveStartTime;
+            if (exclusive > -1) {
+                exclusive = System.nanoTime() - exclusive;
+            }
+            model.get(EXCLUSIVE_RUNNING_TIME).set(exclusive);
+            model.get(CANCELLED).set(cancelled);
+            return model;
+        }
+
+        private String getExecutionStatus() {
+            ExecutionStatus currentStatus = executionStatus;
+            if (currentStatus == ExecutionStatus.EXECUTING) {
+                currentStatus = resultAction == ResultAction.ROLLBACK ? ExecutionStatus.ROLLING_BACK
+                        : currentStage == Stage.DONE ? ExecutionStatus.COMPLETING : ExecutionStatus.EXECUTING;
+            }
+            return currentStatus.toString();
+        }
+
+        @Override
+        public boolean cancel() {
+            synchronized (done) {
+                boolean canCancel = !done.done;
+                if (canCancel) {
+                    done.done = true;
+                    ControllerLogger.MGMT_OP_LOGGER.cancellingOperation(operationName, operationId, initiatingThread.getName());
+                    initiatingThread.interrupt();
+                }
+                return canCancel;
+            }
+        }
+    }
+
+    private static class BooleanHolder {
+        private boolean done = false;
     }
 }

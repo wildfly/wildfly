@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +31,7 @@ import java.util.Set;
 import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderResolverImpl;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.as.server.deployment.Attachments;
@@ -75,10 +73,10 @@ public class PersistenceProviderHandler {
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
                     providerList.add(provider);
-                    JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), providerName);
+                    JpaLogger.JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), providerName);
 
                 } catch (Exception e) {
-                    throw MESSAGES.cannotDeployApp(e, providerName);
+                    throw JpaLogger.ROOT_LOGGER.cannotDeployApp(e, providerName);
                 }
             }
 
@@ -94,11 +92,11 @@ public class PersistenceProviderHandler {
                         adaptorList.add(adaptor);
                         PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providerList, adaptorList);
                     } catch (InstantiationException e) {
-                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
+                        throw JpaLogger.ROOT_LOGGER.cannotCreateAdapter(e, adapterClass);
                     } catch (IllegalAccessException e) {
-                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
+                        throw JpaLogger.ROOT_LOGGER.cannotCreateAdapter(e, adapterClass);
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotCreateAdapter(e, adapterClass);
+                        throw JpaLogger.ROOT_LOGGER.cannotCreateAdapter(e, adapterClass);
                     }
                 } else {
                     // register the provider (no adapter specified)

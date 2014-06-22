@@ -1,0 +1,64 @@
+Ales Justin <ales.justin@gmail.com>
+Alessio Soldano <alessio.soldano@jboss.com>
+Alexey Loubyansky <alex@jboss.org>
+Alexey Loubyansky <olubyans@tstudio.(none)>
+Andrew Dinn <adinn@redhat.com>
+Andrew Lee Rubinger <alr@jboss.org>
+Andy Taylor <ataylor@redhat.com>
+Anil Saldhana <anil.saldhana@jboss.com>
+Aslak Knutsen <aslak@redhat.com>
+Bob McWhirter <bob@mcwhirter.org>
+Brian Stansberry <brian.stansberry@jboss.com>
+Brian Stansberry <brian.stansberry@redhat.com>
+Brian Stansberry <bstansberry@jboss.com>
+Carlo de Wolf <carlo@nerdnet.nl>
+Carlo de Wolf <cdewolf@redhat.com>
+Darran Lofthouse <darran.lofthouse@jboss.com>
+David Bosschaert <david.bosschaert@gmail.com>
+David M. Lloyd <david.lloyd@redhat.com>
+David M. Lloyd <dmlloyd@flurg.com>
+Dimitris Andreadis <dandread@redhat.com>
+Dimitris Andreadis <dimitris@redhat.com>
+Emanuel Muckenhuber <emuckenh@redhat.com>
+Flavia Rainone <flavia.rainone@jboss.com>
+Heiko Braun <ike.braun@googlemail.com>
+Howard Gao <hgao@redhat.com>
+Jaikiran Pai <jaikiran.pai@gmail.com>
+James Perkins <jperkins@redhat.com>
+James Perkins <jrperkinsjr@gmail.com>
+Jason T. Greene <jason.greene@redhat.com>
+Jason T. Greene <jason@stacksmash.com>
+Jean-Frederic Clere <jfclere@gmail.com>
+Jean-Frederic Clere <jfclere@jfcpc.(none)>
+Jeff Zhang <jeff.zhang@jboss.org>
+Jesper Pedersen <jesper.pedersen@redhat.com>
+Jim Ma <ema@redhat.com>
+John Bailey <baileyje@gmail.com>
+John E. Bailey <baileyje@gmail.com>
+John E. Bailey <jbailey@redhat.com>
+Jonathan Pearlin <jdp.grails.dev@gmail.com>
+Kabir Khan <kkhan@redhat.com>
+Marcus Moyses <marcus.moyses@gmail.com>
+Marcus Moyses <mmoyses@redhat.com>
+Marius Bogoevici <marius.bogoevici@gmail.com>
+Max Rydahl Andersen <max@jboss.org>
+Paul Ferraro <paul.ferraro@redhat.com>
+Paul Gier <pgier@redhat.com>
+Pete Muir <pmuir@bleepbleep.org.uk>
+Richard Opalka <ropalka@redhat.com>
+Rémy Maucherat <remm@ws.remm.hd.free.fr>
+Rémy Maucherat <rmaucher@redhat.com>
+Scott M Stark <scott.stark@jboss.org>
+Scott Marlow <smarlow@redhat.com>
+Shelly McGowan <smcgowan@redhat.com>
+Stan Silvert <ssilvert@jboss.com>
+Stan Silvert <ssilvert@redhat.com>
+Stefan Guilhen <sguilhen@redhat.com>
+Stefano Maestri <stefano.maestri@javalinux.it>
+Steve Ebersole <steve@hibernate.org>
+Stuart Douglas <stuart.w.douglas@gmail.com>
+Stuart Douglas <stuart@stuart-thinkpad.localdomain>
+Thomas Diesler <thomas.diesler@jboss.com>
+Tomaz Cerar <tomaz.cerar@gmail.com>
+Vladimir Dosoudil <dosoudil@redhat.com>
+Weston Price <wmprice@redhat.com>

@@ -27,7 +27,7 @@ import java.util.List;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.pool.EJBBoundPoolMetaData;
@@ -64,7 +64,7 @@ public abstract class AbstractPoolMergingProcessor<T extends EJBComponentDescrip
         if (!pool.getClassLevelAnnotations().isEmpty()) {
             final String poolName = pool.getClassLevelAnnotations().get(0);
             if (poolName == null || poolName.trim().isEmpty()) {
-                throw EjbMessages.MESSAGES.poolNameCannotBeEmptyString(description.getEJBName());
+                throw EjbLogger.ROOT_LOGGER.poolNameCannotBeEmptyString(description.getEJBName());
             }
             this.setPoolName(description, poolName);
         }

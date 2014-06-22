@@ -22,22 +22,23 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -81,8 +82,8 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
         ConnectionFactoryControl control = ConnectionFactoryControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_CONNECTION_FACTORY + factoryName));
 
         if (control == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         if (HA.getName().equals(attributeName)) {
@@ -93,7 +94,7 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
             context.getResult().set(control.getInitialMessagePacketSize());
         } else {
             // Bug
-            throw MESSAGES.unsupportedAttribute(attributeName);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
         }
         context.stepCompleted();
     }

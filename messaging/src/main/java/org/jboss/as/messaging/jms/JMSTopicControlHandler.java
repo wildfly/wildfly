@@ -22,27 +22,39 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.resolveFilter;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeOnlyOperation;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
+import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,22 +67,46 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
     public static final JMSTopicControlHandler INSTANCE = new JMSTopicControlHandler();
 
-    private final ParametersValidator listMessagesForSubscriptionValidator = new ParametersValidator();
-    private final ParametersValidator countMessagesForSubscriptionValidator = new ParametersValidator();
-    private final ParametersValidator dropDurableSubscriptionValidator = new ParametersValidator();
-    private final ParametersValidator removeMessagesValidator = new ParametersValidator();
+    private static final String REMOVE_MESSAGES = "remove-messages";
+    private static final String DROP_ALL_SUBSCRIPTIONS = "drop-all-subscriptions";
+    private static final String DROP_DURABLE_SUBSCRIPTION = "drop-durable-subscription";
+    private static final String COUNT_MESSAGES_FOR_SUBSCRIPTION = "count-messages-for-subscription";
+    private static final String LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON = "list-messages-for-subscription-as-json";
+    private static final String LIST_MESSAGES_FOR_SUBSCRIPTION = "list-messages-for-subscription";
+    private static final String LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON = "list-non-durable-subscriptions-as-json";
+    private static final String LIST_NON_DURABLE_SUBSCRIPTIONS = "list-non-durable-subscriptions";
+    private static final String LIST_DURABLE_SUBSCRIPTIONS_AS_JSON = "list-durable-subscriptions-as-json";
+    private static final String LIST_DURABLE_SUBSCRIPTIONS = "list-durable-subscriptions";
+    private static final String LIST_ALL_SUBSCRIPTIONS_AS_JSON = "list-all-subscriptions-as-json";
+    private static final String LIST_ALL_SUBSCRIPTIONS = "list-all-subscriptions";
+
+    private static final AttributeDefinition CLIENT_ID = create(CommonAttributes.CLIENT_ID)
+            .setAllowNull(false)
+            .setValidator(new StringLengthValidator(1))
+            .build();
+    private static final AttributeDefinition SUBSCRIPTION_NAME = createNonEmptyStringAttribute("subscription-name");
+    private static final AttributeDefinition QUEUE_NAME = createNonEmptyStringAttribute(CommonAttributes.QUEUE_NAME);
+
+    private static final AttributeDefinition[] SUBSCRIPTION_REPLY_PARAMETER_DEFINITIONS = new AttributeDefinition[] {
+            createNonEmptyStringAttribute("queueName"),
+            createNonEmptyStringAttribute("clientID"),
+            createNonEmptyStringAttribute("selector"),
+            createNonEmptyStringAttribute("name"),
+            create("durable", BOOLEAN).build(),
+            create("messageCount", LONG).build(),
+            create("deliveringCount", INT).build(),
+            ObjectListAttributeDefinition.Builder.of("consumers",
+                    ObjectTypeAttributeDefinition.Builder.of("consumers",
+                            createNonEmptyStringAttribute("consumerID"),
+                            createNonEmptyStringAttribute("connectionID"),
+                            createNonEmptyStringAttribute("sessionID"),
+                            create("browseOnly", BOOLEAN).build(),
+                            create("creationTime", BOOLEAN).build()
+                    ).build()
+            ).build()
+    };
 
     private JMSTopicControlHandler() {
-        listMessagesForSubscriptionValidator.registerValidator(QUEUE_NAME, new StringLengthValidator(1));
-
-        countMessagesForSubscriptionValidator.registerValidator(CLIENT_ID.getName(), new StringLengthValidator(1));
-        countMessagesForSubscriptionValidator.registerValidator(JMSTopicDefinition.SUBSCRIPTION_NAME, new StringLengthValidator(1));
-        countMessagesForSubscriptionValidator.registerValidator(FILTER.getName(), new ModelTypeValidator(ModelType.STRING, true, false));
-
-        dropDurableSubscriptionValidator.registerValidator(CLIENT_ID.getName(), new StringLengthValidator(1));
-        dropDurableSubscriptionValidator.registerValidator(JMSTopicDefinition.SUBSCRIPTION_NAME, new StringLengthValidator(1));
-
-        removeMessagesValidator.registerValidator(FILTER.getName(), new ModelTypeValidator(ModelType.STRING, true, false));
     }
 
     @Override
@@ -88,59 +124,55 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         TopicControl control = TopicControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
 
         if (control == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         try {
-            if (JMSTopicDefinition.LIST_ALL_SUBSCRIPTIONS.equals(operationName)) {
+            if (LIST_ALL_SUBSCRIPTIONS.equals(operationName)) {
                 String json = control.listAllSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
-            } else if (JMSTopicDefinition.LIST_ALL_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
+            } else if (LIST_ALL_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listAllSubscriptionsAsJSON());
-            } else if (JMSTopicDefinition.LIST_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
+            } else if (LIST_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
                 String json = control.listDurableSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
-            } else if (JMSTopicDefinition.LIST_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
+            } else if (LIST_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listDurableSubscriptionsAsJSON());
-            } else if (JMSTopicDefinition.LIST_NON_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
+            } else if (LIST_NON_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
                 String json = control.listNonDurableSubscriptionsAsJSON();
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
-            } else if (JMSTopicDefinition.LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
+            } else if (LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listNonDurableSubscriptionsAsJSON());
-            } else if (JMSTopicDefinition.LIST_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
-                listMessagesForSubscriptionValidator.validate(operation);
-                final String queueName = operation.require(QUEUE_NAME).asString();
+            } else if (LIST_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
+                final String queueName = QUEUE_NAME.resolveModelAttribute(context, operation).asString();
                 String json = control.listMessagesForSubscriptionAsJSON(queueName);
                 context.getResult().set(ModelNode.fromJSONString(json));
-            } else if (JMSTopicDefinition.LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON.equals(operationName)) {
-                final String queueName = operation.require(QUEUE_NAME).asString();
+            } else if (LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON.equals(operationName)) {
+                final String queueName = QUEUE_NAME.resolveModelAttribute(context, operation).asString();
                 context.getResult().set(control.listMessagesForSubscriptionAsJSON(queueName));
-            } else if (JMSTopicDefinition.COUNT_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
-                countMessagesForSubscriptionValidator.validate(operation);
-                String clientId = operation.require(CLIENT_ID.getName()).asString();
-                String subscriptionName = operation.require(JMSTopicDefinition.SUBSCRIPTION_NAME).asString();
-                String filter = operation.hasDefined(FILTER.getName()) ? operation.get(FILTER.getName()).asString() : null;
+            } else if (COUNT_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
+                String clientId = CLIENT_ID.resolveModelAttribute(context, operation).asString();
+                String subscriptionName = SUBSCRIPTION_NAME.resolveModelAttribute(context, operation).asString();
+                String filter = resolveFilter(context, operation);
                 context.getResult().set(control.countMessagesForSubscription(clientId, subscriptionName, filter));
-            } else if (JMSTopicDefinition.DROP_DURABLE_SUBSCRIPTION.equals(operationName)) {
-                dropDurableSubscriptionValidator.validate(operation);
-                String clientId = operation.require(CLIENT_ID.getName()).asString();
-                String subscriptionName = operation.require(JMSTopicDefinition.SUBSCRIPTION_NAME).asString();
+            } else if (DROP_DURABLE_SUBSCRIPTION.equals(operationName)) {
+                String clientId = CLIENT_ID.resolveModelAttribute(context, operation).asString();
+                String subscriptionName = SUBSCRIPTION_NAME.resolveModelAttribute(context, operation).asString();
                 control.dropDurableSubscription(clientId, subscriptionName);
                 context.getResult();
-            } else if (JMSTopicDefinition.DROP_ALL_SUBSCRIPTIONS.equals(operationName)) {
+            } else if (DROP_ALL_SUBSCRIPTIONS.equals(operationName)) {
                 control.dropAllSubscriptions();
                 context.getResult();
-            } else if (JMSTopicDefinition.REMOVE_MESSAGES.equals(operationName)) {
-                removeMessagesValidator.validate(operation);
-                String filter = operation.hasDefined(FILTER.getName()) ? operation.get(FILTER.getName()).asString() : null;
+            } else if (REMOVE_MESSAGES.equals(operationName)) {
+                String filter = resolveFilter(context, operation);
                 context.getResult().set(control.removeMessages(filter));
             } else {
                 // Bug
-                throw MESSAGES.unsupportedOperation(operationName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
@@ -149,5 +181,63 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         }
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    public void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_ALL_SUBSCRIPTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(SUBSCRIPTION_REPLY_PARAMETER_DEFINITIONS)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_ALL_SUBSCRIPTIONS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DURABLE_SUBSCRIPTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(SUBSCRIPTION_REPLY_PARAMETER_DEFINITIONS)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_DURABLE_SUBSCRIPTIONS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_NON_DURABLE_SUBSCRIPTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyParameters(SUBSCRIPTION_REPLY_PARAMETER_DEFINITIONS)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES_FOR_SUBSCRIPTION, resolver)
+                .setParameters(QUEUE_NAME)
+                .setReplyType(LIST)
+                .setReplyParameters(JMSManagementHelper.JMS_MESSAGE_PARAMETERS)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON, resolver)
+                .setParameters(QUEUE_NAME)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(COUNT_MESSAGES_FOR_SUBSCRIPTION, resolver)
+                .setParameters(CLIENT_ID, SUBSCRIPTION_NAME, FILTER)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(DROP_DURABLE_SUBSCRIPTION, resolver)
+                .setParameters(CLIENT_ID, SUBSCRIPTION_NAME)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(DROP_ALL_SUBSCRIPTIONS, resolver)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(REMOVE_MESSAGES, resolver)
+                .setParameters(FILTER)
+                .setReplyType(INT)
+                .build(),
+                this);
     }
 }

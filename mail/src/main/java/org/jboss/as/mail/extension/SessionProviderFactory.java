@@ -155,7 +155,7 @@ class SessionProviderFactory {
             final String ref = server.getOutgoingSocketBinding();
             final OutboundSocketBinding binding = socketBindings.get(ref);
             if (binding == null) {
-                throw MailMessages.MESSAGES.outboundSocketBindingNotAvailable(ref);
+                throw MailLogger.ROOT_LOGGER.outboundSocketBindingNotAvailable(ref);
             }
             return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
         }

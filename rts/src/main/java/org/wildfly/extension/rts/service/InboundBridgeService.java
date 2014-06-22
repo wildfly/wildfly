@@ -25,7 +25,6 @@ import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.arjuna.recovery.RecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceOrphanFilter;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -33,13 +32,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridge;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridgeOrphanFilter;
 import org.jboss.narayana.rest.bridge.inbound.InboundBridgeRecoveryModule;
+import org.wildfly.extension.rts.logging.RTSLogger;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 public class InboundBridgeService implements Service<InboundBridgeService> {
-
-    private static final Logger LOG = Logger.getLogger(InboundBridgeService.class);
 
     private RecoveryModule recoveryModule;
 
@@ -47,9 +45,7 @@ public class InboundBridgeService implements Service<InboundBridgeService> {
 
     @Override
     public void start(StartContext startContext) throws StartException {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("InboundBridgeService.start");
-        }
+        RTSLogger.ROOT_LOGGER.trace("InboundBridgeService.start");
 
         addDeserializerAndOrphanFilter();
         addRecoveryModule();
@@ -57,9 +53,7 @@ public class InboundBridgeService implements Service<InboundBridgeService> {
 
     @Override
     public void stop(StopContext stopContext) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("InboundBridgeService.stop");
-        }
+        RTSLogger.ROOT_LOGGER.trace("InboundBridgeService.stop");
 
         removeOrphanFilter();
         removeRecoveryModule();
@@ -67,9 +61,7 @@ public class InboundBridgeService implements Service<InboundBridgeService> {
 
     @Override
     public InboundBridgeService getValue() throws IllegalStateException, IllegalArgumentException {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("InboundBridgeService.getValue");
-        }
+        RTSLogger.ROOT_LOGGER.trace("InboundBridgeService.getValue");
 
         return this;
     }

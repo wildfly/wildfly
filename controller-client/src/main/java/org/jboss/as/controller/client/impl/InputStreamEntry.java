@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ControllerClientLogger;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.protocol.StreamUtils;
 
 import java.io.ByteArrayOutputStream;

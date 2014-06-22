@@ -21,10 +21,9 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import javax.management.ObjectName;
 
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.jsr77.subsystem.Constants;
 
 /**
@@ -60,7 +59,7 @@ public class ObjectNameBuilder {
         try {
             return new ObjectName(toString());
         } catch (Exception e) {
-            throw MESSAGES.invalidObjectName(e, toString());
+            throw JSR77Logger.ROOT_LOGGER.invalidObjectName(e, toString());
         }
     }
 
@@ -68,7 +67,7 @@ public class ObjectNameBuilder {
         try {
             return new ObjectName(name);
         } catch (Exception e) {
-            throw MESSAGES.couldNotCreateObjectName(e, name);
+            throw JSR77Logger.ROOT_LOGGER.couldNotCreateObjectName(e, name);
         }
     }
 

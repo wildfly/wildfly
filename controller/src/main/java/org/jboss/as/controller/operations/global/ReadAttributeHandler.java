@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.operations.global;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -33,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import java.util.Locale;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -123,7 +122,7 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         if (attributeAccess == null) {
             final Set<String> children = context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
             if (children.contains(attributeName)) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.attributeRegisteredOnResource(attributeName, operation.get(OP_ADDR))));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.attributeRegisteredOnResource(attributeName, operation.get(OP_ADDR))));
             } else {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
                 final ModelNode subModel = resource.getModel();
@@ -143,7 +142,7 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
                         // as proof that it's a legit attribute name
                         context.getResult(); // this initializes the "result" to ModelType.UNDEFINED
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
+                        throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.unknownAttribute(attributeName)));
                     }
                 }
             }
@@ -220,9 +219,7 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
             AuthorizationResult authorizationResult = context.authorize(operation, operation.require(NAME).asString(), value);
             if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
                 context.getResult().clear();
-                throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
-                        PathAddress.pathAddress(operation.get(OP_ADDR)),
-                        authorizationResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.require(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
             }
 
             context.stepCompleted();

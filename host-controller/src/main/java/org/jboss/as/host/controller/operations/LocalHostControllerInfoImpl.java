@@ -52,6 +52,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private volatile boolean remoteIgnoreUnaffectedConfiguration;
     private volatile String httpManagementInterface;
     private volatile int httpManagementPort;
+    private volatile String httpManagementSecureInterface;
     private volatile int httpManagementSecurePort;
     private volatile String nativeManagementSecurityRealm;
     private volatile String httpManagementSecurityRealm;
@@ -106,6 +107,11 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     @Override
     public int getHttpManagementPort() {
         return httpManagementPort;
+    }
+
+    @Override
+    public String getHttpManagementSecureInterface() {
+        return httpManagementSecureInterface == null ? httpManagementInterface : httpManagementSecureInterface;
     }
 
     @Override
@@ -167,6 +173,10 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     void setHttpManagementPort(int httpManagementPort) {
         this.httpManagementPort = httpManagementPort;
+    }
+
+    void setHttpManagementSecureInterface(String httpManagementSecureInterface) {
+        this.httpManagementSecureInterface = httpManagementSecureInterface;
     }
 
     void setHttpManagementSecurePort(int httpManagementSecurePort) {

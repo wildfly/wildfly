@@ -36,7 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.controller.transform.OperationRejectionPolicy;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationContext;
@@ -101,8 +101,8 @@ class HostControllerUpdateTask {
                 // Make sure we preserve the operation headers like PrepareStepHandler.EXECUTE_FOR_COORDINATOR
                 if(transformedOperation != null) {
                     transformedOperation.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
-                    // If the operation was transformed in any way
-                    if(operation != transformedOperation) {
+                    // If the operation was transformed
+                    if (!operation.equals(transformedOperation)) {
                         // push all operations (incl. read-only) to the servers
                         transformedOperation.get(OPERATION_HEADERS, ServerOperationsResolverHandler.DOMAIN_PUSH_TO_SERVERS).set(true);
                     }
@@ -211,7 +211,7 @@ class HostControllerUpdateTask {
         }
 
         public void asyncCancel() {
-            futureResult.asyncCancel(false);
+            futureResult.asyncCancel(true);
         }
     }
 

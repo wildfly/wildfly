@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +38,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
@@ -260,7 +259,7 @@ public class DomainClientImpl implements DomainClient {
                 throw new RuntimeException(result.get("host-failure-descriptions").toString());
             }
             else {
-                throw MESSAGES.operationOutcome(result.get("outcome").asString());
+                throw ControllerClientLogger.ROOT_LOGGER.operationOutcome(result.get("outcome").asString());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

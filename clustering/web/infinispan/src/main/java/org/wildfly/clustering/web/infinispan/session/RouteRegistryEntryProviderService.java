@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 
@@ -32,8 +31,6 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  * @author Paul Ferraro
  */
 public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
-
-    public static final ServiceName SERVICE_NAME = RouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
 
     private final Value<? extends Value<String>> route;
 

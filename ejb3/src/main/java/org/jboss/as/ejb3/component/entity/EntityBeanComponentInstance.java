@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.component.entity;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Map;
@@ -34,6 +32,7 @@ import javax.ejb.Timer;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -255,7 +254,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBObject getEjbObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw MESSAGES.cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
+            throw EjbLogger.ROOT_LOGGER.cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBObject(pk);
     }
@@ -263,7 +262,7 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     public EJBLocalObject getEjbLocalObject() {
         final Object pk = getPrimaryKey();
         if (pk == null) {
-            throw MESSAGES.cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
+            throw EjbLogger.ROOT_LOGGER.cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
         }
         return getComponent().getEJBLocalObject(pk);
     }

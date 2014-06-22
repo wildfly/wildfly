@@ -24,7 +24,7 @@ package org.jboss.as.weld.services.bootstrap;
 import java.security.Principal;
 
 import org.jboss.as.security.service.SimpleSecurityManager;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -58,7 +58,7 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
     public Principal getPrincipal() {
         final SimpleSecurityManager securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
-            throw WeldMessages.MESSAGES.securityNotEnabled();
+            throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
         return securityManager.getCallerPrincipal();
     }
 

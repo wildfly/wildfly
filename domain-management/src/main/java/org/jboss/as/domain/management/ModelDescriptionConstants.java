@@ -31,6 +31,7 @@ public class ModelDescriptionConstants {
 
     public static final String ALIAS = "alias";
     public static final String ALLOWED_USERS = "allowed-users";
+    public static final String ASSIGN_GROUPS = "assign-groups";
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHORIZATION = "authorization";
     public static final String BY_ACCESS_TIME = "by-access-time";
@@ -44,9 +45,14 @@ public class ModelDescriptionConstants {
     public static final String DISTINGUISHED_NAME = "distinguished-name";
     public static final String EVICTION_TIME = "eviction-time";
     public static final String FLUSH_CACHE = "flush-cache";
+    public static final String FOLLOW = "follow";
     public static final String GROUPS = "groups";
+    public static final String HANDLES_REFERRALS_FOR = "handles-referrals-for";
     public static final String IDENTITY = "identity";
+    public static final String IGNORE = "ignore";
+    public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
     public static final String IS_CALLER_IN_ROLE = "is-caller-in-role";
+    public static final String JAAS = "jaas";
     public static final String JKS = "JKS";
     public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
@@ -65,9 +71,15 @@ public class ModelDescriptionConstants {
     public static final String PROPERTY = "property";
     public static final String PROVIDER = "provider";
     public static final String REALM = "realm";
+    public static final String REFERRALS = "referrals";
     public static final String RELATIVE_TO = "relative-to";
     public static final String ROLES = "roles";
+    public static final String SEARCH_CREDENTIAL = "search-credential";
+    public static final String SEARCH_DN = "search-dn";
+    public static final String SECURITY_REALM = "security-realm";
     public static final String SKIP_GROUP_LOADING = "skip-group-loading";
+    public static final String THROW = "throw";
+    public static final String URL = "url";
     public static final String USERNAME = "username";
     public static final String VALUE = "value";
     public static final String VERBOSE = "verbose";

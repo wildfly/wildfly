@@ -32,7 +32,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -122,7 +122,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
             protocolClass = Protocol.class.getClassLoader().loadClass(className).asSubclass(Protocol.class);
             loaded = true;
         } catch (ClassNotFoundException e) {
-            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unableToLoadProtocol(className));
+            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unableToLoadProtocol(className));
         }
 
         if (loaded) {
@@ -133,7 +133,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 field = getField(protocolClass, attrName);
                 fieldFound = true;
             } catch (NoSuchFieldException e) {
-                context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
+                context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(attrName));
             }
 
             // we now have a valid protocol instance and a valid field, get the value
@@ -147,7 +147,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
 
                 if (protocol == null) {
-                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.protocolNotFoundInStack(protocolName));
+                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.protocolNotFoundInStack(protocolName));
                 }
 
                 // get the type of the attribute and call the appropriate set method
@@ -162,10 +162,10 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                     result = getProtocolFieldValue(protocol, field, type);
                 }
                 catch (PrivilegedActionException pae) {
-                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.privilegedAccessExceptionForAttribute(attrName));
+                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(attrName));
                 }
                 catch (InstantiationException ie){
-                    context.getFailureDescription().set(JGroupsMessages.MESSAGES.instantiationExceptionOnConverterForAttribute(attrName));
+                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.instantiationExceptionOnConverterForAttribute(attrName));
                }
 
             context.getResult().set(result);
@@ -254,7 +254,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         Property property = field.getAnnotation(Property.class);
 
         // mutually exclusive: managed attribute and Property?
-        assert !((managed !=null) && (property != null)) : "attribute " + field.getName() + "is both property and managed attribute" ;
+        assert !((managed !=null) && (property != null)) : "attribute " + field.getName() + "is both property and managed attribute";
 
         if (managed != null) {
             // handle non-primitive managed attribute

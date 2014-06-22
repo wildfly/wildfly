@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -52,8 +53,6 @@ import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Because trans-attr and trans-timeout are both contained in container-transaction
@@ -81,7 +80,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                 processTransactionAttributeAnnotation(applicationClasses, deploymentReflectionIndex, viewClass, ejbView.getMethodIntf(), componentConfiguration);
                 processTransactionTimeoutAnnotation(applicationClasses, deploymentReflectionIndex, viewClass, ejbView.getMethodIntf(), componentConfiguration);
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.failToLoadEjbViewClass(e);
+                throw EjbLogger.ROOT_LOGGER.failToLoadEjbViewClass(e);
             }
 
         }
@@ -133,8 +132,25 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
 
         EjbJarMetaData ejbJarMetadata = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
         if (ejbJarMetadata != null) {
+
+            boolean wildcardAttributeSet = false;
+            boolean wildcardTimeoutSet = false;
+            ContainerTransactionMetaData global = null;
             final AssemblyDescriptorMetaData assemblyDescriptor = ejbJarMetadata.getAssemblyDescriptor();
-            if (assemblyDescriptor != null) {
+            if(assemblyDescriptor != null) {
+                final ContainerTransactionsMetaData globalTransactions = assemblyDescriptor.getContainerTransactionsByEjbName("*");
+
+                if (globalTransactions != null) {
+                    if (globalTransactions.size() > 1) {
+                        throw EjbLogger.ROOT_LOGGER.mustOnlyBeSingleContainerTransactionElementWithWildcard();
+                    }
+                    global = globalTransactions.iterator().next();
+                    for(MethodMetaData method : global.getMethods()) {
+                        if(!method.getMethodName().equals("*")) {
+                            throw EjbLogger.ROOT_LOGGER.wildcardContainerTransactionElementsMustHaveWildcardMethodName();
+                        }
+                    }
+                }
                 final ContainerTransactionsMetaData containerTransactions = assemblyDescriptor.getContainerTransactionsByEjbName(componentDescription.getEJBName());
                 if (containerTransactions != null) {
                     for (final ContainerTransactionMetaData containerTx : containerTransactions) {
@@ -146,10 +162,14 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                             final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
                             final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                             if (methodName.equals("*")) {
-                                if (txAttr != null)
+                                if (txAttr != null){
+                                    wildcardAttributeSet = true;
                                     componentDescription.getTransactionAttributes().setAttribute(methodIntf, null, txAttr);
-                                if (timeout != null)
+                                }
+                                if (timeout != null) {
+                                    wildcardTimeoutSet = true;
                                     componentDescription.getTransactionTimeouts().setAttribute(methodIntf, null, timeout);
+                                }
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
@@ -167,6 +187,23 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                                 }
                             }
                         }
+                    }
+                }
+            }
+            if(global != null) {
+                if(!wildcardAttributeSet && global.getTransAttribute() != null) {
+                    for(MethodMetaData method : global.getMethods()) {
+                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        componentDescription.getTransactionAttributes().setAttribute(methodIntf, null, global.getTransAttribute());
+                    }
+                }
+                final Integer timeout = timeout(global);
+                if(!wildcardTimeoutSet && timeout != null) {
+                    for(MethodMetaData method : global.getMethods()) {
+                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
+                        componentDescription.getTransactionTimeouts().setAttribute(methodIntf, null, timeout);
                     }
                 }
             }

@@ -22,12 +22,16 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
@@ -38,9 +42,6 @@ import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -79,19 +80,49 @@ public class Constants {
     private static final String CAPACITY_DECREMENTER_PROPERTIES_NAME = "capacity-decrementer-properties";
 
 
-    public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS = new SimpleAttributeDefinition(BLOCKING_TIMEOUT_WAIT_MILLIS_NAME, TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true , true, MeasurementUnit.MILLISECONDS);
+    public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS = new SimpleAttributeDefinitionBuilder(BLOCKING_TIMEOUT_WAIT_MILLIS_NAME, ModelType.LONG, true)
+            .setXmlName(TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .build();
 
-    public static final SimpleAttributeDefinition IDLETIMEOUTMINUTES = new SimpleAttributeDefinition(IDLETIMEOUTMINUTES_NAME, TimeOut.Tag.IDLE_TIMEOUT_MINUTES.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.MINUTES);
 
-    public static final SimpleAttributeDefinition BACKGROUNDVALIDATIONMILLIS = new SimpleAttributeDefinition(BACKGROUNDVALIDATIONMILLIS_NAME, Validation.Tag.BACKGROUND_VALIDATION_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.MILLISECONDS, new IntRangeValidator(1, true, true));
+    public static final SimpleAttributeDefinition IDLETIMEOUTMINUTES = new SimpleAttributeDefinitionBuilder(IDLETIMEOUTMINUTES_NAME, ModelType.LONG, true)
+            .setXmlName(TimeOut.Tag.IDLE_TIMEOUT_MINUTES.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MINUTES)
+            .setAllowExpression(true)
+            .build();
 
-    public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinition(BACKGROUNDVALIDATION_NAME, Validation.Tag.BACKGROUND_VALIDATION.getLocalName(), new ModelNode(Defaults.BACKGROUND_VALIDATION), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition BACKGROUNDVALIDATIONMILLIS = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATIONMILLIS_NAME, ModelType.LONG, true)
+            .setXmlName(Validation.Tag.BACKGROUND_VALIDATION_MILLIS.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setValidator(new IntRangeValidator(1, true, true))
+            .setAllowExpression(true)
+            .build();
 
-    public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinition(USE_FAST_FAIL_NAME, Validation.Tag.USE_FAST_FAIL.getLocalName(), new ModelNode(Defaults.USE_FAST_FAIL), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATION_NAME, ModelType.BOOLEAN, true)
+            .setXmlName(Validation.Tag.BACKGROUND_VALIDATION.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(Defaults.BACKGROUND_VALIDATION))
+            .build();
 
-    public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinition(MAX_POOL_SIZE_NAME, CommonPool.Tag.MAX_POOL_SIZE.getLocalName(), new ModelNode(Defaults.MAX_POOL_SIZE), ModelType.INT, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinitionBuilder(USE_FAST_FAIL_NAME, ModelType.BOOLEAN, true)
+            .setXmlName(Validation.Tag.USE_FAST_FAIL.getLocalName())
+            .setDefaultValue(new ModelNode(Defaults.USE_FAST_FAIL))
+            .setAllowExpression(true)
+            .build();
 
-    public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinition(MIN_POOL_SIZE_NAME, CommonPool.Tag.MIN_POOL_SIZE.getLocalName(), new ModelNode(Defaults.MIN_POOL_SIZE), ModelType.INT, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MAX_POOL_SIZE_NAME, ModelType.INT, true)
+            .setXmlName(CommonPool.Tag.MAX_POOL_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(Defaults.MAX_POOL_SIZE))
+            .build();
+
+    public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MIN_POOL_SIZE_NAME, ModelType.INT, true)
+            .setXmlName(CommonPool.Tag.MIN_POOL_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(Defaults.MIN_POOL_SIZE))
+            .build();
 
     public static final SimpleAttributeDefinition INITIAL_POOL_SIZE = new SimpleAttributeDefinitionBuilder(INITIAL_POOL_SIZE_NAME, ModelType.INT)
             .setXmlName(ConnDefPool.Tag.INITIAL_POOL_SIZE.getLocalName())
@@ -99,7 +130,11 @@ public class Constants {
             .setAllowNull(true)
             .build();
 
-    public static SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinition(CAPACITY_INCREMENTER_CLASS_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    public static SimpleAttributeDefinition CAPACITY_INCREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_INCREMENTER_CLASS_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+
+            .setAllowExpression(true)
+            .build();
 
     public static PropertiesAttributeDefinition CAPACITY_INCREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_INCREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
@@ -120,7 +155,10 @@ public class Constants {
             })
             .build();
 
-    public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinition(CAPACITY_DECREMENTER_CLASS_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinitionBuilder(CAPACITY_DECREMENTER_CLASS_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+            .setAllowExpression(true)
+            .build();
 
     public static PropertiesAttributeDefinition CAPACITY_DECREMENTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(CAPACITY_DECREMENTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
@@ -142,9 +180,17 @@ public class Constants {
             .build();
 
 
-    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinition(POOL_PREFILL_NAME, CommonPool.Tag.PREFILL.getLocalName(), new ModelNode(Defaults.PREFILL), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinitionBuilder(POOL_PREFILL_NAME, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(Defaults.PREFILL))
+            .setAllowExpression(true)
+            .setXmlName(CommonPool.Tag.PREFILL.getLocalName())
+            .build();
 
-    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinition(POOL_USE_STRICT_MIN_NAME, CommonPool.Tag.USE_STRICT_MIN.getLocalName(), new ModelNode(Defaults.USE_STRICT_MIN), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinitionBuilder(POOL_USE_STRICT_MIN_NAME, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(Defaults.USE_STRICT_MIN))
+            .setAllowExpression(true)
+            .setXmlName(CommonPool.Tag.USE_STRICT_MIN.getLocalName())
+            .build();
 
     public static final SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinitionBuilder(FLUSH_STRATEGY_NAME, ModelType.STRING)
             .setDefaultValue(new ModelNode(Defaults.FLUSH_STRATEGY.getName()))
@@ -163,4 +209,8 @@ public class Constants {
     public static final AttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
             CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
+
+    public static SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+            .setStorageRuntime()
+            .build();
 }

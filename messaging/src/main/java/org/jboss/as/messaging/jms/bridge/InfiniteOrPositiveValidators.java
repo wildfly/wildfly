@@ -22,10 +22,9 @@
 
 package org.jboss.as.messaging.jms.bridge;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -42,7 +41,7 @@ public interface InfiniteOrPositiveValidators {
             super.validateParameter(parameterName, value);
             long val = value.asLong();
             if (!(val == -1 || (val > 0 && val < Long.MAX_VALUE))) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.illegalValue(value, parameterName)));
+                throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName)));
             }
         }
     };
@@ -53,7 +52,7 @@ public interface InfiniteOrPositiveValidators {
             super.validateParameter(parameterName, value);
             int val = value.asInt();
             if (!(val == -1 || (val > 0 && val < Integer.MAX_VALUE))) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.illegalValue(value, parameterName)));
+                throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.illegalValue(value, parameterName)));
             }
         }
     };

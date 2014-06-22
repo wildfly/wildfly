@@ -27,15 +27,20 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/wildfly/clustering/ejb/infinispan/logging"/>
+    </exports>
+
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-clustering-ejb-infinispan}"/>
     </resources>
 
     <dependencies>
         <module name="org.infinispan"/>
+        <module name="org.infinispan.commons"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.clustering.infinispan" services="import"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.ejb-client"/>
@@ -48,6 +53,7 @@
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.wildfly.clustering.server" services="import"/>
+        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

@@ -22,26 +22,28 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -66,15 +68,14 @@ public class CoreManagementResourceRegistrationUnitTestCase {
 
     @Before
     public void setup() {
-        rootRegistration = ManagementResourceRegistration.Factory.create(new TestDescriptionProvider("RootResource"));
+        rootRegistration = ManagementResourceRegistration.Factory.create(new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()));
     }
 
     @Test
     public void testHandlersOnRootResource() throws Exception {
 
-        rootRegistration.registerOperationHandler("one", TestHandler.ONE, new TestDescriptionProvider("one"));
-        rootRegistration.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler(getOpDef("one"), TestHandler.ONE);
+        rootRegistration.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.TWO);
 
         OperationStepHandler oneHandler = rootRegistration.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.ONE, oneHandler);
@@ -86,10 +87,10 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testHandlersOnChildResource() throws Exception {
 
-        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
-        child.registerOperationHandler("one", TestHandler.ONE, new TestDescriptionProvider("one"));
-        child.registerOperationHandler("two", TestHandler.TWO, new TestDescriptionProvider("two"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(new SimpleResourceDefinition(childElement, new NonResolvingResourceDescriptionResolver()));
+        child.registerOperationHandler(getOpDef("one"), TestHandler.ONE);
+        child.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.TWO);
+
 
         OperationStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.ONE, oneHandler);
@@ -119,21 +120,16 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testHandlerInheritance() throws Exception {
 
-        rootRegistration.registerOperationHandler("one", TestHandler.PARENT, new TestDescriptionProvider("one"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("two", TestHandler.PARENT, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("three", TestHandler.PARENT, new TestDescriptionProvider("three"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("four", TestHandler.PARENT, new TestDescriptionProvider("four"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler(getOpDef("one", OperationEntry.Flag.READ_ONLY), TestHandler.PARENT, true);
+        rootRegistration.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.PARENT, true);
+        rootRegistration.registerOperationHandler(getOpDef("three", OperationEntry.Flag.READ_ONLY), TestHandler.PARENT, true);
+        rootRegistration.registerOperationHandler(getOpDef("four", OperationEntry.Flag.READ_ONLY), TestHandler.PARENT, false);
 
-        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
-        child.registerOperationHandler("one", TestHandler.CHILD, new TestDescriptionProvider("one"), true);
-        child.registerOperationHandler("two", TestHandler.CHILD, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(new SimpleResourceDefinition(childElement, new NonResolvingResourceDescriptionResolver()));
+        child.registerOperationHandler(getOpDef("one"), TestHandler.CHILD, true);
+        child.registerOperationHandler(getOpDef("two", OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY), TestHandler.CHILD, true);
 
-        ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
+        ManagementResourceRegistration grandchild = child.registerSubModel(new SimpleResourceDefinition(grandchildElement, new NonResolvingResourceDescriptionResolver()));
 
         OperationStepHandler oneHandler = child.getOperationHandler(PathAddress.EMPTY_ADDRESS, "one");
         assertSame(TestHandler.CHILD, oneHandler);
@@ -194,9 +190,8 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testFlagsOnRootResource() throws Exception {
 
-        rootRegistration.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"));
-        rootRegistration.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler(getOpDef("one"), TestHandler.INSTANCE);
+        rootRegistration.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, false);
 
         Set<OperationEntry.Flag> oneFlags = rootRegistration.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
         assertNotNull(oneFlags);
@@ -210,10 +205,9 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testFlagsOnChildResource() throws Exception {
 
-        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
-        child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"));
-        child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(new SimpleResourceDefinition(childElement, new NonResolvingResourceDescriptionResolver()));
+        child.registerOperationHandler(getOpDef("one"), TestHandler.INSTANCE);
+        child.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, false);
 
         Set<OperationEntry.Flag> oneFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
         assertNotNull(oneFlags);
@@ -243,21 +237,16 @@ public class CoreManagementResourceRegistrationUnitTestCase {
     @Test
     public void testFlagsInheritance() throws Exception {
 
-        rootRegistration.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("three", TestHandler.INSTANCE, new TestDescriptionProvider("three"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-        rootRegistration.registerOperationHandler("four", TestHandler.INSTANCE, new TestDescriptionProvider("four"), false,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        rootRegistration.registerOperationHandler(getOpDef("one", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, true);
+        rootRegistration.registerOperationHandler(getOpDef("two", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, true);
+        rootRegistration.registerOperationHandler(getOpDef("three", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, true);
+        rootRegistration.registerOperationHandler(getOpDef("four", OperationEntry.Flag.READ_ONLY), TestHandler.INSTANCE, false);
 
-        ManagementResourceRegistration child = rootRegistration.registerSubModel(childElement, new TestDescriptionProvider("child"));
-        child.registerOperationHandler("one", TestHandler.INSTANCE, new TestDescriptionProvider("one"), true);
-        child.registerOperationHandler("two", TestHandler.INSTANCE, new TestDescriptionProvider("two"), true,
-                OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY));
+        ManagementResourceRegistration child = rootRegistration.registerSubModel(new SimpleResourceDefinition(childElement, new NonResolvingResourceDescriptionResolver()));
+        child.registerOperationHandler(getOpDef("one"), TestHandler.INSTANCE, true);
+        child.registerOperationHandler(getOpDef("two", OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY), TestHandler.INSTANCE, true);
 
-        ManagementResourceRegistration grandchild = child.registerSubModel(grandchildElement, new TestDescriptionProvider("grandchild"));
+        ManagementResourceRegistration grandchild = child.registerSubModel(new SimpleResourceDefinition(grandchildElement, new NonResolvingResourceDescriptionResolver()));
 
         Set<OperationEntry.Flag> oneFlags = child.getOperationFlags(PathAddress.EMPTY_ADDRESS, "one");
         assertNotNull(oneFlags);
@@ -349,8 +338,8 @@ public class CoreManagementResourceRegistrationUnitTestCase {
             @Override
             public List<AccessConstraintDefinition> getAccessConstraints() {
                 return Arrays.asList(
-                        (AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.EXTENSIONS,
-                        (AccessConstraintDefinition) ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
+                        SensitiveTargetAccessConstraintDefinition.EXTENSIONS,
+                        ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
                 );
             }
         };
@@ -365,8 +354,8 @@ public class CoreManagementResourceRegistrationUnitTestCase {
             @Override
             public List<AccessConstraintDefinition> getAccessConstraints() {
                 return Arrays.asList(
-                        (AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN,
-                        (AccessConstraintDefinition) ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
+                        SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN,
+                        ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
                 );
             }
         };
@@ -384,12 +373,9 @@ public class CoreManagementResourceRegistrationUnitTestCase {
 
         private static TestHandler ONE = new TestHandler();
         private static TestHandler TWO = new TestHandler();
-        private static TestHandler THREE = new TestHandler();
-        private static TestHandler FOUR = new TestHandler();
 
         private static TestHandler PARENT = new TestHandler();
         private static TestHandler CHILD = new TestHandler();
-        private static TestHandler GRANDCHILD = new TestHandler();
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -397,16 +383,11 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         }
     }
 
-    private static class TestDescriptionProvider implements DescriptionProvider {
-        private final String description;
-
-        public TestDescriptionProvider(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode().set(description);
-        }
+    static OperationDefinition getOpDef(String name, OperationEntry.Flag... flags) {
+        return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
+                .withFlags(flags)
+                .build();
     }
+
+
 }

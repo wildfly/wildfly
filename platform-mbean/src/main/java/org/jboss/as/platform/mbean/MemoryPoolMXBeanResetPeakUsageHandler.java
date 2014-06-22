@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,7 +45,7 @@ import org.jboss.dmr.ModelNode;
 public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandler{
 
     static final MemoryPoolMXBeanResetPeakUsageHandler INSTANCE = new MemoryPoolMXBeanResetPeakUsageHandler();
-    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("reset-peak-usage", PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_POOL))
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("reset-peak-usage", PlatformMBeanUtil.getResolver(PlatformMBeanConstants.MEMORY_POOL))
             .setRuntimeOnly()
             .build();
 
@@ -75,7 +76,7 @@ public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandl
         }
 
         if (memoryPoolMXBean == null) {
-            throw PlatformMBeanMessages.MESSAGES.unknownMemoryPool2(memPoolName);
+            throw PlatformMBeanLogger.ROOT_LOGGER.unknownMemoryPool(memPoolName);
         }
         return memoryPoolMXBean;
     }

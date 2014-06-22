@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
@@ -76,6 +75,11 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     private final EEDefaultResourceJndiNames defaultResourceJndiNames;
 
     /**
+     * The default security domain for the module.
+     */
+    private String defaultSecurityDomain;
+
+    /**
      * Construct a new instance.
      *
      * @param applicationName    the application name (which is same as the module name if the .ear is absent)
@@ -104,7 +108,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
      */
     public EEModuleClassDescription addOrGetLocalClassDescription(final String className) {
         if (className == null) {
-            throw MESSAGES.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullVar("name");
         }
         EEModuleClassDescription ret = classDescriptions.get(className);
         if (ret == null) {
@@ -149,13 +153,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         final String componentName = description.getComponentName();
         final String componentClassName = description.getComponentClassName();
         if (componentName == null) {
-            throw MESSAGES.nullVar("componentName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentName");
         }
         if (componentClassName == null) {
-            throw MESSAGES.nullVar("componentClassName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName");
         }
         if (componentsByName.containsKey(componentName)) {
-            throw MESSAGES.componentAlreadyDefined(componentName);
+            throw EeLogger.ROOT_LOGGER.componentAlreadyDefined(componentName);
         }
         componentsByName.put(componentName, description);
         List<ComponentDescription> list = componentsByClassName.get(componentClassName);
@@ -233,7 +237,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public void setDistinctName(String distinctName) {
         if (distinctName == null) {
-            throw MESSAGES.nullVar("distinctName");
+            throw EeLogger.ROOT_LOGGER.nullVar("distinctName");
         }
         this.distinctName = distinctName;
     }
@@ -314,5 +318,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public EEDefaultResourceJndiNames getDefaultResourceJndiNames() {
         return defaultResourceJndiNames;
+    }
+
+    public String getDefaultSecurityDomain() {
+        return defaultSecurityDomain;
+    }
+
+    public void setDefaultSecurityDomain(String defaultSecurityDomain) {
+        this.defaultSecurityDomain = defaultSecurityDomain;
     }
 }

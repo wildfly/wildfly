@@ -46,7 +46,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultPermissionsProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
@@ -265,7 +265,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return EjbMessages.MESSAGES.rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
+                        return EjbLogger.ROOT_LOGGER.rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
                     }
 
                     @Override
@@ -311,7 +311,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
-
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

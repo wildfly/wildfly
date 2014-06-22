@@ -90,7 +90,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         // remove original vault
         if (originalVault.get("KEYSTORE_URL") != null && originalVault.hasDefined("KEYSTORE_URL")) {
             op = Util.createRemoveOperation(VAULT_PATH);
-            Utils.applyUpdate(op, managementClient.getControllerClient());
+            CoreUtils.applyUpdate(op, managementClient.getControllerClient());
         }
 
         // create new vault
@@ -116,7 +116,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         vaultOption.get("SALT").set(salt);
         vaultOption.get("ITERATION_COUNT").set(Integer.toString(iterationCount));
         vaultOption.get("ENC_FILE_DIR").set(encryptionDirectory);
-        Utils.applyUpdate(op, managementClient.getControllerClient());
+        CoreUtils.applyUpdate(op, managementClient.getControllerClient());
 
         LOGGER.debug("Vault created in server configuration");
 
@@ -128,7 +128,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         ModelNode op;
 
         op = Util.createRemoveOperation(VAULT_PATH);
-        Utils.applyUpdate(op, managementClient.getControllerClient());
+        CoreUtils.applyUpdate(op, managementClient.getControllerClient());
 
         // set original vault
         if (originalVault.get("KEYSTORE_URL") != null && originalVault.hasDefined("KEYSTORE_URL")) {
@@ -140,7 +140,7 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
                 String param = (String) it.next();
                 vaultOption.get(param).set(originalVault.get(param));
             }
-            Utils.applyUpdate(op, managementClient.getControllerClient());
+            CoreUtils.applyUpdate(op, managementClient.getControllerClient());
         }
 
         // remove vault files

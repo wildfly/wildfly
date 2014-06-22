@@ -48,7 +48,7 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -60,8 +60,6 @@ import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * SCI deployment processor.
@@ -86,7 +84,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         assert warMetaData != null;
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw MESSAGES.failedToResolveModule(deploymentUnit);
+            throw UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit);
         }
         final ClassLoader classLoader = module.getClassLoader();
         ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
@@ -114,7 +112,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             } catch (ModuleLoadException e) {
                 if (dependency.isOptional() == false) {
-                    throw MESSAGES.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
+                    throw UndertowLogger.ROOT_LOGGER.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
                 }
             }
         }
@@ -152,7 +150,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index == null) {
-            throw MESSAGES.unableToResolveAnnotationIndex(deploymentUnit);
+            throw UndertowLogger.ROOT_LOGGER.unableToResolveAnnotationIndex(deploymentUnit);
         }
 
         // Find classes which extend, implement, or are annotated by HandlesTypes
@@ -196,7 +194,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     servletContainerInitializerClassName = reader.readLine();
                 } catch (Exception e) {
                     if (error) {
-                        throw MESSAGES.errorProcessingSCI(jar, e);
+                        throw UndertowLogger.ROOT_LOGGER.errorProcessingSCI(jar, e);
                     } else {
                         UndertowLogger.ROOT_LOGGER.skippedSCI(jar, e);
                     }
@@ -204,7 +202,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             }
         } catch (Exception e) {
             if (error) {
-                throw MESSAGES.errorProcessingSCI(jar, e);
+                throw UndertowLogger.ROOT_LOGGER.errorProcessingSCI(jar, e);
             } else {
                 UndertowLogger.ROOT_LOGGER.skippedSCI(jar, e);
             }

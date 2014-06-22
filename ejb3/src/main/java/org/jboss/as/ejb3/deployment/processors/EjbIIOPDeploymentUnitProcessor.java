@@ -38,7 +38,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -56,6 +56,7 @@ import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
+import org.jboss.as.jacorb.service.IORSecConfigMetaDataService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -68,6 +69,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.metadata.ejb.jboss.IIOPMetaData;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,8 +77,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.PortableServer.POA;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * This is the DUP that sets up IIOP for EJB's
@@ -157,14 +157,14 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         try {
             remoteClass = classIndex.classIndex(remoteView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
         final EJBViewDescription homeView = componentDescription.getEjbHomeView();
         final ClassIndex homeClass;
         try {
             homeClass = classIndex.classIndex(homeView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
 
         componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
@@ -176,7 +176,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<String, SkeletonStrategy>();
@@ -217,7 +217,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<String, SkeletonStrategy>();
@@ -255,6 +255,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
         builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
         builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
+        builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME, IORSecurityConfigMetaData.class, service.getIORSecConfigMetaDataInjectedValue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
 
         //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors

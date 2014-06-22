@@ -22,9 +22,9 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.util.Base64;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 /**
@@ -44,7 +44,7 @@ public class DisplaySecret implements State {
 
     public State execute() {
         String pwdBase64 = Base64.encodeBytes(stateValues.getPassword().getBytes());
-        theConsole.printf(MESSAGES.secretElement(pwdBase64));
+        theConsole.printf(DomainManagementLogger.ROOT_LOGGER.secretElement(pwdBase64));
         theConsole.printf(NEW_LINE);
 
         // This is now the final state so return null.

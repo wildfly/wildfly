@@ -21,16 +21,16 @@
  */
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
-import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.timerservice.AutoTimer;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
-
 import javax.ejb.Schedule;
 import javax.ejb.Schedules;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.timerservice.AutoTimer;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
+
 /**
  * {@link org.jboss.as.ee.metadata.ClassAnnotationInformation} for Schedule annotation
  *
@@ -43,10 +43,10 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
     }
 
     @Override
-    protected AutoTimer fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected AutoTimer fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final AutoTimer timer = new AutoTimer();
         for (ScheduleValues schedulePart : ScheduleValues.values()) {
-            schedulePart.set(timer, annotationInstance);
+            schedulePart.set(timer, annotationInstance, propertyReplacer);
         }
         return timer;
     }
@@ -124,7 +124,7 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
             this.booleanValue = true;
         }
 
-        public void set(final AutoTimer timer, final AnnotationInstance annotationInstance) {
+        public void set(final AutoTimer timer, final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
             final AnnotationValue value = annotationInstance.value(name);
             if (booleanValue) {
                 if (value == null) {
@@ -136,17 +136,17 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
                 if (value == null) {
                     setString(timer, defaultStringValue);
                 } else {
-                    setString(timer, PropertiesValueResolver.replaceProperties(value.asString()));
+                    setString(timer, propertyReplacer.replaceProperties(value.asString()));
                 }
             }
         }
 
         protected void setString(final AutoTimer expression, final String value) {
-            throw MESSAGES.shouldBeOverridden();
+            throw EjbLogger.ROOT_LOGGER.shouldBeOverridden();
         }
 
         protected void setBoolean(final AutoTimer expression, final boolean value) {
-            throw MESSAGES.shouldBeOverridden();
+            throw EjbLogger.ROOT_LOGGER.shouldBeOverridden();
         }
     }
 }

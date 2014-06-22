@@ -1,99 +1,58 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU Lesser General Public License, v. 2.1.
+ * This program is distributed in the hope that it will be useful, but WITHOUT A
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License,
+ * v.2.1 along with this distribution; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA  02110-1301, USA.
+ */
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
+/**
+ * A handler for cache-container metrics.
+ *
+ * @author Paul Ferraro
+ */
 public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-    public static final CacheContainerMetricsHandler INSTANCE = new CacheContainerMetricsHandler();
-
-    public enum CacheManagerMetrics {
-        CACHE_MANAGER_STATUS(CacheContainerResourceDefinition.CACHE_MANAGER_STATUS),
-        CLUSTER_NAME(CacheContainerResourceDefinition.CLUSTER_NAME),
-        IS_COORDINATOR(CacheContainerResourceDefinition.IS_COORDINATOR),
-        COORDINATOR_ADDRESS(CacheContainerResourceDefinition.COORDINATOR_ADDRESS),
-        LOCAL_ADDRESS(CacheContainerResourceDefinition.LOCAL_ADDRESS);
-
-        private static final Map<String, CacheManagerMetrics> MAP = new HashMap<>();
-
-        static {
-            for (CacheManagerMetrics metric : CacheManagerMetrics.values()) {
-                MAP.put(metric.toString(), metric);
-            }
-        }
-
-        final AttributeDefinition definition;
-
-        private CacheManagerMetrics(final AttributeDefinition definition) {
-            this.definition = definition;
-        }
-
-        @Override
-        public final String toString() {
-            return this.definition.getName();
-        }
-
-        public static CacheManagerMetrics getStat(final String stringForm) {
-            return MAP.get(stringForm);
-        }
-    }
-
-    /*
-     * Two constraints need to be dealt with here:
-     * 1. There may be no started cache container instance available to interrogate. Because of lazy deployment,
-     * a cache container instance is only started upon deployment of an application which uses that cache instance.
-     * 2. The attribute name passed in may not correspond to a defined metric
-     *
-     * Read-only attributes have no easy way to throw an exception without negatively impacting other parts
-     * of the system. Therefore in such cases, as message will be logged and a ModelNode of undefined will be returned.
-     */
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String cacheContainerName = address.getLastElement().getValue();
-        final String attrName = operation.require(ModelDescriptionConstants.NAME).asString();
-        final ServiceController<?> controller = context.getServiceRegistry(false).getService(EmbeddedCacheManagerService.getServiceName(cacheContainerName));
+        // Address is of the form: /subsystem=infinispan/cache-container=*
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String containerName = address.getLastElement().getValue();
+        String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        // check that the service has been installed and started
-        boolean started = controller != null && controller.getValue() != null;
-        CacheManagerMetrics metric = CacheManagerMetrics.getStat(attrName);
-        ModelNode result = new ModelNode();
+        CacheContainerMetric metric = CacheContainerMetric.forName(name);
 
         if (metric == null) {
-            context.getFailureDescription().set(InfinispanMessages.MESSAGES.unknownMetric(attrName));
-        } else if (!started) {
-            // when the cache manager service is not available, return a null result
+            context.getFailureDescription().set(InfinispanLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
-            CacheContainer cacheManager = (CacheContainer) controller.getValue();
-            switch (metric) {
-                case CACHE_MANAGER_STATUS:
-                    result.set(cacheManager.getStatus().toString());
-                    break;
-                case IS_COORDINATOR:
-                    result.set(cacheManager.isCoordinator());
-                    break;
-                case LOCAL_ADDRESS:
-                    result.set(cacheManager.getAddress() != null ? cacheManager.getAddress().toString() : "N/A");
-                    break;
-                case COORDINATOR_ADDRESS:
-                    result.set(cacheManager.getCoordinator() != null ? cacheManager.getCoordinator().toString() : "N/A");
-                    break;
-                case CLUSTER_NAME:
-                    result.set(cacheManager.getClusterName() != null ? cacheManager.getClusterName() : "N/A");
+            CacheContainer container = ServiceContainerHelper.findValue(context.getServiceRegistry(false), EmbeddedCacheManagerService.getServiceName(containerName));
+            if (container != null) {
+                ModelNode result = metric.getValue(container);
+                context.getResult().set((result != null) && result.isDefined() ? result : new ModelNode("N/A"));
             }
-            context.getResult().set(result);
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }

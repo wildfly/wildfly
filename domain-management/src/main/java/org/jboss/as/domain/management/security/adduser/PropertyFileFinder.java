@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.APPLICATION_ROLES_PROPERTIES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.APPLICATION_USERS_PROPERTIES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DOMAIN_BASE_DIR;
@@ -43,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
 import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
 import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
@@ -62,9 +62,6 @@ public class PropertyFileFinder implements State {
     public PropertyFileFinder(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     @Override
@@ -72,18 +69,17 @@ public class PropertyFileFinder implements State {
         stateValues.setKnownGroups(new HashMap<String, String>());
 
         if (stateValues.getOptions().getGroupProperties() != null && stateValues.getOptions().getUserProperties() == null) {
-            return new ErrorState(theConsole, MESSAGES.groupPropertiesButNoUserProperties(stateValues.getOptions()
-                    .getGroupProperties()), null, stateValues);
+            return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.groupPropertiesButNoUserProperties(stateValues.getOptions().getGroupProperties()), null, stateValues);
         }
 
         List<File> foundFiles = new ArrayList<File>(2);
         String fileName = stateValues.getOptions().getUserProperties();
-        fileName = fileName == null ? stateValues.getFileMode() == FileMode.MANAGEMENT ? MGMT_USERS_PROPERTIES : APPLICATION_USERS_PROPERTIES : fileName;
+        fileName = fileName == null ? stateValues.getFileMode() == FileMode.MANAGEMENT ? MGMT_USERS_PROPERTIES
+                : APPLICATION_USERS_PROPERTIES : fileName;
         if (!findFiles(foundFiles, fileName)) {
-            return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
+            return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.propertiesFileNotFound(fileName), null, stateValues);
         }
         fileName = stateValues.getOptions().getGroupProperties();
-
 
         if (fileName != null || stateValues.getFileMode() != FileMode.UNDEFINED) {
             boolean groupFileMandatory = true;
@@ -96,13 +92,13 @@ public class PropertyFileFinder implements State {
             }
             fileName = fileName == null ? APPLICATION_ROLES_PROPERTIES : fileName;
             if (!findFiles(foundGroupFiles, fileName) && groupFileMandatory) {
-                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.propertiesFileNotFound(fileName), null, stateValues);
             }
             stateValues.setGroupFiles(foundGroupFiles);
             try {
                 stateValues.setKnownGroups(loadAllGroups(foundGroupFiles));
             } catch (Exception e) {
-                return new ErrorState(theConsole, MESSAGES.propertiesFileNotFound(fileName), null, stateValues);
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.propertiesFileNotFound(fileName), null, stateValues);
             }
         }
 
@@ -121,14 +117,16 @@ public class PropertyFileFinder implements State {
                     realmName = pfl.getRealmName();
                 } else {
                     String nextRealm = pfl.getRealmName();
-                    if (realmName.equals(nextRealm)==false) {
-                        return new ErrorState(theConsole, MESSAGES.multipleRealmsDetected(realmName, nextRealm), null, stateValues);
+                    if (realmName.equals(nextRealm) == false) {
+                        return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.multipleRealmsDetected(realmName, nextRealm), null,
+                                stateValues);
                     }
                 }
                 pfl.stop(null);
                 pfl = null;
             } catch (IOException e) {
-                return new ErrorState(theConsole, MESSAGES.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()), null, stateValues);
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.unableToLoadUsers(current.getAbsolutePath(), e.getMessage()), null,
+                        stateValues);
             } finally {
                 if (pfl != null) {
                     pfl.stop(null);
@@ -138,7 +136,7 @@ public class PropertyFileFinder implements State {
         }
         if (realmName != null) {
             if (stateValues.getRealmMode() == RealmMode.USER_SUPPLIED && realmName.equals(stateValues.getRealm()) == false) {
-                return new ErrorState(theConsole, MESSAGES.userRealmNotMatchDiscovered(stateValues.getRealm(), realmName),
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.userRealmNotMatchDiscovered(stateValues.getRealm(), realmName),
                         null, stateValues);
             }
 
@@ -188,15 +186,38 @@ public class PropertyFileFinder implements State {
             return true;
         }
 
-        File standaloneProps = buildFilePath(SERVER_CONFIG_USER_DIR, stateValues.getOptions().getServerConfigDir(),
-                                             SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
-        if (standaloneProps.exists()) {
-            foundFiles.add(standaloneProps);
+        String serverConfigOpt = stateValues.getOptions().getServerConfigDir();
+        String domainConfigOpt = stateValues.getOptions().getDomainConfigDir();
+
+        // if no option is set, add to both standalone and domain
+        if (serverConfigOpt == null && domainConfigOpt == null) {
+            File standaloneProps = buildFilePath(SERVER_CONFIG_USER_DIR, stateValues.getOptions().getServerConfigDir(),
+                    SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
+            if (standaloneProps.exists()) {
+                foundFiles.add(standaloneProps);
+            }
+            File domainProps = buildFilePath(DOMAIN_CONFIG_USER_DIR, stateValues.getOptions().getDomainConfigDir(),
+                    DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
+            if (domainProps.exists()) {
+                foundFiles.add(domainProps);
+            }
         }
-        File domainProps = buildFilePath(DOMAIN_CONFIG_USER_DIR, stateValues.getOptions().getDomainConfigDir(),
-                                         DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
-        if (domainProps.exists()) {
-            foundFiles.add(domainProps);
+
+        // if either the -sc or -dc options are set, use only the one specified.
+        if (serverConfigOpt != null) {
+            File standaloneProps = buildFilePath(SERVER_CONFIG_USER_DIR, stateValues.getOptions().getServerConfigDir(),
+                    SERVER_CONFIG_DIR, SERVER_BASE_DIR, "standalone", fileName);
+            if (standaloneProps.exists()) {
+                foundFiles.add(standaloneProps);
+            }
+        }
+
+        if (domainConfigOpt != null) {
+            File domainProps = buildFilePath(DOMAIN_CONFIG_USER_DIR, stateValues.getOptions().getDomainConfigDir(),
+                    DOMAIN_CONFIG_DIR, DOMAIN_BASE_DIR, "domain", fileName);
+            if (domainProps.exists()) {
+                foundFiles.add(domainProps);
+            }
         }
 
         return !foundFiles.isEmpty();
@@ -206,7 +227,7 @@ public class PropertyFileFinder implements State {
             final String serverConfigDirPropertyName, final String serverBaseDirPropertyName, final String defaultBaseDir,
             final String fileName) {
         return new File(buildDirPath(serverConfigUserDirPropertyName, suppliedConfigDir, serverConfigDirPropertyName,
-                                     serverBaseDirPropertyName, defaultBaseDir), fileName);
+                serverBaseDirPropertyName, defaultBaseDir), fileName);
     }
 
     /**

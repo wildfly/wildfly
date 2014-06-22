@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.enterprise.concurrent.ContextService;
@@ -97,11 +97,11 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 }

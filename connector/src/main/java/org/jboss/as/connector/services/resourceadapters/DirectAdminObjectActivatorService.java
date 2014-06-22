@@ -23,12 +23,12 @@
 package org.jboss.as.connector.services.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
@@ -108,7 +108,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
 
             Connector cmd = mdr.getValue().getResourceAdapter(raId);
             if (cmd.getVersion() == Connector.Version.V_10) {
-                throw MESSAGES.adminObjectForJCA10(resourceAdapter, jndiName);
+                throw ConnectorLogger.ROOT_LOGGER.adminObjectForJCA10(resourceAdapter, jndiName);
             } else {
                 ResourceAdapter1516 ra1516 = (ResourceAdapter1516) cmd.getResourceadapter();
                 if (ra1516.getAdminObjects() != null) {
@@ -120,7 +120,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
             }
 
             if (aoClass == null || !aoClass.equals(className)) {
-                throw MESSAGES.invalidAdminObject(aoClass, resourceAdapter, jndiName);
+                throw ConnectorLogger.ROOT_LOGGER.invalidAdminObject(aoClass, resourceAdapter, jndiName);
             }
 
             Map<String, String> raConfigProperties = new HashMap<String, String>();

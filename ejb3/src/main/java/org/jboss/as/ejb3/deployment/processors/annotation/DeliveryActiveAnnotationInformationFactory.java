@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.ejb3.annotation.DeliveryActive;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Processes the {@link org.jboss.ejb3.annotation.DeliveryActive} annotation
@@ -37,7 +38,7 @@ public class DeliveryActiveAnnotationInformationFactory extends ClassAnnotationI
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         return annotationInstance.value().asBoolean();
     }
 }

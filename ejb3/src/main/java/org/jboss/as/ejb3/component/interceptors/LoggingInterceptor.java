@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.component.interceptors;
 import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.invocation.ImmediateInterceptorFactory;

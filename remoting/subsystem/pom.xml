@@ -31,12 +31,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-remoting-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-remoting</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Remoting Subsystem</name>
 

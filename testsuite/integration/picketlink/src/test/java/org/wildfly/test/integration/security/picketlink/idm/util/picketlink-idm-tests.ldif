@@ -1,0 +1,35 @@
+#dn: dc=jboss,dc=org
+#objectclass: dcObject
+#objectclass: organization
+#o: JBoss
+#dc: JBoss
+
+dn: ou=People,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: People
+
+dn: ou=Agent,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Agent
+
+dn: ou=CustomTypes,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: CustomTypes
+
+dn: ou=Roles,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Roles
+
+dn: ou=Groups,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Groups
+
+dn: ou=QA,ou=Groups,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: QA

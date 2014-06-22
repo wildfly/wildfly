@@ -24,7 +24,7 @@ package org.jboss.as.ee.concurrent.service;
 
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -69,7 +69,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
 
     public ManagedThreadFactoryImpl getValue() throws IllegalStateException {
         if (this.managedThreadFactory == null) {
-            throw EeMessages.MESSAGES.concurrentServiceValueUninitialized();
+            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return managedThreadFactory;
     }

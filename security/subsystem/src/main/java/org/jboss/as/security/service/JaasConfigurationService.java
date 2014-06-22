@@ -25,7 +25,7 @@ package org.jboss.as.security.service;
 import javax.security.auth.login.Configuration;
 
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityLogger;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster.web;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,7 +45,7 @@ public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase 
 
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));

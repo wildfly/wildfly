@@ -22,10 +22,9 @@
 
 package org.jboss.as.server.deployment.reflect;
 
-import static org.jboss.as.server.ServerMessages.MESSAGES;
-
 import java.util.jar.Manifest;
 
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -52,7 +51,7 @@ public final class InstallReflectionIndexProcessor implements DeploymentUnitProc
 
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw MESSAGES.nullModuleAttachment(deploymentUnit);
+            throw ServerLogger.ROOT_LOGGER.nullModuleAttachment(deploymentUnit);
         }
 
         if(deploymentUnit.getParent() == null) {

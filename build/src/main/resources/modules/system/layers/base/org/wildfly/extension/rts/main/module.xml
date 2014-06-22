@@ -24,8 +24,12 @@
 
 <module xmlns="urn:jboss:module:1.3" name="org.wildfly.extension.rts">
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-rts}"/>
     </resources>
+
+    <exports>
+        <exclude path="org/wildfly/extension/rts/logging"/>
+    </exports>
 
     <dependencies>
         <module name="javax.api"/>

@@ -22,13 +22,14 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
+
+import org.jboss.as.protocol.logging.ProtocolLogger;
 
 /**
  * ManagementProtocol header used to send the required information to establish a request with a remote controller.  The primary
@@ -90,7 +91,7 @@ public abstract class ManagementProtocolHeader {
         final byte[] signatureBytes = new byte[4];
         input.readFully(signatureBytes);
         if (!Arrays.equals(ManagementProtocol.SIGNATURE, signatureBytes)) {
-            throw MESSAGES.invalidSignature(Arrays.toString(signatureBytes));
+            throw ProtocolLogger.ROOT_LOGGER.invalidSignature(Arrays.toString(signatureBytes));
         }
     }
 
@@ -123,7 +124,7 @@ public abstract class ManagementProtocolHeader {
             case ManagementProtocol.TYPE_PONG:
                 return new ManagementPongHeader(version);
             default:
-                throw MESSAGES.invalidType("0x" + Integer.toHexString(type));
+                throw ProtocolLogger.ROOT_LOGGER.invalidType("0x" + Integer.toHexString(type));
         }
     }
 }

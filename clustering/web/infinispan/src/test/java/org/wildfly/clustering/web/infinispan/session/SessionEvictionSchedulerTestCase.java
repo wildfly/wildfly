@@ -21,54 +21,63 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 
-import java.util.concurrent.ExecutorService;
-
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 public class SessionEvictionSchedulerTestCase {
+    @SuppressWarnings("rawtypes")
     @Test
-    public void test() {
+    public void test() throws Exception {
+        String name = "cache";
         String evictedSessionId = "evicted";
         String activeSessionId = "active";
         ImmutableSession evictedSession = mock(ImmutableSession.class);
         ImmutableSession activeSession = mock(ImmutableSession.class);
+        CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
+        CommandDispatcher<SessionEvictionContext> dispatcher = mock(CommandDispatcher.class);
         Batcher batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Evictor<String> evictor = mock(Evictor.class);
-        ExecutorService executor = mock(ExecutorService.class);
-        ArgumentCaptor<Runnable> capturedTask = ArgumentCaptor.forClass(Runnable.class);
+        ArgumentCaptor<Command> capturedCommand = ArgumentCaptor.forClass(Command.class);
+        ArgumentCaptor<SessionEvictionContext> capturedContext = ArgumentCaptor.forClass(SessionEvictionContext.class);
 
-        try (Scheduler<ImmutableSession> scheduler = new SessionEvictionScheduler(batcher, evictor, 1, executor)) {
+        when(dispatcherFactory.createCommandDispatcher(same(name), capturedContext.capture())).thenReturn(dispatcher);
+
+        try (Scheduler scheduler = new SessionEvictionScheduler(name, batcher, evictor, dispatcherFactory, 1)) {
+            SessionEvictionContext context = capturedContext.getValue();
+            
+            assertSame(scheduler, context);
+            
             when(evictedSession.getId()).thenReturn(evictedSessionId);
             when(activeSession.getId()).thenReturn(activeSessionId);
             
             scheduler.schedule(evictedSession);
 
-            verifyZeroInteractions(executor);
+            verifyZeroInteractions(dispatcher);
 
             scheduler.schedule(activeSession);
 
-            verify(executor).submit(capturedTask.capture());
+            verify(dispatcher).submitOnCluster(capturedCommand.capture());
             
             when(batcher.startBatch()).thenReturn(batch);
             
-            capturedTask.getValue().run();
+            capturedCommand.getValue().execute(context);
             
             verify(evictor).evict(evictedSessionId);
             verify(evictor, never()).evict(activeSessionId);
             verify(batch).close();
         }
+
+        verify(dispatcher).close();
     }
 }

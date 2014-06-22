@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.security;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
@@ -39,6 +37,7 @@ import javax.security.jacc.PolicyContext;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.invocation.Interceptor;
@@ -79,13 +78,13 @@ public class AuthorizationInterceptor implements Interceptor {
 
     public AuthorizationInterceptor(final EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod, final String contextID) {
         if (ejbMethodSecurityMetaData == null) {
-            throw MESSAGES.ejbMethodSecurityMetaDataIsNull();
+            throw EjbLogger.ROOT_LOGGER.ejbMethodSecurityMetaDataIsNull();
         }
         if (viewClassName == null || viewClassName.trim().isEmpty()) {
-            throw MESSAGES.viewClassNameIsNull();
+            throw EjbLogger.ROOT_LOGGER.viewClassNameIsNull();
         }
         if (viewMethod == null) {
-            throw MESSAGES.viewMethodIsNull();
+            throw EjbLogger.ROOT_LOGGER.viewMethodIsNull();
         }
         this.ejbMethodSecurityMetaData = ejbMethodSecurityMetaData;
         this.viewClassName = viewClassName;
@@ -97,14 +96,14 @@ public class AuthorizationInterceptor implements Interceptor {
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
         if (component instanceof EJBComponent == false) {
-            throw MESSAGES.unexpectedComponent(component,EJBComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
         final Method invokedMethod = context.getMethod();
         final ComponentView componentView = context.getPrivateData(ComponentView.class);
         final String viewClassOfInvokedMethod = componentView.getViewClass().getName();
         // shouldn't really happen if the interceptor was setup correctly. But let's be safe and do a check
         if (!this.viewClassName.equals(viewClassOfInvokedMethod) || !this.viewMethod.equals(invokedMethod)) {
-            throw MESSAGES.failProcessInvocation(this.getClass().getName(), invokedMethod,viewClassOfInvokedMethod, viewMethod, viewClassName);
+            throw EjbLogger.ROOT_LOGGER.failProcessInvocation(this.getClass().getName(), invokedMethod, viewClassOfInvokedMethod, viewMethod, viewClassName);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
         final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
@@ -121,7 +120,7 @@ public class AuthorizationInterceptor implements Interceptor {
 
                             if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
                                     methodIntfType.name(), AuthorizationInterceptor.this.viewMethod, AuthorizationInterceptor.this.getMethodRolesAsPrincipals(), AuthorizationInterceptor.this.contextID)) {
-                                throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+                                throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
                             }
                             return null;
                         }
@@ -132,17 +131,16 @@ public class AuthorizationInterceptor implements Interceptor {
             } else {
                 if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
                         methodIntfType.name(), this.viewMethod, this.getMethodRolesAsPrincipals(), this.contextID)) {
-                    throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+                    throw EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
                 }
             }
+            // successful authorization, let the invocation proceed
+            return context.proceed();
         }
         finally {
             // reset the previous JACC contextID.
             setContextID(previousContextID);
         }
-
-        // successful authorization, let the invocation proceed
-        return context.proceed();
     }
 
     /**

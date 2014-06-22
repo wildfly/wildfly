@@ -1,0 +1,8 @@
+org.wildfly.clustering.server.dispatcher.ChannelCommandDispatcherFactoryServiceInstaller
+org.wildfly.clustering.server.group.CacheGroupServiceInstaller
+org.wildfly.clustering.server.group.CacheNodeFactoryServiceInstaller
+org.wildfly.clustering.server.group.ChannelGroupServiceInstaller
+org.wildfly.clustering.server.group.ChannelNodeFactoryServiceInstaller
+org.wildfly.clustering.server.provider.CacheServiceProviderRegistrationFactoryServiceInstaller
+org.wildfly.clustering.server.registry.CacheRegistryFactoryServiceInstaller
+org.wildfly.clustering.server.singleton.SingletonServiceBuilderFactoryServiceInstaller

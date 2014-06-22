@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 
 package org.jboss.as.test.integration.domain.suites;
@@ -36,25 +38,11 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
-        AuditLogTestCase.class,
-        CoreResourceManagementTestCase.class,
         DatasourceTestCase.class,
         DeploymentManagementTestCase.class,
         DeploymentOverlayTestCase.class,
-        DirectoryGroupingByTypeTestCase.class,
-        ExtensionManagementTestCase.class,
-        IgnoredResourcesTestCase.class,
-        ManagementAccessTestCase.class,
-        ManagementClientContentTestCase.class,
-        ManagementReadsTestCase.class,
-        ManagementVersionTestCase.class,
         ModelPersistenceTestCase.class,
-        ModuleLoadingManagementTestCase.class,
-        OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ServerRestartRequiredTestCase.class,
-        ValidateAddressOperationTestCase.class,
-        ValidateOperationOperationTestCase.class
 })
 public class DomainTestSuite {
 
@@ -76,7 +64,7 @@ public class DomainTestSuite {
         }
     }
 
-    private synchronized static void start(final String name) {
+    private static synchronized void start(final String name) {
         try {
             support = DomainTestSupport.createAndStartDefaultSupport(name);
         } catch (Exception e) {
@@ -84,7 +72,7 @@ public class DomainTestSuite {
         }
     }
 
-    private synchronized static void stop() {
+    private static synchronized void stop() {
         if(support != null) {
             support.stop();
             support = null;
@@ -92,13 +80,13 @@ public class DomainTestSuite {
     }
 
     @BeforeClass
-    public synchronized static void beforeClass() {
+    public static synchronized void beforeClass() {
         initializedLocally = true;
         start(DomainTestSuite.class.getSimpleName());
     }
 
     @AfterClass
-    public synchronized static void afterClass() {
+    public static synchronized void afterClass() {
         stop();
     }
 

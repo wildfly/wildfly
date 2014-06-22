@@ -28,6 +28,7 @@ import javax.interceptor.InvocationContext;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -48,8 +49,6 @@ import org.jboss.metadata.ejb.spec.MessageDrivenBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment descriptor that resolves interceptor methods defined in ejb-jar.xml that could not be resolved at
@@ -76,7 +75,7 @@ public class DeploymentDescriptorMethodProcessor implements DeploymentUnitProces
                             handleStatelessSessionBean((EJBComponentDescription) component, classIndex, reflectionIndex);
                         }
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.failToLoadComponentClass(e, component.getComponentName());
+                        throw EjbLogger.ROOT_LOGGER.failToLoadComponentClass(e, component.getComponentName());
                     }
                 }
             }

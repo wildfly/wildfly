@@ -32,7 +32,7 @@ import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -75,7 +75,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         CoarseSessionCacheEntry<L> cacheEntry = entry.getCacheEntry();
         SessionMetaData metaData = cacheEntry.getMetaData();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = entry.getAttributes();
-        Mutator attributesMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.attributesCache, this.invoker, new SessionAttributesCacheKey(id), value, Flag.SKIP_LOCKING);
+        Mutator attributesMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.attributesCache, this.invoker, new SessionAttributesCacheKey(id), value);
         SessionAttributes attributes = new CoarseSessionAttributes(value, this.marshaller, attributesMutator);
         Mutator sessionMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, this.invoker, id, cacheEntry);
         return new InfinispanSession<>(id, metaData, attributes, cacheEntry.getLocalContext(), this.localContextFactory, this.context, sessionMutator, this);
@@ -95,12 +95,12 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         CoarseSessionCacheEntry<L> cacheEntry = new CoarseSessionCacheEntry<>(new SimpleSessionMetaData());
         CoarseSessionCacheEntry<L> existingCacheEntry = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, cacheEntry));
         if (existingCacheEntry != null) {
-            MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.SKIP_LOCKING);
+            MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)));
             return new CoarseSessionEntry<>(existingCacheEntry, value);
         }
         Map<String, Object> map = new HashMap<>();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(map);
-        MarshalledValue<Map<String, Object>, MarshallingContext> existingValue = this.invoker.invoke(this.attributesCache, new CreateOperation<>(new SessionAttributesCacheKey(id), value), Flag.SKIP_LOCKING);
+        MarshalledValue<Map<String, Object>, MarshallingContext> existingValue = this.invoker.invoke(this.attributesCache, new CreateOperation<>(new SessionAttributesCacheKey(id), value));
         return new CoarseSessionEntry<>(cacheEntry, (existingValue != null) ? existingValue : value);
     }
 
@@ -108,14 +108,14 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     public CoarseSessionEntry<L> findValue(String id) {
         CoarseSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new LockingFindOperation<String, CoarseSessionCacheEntry<L>>(id));
         if (entry == null) return null;
-        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.SKIP_LOCKING);
+        MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)));
         return new CoarseSessionEntry<>(entry, value);
     }
 
     @Override
     public void remove(String id) {
         this.invoker.invoke(this.sessionCache, new RemoveOperation<String, CoarseSessionCacheEntry<L>>(id), Flag.IGNORE_RETURN_VALUES);
-        this.invoker.invoke(this.attributesCache, new RemoveOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING);
+        this.invoker.invoke(this.attributesCache, new RemoveOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.IGNORE_RETURN_VALUES);
     }
 
     @Override

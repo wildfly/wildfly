@@ -21,19 +21,12 @@
  */
 package org.jboss.as.test.integration.auditlog;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UDP;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.logging.syslogserver.UDPSyslogServerConfig;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.test.categories.CommonCriteria;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.productivity.java.syslog4j.SyslogConstants;
-import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
 
 /**
  * Tests UDP protocol of auditlog-to-syslog handler.
@@ -42,29 +35,9 @@ import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(AuditLogToUDPSyslogTestCase.AuditLogToUDPSyslogTestCaseSetup.class)
+@ServerSetup(AuditLogToUDPSyslogSetup.class)
+@Category(CommonCriteria.class)
 public class AuditLogToUDPSyslogTestCase extends AuditLogToSyslogTestCase {
 
-    /**
-     * {@link org.jboss.as.arquillian.api.ServerSetupTask} implementation which configures syslog server and auditlog-to-syslog
-     * handler for this test.
-     */
-    static class AuditLogToUDPSyslogTestCaseSetup extends AuditLogToSyslogSetup {
-
-        @Override
-        protected ModelNode addAuditlogSyslogProtocol(PathAddress syslogHandlerAddress) {
-            return Util.createAddOperation(syslogHandlerAddress.append(PROTOCOL, UDP));
-        }
-
-        @Override
-        protected String getSyslogProtocol() {
-            return SyslogConstants.UDP;
-        }
-
-        @Override
-        protected SyslogServerConfigIF getSyslogConfig() {
-            return new UDPSyslogServerConfig();
-        }
-    }
-
+    // nothing to do here
 }

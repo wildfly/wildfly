@@ -22,8 +22,7 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import org.jboss.as.jaxrs.JaxrsLogger;
-import org.jboss.as.jaxrs.JaxrsMessages;
+import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -38,6 +37,8 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -61,8 +62,13 @@ import java.util.List;
  */
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
+    private static final String VERSION_KEY = "resteasy.version";
 
-    public static final String SPRING_INT_JAR = "resteasy-spring.jar";
+    private static final String SPRING_INT_JAR_BASE = "resteasy-spring";
+
+    private static final String JAR_LOCATION = "resteasy-spring-jar";
+    private static final ModuleIdentifier MODULE = ModuleIdentifier.create("org.jboss.resteasy.resteasy-spring");
+
     public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
     @Deprecated
@@ -79,37 +85,49 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
     /**
      * Lookup Seam integration resource loader.
+     *
      * @return the Seam integration resource loader
-     * @throws DeploymentUnitProcessingException for any error
+     * @throws DeploymentUnitProcessingException
+     *          for any error
      */
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
         try {
-            if (resourceRoot == null) {
-                URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR);
-                if (url == null) {
-                    throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
+            Module module = Module.getBootModuleLoader().loadModule(MODULE);
+            URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);
+
+            if (fileUrl == null) {
+                throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
+            }
+            File dir = new File(fileUrl.getFile());
+            File file = null;
+            for (String jar : dir.list()) {
+                if (jar.endsWith(".jar")) {
+                    file = new File(dir, jar);
+                    break;
+                }
+            }
+            if (file == null) {
+                throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
+            }
+            VirtualFile vf = VFS.getChild(file.toURI());
+            final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
+            Service<Closeable> mountHandleService = new Service<Closeable>() {
+                public void start(StartContext startContext) throws StartException {
                 }
 
-                File file = new File(url.toURI());
-                VirtualFile vf = VFS.getChild(file.toURI());
-                final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
-                Service<Closeable> mountHandleService = new Service<Closeable>() {
-                    public void start(StartContext startContext) throws StartException {
-                    }
+                public void stop(StopContext stopContext) {
+                    VFSUtils.safeClose(mountHandle);
+                }
 
-                    public void stop(StopContext stopContext) {
-                        VFSUtils.safeClose(mountHandle);
-                    }
+                public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
+                    return mountHandle;
+                }
+            };
+            ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
+                    mountHandleService);
+            builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            resourceRoot = vf;
 
-                    public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
-                        return mountHandle;
-                    }
-                };
-                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
-                        mountHandleService);
-                builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-                resourceRoot = vf;
-            }
             return resourceRoot;
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
@@ -142,19 +160,19 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
                 for (ParamValueMetaData prop : md.getContextParams()) {
                     if (prop.getParamName().equals(ENABLE_PROPERTY)) {
                         boolean explicitEnable = Boolean.parseBoolean(prop.getParamValue());
-                        if(explicitEnable) {
+                        if (explicitEnable) {
                             found = true;
                         } else {
                             skip = true;
                         }
                         break;
-                    } else if(prop.getParamName().equals(DISABLE_PROPERTY) && "true".equals(prop.getParamValue())) {
+                    } else if (prop.getParamName().equals(DISABLE_PROPERTY) && "true".equals(prop.getParamValue())) {
                         skip = true;
                         JaxrsLogger.JAXRS_LOGGER.disablePropertyDeprecated();
                         break;
                     }
                 }
-                if(skip) {
+                if (skip) {
                     continue;
                 }
             }
@@ -167,7 +185,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
                     }
                 }
             }
-            if(md.getServlets() != null) {
+            if (md.getServlets() != null) {
                 for (JBossServletMetaData servlet : md.getServlets()) {
                     if (SPRING_SERVLET.equals(servlet.getServletClass())) {
                         found = true;

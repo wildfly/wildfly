@@ -22,8 +22,7 @@ import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -226,7 +225,7 @@ class IdentityPatchContext implements PatchContentProvider {
         if (entry == null) {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
             if (target == null) {
-                throw PatchMessages.MESSAGES.noSuchLayer(layerName);
+                throw PatchLogger.ROOT_LOGGER.noSuchLayer(layerName);
             }
             entry = new PatchEntry(target, element);
             map.put(layerName, entry);
@@ -899,7 +898,7 @@ class IdentityPatchContext implements PatchContentProvider {
     static void backupDirectory(final File source, final File target) throws IOException {
         if (!target.exists()) {
             if (!target.mkdirs()) {
-                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(target.getAbsolutePath());
             }
         }
         final File[] files = source.listFiles(CONFIG_FILTER);
@@ -960,7 +959,7 @@ class IdentityPatchContext implements PatchContentProvider {
         final File parent = file.getParentFile();
         if (!parent.isDirectory()) {
             if (!parent.mkdirs() && !parent.exists()) {
-                throw PatchMessages.MESSAGES.cannotCreateDirectory(file.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(file.getAbsolutePath());
             }
         }
         try {

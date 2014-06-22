@@ -21,6 +21,7 @@
  */
 package org.jboss.as.xts;
 
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.jbossts.txbridge.outbound.OutboundBridgeRecoveryManager;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.StartContext;
@@ -59,7 +60,7 @@ public class TxBridgeOutboundRecoveryService extends AbstractService<OutboundBri
             try {
                 service.start();
             } catch (Exception e) {
-                throw XtsAsMessages.MESSAGES.txBridgeOutboundRecoveryServiceFailedToStart();
+                throw XtsAsLogger.ROOT_LOGGER.txBridgeOutboundRecoveryServiceFailedToStart();
             }
             outboundBridgeRecoveryManager = service;
         } finally {

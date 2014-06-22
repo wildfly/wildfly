@@ -32,11 +32,9 @@ import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,14 +45,8 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 /**
@@ -190,49 +182,5 @@ class TransportConfigOperationHandlers {
             }
         }
         configuration.setConnectorConfigurations(connectors);
-    }
-
-    static class BasicTransportConfigAdd extends HornetQReloadRequiredHandlers.AddStepHandler implements DescriptionProvider {
-
-        private final AttributeDefinition[] attributes;
-        private final boolean isAcceptor;
-
-        BasicTransportConfigAdd(final boolean isAcceptor, final AttributeDefinition[] attributes) {
-            this.isAcceptor = isAcceptor;
-            this.attributes = attributes;
-        }
-
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            for (final AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, model);
-            }
-        }
-
-        @Override
-        protected void populateModel(OperationContext context, ModelNode operation, Resource resource)
-                throws OperationFailedException {
-            super.populateModel(context, operation, resource);
-
-            if(operation.hasDefined(CommonAttributes.PARAM)) {
-                for(Property property : operation.get(CommonAttributes.PARAM).asPropertyList()) {
-                    final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.PARAM, property.getName())));
-                    final ModelNode value = property.getValue();
-                    if(! value.isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.parameterNotDefined(property.getName())));
-                    }
-                    param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
-                }
-            }
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            if (isAcceptor) {
-                return MessagingDescriptions.getAcceptorAdd(locale, attributes);
-            } else {
-                return MessagingDescriptions.getConnectorAdd(locale, attributes);
-            }
-        }
     }
 }

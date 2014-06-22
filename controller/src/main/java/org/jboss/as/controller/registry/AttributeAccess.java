@@ -21,14 +21,13 @@
  */
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationStepHandler;
 
 /**
@@ -151,8 +150,8 @@ public final class AttributeAccess {
 
     AttributeAccess(final AccessType access, final Storage storage, final OperationStepHandler readHandler,
                     final OperationStepHandler writeHandler, AttributeDefinition definition, final EnumSet<Flag> flags) {
-        assert access != null : MESSAGES.nullVar("access").getLocalizedMessage();
-        assert storage != null : MESSAGES.nullVar("storage").getLocalizedMessage();
+        assert access != null : ControllerLogger.ROOT_LOGGER.nullVar("access").getLocalizedMessage();
+        assert storage != null : ControllerLogger.ROOT_LOGGER.nullVar("storage").getLocalizedMessage();
         this.access = access;
         this.readHandler = readHandler;
         this.writeHandler = writeHandler;
@@ -160,11 +159,11 @@ public final class AttributeAccess {
         this.definition = definition;
         if (flags != null && flags.contains(Flag.ALIAS)) {
             if (readHandler == null) {
-                throw MESSAGES.nullVar("writeHandler");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("writeHandler");
             }
         }
         if(access == AccessType.READ_WRITE && writeHandler == null) {
-            throw MESSAGES.nullVar("writeHandler");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("writeHandler");
         }
         this.flags = flags == null ? EnumSet.noneOf(Flag.class) : EnumSet.copyOf(flags);
         switch (storage) {
@@ -177,7 +176,7 @@ public final class AttributeAccess {
                 this.flags.remove(Flag.STORAGE_CONFIGURATION);
                 break;
             default:
-                throw MESSAGES.unexpectedStorage(storage);
+                throw ControllerLogger.ROOT_LOGGER.unexpectedStorage(storage);
         }
     }
 

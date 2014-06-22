@@ -32,7 +32,6 @@ import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.QueueDefinition.ADDRESS;
 import static org.jboss.as.messaging.QueueDefinition.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.QueueDefinition.EXPIRY_ADDRESS;
@@ -51,8 +50,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -106,8 +107,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
 
         if (control == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         if (MESSAGE_COUNT.getName().equals(attributeName)) {
@@ -149,7 +149,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
                 }
             }
         } else {
-            throw MESSAGES.unsupportedAttribute(attributeName);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
         }
 
         context.stepCompleted();

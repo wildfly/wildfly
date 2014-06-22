@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -36,8 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processes a {@link SessionBeanComponentDescription}'s bean class and checks whether it exposes:
@@ -74,7 +73,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (module == null) {
-            throw MESSAGES.moduleNotAttachedToDeploymentUnit(deploymentUnit);
+            throw EjbLogger.ROOT_LOGGER.moduleNotAttachedToDeploymentUnit(deploymentUnit);
         }
         ClassLoader cl = module.getClassLoader();
         Class<?> ejbClass = null;

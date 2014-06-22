@@ -32,6 +32,7 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +74,7 @@ public class SystemPropertyReferencesTestCase extends AbstractCoreModelTest {
         op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add("system-property", "test.referencing");
-        op.get(VALUE).setExpression("${test.one} ${test.two}");
+        op.get(VALUE).set(new ValueExpression("${test.one} ${test.two}"));
         kernelServices.executeForResult(op);
 
         Assert.assertEquals("ONE", System.getProperty("test.one"));
@@ -84,7 +85,7 @@ public class SystemPropertyReferencesTestCase extends AbstractCoreModelTest {
         op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         op.get(OP_ADDR).add("system-property", "test.referencing");
         op.get(NAME).set(VALUE);
-        op.get(VALUE).setExpression("${test.one}---${test.two}");
+        op.get(VALUE).set(new ValueExpression("${test.one}---${test.two}"));
         kernelServices.executeForResult(op);
 
         Assert.assertEquals("ONE---TWO", System.getProperty("test.referencing"));

@@ -29,8 +29,7 @@ import java.io.IOException;
 
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
@@ -77,7 +76,7 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
         final File sourceDir = loader.getFile(contentItem);
         final File[] moduleResources = sourceDir.listFiles();
         if(! targetDir.mkdirs() && ! targetDir.exists()) {
-            throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
+            throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(targetDir.getAbsolutePath());
         }
         if(moduleResources == null || moduleResources.length == 0) {
             return NO_CONTENT;

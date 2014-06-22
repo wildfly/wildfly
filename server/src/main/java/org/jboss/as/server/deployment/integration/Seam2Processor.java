@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.jar.JarFile;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -97,7 +97,7 @@ public class Seam2Processor implements DeploymentUnitProcessor {
                 Module extModule = moduleLoader.loadModule(EXT_CONTENT_MODULE);
                 URL url = extModule.getExportedResource(SEAM_INT_JAR);
                 if (url == null)
-                    throw ServerMessages.MESSAGES.noSeamIntegrationJarPresent(extModule);
+                    throw ServerLogger.ROOT_LOGGER.noSeamIntegrationJarPresent(extModule);
 
                 File file = new File(url.toURI());
                 VirtualFile vf = VFS.getChild(file.toURI());

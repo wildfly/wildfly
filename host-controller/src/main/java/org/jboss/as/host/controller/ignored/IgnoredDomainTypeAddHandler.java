@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,7 +45,7 @@ class IgnoredDomainTypeAddHandler implements OperationStepHandler {
 
         final String type = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         if (ModelDescriptionConstants.HOST.equals(type)) {
-            throw HostControllerMessages.MESSAGES.cannotIgnoreTypeHost(ModelDescriptionConstants.HOST);
+            throw HostControllerLogger.ROOT_LOGGER.cannotIgnoreTypeHost(ModelDescriptionConstants.HOST);
         }
 
         ModelNode names = IgnoredDomainTypeResourceDefinition.NAMES.validateOperation(operation);

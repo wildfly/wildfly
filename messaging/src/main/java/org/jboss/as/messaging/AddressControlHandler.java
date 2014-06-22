@@ -32,10 +32,9 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfStrings;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -45,6 +44,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -89,8 +90,8 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
 
         final AddressControl addressControl = getAddressControl(context, operation);
         if (addressControl == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
@@ -101,7 +102,7 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 reportRoles(context, json);
             } else if (QUEUE_NAMES.equals(name)) {
                 String[] queues = addressControl.getQueueNames();
-                reportListOfString(context, queues);
+                reportListOfStrings(context, queues);
             } else if (NUMBER_OF_BYTES_PER_PAGE.equals(name)) {
                 long l = addressControl.getNumberOfBytesPerPage();
                 context.getResult().set(l);
@@ -110,10 +111,10 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(i);
             } else if (BINDING_NAMES.equals(name)) {
                 String[] bindings = addressControl.getBindingNames();
-                reportListOfString(context, bindings);
+                reportListOfStrings(context, bindings);
             } else {
                 // Bug
-                throw MESSAGES.unsupportedAttribute(name);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
             }
         } catch (RuntimeException e) {
             throw e;

@@ -22,6 +22,17 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
@@ -30,7 +41,9 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.jacorb.service.CorbaNamingService;
@@ -45,11 +58,10 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.txn.TransactionLogger;
-import org.jboss.as.txn.TransactionMessages;
 import org.jboss.as.txn.deployment.TransactionCDIProcessor;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
 import org.jboss.as.txn.service.ArjunaTransactionManagerService;
@@ -75,15 +87,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import java.util.List;
-
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 
 
 /**
@@ -140,7 +143,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (mceVal.isDefined()) {
             ModelNode seVal = coordEnvModel.get(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.getName());
             if (seVal.isDefined() && !seVal.equals(mceVal)) {
-                throw TransactionMessages.MESSAGES.inconsistentStatisticsSettings(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.getName(),
+                throw TransactionLogger.ROOT_LOGGER.inconsistentStatisticsSettings(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED.getName(),
                         TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.getName());
             }
             seVal.set(mceVal);
@@ -195,8 +198,15 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
 
+        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH));
+        final List<ServiceName> deps = new LinkedList<>();
+
+        for (Resource.ResourceEntry re : subsystemResource.getChildren(CM_RESOURCE)) {
+            deps.add(TxnServices.JBOSS_TXN_CMR.append(re.getName()));
+        }
+
         //recovery environment
-        performRecoveryEnvBoottime(context, model, verificationHandler, controllers, jts);
+        performRecoveryEnvBoottime(context, model, verificationHandler, controllers, jts, deps);
 
         //core environment
         performCoreEnvironmentBootTime(context, model, verificationHandler, controllers);
@@ -314,8 +324,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (model.hasDefined(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.getName()))
             confiBuilder.setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
 
-        if (ROOT_LOGGER.isDebugEnabled()) {
-            ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
+        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
+            TransactionLogger.ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s%n", objectStorePathRef, objectStorePath);
         }
 
         ServiceTarget target = context.getServiceTarget();
@@ -346,9 +356,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
         final String varDirPathRef = TransactionSubsystemRootResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, coreEnvModel).asString();
         final String varDirPath = TransactionSubsystemRootResourceDefinition.PATH.resolveModelAttribute(context, coreEnvModel).asString();
-        if (ROOT_LOGGER.isDebugEnabled()) {
-            ROOT_LOGGER.debugf("nodeIdentifier=%s\n", nodeIdentifier);
-            ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s\n", varDirPathRef, varDirPath);
+        if (TransactionLogger.ROOT_LOGGER.isDebugEnabled()) {
+            TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
+            TransactionLogger.ROOT_LOGGER.debugf("varDirPathRef=%s, varDirPath=%s%n", varDirPathRef, varDirPath);
         }
         final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, varDirPath, varDirPathRef);
 
@@ -380,7 +390,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model,
                                             ServiceVerificationHandler verificationHandler,
                                             List<ServiceController<?>> controllers,
-                                            final boolean jts) throws OperationFailedException {
+                                            final boolean jts, List<ServiceName> deps) throws OperationFailedException {
         //recovery environment
         final String recoveryBindingName = TransactionSubsystemRootResourceDefinition.BINDING.resolveModelAttribute(context, model).asString();
         final String recoveryStatusBindingName = TransactionSubsystemRootResourceDefinition.STATUS_BINDING.resolveModelAttribute(context, model).asString();
@@ -394,7 +404,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ArjunaRecoveryManagerService recoveryManagerService = new ArjunaRecoveryManagerService(recoveryListener, jts);
         final ServiceBuilder<RecoveryManagerService> recoveryManagerServiceServiceBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, recoveryManagerService);
         // add dependency on JTA environment bean
-        recoveryManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_JTA_ENVIRONMENT);
+        recoveryManagerServiceServiceBuilder.addDependencies(deps);
 
         if (jts) {
             recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("jacorb", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());

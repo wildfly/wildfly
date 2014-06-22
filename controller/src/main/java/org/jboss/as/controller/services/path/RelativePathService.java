@@ -22,13 +22,13 @@
 
 package org.jboss.as.controller.services.path;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 
 import java.io.File;
 import java.util.List;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -111,19 +111,19 @@ public class RelativePathService extends AbstractPathService {
 
     static String convertPath(String relativePath) {
         if (relativePath == null) {
-            throw MESSAGES.nullVar("relativePath");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("relativePath");
         }
         if (relativePath.length() == 0) {
-            throw MESSAGES.emptyVar("relativePath");
+            throw ControllerLogger.ROOT_LOGGER.emptyVar("relativePath");
         }
         if (relativePath.charAt(0) == '/') {
             if (relativePath.length() == 1) {
-                throw MESSAGES.invalidRelativePathValue(relativePath);
+                throw ControllerLogger.ROOT_LOGGER.invalidRelativePathValue(relativePath);
             }
             return relativePath.substring(1);
         }
         else if (relativePath.indexOf(":\\") == 1) {
-            throw MESSAGES.pathIsAWindowsAbsolutePath(relativePath);
+            throw ControllerLogger.ROOT_LOGGER.pathIsAWindowsAbsolutePath(relativePath);
         }
         else {
             if(isWindows()) {

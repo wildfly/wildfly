@@ -22,9 +22,8 @@
 
 package org.jboss.as.txn.service;
 
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,8 +55,10 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");
 
+    public static final ServiceName JBOSS_TXN_CMR = JBOSS_TXN.append("CMR");
+
     public static <T> T notNull(T value) {
-        if (value == null) throw MESSAGES.serviceNotStarted();
+        if (value == null) throw TransactionLogger.ROOT_LOGGER.serviceNotStarted();
         return value;
     }
 

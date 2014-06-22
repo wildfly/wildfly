@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
 import java.util.ArrayList;
@@ -37,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -131,18 +132,18 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
         if (resourceDefinition == null) {
-            throw MESSAGES.nullVar("resourceDefinition");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("resourceDefinition");
         }
         final PathElement address = resourceDefinition.getPathElement();
         if (address == null) {
-            throw MESSAGES.cannotRegisterSubmodelWithNullPath();
+            throw ControllerLogger.ROOT_LOGGER.cannotRegisterSubmodelWithNullPath();
         }
         if (isRuntimeOnly()) {
-            throw MESSAGES.cannotRegisterSubmodel();
+            throw ControllerLogger.ROOT_LOGGER.cannotRegisterSubmodel();
         }
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
         if (existing != null && existing.getValueString().equals(address.getValue())) {
-            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(existing.getLocationString());
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
@@ -266,25 +267,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, AttributeAccess.Storage storage) {
-        checkPermission();
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
-    public void registerReadWriteAttribute(final String attributeName, final OperationStepHandler readHandler, final OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_WRITE, storage, readHandler, writeHandler, null, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadWriteAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler, final OperationStepHandler writeHandler) {
         checkPermission();
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
@@ -307,16 +289,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public void registerReadOnlyAttribute(final String attributeName, final OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess.Storage storage = (flags != null && flags.contains(AttributeAccess.Flag.STORAGE_RUNTIME)) ? Storage.RUNTIME : Storage.CONFIGURATION;
-        AttributeAccess aa = new AttributeAccess(AccessType.READ_ONLY, storage, readHandler, null, null, null);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
-    }
-
-    @Override
     public void registerReadOnlyAttribute(final AttributeDefinition definition, final OperationStepHandler readHandler) {
         checkPermission();
         final EnumSet<AttributeAccess.Flag> flags = definition.getFlags();
@@ -327,20 +299,6 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             throw alreadyRegistered("attribute", attributeName);
         }
         registerAttributeAccessConstraints(definition);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        registerMetric(attributeName, metricHandler, null);
-    }
-
-    @Override
-    public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
-        checkPermission();
-        AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, null, flags);
-        if (attributesUpdater.putIfAbsent(this, attributeName, aa) != null) {
-            throw alreadyRegistered("attribute", attributeName);
-        }
     }
 
     @Override
@@ -385,7 +343,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
         if (existing != null && existing.getValueString().equals(address.getValue())) {
-            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(existing.getLocationString());
         }
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
@@ -486,6 +444,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
                 // an unexpected undefined value returned. But it removes the possibility of a
                 // dev forgetting to call registry.registerReadOnlyAttribute("foo", null) resulting
                 // in the valid attribute "foo" not being readable
+                DescriptionProvider provider = resourceDefinition.getDescriptionProvider(this);
+                if (provider instanceof DefaultResourceDescriptionProvider){
+                    return null; // attribute was not registered so it does not exist. no need to read resource description as we wont find anything and cause SO
+                }
+                //todo get rid of this fallback loop as with code cleanup we wont need it anymore.
                 final ModelNode desc = resourceDefinition.getDescriptionProvider(this).getModelDescription(null);
                 if (desc.has(ATTRIBUTES) && desc.get(ATTRIBUTES).keys().contains(attributeName)) {
                     access = new AttributeAccess(AccessType.READ_ONLY, Storage.CONFIGURATION, null, null, null, null);
@@ -596,11 +559,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
-        return MESSAGES.alreadyRegistered(type, name, getLocationString());
+        return ControllerLogger.ROOT_LOGGER.alreadyRegistered(type, name, getLocationString());
     }
 
     private IllegalArgumentException operationNotRegisteredException(String op, PathElement address) {
-        return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
+        return ControllerLogger.ROOT_LOGGER.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
     @Override

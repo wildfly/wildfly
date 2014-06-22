@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jaxrs</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: JAX-RS Integration</name>
 
@@ -141,4 +141,13 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

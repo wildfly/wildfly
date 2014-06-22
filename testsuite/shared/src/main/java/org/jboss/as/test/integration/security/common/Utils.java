@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -97,7 +96,7 @@ import org.jboss.util.Base64;
  * @author Jan Lanik
  * @author Josef Cacek
  */
-public class Utils {
+public class Utils extends CoreUtils{
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
@@ -511,7 +510,7 @@ public class Utils {
             // Use our custom configuration to avoid reliance on external config
             Configuration.setConfiguration(new Krb5LoginConfiguration());
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
+            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
             lc.login();
 
             // 2. Perform the work as authenticated Subject.
@@ -582,7 +581,7 @@ public class Utils {
             // Use our custom configuration to avoid reliance on external config
             Configuration.setConfiguration(new Krb5LoginConfiguration());
             // 1. Authenticate to Kerberos.
-            final LoginContext lc = new LoginContext(Utils.class.getName(), new UsernamePasswordHandler(user, pass));
+            final LoginContext lc = new LoginContext(CoreUtils.class.getName(), new UsernamePasswordHandler(user, pass));
             lc.login();
 
             // 2. Perform the work as authenticated Subject.
@@ -691,79 +690,6 @@ public class Utils {
      */
     public static String setSystemProperty(final String key, final String value) {
         return value == null ? System.clearProperty(key) : System.setProperty(key, value);
-    }
-
-    /**
-     * Returns management address (host) from the givem {@link ManagementClient}. If the returned value is IPv6 address then
-     * square brackets around are stripped.
-     *
-     * @param managementClient
-     * @return
-     */
-    public static final String getHost(final ManagementClient managementClient) {
-        return stripSquareBrackets(managementClient.getMgmtAddress());
-    }
-
-    /**
-     * Returns canonical hostname retrieved from management address of the givem {@link ManagementClient}.
-     *
-     * @param managementClient
-     * @return
-     */
-    public static final String getCannonicalHost(final ManagementClient managementClient) {
-        return getCannonicalHost(managementClient.getMgmtAddress());
-    }
-
-    /**
-     * Returns canonical hostname form of the given address.
-     *
-     * @param address hosname or IP address
-     * @return
-     */
-    public static final String getCannonicalHost(final String address) {
-        String host = stripSquareBrackets(address);
-        try {
-            host = InetAddress.getByName(host).getCanonicalHostName();
-        } catch (UnknownHostException e) {
-            LOGGER.warn("Unable to get canonical host name", e);
-        }
-        return host.toLowerCase(Locale.ENGLISH);
-    }
-
-    /**
-     * Returns given URI with the replaced hostname. If the URI or host is null, then the original URI is returned.
-     *
-     * @param uri
-     * @param host
-     * @return
-     * @throws URISyntaxException
-     */
-    public static final URI replaceHost(final URI uri, final String host) throws URISyntaxException {
-        final String origHost = uri == null ? null : uri.getHost();
-        final String newHost = NetworkUtils.formatPossibleIpv6Address(host);
-        if (origHost == null || newHost == null || newHost.equals(origHost)) {
-            return uri;
-        }
-        return new URI(uri.toString().replace(origHost, newHost));
-    }
-
-    /**
-     * Returns servlet URL, as concatenation of webapp URL and servlet path.
-     *
-     * @param webAppURL web application context URL (e.g. injected by Arquillian)
-     * @param servletPath Servlet path starting with slash (must be not-<code>null</code>)
-     * @param mgmtClient Management Client (may be null)
-     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
-     * @return
-     * @throws URISyntaxException
-     */
-    public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-            boolean useCanonicalHost) throws URISyntaxException {
-        URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
-        if (useCanonicalHost) {
-            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
-        }
-        return resultURI;
     }
 
     /**
@@ -917,7 +843,7 @@ public class Utils {
         LOGGER.info("Creating test file " + file.getAbsolutePath());
         try {
             fos = new FileOutputStream(file);
-            IOUtils.copy(Utils.class.getResourceAsStream(file.getName()), fos);
+            IOUtils.copy(CoreUtils.class.getResourceAsStream(file.getName()), fos);
         } finally {
             IOUtils.closeQuietly(fos);
         }
@@ -928,24 +854,24 @@ public class Utils {
     }
 
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
-            File vaultConfig) {
+            String vaultConfig) {
         return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
-                vaultConfig.getAbsolutePath());
+                vaultConfig);
     }
 
     /**
      * Replace keystore paths and passwords variables in original configuration file with given values
      * and set ${hostname} variable from system property: node0
      *
-     * @param String originalFile
-     * @param File keystoreFile
-     * @param File trustStoreFile
-     * @param String keystorePassword
-     * @param String vaultConfigPath - path to vault settings
+     * @param originalFile String
+     * @param keystoreFile File
+     * @param trustStoreFile File
+     * @param keystorePassword String
+     * @param vaultConfig - path to vault settings
      * @return String content
      */
     public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
-            String vaultConfigPath) {
+            String vaultConfig) {
         String hostname = System.getProperty("node0");
 
         // expand possible IPv6 address
@@ -959,10 +885,10 @@ public class Utils {
 
         final Map<String, String> map = new HashMap<String, String>();
         String content = "";
-        if (vaultConfigPath == null) {
+        if (vaultConfig == null) {
             map.put("vaultConfig", "");
         } else {
-            map.put("vaultConfig", "<vault file=\"" + vaultConfigPath + "\"/>");
+            map.put("vaultConfig", vaultConfig);
         }
         map.put("hostname", hostname);
         map.put("keystore", keystoreFile);
@@ -971,7 +897,7 @@ public class Utils {
 
         try {
             content = StrSubstitutor.replace(
-                    IOUtils.toString(Utils.class.getResourceAsStream(originalFile), "UTF-8"), map);
+                    IOUtils.toString(CoreUtils.class.getResourceAsStream(originalFile), "UTF-8"), map);
         } catch (IOException ex) {
             String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
             LOGGER.error(message);

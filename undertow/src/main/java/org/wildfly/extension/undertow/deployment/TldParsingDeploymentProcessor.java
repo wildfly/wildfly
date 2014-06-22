@@ -42,7 +42,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
@@ -52,8 +52,6 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.TaglibMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * @author Remy Maucherat
@@ -109,7 +107,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                         try {
                             pathNameRelativeToRoot = child.getPathNameRelativeTo(deploymentRoot);
                         } catch (IllegalArgumentException e) {
-                            throw new DeploymentUnitProcessingException(MESSAGES.tldFileNotContainedInRoot(child.getPathName(),
+                            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(child.getPathName(),
                                     deploymentRoot.getPathName()), e);
                         }
                         final TldMetaData value = parseTLD(child);
@@ -153,7 +151,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                     try {
                         pathNameRelativeToRoot = file.getPathNameRelativeTo(deploymentRoot);
                     } catch (IllegalArgumentException e) {
-                        throw new DeploymentUnitProcessingException(MESSAGES.tldFileNotContainedInRoot(file.getPathName(),
+                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(file.getPathName(),
                                 deploymentRoot.getPathName()), e);
                     }
 
@@ -200,7 +198,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 try {
                     pathNameRelativeToRoot = file.getPathNameRelativeTo(root);
                 } catch (IllegalArgumentException e) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.tldFileNotContainedInRoot(file.getPathName(),
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.tldFileNotContainedInRoot(file.getPathName(),
                             root.getPathName()), e);
                 }
                 final TldMetaData value = parseTLD(file);
@@ -229,10 +227,10 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
-            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(),
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(),
                     e.getLocation().getColumnNumber()));
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(tld), e);
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld), e);
         } finally {
             try {
                 if (is != null) {

@@ -1,0 +1,102 @@
+<!--
+   This file should be kept in sync with subsystem-1.1.0.xml
+  -->
+
+        <subsystem xmlns="urn:jboss:domain:web:2.0" default-virtual-server="default-host" native="${prop.native:true}">
+            <configuration>
+                <static-resources listings="${prop.listings:true}"
+                                 sendfile="${prop.sendfile:1000}"
+                                 file-encoding="${prop.file-encoding:utf-8}"
+                                 read-only="${prop.read-only:true}"
+                                 webdav="${prop.webdav:false}"
+                                 secret="${prop.secret:secret}"
+                                 max-depth="${prop.max-depth:5}"
+                                 disabled="${prop.disabled:false}"
+                        />
+                <jsp-configuration development="${prop.development:true}"
+                                    disabled="${prop.disabled:false}"
+                                    keep-generated="${prop.keep-generated:true}"
+                                    trim-spaces="${prop.trim-spaces:true}"
+                                    tag-pooling="${prop.tag-pooling:true}"
+                                    mapped-file="${prop.mapped-file:true}"
+                                    check-interval="${prop.check-interval:20}"
+                                    modification-test-interval="${prop.modification-test-interval:1000}"
+                                    recompile-on-fail="${prop.recompile-on-fail:true}"
+                                    smap="${prop.smap:true}"
+                                    dump-smap="${prop.dump-smap:true}"
+                                    generate-strings-as-char-arrays="${prop.generate-strings-as-char-arrays:true}"
+                                    error-on-use-bean-invalid-class-attribute="${prop.error-on-use-bean-invalid-class-attribute:true}"
+                                    scratch-dir="${prop.scratch-dir:/some/dir}"
+                                    source-vm="${prop.source-vm:1.7}"
+                                    target-vm="${prop.target-vm:1.7}"
+                                    java-encoding="${prop.java-encoding:utf-8}"
+                                    x-powered-by="${prop.x-powered-by:true}"
+                                    display-source-fragment="${prop.display-source-fragment:true}" />
+               <mime-mapping name="ogx" value="application/ogg" />
+               <mime-mapping name="ogg" value="audio/ogg" />
+               <welcome-file>toto</welcome-file>
+               <welcome-file>${prop.welcome.file:titi}</welcome-file>
+            </configuration>
+            <connector name="http" scheme="http"
+                       protocol="HTTP/1.1"
+                       socket-binding="http"
+                       enabled="${prop.enabled:true}"
+                       enable-lookups="${prop.enable-lookups:false}"
+                       proxy-name="${prop.proxy-name:some-name}"
+                       proxy-port="${prop.proxy-port:7777}"
+                       max-post-size="${prop.max-post-size:2097153}"
+                       max-save-post-size="${prop.max-save-post-size:512}"
+                       redirect-port="${prop.redirect-port:7778}"
+                       max-connections="${prop.max-connections:300}"
+                       secure="false"
+                       executor="some-executor"
+                    />
+            <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
+            <ssl certificate-key-file="${jboss.server.config.dir}/keystore.p12"
+                    ca-certificate-file="${jboss.server.config.dir}/truststore.jks"
+                    key-alias="${prop.key-alias:tomcat}"
+                    password="${prop.password:changeit}"
+                    cipher-suite="${prop.cipher-suite:SSL_RSA_WITH_3DES_EDE_CBC_SHA}"
+                    protocol="${prop.native:SSLv3}"
+                    verify-client="${prop.verify-client:true}"
+                    verify-depth="${prop.verify-depth:3}"
+                    certificate-file="${prop.certificate-file:certificate-file.ext}"
+                    ca-revocation-url="${prop.ca-revocation-url:https://example.org/some/url}"
+                    ca-certificate-password="${prop.ca-certificate-password:changeit}"
+                    keystore-type="${prop.keystore-type:PKCS12}"
+                    truststore-type="${prop.truststore-type:JKS}"
+                    session-cache-size="${prop.session-cache-size:512}"
+                    session-timeout="${prop.session-timeout:3000}"
+                    ssl-protocol="${prop.ssl-protocol:RFC4279}"
+                  />
+                  <!--  ssl-protocol does not exist < 1.2.0 -->
+            </connector>
+            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+                <virtual-server name="vs1" />
+                <virtual-server name="vs2" />
+            </connector>
+            <virtual-server name="default-host" enable-welcome-root="true">
+               <alias name="localhost" />
+               <alias name="example.com" />
+               <access-log resolve-hosts="true">
+                 <directory relative-to="jboss.server.base.dir" path="toto" />
+               </access-log>
+               <rewrite name="myrewrite" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" />
+               <rewrite name="with-conditions" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" >
+                  <condition name="https" pattern="${prop.pattern:off}" test="${prop.test:%{HTTPS}}" flags="${prop.flags:NC}"/>
+                  <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
+                  <!--  This should break in <= 1.2.0 -->
+                  <condition name="no-flags" test="%{USER}" pattern="toto"/>
+               </rewrite>
+               <sso reauthenticate="${prop.reauthenticate:true}" domain="${prop.domain:myDomain}" cache-name="myCache" cache-container="cache-container"/>
+            </virtual-server>
+            <virtual-server name="vs1" />
+            <virtual-server name="vs2" />
+            <valve name="myvalve" module="org.jboss.some.module" class-name="org.jboss.some.class" enabled="${prop.valve-enabled:true}">
+               <param param-name="param-name" param-value="${prop.valve-param:some-value}"/>
+            </valve>
+            <valve name="myvalve2" module="org.jboss.some.module2" class-name="org.jboss.some.class" enabled="false">
+               <param param-name="param-name1" param-value="${prop.valve-param:some-value}"/>
+               <param param-name="param-name2" param-value="${prop.valve-param:some-value}"/>
+            </valve>
+        </subsystem>

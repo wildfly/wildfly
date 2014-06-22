@@ -46,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -81,6 +82,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME);
+        nodes.add(subsystem);
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
@@ -91,15 +93,17 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             case JacORB_1_1:
             case JacORB_1_2:
             case JacORB_1_3: {
-                this.readElement(readerNS, reader, subsystem);
+                this.readElement_1_1(readerNS, reader, subsystem);
+                break;
+            }
+            case JacORB_1_4: {
+                this.readElement_1_4(readerNS, reader, nodes);
                 break;
             }
             default: {
                 throw unexpectedElement(reader);
             }
         }
-
-        nodes.add(subsystem);
     }
 
     /**
@@ -170,7 +174,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
      * @throws javax.xml.stream.XMLStreamException
      *          if an error occurs while parsing the XML.
      */
-    private void readElement(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void readElement_1_1(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // check the element namespace.
@@ -204,6 +208,54 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 }
                 case PROPERTIES: {
                     this.parsePropertiesConfig(namespace, reader, node);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void readElement_1_4(Namespace namespace, XMLExtendedStreamReader reader, List<ModelNode> nodes) throws XMLStreamException {
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            // check the element namespace.
+            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
+                throw unexpectedElement(reader);
+
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw duplicateNamedElement(reader, element.getLocalName());
+            }
+            ModelNode node = nodes.get(0); // main subsystem node.
+            switch (element) {
+                case ORB: {
+                    this.parseORBConfig(namespace, reader, nodes.get(0));
+                    break;
+                }
+                case POA: {
+                    this.parsePOAConfig(namespace, reader, node);
+                    break;
+                }
+                case NAMING: {
+                    this.parseNamingConfig(reader, node);
+                    break;
+                }
+                case INTEROP: {
+                    this.parseInteropConfig(reader, node);
+                    break;
+                }
+                case SECURITY: {
+                    this.parseSecurityConfig(reader, node);
+                    break;
+                }
+                case PROPERTIES: {
+                    this.parsePropertiesConfig(namespace, reader, node);
+                    break;
+                }
+                case IOR_SETTINGS: {
+                    IORSettingsParser.INSTANCE.readElement(reader, nodes);
                     break;
                 }
                 default: {
@@ -355,7 +407,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
-                    throw JacORBMessages.MESSAGES.invalidInitializerConfig(initializer, reader.getLocation());
+                    throw JacORBLogger.ROOT_LOGGER.invalidInitializerConfig(initializer, reader.getLocation());
             }
         }
     }
@@ -508,7 +560,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 case SECURITY_SERVER_REQUIRES:
                     SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
                     if (value == null)
-                        throw JacORBMessages.MESSAGES.invalidSSLConfig(attrValue, reader.getLocation());
+                        throw JacORBLogger.ROOT_LOGGER.invalidSSLConfig(attrValue, reader.getLocation());
                     attrValue = value.toString();
                 default:
                     SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) JacORBSubsystemDefinitions.
@@ -731,6 +783,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         if (node.hasDefined(properties)) {
             this.writeGenericProperties(writer, node.get(properties));
         }
+
+        if (node.hasDefined(JacORBSubsystemConstants.IOR_SETTINGS))
+            IORSettingsParser.INSTANCE.writeContent(writer, node.get(JacORBSubsystemConstants.IOR_SETTINGS,
+                    JacORBSubsystemConstants.DEFAULT));
+
         writer.writeEndElement(); // End of subsystem element
     }
 
@@ -931,9 +988,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         JacORB_1_0("urn:jboss:domain:jacorb:1.0"),
         JacORB_1_1("urn:jboss:domain:jacorb:1.1"),
         JacORB_1_2("urn:jboss:domain:jacorb:1.2"),
-        JacORB_1_3("urn:jboss:domain:jacorb:1.3");
+        JacORB_1_3("urn:jboss:domain:jacorb:1.3"),
+        JacORB_1_4("urn:jboss:domain:jacorb:1.4");
 
-        static final Namespace CURRENT = JacORB_1_3;
+        static final Namespace CURRENT = JacORB_1_4;
 
         private final String namespaceURI;
 
@@ -1015,7 +1073,9 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
         // elements used to configure generic properties.
         PROPERTIES(JacORBSubsystemConstants.PROPERTIES),
-        PROPERTY(JacORBSubsystemConstants.PROPERTY);
+        PROPERTY(JacORBSubsystemConstants.PROPERTY),
+
+        IOR_SETTINGS(JacORBSubsystemConstants.IOR_SETTINGS);
 
         private final String name;
 

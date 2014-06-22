@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingPathHandlers;
+import org.jboss.as.messaging.PathDefinition;
 import org.junit.Test;
 
 public class ConfigurationAttributesTestCase extends AttributesTestBase {
@@ -43,7 +43,6 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_NIO");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_NIO");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_NIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
         // messaging protocols are automatically resolved by HornetQ using a ServiceLoader
@@ -59,6 +58,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         KNOWN_ATTRIBUTES.add("liveConnectorRef");
         KNOWN_ATTRIBUTES.add("clustered");
         KNOWN_ATTRIBUTES.add("statisticsEnabled");
+        KNOWN_ATTRIBUTES.add("overrideInVmSecurity");
 
         //where we have slightly different names between as7/HornetQ
         DODGY_NAME.put("allowFailback", "allowAutoFailBack");
@@ -80,7 +80,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
     @Test
     public void compareAS7ConfigurationHornetQConfigurationProperties() throws Exception {
         SortedSet<String> attributes = findAllConfigurationProperties(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
-        for (String path : MessagingPathHandlers.PATHS.keySet()) {
+        for (String path : PathDefinition.PATHS.keySet()) {
             attributes.add(path);
         }
         convert(attributes);

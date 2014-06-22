@@ -30,7 +30,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
@@ -54,7 +54,7 @@ class JBossAllXmlParseContext {
 
     public void addResult(final QName namespace, final Object result, final Location location) throws XMLStreamException {
         if(parseResults.containsKey(namespace)) {
-            throw ServerMessages.MESSAGES.duplicateJBossXmlNamespace(namespace, location);
+            throw ServerLogger.ROOT_LOGGER.duplicateJBossXmlNamespace(namespace, location);
         }
         parseResults.put(namespace, result);
     }

@@ -25,11 +25,10 @@
  */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -60,6 +59,7 @@ public class JvmElement {
     private String agentLib;
     private String javaagent;
     private String stack;
+    private String launchCommand;
     private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
     private Map<String, String> environmentVariables = new HashMap<String, String>();
 
@@ -99,6 +99,9 @@ public class JvmElement {
                 for(Property property : node.get(JvmAttributes.JVM_ENV_VARIABLES).asPropertyList()) {
                     environmentVariables.put(property.getName(), property.getValue().asString());
                 }
+            }
+            if(node.hasDefined(JvmAttributes.JVM_LAUNCH_COMMAND)) {
+                launchCommand = node.get(JvmAttributes.JVM_LAUNCH_COMMAND).asString();
             }
             if(node.hasDefined(JvmAttributes.JVM_HEAP)) {
                 heapSize = node.get(JvmAttributes.JVM_HEAP).asString();
@@ -228,7 +231,7 @@ public class JvmElement {
 
     void setAgentPath(String agentPath) {
         if (agentLib != null) {
-            throw MESSAGES.attemptingToSet("agent-path", "agent-lib");
+            throw HostControllerLogger.ROOT_LOGGER.attemptingToSet("agent-path", "agent-lib");
         }
         this.agentPath = agentPath;
     }
@@ -239,9 +242,17 @@ public class JvmElement {
 
     void setAgentLib(String agentLib) {
         if (agentPath != null) {
-            throw MESSAGES.attemptingToSet("agent-lib", "agent-path");
+            throw HostControllerLogger.ROOT_LOGGER.attemptingToSet("agent-lib", "agent-path");
         }
         this.agentLib = agentLib;
+    }
+
+    public String getLaunchCommand() {
+        return launchCommand;
+    }
+
+    void setLaunchCommand(String launchCommand) {
+        this.launchCommand = launchCommand;
     }
 
     public String getJavaagent() {

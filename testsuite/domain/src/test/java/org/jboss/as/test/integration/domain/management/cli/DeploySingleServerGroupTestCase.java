@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
-
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
@@ -58,6 +56,9 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
+
+        CLITestSuite.createSupport(DeploySingleServerGroupTestCase.class.getSimpleName());
+
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
@@ -73,7 +74,11 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-        Assert.assertTrue(warFile.delete());
+        if (warFile!=null) {
+            warFile.delete();
+        }
+
+        CLITestSuite.stopSupport();
     }
 
     @Test

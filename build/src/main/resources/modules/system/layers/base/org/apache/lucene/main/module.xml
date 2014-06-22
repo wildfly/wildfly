@@ -28,7 +28,10 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.apache.lucene:lucene-analyzers}"/>
+        <artifact name="${org.apache.lucene:lucene-core}"/>
+        <artifact name="${org.apache.lucene:lucene-facet}"/>
+        <artifact name="${org.apache.lucene:lucene-memory}"/>
     </resources>
 
     <dependencies>

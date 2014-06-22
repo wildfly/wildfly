@@ -27,11 +27,10 @@ import javax.ejb.EJBException;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -71,13 +70,13 @@ public class TimerHandleImpl implements TimerHandle {
      */
     public TimerHandleImpl(final String id, final String timedObjectId, final TimerServiceImpl service) throws IllegalArgumentException {
         if (id == null) {
-            throw MESSAGES.idIsNull();
+            throw EjbLogger.ROOT_LOGGER.idIsNull();
         }
         if (timedObjectId == null) {
-            throw MESSAGES.timedObjectNull();
+            throw EjbLogger.ROOT_LOGGER.timedObjectNull();
         }
         if (service == null) {
-            throw MESSAGES.timerServiceIsNull();
+            throw EjbLogger.ROOT_LOGGER.timerServiceIsNull();
         }
 
         this.timedObjectId = timedObjectId;
@@ -96,12 +95,12 @@ public class TimerHandleImpl implements TimerHandle {
             // get hold of the timer service through the use of timed object id
             service = (TimerServiceImpl) currentServiceContainer().getRequiredService(ServiceName.parse(serviceName)).getValue();
             if (service == null) {
-                throw MESSAGES.timerServiceWithIdNotRegistered(timedObjectId);
+                throw EjbLogger.ROOT_LOGGER.timerServiceWithIdNotRegistered(timedObjectId);
             }
         }
         final TimerImpl timer = this.service.getTimer(this);
         if (timer == null || !timer.isActive()) {
-            throw MESSAGES.timerHandleIsNotActive(this);
+            throw EjbLogger.ROOT_LOGGER.timerHandleIsNotActive(this);
         }
         return timer;
     }

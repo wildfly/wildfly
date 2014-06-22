@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
@@ -156,7 +156,7 @@ public abstract class AbstractModelResource implements Resource {
     protected void registerResourceProvider(final String type, final ResourceProvider provider) {
         synchronized (children) {
             if (children.containsKey(type)) {
-                throw MESSAGES.duplicateResourceType(type);
+                throw ControllerLogger.ROOT_LOGGER.duplicateResourceType(type);
             }
             children.put(type, provider);
         }
@@ -221,7 +221,7 @@ public abstract class AbstractModelResource implements Resource {
         public void register(String name, Resource resource) {
             synchronized (children) {
                 if (children.containsKey(name)) {
-                    throw MESSAGES.duplicateResource(name);
+                    throw ControllerLogger.ROOT_LOGGER.duplicateResource(name);
                 }
                 children.put(name, resource);
             }

@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -73,7 +73,7 @@ public class ServerStatusHandler implements OperationStepHandler {
             context.getResult().set(status.toString());
             context.stepCompleted();
         } else {
-            throw new OperationFailedException(new ModelNode(MESSAGES.failedToGetServerStatus()));
+            throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.failedToGetServerStatus()));
         }
     }
 

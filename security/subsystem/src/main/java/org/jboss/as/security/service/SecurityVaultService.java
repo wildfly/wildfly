@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -67,7 +67,7 @@ public class SecurityVaultService implements Service<SecurityVault> {
             }
             vault.init(options);
         } catch (SecurityVaultException e) {
-            throw SecurityMessages.MESSAGES.unableToStartException("SecurityVaultService", e);
+            throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityVaultService", e);
         }
     }
 

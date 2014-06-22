@@ -22,9 +22,6 @@
 
 package org.jboss.as.process.protocol;
 
-import static org.jboss.as.process.protocol.ProtocolLogger.CONNECTION_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
-
 import java.io.BufferedOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
@@ -35,6 +32,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.Executor;
+
+import org.jboss.as.process.logging.ProcessLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -74,7 +73,7 @@ final class ConnectionImpl implements Connection {
         final OutputStream os;
         synchronized (lock) {
             if (writeDone) {
-                throw MESSAGES.writesAlreadyShutdown();
+                throw ProcessLogger.ROOT_LOGGER.writesAlreadyShutdown();
             }
             while (sender != null) {
                 try {
@@ -136,7 +135,7 @@ final class ConnectionImpl implements Connection {
     @Override
     public void setMessageHandler(final MessageHandler messageHandler) {
         if (messageHandler == null) {
-            throw MESSAGES.nullVar("messageHandler");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("messageHandler");
         }
         this.messageHandler = messageHandler;
     }
@@ -190,7 +189,7 @@ final class ConnectionImpl implements Connection {
                         int cmd = is.read();
                         switch (cmd) {
                             case -1: {
-                                CONNECTION_LOGGER.trace("Received end of stream");
+                                ProcessLogger.PROTOCOL_CONNECTION_LOGGER.trace("Received end of stream");
                                 // end of stream
                                 safeHandleShutdown();
                                 boolean done;
@@ -225,11 +224,11 @@ final class ConnectionImpl implements Connection {
                                     });
                                 }
                                 int cnt = StreamUtils.readInt(is);
-                                CONNECTION_LOGGER.tracef("Received data chunk of size %d", Integer.valueOf(cnt));
+                                ProcessLogger.PROTOCOL_CONNECTION_LOGGER.tracef("Received data chunk of size %d", Integer.valueOf(cnt));
                                 while (cnt > 0) {
                                     int sc = is.read(buffer, 0, Math.min(cnt, bufferSize));
                                     if (sc == -1) {
-                                        throw MESSAGES.unexpectedEndOfStream();
+                                        throw ProcessLogger.ROOT_LOGGER.unexpectedEndOfStream();
                                     }
                                     mos.write(buffer, 0, sc);
                                     cnt -= sc;
@@ -237,7 +236,7 @@ final class ConnectionImpl implements Connection {
                                 break;
                             }
                             case ProtocolConstants.CHUNK_END: {
-                                CONNECTION_LOGGER.trace("Received end data marker");
+                                ProcessLogger.PROTOCOL_CONNECTION_LOGGER.trace("Received end data marker");
                                 if (mos != null) {
                                     // end message
                                     mos.close();
@@ -248,7 +247,7 @@ final class ConnectionImpl implements Connection {
                                 break;
                             }
                             default: {
-                                throw MESSAGES.invalidCommandByte(cmd);
+                                throw ProcessLogger.ROOT_LOGGER.invalidCommandByte(cmd);
                             }
                         }
                     }
@@ -268,13 +267,13 @@ final class ConnectionImpl implements Connection {
         try {
             messageHandler.handleMessage(this, pis);
         } catch (RuntimeException e) {
-            CONNECTION_LOGGER.failedToReadMessage(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToReadMessage(e);
         } catch (IOException e) {
-            CONNECTION_LOGGER.failedToReadMessage(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToReadMessage(e);
         } catch (NoClassDefFoundError e) {
-            CONNECTION_LOGGER.failedToReadMessage(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToReadMessage(e);
         } catch (Error e) {
-            CONNECTION_LOGGER.failedToReadMessage(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToReadMessage(e);
             throw e;
         } finally {
             StreamUtils.safeClose(pis);
@@ -285,7 +284,7 @@ final class ConnectionImpl implements Connection {
         try {
             messageHandler.handleShutdown(this);
         } catch (IOException e) {
-            CONNECTION_LOGGER.failedToHandleSocketShutdown(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToHandleSocketShutdown(e);
         }
     }
 
@@ -293,7 +292,7 @@ final class ConnectionImpl implements Connection {
         try {
             messageHandler.handleFinished(this);
         } catch (IOException e) {
-            CONNECTION_LOGGER.failedToHandleSocketFinished(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToHandleSocketFinished(e);
         }
     }
 
@@ -301,7 +300,7 @@ final class ConnectionImpl implements Connection {
         try {
             messageHandler.handleFailure(this, e);
         } catch (IOException e1) {
-            CONNECTION_LOGGER.failedToHandleSocketFailure(e);
+            ProcessLogger.PROTOCOL_CONNECTION_LOGGER.failedToHandleSocketFailure(e);
         }
     }
 
@@ -349,9 +348,9 @@ final class ConnectionImpl implements Connection {
                 if (sender != this || writeDone) {
                     if (sender == this) sender = null;
                     lock.notifyAll();
-                    throw MESSAGES.writeChannelClosed();
+                    throw ProcessLogger.ROOT_LOGGER.writeChannelClosed();
                 }
-                CONNECTION_LOGGER.tracef("Sending data chunk of size %d", Integer.valueOf(len));
+                ProcessLogger.PROTOCOL_CONNECTION_LOGGER.tracef("Sending data chunk of size %d", Integer.valueOf(len));
                 out.write(hdr);
                 out.write(b, off, len);
             }
@@ -366,7 +365,7 @@ final class ConnectionImpl implements Connection {
                 sender = null;
                 // wake up waiters
                 lock.notify();
-                if (writeDone) throw MESSAGES.writeChannelClosed();
+                if (writeDone) throw ProcessLogger.ROOT_LOGGER.writeChannelClosed();
                 if (readDone) {
                     readExecutor.execute(new Runnable() {
                         @Override
@@ -375,7 +374,7 @@ final class ConnectionImpl implements Connection {
                         }
                     });
                 }
-                CONNECTION_LOGGER.tracef("Sending end of message");
+                ProcessLogger.PROTOCOL_CONNECTION_LOGGER.tracef("Sending end of message");
                 out.write(ProtocolConstants.CHUNK_END);
             }
         }
@@ -385,7 +384,7 @@ final class ConnectionImpl implements Connection {
             super.finalize();
             synchronized (lock) {
                 if (sender == this) {
-                    CONNECTION_LOGGER.leakedMessageOutputStream();
+                    ProcessLogger.PROTOCOL_CONNECTION_LOGGER.leakedMessageOutputStream();
                     close();
                 }
             }

@@ -25,7 +25,7 @@ package org.jboss.as.controller.interfaces;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * @author Tomaz Cerar
@@ -57,7 +57,7 @@ public class InetAddressUtil {
             InetAddress address = getLocalHost();
             return address != null ? canonize(address.getHostName()) : null;
         } catch (UnknownHostException e) {
-            throw MESSAGES.cannotDetermineDefaultName(e);
+            throw ControllerLogger.ROOT_LOGGER.cannotDetermineDefaultName(e);
         }
     }
 

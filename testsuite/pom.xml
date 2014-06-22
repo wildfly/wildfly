@@ -55,12 +55,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-testsuite</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>WildFly Test Suite: Aggregator</name>
@@ -154,7 +154,6 @@
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
-        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.saxon>8.7</version.saxon>
 
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->
@@ -343,6 +342,29 @@
                            </configuration>
                        </execution>
                    </executions>
+                    <!-- WFLY-3361 - use external xalan for XML transformations to
+                    ensure consistent behaviour on all platrforms.-->
+                   <dependencies>
+                       <dependency>
+                           <groupId>xalan</groupId>
+                           <artifactId>xalan</artifactId>
+                           <version>2.7.1</version>
+                       </dependency>
+                   </dependencies>
+               </plugin>
+
+               <!-- WFLY-3361 - use external xalan for XML transformations to
+               ensure consistent behaviour on all platrforms.-->
+               <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                   <dependencies>
+                       <dependency>
+                           <groupId>xalan</groupId>
+                           <artifactId>xalan</artifactId>
+                           <version>2.7.1</version>
+                       </dependency>
+                   </dependencies>
                </plugin>
 
                 <!--
@@ -459,6 +481,11 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
+            <id>integ-picketlink.module.profile</id>
+            <activation><property><name>ts.picketlink</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
             <id>integ-xts.module.profile</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>
@@ -508,6 +535,38 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.config-as.saml-debug</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>transform</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                            <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                            <stylesheet>${xslt.scripts.dir}/addSAMLTokenTimeout.xsl</stylesheet>
+                                            <includes>
+                                                <include>standalone*.xml</include>
+                                            </includes>
+                                            <parameters>
+                                                <parameter><name>samlTokenTomeout</name><value>3600000</value></parameter>
+                                                <parameter><name>samlClockSkew</name><value>1000</value></parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
 
@@ -1266,7 +1325,6 @@
                 </plugins>
             </build>
         </profile>
-
 
     </profiles>
 </project>

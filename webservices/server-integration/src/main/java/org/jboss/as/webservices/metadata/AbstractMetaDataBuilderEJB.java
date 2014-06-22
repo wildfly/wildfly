@@ -21,10 +21,9 @@
  */
 package org.jboss.as.webservices.metadata;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.List;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -50,7 +49,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @return universal EJB meta data model
      */
     final EJBArchiveMetaData create(final Deployment dep) {
-        ROOT_LOGGER.creatingEjbDeployment(dep.getSimpleName());
+        WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for EJB webservice deployment: %s", dep.getSimpleName());
         final EJBArchiveMetaData ejbArchiveMD = new EJBArchiveMetaData();
 
         this.buildEnterpriseBeansMetaData(dep, ejbArchiveMD);
@@ -90,17 +89,17 @@ abstract class AbstractMetaDataBuilderEJB {
        // set context root
        final String contextRoot = webservicesMD.getContextRoot();
        ejbArchiveMD.setWebServiceContextRoot(contextRoot);
-       ROOT_LOGGER.settingContextRoot(contextRoot);
+        WSLogger.ROOT_LOGGER.tracef("Setting context root: %s", contextRoot);
 
        // set config name
        final String configName = webservicesMD.getConfigName();
        ejbArchiveMD.setConfigName(configName);
-       ROOT_LOGGER.settingConfigName(configName);
+        WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
 
        // set config file
        final String configFile = webservicesMD.getConfigFile();
        ejbArchiveMD.setConfigFile(configFile);
-       ROOT_LOGGER.settingConfigFile(configFile);
+        WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
 
        // set wsdl location resolver
        final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD = webservicesMD.getWebserviceDescriptions();

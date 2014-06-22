@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.interceptors;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -56,7 +56,7 @@ public class ShutDownInterceptorFactory implements InterceptorFactory {
             do {
                 oldValue = invocationCount;
                 if ((oldValue & SHUTDOWN_FLAG) != 0) {
-                    throw EjbMessages.MESSAGES.componentIsShuttingDown();
+                    throw EjbLogger.ROOT_LOGGER.componentIsShuttingDown();
                 }
                 value = oldValue + 1;
             } while (!updater.compareAndSet(ShutDownInterceptorFactory.this, oldValue, value));

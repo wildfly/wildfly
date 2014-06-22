@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -40,6 +39,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -87,7 +87,7 @@ public class JvmXml {
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
 
                         if (!jvmNames.add(value)) {
-                            throw MESSAGES.duplicateDeclaration("JVM", value, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("JVM", value, reader.getLocation());
                         }
                         name = value;
                         break;
@@ -179,7 +179,7 @@ public class JvmXml {
                 }
                 case ENVIRONMENT_VARIABLES: {
                     if (hasEnvironmentVariables) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseEnvironmentVariables(reader, expectedNs, addOp);
                     hasEnvironmentVariables = true;
@@ -187,10 +187,14 @@ public class JvmXml {
                 }
                 case JVM_OPTIONS: {
                     if (hasJvmOptions) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseJvmOptions(reader, expectedNs, addOp);
                     hasJvmOptions = true;
+                    break;
+                }
+                case LAUNCH_COMMAND: {
+                    parseLaunchCommand(reader, addOp);
                     break;
                 }
                 default:
@@ -383,6 +387,38 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
+    private static void parseLaunchCommand(final XMLExtendedStreamReader reader, ModelNode addOp)
+            throws XMLStreamException {
+
+        // Handle attributes
+        boolean valueSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PREFIX: {
+                        if (checkParseAndSetParameter(JvmAttributes.LAUNCH_COMMAND, value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
+                        valueSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!valueSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PREFIX));
+        }
+        // Handle elements
+        requireNoContent(reader);
+    }
+
     private static void parseJavaagent(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
@@ -508,6 +544,10 @@ public class JvmXml {
         }
         if (JvmAttributes.ENVIRONMENT_VARIABLES.isMarshallable(jvmElement)) {
             JvmAttributes.ENVIRONMENT_VARIABLES.marshallAsElement(jvmElement, writer);
+        }
+        if (JvmAttributes.LAUNCH_COMMAND.isMarshallable(jvmElement)) {
+            writer.writeEmptyElement(Element.LAUNCH_COMMAND.getLocalName());
+            JvmAttributes.PREFIX.marshallAsAttribute(jvmElement, writer);
         }
 
         writer.writeEndElement();

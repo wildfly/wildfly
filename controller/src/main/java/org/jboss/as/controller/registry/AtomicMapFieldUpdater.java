@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -55,7 +55,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V put(C instance, K key, V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);
@@ -97,7 +97,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
      */
     public V putAtomic(C instance, K key, V value, Map<K, V> snapshot) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         final Map<K, V> newMap;
         final int oldSize = snapshot.size();
@@ -125,7 +125,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V putIfAbsent(C instance, K key, V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);

@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.EeLogger;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -38,8 +38,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A binding which gets its value from another JNDI binding.
@@ -70,7 +68,7 @@ public final class LookupInjectionSource extends InjectionSource {
 
     public LookupInjectionSource(final String lookupName, final boolean optional) {
         if (lookupName == null) {
-            throw MESSAGES.nullVar("lookupName");
+            throw EeLogger.ROOT_LOGGER.nullVar("lookupName");
         }
         this.lookupName = lookupName;
         this.optional = optional;

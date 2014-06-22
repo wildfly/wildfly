@@ -25,7 +25,7 @@ package org.jboss.as.ee.naming;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ContextManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingMessages;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -61,7 +61,7 @@ public class ContextInjectionSource extends InjectionSource {
         } else if(fullName.startsWith("java:comp")) {
             contextServiceName = ContextNames.contextServiceNameOfComponent(resolutionContext.getApplicationName(), resolutionContext.getModuleName(), resolutionContext.getComponentName());
         } else {
-            throw NamingMessages.MESSAGES.invalidNameForContextBinding(fullName);
+            throw NamingLogger.ROOT_LOGGER.invalidNameForContextBinding(fullName);
         }
         serviceBuilder.addDependency(contextServiceName, NamingStore.class, managedReferenceFactory.getNamingStoreInjectedValue());
         injector.inject(managedReferenceFactory);

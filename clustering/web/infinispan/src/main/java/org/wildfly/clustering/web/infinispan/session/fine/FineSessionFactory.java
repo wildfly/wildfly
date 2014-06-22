@@ -30,7 +30,7 @@ import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
-import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -106,7 +106,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
                 return null;
             }
         };
-        this.invoker.invoke(this.attributeCache, attributeOperation, Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING);
+        this.invoker.invoke(this.attributeCache, attributeOperation, Flag.IGNORE_RETURN_VALUES);
     }
 
     @Override

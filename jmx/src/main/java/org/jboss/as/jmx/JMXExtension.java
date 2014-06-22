@@ -77,6 +77,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -199,7 +200,7 @@ public class JMXExtension implements Extension {
             .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                 @Override
                 public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return JmxMessages.MESSAGES.domainNameMustBeJBossAs();
+                    return JmxLogger.ROOT_LOGGER.domainNameMustBeJBossAs();
                 }
 
                 @Override
@@ -211,7 +212,7 @@ public class JMXExtension implements Extension {
             .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                 @Override
                 public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return JmxMessages.MESSAGES.properPropertyFormatMustBeFalse();
+                    return JmxLogger.ROOT_LOGGER.properPropertyFormatMustBeFalse();
                 }
 
                 @Override
@@ -281,7 +282,7 @@ public class JMXExtension implements Extension {
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JmxAuditLoggerResourceDefinition.ENABLED)
             .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
                 public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return JmxMessages.MESSAGES.auditLogEnabledMustBeFalse();
+                    return JmxLogger.ROOT_LOGGER.auditLogEnabledMustBeFalse();
                 }
 
                 protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
@@ -308,7 +309,7 @@ public class JMXExtension implements Extension {
 
                         @Override
                         public String getFailureDescription() {
-                            return JmxMessages.MESSAGES.auditLogEnabledMustBeFalse();
+                            return JmxLogger.ROOT_LOGGER.auditLogEnabledMustBeFalse();
                         }
                     };
                     return new TransformedOperation(null, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);

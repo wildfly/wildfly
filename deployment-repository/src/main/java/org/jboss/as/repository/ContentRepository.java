@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.repository.logging.DeploymentRepositoryLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -137,24 +138,24 @@ public interface ContentRepository {
 
             protected ContentRepositoryImpl(final File repoRoot) {
                 if (repoRoot == null)
-                    throw DeploymentRepositoryMessages.MESSAGES.nullVar("repoRoot");
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.nullVar("repoRoot");
                 if (repoRoot.exists()) {
                     if (!repoRoot.isDirectory()) {
-                        throw DeploymentRepositoryMessages.MESSAGES.notADirectory(repoRoot.getAbsolutePath());
+                        throw DeploymentRepositoryLogger.ROOT_LOGGER.notADirectory(repoRoot.getAbsolutePath());
                     }
                     else if (!repoRoot.canWrite()) {
-                        throw DeploymentRepositoryMessages.MESSAGES.directoryNotWritable(repoRoot.getAbsolutePath());
+                        throw DeploymentRepositoryLogger.ROOT_LOGGER.directoryNotWritable(repoRoot.getAbsolutePath());
                     }
                 }
                 else if (!repoRoot.mkdirs()) {
-                    throw DeploymentRepositoryMessages.MESSAGES.cannotCreateDirectory(repoRoot.getAbsolutePath());
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.cannotCreateDirectory(repoRoot.getAbsolutePath());
                 }
                 this.repoRoot = repoRoot;
 
                 try {
                     this.messageDigest = MessageDigest.getInstance("SHA-1");
                 } catch (NoSuchAlgorithmException e) {
-                    throw DeploymentRepositoryMessages.MESSAGES.cannotObtainSha1(e, MessageDigest.class.getSimpleName());
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.cannotObtainSha1(e, MessageDigest.class.getSimpleName());
                 }
             }
 
@@ -215,7 +216,7 @@ public interface ContentRepository {
             @Override
             public VirtualFile getContent(byte[] hash) {
                 if (hash == null)
-                    throw DeploymentRepositoryMessages.MESSAGES.nullVar("hash");
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.nullVar("hash");
                 return VFS.getChild(getDeploymentContentFile(hash, true).toURI());
             }
 
@@ -252,7 +253,7 @@ public interface ContentRepository {
                 }
                 final File hashDir = new File(base, partB);
                 if (validate && !hashDir.exists() && !hashDir.mkdirs()) {
-                    throw DeploymentRepositoryMessages.MESSAGES.cannotCreateDirectory(hashDir.getAbsolutePath());
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.cannotCreateDirectory(hashDir.getAbsolutePath());
                 }
                 return hashDir;
             }
@@ -260,12 +261,12 @@ public interface ContentRepository {
             protected void validateDir(File dir) {
                 if (!dir.exists()) {
                     if (!dir.mkdirs()) {
-                        throw DeploymentRepositoryMessages.MESSAGES.cannotCreateDirectory(dir.getAbsolutePath());
+                        throw DeploymentRepositoryLogger.ROOT_LOGGER.cannotCreateDirectory(dir.getAbsolutePath());
                     }
                 } else if (!dir.isDirectory()) {
-                    throw DeploymentRepositoryMessages.MESSAGES.notADirectory(dir.getAbsolutePath());
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.notADirectory(dir.getAbsolutePath());
                 } else if (!dir.canWrite()) {
-                    throw DeploymentRepositoryMessages.MESSAGES.directoryNotWritable(dir.getAbsolutePath());
+                    throw DeploymentRepositoryLogger.ROOT_LOGGER.directoryNotWritable(dir.getAbsolutePath());
                 }
             }
 

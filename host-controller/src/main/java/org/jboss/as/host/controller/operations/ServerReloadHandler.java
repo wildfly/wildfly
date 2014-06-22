@@ -30,11 +30,11 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import static org.jboss.as.host.controller.operations.ServerStartHandler.getOperationDefinition;
 
 /**
@@ -54,7 +54,7 @@ public class ServerReloadHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

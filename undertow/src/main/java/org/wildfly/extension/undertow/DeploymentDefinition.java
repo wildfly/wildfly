@@ -45,6 +45,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Tomaz Cerar
@@ -102,7 +103,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
 
             if (stat == null) {
-                context.getFailureDescription().set(UndertowMessages.MESSAGES.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
+                context.getFailureDescription().set(UndertowLogger.ROOT_LOGGER.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
             } else {
                 ModelNode result = new ModelNode();
                 switch (stat) {
@@ -131,7 +132,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                         result.set(sm.getRejectedSessions());
                         break;
                     */default:
-                        throw new IllegalStateException(UndertowMessages.MESSAGES.unknownMetric(stat));
+                        throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.unknownMetric(stat));
                 }
                 context.getResult().set(result);
             }

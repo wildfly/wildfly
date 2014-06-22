@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
 
@@ -66,9 +66,9 @@ public class DeploymentUploadURLHandler
             URL url = new URL(urlSpec);
             return url.openStream();
         } catch (MalformedURLException e) {
-            throw ServerMessages.MESSAGES.invalidDeploymentURL(urlSpec, e);
+            throw ServerLogger.ROOT_LOGGER.invalidDeploymentURL(urlSpec, e);
         } catch (IOException e) {
-            throw ServerMessages.MESSAGES.problemOpeningStreamFromDeploymentURL(urlSpec, e);
+            throw ServerLogger.ROOT_LOGGER.problemOpeningStreamFromDeploymentURL(urlSpec, e);
         }
     }
 

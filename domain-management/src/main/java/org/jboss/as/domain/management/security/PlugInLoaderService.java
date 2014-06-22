@@ -22,13 +22,12 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
@@ -93,13 +92,13 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
                         providers.add(current);
                     }
                 } catch (ModuleLoadException e) {
-                    throw MESSAGES.unableToLoadPlugInProviders(name, e.getMessage());
+                    throw DomainManagementLogger.ROOT_LOGGER.unableToLoadPlugInProviders(name, e.getMessage());
                 }
                 if (providers.size() > 0) {
                     cachedProviders.put(name, providers);
                     response = providers;
                 } else {
-                    throw MESSAGES.noPlugInProvidersLoaded(name);
+                    throw DomainManagementLogger.ROOT_LOGGER.noPlugInProvidersLoaded(name);
                 }
             }
             return response;
@@ -131,7 +130,7 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
             }
         }
         if (response == null) {
-            throw MESSAGES.noAuthenticationPlugInFound(name);
+            throw DomainManagementLogger.ROOT_LOGGER.noAuthenticationPlugInFound(name);
         }
 
         return response;
@@ -162,7 +161,7 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
             }
         }
         if (response == null) {
-            throw MESSAGES.noAuthenticationPlugInFound(name);
+            throw DomainManagementLogger.ROOT_LOGGER.noAuthenticationPlugInFound(name);
         }
 
         return response;

@@ -27,6 +27,7 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -54,7 +55,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Handle parsing of Persistence unit persistence.xml files
@@ -218,7 +218,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 postParseSteps(persistence_xml, puHolder, deploymentUnit);
                 listPUHolders.add(puHolder);
             } catch (Exception e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failedToParse(persistence_xml), e);
+                throw new DeploymentUnitProcessingException(JpaLogger.ROOT_LOGGER.failedToParse(persistence_xml), e);
             } finally {
                 try {
                     if (is != null) {
@@ -268,10 +268,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 VirtualFile baseDir = (parent != null ? parent : deploymentUnitFile);
                 VirtualFile jarFile = baseDir.getChild(jar);
                 if (jarFile == null)
-                    throw MESSAGES.childNotFound(jar, baseDir);
+                    throw JpaLogger.ROOT_LOGGER.childNotFound(jar, baseDir);
                 return jarFile.toURL();
             } catch (Exception e1) {
-                throw MESSAGES.relativePathNotFound(e1, jar);
+                throw JpaLogger.ROOT_LOGGER.relativePathNotFound(e1, jar);
             }
         }
     }
@@ -354,10 +354,10 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     public static String createBeanName(DeploymentUnit deploymentUnit, String persistenceUnitName) {
         // persistenceUnitName must be a simple name
         if (persistenceUnitName.indexOf('/') != -1) {
-            throw MESSAGES.invalidPersistenceUnitName(persistenceUnitName, '/');
+            throw JpaLogger.ROOT_LOGGER.invalidPersistenceUnitName(persistenceUnitName, '/');
         }
         if (persistenceUnitName.indexOf('#') != -1) {
-            throw MESSAGES.invalidPersistenceUnitName(persistenceUnitName, '#');
+            throw JpaLogger.ROOT_LOGGER.invalidPersistenceUnitName(persistenceUnitName, '#');
         }
 
         String unitName = getScopedDeploymentUnitPath(deploymentUnit) + "#" + persistenceUnitName;

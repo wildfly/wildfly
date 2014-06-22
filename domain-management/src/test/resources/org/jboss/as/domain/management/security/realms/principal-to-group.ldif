@@ -181,3 +181,46 @@ uid: TestUserFour
 memberOf: uid=GroupFour,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
 userPassword: passwordFour
 
+# Entries for testing referrals
+
+dn: uid=TestUserSeven,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupMember
+objectClass: inetOrgPerson
+objectClass: uidObject
+objectClass: person
+objectClass: organizationalPerson
+cn: Test User Seven
+sn: Test User Seven
+uid: TestUserSeven
+memberOf: uid=ReferralGroupSeven,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+userPassword: passwordSeven
+
+dn: uid=ReferralGroupSeven,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: referral
+objectClass: uidObject
+uid: ReferralGroupSeven
+ref: ldap://localhost:11391/uid=GroupSeven,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+
+dn: uid=ReferralUserEight,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: referral
+objectClass: uidObject
+uid: ReferralUserEight
+ref: ldap://localhost:11391/uid=TestUserEight,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+
+dn: uid=ReferralUserTen,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: referral
+objectClass: uidObject
+uid: ReferralUserTen
+ref: ldap://localhost:11391/uid=TestUserTen,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+
+dn: uid=GroupNine,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupMember
+objectClass: group
+objectClass: uidObject
+uid: GroupNine
+

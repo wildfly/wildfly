@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -148,19 +147,10 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly) {
-            JMSQueueControlHandler.INSTANCE.registerOperations(registry);
+            JMSQueueControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
 
             if (!deployed) {
-                SimpleOperationDefinition addJNDI = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
-                        getResourceDescriptionResolver(),
-                        AbstractUpdateJndiHandler.JNDI_BINDING);
-                registry.registerOperationHandler(addJNDI, new JMSQueueUpdateJndiHandler(true));
-
-                SimpleOperationDefinition removeJNDI = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
-                        getResourceDescriptionResolver(),
-                        AbstractUpdateJndiHandler.JNDI_BINDING);
-                registry.registerOperationHandler(removeJNDI, new JMSQueueUpdateJndiHandler(false));
-
+                JMSQueueUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
             }
         }
     }

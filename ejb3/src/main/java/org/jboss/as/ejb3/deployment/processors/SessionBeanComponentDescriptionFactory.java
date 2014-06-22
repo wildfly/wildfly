@@ -22,16 +22,23 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
+
+import java.lang.reflect.Modifier;
+import java.util.List;
+
+import javax.ejb.Singleton;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
+
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ee.structure.Attachments;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
-import org.jboss.as.ejb3.util.PropertiesValueResolver;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -47,15 +54,8 @@ import org.jboss.metadata.ejb.spec.GenericBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean32MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.metadata.ejb.spec.SessionType;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.msc.service.ServiceName;
-
-import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import java.lang.reflect.Modifier;
-import java.util.List;
-
-import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 
 /**
  * User: jpai
@@ -111,14 +111,14 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
-        final boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                EjbMessages.MESSAGES.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target);
+                EjbLogger.ROOT_LOGGER.warn(EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target).getMessage());
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;
@@ -128,7 +128,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             }
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());
+            final String beanName = (nameValue == null || nameValue.asString().isEmpty()) ? ejbName : propertyReplacer.replaceProperties(nameValue.asString());
             final SessionBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, SessionBeanMetaData.class);
             final SessionBeanComponentDescription.SessionBeanType sessionBeanType;
             final String beanClassName;
@@ -163,7 +163,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                     sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnitServiceName, beanMetaData);
                     break;
                 default:
-                    throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionBeanType.name());
+                    throw EjbLogger.ROOT_LOGGER.unknownSessionBeanType(sessionBeanType.name());
             }
 
             addComponent(deploymentUnit, sessionBeanDescription);
@@ -183,7 +183,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             case Singleton:
                 return SessionBeanComponentDescription.SessionBeanType.SINGLETON;
             default:
-                throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionType.name());
+                throw EjbLogger.ROOT_LOGGER.unknownSessionBeanType(sessionType.name());
         }
     }
 
@@ -200,12 +200,12 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         final String className = sessionBeanClass.name().toString();
         // must *not* be an interface
         if (Modifier.isInterface(flags)) {
-            EjbLogger.EJB3_LOGGER.sessionBeanClassCannotBeAnInterface(className);
+            EjbLogger.ROOT_LOGGER.sessionBeanClassCannotBeAnInterface(className);
             return false;
         }
         // bean class must be public, must *not* be abstract or final
         if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            EjbLogger.EJB3_LOGGER.sessionBeanClassMustBePublicNonAbstractNonFinal(className);
+            EjbLogger.ROOT_LOGGER.sessionBeanClassMustBePublicNonAbstractNonFinal(className);
             return false;
         }
         // valid class
@@ -224,7 +224,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             if (bean.getEjbType() == EjbType.SESSION) {
                 sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
                 if (sessionType == null) {
-                    throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                    throw EjbLogger.ROOT_LOGGER.sessionTypeNotSpecified(beanName);
                 }
             } else {
                 //it is not a session bean, so we ignore it
@@ -233,7 +233,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
         } else if (sessionType == null) {
             sessionType = determineSessionType(sessionBean.getEjbClass(), compositeIndex);
             if (sessionType == null) {
-                throw EjbMessages.MESSAGES.sessionTypeNotSpecified(beanName);
+                throw EjbLogger.ROOT_LOGGER.sessionTypeNotSpecified(beanName);
             }
         }
 
@@ -253,7 +253,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
                 sessionBeanDescription = new SingletonComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit.getServiceName(), sessionBean);
                 break;
             default:
-                throw EjbMessages.MESSAGES.unknownSessionBeanType(sessionType.name());
+                throw EjbLogger.ROOT_LOGGER.unknownSessionBeanType(sessionType.name());
         }
         addComponent(deploymentUnit, sessionBeanDescription);
     }

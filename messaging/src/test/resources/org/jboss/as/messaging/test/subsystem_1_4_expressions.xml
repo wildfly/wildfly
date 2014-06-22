@@ -78,9 +78,7 @@
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="${batch.delay:50}"/>
                </netty-connector>
-               <in-vm-connector name="in-vm" server-id="${my.server-id:0}">
-                  <param key="batch-delay" value="${batch.delay:50}"/>
-               </in-vm-connector>
+               <in-vm-connector name="in-vm" server-id="${my.server-id:0}" />
                <connector name="myconnector">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                   <param key="host" value="192.168.1.2"/>
@@ -95,9 +93,7 @@
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
-               <in-vm-acceptor name="in-vm" server-id="${my.server-id:0}">
-                   <param key="batch-delay" value="${batch.delay:50}"/>
-               </in-vm-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="${my.server-id:0}" />
                <acceptor name="myacceptor">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
                   <param key="batch-delay" value="${batch.delay:50}"/>

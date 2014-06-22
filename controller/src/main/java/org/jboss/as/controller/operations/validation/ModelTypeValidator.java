@@ -22,11 +22,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.EnumSet;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates that the given parameter is of the correct type.
@@ -131,7 +130,7 @@ public class ModelTypeValidator implements ParameterValidator {
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (!value.isDefined()) {
             if (!nullable)
-                throw MESSAGES.nullNotAllowed(parameterName);
+                throw ControllerLogger.ROOT_LOGGER.nullNotAllowed(parameterName);
         } else  {
             boolean matched = false;
             if (strictType) {
@@ -145,7 +144,7 @@ public class ModelTypeValidator implements ParameterValidator {
                 }
             }
             if  (!matched)
-                throw MESSAGES.incorrectType(parameterName, validTypes, value.getType());
+                throw ControllerLogger.ROOT_LOGGER.incorrectType(parameterName, validTypes, value.getType());
         }
     }
 

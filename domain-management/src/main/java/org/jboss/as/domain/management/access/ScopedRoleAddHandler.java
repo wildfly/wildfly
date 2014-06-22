@@ -25,7 +25,6 @@ import org.jboss.as.controller.ParameterCorrector;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,7 +90,7 @@ abstract class ScopedRoleAddHandler extends AbstractAddStepHandler {
                             }
                         }
 
-                        throw MESSAGES.badBaseRole(specifiedRole);
+                        throw DomainManagementLogger.ROOT_LOGGER.badBaseRole(specifiedRole);
                     }
                 }).setCorrector(new ParameterCorrector() {
                     @Override
@@ -124,7 +124,7 @@ abstract class ScopedRoleAddHandler extends AbstractAddStepHandler {
         Set<String> standardRoles = authorizerConfiguration.getStandardRoles();
         for (String current : standardRoles) {
             if (roleName.equalsIgnoreCase(current)) {
-                throw MESSAGES.scopedRoleStandardName(roleName, current);
+                throw DomainManagementLogger.ROOT_LOGGER.scopedRoleStandardName(roleName, current);
             }
         }
 
@@ -132,14 +132,14 @@ abstract class ScopedRoleAddHandler extends AbstractAddStepHandler {
         Set<String> hostScopedRoles = readResource.getChildrenNames(HOST_SCOPED_ROLE);
         for (String current : hostScopedRoles) {
             if (roleName.equalsIgnoreCase(current)) {
-                throw MESSAGES.duplicateScopedRole(HOST_SCOPED_ROLE, roleName);
+                throw DomainManagementLogger.ROOT_LOGGER.duplicateScopedRole(HOST_SCOPED_ROLE, roleName);
             }
         }
 
         Set<String> serverGroupScopedRoles = readResource.getChildrenNames(SERVER_GROUP_SCOPED_ROLE);
         for (String current : serverGroupScopedRoles) {
             if (roleName.equalsIgnoreCase(current)) {
-                throw MESSAGES.duplicateScopedRole(SERVER_GROUP_SCOPED_ROLE, roleName);
+                throw DomainManagementLogger.ROOT_LOGGER.duplicateScopedRole(SERVER_GROUP_SCOPED_ROLE, roleName);
             }
         }
 

@@ -1,7 +1,6 @@
 package org.jboss.as.controller;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +10,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -20,7 +20,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
@@ -93,7 +92,7 @@ public class PersistentResourceXMLDescription {
             }
         }
         if (wildcard && name == null) {
-            throw MESSAGES.missingRequiredAttributes(new StringBuilder(NAME), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(NAME), reader.getLocation());
         }
         PathElement path = wildcard ? PathElement.pathElement(resourceDefinition.getPathElement().getKey(), name) : resourceDefinition.getPathElement();
         PathAddress address = parentAddress.append(path);
@@ -270,13 +269,6 @@ public class PersistentResourceXMLDescription {
         }
 
         public PersistentResourceXMLBuilder addAttributes(AttributeDefinition... attributes) {
-            for (final AttributeDefinition at : attributes) {
-                this.attributes.put(at.getXmlName(), at);
-            }
-            return this;
-        }
-
-        public PersistentResourceXMLBuilder addAttributes(Collection<? extends AttributeDefinition> attributes) {
             for (final AttributeDefinition at : attributes) {
                 this.attributes.put(at.getXmlName(), at);
             }

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -136,6 +136,11 @@
         <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
         </dependency>
 
         <dependency>

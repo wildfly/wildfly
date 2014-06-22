@@ -29,12 +29,12 @@ import java.util.Map;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 /**
  * Abstract superclass for {@link ExtensibleConfigurationPersister} implementations.
@@ -120,7 +120,7 @@ public abstract class AbstractConfigurationPersister implements ExtensibleConfig
                 safeClose(streamWriter);
             }
         } catch (Exception e) {
-            throw MESSAGES.failedToWriteConfiguration(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToWriteConfiguration(e);
         }
     }
 

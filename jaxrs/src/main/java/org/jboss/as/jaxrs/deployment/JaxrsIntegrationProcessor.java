@@ -54,7 +54,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -85,13 +85,13 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         final ResteasyDeploymentData resteasy = deploymentUnit.getAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA);
 
-
         if (resteasy == null)
             return;
 
         //remove the resteasy.scan parameter
         //because it is not needed
         final List<ParamValueMetaData> params = webdata.getContextParams();
+        boolean entityExpandEnabled = false;
         if (params != null) {
             Iterator<ParamValueMetaData> it = params.iterator();
             while (it.hasNext()) {
@@ -102,8 +102,15 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                     it.remove();
                 } else if (param.getParamName().equals(RESTEASY_SCAN_PROVIDERS)) {
                     it.remove();
+                } else if(param.getParamName().equals(ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES)) {
+                    entityExpandEnabled = true;
                 }
             }
+        }
+
+        //don't expand entity references by default
+        if(!entityExpandEnabled) {
+            setContextParameter(webdata, ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES, "false");
         }
 
 

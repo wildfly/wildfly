@@ -23,8 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
-import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -43,6 +41,7 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
+import org.jboss.as.server.logging.ServerLogger;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.as.server.Services;
 import org.jboss.as.version.ProductConfig;
@@ -95,24 +94,24 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         final ProductConfig config = environment.getProductConfig();
         final String prettyVersion = config.getPrettyVersionString();
-        AS_ROOT_LOGGER.serverStarting(prettyVersion);
-        if (CONFIG_LOGGER.isDebugEnabled()) {
+        ServerLogger.AS_ROOT_LOGGER.serverStarting(prettyVersion);
+        if (ServerLogger.CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
             b.append("Configured system properties:");
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
-            CONFIG_LOGGER.debug(b);
-            CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
-            if (CONFIG_LOGGER.isTraceEnabled()) {
+            ServerLogger.CONFIG_LOGGER.debug(b);
+            ServerLogger.CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
+            if (ServerLogger.CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String, String> env = System.getenv();
                 b.append("Configured system environment:");
                 for (String key : new TreeSet<String>(env.keySet())) {
                     b.append("\n\t").append(key).append(" = ").append(env.get(key));
                 }
-                CONFIG_LOGGER.trace(b);
+                ServerLogger.CONFIG_LOGGER.trace(b);
             }
         }
         final ServiceTarget serviceTarget = context.getChildTarget();
@@ -161,7 +160,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
     public void stop(StopContext context) {
         String prettyVersion = environment.getProductConfig().getPrettyVersionString();
         processState.setStopping();
-        AS_ROOT_LOGGER.serverStopped(prettyVersion, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        ServerLogger.AS_ROOT_LOGGER.serverStopped(prettyVersion, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     @Override

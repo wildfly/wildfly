@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +42,7 @@ import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -76,6 +76,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
 import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResourcesHandler;
@@ -299,9 +300,12 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
-        resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));
+        ResourceDefinition domainDeploymentDefinition = isMaster
+                ? DomainDeploymentResourceDefinition.createForDomainMaster(contentRepo)
+                : DomainDeploymentResourceDefinition.createForDomainSlave(environment.isBackupDomainFiles(), fileRepository);
+        resourceRegistration.registerSubModel(domainDeploymentDefinition);
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
-        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, hostControllerInfo, contentRepo, fileRepository, runtimeIgnoreTransformationRegistry));
+        resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, hostControllerInfo, fileRepository, runtimeIgnoreTransformationRegistry));
 
         //TODO socket-binding-group currently lives in controller and the child RDs live in domain so they currently need passing in from here
         resourceRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(
@@ -337,10 +341,10 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         @Override
         public void validateParameter(String parameterName, ModelNode plan) throws OperationFailedException {
             if(plan == null) {
-                throw new OperationFailedException(MESSAGES.nullVar("plan").getLocalizedMessage());
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.nullVar("plan").getLocalizedMessage());
             }
             if(!plan.hasDefined(ROLLOUT_PLAN)) {
-                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, plan.toString()));
             }
             ModelNode rolloutPlan1 = plan.get(ROLLOUT_PLAN);
 
@@ -348,23 +352,23 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             try {
                 keys = rolloutPlan1.keys();
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
             }
             if(!keys.contains(IN_SERIES)) {
-                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
             }
             if(keys.size() > 2 || keys.size() == 2 && !keys.contains(ROLLBACK_ACROSS_GROUPS)) {
-                throw new OperationFailedException(MESSAGES.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, plan.toString()));
             }
 
             final ModelNode inSeries = rolloutPlan1.get(IN_SERIES);
             if(!inSeries.isDefined()) {
-                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
             }
 
             final List<ModelNode> groups = inSeries.asList();
             if(groups.isEmpty()) {
-                throw new OperationFailedException(MESSAGES.inSeriesIsMissingGroups(plan.toString()));
+                throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.inSeriesIsMissingGroups(plan.toString()));
             }
 
             for(ModelNode group : groups) {
@@ -374,10 +378,10 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                     try {
                         groupKeys = serverGroup.keys();
                     } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
+                        throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.serverGroupExpectsSingleChild(plan.toString()));
                     }
                     if(groupKeys.size() != 1) {
-                        throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
+                        throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.serverGroupExpectsSingleChild(plan.toString()));
                     }
                     validateInSeriesServerGroup(serverGroup.asProperty().getValue());
                 } else if(group.hasDefined(CONCURRENT_GROUPS)) {
@@ -386,7 +390,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                         validateInSeriesServerGroup(child.asProperty().getValue());
                     }
                 } else {
-                    throw new OperationFailedException(MESSAGES.unexpectedInSeriesGroup(plan.toString()));
+                    throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.unexpectedInSeriesGroup(plan.toString()));
                 }
             }
         }
@@ -396,7 +400,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 try {
                     final Set<String> specKeys = serverGroup.keys();
                     if(!ALLOWED_SERVER_GROUP_CHILDREN.containsAll(specKeys)) {
-                        throw new OperationFailedException(MESSAGES.unrecognizedChildren(SERVER_GROUP, ALLOWED_SERVER_GROUP_CHILDREN.toString(), specKeys.toString()));
+                        throw new OperationFailedException(DomainControllerLogger.ROOT_LOGGER.unrecognizedChildren(SERVER_GROUP, ALLOWED_SERVER_GROUP_CHILDREN.toString(), specKeys.toString()));
                     }
                 } catch(IllegalArgumentException e) {// ignore?
                 }

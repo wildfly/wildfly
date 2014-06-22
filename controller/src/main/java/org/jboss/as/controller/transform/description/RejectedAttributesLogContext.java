@@ -31,7 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -128,9 +128,9 @@ class RejectedAttributesLogContext {
         if (error) {
             // Target is  7.2.x or higher so we should throw an error
             if (subsystemName != null) {
-                throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
+                throw ControllerLogger.ROOT_LOGGER.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, messages);
             }
-            throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
+            throw ControllerLogger.ROOT_LOGGER.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, messages);
         }
         return null;
     }

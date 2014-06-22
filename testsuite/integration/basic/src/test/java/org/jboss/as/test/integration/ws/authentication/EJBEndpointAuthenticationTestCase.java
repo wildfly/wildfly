@@ -32,7 +32,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -122,7 +122,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("hello"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("hello"), e.getCause().getMessage());
         }
     }
     
@@ -163,7 +163,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForRole"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("helloForRole"), e.getCause().getMessage());
         }
     }
     
@@ -234,7 +234,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForRoles"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("helloForRoles"), e.getCause().getMessage());
         }
     }
     
@@ -310,7 +310,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("helloForNone"), e.getCause().getMessage());
         }
     }
     
@@ -330,7 +330,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("helloForNone"), e.getCause().getMessage());
         }
     }
     
@@ -350,11 +350,14 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
+            Assert.assertEquals(getNotAllowedExceptionMessage("helloForNone"), e.getCause().getMessage());
         }
     }
 
+    /**
+     * @deprecated This is a really bad way to do this - we cannot unexport this non-API class until this is removed
+     */
     private String getNotAllowedExceptionMessage(String methodName) throws NoSuchMethodException {
-        return EjbMessages.MESSAGES.invocationOfMethodNotAllowed(EJBEndpoint.class.getMethod(methodName, String.class), "EJBEndpoint").getMessage();
+        return EjbLogger.ROOT_LOGGER.invocationOfMethodNotAllowed(EJBEndpoint.class.getMethod(methodName, String.class), "EJBEndpoint").getMessage();
     }
 }

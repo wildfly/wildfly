@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -46,12 +46,12 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
 
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        ROOT_LOGGER.creatingEndpointsMetaDataModel("JAXWS", "EJB");
+        WSLogger.ROOT_LOGGER.trace("Creating JAXWS EJB endpoints meta data model");
         for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
             final String ejbEndpointName = ejbEndpoint.getName();
-            ROOT_LOGGER.ejbName(ejbEndpointName);
+            WSLogger.ROOT_LOGGER.tracef("EJB name: %s", ejbEndpointName);
             final String ejbEndpointClassName = ejbEndpoint.getClassName();
-            ROOT_LOGGER.ejbClass(ejbEndpointClassName);
+            WSLogger.ROOT_LOGGER.tracef("EJB class: %s", ejbEndpointClassName);
             final Endpoint ep = newHttpEndpoint(ejbEndpointClassName, ejbEndpointName, dep);
             final ServiceName componentViewName = ejbEndpoint.getComponentViewName();
             if (componentViewName != null) {

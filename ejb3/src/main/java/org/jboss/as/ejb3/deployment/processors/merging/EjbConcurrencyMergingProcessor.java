@@ -33,6 +33,7 @@ import javax.ejb.LockType;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -46,7 +47,6 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Class that can merge {@link javax.ejb.Lock} and {@link javax.ejb.AccessTimeout} metadata
  *
@@ -129,7 +129,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
 
     private Method resolveMethod(final DeploymentReflectionIndex index, final Class<?> currentClass, final Class<?> componentClass, final NamedMethodMetaData methodData) throws DeploymentUnitProcessingException {
         if (currentClass == null) {
-            throw MESSAGES.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
+            throw EjbLogger.ROOT_LOGGER.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
         }
         final ClassReflectionIndex<?> classIndex = index.getClassIndex(currentClass);
 
@@ -138,7 +138,7 @@ public class EjbConcurrencyMergingProcessor extends AbstractMergingProcessor<Ses
             if (methods.isEmpty()) {
                 return resolveMethod(index, currentClass.getSuperclass(), componentClass, methodData);
             } else if (methods.size() > 1) {
-                throw MESSAGES.multipleMethodReferencedInEjbJarXml( methodData.getMethodName(),currentClass.getName());
+                throw EjbLogger.ROOT_LOGGER.multipleMethodReferencedInEjbJarXml(methodData.getMethodName(), currentClass.getName());
             }
             return methods.iterator().next();
         } else {

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_ENVIRONMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -34,7 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -45,6 +46,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
@@ -70,13 +72,16 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
     private final HostControllerEnvironment hostControllerEnvironment;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
     private final HostModelUtil.HostModelRegistrar hostModelRegistrar;
+    private final Resource modelControllerResource;
 
     public HostModelRegistrationHandler(final HostControllerEnvironment hostControllerEnvironment,
                                         final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                        final HostModelUtil.HostModelRegistrar hostModelRegistrar) {
+                                        final HostModelUtil.HostModelRegistrar hostModelRegistrar,
+                                        final Resource modelControllerResource) {
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.hostModelRegistrar = hostModelRegistrar;
+        this.modelControllerResource = modelControllerResource;
     }
 
     /**
@@ -85,7 +90,7 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) {
 
         if (!context.isBooting()) {
-            throw MESSAGES.invocationNotAllowedAfterBoot(OPERATION_NAME);
+            throw HostControllerLogger.ROOT_LOGGER.invocationNotAllowedAfterBoot(OPERATION_NAME);
         }
 
         final String hostName = operation.require(NAME).asString();
@@ -100,8 +105,11 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
 
         initCoreModel(model, hostControllerEnvironment);
 
-        // Create the empty management security resources
+        // Create the management resources
         Resource management = context.createResource(hostAddress.append(PathElement.pathElement(CORE_SERVICE, MANAGEMENT)));
+        if (modelControllerResource != null) {
+            management.registerChild(PathElement.pathElement(SERVICE, MANAGEMENT_OPERATIONS), modelControllerResource);
+        }
 
         //Create the empty host-environment resource
         context.createResource(hostAddress.append(PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT)));

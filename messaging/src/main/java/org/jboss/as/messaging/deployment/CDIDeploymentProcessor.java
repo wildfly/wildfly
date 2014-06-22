@@ -22,12 +22,14 @@
 
 package org.jboss.as.messaging.deployment;
 
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Processor that deploys a CDI portable extension to provide injection of JMSContext resource.
@@ -38,10 +40,11 @@ public class CDIDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parent = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(parent);
-            extensions.registerExtensionInstance(new JMSCDIExtension(), parent);
+            extensions.registerExtensionInstance(new JMSCDIExtension(propertyReplacer), parent);
         }
     }
 

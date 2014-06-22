@@ -23,7 +23,6 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
@@ -33,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -110,7 +110,7 @@ public class DataSourceEnable implements OperationStepHandler {
             try {
                 dataSourceConfig = xaFrom(context, model, dsName);
             } catch (ValidateException e) {
-                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
+                throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("XaDataSource", operation, e.getLocalizedMessage())));
             }
             final ServiceName xaDataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
             final XADataSourceConfigService xaDataSourceConfigService = new XADataSourceConfigService(dataSourceConfig);
@@ -139,12 +139,12 @@ public class DataSourceEnable implements OperationStepHandler {
                         builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
 
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
+                        throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.xa-config-property", name)));
                     }
                 }
             }
             if (propertiesCount == 0) {
-                throw MESSAGES.xaDataSourcePropertiesNotPresent();
+                throw ConnectorLogger.ROOT_LOGGER.xaDataSourcePropertiesNotPresent();
             }
             controllers.add(builder.install());
 
@@ -154,7 +154,7 @@ public class DataSourceEnable implements OperationStepHandler {
             try {
                 dataSourceConfig = from(context, model,dsName);
             } catch (ValidateException e) {
-                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
+                throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("DataSource", operation, e.getLocalizedMessage())));
             }
             final ServiceName dataSourceCongServiceName = DataSourceConfigService.SERVICE_NAME_BASE.append(dsName);
             final DataSourceConfigService configService = new DataSourceConfigService(dataSourceConfig);
@@ -181,7 +181,7 @@ public class DataSourceEnable implements OperationStepHandler {
                         builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
 
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
+                        throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.connectionProperty", name)));
                     }
                 }
             }
@@ -199,10 +199,10 @@ public class DataSourceEnable implements OperationStepHandler {
             if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
                 dataSourceController.setMode(ServiceController.Mode.ACTIVE);
             } else {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source", dsName)));
+                throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source", dsName)));
             }
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source", dsName)));
+            throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source", dsName)));
         }
 
         final DataSourceReferenceFactoryService referenceFactoryService = new DataSourceReferenceFactoryService();

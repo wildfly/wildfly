@@ -22,6 +22,7 @@
 
 package org.jboss.as.process.protocol;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -31,8 +32,6 @@ import org.jboss.marshalling.Unmarshaller;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * Utility class providing methods for common management tasks.
@@ -53,7 +52,7 @@ public class    ProtocolUtils {
         try {
             return unmarshaller.readObject(expectedType);
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failedToReadObject(e);
+            throw ProcessLogger.ROOT_LOGGER.failedToReadObject(e);
         }
     }
 
@@ -75,7 +74,7 @@ public class    ProtocolUtils {
 
     public static void expectHeader(final byte actual, int expected) throws IOException {
         if (actual != (byte) expected) {
-            throw MESSAGES.invalidByteToken(expected, actual);
+            throw ProcessLogger.ROOT_LOGGER.invalidByteToken(expected, actual);
         }
     }
 }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.deployment;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.ee.structure.DeploymentType.APPLICATION_CLIENT;
 import static org.jboss.as.ee.structure.DeploymentType.WAR;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
@@ -39,12 +38,14 @@ import javax.jms.JMSConnectionFactoryDefinitions;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.JMSDestinationDefinitions;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -55,6 +56,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Process {@link JMSDestinationDefinition}(s) {@link JMSConnectionFactoryDefinition}(s) annotations.
@@ -74,16 +76,17 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        PropertyReplacer propertyReplacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
 
         // @JMSDestinationDefinitions
         for (AnnotationInstance annotation : index.getAnnotations(JMS_DESTINATION_DEFINITIONS)) {
             final AnnotationTarget target = annotation.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_DESTINATION_DEFINITIONS.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_DESTINATION_DEFINITIONS.toString(), target);
             }
             List<AnnotationInstance> destinationDefinitions = getNestedDefinitionAnnotations(annotation);
             for (AnnotationInstance definition : destinationDefinitions) {
-                processJMSDestinationDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
+                processJMSDestinationDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses, propertyReplacer);
             }
         }
 
@@ -91,20 +94,20 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance definition : index.getAnnotations(JMS_DESTINATION_DEFINITION)) {
             final AnnotationTarget target = definition.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_DESTINATION_DEFINITION.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_DESTINATION_DEFINITION.toString(), target);
             }
-            processJMSDestinationDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
+            processJMSDestinationDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses, propertyReplacer);
         }
 
         // @JMSConnectionFactoryDefinitions
         for (AnnotationInstance annotation : index.getAnnotations(JMS_CONNECTION_FACTORY_DEFINITIONS)) {
             final AnnotationTarget target = annotation.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITIONS.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITIONS.toString(), target);
             }
             List<AnnotationInstance> connectionFactoryDefinitions = getNestedDefinitionAnnotations(annotation);
             for (AnnotationInstance definition : connectionFactoryDefinitions) {
-                processJMSConnectionFactoryDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
+                processJMSConnectionFactoryDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses, propertyReplacer);
             }
         }
 
@@ -112,9 +115,9 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance definition : index.getAnnotations(JMS_CONNECTION_FACTORY_DEFINITION)) {
             final AnnotationTarget target = definition.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITION.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITION.toString(), target);
             }
-            processJMSConnectionFactoryDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
+            processJMSConnectionFactoryDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses, propertyReplacer);
         }
     }
 
@@ -122,22 +125,24 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processJMSDestinationDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance destinationDefinition, ClassInfo target, EEApplicationClasses applicationClasses) {
+    private void processJMSDestinationDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance destinationDefinition, ClassInfo target, EEApplicationClasses applicationClasses, PropertyReplacer propertyReplacer) {
         final AnnotationValue nameValue = destinationDefinition.value(NAME);
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), NAME);
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), NAME);
         }
 
         final AnnotationValue interfaceNameValue = destinationDefinition.value("interfaceName");
         if (interfaceNameValue == null || interfaceNameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), "interfaceName");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), "interfaceName");
         }
 
         DirectJMSDestinationInjectionSource source = new DirectJMSDestinationInjectionSource(nameValue.asString(), interfaceNameValue.asString());
-        source.setDestinationName(asString(destinationDefinition, "destinationName"));
+        source.setDestinationName(asString(destinationDefinition, "destinationName", propertyReplacer));
         for (String fullProp : asArray(destinationDefinition, "properties")) {
             String[] prop = fullProp.split("=", 2);
-            source.addProperty(prop[0], prop[1]);
+            String name = propertyReplacer.replaceProperties(prop[0]);
+            String value = propertyReplacer.replaceProperties(prop[1]);
+            source.addProperty(name, value);
         }
 
         final BindingConfiguration config = new BindingConfiguration(nameValue.asString(), source);
@@ -150,21 +155,23 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         classDescription.getBindingConfigurations().add(config);
     }
 
-    private void processJMSConnectionFactoryDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance connectionFactoryDefinition, ClassInfo target, EEApplicationClasses applicationClasses) {
+    private void processJMSConnectionFactoryDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance connectionFactoryDefinition, ClassInfo target, EEApplicationClasses applicationClasses, PropertyReplacer propertyReplacer) {
         final AnnotationValue nameValue = connectionFactoryDefinition.value(NAME);
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_CONNECTION_FACTORY_DEFINITION.toString(), NAME);
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_CONNECTION_FACTORY_DEFINITION.toString(), NAME);
         }
 
         DirectJMSConnectionFactoryInjectionSource source = new DirectJMSConnectionFactoryInjectionSource(nameValue.asString());
-        source.setInterfaceName(asString(connectionFactoryDefinition, "interfaceName", ConnectionFactory.class.getName()));
-        source.setResourceAdapter(asString(connectionFactoryDefinition, "resourceAdapter"));
-        source.setUser(asString(connectionFactoryDefinition, "user"));
-        source.setPassword(asString(connectionFactoryDefinition, "password"));
-        source.setClientId(asString(connectionFactoryDefinition, "clientId"));
+        source.setInterfaceName(asString(connectionFactoryDefinition, "interfaceName", ConnectionFactory.class.getName(), propertyReplacer));
+        source.setResourceAdapter(asString(connectionFactoryDefinition, "resourceAdapter", propertyReplacer));
+        source.setUser(asString(connectionFactoryDefinition, "user", propertyReplacer));
+        source.setPassword(asString(connectionFactoryDefinition, "password", propertyReplacer));
+        source.setClientId(asString(connectionFactoryDefinition, "clientId", propertyReplacer));
         for (String fullProp : asArray(connectionFactoryDefinition, "properties")) {
             String[] prop = fullProp.split("=", 2);
-            source.addProperty(prop[0], prop[1]);
+            String name = propertyReplacer.replaceProperties(prop[0]);
+            String value = propertyReplacer.replaceProperties(prop[1]);
+            source.addProperty(name, value);
         }
         source.setTransactional(asBoolean(connectionFactoryDefinition, "transactional"));
         source.setMaxPoolSize(asInt(connectionFactoryDefinition, "maxPoolSize", MAX_POOL_SIZE.getDefaultValue().asInt()));
@@ -195,13 +202,13 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         return Arrays.asList(nested);
     }
 
-    private static String asString(final AnnotationInstance annotation, String property) {
-        return asString(annotation, property, "");
+    private static String asString(final AnnotationInstance annotation, String property, PropertyReplacer propertyReplacer) {
+        return asString(annotation, property, "", propertyReplacer);
     }
 
-    private static String asString(final AnnotationInstance annotation, String property, String defaultValue) {
+    private static String asString(final AnnotationInstance annotation, String property, String defaultValue, PropertyReplacer propertyReplacer) {
         AnnotationValue value = annotation.value(property);
-        return value == null ? defaultValue : value.asString().isEmpty() ? defaultValue : value.asString();
+        return value == null ? defaultValue : value.asString().isEmpty() ? defaultValue : propertyReplacer.replaceProperties(value.asString());
     }
 
     private static boolean asBoolean(final AnnotationInstance annotation, String property) {

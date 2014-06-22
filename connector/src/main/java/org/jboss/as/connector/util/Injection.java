@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.util;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -38,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.StringTokenizer;
+
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -102,10 +102,10 @@ public class Injection {
         throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
         if (object == null)
-            throw new IllegalArgumentException(MESSAGES.nullVar("Object"));
+            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Object"));
 
         if (propertyName == null || propertyName.trim().equals(""))
-            throw MESSAGES.undefinedVar("PropertyName");
+            throw ConnectorLogger.ROOT_LOGGER.undefinedVar("PropertyName");
 
         String methodName = "set" + propertyName.substring(0, 1).toUpperCase(Locale.US);
         if (propertyName.length() > 1) {
@@ -128,7 +128,7 @@ public class Injection {
                 method.invoke(object, new Object[] {parameterValue});
         } else {
             if (!includeFields)
-                throw MESSAGES.noSuchMethod(methodName);
+                throw ConnectorLogger.ROOT_LOGGER.noSuchMethod(methodName);
 
             // Ok, we didn't find a method - assume field
             Field field = findField(object.getClass(), propertyName, propertyType);
@@ -145,7 +145,7 @@ public class Injection {
 
                 field.set(object, fieldValue);
             } else {
-                throw MESSAGES.noSuchField(propertyName);
+                throw ConnectorLogger.ROOT_LOGGER.noSuchField(propertyName);
             }
         }
     }
@@ -339,7 +339,7 @@ public class Injection {
                         Method valueOf = clz.getMethod("valueOf", String.class);
                         v = valueOf.invoke((Object)null, substituredValue);
                     } catch (Throwable inner) {
-                        throw MESSAGES.noPropertyResolution(name);
+                        throw ConnectorLogger.ROOT_LOGGER.noPropertyResolution(name);
                     }
                 }
             }

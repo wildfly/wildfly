@@ -22,12 +22,13 @@
 
 package org.jboss.as.domain.controller.plan;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 
 /**
@@ -57,6 +58,8 @@ class RollingServerGroupUpdateTask extends AbstractServerGroupRolloutTask implem
                     final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> prepared = listener.retrievePreparedOperation();
                     recordPreparedOperation(identity, prepared);
                 } catch (InterruptedException e) {
+                    DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.interruptedAwaitingPreparedResponse(getClass().getSimpleName(), Collections.singleton(identity));
+                    executor.cancelTask(identity);
                     interrupted = true;
                 }
             }

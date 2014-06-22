@@ -35,13 +35,13 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.as.webservices.util.WSServices;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jbossts.XTSService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -153,7 +153,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String hostName = HOST_NAME.resolveModelAttribute(context, model).asString();
 
-        final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
+        final ModelNode coordinatorURLAttribute = ENVIRONMENT_URL.resolveModelAttribute(context, model);
+        final String coordinatorURL = coordinatorURLAttribute.isDefined() ? coordinatorURLAttribute.asString() : null;
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
@@ -200,9 +201,11 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install());
         }
 
+        XTSHandlersService.install(target, isDefaultContextPropagation);
+
         // add an XTS service which depends on all the WS endpoints
 
-        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL, isDefaultContextPropagation);
+        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
 
         // this service needs to depend on the transaction recovery service
         // because it can only initialise XTS recovery once the transaction recovery
@@ -213,8 +216,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
 
         // this service needs to depend on JBossWS Config Service to be notified of the JBoss WS config (bind address, port etc)
-        xtsServiceBuilder.addDependency(WSServices.CLIENT_CONFIG_SERVICE.append("Standard-Client-Config"));
         xtsServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, xtsService.getWSServerConfig());
+        xtsServiceBuilder.addDependency(WSServices.XTS_CLIENT_INTEGRATION_SERVICE);
 
         // the service also needs to depend on the endpoint services
         for (ServiceController<Context> controller : controllers) {

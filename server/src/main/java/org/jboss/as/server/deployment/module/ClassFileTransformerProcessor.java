@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -57,7 +57,7 @@ public class ClassFileTransformerProcessor implements DeploymentUnitProcessor {
             // so that transformers themselves are not instrumented
             transformer.setActive(true);
         } catch (Exception e) {
-            throw ServerMessages.MESSAGES.failedToInstantiateClassFileTransformer(ClassFileTransformer.class.getSimpleName(), e);
+            throw ServerLogger.ROOT_LOGGER.failedToInstantiateClassFileTransformer(ClassFileTransformer.class.getSimpleName(), e);
         }
     }
 

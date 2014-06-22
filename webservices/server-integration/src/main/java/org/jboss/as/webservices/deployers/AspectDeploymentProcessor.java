@@ -21,12 +21,11 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.msc.service.ServiceTarget;
@@ -67,7 +66,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
             ensureAspectInitialized();
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
-                ROOT_LOGGER.aspectStart(aspect, unit.getName());
+                WSLogger.ROOT_LOGGER.tracef("%s start: %s", aspect, unit.getName());
                 ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
@@ -86,7 +85,7 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
         if (isWebServiceDeployment(unit)) {
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
             if (aspect.canHandle(dep)) {
-                ROOT_LOGGER.aspectStop(aspect, unit.getName());
+                WSLogger.ROOT_LOGGER.tracef("%s stop: %s", aspect, unit.getName());
                 ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());

@@ -60,7 +60,7 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
         return INSTANCE;
     }
 
-    private Messaging20SubsystemParser() {
+    protected Messaging20SubsystemParser() {
     }
 
     @Override
@@ -97,45 +97,43 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
 
+            boolean generic = false;
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case CONNECTOR: {
-                    connectorAddress.add(CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(CONNECTOR, name));
                     if (socketBinding != null) {
                         operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     }
-                    parseTransportConfiguration(reader, operation, true);
+                    generic = true;
                     break;
                 } case NETTY_CONNECTOR: {
-                    connectorAddress.add(REMOTE_CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(REMOTE_CONNECTOR, name));
                     if (socketBinding == null) {
                         throw missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_CONNECTOR: {
-                    connectorAddress.add(IN_VM_CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(IN_VM_CONNECTOR, name));
                     if (serverId != null) {
                         InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
                     }
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case HTTP_CONNECTOR: {
                     if (socketBinding == null) {
                         throw missingRequired(reader, Collections.singleton(SOCKET_BINDING));
                     }
-                    connectorAddress.add(HTTP_CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(HTTP_CONNECTOR, name));
                     HTTPConnectorDefinition.SOCKET_BINDING.parseAndSetParameter(socketBinding, operation, reader);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
 
-            operation.get(OP_ADDR).set(connectorAddress);
             updates.add(operation);
+            parseTransportConfiguration(reader, operation, generic, updates);
         }
     }
 
@@ -178,42 +176,42 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
             operation.get(OP).set(ADD);
 
             final Element element = Element.forName(reader.getLocalName());
+            boolean generic = false;
             switch (element) {
                 case ACCEPTOR: {
-                    acceptorAddress.add(ACCEPTOR, name);
-                    if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, true);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(ACCEPTOR, name));
+                    if(socketBinding != null) {
+                        operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
+                    }
+                    generic = true;
                     break;
                 } case NETTY_ACCEPTOR: {
-                    acceptorAddress.add(REMOTE_ACCEPTOR, name);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(REMOTE_ACCEPTOR, name));
                     if(socketBinding == null) {
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
-                    acceptorAddress.add(IN_VM_ACCEPTOR, name);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(IN_VM_ACCEPTOR, name));
                     if (serverId != null) {
                         InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
                     }
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case HTTP_ACCEPTOR: {
                     if (httpListener == null) {
                         throw missingRequired(reader, Collections.singleton(HTTP_LISTENER));
                     }
-                    acceptorAddress.add(HTTP_ACCEPTOR, name);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(HTTP_ACCEPTOR, name));
                     HTTPAcceptorDefinition.HTTP_LISTENER.parseAndSetParameter(httpListener, operation, reader);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
-            //
-            operation.get(OP_ADDR).set(acceptorAddress);
+
             updates.add(operation);
+            parseTransportConfiguration(reader, operation, generic, updates);
         }
     }
 

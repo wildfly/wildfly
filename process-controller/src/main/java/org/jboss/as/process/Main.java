@@ -23,7 +23,6 @@
 package org.jboss.as.process;
 
 import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +39,7 @@ import java.util.logging.Logger;
 
 import javax.net.ServerSocketFactory;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.ProtocolServer;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.as.version.ProductConfig;
@@ -164,7 +164,7 @@ public final class Main {
                 }
                 i += pcSocketConfig.getArgIncrement();
             } else {
-                throw MESSAGES.invalidOption(arg);
+                throw ProcessLogger.ROOT_LOGGER.invalidOption(arg);
             }
         }
         if (modulePath == null) {
@@ -242,7 +242,7 @@ public final class Main {
         String value = null;
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
-            System.out.println(MESSAGES.noArgValue(key));
+            System.out.println(ProcessLogger.ROOT_LOGGER.noArgValue(key));
             usage();
         } else {
             value = arg.substring(splitPos + 1);

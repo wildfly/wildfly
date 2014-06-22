@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import javax.rmi.CORBA.Util;
 import javax.rmi.PortableRemoteObject;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.rmi.RmiIdlUtil;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA_2_3.portable.InputStream;
@@ -163,7 +163,7 @@ public class CDRStream {
                             true,
                             cl));
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(s.substring(1), e);
                 }
             case 'M':
                 return CorbaObjectReader.instance;
@@ -171,7 +171,7 @@ public class CDRStream {
                 try {
                     return new IdlInterfaceReader(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(s.substring(1), e);
                 }
             case 'O':
                 return ObjectReader.instance;
@@ -179,7 +179,7 @@ public class CDRStream {
                 try {
                     return new RemoteReader(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(s.substring(1), e);
                 }
             case 'S':
                 return ShortReader.instance;
@@ -227,7 +227,7 @@ public class CDRStream {
                             true,
                             cl));
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(s.substring(1), e);
                 }
             case 'M':
                 return CorbaObjectWriter.instance;
@@ -235,7 +235,7 @@ public class CDRStream {
                 try {
                     return new IdlInterfaceWriter(cl.loadClass(s.substring(1)));
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(s.substring(1), e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(s.substring(1), e);
                 }
             case 'O':
                 return ObjectWriter.instance;
@@ -603,9 +603,9 @@ public class CDRStream {
                         clz.getClassLoader().loadClass(helperClassName);
                 readMethod = helperClass.getMethod("read", paramTypes);
             } catch (ClassNotFoundException e) {
-                throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
             } catch (NoSuchMethodException e) {
-                throw JacORBMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
+                throw JacORBLogger.ROOT_LOGGER.noReadMethodInHelper(helperClassName, e);
             }
         }
 
@@ -613,9 +613,9 @@ public class CDRStream {
             try {
                 return readMethod.invoke(null, new Object[]{in});
             } catch (IllegalAccessException e) {
-                throw JacORBMessages.MESSAGES.unexpectedException(e);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
             } catch (InvocationTargetException e) {
-                throw JacORBMessages.MESSAGES.errorUnmarshaling(org.omg.CORBA.Object.class, e.getTargetException());
+                throw JacORBLogger.ROOT_LOGGER.errorUnmarshaling(org.omg.CORBA.Object.class, e.getTargetException());
             }
         }
     }
@@ -907,9 +907,9 @@ public class CDRStream {
                 };
                 writeMethod = helperClass.getMethod("write", paramTypes);
             } catch (ClassNotFoundException e) {
-                throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
             } catch (NoSuchMethodException e) {
-                throw JacORBMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
+                throw JacORBLogger.ROOT_LOGGER.noWriteMethodInHelper(helperClassName, e);
             }
         }
 
@@ -917,9 +917,9 @@ public class CDRStream {
             try {
                 writeMethod.invoke(null, new Object[]{out, obj});
             } catch (IllegalAccessException e) {
-                throw JacORBMessages.MESSAGES.unexpectedException(e);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
             } catch (InvocationTargetException e) {
-                throw JacORBMessages.MESSAGES.errorMarshaling(org.omg.CORBA.Object.class, e.getTargetException());
+                throw JacORBLogger.ROOT_LOGGER.errorMarshaling(org.omg.CORBA.Object.class, e.getTargetException());
             }
         }
     }

@@ -46,7 +46,7 @@ public class PrincipalToGroupResourceDefinition extends BaseLdapGroupSearchResou
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
-    private static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {GROUP_NAME, ITERATIVE, GROUP_DN_ATTRIBUTE, GROUP_NAME_ATTRIBUTE, GROUP_ATTRIBUTE};
+    private static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {GROUP_NAME, ITERATIVE, GROUP_DN_ATTRIBUTE, GROUP_NAME_ATTRIBUTE, GROUP_ATTRIBUTE, PREFER_ORIGINAL_CONNECTION};
 
     public static final ResourceDefinition INSTANCE = new PrincipalToGroupResourceDefinition();
 

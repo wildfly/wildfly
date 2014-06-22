@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
+
 /**
  * {@link OperationFailedRuntimeException} thrown when an operation is not authorized.
  *

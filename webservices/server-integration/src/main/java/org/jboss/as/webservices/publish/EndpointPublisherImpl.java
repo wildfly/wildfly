@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.publish;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.io.File;
 import java.security.AccessController;
 import java.util.LinkedList;
@@ -35,6 +33,7 @@ import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebHost;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
@@ -213,12 +212,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             handle = host.addWebDeployment(deployment);
             handle.create();
         } catch (Exception e) {
-            throw MESSAGES.createContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.createContextPhaseFailed(e);
         }
         try {
             handle.start();
         } catch (Exception e) {
-            throw MESSAGES.startContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.startContextPhaseFailed(e);
         }
         return handle;
     }
@@ -302,12 +301,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             context = deployment.getAttachment(WebDeploymentController.class);
             context.stop();
         } catch (Exception e) {
-            throw MESSAGES.stopContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.stopContextPhaseFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            throw MESSAGES.destroyContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.destroyContextPhaseFailed(e);
         }
     }
 

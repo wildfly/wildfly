@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoLogger;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.Service;

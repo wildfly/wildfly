@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AttributeDef;
 import org.omg.CORBA.AttributeDefOperations;
@@ -97,7 +97,7 @@ public class AttributeDefImpl
     }
 
     public void type_def(IDLType arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public AttributeMode mode() {
@@ -105,7 +105,7 @@ public class AttributeDefImpl
     }
 
     public void mode(AttributeMode arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 

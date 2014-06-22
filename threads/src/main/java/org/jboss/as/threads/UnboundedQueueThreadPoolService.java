@@ -75,7 +75,7 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     public synchronized ManagedJBossThreadPoolExecutorService getValue() throws IllegalStateException {
         final ManagedJBossThreadPoolExecutorService value = this.executor;
         if (value == null) {
-            throw ThreadsMessages.MESSAGES.unboundedQueueThreadPoolExecutorUninitialized();
+            throw ThreadsLogger.ROOT_LOGGER.unboundedQueueThreadPoolExecutorUninitialized();
         }
         return value;
     }

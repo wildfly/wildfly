@@ -43,6 +43,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -58,7 +59,6 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * @author Jaikiran Pai
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -186,7 +186,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.REMOTE) {
-                throw MESSAGES.failToAddClassToLocalView(viewClassName,getEJBName());
+                throw EjbLogger.ROOT_LOGGER.failToAddClassToLocalView(viewClassName, getEJBName());
             }
         }
     }
@@ -196,7 +196,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
         for (final ViewDescription view : getViews()) {
             ejbView = (EJBViewDescription) view;
             if (viewClassName.equals(ejbView.getViewClassName()) && ejbView.getMethodIntf() == MethodIntf.LOCAL) {
-                throw MESSAGES.failToAddClassToLocalView(viewClassName,getEJBName());
+                throw EjbLogger.ROOT_LOGGER.failToAddClassToLocalView(viewClassName, getEJBName());
             }
         }
     }

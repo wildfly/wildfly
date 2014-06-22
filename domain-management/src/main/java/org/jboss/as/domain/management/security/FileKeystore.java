@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +33,7 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -112,7 +111,7 @@ final class FileKeystore {
                 fis = new FileInputStream(path);
                 loadedKeystore.load(fis, keystorePassword);
             } else if (isKeyStore) {
-                throw MESSAGES.keyStoreNotFound(path);
+                throw DomainManagementLogger.ROOT_LOGGER.keyStoreNotFound(path);
             } else {
                 loadedKeystore.load(null);
             }
@@ -135,25 +134,25 @@ final class FileKeystore {
                         KeyStore.Entry entry = loadedKeystore.getEntry(this.alias, passParam);
                         newKeystore.setEntry(alias, entry, passParam);
                     } else {
-                        throw MESSAGES.aliasNotKey(alias, validAliasList(loadedKeystore));
+                        throw DomainManagementLogger.ROOT_LOGGER.aliasNotKey(alias, validAliasList(loadedKeystore));
                     }
                 } else {
-                    throw MESSAGES.aliasNotFound(alias, validAliasList(loadedKeystore));
+                    throw DomainManagementLogger.ROOT_LOGGER.aliasNotFound(alias, validAliasList(loadedKeystore));
                 }
 
                 this.setKeyStore(newKeystore);
             }
             this.lastModificationTime = new File(path).lastModified();
         } catch (KeyStoreException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (CertificateException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (IOException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (UnrecoverableEntryException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } finally {
             safeClose(fis);
         }
@@ -167,7 +166,7 @@ final class FileKeystore {
             }
         }
 
-        throw MESSAGES.noKey(path);
+        throw DomainManagementLogger.ROOT_LOGGER.noKey(path);
     }
 
     private String validAliasList(final KeyStore keyStore) throws KeyStoreException {

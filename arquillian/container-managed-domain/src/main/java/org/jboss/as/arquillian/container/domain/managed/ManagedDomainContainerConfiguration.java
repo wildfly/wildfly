@@ -35,7 +35,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private String modulePath = System.getProperty("module.path");
 
-    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
+    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=256m");
 
     private int startupTimeoutInSeconds = 60;
 

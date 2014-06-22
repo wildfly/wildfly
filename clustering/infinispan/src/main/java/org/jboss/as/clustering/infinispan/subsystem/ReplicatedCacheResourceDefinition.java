@@ -32,14 +32,15 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefinition {
 
-    public static final PathElement REPLICATED_CACHE_PATH = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.REPLICATED_CACHE, name);
+    }
 
     // attributes
 
-    public ReplicatedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
-        super(REPLICATED_CACHE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REPLICATED_CACHE),
-                ReplicatedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
+    ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 }

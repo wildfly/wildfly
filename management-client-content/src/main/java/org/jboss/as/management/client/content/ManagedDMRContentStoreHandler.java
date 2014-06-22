@@ -23,16 +23,15 @@
 package org.jboss.as.management.client.content;
 
 import java.util.Arrays;
-import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.Resource;
@@ -43,7 +42,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ManagedDMRContentStoreHandler implements OperationStepHandler, DescriptionProvider {
+public class ManagedDMRContentStoreHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "store";
 
@@ -55,6 +54,12 @@ public class ManagedDMRContentStoreHandler implements OperationStepHandler, Desc
         this.descriptionResolver = descriptionResolver;
     }
 
+    public OperationDefinition getDefinition() {
+        return new SimpleOperationDefinitionBuilder(OPERATION_NAME, descriptionResolver)
+                .setParameters(ManagedDMRContentResourceDefinition.HASH, contentAttribute)
+                .build();
+    }
+
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
@@ -62,10 +67,7 @@ public class ManagedDMRContentStoreHandler implements OperationStepHandler, Desc
         final byte[] oldHash = ManagedDMRContentResourceDefinition.HASH.validateOperation(operation).asBytes();
         final byte[] currentHash = resource.getModel().get(ManagedDMRContentResourceDefinition.HASH.getName()).asBytes();
         if (!Arrays.equals(oldHash, currentHash)) {
-            throw ManagedDMRContentMessages.MESSAGES.invalidHash(
-                    HashUtil.bytesToHexString(oldHash),
-                    PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)),
-                    HashUtil.bytesToHexString(currentHash));
+            throw ManagedDMRContentLogger.ROOT_LOGGER.invalidHash(HashUtil.bytesToHexString(oldHash), PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)), HashUtil.bytesToHexString(currentHash));
         }
         ModelNode model = new ModelNode();
         contentAttribute.validateAndSet(operation, model);
@@ -74,11 +76,5 @@ public class ManagedDMRContentStoreHandler implements OperationStepHandler, Desc
         resource.writeModel(model);
 
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME, descriptionResolver, ManagedDMRContentResourceDefinition.HASH, contentAttribute);
-        return delegate.getModelDescription(locale);
     }
 }

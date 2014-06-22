@@ -22,10 +22,9 @@
 
 package org.jboss.as.ee.component.interceptors;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -44,7 +43,7 @@ public class ComponentDispatcherInterceptor implements Interceptor {
     public Object processInvocation(final InterceptorContext context) throws Exception {
         ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
         if (componentInstance == null) {
-            throw MESSAGES.noComponentInstance();
+            throw EeLogger.ROOT_LOGGER.noComponentInstance();
         }
         Method oldMethod = context.getMethod();
         try {

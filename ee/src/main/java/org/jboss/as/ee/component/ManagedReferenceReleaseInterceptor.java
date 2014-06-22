@@ -22,8 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -44,7 +43,7 @@ class ManagedReferenceReleaseInterceptor implements Interceptor {
      */
     public ManagedReferenceReleaseInterceptor(final Object contextKey) {
         if (contextKey == null) {
-            throw MESSAGES.nullVar("contextKey");
+            throw EeLogger.ROOT_LOGGER.nullVar("contextKey");
         }
         this.contextKey = contextKey;
     }

@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -48,12 +49,13 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JMSTopicAdd extends AbstractAddStepHandler {
 
-    public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
+    public static final JMSTopicAdd INSTANCE = new JMSTopicAdd(JMSTopicDefinition.ATTRIBUTES);
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        CommonAttributes.DESTINATION_ENTRIES.validateAndSet(operation, model);
+    private JMSTopicAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();

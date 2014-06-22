@@ -38,8 +38,7 @@ import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
 import org.wildfly.clustering.ejb.infinispan.BeanKey;
-import org.wildfly.clustering.ejb.infinispan.InfinispanEjbLogger;
-import org.wildfly.clustering.ejb.infinispan.InfinispanEjbMessages;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Encapsulates the cache mapping strategy for a bean.
@@ -77,7 +76,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
         G groupId = entry.getGroupId();
         BeanGroupEntry<I, T> groupEntry = this.groupFactory.findValue(groupId);
         if (groupEntry == null) {
-             throw InfinispanEjbMessages.MESSAGES.invalidBeanGroup(id, groupId);
+             throw InfinispanEjbLogger.ROOT_LOGGER.invalidBeanGroup(id, groupId);
         }
         BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
         Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new BeanMutator<>(this.invoker, this.cache, this.createKey(id), entry);

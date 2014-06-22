@@ -66,7 +66,6 @@ import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
@@ -97,6 +96,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -142,7 +142,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case LOGGING_1_1:
                 case LOGGING_1_2:
                 case LOGGING_1_3:
-                case LOGGING_2_0: {
+                case LOGGING_2_0:
+                case LOGGING_3_0:  {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ADD_LOGGING_API_DEPENDENCIES:{
@@ -906,7 +907,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
                 case FORMATTER: {
                     if (reader.nextTag() != START_ELEMENT) {
-                        throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
+                        throw new XMLStreamException(LoggingLogger.ROOT_LOGGER.missingRequiredNestedFilterElement(), reader.getLocation());
                     }
                     switch (Element.forName(reader.getLocalName())) {
                         case SYSLOG_FORMATTER: {

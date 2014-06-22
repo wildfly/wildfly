@@ -21,6 +21,7 @@
  */
 package org.jboss.as.appclient.deployment;
 
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,8 +31,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that determines which application client should be started. This may be specified on the command line,
@@ -72,14 +71,14 @@ public class ActiveApplicationClientProcessor implements DeploymentUnitProcessor
             }
         }
         if(deploymentName != null && ! deploymentName.isEmpty()) {
-            throw MESSAGES.cannotFindAppClient(deploymentName);
+            throw AppClientLogger.ROOT_LOGGER.cannotFindAppClient(deploymentName);
         }
         if (appClients.size() == 1) {
             appClients.get(0).putAttachment(AppClientAttachments.START_APP_CLIENT, true);
         } else if (appClients.isEmpty()) {
-            throw MESSAGES.cannotFindAppClient();
+            throw AppClientLogger.ROOT_LOGGER.cannotFindAppClient();
         } else {
-            throw MESSAGES.multipleAppClientsFound();
+            throw AppClientLogger.ROOT_LOGGER.multipleAppClientsFound();
         }
 
     }

@@ -23,13 +23,13 @@ package org.jboss.as.ejb3.timerservice.task;
 
 import java.util.Date;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -69,7 +69,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      */
     public TimerTask(T timer) {
         if (timer == null) {
-            throw MESSAGES.timerIsNull();
+            throw EjbLogger.ROOT_LOGGER.timerIsNull();
         }
 
         this.timedObjectId = timer.getTimedObjectId();
@@ -92,7 +92,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     @Override
     public void run() {
         try {
-            TimerImpl timer = timerService.getTimer(timedObjectId, timerId);
+            TimerImpl timer = timerService.getTimer(timerId);
             if (cancelled) {
                 ROOT_LOGGER.debug("Timer task was cancelled for " + timer);
                 return;
@@ -113,6 +113,14 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 scheduleTimeoutIfRequired(timer);
                 return;
             }
+
+            if(!timerService.shouldRun(timer)) {
+                ROOT_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node", timer.getTimedObjectId());
+                timer.setNextTimeout(calculateNextTimeout(timer));
+                scheduleTimeoutIfRequired(timer);
+                return;
+            }
+
             // If the recurring timer running longer than the interval is, we don't want to allow another
             // execution until it is complete. See JIRA AS7-3119
             if (timer.getState() == TimerState.IN_TIMEOUT && !timer.isCalendarTimer()) {

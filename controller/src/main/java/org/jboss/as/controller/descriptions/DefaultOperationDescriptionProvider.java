@@ -179,14 +179,18 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
         if (replyParameters != null && replyParameters.length > 0) {
             if (replyParameters.length == 1) {
                 AttributeDefinition ad = replyParameters[0];
-                ModelNode param = ad.getNoTextDescription(true);
+                /*ModelNode param = ad.getNoTextDescription(true);
                 final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, attributeBundle);
                 param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
                 reply.set(param);
                 ModelNode deprecated = ad.addDeprecatedInfo(result);
                 if (deprecated != null) {
                     deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, attributeBundle));
-                }
+                }*/
+                ModelNode param = new ModelNode();
+                ad.addOperationParameterDescription(param, operationName, attributeDescriptionResolver, locale, attributeBundle);
+                reply.set(param.get(REQUEST_PROPERTIES).get(ad.getName()));
+
             } else {
                 reply.get(TYPE).set(replyType == null ? ModelType.OBJECT : replyType);
                 for (AttributeDefinition ad : replyParameters) {

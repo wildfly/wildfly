@@ -27,10 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CONTAINS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.FLUSH_CACHE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,7 +56,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.as.domain.management.security.LdapSearcherCache.Predicate;
 import org.jboss.dmr.ModelNode;
@@ -451,7 +451,7 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
             Set<String> children = resource.getChildrenNames(ModelDescriptionConstants.CACHE);
             if (children.size() > 1) {
                 String realmName = ManagementUtil.getSecurityRealmName(operation);
-                throw DomainManagementMessages.MESSAGES.multipleCacheConfigurationsDefined(realmName);
+                throw DomainManagementLogger.ROOT_LOGGER.multipleCacheConfigurationsDefined(realmName);
             }
 
             context.stepCompleted();

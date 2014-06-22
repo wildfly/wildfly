@@ -193,7 +193,7 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 		boolean warningFound = false;
 		while ((line = br.readLine()) != null) {
 			// Look for message id in order to support all languages
-			if (line.contains("JBAS011509")) {
+			if (line.contains("WFLYLOG0010")) {
 				warningFound = true;
 				break;
 			}

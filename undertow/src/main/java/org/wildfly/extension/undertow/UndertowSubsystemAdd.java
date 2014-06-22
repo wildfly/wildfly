@@ -42,7 +42,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.SharedSessionManagerDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.TldParsingDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.UndertowAttachments;
 import org.wildfly.extension.undertow.deployment.UndertowDependencyProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.UndertowHandlersDeploymentProcessor;
@@ -54,9 +56,12 @@ import org.wildfly.extension.undertow.deployment.WarStructureDeploymentProcessor
 import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
 import org.wildfly.extension.undertow.session.RouteValueService;
+import org.wildfly.extension.undertow.session.SharedSessionConfigParser_1_0;
+import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 
 
 /**
@@ -76,7 +81,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : UndertowRootDefinition.ATTRIBUTES) {
+        for (AttributeDefinition def : UndertowRootDefinition.INSTANCE.getAttributes()) {
             def.validateAndSet(operation, model);
         }
     }
@@ -114,6 +119,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(model.clone());
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(model.clone());
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_UNDERTOW_SHARED_SESSION, new JBossAllXmlParserRegisteringProcessor<SharedSessionManagerConfig>(SharedSessionConfigParser_1_0.ROOT_ELEMENT, UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG, SharedSessionConfigParser_1_0.INSTANCE));
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_WEB, new JBossAllXmlParserRegisteringProcessor<>(WebJBossAllParser.ROOT_ELEMENT, WebJBossAllParser.ATTACHMENT_KEY, new WebJBossAllParser()));
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_WAR_DEPLOYMENT_INIT, new WarDeploymentInitializingProcessor());
@@ -132,6 +138,8 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_WEBSOCKETS, new UndertowJSRWebSocketDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS, new UndertowHandlersDeploymentProcessor());
 
+
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SHARED_SESSION_MANAGER, new SharedSessionManagerDeploymentProcessor());
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
 

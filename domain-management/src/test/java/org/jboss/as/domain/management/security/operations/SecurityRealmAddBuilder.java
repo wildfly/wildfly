@@ -28,8 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.ArrayList;
 import java.util.List;

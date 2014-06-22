@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +32,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -119,6 +118,7 @@ public enum Element {
    MANAGEMENT_ADDRESS(CommonAttributes.MANAGEMENT_ADDRESS),
    MANAGEMENT_NOTIFICATION_ADDRESS(CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS),
    MAX_HOPS(ClusterConnectionDefinition.MAX_HOPS),
+   MAX_REDELIVERY_DELAY(AddressSettingDefinition.MAX_REDELIVERY_DELAY),
    MAX_SAVED_REPLICATED_JOURNAL_SIZE(CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE),
    MEMORY_MEASURE_INTERVAL(CommonAttributes.MEMORY_MEASURE_INTERVAL),
    MEMORY_WARNING_THRESHOLD(CommonAttributes.MEMORY_WARNING_THRESHOLD),
@@ -131,6 +131,7 @@ public enum Element {
    NETTY_ACCEPTOR(CommonAttributes.NETTY_ACCEPTOR),
    NETTY_CONNECTOR(CommonAttributes.NETTY_CONNECTOR),
    BACKUP_GROUP_NAME(CommonAttributes.BACKUP_GROUP_NAME),
+   OVERRIDE_IN_VM_SECURITY(CommonAttributes.OVERRIDE_IN_VM_SECURITY),
    PAGE_MAX_CONCURRENT_IO(CommonAttributes.PAGE_MAX_CONCURRENT_IO),
    PAGING_DIRECTORY(CommonAttributes.PAGING_DIRECTORY),
    PERF_BLAST_PAGES(CommonAttributes.PERF_BLAST_PAGES),
@@ -139,6 +140,7 @@ public enum Element {
    PERSISTENCE_ENABLED(CommonAttributes.PERSISTENCE_ENABLED),
    QUEUE(CommonAttributes.QUEUE),
    REAPER_PERIOD(GroupingHandlerDefinition.REAPER_PERIOD),
+   REDELIVERY_MULTIPLIER(AddressSettingDefinition.REDELIVERY_MULTIPLIER),
    REFRESH_TIMEOUT(DiscoveryGroupDefinition.REFRESH_TIMEOUT),
    REMOTING_INTERCEPTORS(CommonAttributes.REMOTING_INTERCEPTORS),
    REMOTING_INCOMING_INTERCEPTORS(CommonAttributes.REMOTING_INCOMING_INTERCEPTORS),
@@ -293,10 +295,10 @@ public enum Element {
             if (ourName == null) {
                 ourName = def.getXmlName();
             } else if (!ourName.equals(def.getXmlName())) {
-                throw MESSAGES.attributeDefinitionsMustMatch(def.getXmlName(), ourName);
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsMustMatch(def.getXmlName(), ourName);
             }
             if (this.definitions.put(def.getName(), def) != null) {
-                throw MESSAGES.attributeDefinitionsNotUnique(def.getName());
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsNotUnique(def.getName());
             }
         }
        this.name = ourName;
@@ -311,7 +313,7 @@ public enum Element {
             if (ourName == null) {
                 ourName = xmlName;
             } else if (!ourName.equals(xmlName)) {
-                throw MESSAGES.attributeDefinitionsMustMatch(xmlName, ourName);
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsMustMatch(xmlName, ourName);
             }
             this.definitions.put(def.getKey(), def.getValue());
         }

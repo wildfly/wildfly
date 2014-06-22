@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -36,8 +37,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Tracks the status of a service installed by an {@link OperationStepHandler}, recording a failure desription
@@ -62,7 +61,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             monitor.awaitStability(failed, problems);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            context.getFailureDescription().set(MESSAGES.operationCancelled());
+            context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.operationCancelled());
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             return;
         } finally {
@@ -76,7 +75,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
                 if (failedList == null) {
-                    failedList = failureDescription.get(MESSAGES.failedServices());
+                    failedList = failureDescription.get(ControllerLogger.ROOT_LOGGER.failedServices());
                 }
                 ServiceName serviceName = controller.getName();
                 trackedServices.add(serviceName);
@@ -88,7 +87,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 Set<ServiceName> immediatelyUnavailable = controller.getImmediateUnavailableDependencies();
                 if (!immediatelyUnavailable.isEmpty()) {
                     if (problemList == null) {
-                        problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
+                        problemList = failureDescription.get(ControllerLogger.ROOT_LOGGER.servicesMissingDependencies());
                     }
 
                     StringBuilder missing = new StringBuilder();
@@ -103,7 +102,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
 
                     final StringBuilder problem = new StringBuilder();
                     problem.append(controller.getName().getCanonicalName());
-                    problem.append(" ").append(MESSAGES.servicesMissing(missing));
+                    problem.append(" ").append(ControllerLogger.ROOT_LOGGER.servicesMissing(missing));
                     problemList.add(problem.toString());
 
                 } else {
@@ -120,8 +119,8 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                 // info to the user, so report that
                 SortedSet<ServiceName> allMissing = findAllMissingServices(missingTransitive, trackedServices);
                 if (!allMissing.isEmpty()) {
-                    ModelNode missingTransitiveDesc = failureDescription.get(MESSAGES.missingTransitiveDependencyProblem());
-                    ModelNode missingTransitiveDeps = missingTransitiveDesc.get(MESSAGES.missingTransitiveDependendents());
+                    ModelNode missingTransitiveDesc = failureDescription.get(ControllerLogger.ROOT_LOGGER.missingTransitiveDependencyProblem());
+                    ModelNode missingTransitiveDeps = missingTransitiveDesc.get(ControllerLogger.ROOT_LOGGER.missingTransitiveDependents());
                     Set<ServiceName> sortedNames = new TreeSet<ServiceName>();
                     for (ServiceController<?> serviceController : missingTransitive) {
                         sortedNames.add(serviceController.getName());
@@ -129,7 +128,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
                     for (ServiceName serviceName : sortedNames) {
                         missingTransitiveDeps.add(serviceName.getCanonicalName());
                     }
-                    ModelNode allMissingList = missingTransitiveDesc.get(MESSAGES.missingTransitiveDependencies());
+                    ModelNode allMissingList = missingTransitiveDesc.get(ControllerLogger.ROOT_LOGGER.missingTransitiveDependencies());
                     for (ServiceName serviceName : allMissing) {
                         allMissingList.add(serviceName.getCanonicalName());
                     }

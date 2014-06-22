@@ -31,8 +31,6 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
-
 public class Proxy {
     String host;
     int port;
@@ -59,6 +57,6 @@ public class Proxy {
                    port = 0;
             }
         }
-        if (host == null || port == 0) { throw new OperationFailedException(MESSAGES.needHostAndPort()); }
+        if (host == null || port == 0) { throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.needHostAndPort()); }
     }
 }

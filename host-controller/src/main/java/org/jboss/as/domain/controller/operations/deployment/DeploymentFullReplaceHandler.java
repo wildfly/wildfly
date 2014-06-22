@@ -24,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FUL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 
@@ -40,6 +39,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
@@ -114,7 +114,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             if (contentRepository != null) {
                 // We are the master DC. Validate that we actually have this content.
                 if (!contentRepository.hasContent(newHash)) {
-                    throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(newHash)));
+                    throw createFailureException(DomainControllerLogger.ROOT_LOGGER.noDeploymentContentWithHash(HashUtil.bytesToHexString(newHash)));
                 }
             } else {
                 // We are a slave controller
@@ -124,7 +124,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
-                throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
+                throw createFailureException(DomainControllerLogger.ROOT_LOGGER.slaveCannotAcceptUploads());
             }
             try {
                 // Store and transform operation

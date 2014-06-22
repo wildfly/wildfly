@@ -22,8 +22,7 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.util.Map;
 
@@ -36,6 +35,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.host.controller.ServerInventory;
@@ -80,11 +80,11 @@ public class StartServersHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (!context.isBooting()) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.invocationNotAllowedAfterBoot(operation.require(OP))));
+            throw new OperationFailedException(new ModelNode().set(HostControllerLogger.ROOT_LOGGER.invocationNotAllowedAfterBoot(operation.require(OP))));
         }
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final ModelNode domainModel = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));

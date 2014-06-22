@@ -27,8 +27,12 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/wildfly/clustering/web/infinispan/logging"/>
+    </exports>
+
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-clustering-web-infinispan}"/>
     </resources>
 
     <dependencies>
@@ -37,16 +41,18 @@
         <module name="org.infinispan"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.clustering.infinispan" services="import"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.server" services="import"/>
+        <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.security.manager"/>

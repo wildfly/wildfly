@@ -20,7 +20,6 @@ package org.jboss.as.host.controller.operations;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -38,6 +37,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
@@ -87,7 +87,7 @@ public class ServerStartHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));

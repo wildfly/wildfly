@@ -35,7 +35,7 @@ import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ImmediateResourceReferenceFactory;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -68,7 +68,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //TODO: cache this stuff
         final PersistenceContext context = getResourceAnnotated(injectionPoint).getAnnotation(PersistenceContext.class);
         if (context == null) {
-            throw WeldMessages.MESSAGES.annotationNotFound(PersistenceContext.class, injectionPoint.getMember());
+            throw WeldLogger.ROOT_LOGGER.annotationNotFound(PersistenceContext.class, injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
@@ -85,7 +85,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         //TODO: cache this stuff
         final PersistenceUnit context = getResourceAnnotated(injectionPoint).getAnnotation(PersistenceUnit.class);
         if (context == null) {
-            throw WeldMessages.MESSAGES.annotationNotFound(PersistenceUnit.class, injectionPoint.getMember());
+            throw WeldLogger.ROOT_LOGGER.annotationNotFound(PersistenceUnit.class, injectionPoint.getMember());
         }
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
@@ -107,7 +107,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         PersistenceUnitMetadata scopedPu;
         scopedPu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
         if (null == scopedPu) {
-            throw WeldMessages.MESSAGES.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName());
+            throw WeldLogger.ROOT_LOGGER.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName());
         }
         return scopedPu.getScopedPersistenceUnitName();
     }

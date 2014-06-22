@@ -37,9 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
@@ -156,12 +158,12 @@ public class ProxyStepHandler implements OperationStepHandler {
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } else {
 
-            completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
+            completeRemoteTransaction(context, txRef, preparedResultRef, finalResultRef);
 
         }
     }
 
-    private void completeRemoteTransaction(OperationContext context, ModelNode operation, final AtomicReference<ModelController.OperationTransaction> txRef,
+    private void completeRemoteTransaction(OperationContext context, final AtomicReference<ModelController.OperationTransaction> txRef,
                                            final AtomicReference<ModelNode> preparedResultRef, final AtomicReference<ModelNode> finalResultRef) {
 
         boolean completeStepCalled = false;
@@ -243,10 +245,10 @@ public class ProxyStepHandler implements OperationStepHandler {
     private static OperationFailedRuntimeException translateFailureDescription(ModelNode failureDescription) {
 
         String failureDesc = failureDescription.asString();
-        if (failureDesc.startsWith("JBAS014807")) {
+        if (failureDesc.startsWith("WFLYCTL0216")) {
             return new NoSuchResourceException(failureDesc);
         }
-        else if (failureDesc.startsWith("JBAS013456")) {
+        else if (failureDesc.startsWith("WFLYCTL0313")) {
             return new UnauthorizedException(failureDesc);
         }
         return null;

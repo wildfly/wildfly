@@ -26,9 +26,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import org.jboss.as.naming.util.FastCopyHashMap;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.as.naming.logging.NamingLogger;
+import org.jboss.as.naming.util.FastCopyHashMap;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -56,7 +56,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V put(C instance, K key, V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw NamingLogger.ROOT_LOGGER.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);
@@ -98,7 +98,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
      */
     public V putAtomic(C instance, K key, V value, Map<K, V> snapshot) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw NamingLogger.ROOT_LOGGER.nullVar("key");
         }
         final Map<K, V> newMap;
         final int oldSize = snapshot.size();
@@ -126,7 +126,7 @@ final class AtomicMapFieldUpdater<C, K, V> {
 
     public V putIfAbsent(C instance, K key, V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw NamingLogger.ROOT_LOGGER.nullVar("key");
         }
         for (;;) {
             final Map<K, V> oldMap = updater.get(instance);

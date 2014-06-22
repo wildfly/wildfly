@@ -25,8 +25,6 @@
  */
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,6 +35,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.network.NetworkUtils;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.version.ProductConfig;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -244,23 +243,23 @@ public class HostControllerEnvironment extends ProcessEnvironment {
                                      String initialHostConfig, RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
 
         if (hostSystemProperties == null) {
-            throw MESSAGES.nullVar("hostSystemProperties");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("hostSystemProperties");
         }
         this.hostSystemProperties = Collections.unmodifiableMap(hostSystemProperties);
         if (modulePath == null) {
-            throw MESSAGES.nullVar("modulePath");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("modulePath");
         }
         if (processControllerAddress == null) {
-            throw MESSAGES.nullVar("processControllerAddress");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("processControllerAddress");
         }
         if (processControllerPort == null) {
-            throw MESSAGES.nullVar("processControllerPort");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("processControllerPort");
         }
         if (hostControllerAddress == null) {
-            throw MESSAGES.nullVar("hostControllerAddress");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("hostControllerAddress");
         }
         if (hostControllerPort == null) {
-            throw MESSAGES.nullVar("hostControllerPort");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("hostControllerPort");
         }
         this.processControllerPort = processControllerPort;
         this.processControllerAddress = processControllerAddress;
@@ -319,10 +318,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         File home = getFileFromProperty(HOME_DIR);
         this.homeDir = home;
         if (homeDir == null) {
-            throw MESSAGES.missingHomeDirConfiguration(HOME_DIR);
+            throw HostControllerLogger.ROOT_LOGGER.missingHomeDirConfiguration(HOME_DIR);
         }
         if (!homeDir.exists() || !homeDir.isDirectory()) {
-            throw MESSAGES.homeDirectoryDoesNotExist(homeDir);
+            throw HostControllerLogger.ROOT_LOGGER.homeDirectoryDoesNotExist(homeDir);
         }
         WildFlySecurityManager.setPropertyPrivileged(HOME_DIR, this.homeDir.getAbsolutePath());
 
@@ -331,7 +330,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         if (tmp == null) {
             tmp = new File(this.homeDir, "modules");
         } else if (!tmp.exists() || !tmp.isDirectory()) {
-            throw MESSAGES.modulesDirectoryDoesNotExist(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.modulesDirectoryDoesNotExist(tmp);
         }
         this.modulesDir = tmp;
         @SuppressWarnings("deprecation")
@@ -343,9 +342,9 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             tmp = new File(this.homeDir, "domain");
         }
         if (!tmp.exists()) {
-            throw MESSAGES.domainBaseDirectoryDoesNotExist(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.domainBaseDirectoryDoesNotExist(tmp);
         } else if (!tmp.isDirectory()) {
-            throw MESSAGES.domainBaseDirectoryIsNotADirectory(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.domainBaseDirectoryIsNotADirectory(tmp);
         }
         this.domainBaseDir = tmp;
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_BASE_DIR, this.domainBaseDir.getAbsolutePath());
@@ -355,7 +354,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             tmp = new File(this.domainBaseDir, "configuration");
         }
         if (!tmp.exists() || !tmp.isDirectory()) {
-            throw MESSAGES.configDirectoryDoesNotExist(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.configDirectoryDoesNotExist(tmp);
         }
         this.domainConfigurationDir = tmp;
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_CONFIG_DIR, this.domainConfigurationDir.getAbsolutePath());
@@ -373,11 +372,11 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.domainDataDir = tmp;
         if (domainDataDir.exists()) {
             if (!domainDataDir.isDirectory()) {
-                throw MESSAGES.domainDataDirectoryIsNotDirectory(domainDataDir);
+                throw HostControllerLogger.ROOT_LOGGER.domainDataDirectoryIsNotDirectory(domainDataDir);
             }
         } else {
             if (!domainDataDir.mkdirs()) {
-                throw MESSAGES.couldNotCreateDomainDataDirectory(domainDataDir);
+                throw HostControllerLogger.ROOT_LOGGER.couldNotCreateDomainDataDirectory(domainDataDir);
             }
         }
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_DATA_DIR, this.domainDataDir.getAbsolutePath());
@@ -394,10 +393,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.domainContentDir = tmp;
         if (domainContentDir.exists()) {
             if (!domainContentDir.isDirectory()) {
-                throw MESSAGES.domainContentDirectoryIsNotDirectory(domainContentDir);
+                throw HostControllerLogger.ROOT_LOGGER.domainContentDirectoryIsNotDirectory(domainContentDir);
             }
         } else if (!domainContentDir.mkdirs()) {
-            throw MESSAGES.couldNotCreateDomainContentDirectory(domainContentDir);
+            throw HostControllerLogger.ROOT_LOGGER.couldNotCreateDomainContentDirectory(domainContentDir);
         }
 
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_CONTENT_DIR, this.domainContentDir.getAbsolutePath());
@@ -409,10 +408,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         }
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.logDirectoryIsNotADirectory(tmp);
+                throw HostControllerLogger.ROOT_LOGGER.logDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()) {
-            throw MESSAGES.couldNotCreateLogDirectory(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.couldNotCreateLogDirectory(tmp);
         }
         this.domainLogDir = tmp;
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_LOG_DIR, this.domainLogDir.getAbsolutePath());
@@ -423,10 +422,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         }
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.serversDirectoryIsNotADirectory(tmp);
+                throw HostControllerLogger.ROOT_LOGGER.serversDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()) {
-            throw MESSAGES.couldNotCreateServersDirectory(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.couldNotCreateServersDirectory(tmp);
         }
         this.domainServersDir = tmp;
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_SERVERS_DIR, this.domainServersDir.getAbsolutePath());
@@ -437,10 +436,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         }
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.domainTempDirectoryIsNotADirectory(tmp);
+                throw HostControllerLogger.ROOT_LOGGER.domainTempDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()){
-            throw MESSAGES.couldNotCreateDomainTempDirectory(tmp);
+            throw HostControllerLogger.ROOT_LOGGER.couldNotCreateDomainTempDirectory(tmp);
         }
         this.domainTempDir = tmp;
         WildFlySecurityManager.setPropertyPrivileged(DOMAIN_TEMP_DIR, this.domainTempDir.getAbsolutePath());
@@ -734,7 +733,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
         // Currently any system-property in host.xml should not be applied to the HC runtime. This method
         // should not be invoked.
-        throw MESSAGES.hostControllerSystemPropertyUpdateNotSupported();
+        throw HostControllerLogger.ROOT_LOGGER.hostControllerSystemPropertyUpdateNotSupported();
     }
 
     @Override

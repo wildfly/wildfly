@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
 import org.jboss.msc.service.StartContext;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
@@ -43,8 +44,8 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
     private volatile AcceptingChannel<StreamConnection> server;
     private final String scheme;
 
-    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions) {
-        super(name, listenerOptions);
+    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions, OptionMap socketOptions) {
+        super(name, listenerOptions, socketOptions);
         this.scheme = scheme;
     }
 
@@ -57,7 +58,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     @Override
     void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).getMap());
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(socketOptions).getMap());
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), binding.getValue().getSocketAddress());
     }

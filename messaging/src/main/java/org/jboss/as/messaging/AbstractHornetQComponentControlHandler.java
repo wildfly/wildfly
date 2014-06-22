@@ -29,13 +29,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 
 import org.hornetq.api.core.management.HornetQComponentControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,6 +48,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -216,7 +217,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected Object handleOperation(String operationName, OperationContext context, ModelNode operation) throws OperationFailedException {
         unsupportedOperation(operationName);
-        throw MESSAGES.unsupportedOperation(operationName);
+        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
     }
 
     /**
@@ -245,7 +246,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected final void unsupportedAttribute(final String attributeName) {
         // Bug
-        throw MESSAGES.unsupportedAttribute(attributeName);
+        throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
     }
 
     /**
@@ -259,7 +260,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
      */
     protected final void unsupportedOperation(final String operationName) {
         // Bug
-        throw MESSAGES.unsupportedOperation(operationName);
+        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
     }
 
     /**
@@ -278,7 +279,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
          T control = getHornetQComponentControl(server, address);
          if (control == null) {
-             throw new OperationFailedException(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
+             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
          }
          return control;
 

@@ -22,6 +22,20 @@
 
 package org.jboss.as.appclient.subsystem.parsing;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
+import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -30,7 +44,8 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.appclient.logging.AppClientLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -46,21 +61,6 @@ import org.jboss.dmr.Property;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
-import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.controller.parsing.ParseUtils.nextElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code appclient.xml}.
@@ -268,7 +268,22 @@ public class AppClientXml extends CommonXml {
         }
 
         if (element == Element.VAULT) {
-            parseVault(reader, address, namespace, list);
+            switch (namespace) {
+                //Less than 1.1 does not end up in this method
+                case DOMAIN_1_1:
+                case DOMAIN_1_2:
+                case DOMAIN_1_3:
+                case DOMAIN_1_4:
+                case DOMAIN_1_5:
+                case DOMAIN_2_0:
+                case DOMAIN_2_1: {
+                    parseVault_1_1(reader, address, namespace, list);
+                    break;
+                }
+                default: {
+                    parseVault_3_0(reader, address, namespace, list);
+                }
+            }
             element = nextElement(reader, namespace);
         }
         // Single profile
@@ -351,16 +366,14 @@ public class AppClientXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw ControllerMessages.MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw ControllerMessages.MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -382,7 +395,7 @@ public class AppClientXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                throw MESSAGES.duplicateSubsystemDeclaration(reader.getLocation());
+                throw AppClientLogger.ROOT_LOGGER.duplicateSubsystemDeclaration(reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();

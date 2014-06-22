@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.List;
 
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -60,7 +60,7 @@ public class RemoveAliasCommand implements OperationStepHandler {
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode currentValue = submodel.get(CacheContainerResourceDefinition.ALIASES.getName()).clone();
 
-        ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove) ;
+        ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove);
 
         // now set the new ALIAS attribute
         final ModelNode syntheticOp = new ModelNode();
@@ -102,15 +102,14 @@ public class RemoveAliasCommand implements OperationStepHandler {
     private static ModelNode removeAliasFromList(ModelNode list, String alias) throws OperationFailedException {
 
         // check for empty string
-        if (alias == null || alias.equals(""))
-            return list ;
+        if (alias == null || alias.equals("")) return list;
 
         // check for undefined list (AS7-3476)
         if (!list.isDefined()) {
-            throw InfinispanMessages.MESSAGES.cannotRemoveAliasFromEmptyList(alias);
+            throw InfinispanLogger.ROOT_LOGGER.cannotRemoveAliasFromEmptyList(alias);
         }
 
-        ModelNode newList = new ModelNode() ;
+        ModelNode newList = new ModelNode();
         List<ModelNode> listElements = list.asList();
 
         for (ModelNode listElement : listElements) {
@@ -118,6 +117,6 @@ public class RemoveAliasCommand implements OperationStepHandler {
                 newList.add().set(listElement);
             }
         }
-        return newList ;
+        return newList;
     }
 }

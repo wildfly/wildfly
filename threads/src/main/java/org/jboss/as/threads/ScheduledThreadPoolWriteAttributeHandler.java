@@ -51,7 +51,7 @@ public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
                                   ServiceController<?> service, boolean forRollback) {
         if (!forRollback) {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedScheduledThreadPoolAttribute(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedScheduledThreadPoolAttribute(attributeName);
         }
     }
 
@@ -61,7 +61,7 @@ public class ScheduledThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw ThreadsMessages.MESSAGES.scheduledThreadPoolServiceNotFound(serviceName);
+            throw ThreadsLogger.ROOT_LOGGER.scheduledThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

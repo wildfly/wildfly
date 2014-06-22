@@ -46,7 +46,7 @@ import org.jboss.as.naming.ExternalContextObjectFactory;
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.NamingMessages;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.context.external.ExternalContexts;
@@ -95,7 +95,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             }
         }
         if (!allowed) {
-            throw NamingMessages.MESSAGES.invalidNamespaceForBinding(name, Arrays.toString(GLOBAL_NAMESPACES));
+            throw NamingLogger.ROOT_LOGGER.invalidNamespaceForBinding(name, Arrays.toString(GLOBAL_NAMESPACES));
         }
 
         final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context, model).asString());
@@ -108,7 +108,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type == BindingType.EXTERNAL_CONTEXT) {
             installExternalContext(context, name, model, verificationHandler, newControllers);
         } else {
-            throw NamingMessages.MESSAGES.unknownBindingType(type.toString());
+            throw NamingLogger.ROOT_LOGGER.unknownBindingType(type.toString());
         }
     }
 
@@ -154,7 +154,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         try {
             module = Module.getBootModuleLoader().loadModule(moduleID);
         } catch (ModuleLoadException e) {
-            throw NamingMessages.MESSAGES.couldNotLoadModule(moduleID);
+            throw NamingLogger.ROOT_LOGGER.couldNotLoadModule(moduleID);
         }
 
         final ObjectFactory objectFactoryClassInstance;
@@ -165,13 +165,13 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
             objectFactoryClassInstance = (ObjectFactory) clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            throw NamingMessages.MESSAGES.couldNotLoadClassFromModule(className, moduleID);
+            throw NamingLogger.ROOT_LOGGER.couldNotLoadClassFromModule(className, moduleID);
         } catch (InstantiationException e) {
-            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
+            throw NamingLogger.ROOT_LOGGER.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (IllegalAccessException e) {
-            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
+            throw NamingLogger.ROOT_LOGGER.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (ClassCastException e) {
-            throw NamingMessages.MESSAGES.notAnInstanceOfObjectFactory(className, moduleID);
+            throw NamingLogger.ROOT_LOGGER.notAnInstanceOfObjectFactory(className, moduleID);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
@@ -372,10 +372,10 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             try {
                 return new URL(value);
             } catch (MalformedURLException e) {
-                throw NamingMessages.MESSAGES.unableToTransformURLBindingValue(value, e);
+                throw NamingLogger.ROOT_LOGGER.unableToTransformURLBindingValue(value, e);
             }
         } else {
-            throw NamingMessages.MESSAGES.unsupportedSimpleBindingType(type);
+            throw NamingLogger.ROOT_LOGGER.unsupportedSimpleBindingType(type);
         }
 
     }

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
@@ -35,7 +36,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link javax.ejb.TimerService}
  * <p/>
@@ -84,7 +84,7 @@ public class TimerServiceBindingSource extends InjectionSource {
             final InterceptorContext currentInvocationContext = CurrentInvocationContext.get();
             final EJBComponent ejbComponent = (EJBComponent) currentInvocationContext.getPrivateData(Component.class);
             if (ejbComponent == null) {
-                throw MESSAGES.failToGetEjbComponent(currentInvocationContext);
+                throw EjbLogger.ROOT_LOGGER.failToGetEjbComponent(currentInvocationContext);
             }
             return ejbComponent.getTimerService();
         }

@@ -25,7 +25,7 @@ package org.jboss.as.jpa.container;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
+import org.jboss.as.jpa.messages.JpaLogger;
 
 /**
  * Tracks the lifecycle of created XPC Entity Managers
@@ -52,7 +52,7 @@ public class CreatedEntityManagers {
      */
     public static void registerPersistenceContext(ExtendedEntityManager xpc) {
         if (xpc == null) {
-            throw MESSAGES.nullParameter("SFSBXPCMap.RegisterPersistenceContext", "EntityManager");
+            throw JpaLogger.ROOT_LOGGER.nullParameter("SFSBXPCMap.RegisterPersistenceContext", "EntityManager");
         }
         final List<ExtendedEntityManager> store = deferToPostConstruct.get();
         store.add(xpc);

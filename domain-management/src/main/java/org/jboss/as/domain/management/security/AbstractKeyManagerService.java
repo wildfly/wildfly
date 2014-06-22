@@ -21,8 +21,6 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +29,7 @@ import java.security.UnrecoverableKeyException;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -83,11 +82,11 @@ abstract class AbstractKeyManagerService implements Service<KeyManager[]> {
         try {
             theKeyManagers = createKeyManagers();
         } catch (UnrecoverableKeyException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (KeyStoreException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         }
     }
 

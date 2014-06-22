@@ -233,6 +233,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testStandalonePicketLinkXml() throws Exception {
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-picketlink.xml"));
+    }
+
+    @Test
     public void testStandaloneXtsXml() throws Exception {
         standaloneXmlTest(getGeneratedExampleConfigFile("standalone-xts.xml"));
     }
@@ -675,7 +680,7 @@ public class ParseAndMarshalModelsTestCase {
     //TODO use HostInitializer & TestModelControllerService
     private ModelNode loadHostModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
-        final HostXml parser = new HostXml("host-controller");
+        final HostXml parser = new HostXml("host-controller", RunningMode.NORMAL, false);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {
@@ -864,8 +869,8 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getOriginalStandaloneXml(String profile) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/standalone/configuration/" + profile
+                System.getProperty("jboss.inst", "../../.."),
+                "standalone/configuration/" + profile
         );
     }
 
@@ -896,16 +901,16 @@ public class ParseAndMarshalModelsTestCase {
 
     private File getDocsExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/src/main/resources/docs/examples/configs" + File.separator + name
+                System.getProperty("jboss.inst", "../../.."),
+                "docs/examples/configs" + File.separator + name
         );
     }
 
 
     private File getGeneratedExampleConfigFile(String name) throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/docs/examples/configs" + File.separator + name
+                System.getProperty("jboss.inst", "../../.."),
+                "docs/examples/configs" + File.separator + name
         );
     }
 
@@ -913,15 +918,15 @@ public class ParseAndMarshalModelsTestCase {
         //Get the standalone.xml from the build/src directory, since the one in the
         //built server could have changed during running of tests
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/src/main/resources/domain/configuration"
+                System.getProperty("jboss.inst", "../../.."),
+                "domain/configuration"
         );
     }
 
     private File getDomainConfigDir() throws FileNotFoundException {
         return FileUtils.getFileOrCheckParentsIfNotFound(
-                System.getProperty("jbossas.project.dir", "../../.."),
-                "build/target/generated-configs/domain/configuration"
+                System.getProperty("jboss.inst", "../../.."),
+                "domain/configuration"
         );
     }
 
@@ -958,7 +963,7 @@ public class ParseAndMarshalModelsTestCase {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             registration.setup(rootResource, rootRegistration, authorizer);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("capture-model", new NonResolvingResourceDescriptionResolver()).build()
@@ -1129,6 +1134,11 @@ public class ParseAndMarshalModelsTestCase {
 
         @Override
         public String getHttpManagementInterface() {
+            return null;
+        }
+
+        @Override
+        public String getHttpManagementSecureInterface() {
             return null;
         }
 

@@ -32,7 +32,7 @@ import java.util.List;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.LayersConfig;
@@ -207,7 +207,7 @@ public interface PatchTool {
                 if (!layersDir.exists())  {
                     if (layersConfig.isConfigured()) {
                         // Bad config from user
-                        throw PatchMessages.MESSAGES.installationNoLayersConfigFound(layersDir.getAbsolutePath());
+                        throw PatchLogger.ROOT_LOGGER.installationNoLayersConfigFound(layersDir.getAbsolutePath());
                     }
                     // else this isn't a root that has layers and add-ons
                     continue;
@@ -220,7 +220,7 @@ public interface PatchTool {
                     if (!layer.exists()) {
                         if (layersConfig.isConfigured()) {
                             // Bad config from user
-                            throw PatchMessages.MESSAGES.installationMissingLayer(layerName, layersDir.getAbsolutePath());
+                            throw PatchLogger.ROOT_LOGGER.installationMissingLayer(layerName, layersDir.getAbsolutePath());
                         }
                         // else this isn't a standard layers and add-ons structure
                         validLayers = false;

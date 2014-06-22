@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.as.jsf.JSFLogger;
+import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.modules.ModuleIdentifier;
 

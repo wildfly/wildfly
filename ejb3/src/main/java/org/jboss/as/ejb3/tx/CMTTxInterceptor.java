@@ -40,8 +40,7 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.MethodIntfHelper;
@@ -82,7 +81,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected void endTransaction(final TransactionManager tm, final Transaction tx) {
         try {
             if (tx != tm.getTransaction()) {
-                throw EjbMessages.MESSAGES.wrongTxOnThread(tx, tm.getTransaction());
+                throw EjbLogger.ROOT_LOGGER.wrongTxOnThread(tx, tm.getTransaction());
             }
             final int txStatus = tx.getStatus();
             if (txStatus == Status.STATUS_ACTIVE) {
@@ -97,14 +96,14 @@ public class CMTTxInterceptor implements Interceptor {
                 // handle reaper canceled (rolled back) tx case (see WFLY-1346)
                 // clear current tx state and throw RollbackException (EJBTransactionRolledbackException)
                 tm.suspend();
-                throw EjbMessages.MESSAGES.transactionAlreadyRolledBack(tx);
+                throw EjbLogger.ROOT_LOGGER.transactionAlreadyRolledBack(tx);
             } else if (txStatus == Status.STATUS_UNKNOWN) {
                 // STATUS_UNKNOWN isn't expected to be reached here but if it does, we need to clear current thread tx.
                 // It is possible that calling tm.commit() could succeed but we call tm.rollback, since this is an unexpected
                 // tx state that are are handling.
                 tm.rollback();
                 // if the tm.rollback doesn't fail, we throw an EJBException to reflect the unexpected tx state.
-                throw EjbMessages.MESSAGES.transactionInUnexpectedState(tx, statusAsString(txStatus));
+                throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             } else {
                 // logically, all of the following (unexpected) tx states are handled here:
                 //  Status.STATUS_PREPARED
@@ -113,7 +112,7 @@ public class CMTTxInterceptor implements Interceptor {
                 //  Status.STATUS_NO_TRANSACTION
                 //  Status.STATUS_COMMITTED
                 tm.suspend();                       // clear current tx state and throw EJBException
-                throw EjbMessages.MESSAGES.transactionInUnexpectedState(tx, statusAsString(txStatus));
+                throw EjbLogger.ROOT_LOGGER.transactionInUnexpectedState(tx, statusAsString(txStatus));
             }
         } catch (RollbackException e) {
             handleEndTransactionException(e);
@@ -184,7 +183,7 @@ public class CMTTxInterceptor implements Interceptor {
             if (t instanceof Error) {
                 //t = new EJBException(formatException("Unexpected Error", t));
                 Throwable cause = t;
-                t = EjbMessages.MESSAGES.unexpectedError();
+                t = EjbLogger.ROOT_LOGGER.unexpectedError();
                 t.initCause(cause);
             } else if (t instanceof RuntimeException) {
                 t = new EJBException((Exception) t);
@@ -210,7 +209,7 @@ public class CMTTxInterceptor implements Interceptor {
             if (t instanceof Error) {
                 //t = new EJBException(formatException("Unexpected Error", t));
                 Throwable cause = t;
-                t = EjbMessages.MESSAGES.unexpectedError();
+                t = EjbLogger.ROOT_LOGGER.unexpectedError();
                 t.initCause(cause);
             } else if (t instanceof RuntimeException) {
                 t = new EJBException((Exception) t);
@@ -242,7 +241,7 @@ public class CMTTxInterceptor implements Interceptor {
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw EjbMessages.MESSAGES.unknownTxAttributeOnInvocation(attr, invocation);
+                throw EjbLogger.ROOT_LOGGER.unknownTxAttributeOnInvocation(attr, invocation);
         }
     }
 
@@ -297,7 +296,7 @@ public class CMTTxInterceptor implements Interceptor {
         final TransactionManager tm = component.getTransactionManager();
         Transaction tx = tm.getTransaction();
         if (tx == null) {
-            throw EjbMessages.MESSAGES.txRequiredForInvocation(invocation);
+            throw EjbLogger.ROOT_LOGGER.txRequiredForInvocation(invocation);
         }
         return invokeInCallerTx(invocation, tx, component);
     }
@@ -305,7 +304,7 @@ public class CMTTxInterceptor implements Interceptor {
     protected Object never(InterceptorContext invocation, final EJBComponent component) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
         if (tm.getTransaction() != null) {
-            throw EjbMessages.MESSAGES.txPresentForNeverTxAttribute();
+            throw EjbLogger.ROOT_LOGGER.txPresentForNeverTxAttribute();
         }
         return invokeInNoTx(invocation, component);
     }
@@ -386,9 +385,9 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             tx.setRollbackOnly();
         } catch (SystemException ex) {
-            EjbLogger.EJB3_LOGGER.failedToSetRollbackOnly(ex);
+            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
         } catch (IllegalStateException ex) {
-            EjbLogger.EJB3_LOGGER.failedToSetRollbackOnly(ex);
+            EjbLogger.ROOT_LOGGER.failedToSetRollbackOnly(ex);
         }
     }
 

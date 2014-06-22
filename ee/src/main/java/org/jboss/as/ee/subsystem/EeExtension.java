@@ -48,7 +48,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -83,7 +83,7 @@ public class EeExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         // Register the root subsystem resource.
-        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(EeSubsystemRootResource.INSTANCE);
+        final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(EeSubsystemRootResource.create());
 
         // Mandatory describe operation
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
@@ -147,7 +147,7 @@ public class EeExtension implements Extension {
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
 
-            return EeMessages.MESSAGES.onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
+            return EeLogger.ROOT_LOGGER.onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
         }
 
         @Override
@@ -217,7 +217,7 @@ public class EeExtension implements Extension {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return EeMessages.MESSAGES.propertiesNotAllowedOnGlobalModules();
+            return EeLogger.ROOT_LOGGER.propertiesNotAllowedOnGlobalModules();
         }
 
         private void cleanModel(final ModelNode attributeValue) {

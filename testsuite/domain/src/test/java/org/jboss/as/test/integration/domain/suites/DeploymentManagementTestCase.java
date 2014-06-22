@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -62,7 +61,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
@@ -762,7 +760,7 @@ public class DeploymentManagementTestCase {
                  return composite;
              }
 
-        };
+        }
         LocalMethods localMethods = new LocalMethods();
         try {
             executeOnMaster(localMethods.createDeploymentOperation(ROOT_DEPLOYMENT_ADDRESS, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS));
@@ -957,7 +955,8 @@ public class DeploymentManagementTestCase {
 
         Assert.assertFalse(content.getAbsolutePath(), content.exists());
         Assert.assertFalse(db.getAbsolutePath(), db.exists());
-        Assert.assertFalse(da.getAbsolutePath(), da.exists());
+        String[] children = da.list();
+        Assert.assertFalse(da.getAbsolutePath(), da.exists() && children != null && children.length > 0);
 
     }
 

@@ -25,12 +25,12 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.regex.Pattern;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given {@link Pattern regex pattern}
@@ -54,7 +54,7 @@ public class NicMatchInterfaceCriteria extends AbstractInterfaceCriteria {
      */
     public NicMatchInterfaceCriteria(Pattern pattern) {
         if (pattern == null)
-            throw MESSAGES.nullVar("pattern");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("pattern");
         this.pattern = pattern;
     }
 

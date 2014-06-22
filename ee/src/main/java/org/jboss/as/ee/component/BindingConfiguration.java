@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import org.jboss.as.ee.logging.EeLogger;
 
 /**
  * A binding into JNDI.  This class contains the mechanism to construct the binding service.  In particular
@@ -44,10 +44,10 @@ public final class BindingConfiguration {
      */
     public BindingConfiguration(final String name, final InjectionSource source) {
         if (name == null) {
-            throw MESSAGES.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullVar("name");
         }
         if (source == null) {
-            throw MESSAGES.nullVar("source");
+            throw EeLogger.ROOT_LOGGER.nullVar("source");
         }
         this.name = name;
         this.source = source;

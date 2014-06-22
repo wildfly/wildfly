@@ -29,9 +29,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
 
 /**
  * Combines the relevant parts of the domain-level and host-level models to
@@ -185,6 +188,12 @@ public class ManagedServerBootCmdFactory implements ManagedServerBootConfigurati
     public List<String> getServerLaunchCommand() {
         final List<String> command = new ArrayList<String>();
 
+        if (jvmElement.getLaunchCommand() != null) {
+            List<String> commandPrefix = getLaunchPrefixCommands();
+            if(commandPrefix != null)
+                command.addAll(commandPrefix);
+        }
+
         command.add(getJavaCommand());
 
         command.add("-D[" + ManagedServer.getServerProcessName(serverName) + "]");
@@ -281,6 +290,17 @@ public class ManagedServerBootCmdFactory implements ManagedServerBootConfigurati
         }
 
         return DefaultJvmUtils.findJavaExecutable(javaHome);
+    }
+
+    private ArrayList<String> getLaunchPrefixCommands(){
+        String launchCommand = jvmElement.getLaunchCommand();
+        ArrayList<String> commands = null;
+
+        if(launchCommand.length()>0){
+            commands = new ArrayList<String>(Arrays.asList(launchCommand.split("\\s* \\s*")));
+        }
+        ROOT_LOGGER.serverLaunchCommandPrefix(this.serverName, launchCommand);
+        return commands;
     }
 
     /** {@inheritDoc} */

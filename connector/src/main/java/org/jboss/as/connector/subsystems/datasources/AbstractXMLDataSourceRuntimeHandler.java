@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.connector.logging.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -77,7 +77,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
     protected abstract void executeReadAttribute(final String attributeName, final OperationContext context, final T dataSource, final PathAddress address);
 
     private static IllegalStateException unknownOperation(String opName) {
-        throw ConnectorMessages.MESSAGES.unknownOperation(opName);
+        throw ConnectorLogger.ROOT_LOGGER.unknownOperation(opName);
     }
 
     private T getDataSourceConfig(final PathAddress operationAddress) throws OperationFailedException {
@@ -100,7 +100,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
            config = dataSourceConfigs.get(pa);
         }
         if (config == null) {
-            String exceptionMessage = ConnectorMessages.MESSAGES.noDataSourceRegisteredForAddress(operationAddress);
+            String exceptionMessage = ConnectorLogger.ROOT_LOGGER.noDataSourceRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
         return config;

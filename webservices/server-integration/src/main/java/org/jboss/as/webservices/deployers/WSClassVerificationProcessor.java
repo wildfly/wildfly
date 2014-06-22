@@ -22,8 +22,6 @@
 
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
 import javax.jws.WebService;
@@ -34,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.AbstractEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.verification.JwsWebServiceEndpointVerifier;
@@ -65,7 +64,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
 
     private void verifyEndpoint(final AbstractEndpoint pojoEndpoint, final ClassLoader moduleClassLoader,
             final DeploymentReflectionIndex deploymentReflectionIndex) throws DeploymentUnitProcessingException {
-        ROOT_LOGGER.tracef("Verifying web service endpoint class %s", pojoEndpoint.getClassName());
+        WSLogger.ROOT_LOGGER.tracef("Verifying web service endpoint class %s", pojoEndpoint.getClassName());
         try {
             final Class<?> endpointClass = moduleClassLoader.loadClass(pojoEndpoint.getClassName());
             final WebService webServiceAnnotation = endpointClass.getAnnotation(WebService.class);
@@ -73,7 +72,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
                 verifyJwsEndpoint(endpointClass, webServiceAnnotation, moduleClassLoader, deploymentReflectionIndex);
             } // otherwise it's probably a javax.xml.ws.Provider implementation
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.endpointClassNotFound(pojoEndpoint.getClassName());
+            throw WSLogger.ROOT_LOGGER.endpointClassNotFound(pojoEndpoint.getClassName());
         }
     }
 
@@ -88,10 +87,10 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
             wsEndpointVerifier.verify();
             if (wsEndpointVerifier.failed()) {
                 wsEndpointVerifier.logFailures();
-                throw MESSAGES.jwsWebServiceClassVerificationFailed(endpointClass);
+                throw WSLogger.ROOT_LOGGER.jwsWebServiceClassVerificationFailed(endpointClass);
             }
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.declaredEndpointInterfaceClassNotFound(endpointInterfaceClassName, endpointClass);
+            throw WSLogger.ROOT_LOGGER.declaredEndpointInterfaceClassNotFound(endpointInterfaceClassName, endpointClass);
         }
     }
 

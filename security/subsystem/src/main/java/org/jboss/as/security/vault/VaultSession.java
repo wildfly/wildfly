@@ -33,6 +33,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.security.plugins.PBEUtils;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
@@ -96,15 +97,15 @@ public final class VaultSession {
 
         File f = new File(keystoreURL);
         if (!f.exists()) {
-            throw VaultMessages.MESSAGES.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
+            throw SecurityLogger.ROOT_LOGGER.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
         } else if (!f.canWrite() || !f.isFile()) {
-            throw VaultMessages.MESSAGES.keyStoreNotWritable(keystoreURL);
+            throw SecurityLogger.ROOT_LOGGER.keyStoreNotWritable(keystoreURL);
         }
     }
 
     protected void validateKeystorePassword() throws Exception {
         if (keystorePassword == null) {
-            throw VaultMessages.MESSAGES.keyStorePasswordNotSpecified();
+            throw SecurityLogger.ROOT_LOGGER.keyStorePasswordNotSpecified();
         }
     }
 
@@ -118,23 +119,23 @@ public final class VaultSession {
         File d = new File(encryptionDirectory);
         if (!d.exists()) {
             if (!d.mkdirs()) {
-                throw VaultMessages.MESSAGES.cannotCreateEncryptionDirectory(d.getAbsolutePath());
+                throw SecurityLogger.ROOT_LOGGER.cannotCreateEncryptionDirectory(d.getAbsolutePath());
             }
         }
         if (!d.isDirectory()) {
-            throw VaultMessages.MESSAGES.encryptionDirectoryDoesNotExist(encryptionDirectory);
+            throw SecurityLogger.ROOT_LOGGER.encryptionDirectoryDoesNotExist(encryptionDirectory);
         }
     }
 
     protected void validateIterationCount() throws Exception {
         if (iterationCount < 1 && iterationCount > Integer.MAX_VALUE) {
-            throw VaultMessages.MESSAGES.iterationCountOutOfRange(String.valueOf(iterationCount));
+            throw SecurityLogger.ROOT_LOGGER.iterationCountOutOfRange(String.valueOf(iterationCount));
         }
     }
 
     protected void validateSalt() throws Exception {
         if (salt == null || salt.length() != 8) {
-            throw VaultMessages.MESSAGES.saltWrongLength();
+            throw SecurityLogger.ROOT_LOGGER.saltWrongLength();
         }
     }
 
@@ -170,7 +171,7 @@ public final class VaultSession {
             this.vault.init(getVaultOptionsMap());
             handshake();
         } catch (SecurityVaultException e) {
-            throw VaultMessages.MESSAGES.securityVaultException(e);
+            throw SecurityLogger.ROOT_LOGGER.securityVaultException(e);
         }
     }
 
@@ -182,7 +183,7 @@ public final class VaultSession {
      */
     public void startVaultSession(String vaultAlias) throws Exception {
         if (vaultAlias == null) {
-            throw VaultMessages.MESSAGES.vaultAliasNotSpecified();
+            throw SecurityLogger.ROOT_LOGGER.vaultAliasNotSpecified();
         }
         this.keystoreMaskedPassword = (org.jboss.security.Util.isPasswordCommand(keystorePassword))
                 ? keystorePassword
@@ -258,8 +259,7 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
-        System.out.println(VaultMessages.MESSAGES.vaultAttributeCreateDisplay(vaultBlock, attributeName,
-                securedAttributeConfigurationString(vaultBlock, attributeName)));
+        System.out.println(SecurityLogger.ROOT_LOGGER.vaultAttributeCreateDisplay(vaultBlock, attributeName, securedAttributeConfigurationString(vaultBlock, attributeName)));
     }
 
     /**
@@ -277,7 +277,7 @@ public final class VaultSession {
      * Display info about vault itself in form of AS7 configuration file.
      */
     public void vaultConfigurationDisplay() {
-        System.out.println(VaultMessages.MESSAGES.vaultConfigurationTitle());
+        System.out.println(SecurityLogger.ROOT_LOGGER.vaultConfigurationTitle());
         System.out.println("********************************************");
         System.out.println("...");
         System.out.println("</extensions>");

@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security;
 import java.io.IOException;
 
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 /**
  * Interface for a LDAP searcher, this could be a search for users or a search for groups.
@@ -36,12 +35,12 @@ interface LdapSearcher<R, K> {
     /**
      * Perform a search against LDAP.
      *
-     * @param context - The {@link DirContext} to use to access LDAP.
+     * @param connectionHandler - The {@link LdapConnectionHandler} to use to access LDAP.
      * @param key - The base key to use as the search.
      * @return The search result.
      * @throws IOException - If an error occurs communicating with LDAP.
      * @throws NamingException - If an error is encountered searching LDAP.
      */
-    R search(final DirContext context, final K key) throws IOException, NamingException;
+    R search(final LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException;
 
 }

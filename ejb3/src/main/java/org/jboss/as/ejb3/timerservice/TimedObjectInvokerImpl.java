@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -76,12 +76,12 @@ public class TimedObjectInvokerImpl implements TimedObjectInvoker, Serializable,
         synchronized (this) {
             if (!started) {
                 //this can happen if an invocation has been triggered as the deployment is shutting down
-                throw EjbMessages.MESSAGES.timerInvocationFailedDueToInvokerNotBeingStarted();
+                throw EjbLogger.ROOT_LOGGER.timerInvocationFailedDueToInvokerNotBeingStarted();
             }
             interceptor = timeoutInterceptors.get(timeoutMethod);
         }
         if(interceptor == null) {
-            throw EjbMessages.MESSAGES.failToInvokeTimeout(timeoutMethod);
+            throw EjbLogger.ROOT_LOGGER.failToInvokeTimeout(timeoutMethod);
         }
         final InterceptorContext context = new InterceptorContext();
         context.setContextData(new HashMap<String, Object>());

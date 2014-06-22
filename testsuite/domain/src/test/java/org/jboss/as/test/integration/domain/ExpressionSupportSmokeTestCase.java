@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -201,8 +202,8 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
     private void setExpressions(PathAddress address, String hostName, Map<PathAddress, Map<String, ModelNode>> expectedValues) throws IOException, MgmtOperationException {
 
         ModelNode description = readResourceDescription(address);
-        ModelNode resource = readResource(address, true);
-        ModelNode resourceNoDefaults = readResource(address, false);
+        ModelNode resource = readResource(address, true, false);
+        ModelNode resourceNoDefaults = readResource(address, false, false);
 
         Map<String, ModelNode> expressionAttrs = new HashMap<String, ModelNode>();
         Map<String, ModelNode> otherAttrs = new HashMap<String, ModelNode>();
@@ -220,7 +221,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         if (expectedAttrs.size() > 0 && immediateValidation) {
             // Validate that our write-attribute calls resulted in the expected values in the model
-            ModelNode modifiedResource = readResource(address, true);
+            ModelNode modifiedResource = readResource(address, true, true);
             for (Map.Entry<String, ModelNode> entry : expectedAttrs.entrySet()) {
                 ModelNode expectedValue = entry.getValue();
                 ModelNode modVal = modifiedResource.get(entry.getKey());
@@ -318,7 +319,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         }
                         String expression = "${exp.test:" + attrValue.asString() + "}";
                         expressionAttrs.put(attrName, new ModelNode(expression));
-                        expectedAttrs.put(attrName, new ModelNode().setExpression(expression));
+                        expectedAttrs.put(attrName, new ModelNode().set(new ValueExpression(expression)));
                         simple++;
                         logHandling("Added expression to simple attribute " + attrName + " at " + address.toModelNode().asString());
                     }
@@ -446,7 +447,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                         }
                         String expression = "${exp.test:" + propVal.asString() + "}";
                         updated.get(prop.getName()).set(expression);
-                        expected.get(prop.getName()).set(new ModelNode().setExpression(expression));
+                        expected.get(prop.getName()).set(new ModelNode().set(new ValueExpression(expression)));
                         hasExpression = true;
 
                     } else {
@@ -460,7 +461,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                     }
                     String expression = "${exp.test:" + item.asString() + "}";
                     updated.add(expression);
-                    expected.add(new ModelNode().setExpression(expression));
+                    expected.add(new ModelNode().set(new ValueExpression(expression)));
                     hasExpression = true;
                 } else {
                     updated.add(item);
@@ -601,7 +602,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 String valueString = timeunit ? fieldValue.asString().toLowerCase() : fieldValue.asString();
                 String expression = "${exp.test:" + valueString + "}";
                 updatedItem.get(fieldName).set(expression);
-                itemToExpect.get(fieldName).set(new ModelNode().setExpression(expression));
+                itemToExpect.get(fieldName).set(new ModelNode().set(new ValueExpression(expression)));
                 changed = true;
             }
         }
@@ -619,11 +620,18 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
     }
 
-    private ModelNode readResource(PathAddress address, boolean defaults) throws IOException, MgmtOperationException {
+    private ModelNode readResource(PathAddress address, boolean defaults, boolean failIfMissing) throws IOException, MgmtOperationException {
 
-        ModelNode op = createOperation(READ_RESOURCE_OPERATION, address);
-        op.get(INCLUDE_DEFAULTS).set(defaults);
-        return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
+        try {
+            ModelNode op = createOperation(READ_RESOURCE_OPERATION, address);
+            op.get(INCLUDE_DEFAULTS).set(defaults);
+            return executeForResult(op, domainMasterLifecycleUtil.getDomainClient());
+        } catch (MgmtOperationException e) {
+            if (failIfMissing) {
+                throw e;
+            }
+            return new ModelNode();
+        }
     }
 
     private void checkForUnconvertedExpression(PathAddress address, String attrName, ModelNode attrValue) {
@@ -660,7 +668,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
         Map<String, ModelNode> expectedModel = expectedValues.get(address);
         if (expectedModel != null && isValidatable(address)) {
-            ModelNode resource = readResource(address, true);
+            ModelNode resource = readResource(address, true, true);
             for (Map.Entry<String, ModelNode> entry : expectedModel.entrySet()) {
                 String attrName = entry.getKey();
                 ModelNode expectedValue = entry.getValue();

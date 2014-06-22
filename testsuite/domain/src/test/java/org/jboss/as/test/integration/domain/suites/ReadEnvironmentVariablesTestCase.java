@@ -95,8 +95,6 @@ public class ReadEnvironmentVariablesTestCase {
             WebArchive archive = ShrinkWrap.create(WebArchive.class, "env-test.war").addClass(EnvironmentTestServlet.class);
             archive.addAsResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.dmr \n"),"META-INF/MANIFEST.MF");
 
-            System.out.println(archive.toString(true));
-
             final InputStream contents = archive.as(ZipExporter.class).exportAsInputStream();
             try {
                 DeploymentPlan plan = manager.newDeploymentPlan().add("env-test.war", contents).deploy("env-test.war").toServerGroup("main-server-group").toServerGroup("other-server-group").build();

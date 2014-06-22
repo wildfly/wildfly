@@ -60,7 +60,8 @@ public class JTAEnvironmentBeanService implements Service<JTAEnvironmentBean> {
         // setup the XA orphan filters
         jtaEnvironmentBean.setXaResourceOrphanFilterClassNames(Arrays.asList(JTATransactionLogXAResourceOrphanFilter.class.getName(), JTANodeNameXAResourceOrphanFilter.class.getName(), SubordinateJTAXAResourceOrphanFilter.class.getName()));
         jtaEnvironmentBean.setXAResourceRecordWrappingPlugin(new com.arjuna.ats.internal.jbossatx.jta.XAResourceRecordWrappingPluginImpl());
-
+        jtaEnvironmentBean.setTransactionManagerJNDIContext("java:jboss/TransactionManager");
+        jtaEnvironmentBean.setTransactionSynchronizationRegistryJNDIContext("java:jboss/TransactionSynchronizationRegistry");
     }
 
     @Override

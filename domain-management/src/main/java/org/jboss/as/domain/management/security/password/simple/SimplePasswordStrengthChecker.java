@@ -22,14 +22,13 @@
 
 package org.jboss.as.domain.management.security.password.simple;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.password.CompoundRestriction;
 import org.jboss.as.domain.management.security.password.Dictionary;
 import org.jboss.as.domain.management.security.password.Keyboard;
@@ -394,18 +393,18 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     }
 
     public static PasswordRestriction getRestrictionAlpha(int minAlpha) {
-        return createRegExRestriction(minAlpha, REGEX_ALPHA, MESSAGES.passwordMustHaveAlphaInfo(minAlpha),
-                MESSAGES.passwordMustHaveAlpha(minAlpha));
+        return createRegExRestriction(minAlpha, REGEX_ALPHA, DomainManagementLogger.ROOT_LOGGER.passwordMustHaveAlphaInfo(minAlpha),
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveAlpha(minAlpha));
     }
 
     public static PasswordRestriction getRestrictionDigit(int minDigit) {
-        return createRegExRestriction(minDigit, REGEX_DIGITS, MESSAGES.passwordMustHaveDigitInfo(minDigit),
-                MESSAGES.passwordMustHaveDigit(minDigit));
+        return createRegExRestriction(minDigit, REGEX_DIGITS, DomainManagementLogger.ROOT_LOGGER.passwordMustHaveDigitInfo(minDigit),
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveDigit(minDigit));
     }
 
     public static PasswordRestriction getRestrictionSymbol(int minSymbol) {
-        return createRegExRestriction(minSymbol, REGEX_SYMBOLS, MESSAGES.passwordMustHaveSymbolInfo(minSymbol),
-                MESSAGES.passwordMustHaveSymbol(minSymbol));
+        return createRegExRestriction(minSymbol, REGEX_SYMBOLS, DomainManagementLogger.ROOT_LOGGER.passwordMustHaveSymbolInfo(minSymbol),
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveSymbol(minSymbol));
     }
 
     private static PasswordRestriction createRegExRestriction(int minChar, String regex, String requirementsMessage,

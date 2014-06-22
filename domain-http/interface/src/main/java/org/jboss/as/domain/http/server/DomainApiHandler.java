@@ -36,8 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,11 +57,13 @@ import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HexConverter;
 import io.undertow.util.Methods;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
@@ -72,6 +73,8 @@ import org.xnio.streams.ChannelInputStream;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class DomainApiHandler implements HttpHandler {
+
+    private static final String JSON_PRETTY = "json.pretty";
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET. Cacheable operations
@@ -135,7 +138,13 @@ class DomainApiHandler implements HttpHandler {
                 dmr = convertPostRequest(exchange, encode);
                 cachable = false;
             }
-            operationParameterBuilder.pretty(dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean());
+            boolean pretty = false;
+            if (dmr.hasDefined(JSON_PRETTY)) {
+                String jsonPretty = dmr.get(JSON_PRETTY).asString();
+                pretty = "true".equalsIgnoreCase(jsonPretty) || "1".equals(jsonPretty);
+
+            }
+            operationParameterBuilder.pretty(pretty);
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
             Common.sendError(exchange, false, e.getLocalizedMessage());
@@ -201,7 +210,7 @@ class DomainApiHandler implements HttpHandler {
                 operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
                 value = operation.realOperation();
             } catch (Exception e) {
-                throw MESSAGES.invalidOperation(e, value);
+                throw HttpServerLogger.ROOT_LOGGER.invalidOperation(e, value);
             }
         }
 

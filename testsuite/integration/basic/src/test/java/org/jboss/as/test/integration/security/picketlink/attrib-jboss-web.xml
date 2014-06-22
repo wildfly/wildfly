@@ -1,0 +1,14 @@
+<jboss-web>
+	<security-domain>idp</security-domain>
+	<valve>
+		<class-name>org.jboss.security.negotiation.NegotiationAuthenticator</class-name>
+	</valve>
+
+	<valve>
+		<class-name>org.picketlink.identity.federation.bindings.tomcat.idp.IDPWebBrowserSSOValve</class-name>
+		<param>
+			<param-name>passUserPrincipalToAttributeManager</param-name>
+			<param-value>true</param-value>
+		</param>
+	</valve>
+</jboss-web>

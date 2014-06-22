@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -56,8 +57,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * View configurator for the home interface of an entity bean
@@ -112,7 +111,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             } else if (method.getName().startsWith("find")) {
                 final Method ejbFind = resolveEjbFinderMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName(), componentDescription.getPersistenceType());
                 if(!Modifier.isPublic(ejbFind.getModifiers())) {
-                    throw MESSAGES.ejbMethodMustBePublic("ejbFind", ejbFind);
+                    throw EjbLogger.ROOT_LOGGER.ejbMethodMustBePublic("ejbFind", ejbFind);
                 }
                 final EntityBeanHomeFinderInterceptorFactory interceptorFactory = createHomeFindInterceptorFactory(ejbFind, localHome);
                 configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
@@ -136,7 +135,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     ejbObjectClass = classIndex.classIndex(createdView.getViewClassName()).getModuleClass();
                     pkClass = classIndex.classIndex(componentDescription.getPrimaryKeyType()).getModuleClass();
                 } catch (ClassNotFoundException e) {
-                    throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
+                    throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                 }
                 final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
 
@@ -156,7 +155,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 //we have a home business method
                 Method home = resolveEjbHomeBusinessMethod(componentConfiguration.getComponentClass(), deploymentReflectionIndex, method, componentConfiguration.getComponentName());
                 if(!Modifier.isPublic(home.getModifiers())) {
-                    throw MESSAGES.ejbMethodMustBePublic("ejbHome", home);
+                    throw EjbLogger.ROOT_LOGGER.ejbMethodMustBePublic("ejbHome", home);
                 }
                 configuration.addViewInterceptor(method, new EntityBeanHomeMethodInterceptorFactory(home), InterceptorOrder.View.COMPONENT_DISPATCHER);
             }
@@ -179,7 +178,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw MESSAGES.failToResolveMethodForHomeInterface(ejbMethodName, method, ejbName);
+        throw EjbLogger.ROOT_LOGGER.failToResolveMethodForHomeInterface(ejbMethodName, method, ejbName);
     }
 
     protected Method resolveEjbFinderMethod(final Class<?> componentClass, final DeploymentReflectionIndex index, final Method method, final String ejbName, final PersistenceType persistenceType) throws DeploymentUnitProcessingException {
@@ -194,7 +193,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             clazz = clazz.getSuperclass();
         }
         if (PersistenceType.Bean == persistenceType) {
-            throw MESSAGES.failToResolveMethodForHomeInterface("ejbFind", method, ejbName);
+            throw EjbLogger.ROOT_LOGGER.failToResolveMethodForHomeInterface("ejbFind", method, ejbName);
         }
         return method;
     }
@@ -210,7 +209,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw MESSAGES.failToResolveMethodForHomeInterface("ejbHome", method, ejbName);
+        throw EjbLogger.ROOT_LOGGER.failToResolveMethodForHomeInterface("ejbHome", method, ejbName);
     }
 
     private static String[] namesOf(final Class<?>[] types) {

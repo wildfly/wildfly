@@ -22,12 +22,14 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.AbstractQueueControlHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -40,17 +42,26 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
 
     public static final JMSQueueControlHandler INSTANCE = new JMSQueueControlHandler();
 
+    private static final AttributeDefinition MESSAGE_ID = createNonEmptyStringAttribute("message-id");
+
     private JMSQueueControlHandler() {
-        super(new StringLengthValidator(1));
     }
 
     @Override
-    public boolean isJMS() {
-        return true;
+    protected AttributeDefinition getMessageIDAttributeDefinition() {
+        return MESSAGE_ID;
+    }
+
+    @Override
+    protected AttributeDefinition[] getReplyMessageParameterDefinitions() {
+        return JMSManagementHelper.JMS_MESSAGE_PARAMETERS;
     }
 
     protected AbstractQueueControlHandler.DelegatingQueueControl<JMSQueueControl> getQueueControl(HornetQServer hqServer, String queueName){
         final JMSQueueControl control = JMSQueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
+        if (control == null) {
+            return null;
+        }
         return new AbstractQueueControlHandler.DelegatingQueueControl<JMSQueueControl>() {
 
             @Override

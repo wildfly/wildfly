@@ -21,10 +21,9 @@
  */
 package org.jboss.as.controller.client;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +76,7 @@ class OperationImpl implements Operation {
     @Deprecated
     public Operation clone(final ModelNode operation) {
         if (operation == null) {
-            throw MESSAGES.nullVar("operation");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("operation");
         }
         List<InputStream> streamsCopy = inputStreams == null ? null : new ArrayList<InputStream>(inputStreams);
         return new OperationImpl(operation, streamsCopy);

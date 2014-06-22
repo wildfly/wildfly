@@ -22,8 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -84,7 +83,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(new IORSecurityConfigMetaData(), codec,
                     sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

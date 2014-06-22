@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.CLASSLOADER_KEY;
@@ -35,6 +33,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.util.VirtualFileAdaptor;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
@@ -44,6 +43,7 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.deployment.AnnotationsInfo;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
@@ -136,8 +136,8 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      * @return WS endpoint
      */
     protected final Endpoint newHttpEndpoint(final String endpointClass, final String endpointName, final Deployment dep) {
-        if (endpointName == null) throw MESSAGES.nullEndpointName();
-        if (endpointClass == null) throw MESSAGES.nullEndpointClass();
+        if (endpointName == null) throw WSLogger.ROOT_LOGGER.nullEndpointName();
+        if (endpointClass == null) throw WSLogger.ROOT_LOGGER.nullEndpointClass();
 
         final Endpoint endpoint = this.deploymentModelFactory.newHttpEndpoint(endpointClass);
         endpoint.setShortName(endpointName);
@@ -156,8 +156,8 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      * @return WS endpoint
      */
     protected final Endpoint newJMSEndpoint(final String endpointClass, final String endpointName, final String soapAddress, final Deployment dep) {
-        if (endpointName == null) throw MESSAGES.nullEndpointName();
-        if (endpointClass == null) throw MESSAGES.nullEndpointClass();
+        if (endpointName == null) throw WSLogger.ROOT_LOGGER.nullEndpointName();
+        if (endpointClass == null) throw WSLogger.ROOT_LOGGER.nullEndpointClass();
 
         final Endpoint endpoint = deploymentModelFactory.newJMSEndpoint(endpointClass);
         endpoint.setAddress(soapAddress);
@@ -175,7 +175,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      * @return archive deployment
      */
     private ArchiveDeployment newDeployment(final DeploymentUnit unit) {
-        ROOT_LOGGER.creatingUnifiedWebservicesDeploymentModel(unit);
+        WSLogger.ROOT_LOGGER.tracef("Creating new unified WS deployment model for %s", unit);
         final ResourceRoot deploymentRoot = unit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final VirtualFile root = deploymentRoot != null ? deploymentRoot.getRoot() : null;
         final ClassLoader classLoader;
@@ -183,7 +183,7 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         if (module == null) {
             classLoader = unit.getAttachment(CLASSLOADER_KEY);
             if (classLoader == null) {
-                throw MESSAGES.classLoaderResolutionFailed(unit);
+                throw WSLogger.ROOT_LOGGER.classLoaderResolutionFailed(unit);
             }
         } else {
             classLoader = module.getClassLoader();
@@ -194,11 +194,11 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
             final String parentDeploymentName = unit.getParent().getName();
             final Module parentModule = unit.getParent().getAttachment(Attachments.MODULE);
             if (parentModule == null) {
-                throw MESSAGES.classLoaderResolutionFailed(deploymentRoot);
+                throw WSLogger.ROOT_LOGGER.classLoaderResolutionFailed(deploymentRoot);
             }
             final ClassLoader parentClassLoader = parentModule.getClassLoader();
 
-            ROOT_LOGGER.creatingUnifiedWebservicesDeploymentModel(unit.getParent());
+            WSLogger.ROOT_LOGGER.tracef("Creating new unified WS deployment model for %s", unit.getParent());
             final ArchiveDeployment parentDep = this.newDeployment(parentDeploymentName, parentClassLoader);
             dep.setParent(parentDep);
         }
@@ -210,6 +210,8 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         }
         dep.setRuntimeClassLoader(classLoader);
         dep.setType(deploymentType);
+        //add an AnnotationInfo attachment that uses composite jandex index
+        dep.addAttachment(AnnotationsInfo.class, new JandexAnnotationsInfo(unit));
 
         return dep;
     }

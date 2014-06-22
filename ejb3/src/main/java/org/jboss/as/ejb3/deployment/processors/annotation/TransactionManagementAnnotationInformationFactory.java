@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
@@ -40,7 +41,7 @@ public class TransactionManagementAnnotationInformationFactory extends ClassAnno
     }
 
     @Override
-    protected TransactionManagementType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected TransactionManagementType fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final AnnotationValue value = annotationInstance.value();
         if(value == null) {
             return TransactionManagementType.CONTAINER;

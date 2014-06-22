@@ -29,8 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import javax.security.auth.Subject;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -46,11 +48,13 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -59,6 +63,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Base implementation for the transactional protocol.
@@ -68,10 +73,20 @@ import org.jboss.threads.AsyncFuture;
  */
 class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory, TransactionalProtocolClient {
 
+    private static final File javaTempDir = new File(WildFlySecurityManager.getPropertyPrivileged("java.io.tmpdir", null));
+
+    private final File tempDir;
     private final ManagementChannelAssociation channelAssociation;
+
     public TransactionalProtocolClientImpl(final ManagementChannelAssociation channelAssociation) {
         assert channelAssociation != null;
         this.channelAssociation = channelAssociation;
+        final File temp = channelAssociation.getAttachments().getAttachment(ManagementChannelHandler.TEMP_DIR);
+        if (temp != null && temp.isDirectory()) {
+            tempDir = temp;
+        } else {
+            tempDir = javaTempDir;
+        }
     }
 
     /** {@inheritDoc} */
@@ -95,7 +110,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
         final Subject subject = SecurityActions.getSubject();
-        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject);
+        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject, tempDir);
         final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
         final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
             @Override
@@ -103,7 +118,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 try {
                     // Execute
                     channelAssociation.executeRequest(op, new CompleteTxRequest(ModelControllerProtocol.PARAM_ROLLBACK));
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -128,9 +143,28 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
+        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("sending ExecuteRequest for %d", context.getOperationId());
+            // WFLY-3090 Protect the communication channel from getting closed due to administrative
+            // cancellation of the management op by using a separate thread to send
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    sendRequestInternal(resultHandler, context);
+                }
+            }, false);
+
+        }
+
+        @Override
         protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
                                    final ManagementRequestContext<ExecuteRequestContext> context,
                                    final FlushableDataOutput output) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("transmitting ExecuteRequest for %d", context.getOperationId());
+
             // Write the operation
             final ExecuteRequestContext executionContext = context.getAttachment();
             final List<InputStream> streams = executionContext.getInputStreams();
@@ -153,6 +187,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            ControllerLogger.MGMT_OP_LOGGER.tracef("received response to ExecuteRequest for %d", context.getOperationId());
             final byte responseType = input.readByte();
             final ModelNode response = new ModelNode();
             response.readExternal(input);
@@ -188,6 +223,11 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 resultHandler.done(response);
             }
         }
+
+        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                         ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            super.sendRequest(resultHandler, context);
+        }
     }
 
     /**
@@ -208,18 +248,40 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
+        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("sending CompleteTxRequest for %d", context.getOperationId());
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    sendRequestInternal(resultHandler, context);
+                }
+            }, false);
+
+        }
+
+        @Override
         protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context, final FlushableDataOutput output) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("transmitting CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             output.write(status);
         }
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            ControllerLogger.MGMT_OP_LOGGER.tracef("received response to CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             // We only accept operationCompleted responses
             expectHeader(input, ModelControllerProtocol.PARAM_OPERATION_COMPLETED);
             final ModelNode response = new ModelNode();
             response.readExternal(input);
             // Complete the operation
             resultHandler.done(response);
+        }
+
+        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                         ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            super.sendRequest(resultHandler, context);
         }
     }
 
@@ -268,17 +330,27 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                     final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
                     final InputStream is = exec.getAttachments().getInputStreams().get(index);
                     try {
-                        final ByteArrayOutputStream bout = copyStream(is);
-                        final FlushableDataOutput output = context.writeMessage(response);
+                        final File temp = copyStream(is, exec.tempDir);
                         try {
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-                            output.writeInt(bout.size());
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-                            output.write(bout.toByteArray());
-                            output.writeByte(ManagementProtocol.RESPONSE_END);
-                            output.close();
+                            final FlushableDataOutput output = context.writeMessage(response);
+                            try {
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                                output.writeInt((int) temp.length()); // the int is required by the protocol
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                                final FileInputStream fis = new FileInputStream(temp);
+                                try {
+                                    StreamUtils.copyStream(fis, output);
+                                    fis.close();
+                                } finally {
+                                    StreamUtils.safeClose(fis);
+                                }
+                                output.writeByte(ManagementProtocol.RESPONSE_END);
+                                output.close();
+                            } finally {
+                                StreamUtils.safeClose(output);
+                            }
                         } finally {
-                            StreamUtils.safeClose(output);
+                            temp.delete();
                         }
                     } finally {
                         // the caller is responsible for closing the input streams
@@ -288,24 +360,31 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             });
         }
 
-        protected ByteArrayOutputStream copyStream(final InputStream is) throws IOException {
-            final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            if(is != null) {
-                StreamUtils.copyStream(is, bout);
+        protected File copyStream(final InputStream is, final File tempDir) throws IOException {
+            final File temp = File.createTempFile("upload", "temp", tempDir);
+            if (is != null) {
+                final FileOutputStream os = new FileOutputStream(temp);
+                try {
+                    StreamUtils.copyStream(is, os);
+                    os.close();
+                } finally {
+                    StreamUtils.safeClose(os);
+                }
             }
-            return bout;
+            return temp;
         }
-
     }
 
     static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<ModelNode> {
         final OperationWrapper<?> wrapper;
         final AtomicBoolean completed = new AtomicBoolean(false);
         final Subject subject;
+        final File tempDir;
 
-        ExecuteRequestContext(OperationWrapper<?> operationWrapper, Subject subject) {
+        ExecuteRequestContext(OperationWrapper<?> operationWrapper, Subject subject, File tempDir) {
             this.wrapper = operationWrapper;
             this.subject = subject;
+            this.tempDir = tempDir;
         }
 
         void initialize(final AsyncFuture<ModelNode> result) {

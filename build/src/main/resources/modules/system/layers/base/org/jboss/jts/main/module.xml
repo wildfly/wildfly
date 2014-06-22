@@ -28,10 +28,11 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.narayana.jts:narayana-jts-jacorb}"/>
     </resources>
 
     <dependencies>
+        <module name="sun.jdk"/>
         <module name="org.omg.api" />
         <module name="org.apache.commons.logging"/>
         <module name="org.jboss.logging"/>

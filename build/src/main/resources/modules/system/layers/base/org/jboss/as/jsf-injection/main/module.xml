@@ -28,13 +28,15 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-jsf-injection}"/>
+        <artifact name="${org.jboss.weld:weld-core-jsf}"/>
     </resources>
 
     <dependencies>
         <module name="com.sun.jsf-impl"/>
         <module name="javax.api"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.jsf"/>
         <module name="org.jboss.as.web-common"/>
         <module name="javax.servlet.api"/>
         <module name="javax.enterprise.api"/>

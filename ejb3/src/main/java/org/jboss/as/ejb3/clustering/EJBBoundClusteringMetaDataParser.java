@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.clustering;
 
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 
 import javax.xml.stream.XMLStreamException;
@@ -55,7 +55,7 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
     @Override
     protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         if (NAMESPACE_URI.equals(reader.getNamespaceURI())) {
-            EjbLogger.EJB3_LOGGER.deprecatedNamespace(NAMESPACE_URI, ROOT_ELEMENT_CLUSTERING);
+            EjbLogger.ROOT_LOGGER.deprecatedNamespace(NAMESPACE_URI, ROOT_ELEMENT_CLUSTERING);
             final String localName = reader.getLocalName();
             if (localName.equals("clustered")) {
                 getElementText(reader, propertyReplacer);

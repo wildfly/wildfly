@@ -22,7 +22,6 @@
 package org.jboss.as.server.controller.resources;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.server.ServerMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,6 +53,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.AbstractDeploymentUnitService;
 import org.jboss.dmr.ModelNode;
@@ -356,22 +356,22 @@ public class DeploymentAttributes {
                     } else if (UNMANAGED_CONTENT_ATTRIBUTES.containsKey(name)) {
                         unmanagedNames.add(name);
                     } else {
-                        throw MESSAGES.unknownContentItemKey(name);
+                        throw ServerLogger.ROOT_LOGGER.unknownContentItemKey(name);
                     }
                 }
             }
             if (managedNames.size() > 1) {
-                throw MESSAGES.cannotHaveMoreThanOneManagedContentItem(MANAGED_CONTENT_ATTRIBUTES.keySet());
+                throw ServerLogger.ROOT_LOGGER.cannotHaveMoreThanOneManagedContentItem(MANAGED_CONTENT_ATTRIBUTES.keySet());
             }
             if (unmanagedNames.size() > 0 && managedNames.size() > 0) {
-                throw MESSAGES.cannotMixUnmanagedAndManagedContentItems(managedNames, unmanagedNames);
+                throw ServerLogger.ROOT_LOGGER.cannotMixUnmanagedAndManagedContentItems(managedNames, unmanagedNames);
             }
             if (unmanagedNames.size() > 0) {
                 if (!unmanagedNames.contains(CONTENT_ARCHIVE.getName())) {
-                    throw MESSAGES.nullParameter(CONTENT_ARCHIVE.getName());
+                    throw ServerLogger.ROOT_LOGGER.nullParameter(CONTENT_ARCHIVE.getName());
                 }
                 if (!unmanagedNames.contains(CONTENT_PATH.getName())) {
-                    throw MESSAGES.nullParameter(CONTENT_PATH.getName());
+                    throw ServerLogger.ROOT_LOGGER.nullParameter(CONTENT_PATH.getName());
                 }
             }
 

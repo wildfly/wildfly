@@ -22,8 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.omg.CORBA.Any;
@@ -189,7 +188,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         try {
             encapsulatedErrorToken = codec.encode_value(any);
         } catch (InvalidTypeForEncoding e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
 
         // initialize msgBodyCtxError.
@@ -346,7 +345,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                     // should not happen, as stateful context requests are always negotiated down to stateless in this implementation.
                     long contextId = contextBody.in_context_msg().client_context_id;
                     threadLocal.sasReply = createMsgCtxError(contextId, 4 /* major status: no context */);
-                    throw JacORBMessages.MESSAGES.missingSASContext();
+                    throw JacORBLogger.ROOT_LOGGER.missingSASContext();
                 } else if (contextBody.discriminator() == MTEstablishContext.value) {
                     EstablishContext message = contextBody.establish_msg();
                     threadLocal.contextId = message.client_context_id;
@@ -358,14 +357,14 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                                 message.client_authentication_token, codec);
                         if (authToken == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw JacORBMessages.MESSAGES.errorDecodingInitContextToken();
+                            throw JacORBLogger.ROOT_LOGGER.errorDecodingInitContextToken();
                         }
                         threadLocal.incomingUsername = authToken.username;
                         threadLocal.incomingPassword = authToken.password;
                         threadLocal.incomingTargetName = CSIv2Util.decodeGssExportedName(authToken.target_name);
                         if (threadLocal.incomingTargetName == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw JacORBMessages.MESSAGES.errorDecodingTargetInContextToken();
+                            throw JacORBLogger.ROOT_LOGGER.errorDecodingTargetInContextToken();
                         }
 
 
@@ -385,7 +384,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
                             if (threadLocal.incomingPrincipalName == null) {
                                 threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                                throw JacORBMessages.MESSAGES.errorDecodingPrincipalName();
+                                throw JacORBLogger.ROOT_LOGGER.errorDecodingPrincipalName();
                             }
                         }
                     }
@@ -397,9 +396,9 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JacORBLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JacORBLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         }
     }
 
@@ -413,7 +412,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw JacORBMessages.MESSAGES.unexpectedException(e);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
     }
@@ -435,7 +434,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw JacORBMessages.MESSAGES.unexpectedException(e);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
     }

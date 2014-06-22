@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -57,7 +57,7 @@ public class FactoryConfig extends ValueConfig {
     }
 
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
-        throw PojoMessages.MESSAGES.tooDynamicFromFactory();
+        throw PojoLogger.ROOT_LOGGER.tooDynamicFromFactory();
     }
 
     public void setBean(String dependency) {

@@ -21,8 +21,7 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.ServletDelegate;
 import org.jboss.wsf.spi.deployment.ServletDelegateFactory;
@@ -45,7 +44,7 @@ public final class ServletDelegateFactoryImpl implements ServletDelegateFactory 
             final Class<?> clazz = classLoader.loadClass(servletClassName);
             return (ServletDelegate) clazz.newInstance();
         } catch (final Exception e) {
-            throw MESSAGES.cannotInstantiateServletDelegate(e, servletClassName);
+            throw WSLogger.ROOT_LOGGER.cannotInstantiateServletDelegate(e, servletClassName);
         }
     }
 

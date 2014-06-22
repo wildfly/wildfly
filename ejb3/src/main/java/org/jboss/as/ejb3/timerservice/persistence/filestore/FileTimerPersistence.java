@@ -22,39 +22,44 @@
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
-import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
-import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
-import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
-import org.jboss.marshalling.InputStreamByteInput;
-import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.marshalling.OutputStreamByteOutput;
-import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.staxmapper.XMLMapper;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +68,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * File based persistent timer store.
@@ -74,6 +78,8 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author Stuart Douglas
  */
 public class FileTimerPersistence implements TimerPersistence, Service<FileTimerPersistence> {
+
+    private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
@@ -112,15 +118,16 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
-                    throw MESSAGES.failToCreateTimerFileStoreDir(baseDir);
+                    throw EjbLogger.ROOT_LOGGER.failToCreateTimerFileStoreDir(baseDir);
                 }
             } else {
-                throw MESSAGES.timerFileStoreDirNotExist(baseDir);
+                throw EjbLogger.ROOT_LOGGER.timerFileStoreDirNotExist(baseDir);
             }
         }
         if (!baseDir.isDirectory()) {
-            throw MESSAGES.invalidTimerFileStoreDir(baseDir);
+            throw EjbLogger.ROOT_LOGGER.invalidTimerFileStoreDir(baseDir);
         }
+
     }
 
     @Override
@@ -141,12 +148,37 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     @Override
     public void addTimer(final TimerImpl TimerImpl) {
-        persistTimer(TimerImpl, true);
+        if(WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    persistTimer(TimerImpl, true);
+                    return null;
+                }
+            });
+        } else {
+            persistTimer(TimerImpl, true);
+        }
     }
 
     @Override
     public void persistTimer(final TimerImpl TimerImpl) {
-        persistTimer(TimerImpl, false);
+        if(WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    persistTimer(TimerImpl, false);
+                    return null;
+                }
+            });
+        } else {
+            persistTimer(TimerImpl, false);
+        }
+    }
+
+    @Override
+    public boolean shouldRun(TimerImpl timer) {
+        return true;
     }
 
     private void persistTimer(final TimerImpl timer, boolean newTimer) {
@@ -234,6 +266,15 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
     }
 
+    @Override
+    public Closeable registerChangeListener(String timedObjectId, TimerChangeListener listener) {
+        return new Closeable() {
+            @Override
+            public void close() throws IOException {
+            }
+        };
+    }
+
     /**
      * Returns either the loaded entity or the most recent version of the entity that has
      * been persisted in this transaction.
@@ -275,81 +316,72 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         return loadTimersFromFile(timedObjectId, timerService);
     }
 
-    private Map<String, TimerImpl> loadTimersFromFile(final String timedObjectId, final TimerServiceImpl timerService) {
-        final Map<String, TimerImpl> timers = new HashMap<String, TimerImpl>();
-        try {
-            final File file = new File(getDirectory(timedObjectId));
-            if (!file.exists()) {
-                //no timers exist yet
-                return timers;
-            } else if (!file.isDirectory()) {
-                ROOT_LOGGER.failToRestoreTimers(file);
-                return timers;
+    private Map<String, TimerImpl> loadTimersFromFile(String timedObjectId, TimerServiceImpl timerService) {
+        Map<String, TimerImpl> timers = new HashMap<>();
+        String directory = getDirectory(timedObjectId);
+
+        timers.putAll(LegacyFileStore.loadTimersFromFile(timedObjectId, timerService, directory, factory, configuration));
+        for(Map.Entry<String, TimerImpl> entry : timers.entrySet()) {
+            writeFile(entry.getValue()); //write legacy timers into the new format
+            //the legacy code handling code will write a marker file, to make sure that the old timers will not be loaded on next restart.
+        }
+        final File file = new File(directory);
+        if (!file.exists()) {
+            //no timers exist yet
+            return timers;
+        } else if (!file.isDirectory()) {
+            ROOT_LOGGER.failToRestoreTimers(file);
+            return timers;
+        }
+
+        final XMLMapper mapper = createMapper(timerService);
+
+        for (File timerFile : file.listFiles()) {
+            if (!timerFile.getName().endsWith(".xml")) {
+                continue;
             }
-            Unmarshaller unmarshaller = factory.createUnmarshaller(configuration);
-            for (File timerFile : file.listFiles()) {
-                FileInputStream in = null;
+            FileInputStream in = null;
+
+            try {
+                in = new FileInputStream(timerFile);
+                final XMLInputFactory inputFactory = INPUT_FACTORY;
+                setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
+                setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+                final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(in);
                 try {
-                    in = new FileInputStream(timerFile);
-                    unmarshaller.start(new InputStreamByteInput(in));
-
-                    final TimerEntity entity = unmarshaller.readObject(TimerEntity.class);
-
-                    //we load the legacy timer entity class, and turn it into a timer state
-
-                    TimerImpl.Builder builder;
-                    if (entity instanceof CalendarTimerEntity) {
-                        CalendarTimerEntity c = (CalendarTimerEntity) entity;
-                        builder = CalendarTimer.builder()
-                                .setScheduleExprSecond(c.getSecond())
-                                .setScheduleExprMinute(c.getMinute())
-                                .setScheduleExprHour(c.getHour())
-                                .setScheduleExprDayOfWeek(c.getDayOfWeek())
-                                .setScheduleExprDayOfMonth(c.getDayOfMonth())
-                                .setScheduleExprMonth(c.getMonth())
-                                .setScheduleExprYear(c.getYear())
-                                .setScheduleExprStartDate(c.getStartDate())
-                                .setScheduleExprEndDate(c.getEndDate())
-                                .setScheduleExprTimezone(c.getTimezone())
-                                .setAutoTimer(c.isAutoTimer())
-                                .setTimeoutMethod(CalendarTimer.getTimeoutMethod(c.getTimeoutMethod(), timerService.getTimedObjectInvoker().getValue()));
-                    } else {
-                        builder = TimerImpl.builder();
+                    List<TimerImpl> timerList = new ArrayList<>();
+                    mapper.parseDocument(timerList, streamReader);
+                    for (TimerImpl timer : timerList) {
+                        timers.put(timer.getId(), timer);
                     }
-                    builder.setId(entity.getId())
-                            .setTimedObjectId(entity.getTimedObjectId())
-                            .setInitialDate(entity.getInitialDate())
-                            .setRepeatInterval(entity.getInterval())
-                            .setNextDate(entity.getNextDate())
-                            .setPreviousRun(entity.getPreviousRun())
-                            .setInfo(entity.getInfo())
-                            .setPrimaryKey(entity.getPrimaryKey())
-                            .setTimerState(entity.getTimerState())
-                            .setPersistent(true);
-
-                    timers.put(entity.getId(), builder.build(timerService));
-                    unmarshaller.finish();
-                } catch (Exception e) {
-                    ROOT_LOGGER.failToRestoreTimersFromFile(timerFile, e);
                 } finally {
-                    if (in != null) {
-                        try {
-                            in.close();
-                        } catch (IOException e) {
-                            ROOT_LOGGER.failToCloseFile(e);
-                        }
-                    }
+                    safeClose(in);
                 }
 
+            } catch (Exception e) {
+                ROOT_LOGGER.failToRestoreTimersFromFile(timerFile, e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        ROOT_LOGGER.failToCloseFile(e);
+                    }
+                }
             }
-        } catch (Exception e) {
-            ROOT_LOGGER.failToRestoreTimersForObjectId(timedObjectId, e);
         }
         return timers;
     }
 
+    private XMLMapper createMapper(TimerServiceImpl timerService) {
+        final XMLMapper mapper = XMLMapper.Factory.create();
+        mapper.registerRootElement(new QName(EjbTimerXmlParser_1_0.NAMESPACE, EjbTimerXmlPersister.TIMERS), new EjbTimerXmlParser_1_0(timerService, factory, configuration, timerService.getTimedObjectInvoker().getValue().getClassLoader()));
+        return mapper;
+    }
+
+
     private File fileName(String timedObjectId, String timerId) {
-        return new File(getDirectory(timedObjectId) + File.separator + timerId.replace(File.separator, "-"));
+        return new File(getDirectory(timedObjectId) + File.separator + timerId.replace(File.separator, "-") + ".xml");
     }
 
     /**
@@ -373,49 +405,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         return dirName;
     }
 
-
-    private void writeFile(TimerImpl timer) {
-        final File file = fileName(timer.getTimedObjectId(), timer.getId());
-
-        //if the timer is expired or cancelled delete the file
-        if (timer.getState() == TimerState.CANCELED ||
-                timer.getState() == TimerState.EXPIRED) {
-            if (file.exists()) {
-                file.delete();
-            }
-            return;
-        }
-
-        final TimerEntity entity;
-        if (timer instanceof CalendarTimer) {
-            entity = new CalendarTimerEntity((CalendarTimer) timer);
-        } else {
-            entity = new TimerEntity(timer);
-        }
-
-        FileOutputStream fileOutputStream = null;
-        try {
-            fileOutputStream = new FileOutputStream(file, false);
-            final Marshaller marshaller = factory.createMarshaller(configuration);
-            marshaller.start(new OutputStreamByteOutput(fileOutputStream));
-            marshaller.writeObject(entity);
-            marshaller.finish();
-            fileOutputStream.flush();
-            fileOutputStream.getFD().sync();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (fileOutputStream != null) {
-                try {
-                    fileOutputStream.close();
-                } catch (IOException e) {
-                    ROOT_LOGGER.failToCloseFile(e);
-                }
-            }
-        }
-    }
 
     private final class PersistTransactionSynchronization implements Synchronization {
 
@@ -467,6 +456,34 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     }
 
+    private void writeFile(TimerImpl timer) {
+        final File file = fileName(timer.getTimedObjectId(), timer.getId());
+
+        //if the timer is expired or cancelled delete the file
+        if (timer.getState() == TimerState.CANCELED ||
+                timer.getState() == TimerState.EXPIRED) {
+            if (file.exists()) {
+                file.delete();
+            }
+            return;
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+
+            try {
+                XMLStreamWriter writer = XMLOutputFactory.newInstance().createXMLStreamWriter(out);
+                XMLMapper mapper = createMapper(timer.getTimerService());
+                mapper.deparseDocument(new EjbTimerXmlPersister(factory, configuration), Collections.singletonList(timer), writer);
+                writer.flush();
+                writer.close();
+            } finally {
+                safeClose(out);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public InjectedValue<TransactionManager> getTransactionManager() {
         return transactionManager;
     }
@@ -483,5 +500,28 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         return pathManager;
     }
 
+    private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {
+        if (inputFactory.isPropertySupported(property)) {
+            inputFactory.setProperty(property, value);
+        }
+    }
 
+    private static void safeClose(final Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+    }
+
+    public static XMLExtendedStreamWriter create(XMLStreamWriter writer) throws Exception {
+        // Use reflection to access package protected class FormattingXMLStreamWriter
+        // TODO: at some point the staxmapper API could be enhanced to make this unnecessary
+        Class<?> clazz = Class.forName("org.jboss.staxmapper.FormattingXMLStreamWriter");
+        Constructor<?> ctr = clazz.getConstructor(XMLStreamWriter.class);
+        ctr.setAccessible(true);
+        return (XMLExtendedStreamWriter) ctr.newInstance(new Object[]{writer});
+    }
 }

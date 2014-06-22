@@ -26,12 +26,12 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.infinispan:infinispan-client-hotrod}"/>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="com.google.protobuf"/>
+        <module name="com.google.protobuf" optional="true"/>
         <module name="org.apache.commons.pool"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.query.dsl"/>

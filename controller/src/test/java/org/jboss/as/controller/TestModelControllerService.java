@@ -96,10 +96,8 @@ public abstract class TestModelControllerService extends AbstractControllerServi
         latch.countDown();
     }
 
-    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
+    protected static OperationDefinition getOD(String name) {
+        return new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
+                .build();
+    }
 }

@@ -28,7 +28,7 @@ import java.io.File;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 
 /**
  * @author Emanuel Muckenhuber
@@ -43,7 +43,7 @@ abstract class LayerDirectoryStructure extends DirectoryStructure {
             root = getBundleRepositoryRoot();
         }
         if (root == null) {
-            throw PatchMessages.MESSAGES.installationInvalidLayerConfiguration(name);
+            throw PatchLogger.ROOT_LOGGER.installationInvalidLayerConfiguration(name);
         }
         return root;
     }

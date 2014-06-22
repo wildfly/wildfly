@@ -27,7 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.ServerGroupEffect;
 import org.jboss.as.controller.access.TargetAttribute;

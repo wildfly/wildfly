@@ -35,6 +35,7 @@ import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.Layer;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.dmr.ModelNode;
@@ -77,7 +78,7 @@ public class LocalAgeoutHistoryHandler implements OperationStepHandler {
         try {
             info = mgr.getIdentity().loadTargetInfo();
         } catch (IOException e) {
-            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
         }
 
         final PatchingHistory.Iterator i = PatchingHistory.Factory.iterator(mgr, info);
@@ -91,7 +92,7 @@ public class LocalAgeoutHistoryHandler implements OperationStepHandler {
                     for(String layerName : layerPatches.keySet()) {
                         final Layer layer = mgr.getLayer(layerName);
                         if(layer == null) {
-                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.layerNotFound(layerName));
+                            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.layerNotFound(layerName));
                         }
                         final File patchDir = layer.getDirectoryStructure().getModulePatchDirectory(layerPatches.get(layerName));
                         if(patchDir.exists()) {

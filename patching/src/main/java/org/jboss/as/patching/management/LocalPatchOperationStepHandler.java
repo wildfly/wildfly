@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.management.PatchManagementMessages.MESSAGES;
-
 import java.io.InputStream;
 
 import org.jboss.as.controller.OperationContext;
@@ -33,6 +31,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.as.patching.tool.PatchTool;
@@ -54,7 +53,7 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
 
         if (installationManager.requiresRestart()) {
-            throw MESSAGES.serverRequiresRestart();
+            throw PatchLogger.ROOT_LOGGER.serverRequiresRestart();
         }
 
         try {

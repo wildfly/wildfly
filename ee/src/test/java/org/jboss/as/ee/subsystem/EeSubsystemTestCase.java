@@ -45,6 +45,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -112,7 +113,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
                 public ModelNode fixModel(ModelNode modelNode) {
                     Assert.assertTrue(modelNode.get(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT).asBoolean());
                     //Replace the value used in the xml
-                    modelNode.get(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT).setExpression("${test-exp2:false}");
+                    modelNode.get(EESubsystemModel.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT).set(new ValueExpression("${test-exp2:false}"));
                     return modelNode;
                 }
             });

@@ -36,6 +36,7 @@ import javax.transaction.UserTransaction;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.core.security.ServerSecurityManager;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
 import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.Endpoint;
@@ -50,9 +51,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.propertyeditor.PropertyEditors;
-
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * The gas, water & energy for the EJB subsystem.
@@ -82,16 +80,16 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             // ra name
             final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
             if (raIdentifier == null) {
-                throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
+                throw EjbLogger.ROOT_LOGGER.unknownResourceAdapter(resourceAdapterName);
             }
             final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
             if (resourceAdapterRepository == null) {
-                throw MESSAGES.resourceAdapterRepositoryUnAvailable();
+                throw EjbLogger.ROOT_LOGGER.resourceAdapterRepositoryUnAvailable();
             }
             // now get the message listeners for this specific ra identifier
             final List<MessageListener> messageListeners = resourceAdapterRepository.getMessageListeners(raIdentifier);
             if (messageListeners == null || messageListeners.isEmpty()) {
-                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
+                throw EjbLogger.ROOT_LOGGER.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             MessageListener requiredMessageListener = null;
             // now find the expected message listener from the list of message listeners for this resource adapter
@@ -102,7 +100,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
                 }
             }
             if (requiredMessageListener == null) {
-                throw MESSAGES.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
+                throw EjbLogger.ROOT_LOGGER.unknownMessageListenerType(messageListenerInterface.getName(), resourceAdapterName);
             }
             // found the message listener, now finally create the activation spec
             final Activation activation = requiredMessageListener.getActivation();
@@ -139,16 +137,16 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
         // ra name
         final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(resourceAdapterName);
         if (raIdentifier == null) {
-            throw MESSAGES.unknownResourceAdapter(resourceAdapterName);
+            throw EjbLogger.ROOT_LOGGER.unknownResourceAdapter(resourceAdapterName);
         }
         final ResourceAdapterRepository resourceAdapterRepository = getResourceAdapterRepository();
         if (resourceAdapterRepository == null) {
-            throw MESSAGES.resourceAdapterRepositoryUnAvailable();
+            throw EjbLogger.ROOT_LOGGER.resourceAdapterRepositoryUnAvailable();
         }
         try {
             return resourceAdapterRepository.getEndpoint(raIdentifier);
         } catch (NotFoundException nfe) {
-            throw MESSAGES.noSuchEndpointException(resourceAdapterName, nfe);
+            throw EjbLogger.ROOT_LOGGER.noSuchEndpointException(resourceAdapterName, nfe);
         }
     }
 
@@ -163,7 +161,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     public ServerSecurityManager getSecurityManager() {
         final ServerSecurityManager securityManager = securityManagerValue.getOptionalValue();
         if (securityManager == null)
-            throw MESSAGES.securityNotEnabled();
+            throw EjbLogger.ROOT_LOGGER.securityNotEnabled();
         return securityManager;
     }
 
@@ -244,7 +242,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
             if (raActivationConfigProps.containsKey(propName) == false && raRequiredConfigProps.contains(propName) == false) {
                 // not a valid activation config property, so log a WARN and filter it out from the valid activation config properties
                 validActivationConfigProps.remove(propName);
-                EJB3_LOGGER.activationConfigPropertyIgnored(propName, resourceAdapterName);
+                EjbLogger.ROOT_LOGGER.activationConfigPropertyIgnored(propName, resourceAdapterName);
             }
         }
         return validActivationConfigProps;

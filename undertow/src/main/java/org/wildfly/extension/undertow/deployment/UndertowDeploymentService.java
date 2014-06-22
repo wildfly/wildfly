@@ -35,6 +35,7 @@ import javax.servlet.ServletException;
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
 import org.jboss.as.web.host.ContextActivator;
+import org.jboss.el.cache.FactoryFinderCache;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
@@ -43,8 +44,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Stuart Douglas
@@ -106,6 +106,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
         Thread.currentThread().setContextClassLoader(deploymentInfo.getClassLoader());
         try {
+            FactoryFinderCache.clearClassLoader(deploymentInfo.getClassLoader());
             if (deploymentManager != null) {
                 Deployment deployment = deploymentManager.getDeployment();
                 try {
@@ -167,7 +168,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 UndertowDeploymentService service = controller.getValue();
                 service.startContext();
             } catch (Exception ex) {
-                throw UndertowMessages.MESSAGES.cannotActivateContext(ex, controller.getName());
+                throw UndertowLogger.ROOT_LOGGER.cannotActivateContext(ex, controller.getName());
             }
             return true;
         }

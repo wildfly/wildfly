@@ -69,6 +69,11 @@ public class AddressableNode implements Node, Addressable, Comparable<Addressabl
     }
 
     @Override
+    public String toString() {
+        return this.address.toString();
+    }
+
+    @Override
     public String getName() {
         return this.name;
     }

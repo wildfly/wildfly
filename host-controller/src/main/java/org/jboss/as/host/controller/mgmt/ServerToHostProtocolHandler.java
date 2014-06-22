@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -50,7 +50,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServerOperationsFactory;
 import org.jboss.as.host.controller.ServerInventory;
-import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;

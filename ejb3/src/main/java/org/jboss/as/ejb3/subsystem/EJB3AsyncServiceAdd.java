@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.List;
 

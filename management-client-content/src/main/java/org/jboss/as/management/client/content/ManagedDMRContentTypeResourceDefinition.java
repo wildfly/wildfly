@@ -45,8 +45,9 @@ import org.jboss.dmr.ModelType;
  */
 public class ManagedDMRContentTypeResourceDefinition extends SimpleResourceDefinition {
 
-    public static final AttributeDefinition HASH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HASH,
-            ModelType.BYTES, true).setValidator(BytesValidator.createSha1(true)).build();
+    public static final AttributeDefinition HASH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HASH, ModelType.BYTES, true)
+            .setValidator(BytesValidator.createSha1(true))
+            .build();
 
     private final ParameterValidator contentValidator;
     private final ResourceDescriptionResolver childResolver;

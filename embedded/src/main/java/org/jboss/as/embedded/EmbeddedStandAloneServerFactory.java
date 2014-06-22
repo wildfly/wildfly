@@ -22,8 +22,6 @@
 
 package org.jboss.as.embedded;
 
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -51,11 +49,12 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.embedded.logging.EmbeddedLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.modules.ModuleLoader;
@@ -99,15 +98,15 @@ public class EmbeddedStandAloneServerFactory {
 
     public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv, final String[] cmdargs) {
         if (jbossHomeDir == null)
-            MESSAGES.nullVar("jbossHomeDir");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("jbossHomeDir");
         if (moduleLoader == null)
-            MESSAGES.nullVar("moduleLoader");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("moduleLoader");
         if (systemProps == null)
-            MESSAGES.nullVar("systemProps");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("systemProps");
         if (systemEnv == null)
-            MESSAGES.nullVar("systemEnv");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("systemEnv");
         if (cmdargs == null)
-            MESSAGES.nullVar("cmdargs");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("cmdargs");
 
         setupCleanDirectories(jbossHomeDir, systemProps);
 
@@ -141,7 +140,7 @@ public class EmbeddedStandAloneServerFactory {
             @Override
             public Context getContext() {
                 if (context == null) {
-                    throw ServerMessages.MESSAGES.namingContextHasNotBeenSet();
+                    throw ServerLogger.ROOT_LOGGER.namingContextHasNotBeenSet();
                 }
                 return context;
             }
@@ -200,7 +199,7 @@ public class EmbeddedStandAloneServerFactory {
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (Exception ex) {
-                    throw MESSAGES.cannotStartEmbeddedServer(ex);
+                    throw EmbeddedLogger.ROOT_LOGGER.cannotStartEmbeddedServer(ex);
                 }
             }
 
@@ -285,7 +284,7 @@ public class EmbeddedStandAloneServerFactory {
             if (prop == null) {
                 File dir = new File(jbossHomeDir, "standalone" + File.separator + relativeLocation);
                 if (mustExist && (!dir.exists() || !dir.isDirectory())) {
-                    throw ServerMessages.MESSAGES.embeddedServerDirectoryNotFound("standalone" + File.separator + relativeLocation, jbossHomeDir.getAbsolutePath());
+                    throw ServerLogger.ROOT_LOGGER.embeddedServerDirectoryNotFound("standalone" + File.separator + relativeLocation, jbossHomeDir.getAbsolutePath());
                 }
                 return dir;
             } else {
@@ -323,10 +322,10 @@ public class EmbeddedStandAloneServerFactory {
 
     private static void validateDirectory(String property, File file) {
         if (!file.exists()) {
-            throw ServerMessages.MESSAGES.propertySpecifiedFileDoesNotExist(property, file.getAbsolutePath());
+            throw ServerLogger.ROOT_LOGGER.propertySpecifiedFileDoesNotExist(property, file.getAbsolutePath());
         }
         if (!file.isDirectory()) {
-            throw ServerMessages.MESSAGES.propertySpecifiedFileIsNotADirectory(property, file.getAbsolutePath());
+            throw ServerLogger.ROOT_LOGGER.propertySpecifiedFileIsNotADirectory(property, file.getAbsolutePath());
         }
     }
 
@@ -349,14 +348,14 @@ public class EmbeddedStandAloneServerFactory {
                             out.write(i);
                         }
                     } catch (IOException e) {
-                        throw ServerMessages.MESSAGES.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
+                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
                     } finally {
                         StreamUtils.safeClose(in);
                         StreamUtils.safeClose(out);
                     }
 
                 } catch (FileNotFoundException e) {
-                    throw MESSAGES.cannotSetupEmbeddedServer(e);
+                    throw EmbeddedLogger.ROOT_LOGGER.cannotSetupEmbeddedServer(e);
                 }
             }
         }

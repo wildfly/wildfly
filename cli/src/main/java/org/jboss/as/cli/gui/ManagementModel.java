@@ -75,6 +75,22 @@ public class ManagementModel extends JPanel {
         add(makeFilterPanel(tree), BorderLayout.SOUTH);
     }
 
+    /**
+     * Find a node in the tree.  The node must be "visible" to be found.
+     * @param address The full address of the node matching ManagementModelNode.addressPath()
+     * @return The node, or null if not found.
+     */
+    public ManagementModelNode findNode(String address) {
+        ManagementModelNode root = (ManagementModelNode)tree.getModel().getRoot();
+        Enumeration<ManagementModelNode> allNodes = root.depthFirstEnumeration();
+        while (allNodes.hasMoreElements()) {
+            ManagementModelNode node = allNodes.nextElement();
+            if (node.addressPath().equals(address)) return node;
+        }
+
+        return null;
+    }
+
     private JPanel makeFilterPanel(JTree tree) {
         Box filterBox = Box.createHorizontalBox();
         JLabel filterLabel = new JLabel("Filter:");

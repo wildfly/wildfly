@@ -26,6 +26,25 @@ public class AdditionalInitialization extends AdditionalParsers {
         }
     };
 
+    public static class HostControllerAdditionalInitialization extends AdditionalInitialization implements Serializable {
+        private static final long serialVersionUID = -509444465514822866L;
+
+         @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
+        }
+
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+
+        @Override
+        protected boolean isValidateOperations() {
+            return true;
+        }
+    }
+
     public static class ManagementAdditionalInitialization extends AdditionalInitialization implements Serializable {
         private static final long serialVersionUID = -509444465514822866L;
 

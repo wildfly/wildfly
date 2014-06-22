@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.ejb.client.remoting.PackedInteger;
 
@@ -43,10 +43,10 @@ class ModuleAvailabilityWriter {
     void writeModuleAvailability(final DataOutput output, final DeploymentModuleIdentifier[] availableModules) throws IOException {
 
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (availableModules == null) {
-            throw EjbMessages.MESSAGES.ejbModuleIdentifiersCannotBeNull();
+            throw EjbLogger.ROOT_LOGGER.ejbModuleIdentifiersCannotBeNull();
         }
         // write the header
         output.write(HEADER_MODULE_AVAILABLE);
@@ -57,10 +57,10 @@ class ModuleAvailabilityWriter {
     void writeModuleUnAvailability(final DataOutput output, final DeploymentModuleIdentifier[] unavailableModules) throws IOException {
 
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (unavailableModules == null) {
-            throw EjbMessages.MESSAGES.ejbModuleIdentifiersCannotBeNull();
+            throw EjbLogger.ROOT_LOGGER.ejbModuleIdentifiersCannotBeNull();
         }
         // write the header
         output.write(HEADER_MODULE_UNAVAILABLE);

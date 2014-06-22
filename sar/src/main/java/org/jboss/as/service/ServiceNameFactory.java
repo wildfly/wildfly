@@ -22,6 +22,7 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -49,7 +50,7 @@ final class ServiceNameFactory {
 
     private static ServiceName newServiceName(final String name) {
         if(name == null) {
-            throw SarMessages.MESSAGES.nullVar("name");
+            throw SarLogger.ROOT_LOGGER.nullVar("name");
         }
         return MBEAN_SERVICE_NAME_BASE.append(name);
     }

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.naming.deployment;
 
-import org.jboss.as.naming.NamingLogger;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

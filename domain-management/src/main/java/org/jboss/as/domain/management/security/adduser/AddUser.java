@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 
 /**
@@ -75,8 +74,8 @@ public class AddUser {
             stateValues.setRealmMode(RealmMode.USER_SUPPLIED);
         }
 
-        if (theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
+        if (theConsole.hasConsole() == false) {
+            throw DomainManagementLogger.ROOT_LOGGER.noConsoleAvailable();
         }
         if (options.getUserProperties() != null || options.getGroupProperties() != null) {
             // If we have property files specified we do not need to check the running mode.
@@ -91,6 +90,7 @@ public class AddUser {
 
         final Interactiveness howInteractive;
         boolean silent = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.SILENT.key()));
+        theConsole = options.getConsoleWrapper();
         if (silent) {
             howInteractive = Interactiveness.SILENT;
         } else {
@@ -98,20 +98,15 @@ public class AddUser {
         }
         stateValues.setHowInteractive(howInteractive);
 
-        // Silent modes still need to be able to output an error on failure.
-        theConsole = options.getConsoleWrapper();
-        if (theConsole.getConsole() == null && !howInteractive.equals(Interactiveness.SILENT)) {
-            throw MESSAGES.noConsoleAvailable();
-        }
         // Username should not be null or empty.
         if (user == null || user.isEmpty()) {
-            nextState = new ErrorState(theConsole, MESSAGES.noUsernameExiting(), null, stateValues);
+            nextState = new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noUsernameExiting(), null, stateValues);
             return;
         }
         stateValues.setUserName(user);
         // Password can be null or empty when disabling/enabling an existing user
         if (!options.isEnableDisableMode() && (password == null || password.isEmpty())) {
-            nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
+            nextState = new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noPasswordExiting(), null, stateValues);
             return;
         }
         stateValues.setPassword(password);
@@ -274,7 +269,7 @@ public class AddUser {
         APPLICATION_USERS("-a") {
             @Override
             public String instructions() {
-                return MESSAGES.argApplicationUsers();
+                return DomainManagementLogger.ROOT_LOGGER.argApplicationUsers();
             }
         },
         DOMAIN_CONFIG_DIR_USERS("-dc") {
@@ -285,7 +280,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argDomainConfigDirUsers();
+                return DomainManagementLogger.ROOT_LOGGER.argDomainConfigDirUsers();
             }
         },
         SERVER_CONFIG_DIR_USERS("-sc") {
@@ -296,7 +291,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argServerConfigDirUsers();
+                return DomainManagementLogger.ROOT_LOGGER.argServerConfigDirUsers();
             }
         },
         USER_PROPERTIES("-up", "--user-properties") {
@@ -307,7 +302,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argUserProperties();
+                return DomainManagementLogger.ROOT_LOGGER.argUserProperties();
             }
 
         },
@@ -319,7 +314,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argGroup();
+                return DomainManagementLogger.ROOT_LOGGER.argGroup();
             }
         },
         GROUP_PROPERTIES("-gp", "--group-properties") {
@@ -330,7 +325,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argGroupProperties();
+                return DomainManagementLogger.ROOT_LOGGER.argGroupProperties();
             }
 
         },
@@ -342,7 +337,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argPassword();
+                return DomainManagementLogger.ROOT_LOGGER.argPassword();
             }
         },
         USER("-u", "--user") {
@@ -353,7 +348,7 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argUser();
+                return DomainManagementLogger.ROOT_LOGGER.argUser();
             }
         },
         REALM("-r", "--realm") {
@@ -364,13 +359,13 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argRealm();
+                return DomainManagementLogger.ROOT_LOGGER.argRealm();
             }
         },
         SILENT("-s", "--silent", "--silent=true") {
             @Override
             public String instructions() {
-                return MESSAGES.argSilent();
+                return DomainManagementLogger.ROOT_LOGGER.argSilent();
             }
         },
         ROLE("-ro", "--role") {
@@ -384,31 +379,31 @@ public class AddUser {
 
             @Override
             public String instructions() {
-                return MESSAGES.argRole();
+                return DomainManagementLogger.ROOT_LOGGER.argRole();
             }
         },
         ENABLE("-e", "--enable") {
             @Override
             public String instructions() {
-                return MESSAGES.argEnable();
+                return DomainManagementLogger.ROOT_LOGGER.argEnable();
             }
         },
         DISABLE("-d", "--disable") {
             @Override
             public String instructions() {
-                return MESSAGES.argDisable();
+                return DomainManagementLogger.ROOT_LOGGER.argDisable();
             }
         },
         CONFIRM_WARNING("-cw", "--confirm-warning") {
             @Override
             public String instructions() {
-                return MESSAGES.argConfirmWarning();
+                return DomainManagementLogger.ROOT_LOGGER.argConfirmWarning();
             }
         },
         HELP("-h", "--help") {
             @Override
             public String instructions() {
-                return MESSAGES.argHelp();
+                return DomainManagementLogger.ROOT_LOGGER.argHelp();
             }
         };
 
@@ -500,7 +495,7 @@ public class AddUser {
         public static String usage() {
             if (USAGE == null) {
                 final StringBuilder sb = new StringBuilder();
-                sb.append(MESSAGES.argUsage()).append(NEW_LINE);
+                sb.append(DomainManagementLogger.ROOT_LOGGER.argUsage()).append(NEW_LINE);
                 for (CommandLineArgument arg : CommandLineArgument.values()) {
                     if (arg != ROLE) { // Deprecated
                         sb.append(arg.toString()).append(NEW_LINE);

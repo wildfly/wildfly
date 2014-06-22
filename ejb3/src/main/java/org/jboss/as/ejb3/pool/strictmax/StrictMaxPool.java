@@ -21,9 +21,9 @@
  */
 package org.jboss.as.ejb3.pool.strictmax;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.AbstractPool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 
@@ -93,7 +93,7 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
     }
 
     public void setMaxSize(int maxSize) {
-        throw MESSAGES.methodNotImplemented();
+        throw EjbLogger.ROOT_LOGGER.methodNotImplemented();
     }
 
     /**
@@ -106,9 +106,9 @@ public class StrictMaxPool<T> extends AbstractPool<T> {
         try {
             boolean acquired = semaphore.tryAcquire(timeout, timeUnit);
             if (!acquired)
-                throw MESSAGES.failedToAcquirePermit(timeout, timeUnit);
+                throw EjbLogger.ROOT_LOGGER.failedToAcquirePermit(timeout, timeUnit);
         } catch (InterruptedException e) {
-            throw MESSAGES.acquireSemaphoreInterrupted();
+            throw EjbLogger.ROOT_LOGGER.acquireSemaphoreInterrupted();
         }
 
         synchronized (pool) {

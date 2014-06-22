@@ -54,8 +54,7 @@ import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
@@ -114,11 +113,11 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
+            throw ServerLogger.ROOT_LOGGER.attributeIsRequired(attributeName);
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw ServerMessages.MESSAGES.attributeIsInvalid(attributeName);
+                throw ServerLogger.ROOT_LOGGER.attributeIsInvalid(attributeName);
             }
             definition.validateAndSet(operation, subModel);
         } else {
@@ -133,13 +132,13 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         final String attributeName = definition.getName();
         final boolean has = subModel.has(attributeName);
         if(! has && definition.isRequired(subModel)) {
-            throw ServerMessages.MESSAGES.attributeIsRequired(attributeName);
+            throw ServerLogger.ROOT_LOGGER.attributeIsRequired(attributeName);
         }
         ModelNode result;
         if(has) {
             if(! definition.isAllowed(subModel)) {
                 if (subModel.hasDefined(attributeName)) {
-                    throw ServerMessages.MESSAGES.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
+                    throw ServerLogger.ROOT_LOGGER.attributeNotAllowedWhenAlternativeIsPresent(attributeName, Arrays.asList(definition.getAlternatives()));
                 } else {
                     // create the undefined node
                     result = new ModelNode();

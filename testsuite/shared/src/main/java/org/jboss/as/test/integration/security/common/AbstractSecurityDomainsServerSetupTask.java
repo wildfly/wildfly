@@ -56,7 +56,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.config.AuthnModule;
 import org.jboss.as.test.integration.security.common.config.JSSE;
 import org.jboss.as.test.integration.security.common.config.JaspiAuthn;
@@ -126,13 +125,13 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
                     .append(SECURITY_DOMAIN, securityDomainName);
             ModelNode op = Util.createAddOperation(opAddr);
             if (StringUtils.isNotEmpty(securityDomain.getCacheType())) {
-                op.get(Constants.CACHE_TYPE).set(securityDomain.getCacheType());
+                op.get(org.jboss.as.test.integration.security.common.Constants.CACHE_TYPE).set(securityDomain.getCacheType());
             }
             steps.add(op);
 
             //only one can occur - authenticationType or authenticationJaspiType
-            final boolean authNodeAdded = createSecurityModelNode(Constants.AUTHENTICATION, Constants.LOGIN_MODULE, FLAG,
-                    Constants.REQUIRED, securityDomain.getLoginModules(), securityDomainName, steps);
+            final boolean authNodeAdded = createSecurityModelNode(org.jboss.as.test.integration.security.common.Constants.AUTHENTICATION, LOGIN_MODULE, FLAG,
+                    org.jboss.as.test.integration.security.common.Constants.REQUIRED, securityDomain.getLoginModules(), securityDomainName, steps);
             if (!authNodeAdded) {
                 final List<ModelNode> jaspiAuthnNodes = createJaspiAuthnNodes(securityDomain.getJaspiAuthn(), securityDomain.getName());
                 if (jaspiAuthnNodes != null) {
@@ -141,8 +140,8 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
                     }
                 }
             }
-            createSecurityModelNode(Constants.AUTHORIZATION, Constants.POLICY_MODULE, FLAG, Constants.REQUIRED, securityDomain.getAuthorizationModules(), securityDomainName, steps);
-            createSecurityModelNode(Constants.MAPPING, Constants.MAPPING_MODULE, TYPE, ROLE, securityDomain.getMappingModules(), securityDomainName, steps);
+            createSecurityModelNode(org.jboss.as.test.integration.security.common.Constants.AUTHORIZATION, org.jboss.as.test.integration.security.common.Constants.POLICY_MODULE, FLAG, org.jboss.as.test.integration.security.common.Constants.REQUIRED, securityDomain.getAuthorizationModules(), securityDomainName, steps);
+            createSecurityModelNode(org.jboss.as.test.integration.security.common.Constants.MAPPING, org.jboss.as.test.integration.security.common.Constants.MAPPING_MODULE, TYPE, ROLE, securityDomain.getMappingModules(), securityDomainName, steps);
 
             final ModelNode jsseNode = createJSSENode(securityDomain.getJsse(), securityDomain.getName());
             if (jsseNode != null) {
@@ -150,7 +149,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             }
             updates.add(compositeOp);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     /**
@@ -176,13 +175,13 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             final ModelNode op = new ModelNode();
             op.get(OP).set(REMOVE);
             op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(Constants.SECURITY_DOMAIN, domainName);
+            op.get(OP_ADDR).add(SECURITY_DOMAIN, domainName);
             // Don't rollback when the AS detects the war needs the module
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(op);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
 
         this.managementClient = null;
     }
@@ -220,7 +219,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         PathAddress domainAddress = PathAddress.pathAddress()
                 .append(SUBSYSTEM, SUBSYSTEM_SECURITY)
                 .append(SECURITY_DOMAIN, domainName);
-        PathAddress jaspiAddress = domainAddress.append(Constants.AUTHENTICATION, Constants.JASPI);
+        PathAddress jaspiAddress = domainAddress.append(org.jboss.as.test.integration.security.common.Constants.AUTHENTICATION, org.jboss.as.test.integration.security.common.Constants.JASPI);
         steps.add(Util.createAddOperation(jaspiAddress));
 
         for (final AuthnModule config : securityConfigurations.getAuthnModules()) {
@@ -229,13 +228,13 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
             steps.add(securityModuleNode);
             securityModuleNode.get(ModelDescriptionConstants.CODE).set(config.getName());
             if (config.getFlag() != null) {
-                securityModuleNode.get(Constants.FLAG).set(config.getFlag());
+                securityModuleNode.get(FLAG).set(config.getFlag());
             }
             if (config.getModule() != null) {
-                securityModuleNode.get(Constants.MODULE).set(config.getModule());
+                securityModuleNode.get(org.jboss.as.test.integration.security.common.Constants.MODULE).set(config.getModule());
             }
             if (config.getLoginModuleStackRef() != null) {
-                securityModuleNode.get(Constants.LOGIN_MODULE_STACK_REF).set(config.getLoginModuleStackRef());
+                securityModuleNode.get(org.jboss.as.test.integration.security.common.Constants.LOGIN_MODULE_STACK_REF).set(config.getLoginModuleStackRef());
             }
             Map<String, String> configOptions = config.getOptions();
             if (configOptions == null) {
@@ -256,16 +255,16 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
 
 
         for (final LoginModuleStack lmStack : securityConfigurations.getLoginModuleStacks()) {
-            PathAddress lmStackAddress = jaspiAddress.append(Constants.LOGIN_MODULE_STACK, lmStack.getName());
+            PathAddress lmStackAddress = jaspiAddress.append(org.jboss.as.test.integration.security.common.Constants.LOGIN_MODULE_STACK, lmStack.getName());
             steps.add(Util.createAddOperation(lmStackAddress));
 
             for (final SecurityModule config : lmStack.getLoginModules()) {
                 final String code = config.getName();
                 final ModelNode securityModuleNode = Util.createAddOperation(lmStackAddress.append(LOGIN_MODULE, code));
 
-                final String flag = StringUtils.defaultIfEmpty(config.getFlag(), Constants.REQUIRED);
+                final String flag = StringUtils.defaultIfEmpty(config.getFlag(), org.jboss.as.test.integration.security.common.Constants.REQUIRED);
                 securityModuleNode.get(ModelDescriptionConstants.CODE).set(code);
-                securityModuleNode.get(Constants.FLAG).set(flag);
+                securityModuleNode.get(FLAG).set(flag);
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("Adding JASPI login module stack [code=" + code + ", flag=" + flag + "]");
                 }
@@ -296,9 +295,9 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
      * Creates a {@link ModelNode} with the security component configuration. If the securityConfigurations array is empty or
      * null, then null is returned.
      *
-     * @param securityComponent name of security component (e.g. {@link Constants#AUTHORIZATION})
+     * @param securityComponent name of security component (e.g. {@link org.jboss.as.test.integration.security.common.Constants#AUTHORIZATION})
      * @param subnodeName       name of the security component subnode, which holds module configurations (e.g.
-     *                          {@link Constants#POLICY_MODULES})
+     *                          {@link org.jboss.as.test.integration.security.common.Constants#POLICY_MODULES})
      * @param flagAttributeName name of attribute to which the value of {@link SecurityModule#getFlag()} is set
      * @param flagDefaultValue  default value for flagAttributeName attr.
      * @param securityModules   configurations
@@ -315,7 +314,7 @@ public abstract class AbstractSecurityDomainsServerSetupTask implements ServerSe
         PathAddress address = PathAddress.pathAddress()
                 .append(SUBSYSTEM, SUBSYSTEM_SECURITY)
                 .append(SECURITY_DOMAIN, domainName)
-                .append(securityComponent, Constants.CLASSIC);
+                .append(securityComponent, CLASSIC);
         operations.add(Util.createAddOperation(address));
 
         for (final SecurityModule config : securityModules) {

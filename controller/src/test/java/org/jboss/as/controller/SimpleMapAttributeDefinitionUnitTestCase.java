@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,11 +49,11 @@ public class SimpleMapAttributeDefinitionUnitTestCase {
 
         ModelNode validated = ld.validateOperation(op);
         Assert.assertEquals(op.get("test", "int"), validated.get("int"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test", "exp").asString()), validated.get("exp"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test", "exp").asString())), validated.get("exp"));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
         Assert.assertEquals(op.get("test", "int"), model.get("test", "int"));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test", "exp").asString()), model.get("test", "exp"));
+        Assert.assertEquals(new ModelNode().set(new ValueExpression(op.get("test", "exp").asString())), model.get("test", "exp"));
     }
 }

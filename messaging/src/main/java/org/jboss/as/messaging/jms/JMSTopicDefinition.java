@@ -26,28 +26,20 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 
 /**
@@ -99,32 +91,6 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] METRICS = { CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
         CommonAttributes.MESSAGE_COUNT, DURABLE_MESSAGE_COUNT, NON_DURABLE_MESSAGE_COUNT,
         SUBSCRIPTION_COUNT, DURABLE_SUBSCRIPTION_COUNT, NON_DURABLE_SUBSCRIPTION_COUNT};
-
-    public static final String REMOVE_MESSAGES = "remove-messages";
-
-    public static final String DROP_ALL_SUBSCRIPTIONS = "drop-all-subscriptions";
-
-    public static final String DROP_DURABLE_SUBSCRIPTION = "drop-durable-subscription";
-
-    public static final String SUBSCRIPTION_NAME = "subscription-name";
-
-    public static final String COUNT_MESSAGES_FOR_SUBSCRIPTION = "count-messages-for-subscription";
-
-    public static final String LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON = "list-messages-for-subscription-as-json";
-
-    public static final String LIST_MESSAGES_FOR_SUBSCRIPTION = "list-messages-for-subscription";
-
-    public static final String LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON = "list-non-durable-subscriptions-as-json";
-
-    public static final String LIST_NON_DURABLE_SUBSCRIPTIONS = "list-non-durable-subscriptions";
-
-    public static final String LIST_DURABLE_SUBSCRIPTIONS_AS_JSON = "list-durable-subscriptions-as-json";
-
-    public static final String LIST_DURABLE_SUBSCRIPTIONS = "list-durable-subscriptions";
-
-    public static final String LIST_ALL_SUBSCRIPTIONS_AS_JSON = "list-all-subscriptions-as-json";
-
-    public static final String LIST_ALL_SUBSCRIPTIONS = "list-all-subscriptions";
 
     private final boolean registerRuntimeOnly;
 
@@ -182,105 +148,10 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly && !deployed) {
-            SimpleOperationDefinition add = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
-                    getResourceDescriptionResolver(),
-                    AbstractUpdateJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(add, new JMSTopicUpdateJndiHandler(true));
-            SimpleOperationDefinition remove = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
-                    getResourceDescriptionResolver(),
-                    AbstractUpdateJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(remove, new JMSTopicUpdateJndiHandler(false));
+            JMSTopicUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
         }
 
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
-        final EnumSet<OperationEntry.Flag> runtimeOnly = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
-
-        registry.registerOperationHandler(LIST_ALL_SUBSCRIPTIONS, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_ALL_SUBSCRIPTIONS);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_ALL_SUBSCRIPTIONS_AS_JSON, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_ALL_SUBSCRIPTIONS_AS_JSON,
-                        CommonAttributes.JMS_TOPIC, ModelType.STRING, false);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_DURABLE_SUBSCRIPTIONS, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_DURABLE_SUBSCRIPTIONS);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_DURABLE_SUBSCRIPTIONS_AS_JSON, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_DURABLE_SUBSCRIPTIONS_AS_JSON,
-                        CommonAttributes.JMS_TOPIC, STRING, false);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_NON_DURABLE_SUBSCRIPTIONS, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListSubscriptionsOperation(locale,  LIST_NON_DURABLE_SUBSCRIPTIONS);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON,
-                        CommonAttributes.JMS_TOPIC, STRING, false);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_MESSAGES_FOR_SUBSCRIPTION, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListMessagesForSubscription(locale);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListMessagesForSubscriptionAsJSON(locale);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(COUNT_MESSAGES_FOR_SUBSCRIPTION, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getCountMessagesForSubscription(locale);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(DROP_DURABLE_SUBSCRIPTION, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDropDurableSubscription(locale);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(DROP_ALL_SUBSCRIPTIONS, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, DROP_ALL_SUBSCRIPTIONS, CommonAttributes.JMS_TOPIC);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(REMOVE_MESSAGES, JMSTopicControlHandler.INSTANCE, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getRemoveMessages(locale);
-            }
-        }, runtimeOnly);
+        JMSTopicControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
     }
 
     @Override

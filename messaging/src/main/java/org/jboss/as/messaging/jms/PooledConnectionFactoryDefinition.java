@@ -62,31 +62,28 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_JNDI;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX;
 
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.DeprecatedAttributeWriteHandler;
-import org.jboss.as.messaging.MessagingDescriptions;
+import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.dmr.ModelNode;
 
 /**
  * JMS pooled Connection Factory resource definition.
- *
- * TODO once it will be possible to set flags on attribute when they are registered,
- * this resource needs to be simplified, removings its description provider (idem for its add &amp;
- * remove operations).
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
@@ -100,19 +97,41 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     // * keep in a single place the subtle differences (e.g. different default values for reconnect-attempts between
     //   the regular and pooled CF
     // * define the attributes in the *same order than the XSD* to write them to the XML configuration by simply iterating over the array
-    private static ConnectionFactoryAttribute[] define(ConnectionFactoryAttribute[] common, ConnectionFactoryAttribute... specific) {
+    private static ConnectionFactoryAttribute[] define(ConnectionFactoryAttribute[] specific, ConnectionFactoryAttribute... common) {
         int size = common.length + specific.length;
         ConnectionFactoryAttribute[] result = new ConnectionFactoryAttribute[size];
-        arraycopy(common, 0, result, 0, common.length);
-        arraycopy(specific, 0, result, common.length, specific.length);
-        // replace the reconnect-attempts attribute to use a different default value for pooled CF
-        for (int i = 0; i < result.length; i++) {
-            ConnectionFactoryAttribute attribute = result[i];
-            if (attribute.getDefinition() == Common.RECONNECT_ATTEMPTS) {
-                result[i] = ConnectionFactoryAttribute.create(RECONNECT_ATTEMPTS, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
+        arraycopy(specific, 0, result, 0, specific.length);
+        for (int i = 0; i < common.length; i++) {
+            ConnectionFactoryAttribute attr = common[i];
+            AttributeDefinition definition = attr.getDefinition();
+
+            ConnectionFactoryAttribute newAttr;
+            // replace the reconnect-attempts attribute to use a different default value for pooled CF
+            if (definition == Common.RECONNECT_ATTEMPTS) {
+                AttributeDefinition copy = copy(Pooled.RECONNECT_ATTEMPTS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+                newAttr = ConnectionFactoryAttribute.create(copy, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
+            } else {
+                AttributeDefinition copy = copy(definition, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+                newAttr = ConnectionFactoryAttribute.create(copy, attr.getPropertyName(), attr.isResourceAdapterProperty(), attr.isInboundConfig());
             }
+            result[specific.length + i] = newAttr;
         }
         return result;
+    }
+
+    private static AttributeDefinition copy(AttributeDefinition attribute, AttributeAccess.Flag flag) {
+        AbstractAttributeDefinitionBuilder builder;
+        if (attribute instanceof  SimpleListAttributeDefinition) {
+            builder =  new SimpleListAttributeDefinition.Builder((SimpleListAttributeDefinition)attribute);
+        } else if (attribute instanceof  SimpleMapAttributeDefinition) {
+            builder = new SimpleMapAttributeDefinition.Builder((SimpleMapAttributeDefinition)attribute);
+        } else if (attribute instanceof PrimitiveListAttributeDefinition) {
+            builder = new PrimitiveListAttributeDefinition.Builder((PrimitiveListAttributeDefinition)attribute);
+        } else {
+            builder = new SimpleAttributeDefinitionBuilder((SimpleAttributeDefinition)attribute);
+        }
+        builder.setFlags(flag);
+        return builder.build();
     }
 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
@@ -133,13 +152,6 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
             JNDI_PARAMS, RECONNECT_ATTEMPTS, SETUP_ATTEMPTS, SETUP_INTERVAL,
             TRANSACTION, USE_JNDI, USE_LOCAL_TX};
 
-    private static final DescriptionProvider DESC = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getPooledConnectionFactory(locale);
-        }
-    };
-
     public static Map<String, ConnectionFactoryAttribute> getAttributes() {
         Map<String, ConnectionFactoryAttribute> attrs = new HashMap<String, ConnectionFactoryAttribute>(ATTRIBUTES.length);
         for (ConnectionFactoryAttribute attribute : ATTRIBUTES) {
@@ -152,7 +164,9 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     private final boolean deployed;
 
     public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
-        super(PATH, DESC);
+        super(PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY),
+                PooledConnectionFactoryAdd.INSTANCE,
+                PooledConnectionFactoryRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
     }
@@ -161,8 +175,6 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        //FIXME how to set these flags to the pooled CF attributes?
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : getDefinitions(ATTRIBUTES)) {
             // deprecated attribute
             if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
@@ -173,20 +185,10 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
                     if (deployed) {
                         registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
                     } else {
-                        registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);
+                        registry.registerReadWriteAttribute(attr, null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE);
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registry) {
-        super.registerOperations(registry);
-
-        if (!deployed) {
-            super.registerAddOperation(registry, PooledConnectionFactoryAdd.INSTANCE, OperationEntry.Flag.RESTART_NONE);
-            super.registerRemoveOperation(registry, PooledConnectionFactoryRemove.INSTANCE,  OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         }
     }
 }

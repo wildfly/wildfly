@@ -29,13 +29,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-security-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-security</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>WildFly: Security Subsystem</name>

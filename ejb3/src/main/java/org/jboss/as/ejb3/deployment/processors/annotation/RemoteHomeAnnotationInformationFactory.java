@@ -26,6 +26,7 @@ import javax.ejb.RemoteHome;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 /**
  * Processes the {@link javax.ejb.RemoteHome} annotation on a session bean
@@ -39,7 +40,7 @@ public class RemoteHomeAnnotationInformationFactory extends ClassAnnotationInfor
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         AnnotationValue value = annotationInstance.value();
         return value.asClass().toString();
     }

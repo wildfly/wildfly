@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to perform the actual addition to the discovered properties files.
@@ -47,7 +47,7 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
         State nextState;
         if (password == null) {
             // The user doesn't exist and the password is not provided !
-            nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
+            nextState = new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noPasswordExiting(), null, stateValues);
         } else {
             nextState = update(stateValues);
         }
@@ -57,7 +57,7 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
          * Base64 password of the user - otherwise the util can end.
          */
         if (nextState == null && stateValues.isInteractive()) {
-            nextState = new ConfirmationChoice(theConsole, MESSAGES.serverUser(), MESSAGES.yesNo(), new DisplaySecret(
+            nextState = new ConfirmationChoice(theConsole, DomainManagementLogger.ROOT_LOGGER.serverUser(), DomainManagementLogger.ROOT_LOGGER.yesNo(), new DisplaySecret(
                     theConsole, stateValues), null);
 
         }
@@ -66,16 +66,16 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
 
     @Override
     String consoleUserMessage(String filePath) {
-        return MESSAGES.addedUser(stateValues.getUserName(), filePath);
+        return DomainManagementLogger.ROOT_LOGGER.addedUser(stateValues.getUserName(), filePath);
     }
 
     @Override
     String consoleGroupsMessage(String filePath) {
-        return MESSAGES.addedGroups(stateValues.getUserName(), stateValues.getGroups(), filePath);
+        return DomainManagementLogger.ROOT_LOGGER.addedGroups(stateValues.getUserName(), stateValues.getGroups(), filePath);
     }
 
     @Override
     String errorMessage(String filePath, Throwable e) {
-        return MESSAGES.unableToAddUser(filePath, e.getMessage());
+        return DomainManagementLogger.ROOT_LOGGER.unableToAddUser(filePath, e.getMessage());
     }
 }

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -51,7 +52,6 @@ import org.jboss.metadata.javaee.spec.ResourceInjectionMetaData;
 import org.jboss.metadata.javaee.spec.ResourceInjectionTargetMetaData;
 import org.jboss.modules.Module;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
 
 /**
@@ -149,7 +149,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
                             }
                         }
                         if (!ok) {
-                            throw MESSAGES.invalidInjectionTarget(injectionTarget.getInjectionTargetName(), injectionTarget.getInjectionTargetClass(), classType);
+                            throw EeLogger.ROOT_LOGGER.invalidInjectionTarget(injectionTarget.getInjectionTargetName(), injectionTarget.getInjectionTargetClass(), classType);
                         }
                         classType = injectionTargetType;
                     }

@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.deployment;
 
 import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.io.Serializable;
 
@@ -60,6 +59,9 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.messaging.logging.MessagingLogger;
+import org.jboss.metadata.property.PropertyReplacer;
+
 /**
  * Producer factory for JMSContext resources.
  *
@@ -70,6 +72,18 @@ import javax.transaction.TransactionSynchronizationRegistry;
 public class JMSContextProducer {
 
     private static final String TRANSACTION_SYNCHRONIZATION_REGISTRY_LOOKUP = "java:comp/TransactionSynchronizationRegistry";
+
+    /**
+     * the propertyReplace is set in {@link org.jboss.as.messaging.deployment.JMSCDIExtension#wrapInjectionTarget(javax.enterprise.inject.spi.ProcessInjectionTarget)}.
+     */
+    private PropertyReplacer propertyReplacer;
+
+    public JMSContextProducer() {
+    }
+
+    void setPropertyReplacer(PropertyReplacer propertyReplacer) {
+        this.propertyReplacer = propertyReplacer;
+    }
 
     /**
      * CDI Producer method for injected {@link JMSContext}.
@@ -85,14 +99,14 @@ public class JMSContextProducer {
             // Check for @JMSConnectionFactory annotation
             if (injectionPoint.getAnnotated().isAnnotationPresent(JMSConnectionFactory.class)) {
                 JMSConnectionFactory cf = injectionPoint.getAnnotated().getAnnotation(JMSConnectionFactory.class);
-                connectionFactoryLookup = cf.value();
+                connectionFactoryLookup = propertyReplacer.replaceProperties(cf.value());
             }
 
             // Check for JMSPasswordCredential annotation
             if (injectionPoint.getAnnotated().isAnnotationPresent(JMSPasswordCredential.class)) {
                 JMSPasswordCredential credential = injectionPoint.getAnnotated().getAnnotation(JMSPasswordCredential.class);
-                userName = credential.userName();
-                password = credential.password();
+                userName = propertyReplacer.replaceProperties(credential.userName());
+                password = propertyReplacer.replaceProperties(credential.password());
             }
 
             // Check for JMSSessionMode annotation
@@ -246,7 +260,7 @@ public class JMSContextProducer {
 
         @Override
         public void setClientID(String clientID) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -261,23 +275,23 @@ public class JMSContextProducer {
 
         @Override
         public void setExceptionListener(ExceptionListener listener) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void start() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
 
         public void stop() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void setAutoStart(boolean autoStart) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -287,7 +301,7 @@ public class JMSContextProducer {
 
         @Override
         public void close() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -342,17 +356,17 @@ public class JMSContextProducer {
 
         @Override
         public void commit() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void rollback() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void recover() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -437,7 +451,7 @@ public class JMSContextProducer {
 
         @Override
         public void acknowledge() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
     }
 }

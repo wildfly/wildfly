@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -41,7 +41,7 @@ class EJBRemoteTransactionPropagatingInterceptorFactory extends ComponentInterce
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
         if (!(component instanceof EJBComponent)) {
-            throw EjbMessages.MESSAGES.notAnEJBComponent(component);
+            throw EjbLogger.ROOT_LOGGER.notAnEJBComponent(component);
         }
         final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository = ((EJBComponent) component).getEjbRemoteTransactionsRepository();
         return new EJBRemoteTransactionPropagatingInterceptor(ejbRemoteTransactionsRepository);

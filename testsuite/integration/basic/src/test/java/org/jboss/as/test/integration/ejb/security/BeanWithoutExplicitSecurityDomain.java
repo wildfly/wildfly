@@ -53,9 +53,17 @@ public class BeanWithoutExplicitSecurityDomain implements Restriction, FullAcces
     public void doAnything() {
     }
 
-    @RolesAllowed("role2")
+
+    @RolesAllowed("Role1")
+    public void allowOnlyRoleOneToAccess() {
+        if (!this.sessionContext.isCallerInRole("Role1")) {
+            throw new RuntimeException("Only user(s) in role1 were expected to have access to this method");
+        }
+    }
+
+    @RolesAllowed("Role2")
     public void allowOnlyRoleTwoToAccess() {
-        if (!this.sessionContext.isCallerInRole("role2")) {
+        if (!this.sessionContext.isCallerInRole("Role2")) {
             throw new RuntimeException("Only user(s) in role2 were expected to have access to this method");
         }
     }

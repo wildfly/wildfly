@@ -69,6 +69,7 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HI
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
+import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CONCURRENT_IO;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
@@ -89,8 +90,8 @@ import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
-import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
-import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
+import static org.jboss.as.messaging.PathDefinition.PATHS;
+import static org.jboss.as.messaging.PathDefinition.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -123,6 +124,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.messaging.jms.JMSService;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -168,7 +170,7 @@ class HornetQServerAdd implements OperationStepHandler {
         if (mceVal.isDefined()) {
             ModelNode seVal = model.get(STATISTICS_ENABLED.getName());
             if (seVal.isDefined() && !seVal.equals(mceVal)) {
-                throw MessagingMessages.MESSAGES.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
+                throw MessagingLogger.ROOT_LOGGER.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
             }
             seVal.set(mceVal);
             mceVal.set(new ModelNode());
@@ -181,7 +183,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode model = Resource.Tools.readModel(resource);
-                    for (String path : MessagingPathHandlers.PATHS.keySet()) {
+                    for (String path : PathDefinition.PATHS.keySet()) {
                         if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
                             PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
                             context.createResource(pathAddress);
@@ -339,7 +341,8 @@ class HornetQServerAdd implements OperationStepHandler {
                 resource.setHornetQServerServiceController(hqServerServiceController);
 
                 newControllers.add(hqServerServiceController);
-                newControllers.add(JMSService.addService(serviceTarget, hqServiceName, verificationHandler));
+                boolean overrideInVMSecurity = OVERRIDE_IN_VM_SECURITY.resolveModelAttribute(context, operation).asBoolean();
+                newControllers.add(JMSService.addService(serviceTarget, hqServiceName, overrideInVMSecurity, verificationHandler));
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
@@ -455,7 +458,7 @@ class HornetQServerAdd implements OperationStepHandler {
         QueueAdd.addQueueConfigs(context, configuration, model);
         BridgeAdd.addBridgeConfigs(context, configuration, model);
         ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-        ConnectorServiceAdd.addConnectorServiceConfigs(context, configuration, model);
+        ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
 
         return configuration;
     }

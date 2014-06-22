@@ -23,9 +23,12 @@
 package org.wildfly.extension.undertow.handlers;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.ResponseCodeHandler;
+import io.undertow.server.handlers.proxy.ExclusivityChecker;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
+import io.undertow.util.Headers;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -95,7 +98,13 @@ public class ReverseProxyHandler extends Handler {
         int problemServerRetry = PROBLEM_SERVER_RETRY.resolveModelAttribute(context, model).asInt();
         int maxTime = MAX_REQUEST_TIME.resolveModelAttribute(context, model).asInt();
 
-        final LoadBalancingProxyClient lb = new LoadBalancingProxyClient()
+        final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(new ExclusivityChecker() {
+            @Override
+            public boolean isExclusivityRequired(HttpServerExchange exchange) {
+                //we always create a new connection for upgrade requests
+                return exchange.getRequestHeaders().contains(Headers.UPGRADE);
+            }
+        })
                 .setConnectionsPerThread(connectionsPerThread)
                 .setProblemServerRetry(problemServerRetry);
         String[] sessionIds = sessionCookieNames.split(",");

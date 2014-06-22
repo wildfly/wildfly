@@ -22,7 +22,7 @@
 
 package org.jboss.as.jsf.deployment;
 
-import org.jboss.as.jsf.JSFMessages;
+import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -112,11 +112,11 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
                     try {
                         annotatedClass = classLoader.loadClass(className.toString());
                     } catch (ClassNotFoundException e) {
-                        throw new DeploymentUnitProcessingException(JSFMessages.MESSAGES.classLoadingFailed(className));
+                        throw new DeploymentUnitProcessingException(JSFLogger.ROOT_LOGGER.classLoadingFailed(className));
                     }
                     discoveredClasses.add(annotatedClass);
                 } else {
-                    throw new DeploymentUnitProcessingException(JSFMessages.MESSAGES.invalidAnnotationLocation(annotation, target));
+                    throw new DeploymentUnitProcessingException(JSFLogger.ROOT_LOGGER.invalidAnnotationLocation(annotation, target));
                 }
             }
         }

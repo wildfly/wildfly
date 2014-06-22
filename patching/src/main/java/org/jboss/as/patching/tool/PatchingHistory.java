@@ -38,7 +38,7 @@ import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.installation.PatchableTarget.TargetInfo;
-import org.jboss.as.patching.management.PatchManagementMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.PatchElement;
@@ -168,7 +168,7 @@ public interface PatchingHistory {
                     try {
                         return getHistory(mgr.getIdentity().loadTargetInfo());
                     } catch (IOException e) {
-                        throw new PatchingException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                        throw new PatchingException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                     }
                 }
 
@@ -182,7 +182,7 @@ public interface PatchingHistory {
                     try {
                         return iterator(mgr.getIdentity().loadTargetInfo());
                     } catch (IOException e) {
-                        throw new PatchingException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                        throw new PatchingException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                     }
                 }
 
@@ -217,7 +217,7 @@ public interface PatchingHistory {
                 try {
                     this.currentInfo = mgr.getIdentity().loadTargetInfo();
                 } catch (IOException e) {
-                    throw new PatchingException(PatchManagementMessages.MESSAGES.failedToLoadIdentity());
+                    throw new PatchingException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity());
                 }
                 patchIndex = -1;
             }
@@ -290,7 +290,7 @@ public interface PatchingHistory {
                                 return false;
                             }
                         } catch(Exception e) {
-                            throw new IllegalStateException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                            throw new IllegalStateException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                         }
                         return true;
                     }
@@ -312,7 +312,7 @@ public interface PatchingHistory {
                     } else {
                         final String releaseID = state.currentInfo.getCumulativePatchID();
                         if(BASE.equals(releaseID)) {
-                            throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noMorePatches());
+                            throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.noMorePatches());
                         }
 
                         final File patchHistoryDir = mgr.getInstalledImage().getPatchHistoryDir(releaseID);
@@ -326,19 +326,19 @@ public interface PatchingHistory {
                                     state.patchIndex = 0;
                                     state.type = ONE_OFF;
                                 } catch(Exception e) {
-                                    throw new IllegalStateException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                                    throw new IllegalStateException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                                 }
                             } else {
-                                throw new NoSuchElementException(PatchManagementMessages.MESSAGES.patchIsMissingFile(rollbackXml.getAbsolutePath()));
+                                throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.patchIsMissingFile(rollbackXml.getAbsolutePath()));
                             }
                         } else {
-                            throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noPatchHistory(patchHistoryDir.getAbsolutePath()));
+                            throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.noPatchHistory(patchHistoryDir.getAbsolutePath()));
                         }
                     }
 
                     patchId = nextPatchIdForCurrentInfo(state);
                     if(patchId == null) {
-                        throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noMorePatches());
+                        throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.noMorePatches());
                     }
                     assertExistsOnDisk(mgr, patchId);
                 }
@@ -420,7 +420,7 @@ public interface PatchingHistory {
                         try {
                             return timestampFile.exists() ? PatchUtils.readRef(timestampFile) : null;
                         } catch (IOException e) {
-                            throw new PatchingException(PatchManagementMessages.MESSAGES.fileIsNotReadable(timestampFile.getAbsolutePath()));
+                            throw new PatchingException(PatchLogger.ROOT_LOGGER.fileIsNotReadable(timestampFile.getAbsolutePath()));
                         }
                     }
                 };
@@ -447,26 +447,26 @@ public interface PatchingHistory {
             private static void assertExistsOnDisk(InstalledIdentity mgr, String id) throws NoSuchElementException {
                 final File historyDir = mgr.getInstalledImage().getPatchHistoryDir(id);
                 if(!historyDir.exists()) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noPatchHistory(historyDir.getAbsolutePath()));
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.noPatchHistory(historyDir.getAbsolutePath()));
                 }
                 // TODO parsed xml can be cached
                 final File rollbackXml = new File(historyDir, "rollback.xml");
                 if(!rollbackXml.exists()) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.patchIsMissingFile(rollbackXml.getAbsolutePath()));
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.patchIsMissingFile(rollbackXml.getAbsolutePath()));
                 }
                 try {
                     PatchXml.parse(rollbackXml);
                 } catch (Exception e) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.fileIsNotReadable(rollbackXml.getAbsolutePath() + ": " + e.getLocalizedMessage()));
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.fileIsNotReadable(rollbackXml.getAbsolutePath() + ": " + e.getLocalizedMessage()));
                 }
                 final File patchXml = new File(historyDir, "patch.xml");
                 if(!patchXml.exists()) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.patchIsMissingFile(patchXml.getAbsolutePath()));
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.patchIsMissingFile(patchXml.getAbsolutePath()));
                 }
                 try {
                     PatchXml.parse(patchXml);
                 } catch (Exception e) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.fileIsNotReadable(patchXml.getAbsolutePath() + ": " + e.getLocalizedMessage()));
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.fileIsNotReadable(patchXml.getAbsolutePath() + ": " + e.getLocalizedMessage()));
                 }
             }
 
@@ -502,7 +502,7 @@ public interface PatchingHistory {
                 final IteratorState state = new IteratorState(currentInfo, patchIndex);
                 final Entry entry = nextCP(mgr, state);
                 if(entry == null) {
-                    throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noMorePatches());
+                    throw new NoSuchElementException(PatchLogger.ROOT_LOGGER.noMorePatches());
                 }
                 currentInfo = state.currentInfo;
                 patchIndex = state.patchIndex;

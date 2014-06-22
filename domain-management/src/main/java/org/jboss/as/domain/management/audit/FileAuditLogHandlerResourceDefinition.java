@@ -42,7 +42,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -125,7 +125,7 @@ public class FileAuditLogHandlerResourceDefinition extends AuditLogHandlerResour
             HandlerUtil.checkNoOtherHandlerWithTheSameName(context, operation);
             String formatterName = operation.get(FORMATTER.getName()).asString();
             if (!HandlerUtil.lookForFormatter(context, PathAddress.pathAddress(operation.require(OP_ADDR)), formatterName)) {
-                throw DomainManagementMessages.MESSAGES.noFormatterCalled(formatterName);
+                throw DomainManagementLogger.ROOT_LOGGER.noFormatterCalled(formatterName);
             }
             super.populateModel(context, operation, resource);
         }

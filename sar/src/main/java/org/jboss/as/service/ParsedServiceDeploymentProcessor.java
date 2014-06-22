@@ -53,6 +53,7 @@ import org.jboss.as.service.descriptor.JBossServiceConstructorConfig.Argument;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceDependencyListConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -93,12 +94,12 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         // assert module
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw SarMessages.MESSAGES.failedToGetAttachment("module", deploymentUnit);
+            throw SarLogger.ROOT_LOGGER.failedToGetAttachment("module", deploymentUnit);
 
         // assert reflection index
         final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         if (reflectionIndex == null)
-            throw SarMessages.MESSAGES.failedToGetAttachment("reflection index", deploymentUnit);
+            throw SarLogger.ROOT_LOGGER.failedToGetAttachment("reflection index", deploymentUnit);
 
         // install services
         final ClassLoader classLoader = module.getClassLoader();
@@ -203,7 +204,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         try {
             return new ObjectName(dependencyName);
         } catch(MalformedObjectNameException exception){
-            throw SarMessages.MESSAGES.malformedDependencyName(exception, dependencyName);
+            throw SarLogger.ROOT_LOGGER.malformedDependencyName(exception, dependencyName);
         }
     }
 

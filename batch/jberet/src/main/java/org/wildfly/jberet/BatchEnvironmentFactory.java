@@ -29,9 +29,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import javax.transaction.TransactionManager;
 
+import org.jberet.repository.JobRepository;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
-import org.wildfly.jberet._private.WildFlyBatchMessages;
+import org.wildfly.jberet._private.WildFlyBatchLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -44,37 +45,48 @@ public class BatchEnvironmentFactory {
     private static final BatchEnvironment INVALID_BATCH_ENV = new BatchEnvironment() {
         @Override
         public ClassLoader getClassLoader() {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
         public ArtifactFactory getArtifactFactory() {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
         public Future<?> submitTask(final Runnable runnable) {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
         public <T> Future<T> submitTask(final Runnable runnable, final T t) {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
         public <T> Future<T> submitTask(final Callable<T> callable) {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
         public TransactionManager getTransactionManager() {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
 
         @Override
+        public JobRepository getJobRepository() {
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
+        }
+
+        /**
+         * {@inheritDoc}
+         * @deprecated this is no longer used in jBeret and will be removed
+         * @return
+         */
+        @Override
+        @Deprecated
         public Properties getBatchConfigurationProperties() {
-            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+            throw WildFlyBatchLogger.LOGGER.invalidBatchEnvironment();
         }
     };
 

@@ -63,4 +63,10 @@ class ServerGroupTransformers {
         SystemPropertyTransformers.registerTransformers120(serverGroup);
         JvmTransformers.registerTransformers120(serverGroup);
     }
+
+    static void registerTransformers14_21(TransformersSubRegistration parent) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(ServerGroupResourceDefinition.PATH);
+        TransformersSubRegistration serverGroup = TransformationDescription.Tools.register(builder.build(), parent);
+        JvmTransformers.registerTransformers14_21(serverGroup);
+    }
 }

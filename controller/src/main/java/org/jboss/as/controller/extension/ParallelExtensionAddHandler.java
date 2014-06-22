@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -38,8 +39,7 @@ import org.jboss.as.controller.ParsedBootOp;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 /**
  * Special handler that executes extension initialization in parallel.
@@ -106,9 +106,9 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw MESSAGES.moduleInitializationInterrupted(entry.getKey());
+                        throw ControllerLogger.ROOT_LOGGER.moduleInitializationInterrupted(entry.getKey());
                     } catch (ExecutionException e) {
-                        throw MESSAGES.failedInitializingModule(e, entry.getKey());
+                        throw ControllerLogger.ROOT_LOGGER.failedInitializingModule(e, entry.getKey());
                     }
                 }
 

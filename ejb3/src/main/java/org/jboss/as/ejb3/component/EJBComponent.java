@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ejb3.component;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -40,12 +39,15 @@ import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Map;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
@@ -65,6 +67,7 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -102,6 +105,13 @@ public abstract class EJBComponent extends BasicComponent {
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
     private final ServerSecurityManager serverSecurityManager;
+
+    private final PrivilegedAction<Principal> getCaller = new PrivilegedAction<Principal>() {
+        @Override
+        public Principal run() {
+            return serverSecurityManager.getCallerPrincipal();
+        }
+    };
 
     /**
      * Construct a new instance.
@@ -154,12 +164,12 @@ public abstract class EJBComponent extends BasicComponent {
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
         if (viewInterface == null)
-            throw MESSAGES.viewInterfaceCannotBeNull();
+            throw EjbLogger.ROOT_LOGGER.viewInterfaceCannotBeNull();
         if (viewServices.containsKey(viewInterface.getName())) {
             final ServiceName serviceName = viewServices.get(viewInterface.getName());
             return createViewInstanceProxy(viewInterface, contextData, serviceName);
         } else {
-            throw MESSAGES.viewNotFound(viewInterface.getName(), this.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.viewNotFound(viewInterface.getName(), this.getComponentName());
         }
     }
 
@@ -168,7 +178,16 @@ public abstract class EJBComponent extends BasicComponent {
         final ComponentView view = (ComponentView) serviceController.getValue();
         final ManagedReference instance;
         try {
-            instance = view.createInstance(contextData);
+            if(WildFlySecurityManager.isChecking()) {
+                instance = WildFlySecurityManager.doUnchecked(new PrivilegedExceptionAction<ManagedReference>() {
+                    @Override
+                    public ManagedReference run() throws Exception {
+                        return view.createInstance(contextData);
+                    }
+                });
+            } else {
+                instance = view.createInstance(contextData);
+            }
         } catch (Exception e) {
             //TODO: do we need to let the exception propagate here?
             throw new RuntimeException(e);
@@ -236,7 +255,11 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public Principal getCallerPrincipal() {
-        return this.serverSecurityManager.getCallerPrincipal();
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(getCaller);
+        } else {
+            return this.serverSecurityManager.getCallerPrincipal();
+        }
     }
 
     protected TransactionAttributeType getCurrentTransactionAttribute() {
@@ -248,7 +271,7 @@ public abstract class EJBComponent extends BasicComponent {
 
     public EJBHome getEJBHome() throws IllegalStateException {
         if (ejbHomeViewServiceName == null) {
-            throw MESSAGES.beanHomeInterfaceIsNull(getComponentName());
+            throw EjbLogger.ROOT_LOGGER.beanHomeInterfaceIsNull(getComponentName());
         }
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(ejbHomeViewServiceName);
         final ComponentView view = (ComponentView) serviceController.getValue();
@@ -276,21 +299,21 @@ public abstract class EJBComponent extends BasicComponent {
 
     public EJBLocalHome getEJBLocalHome() throws IllegalStateException {
         if (ejbLocalHomeViewServiceName == null) {
-            throw MESSAGES.beanLocalHomeInterfaceIsNull(getComponentName());
+            throw EjbLogger.ROOT_LOGGER.beanLocalHomeInterfaceIsNull(getComponentName());
         }
         return createViewInstanceProxy(EJBLocalHome.class, Collections.emptyMap(), ejbLocalHomeViewServiceName);
     }
 
     public boolean getRollbackOnly() throws IllegalStateException {
         if (isBeanManagedTransaction()) {
-            throw MESSAGES.failToCallgetRollbackOnly();
+            throw EjbLogger.ROOT_LOGGER.failToCallgetRollbackOnly();
         }
         try {
             TransactionManager tm = this.getTransactionManager();
 
             // The getRollbackOnly method should be used only in the context of a transaction.
             if (tm.getTransaction() == null) {
-                throw MESSAGES.failToCallgetRollbackOnlyOnNoneTransaction();
+                throw EjbLogger.ROOT_LOGGER.failToCallgetRollbackOnlyOnNoneTransaction();
             }
 
             // EJBTHREE-805, consider an asynchronous rollback due to timeout
@@ -303,7 +326,7 @@ public abstract class EJBComponent extends BasicComponent {
             switch (status) {
                 case Status.STATUS_COMMITTED:
                 case Status.STATUS_ROLLEDBACK:
-                    throw MESSAGES.failToCallgetRollbackOnlyAfterTxcompleted();
+                    throw EjbLogger.ROOT_LOGGER.failToCallgetRollbackOnlyAfterTxcompleted();
                 case Status.STATUS_MARKED_ROLLBACK:
                 case Status.STATUS_ROLLING_BACK:
                     return true;
@@ -370,7 +393,15 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     public boolean isCallerInRole(final String roleName) throws IllegalStateException {
-        return this.serverSecurityManager.isCallerInRole(securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+        if (WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
+                public Boolean run() {
+                    return serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+                }
+            });
+        } else {
+            return this.serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+        }
     }
 
     public boolean isStatisticsEnabled() {
@@ -379,11 +410,11 @@ public abstract class EJBComponent extends BasicComponent {
 
     public Object lookup(String name) throws IllegalArgumentException {
         if (name == null) {
-            throw MESSAGES.jndiNameCannotBeNull();
+            throw EjbLogger.ROOT_LOGGER.jndiNameCannotBeNull();
         }
         final NamespaceContextSelector namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
         if (namespaceContextSelector == null) {
-            throw MESSAGES.noNamespaceContextSelectorAvailable(name);
+            throw EjbLogger.ROOT_LOGGER.noNamespaceContextSelectorAvailable(name);
         }
         Context jndiContext = null;
         String namespaceStrippedJndiName = name;
@@ -410,29 +441,29 @@ public abstract class EJBComponent extends BasicComponent {
             try {
                 jndiContext = new InitialContext();
             } catch (NamingException ne) {
-                throw MESSAGES.failToLookupJNDI(name, ne);
+                throw EjbLogger.ROOT_LOGGER.failToLookupJNDI(name, ne);
             }
         } else {
-            throw MESSAGES.failToLookupJNDINameSpace(name);
+            throw EjbLogger.ROOT_LOGGER.failToLookupJNDINameSpace(name);
         }
         ROOT_LOGGER.debug("Looking up " + namespaceStrippedJndiName + " in jndi context: " + jndiContext);
         try {
             return jndiContext.lookup(namespaceStrippedJndiName);
         } catch (NamingException ne) {
-            throw MESSAGES.failToLookupStrippedJNDI(namespaceContextSelector, jndiContext, ne);
+            throw EjbLogger.ROOT_LOGGER.failToLookupStrippedJNDI(namespaceContextSelector, jndiContext, ne);
         }
     }
 
     public void setRollbackOnly() throws IllegalStateException {
         if (isBeanManagedTransaction()) {
-            throw MESSAGES.failToCallSetRollbackOnlyOnNoneCMB();
+            throw EjbLogger.ROOT_LOGGER.failToCallSetRollbackOnlyOnNoneCMB();
         }
         try {
             // get the transaction manager
             TransactionManager tm = getTransactionManager();
             // check if there's a tx in progress. If not, then it's an error to call setRollbackOnly()
             if (tm.getTransaction() == null) {
-                throw MESSAGES.failToCallSetRollbackOnlyWithNoTx();
+                throw EjbLogger.ROOT_LOGGER.failToCallSetRollbackOnlyWithNoTx();
             }
             // set rollback
             tm.setRollbackOnly();

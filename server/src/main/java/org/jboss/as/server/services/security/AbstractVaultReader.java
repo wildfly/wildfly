@@ -30,7 +30,25 @@ import org.jboss.as.controller.VaultReader;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AbstractVaultReader implements VaultReader {
+
+    /**
+     * Creates and initialises a vault, loading it from the PicketLink module
+     * @deprecated Use {@link #createVault(String, String, Map)} instead
+     * @param fqn the name of the vault class, may be null
+     * @param options the vault options
+     * @throws VaultReaderException
+     */
+    @Deprecated
     protected abstract void createVault(final String fqn, final Map<String, Object> options) throws VaultReaderException;
+
+    /**
+     *
+     * @param fqn the name of the vault class, may be null
+     * @param module the module to use to load the vault
+     * @param options the vault options
+     * @throws VaultReaderException
+     */
+    protected abstract void createVault(final String fqn, final String module, final Map<String, Object> options) throws VaultReaderException;
 
     protected abstract void destroyVault();
 }

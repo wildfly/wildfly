@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
@@ -183,7 +183,7 @@ public interface RejectAttributeChecker {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesDoNotSupportExpressions(attributes.keySet());
+            return ControllerLogger.ROOT_LOGGER.attributesDoNotSupportExpressions(attributes.keySet());
         }
     };
 
@@ -306,7 +306,7 @@ public interface RejectAttributeChecker {
     RejectAttributeChecker DEFINED = new DefaultRejectAttributeChecker() {
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(attributes.keySet());
+            return ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored(attributes.keySet());
         }
 
         @Override
@@ -320,7 +320,7 @@ public interface RejectAttributeChecker {
     RejectAttributeChecker UNDEFINED = new DefaultRejectAttributeChecker() {
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesMustBeDefined(attributes.keySet());
+            return ControllerLogger.ROOT_LOGGER.attributesMustBeDefined(attributes.keySet());
         }
 
         @Override
@@ -342,7 +342,7 @@ public interface RejectAttributeChecker {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesMustNotBeDefinedAs(this.value, attributes.keySet());
+            return ControllerLogger.ROOT_LOGGER.attributesMustNotBeDefinedAs(this.value, attributes.keySet());
         }
 
         @Override
@@ -363,7 +363,7 @@ public interface RejectAttributeChecker {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ControllerMessages.MESSAGES.attributesMustBeDefinedAs(this.value, attributes.keySet());
+            return ControllerLogger.ROOT_LOGGER.attributesMustBeDefinedAs(this.value, attributes.keySet());
         }
 
         @Override

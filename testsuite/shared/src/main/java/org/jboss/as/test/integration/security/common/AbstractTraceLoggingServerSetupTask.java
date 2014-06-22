@@ -74,7 +74,7 @@ public abstract class AbstractTraceLoggingServerSetupTask implements ServerSetup
         }
         ModelNode op = Util.createEmptyOperation("write-attribute", PATH_LOGGING.append("console-handler", "CONSOLE"));
         op.get("name").set("level");
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     /*
@@ -100,7 +100,7 @@ public abstract class AbstractTraceLoggingServerSetupTask implements ServerSetup
         ModelNode op = Util.createEmptyOperation("write-attribute", PATH_LOGGING.append("console-handler", "CONSOLE"));
         op.get("name").set("level");
         op.get("value").set("INFO");
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     protected abstract Collection<String> getCategories(ManagementClient managementClient, String containerId);

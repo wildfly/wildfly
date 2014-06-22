@@ -22,13 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -44,8 +45,10 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -54,6 +57,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
+import org.jboss.security.SimpleGroup;
 
 /**
  * A CallbackHandler verifying users usernames and passwords by using a JAAS LoginContext.
@@ -73,12 +77,16 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
         configurationOptions = Collections.unmodifiableMap(temp);
     }
 
+    private final String realm;
     private final String name;
+    private final boolean assignGroups;
 
     private final InjectedValue<ServerSecurityManager> securityManagerValue = new InjectedValue<ServerSecurityManager>();
 
-    public JaasCallbackHandler(final String name) {
+    public JaasCallbackHandler(final String realm, final String name, final boolean assignGroups) {
+        this.realm = realm;
         this.name = name;
+        this.assignGroups = assignGroups;
     }
 
     /*
@@ -142,16 +150,16 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
 
         if (nameCallBack == null) {
             SECURITY_LOGGER.trace("No username supplied in Callbacks.");
-            throw MESSAGES.noUsername();
+            throw DomainManagementLogger.ROOT_LOGGER.noUsername();
         }
         final String userName = nameCallBack.getDefaultName();
         if (userName == null || userName.length() == 0) {
             SECURITY_LOGGER.trace("NameCallback either has no username or is 0 length.");
-            throw MESSAGES.noUsername();
+            throw DomainManagementLogger.ROOT_LOGGER.noUsername();
         }
         if (verifyPasswordCallback == null || verifyPasswordCallback.getPassword() == null) {
             SECURITY_LOGGER.trace("No password to verify.");
-            throw MESSAGES.noPassword();
+            throw DomainManagementLogger.ROOT_LOGGER.noPassword();
         }
         final char[] password = verifyPasswordCallback.getPassword().toCharArray();
 
@@ -163,7 +171,20 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
                 securityManager.push(name, userName, password, subject);
                 securityManager.authenticate();
                 verifyPasswordCallback.setVerified(true);
+                subject = securityManager.getSubject();
                 subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
+                if (assignGroups) {
+                    Set<Principal> prinicpals = subject.getPrincipals();
+                    Set<SimpleGroup> groups = subject.getPrincipals(SimpleGroup.class);
+                    for (SimpleGroup current : groups) {
+                        if ("Roles".equals(current.getName())) {
+                            Enumeration<Principal> members = current.members();
+                            while (members.hasMoreElements()) {
+                                prinicpals.add(new RealmGroup(realm, members.nextElement().getName()));
+                            }
+                        }
+                    }
+                }
                 if (subjectCallback != null) {
                     // Only want to deliberately pass it back if authentication completed.
                     subjectCallback.setSubject(subject);
@@ -196,6 +217,18 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
                 ctx.login();
                 verifyPasswordCallback.setVerified(true);
                 subject.getPrivateCredentials().add(new PasswordCredential(userName, password));
+                if (assignGroups) {
+                    Set<Principal> prinicpals = subject.getPrincipals();
+                    Set<SimpleGroup> groups = subject.getPrincipals(SimpleGroup.class);
+                    for (SimpleGroup current : groups) {
+                        if ("Roles".equals(current.getName())) {
+                            Enumeration<Principal> members = current.members();
+                            while (members.hasMoreElements()) {
+                                prinicpals.add(new RealmGroup(realm, members.nextElement().getName()));
+                            }
+                        }
+                    }
+                }
                 if (subjectCallback != null) {
                     // Only want to deliberately pass it back if authentication completed.
                     subjectCallback.setSubject(subject);

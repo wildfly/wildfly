@@ -27,7 +27,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.

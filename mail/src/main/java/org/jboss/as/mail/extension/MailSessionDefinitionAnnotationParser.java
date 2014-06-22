@@ -24,14 +24,13 @@
 
 package org.jboss.as.mail.extension;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.mail.MailSessionDefinition;
 import javax.mail.MailSessionDefinitions;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -73,7 +72,7 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
             for (AnnotationInstance annotation : mailSessionDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw MESSAGES.classOnlyAnnotation("@MailSessionDefinitions", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@MailSessionDefinitions", target);
                 }
                 // get the nested @MailSessionDefinition out of the outer @MailSessionDefinitions
                 List<AnnotationInstance> mailSessions = this.getNestedMailSessionAnnotations(annotation);
@@ -91,7 +90,7 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
             for (AnnotationInstance mailSession : mailSessions) {
                 final AnnotationTarget target = mailSession.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw MESSAGES.classOnlyAnnotation("@MailSessionDefinition", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@MailSessionDefinition", target);
                 }
                 // create binding configurations out of it
                 this.processMailSession(eeModuleDescription, mailSession, (ClassInfo) target);
@@ -115,7 +114,7 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
 
         final AnnotationValue nameValue = annotationInstance.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing("@MailSessionDefinition", "name");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@MailSessionDefinition", "name");
         }
 
         /*String storeProtocol() default "";

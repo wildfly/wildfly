@@ -36,8 +36,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.server.deploymentoverlay.service.ContentService;
@@ -104,7 +103,7 @@ public class DeploymentOverlayDeploymentUnitProcessor implements DeploymentUnitP
                         }
                     }
                 } catch (IOException e) {
-                    throw ServerMessages.MESSAGES.deploymentOverlayFailed(e, deploymentOverlay.getName(), override.getPath());
+                    throw ServerLogger.ROOT_LOGGER.deploymentOverlayFailed(e, deploymentOverlay.getName(), override.getPath());
                 }
             }
         }

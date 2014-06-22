@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.security.SecurityConstants;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jacc.HttpServletRequestPolicyContextHandler;
 
 /**
@@ -49,6 +50,15 @@ public class UndertowService implements Service<UndertowService> {
     public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
+    /**
+     * service name under which default server is bound.
+     */
+    public static final ServiceName DEFAULT_SERVER = UNDERTOW.append("default-server");
+
+    /**
+     * service name under which default host of default server is bound.
+     */
+    public static final ServiceName DEFAULT_HOST = DEFAULT_SERVER.append("default-host");
     /**
      * The base name for listener/handler/filter services.
      */

@@ -119,7 +119,7 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    AttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
+    SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
@@ -549,6 +549,13 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = create("page-max-concurrent-io", INT)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultMaxConcurrentPageIo()))
             .setAllowNull(true)
@@ -804,6 +811,7 @@ public interface CommonAttributes {
     String HTTP_ACCEPTOR = "http-acceptor";
     String HTTP_CONNECTOR = "http-connector";
     String HTTP_LISTENER = "http-listener";
+    String HORNETQ_ADDRESS = "hornetq-address";
     String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
@@ -822,6 +830,7 @@ public interface CommonAttributes {
     String LOCAL_TX = "LocalTransaction";
     String MANAGE_XML_NAME = "manage";
     String MATCH = "match";
+    String MESSAGE_ID = "message-id";
     String MODE = "mode";
     String NAME = "name";
     String NETTY_ACCEPTOR = "netty-acceptor";
@@ -846,6 +855,7 @@ public interface CommonAttributes {
     String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
     String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
     String RESOURCE_ADAPTER = "resource-adapter";
+    String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
     String RUNTIME_QUEUE = "runtime-queue";
@@ -868,7 +878,7 @@ public interface CommonAttributes {
     String XA_TX = "XATransaction";
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_ATTRIBUTES = { CLUSTERED, PERSISTENCE_ENABLED, SCHEDULED_THREAD_POOL_MAX_SIZE,
-            THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, WILD_CARD_ROUTING_ENABLED,
+            THREAD_POOL_MAX_SIZE, SECURITY_DOMAIN, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL, OVERRIDE_IN_VM_SECURITY, WILD_CARD_ROUTING_ENABLED,
             MANAGEMENT_ADDRESS, MANAGEMENT_NOTIFICATION_ADDRESS, CLUSTER_USER, CLUSTER_PASSWORD, JMX_MANAGEMENT_ENABLED,
             JMX_DOMAIN, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED, MESSAGE_COUNTER_SAMPLE_PERIOD, MESSAGE_COUNTER_MAX_DAY_HISTORY,
             CONNECTION_TTL_OVERRIDE, ASYNC_CONNECTION_EXECUTION_ENABLED, TRANSACTION_TIMEOUT, TRANSACTION_TIMEOUT_SCAN_PERIOD,

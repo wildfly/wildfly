@@ -27,7 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyDeferredProcessor;
 import org.jboss.dmr.ModelNode;
@@ -55,6 +55,10 @@ public class VaultAddHandler extends AbstractAddStepHandler {
         for (AttributeDefinition attr : VaultResourceDefinition.ALL_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
+        if (model.hasDefined(VaultResourceDefinition.MODULE.getName()) && !model.hasDefined(VaultResourceDefinition.CODE.getName())){
+            throw ServerLogger.ROOT_LOGGER.vaultModuleWithNoCode();
+        }
+
     }
 
 
@@ -67,7 +71,9 @@ public class VaultAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ModelNode codeNode = VaultResourceDefinition.CODE.resolveModelAttribute(context, model);
+        ModelNode moduleNode = VaultResourceDefinition.MODULE.resolveModelAttribute(context, model);
         String vaultClass = codeNode.isDefined() ? codeNode.asString() : null;
+        String module = moduleNode.isDefined() ? moduleNode.asString() : null;
 
         if (vaultReader != null) {
             final Map<String, Object> vaultOptions = new HashMap<String, Object>();
@@ -77,9 +83,9 @@ public class VaultAddHandler extends AbstractAddStepHandler {
                 }
             }
             try {
-                vaultReader.createVault(vaultClass, vaultOptions);
+                vaultReader.createVault(vaultClass, module, vaultOptions);
             } catch (VaultReaderException e) {
-                throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
+                throw ServerLogger.ROOT_LOGGER.cannotCreateVault(e, e);
             }
 
             // WFLY-1904 if any system properties were not resolved due to needing vault resolution,

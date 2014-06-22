@@ -37,7 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationWrapper;
 import org.jboss.as.webservices.webserviceref.WebServiceReferences;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
@@ -60,7 +60,7 @@ public class WeldJaxwsInjectionServices implements JaxwsInjectionServices {
 
         WebServiceRef annotation = getResourceAnnotated(injectionPoint).getAnnotation(WebServiceRef.class);
         if (annotation == null) {
-            throw WeldMessages.MESSAGES.annotationNotFound(WebServiceRef.class, injectionPoint.getMember());
+            throw WeldLogger.ROOT_LOGGER.annotationNotFound(WebServiceRef.class, injectionPoint.getMember());
         }
         validateWebServiceRefInjectionPoint(injectionPoint, annotation);
         try {

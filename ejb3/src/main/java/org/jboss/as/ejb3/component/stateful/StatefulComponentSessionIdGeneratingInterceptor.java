@@ -24,13 +24,12 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentClientInstance;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -46,7 +45,7 @@ public class StatefulComponentSessionIdGeneratingInterceptor implements Intercep
     public Object processInvocation(InterceptorContext context) throws Exception {
         final Component component = context.getPrivateData(Component.class);
         if (component instanceof StatefulSessionComponent == false) {
-            throw MESSAGES.unexpectedComponent(component, StatefulSessionComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, StatefulSessionComponent.class);
         }
         ComponentClientInstance clientInstance = context.getPrivateData(ComponentClientInstance.class);
         SessionID existing = context.getPrivateData(SessionID.class);

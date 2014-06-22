@@ -31,7 +31,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -170,7 +170,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             try {
                 context.readResourceFromRoot(interfaceAddress, false);
             } catch (RuntimeException e) {
-                throw ControllerMessages.MESSAGES.nonexistentInterface(defaultInterface, DEFAULT_INTERFACE.getName());
+                throw ControllerLogger.ROOT_LOGGER.nonexistentInterface(defaultInterface, DEFAULT_INTERFACE.getName());
             }
         }
 

@@ -26,10 +26,10 @@
 package org.jboss.as.connector.services.driver;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYER_JDBC_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.sql.Driver;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -51,8 +51,8 @@ public class DriverService implements Service<Driver> {
     private final Driver driver;
 
     public DriverService(InstalledDriver driverMetaData, Driver driver) {
-        assert driverMetaData != null : MESSAGES.nullVar("driverMetaData");
-        assert driver != null : MESSAGES.nullVar("driver");
+        assert driverMetaData != null : ConnectorLogger.ROOT_LOGGER.nullVar("driverMetaData");
+        assert driver != null : ConnectorLogger.ROOT_LOGGER.nullVar("driver");
         this.driverMetaData = driverMetaData;
         this.driver = driver;
     }
@@ -72,7 +72,7 @@ public class DriverService implements Service<Driver> {
     @Override
     public void stop(StopContext context) {
         injectedDriverRegistry.getValue().unregisterInstalledDriver(driverMetaData);
-        DEPLOYER_JDBC_LOGGER.stoppeddDriverService(driverMetaData.getDriverName());
+        DEPLOYER_JDBC_LOGGER.stoppedDriverService(driverMetaData.getDriverName());
     }
 
     public Injector<DriverRegistry> getDriverRegistryServiceInjector() {

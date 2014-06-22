@@ -25,7 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.vfs.VirtualFile;
 
@@ -93,7 +93,7 @@ public final class ResourceRoot extends SimpleAttachable {
      */
     public void merge(final ResourceRoot additionalResourceRoot) {
         if(!additionalResourceRoot.getRoot().equals(root)) {
-            throw ServerMessages.MESSAGES.cannotMergeResourceRoot(root, additionalResourceRoot.getRoot());
+            throw ServerLogger.ROOT_LOGGER.cannotMergeResourceRoot(root, additionalResourceRoot.getRoot());
         }
         usePhysicalCodeSource = additionalResourceRoot.usePhysicalCodeSource;
         if(additionalResourceRoot.getExportFilters().isEmpty()) {

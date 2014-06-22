@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -475,10 +475,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cleanServerBaseDir = createTempServerBaseDirectory();
         }
         if (!cleanServerBaseDir.exists()) {
-            throw ServerMessages.MESSAGES.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
         }
         if (!cleanServerBaseDir.isDirectory()) {
-            throw ServerMessages.MESSAGES.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
         }
         copyOriginalDirectoryToCleanServerBaseDir(CONFIG_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
         copyOriginalDirectoryToCleanServerBaseDir(DATA_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
@@ -551,7 +551,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                             out.write(i);
                         }
                     } catch (IOException e) {
-                        throw ServerMessages.MESSAGES.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
+                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
                     } finally {
                         StreamUtils.safeClose(in);
                         StreamUtils.safeClose(out);

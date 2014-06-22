@@ -23,12 +23,12 @@
 package org.jboss.as.jpa.container;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.util.List;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUtils;
@@ -184,7 +184,7 @@ public class PersistenceUnitSearch {
             // don't throw an error if there is exactly one default persistence unit
             if (numberOfDefaultPersistenceUnits != 1) {
                 // AS7-2275 no unitName and there is more than one persistence unit;
-                throw MESSAGES.noPUnitNameSpecifiedAndMultiplePersistenceUnits(holder.getPersistenceUnits().size(), unit);
+                throw JpaLogger.ROOT_LOGGER.noPUnitNameSpecifiedAndMultiplePersistenceUnits(holder.getPersistenceUnits().size(), unit);
             }
         }
     }
@@ -240,7 +240,7 @@ public class PersistenceUnitSearch {
         }
 
 
-        throw MESSAGES.persistenceUnitNotFound(absolutePath, puName, current);
+        throw JpaLogger.ROOT_LOGGER.persistenceUnitNotFound(absolutePath, puName, current);
     }
 }
 

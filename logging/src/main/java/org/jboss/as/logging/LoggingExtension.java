@@ -48,6 +48,7 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
 import org.jboss.logmanager.LogContext;
@@ -72,7 +73,7 @@ public class LoggingExtension implements Extension {
 
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -87,7 +88,14 @@ public class LoggingExtension implements Extension {
             ModuleIdentifier.create("org.slf4j.impl"),
     };
 
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+    /**
+     * Returns a resource description resolver that uses common descriptions for some attributes.
+     *
+     * @param keyPrefix the prefix to be appended to the {@link #SUBSYSTEM_NAME}
+     *
+     * @return the resolver
+     */
+    static LoggingResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
@@ -95,12 +103,22 @@ public class LoggingExtension implements Extension {
         return new LoggingResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, LoggingExtension.class.getClassLoader());
     }
 
+    /**
+     * Returns a standard resource description resolver requiring the resource or operation to have all attributes
+     * defined in the local description,
+     *
+     * @return the resolver
+     */
+    static StandardResourceDescriptionResolver getStandardResourceDescriptionResolver() {
+        return new StandardResourceDescriptionResolver(SUBSYSTEM_NAME, RESOURCE_NAME, LoggingExtension.class.getClassLoader());
+    }
+
     @Override
     public void initialize(final ExtensionContext context) {
         // The logging subsystem requires JBoss Log Manager to be used
         // Testing the log manager must use the FQCN as the classes may be loaded via different class loaders
         if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
-            throw LoggingMessages.MESSAGES.extensionNotInitialized();
+            throw LoggingLogger.ROOT_LOGGER.extensionNotInitialized();
         }
         LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         // Install STDIO context selector

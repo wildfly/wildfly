@@ -35,8 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -65,7 +64,7 @@ public class TransformersLogger {
 
     private TransformersLogger(TransformationTarget target) {
         this.target = target;
-        logger = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer." + target.getHostName());
+        logger = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller.transformer." + target.getHostName());
     }
 
     public static TransformersLogger getLogger(TransformationTarget target){
@@ -248,7 +247,7 @@ public class TransformersLogger {
             problems.add("\t\t" + entry.getMessage() + "\n");
         }
         if (!problems.isEmpty()) {
-            logger.tranformationWarnings(target.getHostName(), problems);
+            logger.transformationWarnings(target.getHostName(), problems);
         }
     }
 
@@ -278,19 +277,19 @@ public class TransformersLogger {
             final ModelVersion coreVersion = target.getVersion();
             final String subsystemName = findSubsystemName(address);
             final ModelVersion usedVersion = subsystemName == null ? coreVersion : target.getSubsystemVersion(subsystemName);
-            String msg = message == null ? ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored() : message;
-            String attributeSet = attributes != null && attributes.size() > 0 ? ControllerMessages.MESSAGES.attributeNames(attributes) : "";
+            String msg = message == null ? ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored() : message;
+            String attributeSet = attributes != null && attributes.size() > 0 ? ControllerLogger.ROOT_LOGGER.attributeNames(attributes) : "";
             if (operation == null) {//resource transformation
                 if (subsystemName != null) {
-                    return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, attributeSet, msg);
+                    return ControllerLogger.ROOT_LOGGER.transformerLoggerSubsystemModelResourceTransformerAttributes(address, subsystemName, usedVersion, attributeSet, msg);
                 } else {
-                    return ControllerMessages.MESSAGES.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, attributeSet, msg);
+                    return ControllerLogger.ROOT_LOGGER.transformerLoggerCoreModelResourceTransformerAttributes(address, usedVersion, attributeSet, msg);
                 }
             } else {//operation transformation
                 if (subsystemName != null) {
-                    return ControllerMessages.MESSAGES.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, attributeSet, msg);
+                    return ControllerLogger.ROOT_LOGGER.transformerLoggerSubsystemModelOperationTransformerAttributes(operation, address, subsystemName, usedVersion, attributeSet, msg);
                 } else {
-                    return ControllerMessages.MESSAGES.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, attributeSet, msg);
+                    return ControllerLogger.ROOT_LOGGER.transformerLoggerCoreModelOperationTransformerAttributes(operation, address, usedVersion, attributeSet, msg);
                 }
             }
         }
@@ -308,9 +307,9 @@ public class TransformersLogger {
         @Override
         public String getMessage() {
             if (operation != null) {
-                return ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation);
+                return ControllerLogger.ROOT_LOGGER.rejectResourceOperationTransformation(address, operation);
             } else {
-                return ControllerMessages.MESSAGES.rejectedResourceResourceTransformation(address);
+                return ControllerLogger.ROOT_LOGGER.rejectedResourceResourceTransformation(address);
             }
 
         }

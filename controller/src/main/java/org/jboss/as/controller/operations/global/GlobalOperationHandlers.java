@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.operations.global;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -35,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -419,6 +418,14 @@ public class GlobalOperationHandlers {
             }
         }
 
+        // WFLY-3306 Ensure we have an entry for any valid child type
+        for (String type : registry.getChildNames(PathAddress.EMPTY_ADDRESS)) {
+            if ((validChildType == null || validChildType.equals(validChildType))
+                && !result.containsKey(type)) {
+                result.put(type, Collections.<String>emptySet());
+            }
+        }
+
         return result;
     }
 
@@ -478,7 +485,7 @@ public class GlobalOperationHandlers {
     }
 
     private static void reportInvalidLocaleFormat(OperationContext context, String format) {
-        String msg = MESSAGES.invalidLocaleString(format);
+        String msg = ControllerLogger.ROOT_LOGGER.invalidLocaleString(format);
         ControllerLogger.MGMT_OP_LOGGER.debug(msg);
         // TODO report the problem to client via out-of-band message.
         // Enable this in 7.2 or later when there is time to test

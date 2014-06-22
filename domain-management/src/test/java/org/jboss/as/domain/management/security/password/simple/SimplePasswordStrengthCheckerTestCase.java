@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security.password.simple;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -72,7 +72,7 @@ public class SimplePasswordStrengthCheckerTestCase {
 
         assertNotNull(result.getStrength());
 
-        assertEquals(MESSAGES.passwordNotLongEnough(8).getMessage(), result.getRestrictionFailures().get(0).getMessage());
+        assertEquals(DomainManagementLogger.ROOT_LOGGER.passwordNotLongEnough(8).getMessage(), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -95,7 +95,7 @@ public class SimplePasswordStrengthCheckerTestCase {
 
         assertNotNull(result.getStrength());
 
-        assertEquals(MESSAGES.passwordMustHaveDigit(1), result.getRestrictionFailures().get(0).getMessage());
+        assertEquals(DomainManagementLogger.ROOT_LOGGER.passwordMustHaveDigit(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -118,7 +118,7 @@ public class SimplePasswordStrengthCheckerTestCase {
 
         assertNotNull(result.getStrength());
 
-        assertEquals(MESSAGES.passwordMustHaveSymbol(1), result.getRestrictionFailures().get(0).getMessage());
+        assertEquals(DomainManagementLogger.ROOT_LOGGER.passwordMustHaveSymbol(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -141,7 +141,7 @@ public class SimplePasswordStrengthCheckerTestCase {
 
         assertNotNull(result.getStrength());
 
-        assertEquals(MESSAGES.passwordMustHaveAlpha(1), result.getRestrictionFailures().get(0).getMessage());
+        assertEquals(DomainManagementLogger.ROOT_LOGGER.passwordMustHaveAlpha(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -168,6 +168,6 @@ public class SimplePasswordStrengthCheckerTestCase {
 
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(1));
-        assertEquals(MESSAGES.passwordMustNotBeEqual(pwd).getMessage(), result.getRestrictionFailures().get(0).getMessage());
+        assertEquals(DomainManagementLogger.ROOT_LOGGER.passwordMustNotBeEqual(pwd).getMessage(), result.getRestrictionFailures().get(0).getMessage());
     }
 }

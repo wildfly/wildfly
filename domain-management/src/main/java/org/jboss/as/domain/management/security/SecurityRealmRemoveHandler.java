@@ -24,7 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import java.util.List;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -94,7 +94,7 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
         try {
             SecurityRealmAddHandler.INSTANCE.installServices(context, realmName, model, null, null);
         } catch (OperationFailedException e) {
-            throw ControllerMessages.MESSAGES.failedToRecoverServices(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToRecoverServices(e);
         }
     }
 }

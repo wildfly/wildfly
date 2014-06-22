@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,7 +48,7 @@ class ValidateClusteredCacheRefHandler implements OperationStepHandler {
             ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             if (model.hasDefined(DEFAULT_CLUSTERED_SFSB_CACHE.getName())
                 && !model.get(DEFAULT_CLUSTERED_SFSB_CACHE.getName()).equals(model.get(DEFAULT_SFSB_CACHE.getName()))) {
-                throw EjbMessages.MESSAGES.inconsistentAttributeNotSupported(DEFAULT_CLUSTERED_SFSB_CACHE.getName(), DEFAULT_SFSB_CACHE.getName());
+                throw EjbLogger.ROOT_LOGGER.inconsistentAttributeNotSupported(DEFAULT_CLUSTERED_SFSB_CACHE.getName(), DEFAULT_SFSB_CACHE.getName());
             }
         }
         context.stepCompleted();

@@ -25,12 +25,13 @@ package org.jboss.as.ejb3.component.singleton;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public class SingletonComponentCreateServiceFactory extends EJBComponentCreateSe
     @Override
     public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
         if (this.ejbJarConfiguration == null) {
-            throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.ejbJarConfigNotBeenSet(this, configuration.getComponentName());
         }
         // setup an injection dependency to inject the DefaultAccessTimeoutService in the singleton bean
         // component create service

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
@@ -40,7 +41,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.pool.Pool;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Enumeration of types of manageable EJB components.
  *
@@ -127,7 +128,7 @@ public enum EJBComponentType {
                 return StatefulSessionBeanRuntimeHandler.INSTANCE;
             default:
                 // Bug
-                throw MESSAGES.unknownComponentType(this);
+                throw EjbLogger.ROOT_LOGGER.unknownComponentType(this);
         }
     }
 
@@ -143,7 +144,7 @@ public enum EJBComponentType {
                 return entry.getValue();
             }
         }
-        throw MESSAGES.unknownComponentDescriptionType(description.getClass());
+        throw EjbLogger.ROOT_LOGGER.unknownComponentDescriptionType(description.getClass());
     }
 
     protected PooledComponent<?> pooledComponent(final EJBComponent component) {
@@ -156,10 +157,10 @@ public enum EJBComponentType {
                 return StatelessSessionComponent.class.cast(component);
             case SINGLETON:
             case STATEFUL:
-                throw MESSAGES.invalidComponentType(this.getComponentClass().getSimpleName());
+                throw EjbLogger.ROOT_LOGGER.invalidComponentType(this.getComponentClass().getSimpleName());
             default:
                 // Bug
-                throw MESSAGES.unknownComponentType(this);
+                throw EjbLogger.ROOT_LOGGER.unknownComponentType(this);
         }
     }
 }

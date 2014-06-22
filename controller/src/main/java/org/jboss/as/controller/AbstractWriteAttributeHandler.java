@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -32,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
@@ -55,7 +55,7 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
     protected AbstractWriteAttributeHandler(final AttributeDefinition... definitions) {
-        assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
+        assert definitions != null : ControllerLogger.ROOT_LOGGER.nullVar("definitions").getLocalizedMessage();
         attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {
             attributeDefinitions.put(def.getName(), def);

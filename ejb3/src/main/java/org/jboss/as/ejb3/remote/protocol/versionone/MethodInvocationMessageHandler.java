@@ -37,8 +37,7 @@ import java.util.concurrent.Future;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
@@ -120,7 +119,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             distinctName = (String) unmarshaller.readObject();
             beanName = (String) unmarshaller.readObject();
         } catch (Throwable e) {
-            throw EjbMessages.MESSAGES.failedToReadEjbInfo(e);
+            throw EjbLogger.ROOT_LOGGER.failedToReadEjbInfo(e);
         }
         final EjbDeploymentInformation ejbDeploymentInformation = this.findEJB(appName, moduleName, distinctName, beanName);
         if (ejbDeploymentInformation == null) {
@@ -140,7 +139,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             try {
                 locator = (EJBLocator<?>) unmarshaller.readObject();
             } catch (Throwable e) {
-                throw EjbMessages.MESSAGES.failedToReadEJBLocator(e);
+                throw EjbLogger.ROOT_LOGGER.failedToReadEJBLocator(e);
             }
             final String viewClassName = locator.getViewType().getName();
             // Make sure it's a remote view
@@ -192,7 +191,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         } catch (Throwable t) {
                             // catch Throwable, so that we don't skip invoking the method, just because we
                             // failed to send a notification to the client that the method is an async method
-                            EjbLogger.EJB3_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
+                            EjbLogger.ROOT_LOGGER.failedToSendAsyncMethodIndicatorToClient(t, invokedMethod);
                         }
                     }
 
@@ -310,7 +309,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         if (componentView.isAsynchronous(method)) {
             final Component component = componentView.getComponent();
             if (!(component instanceof SessionBeanComponent)) {
-                EjbLogger.EJB3_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
+                EjbLogger.ROOT_LOGGER.asyncMethodSupportedOnlyForSessionBeans(component.getComponentClass(), method);
                 // just invoke normally
                 return componentView.invoke(interceptorContext);
             }
@@ -360,7 +359,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Throwable e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         try {
@@ -388,7 +387,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Throwable e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         try {

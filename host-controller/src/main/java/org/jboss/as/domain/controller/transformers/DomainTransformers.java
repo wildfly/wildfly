@@ -62,8 +62,12 @@ public class DomainTransformers {
     private static final ModelVersion VERSION_1_4 = ModelVersion.create(1, 4, 0);
     // EAP 6.2.0
     private static final ModelVersion VERSION_1_5 = ModelVersion.create(1, 5, 0);
+    // EAP 6.3.0
+    private static final ModelVersion VERSION_1_6 = ModelVersion.create(1, 6, 0);
     //WF 8.0.0.Final
     private static final ModelVersion VERSION_2_0 = ModelVersion.create(2, 0, 0);
+    //WF 8.1.0.Final
+    private static final ModelVersion VERSION_2_1 = ModelVersion.create(2, 1, 0);
 
     /**
      * Initialize the domain registry.
@@ -75,7 +79,10 @@ public class DomainTransformers {
         initializeDomainRegistryEAP60(registry, VERSION_1_2);
         initializeDomainRegistryEAP60(registry, VERSION_1_3);
         initializeDomainRegistry14(registry);
-        initializeDomainRegistry15(registry);
+        initializeDomainRegistry15_21(registry, VERSION_1_5);
+        initializeDomainRegistry15_21(registry, VERSION_1_6);
+        initializeDomainRegistry15_21(registry, VERSION_2_0);
+        initializeDomainRegistry15_21(registry, VERSION_2_1);
     }
 
     private static void initializeDomainRegistryEAP60(TransformerRegistry registry, ModelVersion modelVersion) {
@@ -102,10 +109,13 @@ public class DomainTransformers {
         TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
 
         ManagementTransformers.registerTransformersPreRBAC(domain);
+        ServerGroupTransformers.registerTransformers14_21(domain);
     }
 
-    private static void initializeDomainRegistry15(TransformerRegistry registry) {
-        // currently no transformation needed
+    private static void initializeDomainRegistry15_21(TransformerRegistry registry, ModelVersion version) {
+        TransformersSubRegistration domain = registry.getDomainRegistration(version);
+
+        ServerGroupTransformers.registerTransformers14_21(domain);
     }
 
     private static final ResourceTransformer IGNORED_EXTENSIONS = new IgnoreExtensionResourceTransformer();

@@ -22,11 +22,10 @@
 
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,10 +50,10 @@ public class MulticastAddressValidator extends StringLengthValidator {
             try {
                 final InetAddress mcastAddr = InetAddress.getByName(inetAddr);
                 if (!mcastAddr.isMulticastAddress()) {
-                    throw MESSAGES.invalidMulticastAddress(inetAddr, parameterName);
+                    throw ControllerLogger.ROOT_LOGGER.invalidMulticastAddress(inetAddr, parameterName);
                 }
             } catch (final UnknownHostException e) {
-                throw MESSAGES.unknownMulticastAddress(e, inetAddr, parameterName);
+                throw ControllerLogger.ROOT_LOGGER.unknownMulticastAddress(e, inetAddr, parameterName);
             }
 
         }

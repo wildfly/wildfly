@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.client.helpers;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 /**
  * Metric data values can be in one of the following known units of measurement. These enum values should correspond to
@@ -88,7 +88,7 @@ public enum MeasurementUnit {
 
     private MeasurementUnit(String displayUnits, Family family, Scale scale) {
         if (displayUnits.length() > 5) {
-            throw MESSAGES.maxDisplayUnitLength();
+            throw ControllerClientLogger.ROOT_LOGGER.maxDisplayUnitLength();
         }
 
         this.displayUnits = displayUnits;
@@ -134,7 +134,7 @@ public enum MeasurementUnit {
     public static Double calculateOffset(MeasurementUnit first, MeasurementUnit second)
         throws MeasurementConversionException {
         if (first.isComparableTo(second) == false) {
-            throw new MeasurementConversionException(MESSAGES.cannotConvert(first.name(), second.name()));
+            throw new MeasurementConversionException(ControllerClientLogger.ROOT_LOGGER.cannotConvert(first.name(), second.name()));
         }
 
         return Scale.calculateOffset(first.scale, second.scale);

@@ -23,8 +23,6 @@
 package org.jboss.as.server.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
@@ -71,6 +69,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
@@ -88,6 +87,7 @@ import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -151,9 +151,9 @@ public class StandaloneXml extends CommonXml {
                 }
         }
 
-        if (ROOT_LOGGER.isDebugEnabled()) {
+        if (ServerLogger.ROOT_LOGGER.isDebugEnabled()) {
             long elapsed = System.currentTimeMillis() - start;
-            ROOT_LOGGER.debugf("Parsed standalone configuration in [%d] ms", elapsed);
+            ServerLogger.ROOT_LOGGER.debugf("Parsed standalone configuration in [%d] ms", elapsed);
         }
     }
 
@@ -336,7 +336,8 @@ public class StandaloneXml extends CommonXml {
         }
 
         if (element == Element.VAULT) {
-            parseVault(reader, address, namespace, list);
+            //Only 1.1 to 1.3 end up here, all of which use the same version of the vault
+            parseVault_1_1(reader, address, namespace, list);
             element = nextElement(reader, namespace);
         }
 
@@ -445,7 +446,19 @@ public class StandaloneXml extends CommonXml {
         }
 
         if (element == Element.VAULT) {
-            parseVault(reader, address, namespace, list);
+            switch (namespace) {
+                //Less that 1.4 does not end up here
+                case DOMAIN_1_4:
+                case DOMAIN_1_5:
+                case DOMAIN_2_0:
+                case DOMAIN_2_1: {
+                    parseVault_1_1(reader, address, namespace, list);
+                    break;
+                }
+                default: {
+                    parseVault_3_0(reader, address, namespace, list);
+                }
+            }
             element = nextElement(reader, namespace);
         }
         if (element == Element.MANAGEMENT) {
@@ -987,8 +1000,7 @@ public class StandaloneXml extends CommonXml {
                     required.remove(attribute);
                     if (op.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
                             && !interfaces.contains(value)) {
-                        throw MESSAGES.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(),
-                                Element.INTERFACES.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                     }
                     break;
                 }
@@ -1020,8 +1032,7 @@ public class StandaloneXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName,
-                                Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -1060,8 +1071,7 @@ public class StandaloneXml extends CommonXml {
                     required.remove(attribute);
                     if (op.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
                             && !interfaces.contains(value)) {
-                        throw MESSAGES.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(),
-                                Element.INTERFACES.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.unknownInterface(value, Attribute.DEFAULT_INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                     }
                     break;
                 }
@@ -1092,16 +1102,14 @@ public class StandaloneXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -1124,7 +1132,7 @@ public class StandaloneXml extends CommonXml {
             }
             String namespace = reader.getNamespaceURI();
             if (profileOps.containsKey(namespace)) {
-                throw MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("subsystem", reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();
@@ -1213,7 +1221,7 @@ public class StandaloneXml extends CommonXml {
         if (modelNode.hasDefined(SOCKET_BINDING_GROUP)) {
             Set<String> groups = modelNode.get(SOCKET_BINDING_GROUP).keys();
             if (groups.size() > 1) {
-                throw MESSAGES.multipleModelNodes(SOCKET_BINDING_GROUP);
+                throw ControllerLogger.ROOT_LOGGER.multipleModelNodes(SOCKET_BINDING_GROUP);
             }
             for (String group : groups) {
                 writeSocketBindingGroup(writer, modelNode.get(SOCKET_BINDING_GROUP, group), true);

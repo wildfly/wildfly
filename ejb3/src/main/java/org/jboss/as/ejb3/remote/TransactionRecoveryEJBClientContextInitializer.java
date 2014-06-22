@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextInitializer;
 

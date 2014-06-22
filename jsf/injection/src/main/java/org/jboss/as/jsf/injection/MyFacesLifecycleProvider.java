@@ -22,12 +22,17 @@
 package org.jboss.as.jsf.injection;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
+import javax.faces.FacesException;
 import javax.naming.NamingException;
 
 import org.apache.myfaces.config.annotation.LifecycleProvider2;
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
@@ -41,11 +46,36 @@ public class MyFacesLifecycleProvider implements LifecycleProvider2 {
     }
 
     public Object newInstance(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NamingException, InvocationTargetException {
-        return injectionContainer.newInstance(className);
+        final Class<?> clazz = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged().loadClass(className);
+        if (System.getSecurityManager() == null) {
+            return clazz.newInstance();
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                    public Object run() throws IllegalAccessException, InstantiationException {
+                        return clazz.newInstance();
+                    }
+                });
+            } catch (PrivilegedActionException pae) {
+                Exception e = pae.getException();
+                if (e instanceof IllegalAccessException) {
+                    throw (IllegalAccessException)e;
+                } else if (e instanceof InstantiationException) {
+                    throw (InstantiationException)e;
+                } else {
+                    throw new FacesException(e);
+                }
+            }
+        }
     }
 
     public void postConstruct(Object obj) throws IllegalAccessException, InvocationTargetException {
-        // do nothing.  container.newInstance() took care of this.
+        // WFLY-3387 MyFaces injects managed properties before calling this method
+        try {
+            injectionContainer.newInstance(obj);
+        } catch (NamingException e) {
+            throw new FacesException(e);
+        }
     }
 
     public void destroyInstance(Object obj) throws IllegalAccessException, InvocationTargetException {

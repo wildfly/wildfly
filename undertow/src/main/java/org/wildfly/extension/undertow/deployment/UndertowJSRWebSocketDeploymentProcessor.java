@@ -47,7 +47,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.io.IOServices;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 

@@ -23,7 +23,6 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -154,7 +154,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
     }
 
     private static String getFallbackMessage() {
-        return MESSAGES.noMetricsAvailable();
+        return WSLogger.ROOT_LOGGER.noMetricsAvailable();
     }
 
     private static ServiceContainer currentServiceContainer() {

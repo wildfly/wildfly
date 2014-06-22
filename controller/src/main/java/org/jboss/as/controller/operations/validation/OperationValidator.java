@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
@@ -43,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -120,14 +119,14 @@ public class OperationValidator {
 
         OperationEntry entry = root.getOperationEntry(address, name);
         if (entry == null) {
-            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationEntry(name, address));
+            throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.noOperationEntry(name, address));
         }
         //noinspection ConstantConditions
         if (entry.getType() == EntryType.PRIVATE) {
             return;
         }
         if (entry.getOperationHandler() == null) {
-            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationHandler(name, address));
+            throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.noOperationHandler(name, address));
         }
         final DescriptionProvider provider = getDescriptionProvider(operation);
         final ModelNode description = provider.getModelDescription(null);
@@ -148,7 +147,7 @@ public class OperationValidator {
             for (String key : description.get(REQUEST_PROPERTIES).keys()) {
                 ModelNode desc = description.get(REQUEST_PROPERTIES, key);
                 if (!desc.isDefined()) {
-                    throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionUndefinedRequestProperty(key, getPathAddress(operation), desc));
+                    throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionUndefinedRequestProperty(key, getPathAddress(operation), desc));
                 }
                 requestProperties.put(key, desc);
             }
@@ -177,7 +176,7 @@ public class OperationValidator {
                 return;
             }
             if (!describedProperties.containsKey(paramName)) {
-                throw MESSAGES.validationFailedActualParameterNotDescribed(paramName, describedProperties.keySet(), formatOperationForMessage(operation));
+                throw ControllerLogger.ROOT_LOGGER.validationFailedActualParameterNotDescribed(paramName, describedProperties.keySet(), formatOperationForMessage(operation));
             }
         }
     }
@@ -188,7 +187,7 @@ public class OperationValidator {
             final boolean required;
             if (described.hasDefined(REQUIRED)) {
                 if (ModelType.BOOLEAN != described.get(REQUIRED).getType()) {
-                    throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionRequiredFlagIsNotABoolean(paramName, getPathAddress(operation), description));
+                    throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionRequiredFlagIsNotABoolean(paramName, getPathAddress(operation), description));
                     required = false;
                 } else {
                     required = described.get(REQUIRED).asBoolean();
@@ -205,11 +204,11 @@ public class OperationValidator {
             final boolean alternativeExist = alternative != null && actualParams.get(alternative).isDefined();
             if (required) {
                 if(!exist && !alternativeExist) {
-                    throw MESSAGES.validationFailedRequiredParameterNotPresent(paramName, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedRequiredParameterNotPresent(paramName, formatOperationForMessage(operation));
                 }
             }
             if(exist && alternativeExist) {
-                throw MESSAGES.validationFailedRequiredParameterPresentAsWellAsAlternative(alternative, paramName, formatOperationForMessage(operation));
+                throw ControllerLogger.ROOT_LOGGER.validationFailedRequiredParameterPresentAsWellAsAlternative(alternative, paramName, formatOperationForMessage(operation));
             }
         }
     }
@@ -225,21 +224,21 @@ public class OperationValidator {
             }
             final ModelNode typeNode = describedProperties.get(paramName).get(TYPE);
             if (!typeNode.isDefined()) {
-                throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionNoParamTypeInDescription(paramName, getPathAddress(operation), description));
+                throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionNoParamTypeInDescription(paramName, getPathAddress(operation), description));
                 return;
             }
             final ModelType modelType;
             try {
                 modelType = Enum.valueOf(ModelType.class, typeNode.asString());
             } catch (Exception e) {
-                throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionInvalidParamTypeInDescription(paramName, getPathAddress(operation), description));
+                throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionInvalidParamTypeInDescription(paramName, getPathAddress(operation), description));
                 return;
             }
 
             try {
                 checkType(modelType, value);
             } catch (IllegalArgumentException e) {
-                throw MESSAGES.validationFailedCouldNotConvertParamToType(paramName, modelType, formatOperationForMessage(operation));
+                throw ControllerLogger.ROOT_LOGGER.validationFailedCouldNotConvertParamToType(paramName, modelType, formatOperationForMessage(operation));
             }
             checkRange(operation, description, paramName, modelType, describedProperties.get(paramName), value);
             checkList(operation, paramName, modelType, describedProperties.get(paramName), value);
@@ -257,11 +256,11 @@ public class OperationValidator {
                     try {
                         min = describedProperty.get(MIN).asBigDecimal();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.BIG_DECIMAL, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.BIG_DECIMAL, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asBigDecimal().compareTo(min) == -1) {
-                        throw MESSAGES.validationFailedValueIsSmallerThanMin(value.asBigDecimal(), paramName, min, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsSmallerThanMin(value.asBigDecimal(), paramName, min, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -270,11 +269,11 @@ public class OperationValidator {
                     try {
                         min = describedProperty.get(MIN).asBigInteger();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.BIG_INTEGER, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.BIG_INTEGER, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asBigInteger().compareTo(min) == -1) {
-                        throw MESSAGES.validationFailedValueIsSmallerThanMin(value.asBigInteger(), paramName, min, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsSmallerThanMin(value.asBigInteger(), paramName, min, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -283,11 +282,11 @@ public class OperationValidator {
                     try {
                         min = describedProperty.get(MIN).asDouble();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.DOUBLE, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.DOUBLE, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asDouble() < min) {
-                        throw MESSAGES.validationFailedValueIsSmallerThanMin(value.asDouble(), paramName, min, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsSmallerThanMin(value.asDouble(), paramName, min, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -296,11 +295,11 @@ public class OperationValidator {
                     try {
                         min = describedProperty.get(MIN).asInt();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.INT, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.INT, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asInt() < min) {
-                        throw MESSAGES.validationFailedValueIsSmallerThanMin(value.asInt(), paramName, min, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsSmallerThanMin(value.asInt(), paramName, min, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -309,11 +308,11 @@ public class OperationValidator {
                     try {
                         min = describedProperty.get(MIN).asLong();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.LONG, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MIN, paramName, ModelType.LONG, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asLong() < describedProperty.get(MIN).asLong()) {
-                        throw MESSAGES.validationFailedValueIsSmallerThanMin(value.asLong(), paramName, min, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsSmallerThanMin(value.asLong(), paramName, min, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -326,11 +325,11 @@ public class OperationValidator {
                     try {
                         max = describedProperty.get(MAX).asBigDecimal();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.BIG_DECIMAL, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.BIG_DECIMAL, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asBigDecimal().compareTo(max) == 1) {
-                        throw MESSAGES.validationFailedValueIsGreaterThanMax(value.asBigDecimal(), paramName, max, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsGreaterThanMax(value.asBigDecimal(), paramName, max, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -339,11 +338,11 @@ public class OperationValidator {
                     try {
                         max = describedProperty.get(MAX).asBigInteger();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.BIG_INTEGER, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.BIG_INTEGER, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asBigInteger().compareTo(max) == 1) {
-                        throw MESSAGES.validationFailedValueIsGreaterThanMax(value.asBigInteger(), paramName, max, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsGreaterThanMax(value.asBigInteger(), paramName, max, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -352,11 +351,11 @@ public class OperationValidator {
                     try {
                         max = describedProperty.get(MAX).asDouble();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.DOUBLE, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.DOUBLE, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asDouble() > max) {
-                        throw MESSAGES.validationFailedValueIsGreaterThanMax(value.asDouble(), paramName, max, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsGreaterThanMax(value.asDouble(), paramName, max, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -365,11 +364,11 @@ public class OperationValidator {
                     try {
                         max = describedProperty.get(MAX).asInt();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.INT, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.INT, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asInt() > max) {
-                        throw MESSAGES.validationFailedValueIsGreaterThanMax(value.asInt(), paramName, max, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsGreaterThanMax(value.asInt(), paramName, max, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -378,11 +377,11 @@ public class OperationValidator {
                     try {
                         max = describedProperty.get(MAX).asLong();
                     } catch (IllegalArgumentException e) {
-                        throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.LONG, getPathAddress(operation), description));
+                        throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxForParameterHasWrongType(MAX, paramName, ModelType.LONG, getPathAddress(operation), description));
                         return;
                     }
                     if (value.asLong() > describedProperty.get(MAX).asLong()) {
-                        throw MESSAGES.validationFailedValueIsGreaterThanMax(value.asLong(), paramName, max, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsGreaterThanMax(value.asLong(), paramName, max, formatOperationForMessage(operation));
                     }
                 }
                 break;
@@ -393,23 +392,23 @@ public class OperationValidator {
             try {
                 minLength = describedProperty.get(MIN_LENGTH).asInt();
             } catch (IllegalArgumentException e) {
-                throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxLengthForParameterHasWrongType(MIN_LENGTH, paramName, getPathAddress(operation), description));
+                throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxLengthForParameterHasWrongType(MIN_LENGTH, paramName, getPathAddress(operation), description));
                 return;
             }
             switch (modelType) {
             case LIST:
                 if (value.asList().size() < minLength) {
-                    throw MESSAGES.validationFailedValueIsShorterThanMinLength(value.asList().size(), paramName, minLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsShorterThanMinLength(value.asList().size(), paramName, minLength, formatOperationForMessage(operation));
                 }
                 break;
             case BYTES:
                 if (value.asBytes().length < minLength) {
-                    throw MESSAGES.validationFailedValueIsShorterThanMinLength(value.asBytes().length, paramName, minLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsShorterThanMinLength(value.asBytes().length, paramName, minLength, formatOperationForMessage(operation));
                 }
                 break;
             case STRING:
                 if (value.asString().length() < minLength) {
-                    throw MESSAGES.validationFailedValueIsShorterThanMinLength(value.asString().length(), paramName, minLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsShorterThanMinLength(value.asString().length(), paramName, minLength, formatOperationForMessage(operation));
                 }
                 break;
             }
@@ -419,23 +418,23 @@ public class OperationValidator {
             try {
                 maxLength = describedProperty.get(MAX_LENGTH).asInt();
             } catch (IllegalArgumentException e) {
-                throwOrWarnAboutDescriptorProblem(MESSAGES.invalidDescriptionMinMaxLengthForParameterHasWrongType(MAX_LENGTH, paramName, getPathAddress(operation), description));
+                throwOrWarnAboutDescriptorProblem(ControllerLogger.ROOT_LOGGER.invalidDescriptionMinMaxLengthForParameterHasWrongType(MAX_LENGTH, paramName, getPathAddress(operation), description));
                 return;
             }
             switch (modelType) {
             case LIST:
                 if (value.asList().size() > maxLength) {
-                    throw MESSAGES.validationFailedValueIsLongerThanMaxLength(value.asList().size(), paramName, maxLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsLongerThanMaxLength(value.asList().size(), paramName, maxLength, formatOperationForMessage(operation));
                 }
                 break;
             case BYTES:
                 if (value.asBytes().length > maxLength) {
-                    throw MESSAGES.validationFailedValueIsLongerThanMaxLength(value.asBytes().length, paramName, maxLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsLongerThanMaxLength(value.asBytes().length, paramName, maxLength, formatOperationForMessage(operation));
                 }
                 break;
             case STRING:
                 if (value.asString().length() > maxLength) {
-                    throw MESSAGES.validationFailedValueIsLongerThanMaxLength(value.asString().length(), paramName, maxLength, formatOperationForMessage(operation));
+                    throw ControllerLogger.ROOT_LOGGER.validationFailedValueIsLongerThanMaxLength(value.asString().length(), paramName, maxLength, formatOperationForMessage(operation));
                 }
                 break;
             }
@@ -495,7 +494,7 @@ public class OperationValidator {
                     try {
                         checkType(elementType, element);
                     } catch (IllegalArgumentException e) {
-                        throw MESSAGES.validationFailedInvalidElementType(paramName, elementType, formatOperationForMessage(operation));
+                        throw ControllerLogger.ROOT_LOGGER.validationFailedInvalidElementType(paramName, elementType, formatOperationForMessage(operation));
                     }
                 }
             }
@@ -504,21 +503,21 @@ public class OperationValidator {
 
     private DescriptionProvider getDescriptionProvider(final ModelNode operation) {
         if (!operation.hasDefined(OP)) {
-            throw MESSAGES.validationFailedOperationHasNoField(OP, formatOperationForMessage(operation));
+            throw ControllerLogger.ROOT_LOGGER.validationFailedOperationHasNoField(OP, formatOperationForMessage(operation));
         }
         if (!operation.hasDefined(OP_ADDR)) {
-            throw MESSAGES.validationFailedOperationHasNoField(OP_ADDR, formatOperationForMessage(operation));
+            throw ControllerLogger.ROOT_LOGGER.validationFailedOperationHasNoField(OP_ADDR, formatOperationForMessage(operation));
         }
         final String name = operation.get(OP).asString();
         if (name == null || name.trim().length() == 0) {
-            throw MESSAGES.validationFailedOperationHasANullOrEmptyName(formatOperationForMessage(operation));
+            throw ControllerLogger.ROOT_LOGGER.validationFailedOperationHasANullOrEmptyName(formatOperationForMessage(operation));
         }
 
         final PathAddress addr = getPathAddress(operation);
 
         final DescriptionProvider provider = root.getOperationDescription(addr, name);
         if (provider == null) {
-            throw MESSAGES.validationFailedNoOperationFound(name, addr, formatOperationForMessage(operation));
+            throw ControllerLogger.ROOT_LOGGER.validationFailedNoOperationFound(name, addr, formatOperationForMessage(operation));
         }
         return provider;
     }

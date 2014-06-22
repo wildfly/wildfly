@@ -18,11 +18,10 @@
  */
 package org.jboss.as.controller.operations.validation;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates that the given parameter is an int in a given range.
@@ -60,10 +59,10 @@ public class IntRangeValidator extends ModelTypeValidator implements MinMaxValid
         if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
             int val = value.asInt();
             if (val < min) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinValue(val, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMinValue(val, parameterName, min)));
             }
             else if (val > max) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxValue(val, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMaxValue(val, parameterName, max)));
             }
         }
     }

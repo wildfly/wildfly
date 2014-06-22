@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -43,7 +44,15 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
 
     private final boolean registerRuntimeOnly;
     private final AttributeDefinition[] attrs;
-    private final boolean isAcceptor;
+    protected final boolean isAcceptor;
+
+    /**
+     * If the keys are not known at compile time (e.g. for generic transport), the method
+     * must return an empty set.
+     *
+     * @return the set of keys that are allowed by the transport.
+     */
+    protected abstract Set<String> getAllowedKeys();
 
     protected AbstractTransportDefinition(final boolean registerRuntimeOnly, final boolean isAcceptor, final String specificType, AttributeDefinition... attrs) {
         super(PathElement.pathElement(specificType),
@@ -54,7 +63,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
                         return bundle.getString(specificType);
                     }
                 },
-                new TransportConfigOperationHandlers.BasicTransportConfigAdd(isAcceptor, attrs),
+                new HornetQReloadRequiredHandlers.AddStepHandler(attrs),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.isAcceptor = isAcceptor;
@@ -90,6 +99,6 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
     public void registerChildren(ManagementResourceRegistration registry) {
         super.registerChildren(registry);
 
-        registry.registerSubModel(new TransportParamDefinition());
+        registry.registerSubModel(new TransportParamDefinition(getAllowedKeys()));
     }
 }

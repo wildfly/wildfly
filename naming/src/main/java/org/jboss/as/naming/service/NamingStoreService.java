@@ -26,6 +26,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -33,8 +34,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for managing the creation and life-cycle of a service based naming store.
@@ -82,7 +81,7 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
                 store.close();
                 store = null;
             } catch (NamingException e) {
-                throw MESSAGES.failedToDestroyRootContext(e);
+                throw NamingLogger.ROOT_LOGGER.failedToDestroyRootContext(e);
             }
         }
     }

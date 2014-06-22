@@ -564,6 +564,7 @@ final class SubsystemTestDelegate {
         }
 
         public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
+            Assume.assumeTrue("No legacy controller to test against",version.hasValidLegacyController());
             //Ignore this test if it is eap
             if (version.isEap()) {
                 Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());
@@ -759,7 +760,7 @@ final class SubsystemTestDelegate {
             classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
             classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
-            if (testControllerVersion != ModelTestControllerVersion.MASTER) {
+            if (testControllerVersion != ModelTestControllerVersion.MASTER && testControllerVersion.getTestControllerVersion() != null) {
                 String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
                 String serverArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-server" : "wildfly-server";
                 classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + serverArtifactId + ":" + testControllerVersion.getMavenGavVersion());
@@ -821,12 +822,12 @@ final class SubsystemTestDelegate {
             KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
                 .setBootOperations(clonedBootOperations)
                 .build();
-            if (reverseServices.getBootError() != null) {
-                Throwable t = reverseServices.getBootError();
-                if (t instanceof Exception) {
-                    throw (Exception)t;
+            final Throwable bootError = reverseServices.getBootError();
+            if (bootError != null) {
+                if (bootError instanceof Exception) {
+                    throw (Exception) bootError;
                 }
-                throw new Exception(t);
+                throw new Exception(bootError);
             }
             Assert.assertTrue(reverseServices.isSuccessfulBoot());
 
@@ -974,11 +975,6 @@ final class SubsystemTestDelegate {
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                                             DescriptionProvider descriptionProvider) {
-        }
-
-        @Override
-        public void registerOperationHandler(String operationName, OperationStepHandler handler,
                                              DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
         }
 
@@ -1019,15 +1015,6 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
-                                               OperationStepHandler writeHandler, Storage storage) {
-        }
-
-        @Override
-        public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler, OperationStepHandler writeHandler, EnumSet<AttributeAccess.Flag> flags) {
-        }
-
-        @Override
         public void registerReadWriteAttribute(AttributeDefinition definition, OperationStepHandler readHandler, OperationStepHandler writeHandler) {
         }
 
@@ -1036,23 +1023,11 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public void registerReadOnlyAttribute(String attributeName, OperationStepHandler readHandler, EnumSet<AttributeAccess.Flag> flags) {
-        }
-
-        @Override
         public void registerReadOnlyAttribute(AttributeDefinition definition, OperationStepHandler readHandler) {
         }
 
         @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler) {
-        }
-
-        @Override
         public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
-        }
-
-        @Override
-        public void registerMetric(String attributeName, OperationStepHandler metricHandler, EnumSet<AttributeAccess.Flag> flags) {
         }
 
         @Override

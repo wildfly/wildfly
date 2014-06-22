@@ -25,6 +25,7 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import javax.ejb.StatefulTimeout;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,7 @@ public class StatefulTimeoutAnnotationInformationFactory extends ClassAnnotation
     }
 
     @Override
-    protected StatefulTimeoutInfo fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected StatefulTimeoutInfo fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final long value = annotationInstance.value().asLong();
         final AnnotationValue unitValue = annotationInstance.value("unit");
         final TimeUnit unit;

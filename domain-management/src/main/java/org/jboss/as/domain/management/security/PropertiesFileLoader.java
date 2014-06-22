@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -43,6 +42,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -104,7 +104,7 @@ public class PropertiesFileLoader {
         try {
             getProperties();
         } catch (IOException ioe) {
-            throw MESSAGES.unableToLoadProperties(ioe);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToLoadProperties(ioe);
         }
     }
 

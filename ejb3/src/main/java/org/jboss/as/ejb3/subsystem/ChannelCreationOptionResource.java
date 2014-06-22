@@ -42,7 +42,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -180,7 +180,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
             super.validateParameter(parameterName, value);
             if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
                 if (!this.allowedChannelOptTypes.contains(value)) {
-                    throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(value.asString());
+                    throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
                 }
             }
         }

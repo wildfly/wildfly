@@ -22,8 +22,6 @@
 
 package org.jboss.as.protocol;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
@@ -31,6 +29,7 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.OptionMap;
 
@@ -61,13 +60,13 @@ public class ProtocolConnectionConfiguration {
 
     protected void validate() {
         if (endpoint == null) {
-            throw MESSAGES.nullVar("endpoint");
+            throw ProtocolLogger.ROOT_LOGGER.nullVar("endpoint");
         }
         if (optionMap == null) {
-            throw MESSAGES.nullVar("optionMap");
+            throw ProtocolLogger.ROOT_LOGGER.nullVar("optionMap");
         }
         if (uri == null) {
-            throw MESSAGES.nullVar("uri");
+            throw ProtocolLogger.ROOT_LOGGER.nullVar("uri");
         }
     }
 

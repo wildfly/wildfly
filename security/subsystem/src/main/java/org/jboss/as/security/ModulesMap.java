@@ -58,6 +58,7 @@ import org.jboss.security.mapping.providers.role.PropertiesRolesMappingProvider;
 import org.jboss.security.mapping.providers.role.SimpleRolesMappingProvider;
 import org.jboss.security.negotiation.AdvancedADLoginModule;
 import org.jboss.security.negotiation.AdvancedLdapLoginModule;
+import org.jboss.security.negotiation.KerberosLoginModule;
 import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
 import org.picketbox.datasource.security.ConfiguredIdentityLoginModule;
 import org.picketbox.datasource.security.SecureIdentityLoginModule;
@@ -97,7 +98,7 @@ public interface ModulesMap {
             put("DatabaseUsers", DatabaseServerLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("LdapUsers", LdapUsersLoginModule.class.getName());
             // Negotiation Related Modules
-            put("Kerberos", "com.sun.security.auth.module.Krb5LoginModule");
+            put("Kerberos", KerberosLoginModule.class.getName());
             put("SPNEGO", SPNEGOLoginModule.class.getName());
             put("SPNEGOUsers", SPNEGOLoginModule.class.getName()); // duplicated here to maintain name pattern
             put("AdvancedLdap", AdvancedLdapLoginModule.class.getName());

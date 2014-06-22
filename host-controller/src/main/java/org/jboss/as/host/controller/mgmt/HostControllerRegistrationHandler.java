@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -55,12 +55,12 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
-import org.jboss.as.host.controller.HostControllerMessages;
-import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -115,13 +115,13 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         switch (operationId) {
             case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST: {
                 // Start the registration process
-                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), runtimeIgnoreTransformationRegistry);
+                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), runtimeIgnoreTransformationRegistry, true);
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
                 return new InitiateRegistrationHandler();
             }
             case DomainControllerProtocol.FETCH_DOMAIN_CONFIGURATION_REQUEST: {
                 // Start the fetch the domain model process
-                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry());
+                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), runtimeIgnoreTransformationRegistry, false);
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
                 return new InitiateRegistrationHandler();
             }
@@ -181,11 +181,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             registration.initialize(hostName, hostInfo, context);
 
             if (domainController.getCurrentRunningMode() == RunningMode.ADMIN_ONLY) {
-                registration.failed(SlaveRegistrationException.ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerMessages.MESSAGES.adminOnlyModeCannotAcceptSlaves(RunningMode.ADMIN_ONLY));
+                registration.failed(SlaveRegistrationException.ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerLogger.ROOT_LOGGER.adminOnlyModeCannotAcceptSlaves(RunningMode.ADMIN_ONLY));
                 return;
             }
             if (!domainController.getLocalHostInfo().isMasterDomainController()) {
-                registration.failed(SlaveRegistrationException.ErrorCode.HOST_IS_NOT_MASTER, DomainControllerMessages.MESSAGES.slaveControllerCannotAcceptOtherSlaves());
+                registration.failed(SlaveRegistrationException.ErrorCode.HOST_IS_NOT_MASTER, DomainControllerLogger.ROOT_LOGGER.slaveControllerCannotAcceptOtherSlaves());
                 return;
             }
 
@@ -193,6 +193,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
+                    if (Thread.currentThread().isInterrupted()) throw new IllegalStateException("interrupted");
                     registration.processRegistration();
                 }
             }, registrations);
@@ -251,7 +252,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             context.acquireControllerLock();
             // Check with the controller lock held
             if(domainController.isHostRegistered(registrationContext.hostName)) {
-                final String failureDescription = DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(registrationContext.hostName);
+                final String failureDescription = DomainControllerLogger.ROOT_LOGGER.slaveAlreadyRegistered(registrationContext.hostName);
                 registrationContext.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, failureDescription);
                 context.getFailureDescription().set(failureDescription);
                 context.stepCompleted();
@@ -266,8 +267,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final int micro = hostInfo.getManagementMicroVersion();
             boolean as711 = (major == 1 && minor == 1);
             if(as711) {
-                final OperationFailedException failure = HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(
-                        major, minor, 1, 2);
+                final OperationFailedException failure = HostControllerLogger.ROOT_LOGGER.unsupportedManagementVersionForHost(major, minor, 1, 2);
                 registrationContext.failed(failure);
                 throw failure;
             }
@@ -304,7 +304,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
 
         private final TransformerRegistry transformerRegistry;
         private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
-        private final boolean registerOnCompletion;
+        private final boolean registerProxyController;
         private volatile String hostName;
         private volatile HostInfo hostInfo;
         private ManagementRequestContext<RegistrationContext> responseChannel;
@@ -316,20 +316,12 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private final AtomicBoolean completed = new AtomicBoolean();
         private volatile DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation;
 
-        private RegistrationContext(TransformerRegistry transformerRegistry) {
-            this(transformerRegistry, null, false);
-        }
-
-        private RegistrationContext(TransformerRegistry transformerRegistry, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
-            this(transformerRegistry, runtimeIgnoreTransformationRegistry, true);
-        }
-
         private RegistrationContext(TransformerRegistry transformerRegistry,
                                     DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
-                                    boolean registerOnCompletion) {
+                                    boolean registerProxyController) {
             this.transformerRegistry = transformerRegistry;
             this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
-            this.registerOnCompletion = registerOnCompletion;
+            this.registerProxyController = registerProxyController;
         }
 
         private synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
@@ -366,12 +358,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 transaction.rollback();
             } else {
                 try {
-                    if (registerOnCompletion) {
-                        registerHost(transaction, result);
-                    } else {
-                        // Host just wanted the model; didn't register
-                        sendResultToHost(transaction, result);
-                    }
+                    registerHost(transaction, result);
                 } catch (SlaveRegistrationException e) {
                     failed(e.getErrorCode(), e.getErrorMessage());
                 } catch (Exception e) {
@@ -384,7 +371,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         /**
-         *  Process the registration of the slave whose informatin was provided to {@code initialize()}.
+         *  Process the registration of the slave whose information was provided to {@code initialize()}.
          */
         private void processRegistration() {
 
@@ -404,7 +391,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 } finally {
                     // Now see if the existing registration has been removed
                     if (domainController.isHostRegistered(hostName)) {
-                        failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+                        failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerLogger.ROOT_LOGGER.slaveAlreadyRegistered(hostName));
                     }
                 }
             }
@@ -483,7 +470,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             synchronized (this) {
                 Long pingPongId = hostInfo.getRemoteConnectionId();
                 // Register the slave
-                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId, runtimeIgnoreTransformation);
+                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId, runtimeIgnoreTransformation, registerProxyController);
                 // Complete registration
                 if(! failed) {
                     transaction.commit();
@@ -492,7 +479,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     return;
                 }
             }
-            DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, hostInfo.getPrettyProductName());
+            if (registerProxyController) {
+                DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, hostInfo.getPrettyProductName());
+            }
         }
 
         private boolean sendResultToHost(ModelController.OperationTransaction transaction, final ModelNode result) {
@@ -578,23 +567,23 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     try {
                         task.sendMessage(output);
                     } catch (IOException e) {
-                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.failedToSendMessage(e.getMessage()));
                         throw new IllegalStateException(e);
                     } finally {
                         StreamUtils.safeClose(output);
                     }
                 } catch (IOException e) {
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.failedToSendResponseHeader(e.getMessage()));
                     throw new IllegalStateException(e);
                 }
             }
             try {
                 return task.get();
             } catch (InterruptedException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.registrationTaskGotInterrupted());
                 throw new IllegalStateException(e);
             } catch (ExecutionException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.registrationTaskFailed(e.getMessage()));
                 throw new IllegalStateException(e);
             }
         }
@@ -666,7 +655,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             // send error code
             output.writeByte(errorCode);
             // error message
-            output.writeUTF(message);
+            if (message == null) {
+                output.writeUTF("unknown error");
+            } else {
+                output.writeUTF(message);
+            }
             // response end
             output.writeByte(ManagementProtocol.RESPONSE_END);
             output.close();

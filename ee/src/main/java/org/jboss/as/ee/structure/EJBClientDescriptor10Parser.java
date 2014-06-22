@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -254,7 +254,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
     }
 
     private static void unexpectedEndOfDocument(final Location location) throws XMLStreamException {
-        throw EeMessages.MESSAGES.errorParsingEJBClientDescriptor("Unexpected end of document", location);
+        throw EeLogger.ROOT_LOGGER.errorParsingEJBClientDescriptor("Unexpected end of document", location);
     }
 
     private static void missingAttributes(final Location location, final Set<Attribute> required) throws XMLStreamException {
@@ -262,7 +262,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
         for (Attribute attribute : required) {
             b.append(' ').append(attribute);
         }
-        throw EeMessages.MESSAGES.errorParsingEJBClientDescriptor(b.toString(), location);
+        throw EeLogger.ROOT_LOGGER.errorParsingEJBClientDescriptor(b.toString(), location);
     }
 
     /**
@@ -272,7 +272,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
      * @throws XMLStreamException
      */
     public static void unexpectedElement(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        throw EeMessages.MESSAGES.unexpectedElement(reader.getName(), reader.getLocation());
+        throw EeLogger.ROOT_LOGGER.unexpectedElement(reader.getName(), reader.getLocation());
     }
 
     private static void unexpectedContent(final XMLStreamReader reader) throws XMLStreamException {
@@ -334,7 +334,7 @@ class EJBClientDescriptor10Parser implements XMLElementReader<EJBClientDescripto
         if (reader.hasText()) {
             b.append(", text is: '").append(reader.getText()).append('\'');
         }
-        throw EeMessages.MESSAGES.errorParsingEJBClientDescriptor(b.toString(), reader.getLocation());
+        throw EeLogger.ROOT_LOGGER.errorParsingEJBClientDescriptor(b.toString(), reader.getLocation());
     }
 
 }

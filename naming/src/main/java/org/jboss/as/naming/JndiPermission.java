@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -36,6 +34,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.naming.Name;
+import org.jboss.as.naming.logging.NamingLogger;
 
 /**
  * This class represents access to a path in the JNDI tree. A JndiPermission
@@ -181,13 +180,13 @@ public final class JndiPermission extends Permission
      */
     private void init(int mask) {
         if ((mask & Action.ALL.mask) != mask)
-            throw MESSAGES.invalidActionMask();
+            throw NamingLogger.ROOT_LOGGER.invalidActionMask();
 
         if (mask == Action.NONE.mask)
-            throw MESSAGES.invalidActionMask();
+            throw NamingLogger.ROOT_LOGGER.invalidActionMask();
 
         if ((cpath = getName()) == null)
-            throw new NullPointerException(MESSAGES.cannotBeNull("name"));
+            throw new NullPointerException(NamingLogger.ROOT_LOGGER.cannotBeNull("name"));
 
         this.mask = mask;
 
@@ -433,7 +432,7 @@ public final class JndiPermission extends Permission
         for (String s : sa) {
             action = Action.forName(s.trim());
             if (action == null) {
-                throw MESSAGES.invalidPermissionAction(s);
+                throw NamingLogger.ROOT_LOGGER.invalidPermissionAction(s);
             }
             int i = action.mask;
             mask |= i;
@@ -606,9 +605,9 @@ final class JndiPermissionCollection extends PermissionCollection implements
 
     public void add(Permission permission) {
         if (!(permission instanceof JndiPermission))
-            throw MESSAGES.invalidPermission(permission);
+            throw NamingLogger.ROOT_LOGGER.invalidPermission(permission);
         if (isReadOnly())
-            throw MESSAGES.cannotAddToReadOnlyPermissionCollection();
+            throw NamingLogger.ROOT_LOGGER.cannotAddToReadOnlyPermissionCollection();
 
         synchronized (this) {
             perms.add((JndiPermission) permission);

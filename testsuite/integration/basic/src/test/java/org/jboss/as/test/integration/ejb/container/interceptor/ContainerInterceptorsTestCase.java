@@ -85,7 +85,7 @@ public class ContainerInterceptorsTestCase {
     }
 
     @Test
-    public void testMultipleAnnotatedInovkeAroundClass() throws Throwable {
+    public void testMultipleAnnotatedInvokeAroundClass() throws Throwable {
         try {
             deployer.deploy("incorrect-deployment");
             fail("Deployment should fail");
@@ -93,7 +93,7 @@ public class ContainerInterceptorsTestCase {
             assertThat(ex.getCause(), is(notNullValue()));
             assertThat(ex.getCause().getCause(), is(notNullValue()));
             assertThat(ex.getCause().getCause(), is(notNullValue()));
-            assertThat(ex.getCause().getCause().getCause().getMessage(), containsString("JBAS016715"));
+            assertThat(ex.getCause().getCause().getCause().getMessage(), containsString("WFLYEE0109"));
     }
 }
 

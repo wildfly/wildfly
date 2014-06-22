@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.installation.AddOn;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
@@ -72,7 +72,7 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
         protected PatchableTarget getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
             final AddOn target = identity.getAddOn(name);
             if (target == null) {
-                throw new OperationFailedException(PatchMessages.MESSAGES.noSuchLayer(name).getLocalizedMessage());
+                throw new OperationFailedException(PatchLogger.ROOT_LOGGER.noSuchLayer(name).getLocalizedMessage());
             }
             return target;
         }
@@ -87,7 +87,7 @@ abstract class ElementProviderAttributeReadHandler implements OperationStepHandl
         protected Layer getProvider(final String name, final InstalledIdentity identity) throws OperationFailedException {
             final Layer target = identity.getLayer(name);
             if (target == null) {
-                throw new OperationFailedException(PatchMessages.MESSAGES.noSuchLayer(name).getLocalizedMessage());
+                throw new OperationFailedException(PatchLogger.ROOT_LOGGER.noSuchLayer(name).getLocalizedMessage());
             }
             return target;
         }

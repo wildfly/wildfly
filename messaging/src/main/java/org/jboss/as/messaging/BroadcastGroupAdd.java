@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.messaging.BroadcastGroupDefinition.CONNECTOR_REFS;
 import static org.jboss.as.messaging.BroadcastGroupDefinition.validateConnectors;
 import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -50,6 +49,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -166,7 +166,7 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
             for (ModelNode ref : model.get(CommonAttributes.CONNECTORS).asList()) {
                 final String refName = ref.asString();
                 if(!connectors.contains(refName)){
-                    throw MESSAGES.wrongConnectorRefInBroadCastGroup(name,refName, connectors);
+                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(name, refName, connectors);
                 }
                 connectorRefs.add(refName);
             }

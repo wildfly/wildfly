@@ -45,6 +45,11 @@
                 <min-pool-size>4</min-pool-size>
                 <max-pool-size>5</max-pool-size>
             </jms-connection-factory>
+            <jms-connection-factory>
+                <name>java:app/myFactory6</name>
+                <user>${VAULT::messaging::userName::1}</user>
+                <password>${VAULT::messaging::password::1}</password>
+            </jms-connection-factory>
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myQueue3</name>

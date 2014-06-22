@@ -37,7 +37,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
      */
     private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
 
-    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
+    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=256m");
 
     private String jbossArguments;
 

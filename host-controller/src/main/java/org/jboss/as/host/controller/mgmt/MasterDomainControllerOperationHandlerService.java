@@ -21,11 +21,10 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
-import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 
-import java.util.concurrent.ThreadFactory;
+import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.CurrentOperationIdHolder;
@@ -43,7 +42,7 @@ import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.PullDownDataForServerConfigOnSlaveHandler;
 import org.jboss.as.domain.controller.operations.coordination.DomainControllerLockIdUtils;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -54,8 +53,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.remoting3.Channel;
-import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
@@ -70,14 +67,15 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final HostControllerRegistrationHandler.OperationExecutor operationExecutor;
     private final TransactionalOperationExecutor txOperationExecutor;
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
+    private final File tempDir;
 
-    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor, TransactionalOperationExecutor txOperationExecutor, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor, TransactionalOperationExecutor txOperationExecutor, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry, File tempDir) {
         this.domainController = domainController;
         this.operationExecutor = operationExecutor;
         this.txOperationExecutor = txOperationExecutor;
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
+        this.tempDir = tempDir;
     }
 
     @Override
@@ -89,6 +87,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     @Override
     public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
+        handler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         // Assemble the request handlers for the domain channel
         handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor,
                 getExecutor(), runtimeIgnoreTransformationRegistry));
@@ -122,7 +121,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
                         SlaveChannelAttachments.getTransformers(context.getChannel()),
                         runtimeIgnoreTransformationRegistry);
             } else {
-                throw HostControllerMessages.MESSAGES.cannotExecuteTransactionalOperationFromSlave(operationName);
+                throw HostControllerLogger.ROOT_LOGGER.cannotExecuteTransactionalOperationFromSlave(operationName);
             }
 
             Integer domainControllerLockId;

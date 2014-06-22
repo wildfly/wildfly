@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -31,6 +29,7 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.version.Version;
 
 /**
@@ -87,11 +86,11 @@ class J2EEServerHandler extends BaseHandler {
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = super.getAttributeInfos();
 
-        attributes.add(createRoMBeanAttributeInfo(ATTR_DEPLOYED_OBJECTS, String[].class.getName(), MESSAGES.attrInfoDeployedObjects()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_RESOURCES, String[].class.getName(), MESSAGES.attrInfoResources()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VMS, String[].class.getName(), MESSAGES.attrInfoJavaVms()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER_VENDOR, String.class.getName(), MESSAGES.attrInfoServerVendor()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER_VERSION, String.class.getName(), MESSAGES.attrInfoServerVersion()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_DEPLOYED_OBJECTS, String[].class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoDeployedObjects()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_RESOURCES, String[].class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoResources()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VMS, String[].class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoJavaVms()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER_VENDOR, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoServerVendor()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER_VERSION, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoServerVersion()));
 
         return attributes;
     }

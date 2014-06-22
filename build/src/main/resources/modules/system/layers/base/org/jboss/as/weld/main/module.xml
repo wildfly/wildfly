@@ -28,8 +28,12 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/weld/logging"/>
+    </exports>
+
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-weld}"/>
     </resources>
 
     <dependencies>
@@ -66,7 +70,9 @@
         <module name="org.jboss.ejb3"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.vfs"/>

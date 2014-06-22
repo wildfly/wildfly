@@ -24,12 +24,12 @@ package org.jboss.as.messaging.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.messaging.BinderServiceUtil.installBinderService;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.Locale;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -70,7 +70,7 @@ public class AS7BindingRegistry implements BindingRegistry {
     @Override
     public boolean bind(String name, Object obj) {
         if (name == null || name.isEmpty()) {
-            throw MESSAGES.cannotBindJndiName();
+            throw MessagingLogger.ROOT_LOGGER.cannotBindJndiName();
         }
         installBinderService(container, name, obj);
         ROOT_LOGGER.boundJndiName(name);
@@ -83,7 +83,7 @@ public class AS7BindingRegistry implements BindingRegistry {
     @Override
     public void unbind(String name) {
         if (name == null || name.isEmpty()) {
-            throw MESSAGES.cannotUnbindJndiName();
+            throw MessagingLogger.ROOT_LOGGER.cannotUnbindJndiName();
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());

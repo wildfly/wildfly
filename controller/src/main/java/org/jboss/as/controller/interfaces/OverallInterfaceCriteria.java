@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

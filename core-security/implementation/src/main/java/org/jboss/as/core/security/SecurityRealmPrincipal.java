@@ -22,8 +22,6 @@
 
 package org.jboss.as.core.security;
 
-import static org.jboss.as.core.security.CoreSecurityMessages.MESSAGES;
-
 import java.io.Serializable;
 import java.security.Principal;
 
@@ -40,7 +38,7 @@ public abstract class SecurityRealmPrincipal implements Principal, Serializable 
 
     SecurityRealmPrincipal(final String name) {
         if (name == null) {
-            throw MESSAGES.canNotBeNull("name");
+            throw new IllegalArgumentException("name is null");
         }
         this.name = name;
     }

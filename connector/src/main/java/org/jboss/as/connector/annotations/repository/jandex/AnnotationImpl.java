@@ -21,14 +21,13 @@
  */
 package org.jboss.as.connector.annotations.repository.jandex;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.common.spi.annotations.repository.Annotation;
 
 /**
@@ -83,7 +82,7 @@ public class AnnotationImpl implements Annotation {
         if (annotationClass.isAnnotation()) {
             this.annotationClass = (Class<? extends java.lang.annotation.Annotation>) annotationClass;
         } else {
-            throw MESSAGES.notAnAnnotation(annotationClass);
+            throw ConnectorLogger.ROOT_LOGGER.notAnAnnotation(annotationClass);
         }
 
     }

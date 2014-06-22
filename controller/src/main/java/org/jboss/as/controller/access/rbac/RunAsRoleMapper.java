@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.access.rbac;
 
-import static org.jboss.as.controller.ControllerLogger.ACCESS_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.ACCESS_LOGGER;
 
 import java.util.Collections;
 import java.util.HashSet;

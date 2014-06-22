@@ -37,6 +37,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.dmr.ModelNode;
 
 /**

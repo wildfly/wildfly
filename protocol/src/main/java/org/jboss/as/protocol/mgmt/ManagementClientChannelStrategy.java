@@ -30,7 +30,7 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
@@ -111,7 +111,7 @@ public abstract class ManagementClientChannelStrategy implements Closeable {
         @Override
         public Channel getChannel() throws IOException {
             if(closed) {
-                throw ProtocolMessages.MESSAGES.channelClosed();
+                throw ProtocolLogger.ROOT_LOGGER.channelClosed();
             }
             return channel;
         }

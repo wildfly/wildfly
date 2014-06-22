@@ -24,7 +24,7 @@ package org.jboss.as.naming.deployment;
 
 import java.io.Serializable;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.as.naming.logging.NamingLogger;
 
 /**
  * Utility object used to easily manged the construction and management of JNDI names.
@@ -92,7 +92,7 @@ public class JndiName implements Serializable, Comparable<JndiName> {
      * @return The JndiName representation
      */
     public static JndiName of(final String name) {
-        if(name == null || name.isEmpty()) throw MESSAGES.invalidJndiName(name);
+        if(name == null || name.isEmpty()) throw NamingLogger.ROOT_LOGGER.invalidJndiName(name);
         final String[] parts = name.split(ENTRY_SEPARATOR);
         JndiName current = null;
         for(String part : parts) {

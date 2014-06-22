@@ -39,7 +39,7 @@ import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -86,7 +86,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
                 if (children.size() > 1) {
                     for (ResourceEntry entry : children) {
                         if (!entry.getName().equals(mine.getLastElement().getValue())) {
-                            throw ServerMessages.MESSAGES.cannotAddMoreThanOneSocketBindingGroupForServer(
+                            throw ServerLogger.ROOT_LOGGER.cannotAddMoreThanOneSocketBindingGroupForServer(
                                     mine,
                                     PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, entry.getName())));
                         }

@@ -22,12 +22,13 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceHandlerBase;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -41,7 +42,7 @@ import org.jboss.msc.service.ServiceName;
 abstract class SecurityRealmParentRestartHandler extends RestartParentResourceHandlerBase {
 
     SecurityRealmParentRestartHandler() {
-        super(ModelDescriptionConstants.SECURITY_REALM);
+        super(SECURITY_REALM);
     }
 
     @Override

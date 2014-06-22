@@ -29,6 +29,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.HornetQDefaultCredentials;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -42,8 +43,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
@@ -64,10 +64,11 @@ public class JMSService implements Service<JMSServerManager> {
     private final InjectedValue<HornetQServer> hornetQServer = new InjectedValue<HornetQServer>();
     private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
     private final ServiceName hqServiceName;
+    private final boolean overrideInVMSecurity;
     private JMSServerManager jmsServer;
 
-    public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, final ServiceListener<Object>... listeners) {
-        final JMSService service = new JMSService(hqServiceName);
+    public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName hqServiceName, boolean overrideInVMSecurity, final ServiceListener<Object>... listeners) {
+        final JMSService service = new JMSService(hqServiceName, overrideInVMSecurity);
         ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(hqServiceName), service)
                 .addDependency(hqServiceName, HornetQServer.class, service.hornetQServer)
                 .addListener(listeners)
@@ -76,8 +77,9 @@ public class JMSService implements Service<JMSServerManager> {
         return builder.install();
     }
 
-    protected JMSService(ServiceName hqServiceName) {
+    protected JMSService(ServiceName hqServiceName, boolean overrideInVMSecurity) {
         this.hqServiceName = hqServiceName;
+        this.overrideInVMSecurity = overrideInVMSecurity;
     }
 
     public synchronized JMSServerManager getValue() throws IllegalStateException {
@@ -141,8 +143,9 @@ public class JMSService implements Service<JMSServerManager> {
                 }
 
                 public void activated() {
-                    // FIXME - this check is a work-around for AS7-3658
-                    hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
+                    if (overrideInVMSecurity) {
+                        hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
+                    }
                     // HornetQ only provides a callback to be notified when HornetQ core server is activated.
                     // but the JMS service start must not be completed until the JMSServerManager wrappee is indeed started (and has deployed the JMS resources, etc.).
                     // It is possible that the activation service has already been installed but becomes passive when a backup server has failed over (-> ACTIVE) and failed back (-> PASSIVE)
@@ -170,7 +173,7 @@ public class JMSService implements Service<JMSServerManager> {
         } catch(StartException e){
             throw e;
         } catch (Exception e) {
-            throw MESSAGES.failedToStartService(e);
+            throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }

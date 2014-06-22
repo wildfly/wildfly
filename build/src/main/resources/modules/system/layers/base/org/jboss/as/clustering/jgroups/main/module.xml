@@ -27,8 +27,12 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/clustering/jgroups/logging"/>
+    </exports>
+
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-clustering-jgroups}"/>
     </resources>
 
     <dependencies>
@@ -46,8 +50,5 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>
-        <module name="org.wildfly.clustering.api" optional="true"/>
-        <module name="org.wildfly.clustering.server" services="import" optional="true"/>
-        <module name="org.wildfly.clustering.singleton" optional="true"/>
     </dependencies>
 </module>

@@ -21,13 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -71,7 +70,7 @@ public class ChannelInstanceResource implements Resource {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override
@@ -106,12 +105,12 @@ public class ChannelInstanceResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override

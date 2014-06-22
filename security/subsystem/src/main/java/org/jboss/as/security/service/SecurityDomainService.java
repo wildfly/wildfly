@@ -26,8 +26,7 @@ import javax.security.auth.login.Configuration;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityLogger;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -97,14 +96,14 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
         try {
             securityDomainContext = securityManagement.createSecurityDomainContext(name, cacheFactory);
         } catch (Exception e) {
-            throw SecurityMessages.MESSAGES.unableToStartException("SecurityDomainService", e);
+            throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
         }
         if (jsseSecurityDomain != null) {
             try {
                 jsseSecurityDomain.reloadKeyAndTrustStore();
                 securityDomainContext.setJSSE(jsseSecurityDomain);
             } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.unableToStartException("SecurityDomainService", e);
+                throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityDomainService", e);
             }
         }
         securityManagement.getSecurityManagerMap().put(name, securityDomainContext);

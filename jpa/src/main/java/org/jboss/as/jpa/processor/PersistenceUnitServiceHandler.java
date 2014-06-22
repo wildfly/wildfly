@@ -56,7 +56,7 @@ import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.interceptor.WebNonTxEmCloserAction;
-import org.jboss.as.jpa.messages.JpaMessages;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.secondLevelCache.CacheDeploymentListener;
 import org.jboss.as.jpa.service.JPAService;
@@ -121,6 +121,7 @@ public class PersistenceUnitServiceHandler {
     private static final AttachmentKey<Map<String,PersistenceProviderAdaptor>> providerAdaptorMapKey = AttachmentKey.create(Map.class);
     private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
     private static final String FIRST_PHASE = "__FIRST_PHASE__";
+    private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
 
     public static void deploy(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
         handleWarDeployment(phaseContext, startEarly, platform);
@@ -353,8 +354,13 @@ public class PersistenceUnitServiceHandler {
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
                 if (jtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
+                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                        useDefaultDataSource = true;
+                    }
+                    else {
+                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
+                        useDefaultDataSource = false;
+                    }
                 } else {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
@@ -430,7 +436,7 @@ public class PersistenceUnitServiceHandler {
             addManagementConsole(deploymentUnit, pu, adaptor);
 
         } catch (ServiceRegistryException e) {
-            throw JpaMessages.MESSAGES.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
+            throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
         }
     }
 
@@ -491,8 +497,13 @@ public class PersistenceUnitServiceHandler {
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
                 if (jtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
+                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                        useDefaultDataSource = true;
+                    }
+                    else {
+                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
+                        useDefaultDataSource = false;
+                    }
                 } else {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
@@ -548,7 +559,7 @@ public class PersistenceUnitServiceHandler {
 
             JPA_LOGGER.tracef("added PersistenceUnitService (phase 1 of 2) for '%s'.  PU is ready for injector action.", puServiceName);
         } catch (ServiceRegistryException e) {
-            throw JpaMessages.MESSAGES.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
+            throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
         }
     }
 
@@ -613,8 +624,13 @@ public class PersistenceUnitServiceHandler {
 
             if (jtaDataSource != null && jtaDataSource.length() > 0) {
                 if (jtaDataSource.startsWith("java:")) {
-                    builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
-                    useDefaultDataSource = false;
+                    if (jtaDataSource.equals(EE_DEFAULT_DATASOURCE)) { // explicit use of default datasource
+                        useDefaultDataSource = true;
+                    }
+                    else {
+                        builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
+                        useDefaultDataSource = false;
+                    }
                 } else {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
@@ -687,7 +703,7 @@ public class PersistenceUnitServiceHandler {
             addManagementConsole(deploymentUnit, pu, adaptor);
 
         } catch (ServiceRegistryException e) {
-            throw JpaMessages.MESSAGES.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
+            throw JpaLogger.ROOT_LOGGER.failedToAddPersistenceUnit(e, pu.getPersistenceUnitName());
         }
     }
 
@@ -852,13 +868,13 @@ public class PersistenceUnitServiceHandler {
                     adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform);
                 }
             } catch (ModuleLoadException e) {
-                throw JpaMessages.MESSAGES.persistenceProviderAdaptorModuleLoadError(e, adaptorModule);
+                throw JpaLogger.ROOT_LOGGER.persistenceProviderAdaptorModuleLoadError(e, adaptorModule);
             }
             adaptor = savePerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, adaptor, provider);
         }
 
         if (adaptor == null) {
-            throw JpaMessages.MESSAGES.failedToGetAdapter(pu.getPersistenceProviderClassName());
+            throw JpaLogger.ROOT_LOGGER.failedToGetAdapter(pu.getPersistenceProviderClassName());
         }
         return adaptor;
     }
@@ -965,7 +981,7 @@ public class PersistenceUnitServiceHandler {
                     return provider;
                 }
             } catch (ModuleLoadException e) {
-                throw JpaMessages.MESSAGES.cannotLoadPersistenceProviderModule(e, configuredPersistenceProviderModule, persistenceProviderClassName);
+                throw JpaLogger.ROOT_LOGGER.cannotLoadPersistenceProviderModule(e, configuredPersistenceProviderModule, persistenceProviderClassName);
             }
         }
 
@@ -982,12 +998,12 @@ public class PersistenceUnitServiceHandler {
                 PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
                 provider = getProviderByName(pu, providers);
             } catch (ModuleLoadException e) {
-                throw JpaMessages.MESSAGES.cannotLoadPersistenceProviderModule(e, providerNameDerivedFromClassName, persistenceProviderClassName);
+                throw JpaLogger.ROOT_LOGGER.cannotLoadPersistenceProviderModule(e, providerNameDerivedFromClassName, persistenceProviderClassName);
             }
         }
 
         if (provider == null)
-            throw JpaMessages.MESSAGES.persistenceProviderNotFound(persistenceProviderClassName);
+            throw JpaLogger.ROOT_LOGGER.persistenceProviderNotFound(persistenceProviderClassName);
 
         return provider;
     }

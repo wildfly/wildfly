@@ -96,8 +96,6 @@
                 <property name="waitForPortsTimeoutInSeconds">8</property>
             </configuration>
         </container>
-
-
     </group>
 
 </arquillian>

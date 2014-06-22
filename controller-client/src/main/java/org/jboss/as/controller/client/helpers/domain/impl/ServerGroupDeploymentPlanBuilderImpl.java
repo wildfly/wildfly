@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.RollbackDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
@@ -47,7 +46,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createRollback();
         setPlan = setPlan.storeServerGroup(groupPlan);
@@ -59,7 +58,7 @@ class ServerGroupDeploymentPlanBuilderImpl extends InitialDeploymentSetBuilderIm
         DeploymentSetPlanImpl setPlan = getCurrentDeploymentSetPlan();
         ServerGroupDeploymentPlan groupPlan = setPlan.getLatestServerGroupDeploymentPlan();
         if (groupPlan == null) {
-            throw MESSAGES.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.notConfigured(ServerGroupDeploymentPlan.class.getSimpleName());
         }
         groupPlan = groupPlan.createRollingToServers();
         setPlan = setPlan.storeServerGroup(groupPlan);

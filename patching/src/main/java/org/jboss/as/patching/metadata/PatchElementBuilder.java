@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.metadata;
 
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.impl.IncompatibleWithCallback;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
@@ -88,7 +88,7 @@ public class PatchElementBuilder extends ModificationBuilderTarget<PatchElementB
         assert patchId != null;
         assert provider != null;
         if (patchType != getProvider().getPatchType()) {
-            throw PatchMessages.MESSAGES.patchTypesDontMatch();
+            throw PatchLogger.ROOT_LOGGER.patchTypesDontMatch();
         }
         return element;
     }

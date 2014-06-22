@@ -42,9 +42,9 @@ import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch.BatchServiceNames;
-import org.wildfly.jberet.BatchConfiguration;
+import org.wildfly.extension.batch._private.BatchLogger;
+import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
 import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
@@ -63,23 +63,11 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-            final BatchEnvironmentService service = new BatchEnvironmentService();
+            final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
-            final BatchConfiguration batchConfiguration = BatchConfiguration.getInstance();
-            // If the configuration requires the JDNI name, use the default one
-            if (batchConfiguration.requiresJndiName()) {
-                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-                final String jndiName = moduleDescription.getDefaultResourceJndiNames().getDataSource();
-                BatchLogger.LOGGER.debugf("Adding default JNDI name to configuration: %s", jndiName);
-                batchConfiguration.setJndiName(jndiName);
-            }
-
+            final BatchEnvironmentService service = new BatchEnvironmentService(moduleClassLoader, JobRepositoryFactory.getInstance().getJobRepository(moduleDescription));
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
-
-            // Set the class loader and properties
-            service.setClassLoader(moduleClassLoader);
-            service.setProperties(batchConfiguration.createProperties());
 
             // Only add transactions and the BeanManager if this is a batch deployment
             if (isBatchDeployment(deploymentUnit)) {
@@ -107,7 +95,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
      * @param deploymentUnit the deployment unit to check
      *
      * @return {@code true} if a {@code META-INF/batch.xml} or a non-empty {@code META-INF/batch-jobs} directory was
-     *         found otherwise {@code false}
+     * found otherwise {@code false}
      */
     private boolean isBatchDeployment(final DeploymentUnit deploymentUnit) {
         // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems

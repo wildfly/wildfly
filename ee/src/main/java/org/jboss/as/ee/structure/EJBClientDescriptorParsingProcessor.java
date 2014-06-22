@@ -22,8 +22,7 @@
 
 package org.jboss.as.ee.structure;
 
-import org.jboss.as.ee.EeLogger;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -101,7 +100,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         try {
             ejbClientDeploymentDescriptorFile = descriptorFile.getPhysicalFile();
         } catch (IOException e) {
-            throw EeMessages.MESSAGES.failedToProcessEJBClientDescriptor(e);
+            throw EeLogger.ROOT_LOGGER.failedToProcessEJBClientDescriptor(e);
         }
         final EJBClientDescriptorMetaData ejbClientDescriptorMetaData = parse(ejbClientDeploymentDescriptorFile, deploymentUnit, moduleLoader);
         EeLogger.ROOT_LOGGER.debugf("Successfully parsed jboss-ejb-client.xml for deployment unit %s", deploymentUnit);
@@ -118,7 +117,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
         try {
             fis = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw EeMessages.MESSAGES.failedToProcessEJBClientDescriptor(e);
+            throw EeLogger.ROOT_LOGGER.failedToProcessEJBClientDescriptor(e);
         }
         try {
             return parse(fis, file, deploymentUnit, moduleLoader);
@@ -143,7 +142,7 @@ public class EJBClientDescriptorParsingProcessor implements DeploymentUnitProces
                 safeClose(streamReader);
             }
         } catch (XMLStreamException e) {
-            throw EeMessages.MESSAGES.xmlErrorParsingEJBClientDescriptor(e, file.getAbsolutePath());
+            throw EeLogger.ROOT_LOGGER.xmlErrorParsingEJBClientDescriptor(e, file.getAbsolutePath());
         }
     }
 

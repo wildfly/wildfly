@@ -21,34 +21,36 @@
  */
 package org.jboss.as.webservices.service;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.jboss.as.webservices.dmr.ListInjector;
+import org.jboss.msc.inject.Injector;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
- * A service for setting a handler chain into an endpoint / client config.
+ * A service for creating handler chain metadata.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class HandlerChainService<T extends AbstractCommonConfig> implements Service<UnifiedHandlerChainMetaData> {
+public final class HandlerChainService implements Service<UnifiedHandlerChainMetaData> {
 
-    private InjectedValue<T> abstractCommonConfig = new InjectedValue<T>();
-    private final String handlerChainType;
+    private final List<UnifiedHandlerMetaData> handlers = new ArrayList<UnifiedHandlerMetaData>(2);
     private final String handlerChainId;
     private final String protocolBindings;
     private volatile UnifiedHandlerChainMetaData handlerChain;
 
     public HandlerChainService(String handlerChainType, String handlerChainId, String protocolBindings) {
-        this.handlerChainType = handlerChainType;
+        if (!handlerChainType.equalsIgnoreCase("pre-handler-chain") && !handlerChainType.equals("post-handler-chain")) {
+            throw new RuntimeException(
+                    WSLogger.ROOT_LOGGER.wrongHandlerChainType(handlerChainType, "pre-handler-chain", "post-handler-chain"));
+        }
         this.handlerChainId = handlerChainId;
         this.protocolBindings = protocolBindings;
     }
@@ -60,63 +62,15 @@ public final class HandlerChainService<T extends AbstractCommonConfig> implement
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-        List<UnifiedHandlerChainMetaData> handlerChains;
-        if ("pre-handler-chain".equals(handlerChainType)) {
-            synchronized (commonConfig) { //JBWS-3707
-                handlerChains = commonConfig.getPreHandlerChains();
-                if (handlerChains == null) {
-                    handlerChains = new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>();
-                    commonConfig.setPreHandlerChains(handlerChains);
-                }
-            }
-        } else if ("post-handler-chain".equals(handlerChainType)) {
-            synchronized (commonConfig) { //JBWS-3707
-                handlerChains = commonConfig.getPostHandlerChains();
-                if (handlerChains == null) {
-                    handlerChains = new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>();
-                    commonConfig.setPostHandlerChains(handlerChains);
-                }
-            }
-        } else {
-            throw new StartException(
-                    MESSAGES.wrongHandlerChainType(handlerChainType, "pre-handler-chain", "post-handler-chain"));
-        }
-        handlerChain = getChain(handlerChains, handlerChainId);
-        if (handlerChain != null) {
-            throw new StartException(MESSAGES.multipleHandlerChainsWithSameId(handlerChainType, handlerChainId,
-                    commonConfig.getConfigName()));
-        }
-        handlerChain = new UnifiedHandlerChainMetaData();
-        handlerChain.setId(handlerChainId);
-        handlerChain.setProtocolBindings(protocolBindings);
-        handlerChains.add(handlerChain);
-    }
-
-    private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains,
-            final String handlerChainId) {
-        for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-            if (handlerChainId.equals(handlerChain.getId())) {
-                return handlerChain;
-            }
-        }
-        return null;
+        handlerChain = new UnifiedHandlerChainMetaData(null, null, protocolBindings, handlers, false, handlerChainId);
     }
 
     @Override
     public void stop(final StopContext context) {
-        final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-
-        final List<UnifiedHandlerChainMetaData> handlerChains;
-        if ("pre-handler-chain".equals(handlerChainType)) {
-            handlerChains = commonConfig.getPreHandlerChains();
-        } else {
-            handlerChains = commonConfig.getPostHandlerChains();
-        }
-        handlerChains.remove(handlerChain);
+        handlerChain = null;
     }
 
-    public InjectedValue<T> getAbstractCommonConfig() {
-        return abstractCommonConfig;
+    public Injector<UnifiedHandlerMetaData> getHandlersInjector() {
+        return new ListInjector<UnifiedHandlerMetaData>(handlers);
     }
 }

@@ -29,7 +29,6 @@ import static org.jboss.as.controller.parsing.Element.PROPERTY;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -47,26 +46,28 @@ import org.jboss.dmr.Property;
  * @since 7.2
  */
 public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
+    private final ModelType valueType;
 
     private SimpleMapAttributeDefinition(final Builder builder) {
         super(builder);
+        this.valueType = builder.valueType;
     }
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType);
         node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(new ModelNode(isAllowExpression()));
     }
 
     @Override
     protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType);
         node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(new ModelNode(isAllowExpression()));
     }
 
     @Override
     protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+        node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType);
         node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(new ModelNode(isAllowExpression()));
     }
 
@@ -96,8 +97,15 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
     }
 
     public static final class Builder extends MapAttributeDefinition.Builder<Builder, SimpleMapAttributeDefinition> {
+        private ModelType valueType = ModelType.STRING;
+
         public Builder(final String name, boolean allowNull) {
             super(name, allowNull);
+        }
+
+        public Builder(final String name, final ModelType valueType, final boolean allowNull) {
+            super(name, allowNull);
+            this.valueType = valueType;
         }
 
         public Builder(final SimpleMapAttributeDefinition basis) {
@@ -108,10 +116,15 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             super(basis);
         }
 
+        public Builder setValueType(ModelType valueType) {
+            this.valueType = valueType;
+            return this;
+        }
+
         @Override
         public SimpleMapAttributeDefinition build() {
             if (elementValidator == null) {
-                elementValidator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
+                elementValidator = new ModelTypeValidator(valueType, allowNull, allowExpression);
             }
             if (attributeMarshaller == null) {
                 attributeMarshaller = new MapAttributeMarshaller();

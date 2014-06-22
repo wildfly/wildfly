@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
@@ -65,9 +64,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
-import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
 import org.jboss.jca.common.metadata.ds.v12.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
@@ -137,7 +136,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler,
                                     getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName);
                         } catch (Exception e) {
-                            throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, ds.getJndiName());
+                            throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
                     } else {
                         ConnectorLogger.DS_DEPLOYER_LOGGER.debugf("Ignoring: %s", ds.getJndiName());
@@ -160,7 +159,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                     getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName);
 
                         } catch (Exception e) {
-                            throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, xads.getJndiName());
+                            throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
                         }
                     } else {
                         ConnectorLogger.DS_DEPLOYER_LOGGER.debugf("Ignoring %s", xads.getJndiName());
@@ -231,7 +230,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 ds.getSecurity(), ds.getStatement(), ds.getValidation(),
                 ds.getUrlDelimiter(), ds.getUrlSelectorStrategyClassName(), ds.getNewConnectionSql(),
                 ds.isUseJavaContext(), ds.getPoolName(), ds.isEnabled(), ds.getJndiName(),
-                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.getPool());
+                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.isTracking(), ds.getPool());
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {
@@ -254,7 +253,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 xads.getStatement(), xads.getValidation(),
                 xads.getUrlDelimiter(), xads.getUrlProperty(), xads.getUrlSelectorStrategyClassName(),
                 xads.isUseJavaContext(), xads.getPoolName(), xads.isEnabled(), xads.getJndiName(),
-                xads.isSpy(), xads.isUseCcm(),
+                xads.isSpy(), xads.isUseCcm(), xads.isConnectable(), xads.isTracking(),
                 xads.getXaDataSourceProperty(), xads.getXaDataSourceClass(), xads.getDriver(),
                 xads.getNewConnectionSql(), xaPool, xads.getRecovery());
     }
@@ -295,7 +294,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             if (overrideRegistration == null || overrideRegistration.isAllowsOverride()) {
                 overrideRegistration = registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
             }
-            dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, managementName));
+            dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, managementName, false));
         } // else should probably throw an ISE or something
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));

@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
@@ -59,8 +60,8 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
 
     private final String serverName;
 
-    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
-        super(name, listenerOptions);
+    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
+        super(name, listenerOptions, socketOptions);
         this.serverName = serverName;
         listenerHandlerWrappers.add(new HandlerWrapper() {
             @Override
@@ -109,7 +110,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
 
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener)
             throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, commonOptions);
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(socketOptions).getMap());
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), socketAddress);
     }

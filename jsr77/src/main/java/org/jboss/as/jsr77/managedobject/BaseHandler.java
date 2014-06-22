@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +32,7 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ObjectName;
-
+import org.jboss.as.jsr77.logging.JSR77Logger;
 
 /**
  *
@@ -56,17 +54,17 @@ abstract class BaseHandler extends Handler{
         } else if (attribute.equals(ATTR_STATE_MANAGEABLE) || attribute.equals(ATTR_STATISTICS_PROVIDER) || attribute.equals(ATTR_EVENT_PROVIDER)) {
             return false;
         }
-        throw MESSAGES.noAttributeCalled(attribute);
+        throw JSR77Logger.ROOT_LOGGER.noAttributeCalled(attribute);
     }
 
     @Override
     MBeanInfo getMBeanInfo(ModelReader reader, ObjectName name) throws InstanceNotFoundException {
         Set<ObjectName> names = queryObjectNames(reader, name, null);
         if (names.size() != 1) {
-            throw MESSAGES.noMBeanCalled(name);
+            throw JSR77Logger.ROOT_LOGGER.noMBeanCalled(name);
         }
         if (!name.apply(names.iterator().next())){
-            throw MESSAGES.noMBeanCalled(name);
+            throw JSR77Logger.ROOT_LOGGER.noMBeanCalled(name);
         }
         Set<MBeanAttributeInfo> attrs = getAttributeInfos();
         MBeanAttributeInfo[] attributes = attrs.toArray(new MBeanAttributeInfo[attrs.size()]);
@@ -82,10 +80,10 @@ abstract class BaseHandler extends Handler{
 
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = new HashSet<MBeanAttributeInfo>();
-        attributes.add(createRoMBeanAttributeInfo(ATTR_NAME, String.class.getName(), MESSAGES.attrInfoAttrName()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_STATE_MANAGEABLE, Boolean.TYPE.getName(), MESSAGES.attrInfoStateManageable()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_STATISTICS_PROVIDER, Boolean.TYPE.getName(), MESSAGES.attrInfoStatisticsProvider()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_EVENT_PROVIDER, Boolean.TYPE.getName(), MESSAGES.attrInfoEventProvider()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_NAME, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoAttrName()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_STATE_MANAGEABLE, Boolean.TYPE.getName(), JSR77Logger.ROOT_LOGGER.attrInfoStateManageable()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_STATISTICS_PROVIDER, Boolean.TYPE.getName(), JSR77Logger.ROOT_LOGGER.attrInfoStatisticsProvider()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_EVENT_PROVIDER, Boolean.TYPE.getName(), JSR77Logger.ROOT_LOGGER.attrInfoEventProvider()));
         return attributes;
     }
 

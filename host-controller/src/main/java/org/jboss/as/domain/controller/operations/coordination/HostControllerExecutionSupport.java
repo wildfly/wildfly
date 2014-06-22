@@ -49,7 +49,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil.ServerConfigInfo;
@@ -170,7 +170,7 @@ interface HostControllerExecutionSupport {
                 final Resource hostModel = domainModel.getChild(PathElement.pathElement(HOST, targetHost));
                 if (runningServerTarget.isMultiTarget()) {
                     // TODO WFLY-723
-                    throw DomainControllerMessages.MESSAGES.unsupportedWildcardOperation();
+                    throw DomainControllerLogger.ROOT_LOGGER.unsupportedWildcardOperation();
                 } else {
                     final String serverName = runningServerTarget.getValue();
                     final String serverGroup = hostModel.getChild(PathElement.pathElement(SERVER_CONFIG, serverName)).getModel().require(GROUP).asString();

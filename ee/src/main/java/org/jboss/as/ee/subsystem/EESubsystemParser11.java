@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -42,7 +43,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  */
@@ -171,7 +171,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
 
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
-            throw MESSAGES.invalidValue(value, Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName(), reader.getLocation());
+            throw EeLogger.ROOT_LOGGER.invalidValue(value, Element.EAR_SUBDEPLOYMENTS_ISOLATED.getLocalName(), reader.getLocation());
         }
         return value.trim();
     }
@@ -184,7 +184,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
 
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
-            throw MESSAGES.invalidValue(value, Element.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
+            throw EeLogger.ROOT_LOGGER.invalidValue(value, Element.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
         }
         return value.trim();
     }
@@ -197,7 +197,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
 
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
-            throw MESSAGES.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
+            throw EeLogger.ROOT_LOGGER.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
         }
         return value.trim();
     }

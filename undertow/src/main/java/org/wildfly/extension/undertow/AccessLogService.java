@@ -35,6 +35,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.XnioWorker;
 
 /**
@@ -59,7 +60,7 @@ class AccessLogService implements Service<AccessLogService> {
     public void start(StartContext context) throws StartException {
         if (!directory.exists()) {
             if (!directory.mkdirs()){
-                throw UndertowMessages.MESSAGES.couldNotCreateLogDirectory(directory);
+                throw UndertowLogger.ROOT_LOGGER.couldNotCreateLogDirectory(directory);
             }
         }
         try {

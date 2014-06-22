@@ -26,7 +26,7 @@ import javax.ejb.EJB;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.InjectionPoint;
 
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.injection.ParameterInjectionPoint;
 
 public class ResourceInjectionUtilities {
@@ -42,7 +42,7 @@ public class ResourceInjectionUtilities {
         } else if (jndiName != null) {
             return jndiName;
         } else {
-            throw WeldMessages.MESSAGES.cannotDetermineResourceName();
+            throw WeldLogger.ROOT_LOGGER.cannotDetermineResourceName();
         }
     }
 
@@ -72,10 +72,10 @@ public class ResourceInjectionUtilities {
         } else if (injectionPoint.getMember() instanceof Method) {
             propertyName = getPropertyName((Method) injectionPoint.getMember());
             if (propertyName == null) {
-                throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+                throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) injectionPoint.getMember());
             }
         } else {
-            throw WeldMessages.MESSAGES.cannotInject(injectionPoint);
+            throw WeldLogger.ROOT_LOGGER.cannotInject(injectionPoint);
         }
         String className = injectionPoint.getMember().getDeclaringClass().getName();
         return RESOURCE_LOOKUP_PREFIX + "/" + className + "/" + propertyName;
@@ -98,10 +98,10 @@ public class ResourceInjectionUtilities {
         } else if (injectionPoint.getMember() instanceof Method) {
             propertyName = getPropertyName((Method) injectionPoint.getMember());
             if (propertyName == null) {
-                throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+                throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) injectionPoint.getMember());
             }
         } else {
-            throw WeldMessages.MESSAGES.cannotInject(injectionPoint);
+            throw WeldLogger.ROOT_LOGGER.cannotInject(injectionPoint);
         }
         String className = injectionPoint.getMember().getDeclaringClass().getName();
         return RESOURCE_LOOKUP_PREFIX + "/" + className + "/" + propertyName;

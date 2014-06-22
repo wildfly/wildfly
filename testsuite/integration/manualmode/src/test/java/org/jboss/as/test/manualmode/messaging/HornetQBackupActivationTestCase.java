@@ -516,7 +516,7 @@ public class HornetQBackupActivationTestCase {
     private static void executeWithFailure(ModelControllerClient client, ModelNode operation) throws IOException {
         ModelNode result = client.execute(operation);
         assertEquals(result.toJSONString(true), FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.toJSONString(true), result.get(FAILURE_DESCRIPTION).asString().contains("JBAS011678"));
+        assertTrue(result.toJSONString(true), result.get(FAILURE_DESCRIPTION).asString().contains("WFLYMSG0066"));
         assertFalse(result.has(RESULT));
     }
 

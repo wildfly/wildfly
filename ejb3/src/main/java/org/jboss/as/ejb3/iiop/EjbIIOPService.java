@@ -36,7 +36,7 @@ import org.jacorb.ssl.SSLPolicyValue;
 import org.jacorb.ssl.SSLPolicyValueHelper;
 import org.jacorb.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
@@ -86,8 +86,6 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and
@@ -209,6 +207,11 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     private final InjectedValue<POA> irPoa = new InjectedValue<POA>();
 
     /**
+     * Default IOR security config metadata (defined in the jacorb subsystem).
+     */
+    private final InjectedValue<IORSecurityConfigMetaData> iorSecConfigMetaData = new InjectedValue<IORSecurityConfigMetaData>();
+
+    /**
      * The IIOP metadata, configured in the assembly descriptor.
      */
     private IIOPMetaData iiopMetaData;
@@ -273,8 +276,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 EjbLogger.ROOT_LOGGER.cobraInterfaceRepository(name, orb.object_to_string(iri.getReference()));
             }
 
-            IORSecurityConfigMetaData iorSecurityConfigMetaData = null;
-            if (this.iiopMetaData != null)
+            IORSecurityConfigMetaData iorSecurityConfigMetaData = this.iorSecConfigMetaData.getOptionalValue();
+            if (this.iiopMetaData != null && this.iiopMetaData.getIorSecurityConfigMetaData() != null)
                 iorSecurityConfigMetaData = this.iiopMetaData.getIorSecurityConfigMetaData();
 
             // Create security policies if security metadata has been provided.
@@ -380,12 +383,12 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 try {
                     DynamicStubFactoryFactory.makeStubClass(homeView.getValue().getViewClass());
                 } catch (Exception e) {
-                    EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(homeView.getValue().getViewClass().getName(), e);
+                    EjbLogger.ROOT_LOGGER.dynamicStubCreationFailed(homeView.getValue().getViewClass().getName(), e);
                 }
                 try {
                     DynamicStubFactoryFactory.makeStubClass(remoteView.getValue().getViewClass());
                 } catch (Exception e) {
-                    EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(remoteView.getValue().getViewClass().getName(), e);
+                    EjbLogger.ROOT_LOGGER.dynamicStubCreationFailed(remoteView.getValue().getViewClass().getName(), e);
                 }
             } finally {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
@@ -466,12 +469,12 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                     marshaller.finish();
                     return beanReferenceFactory.createReferenceWithId(stream.toByteArray(), beanRepositoryIds[0]);
                 }
-                throw MESSAGES.unknownEJBLocatorType(locator);
+                throw EjbLogger.ROOT_LOGGER.unknownEJBLocatorType(locator);
             } else {
-                throw MESSAGES.incorrectEJBLocatorForBean(locator, ejbComponent.getComponentName());
+                throw EjbLogger.ROOT_LOGGER.incorrectEJBLocatorForBean(locator, ejbComponent.getComponentName());
             }
         } catch (Exception e) {
-            throw MESSAGES.couldNotCreateCorbaObject(e, locator);
+            throw EjbLogger.ROOT_LOGGER.couldNotCreateCorbaObject(e, locator);
         }
     }
 
@@ -568,5 +571,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
     public InjectedValue<ServiceModuleLoader> getServiceModuleLoaderInjectedValue() {
         return serviceModuleLoaderInjectedValue;
+    }
+
+    public InjectedValue<IORSecurityConfigMetaData> getIORSecConfigMetaDataInjectedValue() {
+        return iorSecConfigMetaData;
     }
 }

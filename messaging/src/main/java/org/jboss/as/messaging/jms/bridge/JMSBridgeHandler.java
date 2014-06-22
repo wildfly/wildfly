@@ -30,8 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STO
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.STARTED;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition.PAUSE;
 import static org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition.RESUME;
 
@@ -41,10 +39,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -77,7 +76,8 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
         final ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         final JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());
@@ -90,7 +90,7 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
             } else if (PAUSED.getName().equals(name)) {
                 context.getResult().set(bridge.isPaused());
             } else {
-                throw MESSAGES.unsupportedAttribute(name);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
             }
         }
         else if (START.equals(operationName)) {
@@ -121,7 +121,7 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
                 context.getFailureDescription().set(e.getLocalizedMessage());
             }
         } else {
-            throw MESSAGES.unsupportedOperation(operationName);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
         }
 
         context.completeStep(new OperationContext.RollbackHandler() {
@@ -139,7 +139,7 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
                         bridge.pause();
                     }
                 } catch (Exception e) {
-                    ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operation
+                    MessagingLogger.ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operation
                             .require(ModelDescriptionConstants.OP).asString(), PathAddress.pathAddress(operation
                             .require(ModelDescriptionConstants.OP_ADDR)));
                 }

@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-arquillian</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-arquillian-common</artifactId>
@@ -38,6 +38,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-cdi</artifactId>
@@ -100,5 +105,6 @@
             <artifactId>arquillian-container-osgi</artifactId>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 </project>

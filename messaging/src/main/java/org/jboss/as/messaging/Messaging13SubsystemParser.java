@@ -39,7 +39,6 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEP
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.Element.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -52,6 +51,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -399,7 +399,7 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
      */
     protected static void checkNotBothElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
         if (seen.contains(element1) && seen.contains(element2)) {
-            throw new XMLStreamException(MESSAGES.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
+            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
         }
     }
 }

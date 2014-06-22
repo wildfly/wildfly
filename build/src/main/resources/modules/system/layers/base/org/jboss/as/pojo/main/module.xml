@@ -27,8 +27,12 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/pojo/logging"/>
+    </exports>
+
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-pojo}"/>
     </resources>
 
     <dependencies>

@@ -21,7 +21,8 @@
  */
 package org.jboss.as.webservices.util;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
+import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
@@ -39,12 +40,16 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.webservices.deployers.WebServiceAnnotationInfo;
 import org.jboss.as.webservices.deployers.WebServiceProviderAnnotationInfo;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
@@ -212,11 +217,11 @@ public final class ASHelper {
             return false;
         }
         if (hasWebServiceAnnotation && hasWebServiceProviderAnnotation) {
-            ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
+            WSLogger.ROOT_LOGGER.mutuallyExclusiveAnnotations(clazz.name().toString());
             return false;
         }
         if (Modifier.isFinal(flags)) {
-            ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
+            WSLogger.ROOT_LOGGER.finalEndpointClassDetected(clazz.name().toString());
             return false;
         }
         return true;
@@ -247,11 +252,11 @@ public final class ASHelper {
         if (isJaxwsService(classInfo, index)) return false;
 
         if (webserviceAnnoationInfo !=null && webserviceProviderAnnoationInfo != null) {
-            ROOT_LOGGER.mutuallyExclusiveAnnotations(classInfo.name().toString());
+            WSLogger.ROOT_LOGGER.mutuallyExclusiveAnnotations(classInfo.name().toString());
             return false;
         }
         if (Modifier.isFinal(flags)) {
-            ROOT_LOGGER.finalEndpointClassDetected(classInfo.name().toString());
+            WSLogger.ROOT_LOGGER.finalEndpointClassDetected(classInfo.name().toString());
             return false;
         }
         return true;
@@ -343,5 +348,17 @@ public final class ASHelper {
             unit.putAttachment(WSAttachmentKeys.WS_REFREGISTRY, refRegistry);
         }
         return refRegistry;
+    }
+
+    public static List<ResourceRoot> getResourceRoots(DeploymentUnit unit) {
+        // wars define resource roots
+        AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
+        if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
+            // ejb archives don't define resource roots, using root resource
+            resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
+            final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
+            resourceRoots.add(root);
+        }
+        return resourceRoots;
     }
 }

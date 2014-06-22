@@ -31,6 +31,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PredicateHandler;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -173,7 +174,7 @@ public enum ConsoleMode {
                 // ignore
             }
 
-            throw HttpServerMessages.MESSAGES.consoleModuleNotFound(moduleName);
+            throw HttpServerLogger.ROOT_LOGGER.consoleModuleNotFoundMsg(moduleName);
         }
     }
 

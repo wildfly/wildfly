@@ -27,7 +27,7 @@ import static java.util.Collections.unmodifiableList;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
@@ -54,7 +54,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public PatchBuilder setPatchId(String patchId) {
         if (!Patch.PATCH_NAME_PATTERN.matcher(patchId).matches()) {
-            throw PatchMessages.MESSAGES.illegalPatchName(patchId);
+            throw PatchLogger.ROOT_LOGGER.illegalPatchName(patchId);
         }
         this.patchId = patchId;
         return this;
@@ -90,7 +90,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public PatchElementBuilder upgradeElement(final String patchId, final String layerName, final boolean addOn) {
         if (!Patch.PATCH_NAME_PATTERN.matcher(patchId).matches()) {
-            throw PatchMessages.MESSAGES.illegalPatchName(patchId);
+            throw PatchLogger.ROOT_LOGGER.illegalPatchName(patchId);
         }
         final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
         builder.upgrade();
@@ -100,7 +100,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public PatchElementBuilder oneOffPatchElement(final String patchId, final String layerName, final boolean addOn) {
         if (!Patch.PATCH_NAME_PATTERN.matcher(patchId).matches()) {
-            throw PatchMessages.MESSAGES.illegalPatchName(patchId);
+            throw PatchLogger.ROOT_LOGGER.illegalPatchName(patchId);
         }
         final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
         builder.oneOffPatch();
@@ -110,7 +110,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public PatchElementBuilder addElement(final String patchId, final String layerName, final boolean addOn) {
         if (!Patch.PATCH_NAME_PATTERN.matcher(patchId).matches()) {
-            throw PatchMessages.MESSAGES.illegalPatchName(patchId);
+            throw PatchLogger.ROOT_LOGGER.illegalPatchName(patchId);
         }
         final PatchElementBuilder builder = new PatchElementBuilder(patchId, layerName, addOn, this);
         //builder.cumulativePatch();
@@ -130,7 +130,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
                         ((PatchElementProviderImpl)element.getProvider()).oneOffPatch();
                     }
                 } else if (patchType != PatchBuilder.this.patchType) {
-                    throw PatchMessages.MESSAGES.patchTypesDontMatch();
+                    throw PatchLogger.ROOT_LOGGER.patchTypesDontMatch();
                 }
                 return element;
             }

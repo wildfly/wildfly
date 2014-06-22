@@ -28,13 +28,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 
 import io.undertow.util.Methods;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.as.domain.http.server.OperationParameter;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +61,7 @@ public class DmrFailureReadinessHandler extends RealmReadinessHandler {
     void rejectRequest(HttpServerExchange exchange) throws IOException {
         ModelNode rejection = new ModelNode();
         rejection.get(OUTCOME).set(FAILED);
-        rejection.get(FAILURE_DESCRIPTION).set(MESSAGES.realmNotReadyMessage(constructUrl(exchange, redirectTo)));
+        rejection.get(FAILURE_DESCRIPTION).set(HttpServerLogger.ROOT_LOGGER.realmNotReadyMessage(constructUrl(exchange, redirectTo)));
         rejection.get(ROLLED_BACK).set(Boolean.TRUE.toString());
 
         // Keep the response visible so it can easily be seen in network traces.

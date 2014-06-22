@@ -24,8 +24,8 @@ package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -49,8 +49,7 @@ public class LogStoreTransactionDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        DefaultOperationDescriptionProvider deleteDesc = new DefaultOperationDescriptionProvider(LogStoreConstants.DELETE, getResourceDescriptionResolver());
-        resourceRegistration.registerOperationHandler(LogStoreConstants.DELETE, new LogStoreTransactionDeleteHandler(resource), deleteDesc);
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.DELETE,getResourceDescriptionResolver()), new LogStoreTransactionDeleteHandler(resource));
     }
 
     @Override

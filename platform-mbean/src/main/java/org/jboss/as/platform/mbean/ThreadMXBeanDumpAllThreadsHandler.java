@@ -25,12 +25,12 @@ package org.jboss.as.platform.mbean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
@@ -42,7 +42,16 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ThreadMXBeanDumpAllThreadsHandler implements OperationStepHandler, DescriptionProvider {
+public class ThreadMXBeanDumpAllThreadsHandler implements OperationStepHandler {
+
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.DUMP_ALL_THREADS, PlatformMBeanUtil.getResolver(PlatformMBeanConstants.THREADING))
+            .setParameters(CommonAttributes.LOCKED_MONITORS_FLAG, CommonAttributes.LOCKED_SYNCHRONIZERS_FLAG)
+            .setReplyType(ModelType.LIST)
+            .setReplyParameters(CommonAttributes.THREAD_INFO_ATTRIBUTES)
+            .setRuntimeOnly()
+            .setReadOnly()
+            .build();
+
 
     public static final ThreadMXBeanDumpAllThreadsHandler INSTANCE = new ThreadMXBeanDumpAllThreadsHandler();
 
@@ -61,8 +70,8 @@ public class ThreadMXBeanDumpAllThreadsHandler implements OperationStepHandler, 
         ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
         try {
             ThreadInfo[] infos = mbean.dumpAllThreads(
-                                    operation.require(PlatformMBeanConstants.LOCKED_MONITORS).asBoolean(),
-                                    operation.require(PlatformMBeanConstants.LOCKED_SYNCHRONIZERS).asBoolean());
+                    operation.require(PlatformMBeanConstants.LOCKED_MONITORS).asBoolean(),
+                    operation.require(PlatformMBeanConstants.LOCKED_SYNCHRONIZERS).asBoolean());
 
             final ModelNode result = context.getResult();
             if (infos != null) {
@@ -80,8 +89,4 @@ public class ThreadMXBeanDumpAllThreadsHandler implements OperationStepHandler, 
         context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDumpThreadsDescription(locale);
-    }
 }

@@ -56,7 +56,7 @@ public class RaRemove implements OperationStepHandler {
 
 
         // Compensating is add
-        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
         final String archiveName;
         final boolean isModule;
         if (model.get(ARCHIVE.getName()).isDefined()) {

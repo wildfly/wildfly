@@ -38,15 +38,18 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.as.jmx.JmxMessages;
+
+import org.jboss.as.jmx.logging.JmxLogger;
 
 import org.jboss.as.jmx.model.TypeConverters.TypeConverter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -101,7 +104,7 @@ public class ExpressionTypeConverterUnitTestCase {
         Assert.assertEquals("false", assertCast(String.class, converter.fromModelNode(new ModelNode().set(Boolean.FALSE))));
         ModelNode newNode = converter.toModelNode("true");
         Assert.assertEquals(ModelType.BOOLEAN, newNode.getType());
-        Assert.assertEquals(Boolean.TRUE, Boolean.valueOf(newNode.asBoolean()));
+        Assert.assertEquals(Boolean.TRUE, newNode.asBoolean());
         assertToArray(converter, "true", "false");
     }
 
@@ -123,7 +126,7 @@ public class ExpressionTypeConverterUnitTestCase {
         ModelNode description = createDescription(ModelType.DOUBLE);
         TypeConverter converter = getConverter(description);
         Assert.assertEquals(SimpleType.STRING, converter.getOpenType());
-        Assert.assertEquals("1.0", assertCast(String.class, converter.fromModelNode(new ModelNode().set(Double.valueOf(1)))));
+        Assert.assertEquals("1.0", assertCast(String.class, converter.fromModelNode(new ModelNode().set((double) 1))));
         ModelNode newNode = converter.toModelNode("2");
         Assert.assertEquals(ModelType.DOUBLE, newNode.getType());
         Assert.assertEquals(Double.valueOf(2), Double.valueOf(newNode.asInt()));
@@ -194,8 +197,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", "uno")));
         Assert.assertEquals(type, data.getCompositeType());
@@ -218,8 +221,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", 1)));
         Assert.assertEquals(type, data.getCompositeType());
@@ -362,7 +365,7 @@ public class ExpressionTypeConverterUnitTestCase {
         node.get("bigdecimal-value").set(BigDecimal.valueOf(3));
         node.get("boolean-value").set(Boolean.TRUE);
         node.get("bytes-value").set(new byte[] {4,5});
-        node.get("double-value").set(Double.valueOf(6));
+        node.get("double-value").set((double) 6);
         node.get("string-value").set("Seven");
         node.get("long-value").set(Long.valueOf(8));
         node.get("type-value").set(ModelType.INT);
@@ -509,7 +512,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testBigIntegerExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.BIG_INTEGER);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -522,7 +525,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testBigDecimalExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.BIG_DECIMAL);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -534,7 +537,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testIntExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.INT);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -546,7 +549,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testBooleanExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.BOOLEAN);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:false}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:false}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:false}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:true}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -558,7 +561,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testDoubleExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.DOUBLE);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -570,7 +573,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testStringExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.STRING);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:A}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:A}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:A}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:B}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -582,7 +585,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testStringVaultExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.STRING);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${VAULT::keystore_pass::password::xxx}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${VAULT::keystore_pass::password::xxx}"))));
         Assert.assertEquals("${VAULT::keystore_pass::password::xxx}", data);
         ModelNode newNode = converter.toModelNode("${VAULT::keystore_pass::password::xxx}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -594,7 +597,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testLongExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.LONG);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -606,7 +609,7 @@ public class ExpressionTypeConverterUnitTestCase {
     public void testTypeExpressionConverter() throws Exception {
         ModelNode description = createDescription(ModelType.TYPE);
         TypeConverter converter = getConverter(description);
-        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:OBJECT}")));
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().set(new ValueExpression("${this.should.not.exist.!!!!!:OBJECT}"))));
         Assert.assertEquals("${this.should.not.exist.!!!!!:OBJECT}", data);
         ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:LONG}");
         Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
@@ -621,8 +624,8 @@ public class ExpressionTypeConverterUnitTestCase {
         TypeConverter converter = getConverter(description);
 
         ModelNode node = new ModelNode();
-        node.get("abc").setExpression("${this.should.not.exist.!!!!!:10}");
-        node.get("def").setExpression("${this.should.not.exist.!!!!!:false}");
+        node.get("abc").set(new ValueExpression("${this.should.not.exist.!!!!!:10}"));
+        node.get("def").set(new ValueExpression("${this.should.not.exist.!!!!!:false}"));
         node.protect();
 
         String json = assertCast(String.class, converter.fromModelNode(node));
@@ -638,10 +641,10 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
-        CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().setExpression("one", "${this.should.not.exist.!!!!!:uno}")));
+        CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", new ValueExpression("${this.should.not.exist.!!!!!:uno}"))));
         Assert.assertEquals(type, data.getCompositeType());
         Assert.assertEquals("one", data.get("name"));
         Assert.assertEquals("${this.should.not.exist.!!!!!:uno}", data.get("value"));
@@ -649,7 +652,7 @@ public class ExpressionTypeConverterUnitTestCase {
         data = new CompositeDataSupport(type, new String[] {"name", "value"}, new String[] {"two", "${this.should.not.exist.!!!!!:dos}"});
         ModelNode newNode = converter.toModelNode(data);
         Assert.assertEquals(ModelType.PROPERTY, newNode.getType());
-        Assert.assertEquals(new ModelNode().setExpression("two", "${this.should.not.exist.!!!!!:dos}"), newNode);
+        Assert.assertEquals(new ModelNode().set("two", new ValueExpression("${this.should.not.exist.!!!!!:dos}")), newNode);
 
         assertToArray(converter, data);
     }
@@ -662,8 +665,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", "${this.should.not.exist.!!!!!:1}")));
         Assert.assertEquals(type, data.getCompositeType());
@@ -673,7 +676,7 @@ public class ExpressionTypeConverterUnitTestCase {
         data = new CompositeDataSupport(type, new String[] {"name", "value"}, new String[] {"two", "${this.should.not.exist.!!!!!:2}"});
         ModelNode newNode = converter.toModelNode(data);
         Assert.assertEquals(ModelType.PROPERTY, newNode.getType());
-        Assert.assertEquals(new ModelNode().setExpression("two", "${this.should.not.exist.!!!!!:2}"), newNode);
+        Assert.assertEquals(new ModelNode().set("two", new ValueExpression("${this.should.not.exist.!!!!!:2}")), newNode);
 
         assertToArray(converter, data);
     }
@@ -686,8 +689,8 @@ public class ExpressionTypeConverterUnitTestCase {
         assertCast(ArrayType.class, converter.getOpenType());
 
         ModelNode node = new ModelNode();
-        node.addExpression("${this.should.not.exist.!!!!!:1}");
-        node.addExpression("${this.should.not.exist.!!!!!:2}");
+        node.add().set(new ValueExpression("${this.should.not.exist.!!!!!:1}"));
+        node.add().set(new ValueExpression("${this.should.not.exist.!!!!!:2}"));
 
         String[] data = assertCast(String[].class, converter.fromModelNode(node));
         Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data[0]);
@@ -706,8 +709,8 @@ public class ExpressionTypeConverterUnitTestCase {
         assertMapType(assertCast(TabularType.class, converter.getOpenType()), SimpleType.STRING, SimpleType.STRING);
 
         ModelNode node = new ModelNode();
-        node.get("one").setExpression("${this.should.not.exist.!!!!!:1}");
-        node.get("two").setExpression("${this.should.not.exist.!!!!!:2}");
+        node.get("one").set(new ValueExpression("${this.should.not.exist.!!!!!:1}"));
+        node.get("two").set(new ValueExpression("${this.should.not.exist.!!!!!:2}"));
 
         TabularData tabularData = assertCast(TabularData.class, converter.fromModelNode(node));
         Assert.assertEquals(2, tabularData.size());
@@ -872,9 +875,7 @@ public class ExpressionTypeConverterUnitTestCase {
 
     private List<Object> createList(Object...values){
         List<Object> list = new ArrayList<Object>();
-        for (Object value : values) {
-            list.add(value);
-        }
+        Collections.addAll(list, values);
         return list;
     }
 

@@ -22,8 +22,7 @@
 
 package org.jboss.as.process.protocol;
 
-import static org.jboss.as.process.protocol.ProtocolLogger.ROOT_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Unmarshaller;
 
@@ -54,13 +53,13 @@ public final class StreamUtils {
         } else if (a < 0x80) {
             return (char)a;
         } else if (a < 0xc0) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
         } else if (a < 0xe0) {
             final int b = input.read();
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-                throw MESSAGES.invalidByte((char)a, a);
+                throw ProcessLogger.ROOT_LOGGER.invalidByte((char)a, a);
             }
             return (a & 0x1f) << 6 | b & 0x3f;
         } else if (a < 0xf0) {
@@ -68,17 +67,17 @@ public final class StreamUtils {
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
             }
             final int c = input.read();
             if (c == -1) {
                 throw new EOFException();
             } else if ((c & 0xc0) != 0x80) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
             }
             return (a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f;
         } else {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
         }
     }
 
@@ -131,7 +130,7 @@ public final class StreamUtils {
         while (n < len) {
             int count = in.read(b, off + n, len - n);
             if (count < 0)
-                throw MESSAGES.readBytes(n);
+                throw ProcessLogger.ROOT_LOGGER.readBytes(n);
             n += count;
         }
     }
@@ -248,13 +247,13 @@ public final class StreamUtils {
         } else if (a < 0x80) {
             return (char)a;
         } else if (a < 0xc0) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
         } else if (a < 0xe0) {
             final int b = input.read();
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
             }
             return (a & 0x1f) << 6 | b & 0x3f;
         } else if (a < 0xf0) {
@@ -262,17 +261,17 @@ public final class StreamUtils {
             if (b == -1) {
                 throw new EOFException();
             } else if ((b & 0xc0) != 0x80) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
             }
             final int c = input.read();
             if (c == -1) {
                 throw new EOFException();
             } else if ((c & 0xc0) != 0x80) {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
             }
             return (a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f;
         } else {
-            throw MESSAGES.invalidByte();
+            throw ProcessLogger.ROOT_LOGGER.invalidByte();
         }
     }
 
@@ -288,7 +287,7 @@ public final class StreamUtils {
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, closeable);
+            ProcessLogger.PROTOCOL_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 
@@ -296,7 +295,7 @@ public final class StreamUtils {
         if (socket != null) try {
             socket.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, socket);
+            ProcessLogger.PROTOCOL_LOGGER.failedToCloseResource(t, socket);
         }
     }
 
@@ -304,7 +303,7 @@ public final class StreamUtils {
         if (serverSocket != null) try {
             serverSocket.close();
         } catch (IOException e) {
-            ROOT_LOGGER.failedToCloseServerSocket(e, serverSocket);
+            ProcessLogger.PROTOCOL_LOGGER.failedToCloseServerSocket(e, serverSocket);
         }
     }
 
@@ -312,7 +311,7 @@ public final class StreamUtils {
         if (marshaller != null) try {
             marshaller.finish();
         } catch (IOException e) {
-            ROOT_LOGGER.failedToFinishMarshaller(e, marshaller);
+            ProcessLogger.PROTOCOL_LOGGER.failedToFinishMarshaller(e, marshaller);
         }
     }
 
@@ -320,7 +319,7 @@ public final class StreamUtils {
         if (unmarshaller != null) try {
             unmarshaller.finish();
         } catch (IOException e) {
-            ROOT_LOGGER.failedToFinishUnmarshaller(e, unmarshaller);
+            ProcessLogger.PROTOCOL_LOGGER.failedToFinishUnmarshaller(e, unmarshaller);
         }
     }
 
@@ -328,7 +327,7 @@ public final class StreamUtils {
         if (writer != null) try {
             writer.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, writer);
+            ProcessLogger.PROTOCOL_LOGGER.failedToCloseResource(t, writer);
         }
     }
 }

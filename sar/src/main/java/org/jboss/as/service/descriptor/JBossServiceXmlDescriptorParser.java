@@ -35,7 +35,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.service.SarMessages;
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -635,11 +635,11 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             case XMLStreamConstants.START_ELEMENT: kind = "element start"; break;
             default: kind = "unknown"; break;
         }
-        return new XMLStreamException(SarMessages.MESSAGES.unexpectedContent(kind, reader.getName(), reader.getText()), reader.getLocation());
+        return new XMLStreamException(SarLogger.ROOT_LOGGER.unexpectedContent(kind, reader.getName(), reader.getText()), reader.getLocation());
     }
 
     private static XMLStreamException missingAttributes(final Location location, final Set<Attribute> required) {
-        final StringBuilder b = new StringBuilder(SarMessages.MESSAGES.missingRequiredAttributes());
+        final StringBuilder b = new StringBuilder(SarLogger.ROOT_LOGGER.missingRequiredAttributes());
         for (Attribute attribute : required) {
             b.append(' ').append(attribute);
         }

@@ -28,12 +28,10 @@ import java.net.Socket;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.Connection.ClosedCallback;
 
 import javax.net.SocketFactory;
-
-import static org.jboss.as.process.protocol.ProtocolLogger.CLIENT_LOGGER;
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
 
 /**
  * A protocol client for management commands, which can also asynchronously receive protocol messages.
@@ -63,36 +61,36 @@ public final class ProtocolClient {
         readExecutor = configuration.getReadExecutor();
         callback = configuration.getClosedCallback();
         if (threadFactory == null) {
-            throw MESSAGES.nullVar("threadFactory");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("threadFactory");
         }
         if (socketFactory == null) {
-            throw MESSAGES.nullVar("factory");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("factory");
         }
         if (serverAddress == null) {
-            throw MESSAGES.nullVar("serverAddress");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("serverAddress");
         }
         if (messageHandler == null) {
-            throw MESSAGES.nullVar("handler");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("handler");
         }
         if (readExecutor == null) {
-            throw MESSAGES.nullVar("readExecutor");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("readExecutor");
         }
     }
 
     public Connection connect() throws IOException {
-        CLIENT_LOGGER.tracef("Creating connection to %s", serverAddress);
+        ProcessLogger.PROTOCOL_CLIENT_LOGGER.tracef("Creating connection to %s", serverAddress);
         final Socket socket = socketFactory.createSocket();
         final ConnectionImpl connection = new ConnectionImpl(socket, messageHandler, readExecutor, callback);
         final Thread thread = threadFactory.newThread(connection.getReadTask());
         if (thread == null) {
-            throw MESSAGES.threadCreationRefused();
+            throw ProcessLogger.ROOT_LOGGER.threadCreationRefused();
         }
         if (bindAddress != null) socket.bind(bindAddress);
         if (readTimeout != 0) socket.setSoTimeout(readTimeout);
         socket.connect(serverAddress, connectTimeout);
         thread.setName("Read thread for " + serverAddress);
         thread.start();
-        CLIENT_LOGGER.tracef("Connected to %s", serverAddress);
+        ProcessLogger.PROTOCOL_CLIENT_LOGGER.tracef("Connected to %s", serverAddress);
         return connection;
     }
 

@@ -32,7 +32,7 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
@@ -106,15 +106,15 @@ public class EntityBeanComponentCreateService extends EJBComponentCreateService 
             }
         }
         if (ejbStore == null) {
-            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbStore");
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEntityBeanMethod("ejbStore");
         } else if (ejbLoad == null) {
-            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbLoad");
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEntityBeanMethod("ejbLoad");
         } else if (ejbActivate == null) {
-            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbActivate");
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEntityBeanMethod("ejbActivate");
         } else if (ejbPassivate == null) {
-            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("ejbPassivate");
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEntityBeanMethod("ejbPassivate");
         } else if (unsetEntityContext == null) {
-            throw EjbMessages.MESSAGES.couldNotFindEntityBeanMethod("unsetEntityContext");
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEntityBeanMethod("unsetEntityContext");
         }
 
         this.ejbActivateMethod = ejbActivate;

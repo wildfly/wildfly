@@ -51,7 +51,11 @@ import org.jboss.dmr.ModelType;
  */
 public class DistributedCacheResourceDefinition extends SharedCacheResourceDefinition {
 
-    public static final PathElement DISTRIBUTED_CACHE_PATH = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE, name);
+    }
 
     // attributes
     static final SimpleAttributeDefinition L1_LIFESPAN = new SimpleAttributeDefinitionBuilder(ModelKeys.L1_LIFESPAN, ModelType.LONG, true)
@@ -60,16 +64,16 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(600000))
-            .build()
-    ;
+            .build();
+
     static final SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
             .setXmlName(Attribute.OWNERS.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(2))
             .setValidator(new IntRangeValidator(1, true, true))
-            .build()
-    ;
+            .build();
+
     @Deprecated
     static final SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
             .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
@@ -78,8 +82,8 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
             .setDefaultValue(new ModelNode().set(1))
             .setDeprecated(ModelVersion.create(1, 4, 0))
             .setAlternatives(ModelKeys.SEGMENTS)
-            .build()
-    ;
+            .build();
+
     @SuppressWarnings("deprecation")
     static final SimpleAttributeDefinition SEGMENTS = new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
             .setXmlName(Attribute.SEGMENTS.getLocalName())
@@ -88,26 +92,22 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
             .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
             .setValidator(new IntRangeValidator(1, true, true))
             .setAlternatives(ModelKeys.VIRTUAL_NODES)
-            .build()
-    ;
+            .build();
 
-    static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = { OWNERS, SEGMENTS, L1_LIFESPAN };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OWNERS, SEGMENTS, L1_LIFESPAN };
 
-    public DistributedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
-        super(DISTRIBUTED_CACHE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.DISTRIBUTED_CACHE),
-                DistributedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE, resolvePathHandler, runtimeRegistration);
+    DistributedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(ModelKeys.DISTRIBUTED_CACHE, DistributedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        super.registerAttributes(registration);
 
         // check that we don't need a special handler here?
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(DISTRIBUTED_CACHE_ATTRIBUTES);
-        for (AttributeDefinition attr : DISTRIBUTED_CACHE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
         // Attribute virtual-nodes has been deprecated, convert to the corresponding segments value if not the default.
@@ -146,6 +146,6 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
         };
 
         // Legacy attributes
-        resourceRegistration.registerReadWriteAttribute(VIRTUAL_NODES, null, virtualNodesWriteHandler);
+        registration.registerReadWriteAttribute(VIRTUAL_NODES, null, virtualNodesWriteHandler);
     }
 }

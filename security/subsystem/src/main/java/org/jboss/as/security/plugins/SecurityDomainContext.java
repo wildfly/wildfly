@@ -27,7 +27,7 @@ import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.JSSESecurityDomain;
@@ -69,7 +69,7 @@ public class SecurityDomainContext {
     public Object lookup(String name) throws NamingException {
         Object binding = null;
         if (name == null || name.length() == 0)
-            throw SecurityMessages.MESSAGES.nullName();
+            throw SecurityLogger.ROOT_LOGGER.nullName();
 
         if (name.equals(ACTIVE_SUBJECT))
             binding = getSubject();

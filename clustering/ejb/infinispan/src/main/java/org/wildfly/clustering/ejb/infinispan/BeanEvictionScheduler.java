@@ -25,11 +25,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batcher;
-import org.wildfly.clustering.ejb.Bean;
 
 /**
  * Schedules a bean for eviction.
@@ -40,34 +40,59 @@ import org.wildfly.clustering.ejb.Bean;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> {
+public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionContext<I> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
-    final Batcher batcher;
-    final Evictor<I> evictor;
+    private final Batcher batcher;
+    private final Evictor<I> evictor;
+    private final CommandDispatcher<BeanEvictionContext<I>> dispatcher;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(Batcher batcher, Evictor<I> evictor, PassivationConfiguration<?> config) {
+    public BeanEvictionScheduler(String name, Batcher batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
+        this.dispatcher = dispatcherFactory.<BeanEvictionContext<I>>createCommandDispatcher(name, this);
     }
 
     @Override
-    public void cancel(Bean<G, I, T> bean) {
+    public Batcher getBatcher() {
+        return this.batcher;
+    }
+
+    @Override
+    public Evictor<I> getEvictor() {
+        return this.evictor;
+    }
+
+    @Override
+    public void cancel(I id) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.remove(bean.getId());
+            this.evictionQueue.remove(id);
         }
     }
 
     @Override
-    public void schedule(Bean<G, I, T> bean) {
+    public void cancel(Locality locality) {
         synchronized (this.evictionQueue) {
-            this.evictionQueue.add(bean.getId());
+            Iterator<I> beans = this.evictionQueue.iterator();
+            while (beans.hasNext()) {
+                I id = beans.next();
+                if (!locality.isLocal(id)) {
+                    beans.remove();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void schedule(I id) {
+        synchronized (this.evictionQueue) {
+            this.evictionQueue.add(id);
             // Trigger eviction of oldest bean if necessary
             if (this.evictionQueue.size() > this.config.getConfiguration().getMaxSize()) {
                 Iterator<I> beans = this.evictionQueue.iterator();
-                this.config.getExecutor().execute(new EvictionTask(beans.next()));
+                this.dispatcher.submitOnCluster(new BeanEvictionCommand<>(beans.next()));
                 beans.remove();
             }
         }
@@ -78,30 +103,6 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> 
         synchronized (this.evictionQueue) {
             this.evictionQueue.clear();
         }
-    }
-
-    private class EvictionTask implements Runnable {
-        private final I id;
-
-        EvictionTask(I id) {
-            this.id = id;
-        }
-
-        @Override
-        public void run() {
-            Batch batch = BeanEvictionScheduler.this.batcher.startBatch();
-            boolean success = false;
-            try {
-                InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
-                BeanEvictionScheduler.this.evictor.evict(this.id);
-                success = true;
-            } finally {
-                if (success) {
-                    batch.close();
-                } else {
-                    batch.discard();
-                }
-            }
-        }
+        this.dispatcher.close();
     }
 }

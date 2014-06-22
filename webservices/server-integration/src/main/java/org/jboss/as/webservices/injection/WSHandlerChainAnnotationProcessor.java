@@ -23,9 +23,6 @@
 package org.jboss.as.webservices.injection;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
-import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
-import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -44,14 +41,13 @@ import java.util.Set;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.WSLogger;
+import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -73,14 +69,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, unit)) {
             return;
         }
-        // wars define resource roots
-        AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
-        if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
-            // ejb archives don't define resource roots, using root resource
-            resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
-            final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
-            resourceRoots.add(root);
-        }
+        List<ResourceRoot> resourceRoots = ASHelper.getResourceRoots(unit);
         if (resourceRoots == null) {
             return;
         }
@@ -158,7 +147,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                 return config.openStream();
             }
 
-            throw MESSAGES.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
+            throw WSLogger.ROOT_LOGGER.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
         }
     }
 

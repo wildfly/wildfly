@@ -27,6 +27,7 @@ import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.ejb3.annotation.TransactionTimeout;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
+import org.jboss.metadata.property.PropertyReplacer;
 
 public class TransactionTimeoutAnnotationInformationFactory extends ClassAnnotationInformationFactory<TransactionTimeout, Integer> {
 
@@ -35,7 +36,7 @@ public class TransactionTimeoutAnnotationInformationFactory extends ClassAnnotat
     }
 
     @Override
-    protected Integer fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+    protected Integer fromAnnotation(final AnnotationInstance annotationInstance, final PropertyReplacer propertyReplacer) {
         final long timeout = annotationInstance.value().asLong();
         AnnotationValue unitAnnVal = annotationInstance.value("unit");
         final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.SECONDS;

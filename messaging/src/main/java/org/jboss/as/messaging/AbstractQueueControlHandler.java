@@ -22,31 +22,36 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.EnumSet;
-import java.util.Locale;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.resolveFilter;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeOnlyOperation;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.LONG;
+import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,8 +60,11 @@ import org.jboss.msc.service.ServiceName;
  * or a {@link org.hornetq.api.jms.management.JMSQueueControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2014 Red Hat Inc.
  */
 public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnlyHandler {
+
+    private static ResourceDescriptionResolver RESOLVER = MessagingExtension.getResourceDescriptionResolver(QUEUE);
 
     public static final String LIST_MESSAGES = "list-messages";
     public static final String LIST_MESSAGES_AS_JSON = "list-messages-as-json";
@@ -83,199 +91,126 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     public static final String LIST_CONSUMERS = "list-consumers";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
 
-    public static final String MESSAGE_ID = "message-id";
-    public static final String NEW_PRIORITY = "new-priority";
-    public static final String OTHER_QUEUE_NAME = "other-queue-name";
-    public static final String REJECT_DUPLICATES = "reject-duplicates";
+    public static final ParameterValidator PRIORITY_VALIDATOR = new IntRangeValidator(0, 9, false, false);
 
-    private final ParametersValidator singleOptionalFilterValidator = new ParametersValidator();
-    private final ParametersValidator singleMessageIdValidator = new ParametersValidator();
-    private final ParametersValidator changeMessagePriorityValidator = new ParametersValidator();
-    private final ParametersValidator changeMessagesPriorityValidator = new ParametersValidator();
-    private final ParametersValidator moveMessageValidator = new ParametersValidator();
-    private final ParametersValidator moveMessagesValidator = new ParametersValidator();
+    private static final AttributeDefinition OTHER_QUEUE_NAME = createNonEmptyStringAttribute("other-queue-name");
+    private static final AttributeDefinition REJECT_DUPLICATES = SimpleAttributeDefinitionBuilder.create("reject-duplicates", BOOLEAN)
+            .setAllowNull(true)
+            .build();
+    private static final AttributeDefinition NEW_PRIORITY = SimpleAttributeDefinitionBuilder.create("new-priority", INT)
+            .setValidator(PRIORITY_VALIDATOR)
+            .build();
 
-    protected AbstractQueueControlHandler(final ParameterValidator messageIdValidator) {
-        //populate validators
+    protected abstract AttributeDefinition getMessageIDAttributeDefinition();
 
-        final ParameterValidator filterValidator = new ModelTypeValidator(ModelType.STRING, true, false);
-        final ParameterValidator queueNameValidator = new StringLengthValidator(1);
-        final ParameterValidator rejectDuplicatesValidator = new ModelTypeValidator(ModelType.BOOLEAN, true);
-        final ParameterValidator priorityValidator = new IntRangeValidator(0, 9, false, false);
+    protected abstract AttributeDefinition[] getReplyMessageParameterDefinitions();
 
-        singleOptionalFilterValidator.registerValidator(FILTER.getName(), filterValidator);
-        singleMessageIdValidator.registerValidator(MESSAGE_ID, messageIdValidator);
-        changeMessagePriorityValidator.registerValidator(MESSAGE_ID, messageIdValidator);
-        changeMessagePriorityValidator.registerValidator(NEW_PRIORITY, priorityValidator);
-        changeMessagesPriorityValidator.registerValidator(FILTER.getName(), filterValidator);
-        changeMessagesPriorityValidator.registerValidator(NEW_PRIORITY, priorityValidator);
-        moveMessageValidator.registerValidator(MESSAGE_ID, messageIdValidator);
-        moveMessageValidator.registerValidator(OTHER_QUEUE_NAME, queueNameValidator);
-        moveMessageValidator.registerValidator(REJECT_DUPLICATES, rejectDuplicatesValidator);
-        moveMessagesValidator.registerValidator(FILTER.getName(), filterValidator);
-        moveMessagesValidator.registerValidator(OTHER_QUEUE_NAME, queueNameValidator);
-        moveMessagesValidator.registerValidator(REJECT_DUPLICATES, rejectDuplicatesValidator);
-    }
+    public void registerOperations(final ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
 
-    public void registerOperations(final ManagementResourceRegistration registry) {
-
-        final boolean forJMS = isJMS();
-
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
-        final EnumSet<OperationEntry.Flag> runtimeOnly = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
-
-        registry.registerOperationHandler(LIST_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListMessages(locale, forJMS, false);
-            }
-        }, false, OperationEntry.EntryType.PUBLIC, readOnly);
-
-        registry.registerOperationHandler(LIST_MESSAGES_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getListMessages(locale, forJMS, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(COUNT_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getCountMessages(locale);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(REMOVE_MESSAGE, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getRemoveMessage(locale, forJMS);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(REMOVE_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getRemoveMessages(locale);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(EXPIRE_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getExpireMessages(locale);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(EXPIRE_MESSAGE, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getExpireMessage(locale, forJMS);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSendMessageToDeadLetterAddress(locale, forJMS);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSendMessagesToDeadLetterAddress(locale);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(CHANGE_MESSAGE_PRIORITY, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getChangeMessagePriority(locale, forJMS);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(CHANGE_MESSAGES_PRIORITY, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getChangeMessagesPriority(locale);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(MOVE_MESSAGE, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getMoveMessage(locale, forJMS);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(MOVE_MESSAGES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getMoveMessages(locale);
-            }
-        }, runtimeOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES, resolver)
+                .setParameters(FILTER)
+                .setReplyType(LIST)
+                .setReplyParameters(getReplyMessageParameterDefinitions())
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGES_AS_JSON, RESOLVER)
+                .setParameters(FILTER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(COUNT_MESSAGES, RESOLVER)
+                .setParameters(FILTER)
+                .setReplyType(LONG)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(REMOVE_MESSAGE, RESOLVER)
+                .setParameters(getMessageIDAttributeDefinition())
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(REMOVE_MESSAGES, RESOLVER)
+                .setParameters(CommonAttributes.FILTER)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(EXPIRE_MESSAGE, RESOLVER)
+                .setParameters(getMessageIDAttributeDefinition())
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(EXPIRE_MESSAGES, RESOLVER)
+                .setParameters(FILTER)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS, RESOLVER)
+                .setParameters(getMessageIDAttributeDefinition())
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS, RESOLVER)
+                .setParameters(FILTER)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(CHANGE_MESSAGE_PRIORITY, RESOLVER)
+                .setParameters(getMessageIDAttributeDefinition(), NEW_PRIORITY)
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(CHANGE_MESSAGES_PRIORITY, RESOLVER)
+                .setParameters(FILTER, NEW_PRIORITY)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(MOVE_MESSAGE, RESOLVER)
+                .setParameters(getMessageIDAttributeDefinition(), OTHER_QUEUE_NAME, REJECT_DUPLICATES)
+                .setReplyType(INT)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(MOVE_MESSAGES, RESOLVER)
+                .setParameters(FILTER, OTHER_QUEUE_NAME, REJECT_DUPLICATES)
+                .setReplyType(INT)
+                .build(),
+                this);
 
         // TODO dmr-based LIST_MESSAGE_COUNTER
 
-        registry.registerOperationHandler(LIST_MESSAGE_COUNTER_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_AS_JSON, "queue", ModelType.STRING, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_MESSAGE_COUNTER_AS_HTML, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_AS_HTML, "queue", ModelType.STRING, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(RESET_MESSAGE_COUNTER, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESET_MESSAGE_COUNTER, "queue");
-            }
-        }, runtimeOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_AS_JSON, RESOLVER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_AS_HTML, RESOLVER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(RESET_MESSAGE_COUNTER, RESOLVER)
+                .build(),
+                this);
 
         // TODO dmr-based LIST_MESSAGE_COUNTER_HISTORY
 
-        registry.registerOperationHandler(LIST_MESSAGE_COUNTER_HISTORY_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_HISTORY_AS_JSON, "queue", ModelType.STRING, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, "queue", ModelType.STRING, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(PAUSE, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, PAUSE, "queue");
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(RESUME, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESUME, "queue");
-            }
-        }, runtimeOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_HISTORY_AS_JSON, RESOLVER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_MESSAGE_COUNTER_HISTORY_AS_HTML, RESOLVER)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(PAUSE, RESOLVER)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(RESUME, RESOLVER)
+                .build(),
+                this);
 
         // TODO LIST_CONSUMERS
 
-        registry.registerOperationHandler(LIST_CONSUMERS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_CONSUMERS_AS_JSON, "queue", ModelType.STRING, true);
-            }
-        }, readOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_CONSUMERS_AS_JSON, RESOLVER)
+                .setReplyType(STRING)
+                .build(),
+                this);
     }
 
     @Override
@@ -293,65 +228,66 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
 
         if (control == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         boolean reversible = false;
         Object handback = null;
         try {
             if (LIST_MESSAGES.equals(operationName)) {
-                String json = control.listMessagesAsJSON(getFilter(operation));
+                String filter = resolveFilter(context, operation);
+                String json = control.listMessagesAsJSON(filter);
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_MESSAGES_AS_JSON.equals(operationName)) {
-                context.getResult().set(control.listMessagesAsJSON(getFilter(operation)));
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(control.listMessagesAsJSON(filter));
             } else if (COUNT_MESSAGES.equals(operationName)) {
-                context.getResult().set(control.countMessages(getFilter(operation)));
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(control.countMessages(filter));
             } else if (REMOVE_MESSAGE.equals(operationName)) {
-                singleMessageIdValidator.validate(operation);
-                ModelNode id = operation.require(MESSAGE_ID);
+                ModelNode id = getMessageIDAttributeDefinition().resolveModelAttribute(context, operation);
                 context.getResult().set(control.removeMessage(id));
             } else if (REMOVE_MESSAGES.equals(operationName)) {
-                context.getResult().set(control.removeMessages(getFilter(operation)));
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(control.removeMessages(filter));
             } else if (EXPIRE_MESSAGES.equals(operationName)) {
-                context.getResult().set(control.expireMessages(getFilter(operation)));
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(control.expireMessages(filter));
             } else if (EXPIRE_MESSAGE.equals(operationName)) {
-                singleMessageIdValidator.validate(operation);
-                ModelNode id = operation.require(MESSAGE_ID);
+                ModelNode id = getMessageIDAttributeDefinition().resolveModelAttribute(context, operation);
                 context.getResult().set(control.expireMessage(id));
             } else if (SEND_MESSAGE_TO_DEAD_LETTER_ADDRESS.equals(operationName)) {
-                singleMessageIdValidator.validate(operation);
-                ModelNode id = operation.require(MESSAGE_ID);
+                ModelNode id = getMessageIDAttributeDefinition().resolveModelAttribute(context, operation);
                 context.getResult().set(control.sendMessageToDeadLetterAddress(id));
             } else if (SEND_MESSAGES_TO_DEAD_LETTER_ADDRESS.equals(operationName)) {
-                context.getResult().set(control.sendMessagesToDeadLetterAddress(getFilter(operation)));
+                String filter = resolveFilter(context, operation);
+                context.getResult().set(control.sendMessagesToDeadLetterAddress(filter));
             } else if (CHANGE_MESSAGE_PRIORITY.equals(operationName)) {
-                changeMessagePriorityValidator.validate(operation);
-                ModelNode id = operation.require(MESSAGE_ID);
-                int priority = operation.require(NEW_PRIORITY).asInt();
+                ModelNode id = getMessageIDAttributeDefinition().resolveModelAttribute(context, operation);
+                int priority = NEW_PRIORITY.resolveModelAttribute(context, operation).asInt();
                 context.getResult().set(control.changeMessagePriority(id, priority));
             } else if (CHANGE_MESSAGES_PRIORITY.equals(operationName)) {
-                changeMessagesPriorityValidator.validate(operation);
-                int priority = operation.require(NEW_PRIORITY).asInt();
-                context.getResult().set(control.changeMessagesPriority(getFilter(operation), priority));
+                String filter = resolveFilter(context, operation);
+                int priority = NEW_PRIORITY.resolveModelAttribute(context, operation).asInt();
+                context.getResult().set(control.changeMessagesPriority(filter, priority));
             } else if (MOVE_MESSAGE.equals(operationName)) {
-                moveMessageValidator.validate(operation);
-                ModelNode id = operation.require(MESSAGE_ID);
-                String otherQueue = operation.require(OTHER_QUEUE_NAME).asString();
-                if (operation.hasDefined(REJECT_DUPLICATES)) {
-                    boolean reject = operation.get(REJECT_DUPLICATES).asBoolean();
-                    context.getResult().set(control.moveMessage(id, otherQueue, reject));
+                ModelNode id = getMessageIDAttributeDefinition().resolveModelAttribute(context, operation);
+                String otherQueue = OTHER_QUEUE_NAME.resolveModelAttribute(context, operation).asString();
+                ModelNode rejectDuplicates = REJECT_DUPLICATES.resolveModelAttribute(context, operation);
+                if (rejectDuplicates.isDefined()) {
+                    context.getResult().set(control.moveMessage(id, otherQueue, rejectDuplicates.asBoolean()));
                 } else {
                     context.getResult().set(control.moveMessage(id, otherQueue));
                 }
             } else if (MOVE_MESSAGES.equals(operationName)) {
-                moveMessagesValidator.validate(operation);
-                String otherQueue = operation.require(OTHER_QUEUE_NAME).asString();
-                if (operation.hasDefined(REJECT_DUPLICATES)) {
-                    boolean reject = operation.get(REJECT_DUPLICATES).asBoolean();
-                    context.getResult().set(control.moveMessages(getFilter(operation), otherQueue, reject));
+                String filter = resolveFilter(context, operation);
+                String otherQueue = OTHER_QUEUE_NAME.resolveModelAttribute(context, operation).asString();
+                ModelNode rejectDuplicates = REJECT_DUPLICATES.resolveModelAttribute(context, operation);
+                if (rejectDuplicates.isDefined()) {
+                    context.getResult().set(control.moveMessages(filter, otherQueue, rejectDuplicates.asBoolean()));
                 } else {
-                    context.getResult().set(control.moveMessages(getFilter(operation), otherQueue));
+                    context.getResult().set(control.moveMessages(filter, otherQueue));
                 }
             } else if (LIST_MESSAGE_COUNTER_AS_JSON.equals(operationName)) {
                 context.getResult().set(control.listMessageCounter());
@@ -421,17 +357,9 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
     protected abstract void revertAdditionalOperation(final String operationName, final ModelNode operation,
                                                       final OperationContext context, T queueControl, Object handback);
 
-    protected abstract boolean isJMS();
-
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug
-        throw MESSAGES.unsupportedOperation(operationName);
-    }
-
-    private String getFilter(ModelNode operation) throws OperationFailedException {
-        singleOptionalFilterValidator.validate(operation);
-        String filter = operation.hasDefined(FILTER.getName()) ? operation.get(FILTER.getName()).asString() : null;
-        return filter;
+        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
     }
 
     /**

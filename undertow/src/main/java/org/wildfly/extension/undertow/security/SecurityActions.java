@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.undertow.security;
 
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -31,6 +29,7 @@ import org.jboss.security.RunAs;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -57,7 +56,7 @@ class SecurityActions {
                     try {
                         return SecurityContextFactory.createSecurityContext(domain);
                     } catch (Exception e) {
-                        throw MESSAGES.failToCreateSecurityContext(e);
+                        throw UndertowLogger.ROOT_LOGGER.failToCreateSecurityContext(e);
                     }
                 }
             });
@@ -65,7 +64,7 @@ class SecurityActions {
             try {
                 return SecurityContextFactory.createSecurityContext(domain);
             } catch (Exception e) {
-                throw MESSAGES.failToCreateSecurityContext(e);
+                throw UndertowLogger.ROOT_LOGGER.failToCreateSecurityContext(e);
             }
         }
     }
@@ -134,7 +133,7 @@ class SecurityActions {
                 @Override
                 public RunAs run() {
                     if (sc == null) {
-                        throw MESSAGES.noSecurityContext();
+                        throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
                     }
                     RunAs old = sc.getOutgoingRunAs();
                     sc.setOutgoingRunAs(principal);
@@ -143,7 +142,7 @@ class SecurityActions {
             });
         } else {
             if (sc == null) {
-                throw MESSAGES.noSecurityContext();
+                throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
             }
             RunAs old = sc.getOutgoingRunAs();
             sc.setOutgoingRunAs(principal);
@@ -162,7 +161,7 @@ class SecurityActions {
                 @Override
                 public RunAs run() {
                     if (sc == null) {
-                        throw MESSAGES.noSecurityContext();
+                        throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
                     }
                     RunAs principal = sc.getOutgoingRunAs();
                     sc.setOutgoingRunAs(null);
@@ -171,7 +170,7 @@ class SecurityActions {
             });
         } else {
             if (sc == null) {
-                throw MESSAGES.noSecurityContext();
+                throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
             }
             RunAs principal = sc.getOutgoingRunAs();
             sc.setOutgoingRunAs(null);
@@ -185,14 +184,14 @@ class SecurityActions {
                 @Override
                 public RunAs run() {
                     if (sc == null) {
-                        throw MESSAGES.noSecurityContext();
+                        throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
                     }
                     return sc.getOutgoingRunAs();
                 }
             });
         } else {
             if (sc == null) {
-                throw MESSAGES.noSecurityContext();
+                throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
             }
             return sc.getOutgoingRunAs();
         }

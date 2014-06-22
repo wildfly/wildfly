@@ -1,3 +1,0 @@
-org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryProvider
-org.wildfly.clustering.server.group.ChannelGroupProvider
-org.wildfly.clustering.server.group.ChannelNodeFactoryProvider

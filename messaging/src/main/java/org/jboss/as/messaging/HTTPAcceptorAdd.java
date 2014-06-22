@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -40,12 +39,12 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-public class HTTPAcceptorAdd extends TransportConfigOperationHandlers.BasicTransportConfigAdd implements DescriptionProvider {
+public class HTTPAcceptorAdd extends HornetQReloadRequiredHandlers.AddStepHandler {
 
     public static final HTTPAcceptorAdd INSTANCE = new HTTPAcceptorAdd();
 
     private HTTPAcceptorAdd() {
-        super(false, HTTPAcceptorDefinition.ATTRIBUTES);
+        super(HTTPAcceptorDefinition.ATTRIBUTES);
     }
 
 

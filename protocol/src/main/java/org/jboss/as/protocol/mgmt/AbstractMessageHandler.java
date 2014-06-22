@@ -34,8 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -56,7 +55,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
         if(executorService == null) {
-            throw ProtocolMessages.MESSAGES.nullExecutor();
+            throw ProtocolLogger.ROOT_LOGGER.nullExecutor();
         }
         this.executorService = executorService;
     }
@@ -107,7 +106,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
             final ActiveRequest<?, ?> request = requests.remove(response.getResponseId());
             if(request == null) {
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(response.getResponseId()));
+                safeWriteErrorResponse(channel, header, ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(response.getResponseId()));
             } else if(response.getError() != null) {
                 request.handleFailed(response);
             } else {
@@ -119,7 +118,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                 final ManagementRequestHeader requestHeader = validateRequest(header);
                 final ManagementRequestHandler<?, ?> handler = getRequestHandler(requestHeader);
                 if(handler == null) {
-                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                    safeWriteErrorResponse(channel, header, ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(requestHeader.getBatchId()));
                 } else {
                     handleMessage(channel, input, requestHeader, handler);
                 }
@@ -167,9 +166,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task, final boolean cancellable) {
                     final ManagementRequestContext<A> context = this;
-                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner(cancellable) {
                         @Override
                         protected void doExecute() {
                             try {
@@ -177,21 +176,36 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                             } catch (Exception e) {
                                 resultHandler.failed(e);
                                 requests.remove(requestId);
+                                if (e instanceof InterruptedException) {
+                                    Thread.currentThread().interrupt();
+                                }
                             }
                         }
                     };
-                    support.addCancellable(runner);
+                    if (cancellable) {
+                        support.addCancellable(runner);
+                    }
                     return runner;
                 }
 
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
-                    executeAsync(task, getExecutor());
+                    executeAsync(task, true, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable) {
+                    executeAsync(task, cancellable, getExecutor());
                 }
 
                 @Override
                 public void executeAsync(AsyncTask<A> task, Executor executor) {
-                    executor.execute(createAsyncTaskRunner(task));
+                    executeAsync(task, true, executor);
+                }
+
+                @Override
+                public void executeAsync(AsyncTask<A> task, boolean cancellable, Executor executor) {
+                    executor.execute(createAsyncTaskRunner(task, cancellable));
                 }
 
                 @Override
@@ -232,7 +246,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     protected <T, A> void handleMessage(final Channel channel, final DataInput message, final ManagementRequestHeader header, ManagementRequestHandler<T, A> handler) throws IOException {
         final ActiveOperation<T, A> support = getActiveOperation(header);
         if(support == null) {
-            throw ProtocolMessages.MESSAGES.responseHandlerNotFound(header.getBatchId());
+            throw ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(header.getBatchId());
         }
         handleMessage(channel, message, header, support, handler);
     }
@@ -274,9 +288,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task, final boolean cancellable) {
                     final ManagementRequestContext<A> context = this;
-                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner(cancellable) {
                         @Override
                         protected void doExecute() {
                             try {
@@ -289,19 +303,31 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                             }
                         }
                     };
-                    support.addCancellable(runner);
+                    if (cancellable) {
+                        support.addCancellable(runner);
+                    }
                     return runner;
                 }
 
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
-                    executeAsync(task, getExecutor());
+                    executeAsync(task, true, getExecutor());
                 }
 
                 @Override
-                public void executeAsync(final AsyncTask<A> task, final Executor executor) {
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable) {
+                    executeAsync(task, cancellable, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(AsyncTask<A> task, Executor executor) {
+                    executeAsync(task, true, executor);
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable, final Executor executor) {
                     try {
-                        executor.execute(createAsyncTaskRunner(task));
+                        executor.execute(createAsyncTaskRunner(task, cancellable));
                     } catch (RejectedExecutionException e) {
                         if(resultHandler.failed(e)) {
                             safeWriteErrorResponse(channel, header, e);
@@ -447,7 +473,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
         return new ManagementRequestHandler<T, A>() {
             @Override
             public void handleRequest(final DataInput input, ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException {
-                final Exception error = ProtocolMessages.MESSAGES.noSuchResponseHandler(Integer.toHexString(header.getRequestId()));
+                final Exception error = ProtocolLogger.ROOT_LOGGER.noSuchResponseHandler(Integer.toHexString(header.getRequestId()));
                 if(resultHandler.failed(error)) {
                     safeWriteErrorResponse(context.getChannel(), context.getRequestHeader(), error);
                 }
@@ -475,15 +501,20 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
     private abstract static class AsyncTaskRunner implements Runnable, Cancellable {
 
+        private final boolean cancellable;
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private volatile Thread thread;
 
+        private AsyncTaskRunner(boolean cancellable) {
+            this.cancellable = cancellable;
+        }
         @Override
         public Cancellable cancel() {
-            if(cancelled.compareAndSet(false, true)) {
+            if (cancellable && cancelled.compareAndSet(false, true)) {
                 final Thread thread = this.thread;
                 if(thread != null) {
                     thread.interrupt();
+                    ProtocolLogger.ROOT_LOGGER.cancelledAsyncTask(getClass().getSimpleName(), thread);
                 }
             }
             return this;
@@ -496,8 +527,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
         @Override
         public void run() {
-            if(cancelled.get()) {
+            if (cancellable && cancelled.get()) {
                 Thread.currentThread().interrupt();
+                ProtocolLogger.ROOT_LOGGER.cancelledAsyncTaskBeforeRun(getClass().getSimpleName());
             }
             this.thread = Thread.currentThread();
             try {
@@ -505,6 +537,10 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
             } finally {
                 this.thread = null;
             }
+        }
+
+        final boolean isCancelled() {
+            return cancelled.get();
         }
     }
 

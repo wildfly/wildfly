@@ -1,0 +1,10 @@
+<jboss umlns="urn:jboss:1.0">
+    <shared-session-config xmlns="urn:jboss:shared-session-config:1.0">
+        <session-config>
+            <cookie-config>
+                <path>/</path>
+            </cookie-config>
+        </session-config>
+    </shared-session-config>
+</jboss>
+

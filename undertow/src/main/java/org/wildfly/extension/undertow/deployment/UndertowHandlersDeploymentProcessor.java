@@ -37,7 +37,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.io.IOException;
 import java.net.URL;
@@ -100,7 +100,7 @@ public class UndertowHandlersDeploymentProcessor implements DeploymentUnitProces
                 }
                 deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, new ConfiguredHandlerWrapper(handlerClass, params));
             } catch (Exception e) {
-                throw UndertowMessages.MESSAGES.failedToConfigureHandlerClass(hander.getHandlerClass(), e);
+                throw UndertowLogger.ROOT_LOGGER.failedToConfigureHandlerClass(hander.getHandlerClass(), e);
             }
         }
 

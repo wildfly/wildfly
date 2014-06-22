@@ -34,8 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.xml.DOMConfigurator;
-import org.jboss.as.logging.LoggingLogger;
-import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -189,7 +188,7 @@ public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentP
                 }
             }
         } catch (IOException e) {
-            throw LoggingMessages.MESSAGES.errorProcessingLoggingConfiguration(e);
+            throw LoggingLogger.ROOT_LOGGER.errorProcessingLoggingConfiguration(e);
         }
         return result;
     }
@@ -250,7 +249,7 @@ public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentP
                 }
             }
         } catch (Exception e) {
-            throw LoggingMessages.MESSAGES.failedToConfigureLogging(e, configFile.getName());
+            throw LoggingLogger.ROOT_LOGGER.failedToConfigureLogging(e, configFile.getName());
         } finally {
             safeClose(configStream);
         }

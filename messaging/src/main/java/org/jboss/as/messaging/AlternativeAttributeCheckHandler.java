@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 public final class AlternativeAttributeCheckHandler implements OperationStepHandler {
@@ -66,11 +66,11 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
             final Resource resource = context.readResource(EMPTY_ADDRESS);
             if (alternativeMustBeSet) {
                 if (!attr.hasAlternative(resource.getModel())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.undefineAttributeWithoutAlternative(attributeName)));
+                    throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.undefineAttributeWithoutAlternative(attributeName)));
                 }
             } else {
                 if (attr.hasAlternative(resource.getModel())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
+                    throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.altAttributeAlreadyDefined(attributeName)));
                 }
             }
         }
@@ -80,9 +80,9 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         boolean hasAttr1 = operation.hasDefined(attr1);
         boolean hasAttr2 = operation.hasDefined(attr2);
         if (!hasAttr1 && !hasAttr2 && !acceptNone) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationParameters(attr1, attr2)));
+            throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.invalidOperationParameters(attr1, attr2)));
         } else if (hasAttr1 && hasAttr2) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotIncludeOperationParameters(attr1, attr2)));
+            throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.cannotIncludeOperationParameters(attr1, attr2)));
         }
     }
 }

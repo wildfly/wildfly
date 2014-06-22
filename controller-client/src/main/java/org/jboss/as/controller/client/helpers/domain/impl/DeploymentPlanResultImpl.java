@@ -22,13 +22,12 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.DeploymentActionResult;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
@@ -60,9 +59,9 @@ public class DeploymentPlanResultImpl implements DeploymentPlanResult {
 
     public DeploymentPlanResultImpl(final DeploymentPlan plan, final InvalidDeploymentPlanException invalidPlanException) {
         if (plan == null)
-            throw MESSAGES.nullVar("plan");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("plan");
         if (invalidPlanException == null)
-            throw MESSAGES.nullVar("invalidPlanException");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("invalidPlanException");
         this.plan = plan;
         this.results = null;
         this.idpe = invalidPlanException;

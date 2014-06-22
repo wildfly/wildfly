@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.InputStream;
 import java.util.Set;
 
@@ -31,6 +29,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -66,7 +65,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    void awaitModelControllerContainerMonitor() throws InterruptedException {
+    void awaitServiceContainerStability() throws InterruptedException {
         // nothing here
     }
 
@@ -144,26 +143,15 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    public ModelNode readModel(PathAddress address) {
-        PathAddress fullAddress = activeStep.address.append(address);
-        return primaryContext.readModel(fullAddress);
-    }
-
-    @Override
-    public ModelNode readModelForUpdate(PathAddress address) {
-        throw readOnlyContext();
-    }
-
-    @Override
     public void acquireControllerLock() {
         if (lockStep == null) {
             try {
-                controller.acquireLock(operationId, true, this);
+                controller.acquireLock(operationId, true);
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
-                throw MESSAGES.operationCancelledAsynchronously();
+                throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
             }
         }
     }
@@ -216,11 +204,6 @@ class ReadOnlyContext extends AbstractOperationContext {
     @Override
     public Resource removeResource(PathAddress relativeAddress) throws UnsupportedOperationException {
         throw readOnlyContext();
-    }
-
-    @Override
-    public Resource getRootResource() {
-        return primaryContext.getRootResource();
     }
 
     @Override
@@ -309,7 +292,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     IllegalStateException readOnlyContext() {
-        return ControllerMessages.MESSAGES.readOnlyContext();
+        return ControllerLogger.ROOT_LOGGER.readOnlyContext();
     }
 
     @Override

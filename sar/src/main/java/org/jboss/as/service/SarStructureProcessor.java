@@ -16,6 +16,7 @@ import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -79,7 +80,7 @@ public class SarStructureProcessor implements DeploymentUnitProcessor {
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
         } catch (IOException e) {
-            SarMessages.MESSAGES.failedToProcessSarChild(e, deploymentRoot);
+            throw SarLogger.ROOT_LOGGER.failedToProcessSarChild(e, deploymentRoot);
         }
 
     }

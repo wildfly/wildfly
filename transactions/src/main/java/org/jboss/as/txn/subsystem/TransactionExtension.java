@@ -24,7 +24,6 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import java.util.Map;
 
@@ -50,7 +49,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.txn.TransactionMessages;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -73,7 +72,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -96,7 +95,7 @@ public class TransactionExtension implements Extension {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
         if (serviceController == null) {
-            throw TransactionMessages.MESSAGES.jmxSubsystemNotInstalled();
+            throw TransactionLogger.ROOT_LOGGER.jmxSubsystemNotInstalled();
         }
         return (MBeanServer) serviceController.getValue();
     }
@@ -105,7 +104,7 @@ public class TransactionExtension implements Extension {
      * {@inheritDoc}
      */
     public void initialize(ExtensionContext context) {
-        ROOT_LOGGER.debug("Initializing Transactions Extension");
+        TransactionLogger.ROOT_LOGGER.debug("Initializing Transactions Extension");
         final LogStoreResource resource = new LogStoreResource();
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -127,6 +126,7 @@ public class TransactionExtension implements Extension {
             final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setPathAttribute(TransactionSubsystemRootResourceDefinition.PATH)
                     .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.RELATIVE_TO)
+                    .setDeprecated(ModelVersion.create(1,4))
                     .build();
             registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
         }
@@ -156,6 +156,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_3.getUriString(), TransactionSubsystem13Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_4.getUriString(), TransactionSubsystem14Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_2_0.getUriString(), TransactionSubsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_0.getUriString(), TransactionSubsystem30Parser.INSTANCE);
     }
 
     // Transformation
@@ -166,6 +167,17 @@ public class TransactionExtension implements Extension {
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        final ResourceTransformationDescriptionBuilder subsystemRoot200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        //Versions < 3.0.0 is not able to handle commit-markable-resource
+        subsystemRoot200.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
+
+        final ModelVersion version200 = ModelVersion.create(2, 0, 0);
+        final TransformationDescription description200 = subsystemRoot200.build();
+        TransformationDescription.Tools.register(description200, subsystem, version200);
+
+
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
@@ -180,6 +192,7 @@ public class TransactionExtension implements Extension {
                 //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
                 .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
+        subsystemRoot.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot.build();
@@ -197,6 +210,7 @@ public class TransactionExtension implements Extension {
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1);
 
+        subsystemRoot.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
         final ModelVersion version111 = ModelVersion.create(1, 1, 1);
         final TransformationDescription description111 = subsystemRoot.build();
         TransformationDescription.Tools.register(description111, subsystem, version111);
@@ -263,7 +277,7 @@ public class TransactionExtension implements Extension {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
+            return TransactionLogger.ROOT_LOGGER.transformHornetQStoreEnableAsyncIoMustBeTrue();
         }
 
         @Override

@@ -69,14 +69,18 @@ import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
+import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
+import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
+
+import javax.security.jacc.PolicyConfiguration;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -84,10 +88,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
-
-import javax.security.jacc.PolicyConfiguration;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -98,7 +98,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer) {
         this.defaultHost = defaultHost;
         if (defaultHost == null) {
-            throw MESSAGES.nullDefaultHost();
+            throw UndertowLogger.ROOT_LOGGER.nullDefaultHost();
         }
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
@@ -126,7 +126,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         String hostName = hostNames.iterator().next();
         if (hostName == null) {
-            throw MESSAGES.nullHostName();
+            throw UndertowLogger.ROOT_LOGGER.nullHostName();
         }
         return hostName;
     }
@@ -142,7 +142,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException(MESSAGES.failedToResolveModule(deploymentUnit));
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
         }
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);
@@ -183,7 +183,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         String deploymentName;
-        if(deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() == null) {
             deploymentName = deploymentUnit.getName();
         } else {
             deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
@@ -204,15 +204,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
         String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName,pathName);
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
-        for(final SetupAction setupAction : setupActions) {
+        for (final SetupAction setupAction : setupActions) {
             Set<ServiceName> dependencies = setupAction.dependencies();
-            if(dependencies != null) {
+            if (dependencies != null) {
                 additionalDependencies.addAll(dependencies);
             }
         }
+        SharedSessionManagerConfig sharedSessionManagerConfig = deploymentUnit.getParent() != null ? deploymentUnit.getParent().getAttachment(UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG) : null;
+
+
+        additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
@@ -229,6 +233,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setSharedTlds(tldsMetaData == null ? Collections.<TldMetaData>emptyList() : tldsMetaData.getSharedTlds(deploymentUnit))
                 .setTldsMetaData(tldsMetaData)
                 .setSetupActions(setupActions)
+                .setSharedSessionManagerConfig(sharedSessionManagerConfig)
                 .setOverlays(warMetaData.getOverlays())
                 .setExpressionFactoryWrappers(deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY))
                 .setPredicatedHandlers(deploymentUnit.getAttachment(UndertowHandlersDeploymentProcessor.PREDICATED_HANDLERS))
@@ -268,18 +273,22 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if(componentRegistryExists) {
+        if (componentRegistryExists) {
             infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
         } else {
             undertowDeploymentInfoService.getComponentRegistryInjectedValue().setValue(new ImmediateValue<>(componentRegistry));
         }
 
-        ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, module, metaData);
-        if (sessionManagerFactoryServiceName != null) {
-            infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+        if (sharedSessionManagerConfig != null) {
+            infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+        } else {
+            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData);
+            if (sessionManagerFactoryServiceName != null) {
+                infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+            }
         }
 
-        ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, metaData);
+        ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
         infoBuilder.addDependency(sessionIdentifierCodecServiceName, SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
 
         infoBuilder.install();
@@ -332,12 +341,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         processManagement(deploymentUnit, metaData);
     }
 
-    private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
+    private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData) {
         if (metaData.getDistributable() != null) {
             DistributableSessionManagerFactoryBuilder sessionManagerFactoryBuilder = new DistributableSessionManagerFactoryBuilderValue().getValue();
             if (sessionManagerFactoryBuilder != null) {
                 ServiceName name = deploymentServiceName.append("session");
-                sessionManagerFactoryBuilder.build(target, name, deploymentServiceName, module, metaData).setInitialMode(Mode.ON_DEMAND).install();
+                sessionManagerFactoryBuilder.build(target, name, new SimpleDistributableSessionManagerConfiguration(metaData, deploymentName, module))
+                        .setInitialMode(Mode.ON_DEMAND)
+                        .install()
+                ;
                 return name;
             }
             // Fallback to local session manager if server does not support clustering
@@ -346,18 +358,18 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         return null;
     }
 
-    private static ServiceName installSessionIdentifierCodec(ServiceTarget target, ServiceName deploymentServiceName, JBossWebMetaData metaData) {
-        ServiceName codecName = deploymentServiceName.append("codec");
+    private static ServiceName installSessionIdentifierCodec(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, JBossWebMetaData metaData) {
+        ServiceName name = deploymentServiceName.append("codec");
         if (metaData.getDistributable() != null) {
             DistributableSessionIdentifierCodecBuilder sessionIdentifierCodecBuilder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
             if (sessionIdentifierCodecBuilder != null) {
-                sessionIdentifierCodecBuilder.build(target, codecName, deploymentServiceName).setInitialMode(Mode.ON_DEMAND).install();
-                return codecName;
+                sessionIdentifierCodecBuilder.build(target, name, deploymentName).setInitialMode(Mode.ON_DEMAND).install();
+                return name;
             }
             // Fallback to simple codec if server does not support clustering
         }
-        SimpleSessionIdentifierCodecService.build(target, codecName).setInitialMode(Mode.ON_DEMAND).install();
-        return codecName;
+        SimpleSessionIdentifierCodecService.build(target, name).setInitialMode(Mode.ON_DEMAND).install();
+        return name;
     }
 
     static String pathNameOfDeployment(final DeploymentUnit deploymentUnit, final JBossWebMetaData metaData) {
@@ -372,9 +384,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         } else {
             pathName = metaData.getContextRoot();
-            if ("/".equals(pathName)) {
-                pathName = "";
-            } else if (pathName.length() > 0 && pathName.charAt(0) != '/') {
+            if (pathName.length() > 0 && pathName.charAt(0) != '/') {
                 pathName = "/" + pathName;
             }
         }

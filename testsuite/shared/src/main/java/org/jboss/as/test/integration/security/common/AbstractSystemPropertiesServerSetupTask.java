@@ -74,7 +74,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
             op.get(ModelDescriptionConstants.VALUE).set(systemProperty.getValue());
             updates.add(op);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
     }
 
     /**
@@ -104,7 +104,7 @@ public abstract class AbstractSystemPropertiesServerSetupTask implements ServerS
             op.get(OP_ADDR).add(SYSTEM_PROPERTY, propertyName);
             updates.add(op);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        CoreUtils.applyUpdates(updates, managementClient.getControllerClient());
 
     }
 

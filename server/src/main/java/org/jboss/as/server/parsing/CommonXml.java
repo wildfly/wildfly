@@ -23,7 +23,6 @@
 package org.jboss.as.server.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
@@ -65,8 +64,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -75,6 +72,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -90,6 +91,7 @@ import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
@@ -323,10 +325,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case NAME: {
                         name = value.trim();
                         if (RESTRICTED_PATHS.contains(value)) {
-                            throw MESSAGES.reserved(name, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.reserved(name, reader.getLocation());
                         }
                         if (!defined.add(name)) {
-                            throw MESSAGES.alreadyDefined(name, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.alreadyDefined(name, reader.getLocation());
                         }
                         break;
                     }
@@ -490,7 +492,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     try {
                         content.get(HASH).set(HashUtil.hexStringToByteArray(value));
                     } catch (final Exception e) {
-                        throw MESSAGES.invalidSha1Value(e, value, attribute.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidSha1Value(e, value, attribute.getLocalName(), reader.getLocation());
                     }
                     break;
                 default:
@@ -607,7 +609,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
             if (!names.add(name)) {
-                throw MESSAGES.duplicateInterfaceDeclaration(reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.duplicateInterfaceDeclaration(reader.getLocation());
             }
             final ModelNode interfaceAdd = new ModelNode();
             interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
@@ -688,8 +690,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         AbstractSocketBindingResourceDefinition.INTERFACE.parseAndSetParameter(value, binding, reader);
                         if (binding.get(AbstractSocketBindingResourceDefinition.INTERFACE.getName()).getType() != ModelType.EXPRESSION
                                 && !interfaces.contains(value)) {
-                            throw MESSAGES.unknownInterface(value, attribute.getLocalName(),
-                                    Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.unknownInterface(value, attribute.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         binding.get(INTERFACE).set(value);
                         break;
@@ -763,7 +764,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
         if (!hasDestinationAddress) {
-            throw MESSAGES.missingRequiredAttributes(new StringBuilder(DESTINATION_ADDRESS), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(DESTINATION_ADDRESS), reader.getLocation());
         }
 
         requireNoContent(reader);
@@ -798,8 +799,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         if (!interfaces.contains(value)
                                 && outboundSocketBindingAddOperation.get(OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.getName()).getType() != ModelType.EXPRESSION) {
-                            throw MESSAGES.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value,
-                                    Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value, Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         break;
                     }
@@ -826,8 +826,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (Element.forName(reader.getLocalName())) {
                 case LOCAL_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
-                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(), Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -841,8 +840,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case REMOTE_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
-                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(), Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -1170,15 +1168,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     }
 
-    protected void parseVault(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseVault_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         final int vaultAttribCount = reader.getAttributeCount();
 
         ModelNode vault = new ModelNode();
         String code = null;
-
-        if (vaultAttribCount > 1) {
-            throw unexpectedAttribute(reader, vaultAttribCount);
-        }
 
         for (int i = 0; i < vaultAttribCount; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -1186,8 +1180,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CODE: {
-                    code = value;
-                    vault.get(Attribute.CODE.getLocalName()).set(code);
+                    VaultResourceDefinition.CODE.parseAndSetParameter(value, vault, reader);
                     break;
                 }
                 default:
@@ -1215,6 +1208,52 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         list.add(vault);
     }
+
+    protected void parseVault_3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        final int vaultAttribCount = reader.getAttributeCount();
+
+        ModelNode vault = new ModelNode();
+        String code = null;
+
+        for (int i = 0; i < vaultAttribCount; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CODE: {
+                    VaultResourceDefinition.CODE.parseAndSetParameter(value, vault, reader);
+                    break;
+                }
+                case MODULE: {
+                    VaultResourceDefinition.MODULE.parseAndSetParameter(value, vault, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        ModelNode vaultAddress = address.clone();
+        vaultAddress.add(CORE_SERVICE, VAULT);
+        if (code != null) {
+            vault.get(Attribute.CODE.getLocalName()).set(code);
+        }
+        vault.get(OP_ADDR).set(vaultAddress);
+        vault.get(OP).set(ADD);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case VAULT_OPTION: {
+                    parseModuleOption(reader, vault.get(VAULT_OPTIONS));
+                    break;
+                }
+            }
+        }
+        list.add(vault);
+    }
+
 
     protected void parseVaultOption(XMLExtendedStreamReader reader, ModelNode vaultOptions) throws XMLStreamException {
         String name = null;
@@ -1371,7 +1410,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 break;
             default: {
                 // TODO we perhaps should just log a warning.
-                throw MESSAGES.unknownCriteriaInterfaceProperty(property.getName());
+                throw ControllerLogger.ROOT_LOGGER.unknownCriteriaInterfaceProperty(property.getName());
             }
         }
     }
@@ -1538,10 +1577,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeVault(XMLExtendedStreamWriter writer, ModelNode vault) throws XMLStreamException {
         writer.writeStartElement(Element.VAULT.getLocalName());
-        String code = vault.hasDefined(Attribute.CODE.getLocalName()) ? vault.get(Attribute.CODE.getLocalName()).asString() : null;
-        if (code != null && !code.isEmpty()) {
-            writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-        }
+        VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
+        VaultResourceDefinition.MODULE.marshallAsAttribute(vault, writer);
 
         if (vault.hasDefined(VAULT_OPTIONS)) {
             ModelNode properties = vault.get(VAULT_OPTIONS);

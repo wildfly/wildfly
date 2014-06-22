@@ -48,7 +48,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
@@ -248,7 +248,7 @@ public abstract class PatchOperationTarget {
 
     public static void formatFailedResponse(final PatchingException e, final ModelNode failureDescription) {
         if(e instanceof ContentConflictsException) {
-            failureDescription.get(Constants.MESSAGE).set(PatchMessages.MESSAGES.detectedConflicts());
+            failureDescription.get(Constants.MESSAGE).set(PatchLogger.ROOT_LOGGER.detectedConflicts());
             final ModelNode conflicts = failureDescription.get(Constants.CONFLICTS);
             for(final ContentItem item : ((ContentConflictsException)e).getConflicts()) {
                 final ContentType type = item.getContentType();

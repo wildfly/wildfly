@@ -22,8 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.jgroups.JGroupsMessages.MESSAGES;
+import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -90,7 +90,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
         try {
             return XmlConfigurator.getInstance(url);
         } catch (IOException e) {
-            throw new StartException(MESSAGES.parserFailure(url));
+            throw new StartException(JGroupsLogger.ROOT_LOGGER.parserFailure(url));
         }
     }
 
@@ -103,7 +103,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
                 }
             }
         }
-        throw new StartException(MESSAGES.notFound(resource));
+        throw new StartException(JGroupsLogger.ROOT_LOGGER.notFound(resource));
     }
 
     /**

@@ -20,13 +20,13 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.InputStream;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
@@ -71,12 +71,12 @@ extends AbstractDeploymentUploadHandler {
         int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
         int maxIndex = operationContext.getAttachmentStreamCount();
         if (streamIndex > maxIndex) {
-            throw new OperationFailedException(new ModelNode().set(String.format(MESSAGES.invalidValue(INPUT_STREAM_INDEX, streamIndex, maxIndex))));
+            throw new OperationFailedException(new ModelNode().set(String.format(DomainControllerLogger.ROOT_LOGGER.invalidValue(INPUT_STREAM_INDEX, streamIndex, maxIndex))));
         }
 
         InputStream in = operationContext.getAttachmentStream(streamIndex);
         if (in == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.nullStream(streamIndex)));
+            throw new OperationFailedException(new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.nullStream(streamIndex)));
         }
 
         return in;

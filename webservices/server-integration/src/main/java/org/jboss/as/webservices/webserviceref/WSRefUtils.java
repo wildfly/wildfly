@@ -22,8 +22,6 @@
 
 package org.jboss.as.webservices.webserviceref;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -32,7 +30,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -40,6 +41,7 @@ import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
 import javax.xml.ws.soap.MTOM;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
 import org.jboss.metadata.javaee.jboss.JBossServiceReferenceMetaData;
 import org.jboss.metadata.javaee.jboss.StubPropertyMetaData;
@@ -71,9 +73,6 @@ final class WSRefUtils {
     private WSRefUtils() {
     }
 
-
-
-
     static UnifiedServiceRefMetaData translate(final ServiceReferenceMetaData serviceRefMD, final UnifiedServiceRefMetaData serviceRefUMDM) {
         serviceRefUMDM.setServiceRefName(serviceRefMD.getName());
         serviceRefUMDM.setServiceRefType(serviceRefMD.getServiceRefType());
@@ -91,7 +90,7 @@ final class WSRefUtils {
                 if (portComponentUMDM.getServiceEndpointInterface() != null || portComponentUMDM.getPortQName() != null) {
                     serviceRefUMDM.addPortComponentRef(portComponentUMDM);
                 } else {
-                    ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
+                    WSLogger.ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
                 }
             }
         }
@@ -181,66 +180,41 @@ final class WSRefUtils {
         final List<StubPropertyMetaData> stubPropertiesMD = jbossPortComponentMD.getStubProperties();
         if (stubPropertiesMD != null) {
             for (final StubPropertyMetaData stubPropertyMD : stubPropertiesMD) {
-                final UnifiedStubPropertyMetaData stubPropertyUMDM = new UnifiedStubPropertyMetaData();
-                stubPropertyUMDM.setPropName(stubPropertyMD.getPropName());
-                stubPropertyUMDM.setPropValue(stubPropertyMD.getPropValue());
-                portComponentUMDM.addStubProperty(stubPropertyUMDM);
+                portComponentUMDM.addStubProperty(new UnifiedStubPropertyMetaData(stubPropertyMD.getPropName(), stubPropertyMD.getPropValue()));
             }
         }
     }
 
     private static UnifiedHandlerMetaData getUnifiedHandlerMetaData(ServiceReferenceHandlerMetaData srhmd) {
-        UnifiedHandlerMetaData handlerUMDM = new UnifiedHandlerMetaData();
-        handlerUMDM.setHandlerName(srhmd.getHandlerName());
-        handlerUMDM.setHandlerClass(srhmd.getHandlerClass());
+        List<UnifiedInitParamMetaData> unifiedInitParamMDs = new LinkedList<UnifiedInitParamMetaData>();
         List<ParamValueMetaData> initParams = srhmd.getInitParam();
         if (initParams != null) {
             for (ParamValueMetaData initParam : initParams) {
-                UnifiedInitParamMetaData param = new UnifiedInitParamMetaData();
-                param.setParamName(initParam.getParamName());
-                param.setParamValue(initParam.getParamValue());
-                handlerUMDM.addInitParam(param);
+                unifiedInitParamMDs.add(new UnifiedInitParamMetaData(initParam.getParamName(), initParam.getParamValue()));
             }
         }
         List<QName> soapHeaders = srhmd.getSoapHeader();
-        if (soapHeaders != null) {
-            for (QName soapHeader : soapHeaders) {
-                handlerUMDM.addSoapHeader(soapHeader);
-            }
-        }
+        Set<QName> soapHeaderList = soapHeaders != null ? new HashSet<QName>(soapHeaders) : null;
         List<String> soapRoles = srhmd.getSoapRole();
-        if (soapRoles != null) {
-            for (String soapRole : soapRoles) {
-                handlerUMDM.addSoapRole(soapRole);
-            }
-        }
+        Set<String> soapRolesList = soapRoles != null ? new HashSet<String>(soapRoles) : null;
         List<String> portNames = srhmd.getPortName();
-        if (portNames != null) {
-            for (String portName : portNames) {
-                handlerUMDM.addPortName(portName);
-            }
-        }
-        return handlerUMDM;
+        Set<String> portNameList = portNames != null ? new HashSet<String>(portNames) : null;
+        return new UnifiedHandlerMetaData(srhmd.getHandlerClass(), srhmd.getHandlerName(), unifiedInitParamMDs, soapHeaderList, soapRolesList, portNameList);
     }
 
     private static UnifiedHandlerChainsMetaData getUnifiedHandlerChainsMetaData(final ServiceReferenceHandlerChainsMetaData handlerChainsMD) {
-        final UnifiedHandlerChainsMetaData handlerChainsUMDM = new UnifiedHandlerChainsMetaData();
-
+        List<UnifiedHandlerChainMetaData> uhcmds = new LinkedList<UnifiedHandlerChainMetaData>();
         for (final ServiceReferenceHandlerChainMetaData handlerChainMD : handlerChainsMD.getHandlers()) {
-            final UnifiedHandlerChainMetaData handlerChainUMDM = new UnifiedHandlerChainMetaData();
-            handlerChainUMDM.setServiceNamePattern(handlerChainMD.getServiceNamePattern());
-            handlerChainUMDM.setPortNamePattern(handlerChainMD.getPortNamePattern());
-            handlerChainUMDM.setProtocolBindings(handlerChainMD.getProtocolBindings());
-
+            List<UnifiedHandlerMetaData> uhmds = new LinkedList<UnifiedHandlerMetaData>();
             for (final ServiceReferenceHandlerMetaData handlerMD : handlerChainMD.getHandler()) {
                 final UnifiedHandlerMetaData handlerUMDM = getUnifiedHandlerMetaData(handlerMD);
-                handlerChainUMDM.addHandler(handlerUMDM);
+                uhmds.add(handlerUMDM);
             }
-
-            handlerChainsUMDM.addHandlerChain(handlerChainUMDM);
+            uhcmds.add(new UnifiedHandlerChainMetaData(handlerChainMD.getServiceNamePattern(), handlerChainMD.getPortNamePattern(),
+                    handlerChainMD.getProtocolBindings(), uhmds, false, null));
         }
 
-        return handlerChainsUMDM;
+        return new UnifiedHandlerChainsMetaData(uhcmds);
     }
 
     static void processAnnotatedElement(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {

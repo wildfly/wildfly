@@ -42,6 +42,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -104,7 +105,7 @@ public class WeldExtension implements Extension {
 
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return WeldMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                        return WeldLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
                     }
 
                     @Override

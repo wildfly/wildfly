@@ -50,12 +50,15 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
+
+        CLITestSuite.createSupport(DataSourceTestCase.class.getSimpleName());
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
     }
 
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
+        CLITestSuite.stopSupport();
     }
 
     @Before

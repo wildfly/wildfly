@@ -30,7 +30,7 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.HashMap;
 import java.util.Map;

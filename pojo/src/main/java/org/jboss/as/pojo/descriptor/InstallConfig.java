@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -58,7 +58,7 @@ public class InstallConfig extends LifecycleConfig {
     @Override
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         if (dependency != null)
-            throw PojoMessages.MESSAGES.tooDynamicFromDependency();
+            throw PojoLogger.ROOT_LOGGER.tooDynamicFromDependency();
 
         return super.getType(visitor, previous);
     }

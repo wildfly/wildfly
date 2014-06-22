@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-domain</artifactId>
@@ -58,6 +58,11 @@
     -->
 
     <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -119,6 +124,19 @@
                          <include>org/jboss/as/test/integration/domain/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/suites/*TestSuite.java</include>
                     </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-style</id>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
                 </configuration>
             </plugin>
         </plugins>

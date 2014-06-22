@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;

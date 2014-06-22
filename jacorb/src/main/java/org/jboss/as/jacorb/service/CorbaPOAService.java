@@ -25,8 +25,7 @@ package org.jboss.as.jacorb.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -152,7 +151,7 @@ public class CorbaPOAService implements Service<POA> {
             try {
                 this.poa = POAHelper.narrow(orb.resolve_initial_references(this.poaName));
             } catch (Exception e) {
-                throw JacORBMessages.MESSAGES.errorResolvingInitRef(this.poaName, e);
+                throw JacORBLogger.ROOT_LOGGER.errorResolvingInitRef(this.poaName, e);
             }
         }
         // if a parent POA has been injected, we use it to create the policies and then the POA itself.
@@ -161,10 +160,10 @@ public class CorbaPOAService implements Service<POA> {
                 Policy[] poaPolicies = this.createPolicies(parentPOA);
                 this.poa = parentPOA.create_POA(this.poaName, null, poaPolicies);
             } catch (Exception e) {
-                throw JacORBMessages.MESSAGES.errorCreatingPOAFromParent(e);
+                throw JacORBLogger.ROOT_LOGGER.errorCreatingPOAFromParent(e);
             }
         } else {
-            throw JacORBMessages.MESSAGES.invalidPOACreationArgs();
+            throw JacORBLogger.ROOT_LOGGER.invalidPOACreationArgs();
         }
 
         // check if the POA should be bound to JNDI under java:/jboss.
@@ -176,7 +175,7 @@ public class CorbaPOAService implements Service<POA> {
         try {
             this.poa.the_POAManager().activate();
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.errorActivatingPOA(e);
+            throw JacORBLogger.ROOT_LOGGER.errorActivatingPOA(e);
         }
     }
 

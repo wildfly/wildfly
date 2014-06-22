@@ -32,8 +32,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.PropertyPermission;
 
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -116,7 +115,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
         final ModuleIdentifier moduleIdentifier = deploymentUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
         if (moduleIdentifier == null) {
-            throw ServerMessages.MESSAGES.noModuleIdentifier(deploymentUnit.getName());
+            throw ServerLogger.ROOT_LOGGER.noModuleIdentifier(deploymentUnit.getName());
         }
 
         final List<AdditionalModuleSpecification> additionalModules = topLevelDeployment.getAttachmentList(Attachments.ADDITIONAL_MODULES);
@@ -336,7 +335,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             permFactories.add(new ImmediatePermissionFactory(
                     new VirtualFilePermission(root.getChild("-").getPathName(), VirtualFilePermission.FLAG_READ)));
         } catch (IOException e) {
-            throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
+            throw ServerLogger.ROOT_LOGGER.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }
     }
 

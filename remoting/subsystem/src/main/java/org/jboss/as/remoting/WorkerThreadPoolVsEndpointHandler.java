@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -65,7 +66,7 @@ class WorkerThreadPoolVsEndpointHandler implements OperationStepHandler {
         if (configuredAttributes.size() > 0) {
             if (context.getProcessType().isServer()) {
                 // worker-thread-pool not allowed on a server
-                throw RemotingMessages.MESSAGES.workerConfigurationIgnored();
+                throw RemotingLogger.ROOT_LOGGER.workerConfigurationIgnored();
             } else if (endpointConfig != null) {
                 // Can't configure both worker-thread-pool and endpoint
                 ModelNode endpointModel = endpointConfig.getModel();
@@ -73,7 +74,7 @@ class WorkerThreadPoolVsEndpointHandler implements OperationStepHandler {
                     for (Property prop : endpointModel.asPropertyList()) {
                         if (prop.getValue().isDefined()) {
                             throw new OperationFailedException(
-                                    RemotingMessages.MESSAGES.workerThreadsEndpointConfigurationChoiceRequired(
+                                    RemotingLogger.ROOT_LOGGER.workerThreadsEndpointConfigurationChoiceRequired(
                                             Element.WORKER_THREAD_POOL.getLocalName(), Element.ENDPOINT.getLocalName()
                                     ));
                         }

@@ -23,7 +23,9 @@
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -55,7 +57,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -83,7 +84,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
 
         final ServiceRegistry serviceRegistry = context.getOperationContext().getServiceRegistry(false);
 
-        final Set<Resource.ResourceEntry> deploymentResource = context.getOperationContext().getRootResource().getChildren(DEPLOYMENT);
+        final Set<Resource.ResourceEntry> deploymentResource = context.getOperationContext().readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false).getChildren(DEPLOYMENT);
         for (final Resource.ResourceEntry entry : deploymentResource) {
             final ServiceController<?> deploymentUnitServiceController = serviceRegistry.getService(ServiceName.JBOSS.append("deployment", "unit", entry.getName()));
             if (deploymentUnitServiceController != null) {
@@ -99,7 +100,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
                     try {
                         context.addEntries(deploymentNode.get("java:app"), new NamingContext(appStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:app", appName)));
+                        throw new OperationFailedException(e, new ModelNode().set(EeLogger.ROOT_LOGGER.failedToRead("java:app", appName)));
                     }
                 }
 
@@ -142,7 +143,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
             try {
                 context.addEntries(moduleNode.get("java:module"), new NamingContext(moduleStore, null));
             } catch (NamingException e) {
-                throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:module", appName, moduleName)));
+                throw new OperationFailedException(e, new ModelNode().set(EeLogger.ROOT_LOGGER.failedToRead("java:module", appName, moduleName)));
             }
 
             final Collection<ComponentDescription> componentDescriptions = moduleDescription.getComponentDescriptions();
@@ -156,7 +157,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
                     try {
                         context.addEntries(componentNode.get("java:comp"), new NamingContext(compStore, null));
                     } catch (NamingException e) {
-                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToRead("java:comp", appName, moduleName, componentName)));
+                        throw new OperationFailedException(e, new ModelNode().set(EeLogger.ROOT_LOGGER.failedToRead("java:comp", appName, moduleName, componentName)));
                     }
                 }
             }

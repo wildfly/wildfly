@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.namespace.QName;
 
-import org.jboss.as.appclient.logging.AppClientMessages;
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.appclient.subsystem.parsing.AppClientXml;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
@@ -53,8 +53,6 @@ import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * The application client entry point
@@ -109,7 +107,7 @@ public final class Main {
             final List<String> clientArgs = options.clientArguments;
 
             if (clientArgs.isEmpty()) {
-                STDERR.println(MESSAGES.appClientNotSpecified());
+                STDERR.println(AppClientLogger.ROOT_LOGGER.appClientNotSpecified());
                 usage();
                 abort(null);
             } else {
@@ -132,7 +130,7 @@ public final class Main {
                 File realFile = new File(earPath);
 
                 if (!realFile.exists()) {
-                    throw MESSAGES.cannotFindAppClientFile(realFile.getAbsoluteFile());
+                    throw AppClientLogger.ROOT_LOGGER.cannotFindAppClientFile(realFile.getAbsoluteFile());
                 }
 
                 final Bootstrap bootstrap = Bootstrap.Factory.newInstance();
@@ -219,28 +217,28 @@ public final class Main {
                     }
                 } else if (arg.equals(CommandLineConstants.SHORT_HOST) || arg.equals(CommandLineConstants.HOST)) {
                     if(ret.propertiesFile != null) {
-                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                        throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
                     String urlSpec = args[++i];
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
                     if(ret.propertiesFile != null) {
-                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                        throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
                     String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.HOST)) {
                     if(ret.propertiesFile != null) {
-                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                        throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
                     String urlSpec = parseValue(arg, CommandLineConstants.HOST);
                     ret.hostUrl = urlSpec;
                 } else if (arg.startsWith(CommandLineConstants.CONNECTION_PROPERTIES)) {
                     if(hostSet) {
-                        throw AppClientMessages.MESSAGES.cannotSpecifyBothHostAndPropertiesFile();
+                        throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     String fileUrl = parseValue(arg, CommandLineConstants.CONNECTION_PROPERTIES);
                     ret.propertiesFile = fileUrl;
@@ -262,7 +260,7 @@ public final class Main {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
                     if (arg.startsWith("-")) {
-                        STDOUT.println(MESSAGES.unknownOption(arg));
+                        STDOUT.println(AppClientLogger.ROOT_LOGGER.unknownOption(arg));
                         usage();
 
                         return null;
@@ -271,7 +269,7 @@ public final class Main {
                     clientArguments.add(arg);
                 }
             } catch (IndexOutOfBoundsException e) {
-                STDERR.println(MESSAGES.argumentExpected(arg));
+                STDERR.println(AppClientLogger.ROOT_LOGGER.argumentExpected(arg));
                 usage();
                 return null;
             }
@@ -302,11 +300,11 @@ public final class Main {
             props.load(url.openConnection().getInputStream());
             return true;
         } catch (MalformedURLException e) {
-            STDERR.println(MESSAGES.malformedUrl(arg));
+            STDERR.println(AppClientLogger.ROOT_LOGGER.malformedUrl(arg));
             usage();
             return false;
         } catch (IOException e) {
-            STDERR.println(MESSAGES.cannotLoadProperties(url));
+            STDERR.println(AppClientLogger.ROOT_LOGGER.cannotLoadProperties(url));
             usage();
             return false;
         }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,7 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.HandlerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -43,7 +43,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
@@ -73,6 +72,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final PathElement confElem = address.getElement(address.size() - 3);
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
+            final String handlerChainType = address.getElement(address.size() - 2).getKey();
             final String handlerChainId = address.getElement(address.size() - 2).getValue();
             final String handlerName = address.getElement(address.size() - 1).getValue();
             final String handlerClass = operation.require(CLASS).asString();
@@ -82,17 +82,15 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);
             if (registry.getService(configServiceName) == null) {
-                throw MESSAGES.missingConfig(configName);
+                throw WSLogger.ROOT_LOGGER.missingConfig(configName);
             }
-            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainId);
+            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainType, handlerChainId);
             if (registry.getService(handlerChainServiceName) == null) {
-                String handlerChainType = address.getElement(address.size() - 2).getKey();
-                throw MESSAGES.missingHandlerChain(configName, handlerChainType, handlerChainId);
+                throw WSLogger.ROOT_LOGGER.missingHandlerChain(configName, handlerChainType, handlerChainId);
             }
             final ServiceName handlerServiceName = getHandlerServiceName(handlerChainServiceName, handlerName);
 
             final ServiceBuilder<?> handlerServiceBuilder = target.addService(handlerServiceName, service);
-            handlerServiceBuilder.addDependency(handlerChainServiceName, UnifiedHandlerChainMetaData.class, service.getHandlerChain());
             ServiceController<?> controller = handlerServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             if (newControllers != null) {
                 newControllers.add(controller);

@@ -48,6 +48,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -56,7 +57,6 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
 
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REFS_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_REF_ANNOTATION;
@@ -114,7 +114,7 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
     private static void processMethodRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final MethodInfo methodInfo) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw MESSAGES.invalidServiceRefSetterMethodName(methodInfo);
+            throw WSLogger.ROOT_LOGGER.invalidServiceRefSetterMethodName(methodInfo);
         }
         final String injectionType = isEmpty(annotation.type()) || annotation.type().equals(Object.class.getName()) ? methodInfo.args()[0].name().toString() : annotation.type();
         final InjectionTarget injectionTarget = new MethodInjectionTarget(methodInfo.declaringClass().name().toString(), methodName, injectionType);
@@ -124,10 +124,10 @@ public class WSRefAnnotationProcessor implements DeploymentUnitProcessor {
 
     private static void processClassRef(final DeploymentUnit unit, final WSRefAnnotationWrapper annotation, final ClassInfo classInfo) throws DeploymentUnitProcessingException {
         if (isEmpty(annotation.name())) {
-            throw MESSAGES.requiredServiceRefName();
+            throw WSLogger.ROOT_LOGGER.requiredServiceRefName();
         }
         if (isEmpty(annotation.type())) {
-            throw MESSAGES.requiredServiceRefType();
+            throw WSLogger.ROOT_LOGGER.requiredServiceRefType();
         }
         processRef(unit, annotation.type(), annotation, classInfo, null, annotation.name());
     }

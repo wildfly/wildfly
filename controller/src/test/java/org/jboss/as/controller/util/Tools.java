@@ -100,7 +100,7 @@ public class Tools {
 
 
     static ModelNode getCurrentModelVersions() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create("http-remoting","localhost", 9990);
         try {
             ModelNode allVersions = new ModelNode();
 
@@ -133,7 +133,7 @@ public class Tools {
     }
 
     static ModelNode getCurrentRunningResourceDefinition(PathAddress pathAddress) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create("http-remoting", "localhost", 9990);
         try {
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);

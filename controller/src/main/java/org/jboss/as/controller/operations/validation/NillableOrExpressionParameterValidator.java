@@ -22,11 +22,9 @@
 
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.List;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -54,7 +52,7 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
      */
     public NillableOrExpressionParameterValidator(ParameterValidator delegate, Boolean allowNull, boolean allowExpression) {
         if (delegate == null) {
-            throw ControllerMessages.MESSAGES.nullVar("delegate");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("delegate");
         }
         this.delegate = delegate;
         this.allowNull = allowNull;
@@ -67,13 +65,13 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
         switch (value.getType()) {
             case EXPRESSION:
                 if (!allowExpression) {
-                    throw MESSAGES.expressionNotAllowed(parameterName);
+                    throw ControllerLogger.ROOT_LOGGER.expressionNotAllowed(parameterName);
                 }
                 break;
             case UNDEFINED:
                 if (allowNull != null) {
                     if (!allowNull) {
-                        throw MESSAGES.nullNotAllowed(parameterName);
+                        throw ControllerLogger.ROOT_LOGGER.nullNotAllowed(parameterName);
                     }
                     break;
                 } // else fall through and let the delegate validate
@@ -87,13 +85,13 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
         switch (value.getType()) {
             case EXPRESSION:
                 if (!allowExpression) {
-                    throw MESSAGES.expressionNotAllowed(parameterName);
+                    throw ControllerLogger.ROOT_LOGGER.expressionNotAllowed(parameterName);
                 }
                 break;
             case UNDEFINED:
                 if (allowNull != null) {
                     if (!allowNull) {
-                        throw MESSAGES.nullNotAllowed(parameterName);
+                        throw ControllerLogger.ROOT_LOGGER.nullNotAllowed(parameterName);
                     }
                     break;
                 } // else fall through and let the delegate validate

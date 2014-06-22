@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ee.metadata;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
@@ -32,6 +31,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.MethodParameterInfo;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         }
     }
 
-    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index, final boolean replacement) {
+    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index, final PropertyReplacer propertyReplacer) {
 
         final List<TargetAnnotation> annotations = new ArrayList<TargetAnnotation>();
         if (multiAnnotationDotName != null) {
@@ -104,7 +104,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else if (instance.target() instanceof MethodParameterInfo) {
                 //ignore for now
             } else {
-                throw MESSAGES.unknownAnnotationTargetType(instance.target());
+                throw EeLogger.ROOT_LOGGER.unknownAnnotationTargetType(instance.target());
             }
         }
 
@@ -124,7 +124,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else {
                 classData = new ArrayList<T>(classAnnotations.size());
                 for (TargetAnnotation instance : classAnnotations) {
-                    classData.add(fromAnnotation(instance.instance(), replacement));
+                    classData.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
 
@@ -141,7 +141,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         fieldData.put(name, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance(), replacement));
+                    data.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
 
@@ -158,7 +158,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         methodData.put(identifier, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance(), replacement));
+                    data.add(fromAnnotation(instance.instance(), propertyReplacer));
                 }
             }
             ClassAnnotationInformation<A, T> information = new ClassAnnotationInformation<A, T>(annotationType, classData, methodData, fieldData);
@@ -178,12 +178,12 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         } else if (annotationTarget instanceof MethodParameterInfo) {
             return ((MethodParameterInfo) annotationTarget).method().declaringClass();
         } else {
-            throw MESSAGES.unknownAnnotationTargetType(annotationTarget);
+            throw EeLogger.ROOT_LOGGER.unknownAnnotationTargetType(annotationTarget);
         }
     }
 
 
-    protected abstract T fromAnnotation(AnnotationInstance annotationInstance, boolean replacement);
+    protected abstract T fromAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer);
 
     protected List<TargetAnnotation> fromMultiAnnotation(AnnotationInstance multiAnnotationInstance) {
         List<TargetAnnotation> instances = new ArrayList<TargetAnnotation>();

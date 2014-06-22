@@ -52,16 +52,13 @@ class ClassLoadingResourceDefinition extends SimpleResourceDefinition {
 
     private ClassLoadingResourceDefinition() {
         super(PlatformMBeanConstants.CLASS_LOADING_PATH,
-                PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.CLASS_LOADING));
+                PlatformMBeanUtil.getResolver(PlatformMBeanConstants.CLASS_LOADING));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ClassLoadingMXBeanAttributeHandler.INSTANCE);
-        }
-
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, ClassLoadingMXBeanAttributeHandler.INSTANCE);
         for (SimpleAttributeDefinition attribute : METRICS) {
             registration.registerMetric(attribute, ClassLoadingMXBeanAttributeHandler.INSTANCE);
         }

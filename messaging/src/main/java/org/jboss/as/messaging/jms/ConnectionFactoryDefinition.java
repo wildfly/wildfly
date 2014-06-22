@@ -56,7 +56,6 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FAC
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -133,15 +132,7 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly) {
-            SimpleOperationDefinition add = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
-                    getResourceDescriptionResolver(),
-                    AbstractUpdateJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(add, new ConnectionFactoryUpdateJndiHandler(true));
-
-            SimpleOperationDefinition remove = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
-                    getResourceDescriptionResolver(),
-                    AbstractUpdateJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(remove, new ConnectionFactoryUpdateJndiHandler(false));
+            ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
         }
    }
 }

@@ -23,7 +23,6 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
@@ -44,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -92,7 +92,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         }
 
         //extract SOAP-over-JMS 1.0 bindings
-        final JMSEndpointsMetaData endpointsMetaData = new JMSEndpointsMetaData();
+        List<JMSEndpointMetaData> list = new LinkedList<JMSEndpointMetaData>();
         if (!map.isEmpty()) {
 
             for (String wsdlLocation : map.keySet()) {
@@ -114,23 +114,16 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                             ClassInfo webServiceClassInfo = (ClassInfo) ai.target();
                             String beanClassName = webServiceClassInfo.name().toString();
                             //service name ?
-                            JMSEndpointMetaData endpointMetaData = new JMSEndpointMetaData(endpointsMetaData);
-                            endpointMetaData.setEndpointName(port);
-                            endpointMetaData.setName(beanClassName);
-                            endpointMetaData.setImplementor(beanClassName);
-                            //endpointMetaData.setName(name);
-                            endpointMetaData.setSoapAddress(soapAddress);
-                            endpointMetaData.setWsdlLocation(wsdlLocation);
-                            endpointsMetaData.addEndpointMetaData(endpointMetaData);
+                            list.add(new JMSEndpointMetaData(beanClassName, port, beanClassName, wsdlLocation, soapAddress));
                         }
                     }
                 } catch (Exception ignore) {
-                    ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
+                    WSLogger.ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
                 }
             }
 
         }
-        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
+        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
     }
 
     @Override

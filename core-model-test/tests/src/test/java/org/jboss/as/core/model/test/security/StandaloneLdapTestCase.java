@@ -47,4 +47,17 @@ public class StandaloneLdapTestCase extends AbstractCoreModelTest {
         ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "ldap-standalone.xml"), marshalled);
     }
 
+
+    @Test
+    public void testNoForceAttributeDefinedConfiguration() throws Exception {
+        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.STANDALONE)
+                .setXmlResource("ldap-standalone-noforce.xml")
+                .validateDescription()
+                .build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+
+        String marshalled = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "ldap-standalone-noforce.xml"), marshalled);
+    }
+
 }

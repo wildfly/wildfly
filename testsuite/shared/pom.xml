@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-testsuite-shared</artifactId>
     <packaging>jar</packaging>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Shared</name>
 
@@ -42,6 +42,12 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-build</artifactId>
             <type>pom</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -85,6 +91,12 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-server-annotations</artifactId>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.syslog4j</groupId>
+            <artifactId>syslog4j</artifactId>
+            <version>${version.org.syslog4j}</version>
         </dependency>
     </dependencies>
 

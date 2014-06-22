@@ -38,7 +38,7 @@ import org.wildfly.clustering.group.Group;
  */
 public class StatelessSessionComponentCreateService extends SessionBeanComponentCreateService {
 
-    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
+    private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<>();
     private final InjectedValue<Group> group = new InjectedValue<>();
 
     /**
@@ -65,7 +65,7 @@ public class StatelessSessionComponentCreateService extends SessionBeanComponent
 
     public Affinity getWeakAffinity() {
         Group group = this.group.getOptionalValue();
-        return (group != null) ? new ClusterAffinity(group.getName()) : Affinity.NONE;
+        return (group != null) && (group.getLocalNode().getSocketAddress() != null) ? new ClusterAffinity(group.getName()) : Affinity.NONE;
     }
 
     public Injector<Group> getGroupInjector() {

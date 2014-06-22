@@ -22,7 +22,7 @@
 package org.jboss.as.jacorb.rmi;
 
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Analysis class for primitive types.
@@ -54,7 +54,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
      */
     public static PrimitiveAnalysis getPrimitiveAnalysis(final Class cls) {
         if (cls == null)
-            throw JacORBMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw JacORBLogger.ROOT_LOGGER.cannotAnalyzeNullClass();
 
         if (cls == Void.TYPE)
             return voidAnalysis;
@@ -75,7 +75,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
         if (cls == Double.TYPE)
             return doubleAnalysis;
 
-        throw JacORBMessages.MESSAGES.notAPrimitive(cls.getName());
+        throw JacORBLogger.ROOT_LOGGER.notAPrimitive(cls.getName());
     }
 
 }

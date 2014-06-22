@@ -105,6 +105,7 @@ import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -363,9 +364,10 @@ public final class ServerService extends AbstractControllerService {
     }
 
     @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
         // TODO maybe make creating of empty nodes part of the MNR description
         Resource managementResource = Resource.Factory.create(); // TODO - Can we get a Resource direct from CoreManagementResourceDefinition?
+        managementResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.SERVICE, ModelDescriptionConstants.MANAGEMENT_OPERATIONS), modelControllerResource);
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), managementResource);
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MODULE_LOADING), Resource.Factory.create());

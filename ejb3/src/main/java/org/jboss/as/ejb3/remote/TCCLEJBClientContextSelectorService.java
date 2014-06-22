@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextIdentifier;
@@ -63,7 +63,7 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
         final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         // TODO: Do we fall back on some other CL?
         if (tccl == null) {
-            throw EjbMessages.MESSAGES.tcclNotAvailable();
+            throw EjbLogger.ROOT_LOGGER.tcclNotAvailable();
         }
         synchronized (this.ejbClientContexts) {
             return this.ejbClientContexts.get(tccl);

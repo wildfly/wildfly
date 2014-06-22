@@ -24,28 +24,36 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -55,9 +63,11 @@ import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraint
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
@@ -95,6 +105,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_ALL_CONNECTION, PoolOperations.FlushAllConnectionInPool.DS_INSTANCE);
+            resourceRegistration.registerOperationHandler(DUMP_QUEUED_THREADS, PoolOperations.DumpQueuedThreadInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_INVALID_CONNECTION, PoolOperations.FlushInvalidConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_GRACEFULLY_CONNECTION, PoolOperations.FlushGracefullyConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_CONNECTION, PoolOperations.TestConnectionInPool.DS_INSTANCE);
@@ -114,18 +125,25 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
             }
 
         } else {
+            DisableRequiredWriteAttributeHandler disableRequiredWriteHandler = new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE);
             for (final SimpleAttributeDefinition attribute : XA_DATASOURCE_ATTRIBUTE) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    resourceRegistration.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE));
+                    if (attribute.equals(STATISTICS_ENABLED)) {
+                        resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler());
+                    } else {
+                        resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                    }
+
                 }
             }
+            DisableRequiredWriteAttributeHandler disableRequiredPropertiesWriteHandler = new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_PROPERTIES_ATTRIBUTES);
             for (final PropertiesAttributeDefinition attribute : XA_DATASOURCE_PROPERTIES_ATTRIBUTES) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    resourceRegistration.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_PROPERTIES_ATTRIBUTES));
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredPropertiesWriteHandler);
                 }
             }
         }
@@ -158,6 +176,23 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
                 )
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.DEFINED,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
                         CONNECTION_LISTENER_PROPERTIES,
@@ -165,7 +200,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        Constants.URL_PROPERTY
+                        Constants.URL_PROPERTY, CONNECTABLE, TRACKING
                 )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                  /*These are nillable in the old model, but appear as not nillable in CompareModelUtils due to problems in the resource description
@@ -185,7 +220,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
                     .inheritResourceAttributeDefinitions()
                     .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end();
+                    .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
+
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
 
@@ -201,16 +242,32 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
                 )
-                .addRejectCheck(RejectAttributeChecker.DEFINED,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
-                        CONNECTION_LISTENER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
-                        Constants.CONNECTION_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        Constants.URL_PROPERTY
-                )
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED).addRejectCheck(RejectAttributeChecker.DEFINED,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
+                CONNECTION_LISTENER_PROPERTIES,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
+                Constants.CONNECTION_PROPERTIES,
+                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
+                org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                Constants.URL_PROPERTY, CONNECTABLE, TRACKING
+        )
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
@@ -226,8 +283,41 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
                     .inheritResourceAttributeDefinitions()
                     .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end();
+                    .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
 
         ConnectionPropertyDefinition.registerTransformers11x(builder);
+    }
+
+    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
     }
 }

@@ -22,8 +22,8 @@
 package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
-
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -57,7 +57,7 @@ public class SimpleWebTestCase {
     @Deployment(name = "deployment-single")
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(SimpleWebTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));
         return war;

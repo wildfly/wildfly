@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition.PROFILE;
 import static org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition.SOCKET_BINDING_GROUP;
 
@@ -36,7 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -72,7 +71,7 @@ public class ServerGroupAddHandler implements OperationStepHandler {
             context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(PROFILE.getName(), profile)));
         } catch (Exception e) {
             if (master) {
-                throw DomainControllerMessages.MESSAGES.noProfileCalled(profile);
+                throw DomainControllerLogger.ROOT_LOGGER.noProfileCalled(profile);
             } else {
                 //We are a slave HC and we don't have the socket-binding-group required, so put the slave into reload-required
                 reloadRequired = true;
@@ -87,7 +86,7 @@ public class ServerGroupAddHandler implements OperationStepHandler {
                 context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
             } catch (NoSuchElementException e) {
                 if (master) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.unknown(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
+                    throw new OperationFailedException(new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.unknown(SOCKET_BINDING_GROUP.getName(), socketBindingGroup)));
                 } else {
                     //We are a slave HC and we don't have the socket-binding-group required, so put the slave into reload-required
                     reloadRequired = true;

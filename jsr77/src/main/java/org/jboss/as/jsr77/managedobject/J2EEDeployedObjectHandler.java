@@ -21,13 +21,13 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.util.Set;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
+import org.jboss.as.jsr77.logging.JSR77Logger;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -52,8 +52,8 @@ public abstract class J2EEDeployedObjectHandler extends BaseHandler {
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = super.getAttributeInfos();
 
-        attributes.add(createRoMBeanAttributeInfo(ATTR_DEPLOYMENT_DESCRIPTOR, String.class.getName(), MESSAGES.attrInfoDeploymentDescriptor()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER, String.class.getName(), MESSAGES.attrInfoServer()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_DEPLOYMENT_DESCRIPTOR, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoDeploymentDescriptor()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVER, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoServer()));
 
         return attributes;
     }

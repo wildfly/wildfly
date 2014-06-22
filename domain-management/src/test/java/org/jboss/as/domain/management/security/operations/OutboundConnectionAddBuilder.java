@@ -23,16 +23,22 @@ package org.jboss.as.domain.management.security.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.HANDLES_REFERRALS_FOR;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.REFERRALS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SEARCH_CREDENTIAL;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SEARCH_DN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.URL;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,6 +55,8 @@ public class OutboundConnectionAddBuilder {
     private String searchCredential;
     private String securityRealm;
     private String initialContextFactory;
+    private ReferralHandling referrals;
+    private List<String> handlesReferralsFor = null;
 
     private OutboundConnectionAddBuilder(final String name) {
         connectionAddress = new ModelNode().add(CORE_SERVICE, MANAGEMENT).add(LDAP_CONNECTION, name);
@@ -93,6 +101,23 @@ public class OutboundConnectionAddBuilder {
         return this;
     }
 
+    public OutboundConnectionAddBuilder setReferrals(final ReferralHandling referrals) {
+        assertNotBuilt();
+        this.referrals = referrals;
+
+        return this;
+    }
+
+    public OutboundConnectionAddBuilder addHandlesReferralsFor(final String uri) {
+        assertNotBuilt();
+        if (handlesReferralsFor == null) {
+            handlesReferralsFor = new LinkedList<String>();
+        }
+        handlesReferralsFor.add(uri);
+
+        return this;
+    }
+
     public ModelNode build() {
         assertNotBuilt();
         built = true;
@@ -106,6 +131,15 @@ public class OutboundConnectionAddBuilder {
         setNotNullParameter(add, SEARCH_CREDENTIAL, searchCredential);
         setNotNullParameter(add, SECURITY_REALM, securityRealm);
         setNotNullParameter(add, INITIAL_CONTEXT_FACTORY, initialContextFactory);
+        if (referrals != null) {
+            add.get(REFERRALS).set(referrals.toString());
+        }
+
+        if (handlesReferralsFor != null) {
+            for (String current : handlesReferralsFor) {
+                add.get(HANDLES_REFERRALS_FOR).add(current);
+            }
+        }
 
         return add;
     }

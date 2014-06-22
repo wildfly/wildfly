@@ -23,7 +23,6 @@ package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.Set;
 
@@ -35,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -61,7 +61,7 @@ public class ScopedRoleRequiredHandler implements OperationStepHandler {
         Set<String> serverGroupScopedRoles = resource.getChildrenNames(SERVER_GROUP_SCOPED_ROLE);
 
         if (hostScopedRoles.contains(roleName) == false && serverGroupScopedRoles.contains(roleName) == false) {
-            throw MESSAGES.invalidRoleNameDomain(roleName);
+            throw DomainManagementLogger.ROOT_LOGGER.invalidRoleNameDomain(roleName);
         }
 
         context.stepCompleted();

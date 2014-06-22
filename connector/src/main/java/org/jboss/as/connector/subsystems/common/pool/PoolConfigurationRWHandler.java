@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -61,8 +61,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 public class PoolConfigurationRWHandler {
 
-    static final String[] NO_LOCATION = new String[0];
-
     public static final List<String> ATTRIBUTES = Arrays.asList(MAX_POOL_SIZE.getName(), MIN_POOL_SIZE.getName(), INITIAL_POOL_SIZE.getName(),BLOCKING_TIMEOUT_WAIT_MILLIS.getName(),
             IDLETIMEOUTMINUTES.getName(), BACKGROUNDVALIDATION.getName(), BACKGROUNDVALIDATIONMILLIS.getName(),
             POOL_PREFILL.getName(), POOL_USE_STRICT_MIN.getName(), POOL_FLUSH_STRATEGY.getName());
@@ -74,7 +72,7 @@ public class PoolConfigurationRWHandler {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
 
-            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
             final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
 
             context.getResult().set(currentValue);
@@ -108,7 +106,7 @@ public class PoolConfigurationRWHandler {
                     updatePoolConfigs(poolConfigs, parameterName, newValue);
                     handbackHolder.setHandback(poolConfigs);
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToSetAttribute(e.getLocalizedMessage())));
+                    throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToSetAttribute(e.getLocalizedMessage())));
                 }
             }
 

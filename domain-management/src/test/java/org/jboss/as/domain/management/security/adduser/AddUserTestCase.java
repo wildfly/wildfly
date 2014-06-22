@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.service.StartException;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -191,9 +191,9 @@ public class AddUserTestCase extends PropertyTestHelper {
      */
     private AssertConsoleBuilder buildAddUserGroupAssertConsole() throws IOException {
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
         return consoleBuilder;

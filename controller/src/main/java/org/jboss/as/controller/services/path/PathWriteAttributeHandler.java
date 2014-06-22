@@ -21,14 +21,13 @@
 */
 package org.jboss.as.controller.services.path;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.READ_ONLY;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -63,12 +62,12 @@ class PathWriteAttributeHandler extends AbstractWriteAttributeHandler<PathWriteA
         // Guard against updates to read-only paths
         final String pathName = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         if (model.getModel().get(READ_ONLY.getName()).asBoolean(false)) {
-            throw ControllerMessages.MESSAGES.cannotModifyReadOnlyPath(pathName);
+            throw ControllerLogger.ROOT_LOGGER.cannotModifyReadOnlyPath(pathName);
         }
         if (services) {
             final PathEntry pathEntry = pathManager.getPathEntry(pathName);
             if (pathEntry.isReadOnly()) {
-                throw MESSAGES.pathEntryIsReadOnly(operation.require(OP_ADDR).asString());
+                throw ControllerLogger.ROOT_LOGGER.pathEntryIsReadOnly(operation.require(OP_ADDR).asString());
             }
         }
     }

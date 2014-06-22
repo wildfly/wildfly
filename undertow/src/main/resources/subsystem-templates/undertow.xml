@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright 2013, Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags. See the copyright.txt file in the
+  ~  * distribution for a full listing of individual contributors.
+  ~  *
+  ~  * This is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU Lesser General Public License as
+  ~  * published by the Free Software Foundation; either version 2.1 of
+  ~  * the License, or (at your option) any later version.
+  ~  *
+  ~  * This software is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~  * Lesser General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU Lesser General Public
+  ~  * License along with this software; if not, write to the Free
+  ~  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~  */
+  -->
+
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.undertow</extension-module>
+    <subsystem xmlns="urn:jboss:domain:undertow:1.1">
+        <buffer-cache name="default" />
+        <server name="default-server">
+            <http-listener name="default" socket-binding="http" />
+            <?AJP?>
+            <host name="default-host" alias="localhost">
+                <location name="/" handler="welcome-content" />
+                <filter-ref name="server-header"/>
+                <filter-ref name="x-powered-by-header"/>
+            </host>
+        </server>
+        <servlet-container name="default" >
+            <jsp-config/>
+        </servlet-container>
+        <handlers>
+            <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
+        </handlers>
+        <filters>
+            <response-header name="server-header" header-name="Server" header-value="WildFly/8"/>
+            <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
+        </filters>
+    </subsystem>
+    <supplement name="ha">
+        <replacement placeholder="AJP">
+            <ajp-listener name="ajp" socket-binding="ajp" />
+        </replacement>
+    </supplement>
+    <socket-binding name="http" port="${jboss.http.port:8080}"/>
+    <socket-binding name="https" port="${jboss.https.port:8443}"/>
+    <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+</config>
+

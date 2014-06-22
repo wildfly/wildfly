@@ -25,18 +25,16 @@ package org.jboss.as.controller.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.ReadResourceHandler;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -52,12 +50,6 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
     private static final PathElement server = PathElement.pathElement("server");
     private static final PathElement subsystem = PathElement.pathElement("subsystem");
     private static final PathElement connector = PathElement.pathElement("connector");
-
-    static final DescriptionProvider NULL = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     @Test
     public void test() throws Exception {
@@ -90,9 +82,10 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration root) {
             GlobalOperationHandlers.registerGlobalOperations(root, processType);
-            root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
+            root.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-            root.registerOperationHandler("setup", new OperationStepHandler() {
+            root.registerOperationHandler(new SimpleOperationDefinition("setup",
+                    new NonResolvingResourceDescriptionResolver()), new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
@@ -109,32 +102,13 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
                     context.stepCompleted();
                 }
-            }, NULL);
+            });
 
 
 
-            final ManagementResourceRegistration hosts = root.registerSubModel(host, NULL);
-            final ManagementResourceRegistration servers = hosts.registerSubModel(server, NULL);
-            final ManagementResourceRegistration subsystems = servers.registerSubModel(subsystem, NULL);
-            final ManagementResourceRegistration connectors = subsystems.registerSubModel(connector, NULL);
-    }
-
-    private static class DescribeHandler implements OperationStepHandler {
-
-        /** {@inheritDoc} */
-        public void execute(OperationContext context, ModelNode operation) {
-
-            final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final DescriptionProvider descriptionProvider = registry.getModelDescription(address);
-            if(descriptionProvider == null) {
-                context.getFailureDescription().set(new ModelNode());
-            } else {
-                context.getResult().set(descriptionProvider.getModelDescription(null));
-            }
-
-            context.stepCompleted();
-        }
-
+            final ManagementResourceRegistration hosts = root.registerSubModel(new SimpleResourceDefinition(host, new NonResolvingResourceDescriptionResolver()));
+            final ManagementResourceRegistration servers = hosts.registerSubModel(new SimpleResourceDefinition(server, new NonResolvingResourceDescriptionResolver()));
+            final ManagementResourceRegistration subsystems = servers.registerSubModel(new SimpleResourceDefinition(subsystem, new NonResolvingResourceDescriptionResolver()));
+            final ManagementResourceRegistration connectors = subsystems.registerSubModel(new SimpleResourceDefinition(connector, new NonResolvingResourceDescriptionResolver()));
     }
 }

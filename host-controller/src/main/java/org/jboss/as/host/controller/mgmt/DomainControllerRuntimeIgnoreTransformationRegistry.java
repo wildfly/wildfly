@@ -254,9 +254,9 @@ public class DomainControllerRuntimeIgnoreTransformationRegistry {
     /**
      * Gets all the unknown extensions for a profile's subsystems on a host
      *
-     * @param domainResource the root domain resource
+     * @param domainRoot the root domain resource
      * @param hostName the name of the host
-     * @param profileElement the profile address to check
+     * @param profile the profile address to check
      * @return the unknown extensions
      */
     public Set<PathElement> getUnknownExtensionsForProfile(Resource domainRoot, String hostName, String profile) {

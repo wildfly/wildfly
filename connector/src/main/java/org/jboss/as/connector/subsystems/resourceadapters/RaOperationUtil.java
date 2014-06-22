@@ -87,7 +87,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -109,6 +108,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -126,6 +126,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
@@ -182,6 +183,8 @@ public class RaOperationUtil {
         String className = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, CLASS_NAME);
         String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, JNDINAME);
         boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, ENABLED);
+        boolean connectable = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, CONNECTABLE);
+        Boolean tracking = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, TRACKING);
         boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_JAVA_CONTEXT);
         boolean useCcm = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_CCM);
         boolean sharable = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, SHARABLE);
@@ -254,7 +257,7 @@ public class RaOperationUtil {
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
-                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery, sharable, enlistment);
+                enabled, useJavaContext, useCcm, pool, timeOut, validation, security, recovery, sharable, enlistment, connectable, tracking);
 
         return connectionDefinition;
 
@@ -336,7 +339,7 @@ public class RaOperationUtil {
         final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
 
         if (inactiveRaController == null) {
-            throw MESSAGES.RARNotYetDeployed(raName);
+            throw ConnectorLogger.ROOT_LOGGER.RARNotYetDeployed(raName);
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
@@ -388,14 +391,14 @@ public class RaOperationUtil {
             ModuleIdentifier moduleId = ModuleIdentifier.create(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
         }
         URL path = module.getExportedResource("META-INF/ra.xml");
         Closeable closable = null;
             try {
                 VirtualFile child;
                 if (path.getPath().contains("!")) {
-                    throw new OperationFailedException(MESSAGES.compressedRarNotSupportedInModuleRA(moduleName));
+                    throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.compressedRarNotSupportedInModuleRA(moduleName));
                 } else {
                     child = VFS.getChild(path.getPath().split("META-INF")[0]);
 
@@ -442,7 +445,7 @@ public class RaOperationUtil {
                 }
 
             } catch (Exception e) {
-                throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
             } finally {
                 if (closable != null) {
                     try {

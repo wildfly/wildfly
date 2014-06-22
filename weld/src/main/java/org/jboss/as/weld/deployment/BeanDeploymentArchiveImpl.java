@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.deployment;
 
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,6 +39,7 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Implementation of {@link BeanDeploymentArchive}.
@@ -167,7 +169,16 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public ClassLoader getClassLoader() {
         if (module != null) {
-            return module.getClassLoader();
+            if(WildFlySecurityManager.isChecking()) {
+                return WildFlySecurityManager.doUnchecked(new PrivilegedAction<ClassLoader>() {
+                    @Override
+                    public ClassLoader run() {
+                        return module.getClassLoader();
+                    }
+                });
+            } else {
+                return module.getClassLoader();
+            }
         }
         return null;
     }

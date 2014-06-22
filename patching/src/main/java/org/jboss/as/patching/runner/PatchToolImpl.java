@@ -36,7 +36,7 @@ import java.util.List;
 
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.Identity;

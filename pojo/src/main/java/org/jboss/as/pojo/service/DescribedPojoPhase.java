@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.msc.service.ServiceBuilder;
@@ -78,7 +78,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
         BeanInfo beanInfo = getBeanInfo();
         if (beanInfo == null)
-            throw new IllegalStateException(PojoMessages.MESSAGES.missingBeanInfo(getBeanConfig()));
+            throw new IllegalStateException(PojoLogger.ROOT_LOGGER.missingBeanInfo(getBeanConfig()));
         return beanInfo;
     }
 }

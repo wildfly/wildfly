@@ -23,7 +23,7 @@
 package org.jboss.as.domain.management.security.realms;
 
 import static org.jboss.as.domain.management.security.realms.LdapTestSuite.HOST_NAME;
-import static org.jboss.as.domain.management.security.realms.LdapTestSuite.LDAP_PORT;
+import static org.jboss.as.domain.management.security.realms.LdapTestSuite.MASTER_LDAP_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -44,11 +44,14 @@ import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
+import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.operations.OutboundConnectionAddBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 /**
  * A base class for all LDAP test to allow the server to be initialised if
@@ -58,38 +61,39 @@ import org.junit.BeforeClass;
  */
 public abstract class BaseLdapSuiteTest extends SecurityRealmTestBase {
 
-    protected static final String CONNECTION_NAME = "TestConnection";
-    private static boolean initialised;
-
-    @BeforeClass
-    public static void startLdapServer() throws Exception {
-        initialised = LdapTestSuite.startLdapServer();
-    }
-
-    @AfterClass
-    public static void stopLdapServer() throws Exception {
-        if (initialised) {
-            LdapTestSuite.stopLdapServer();
-        }
-    }
+    protected static final String MASTER_CONNECTION_NAME = "MasterConnection";
 
     @Override
     protected void addBootOperations(List<ModelNode> bootOperations) throws Exception {
-        bootOperations.add(OutboundConnectionAddBuilder.builder(CONNECTION_NAME)
-                .setUrl("ldap://" + HOST_NAME + ":" + LDAP_PORT)
-                .setSearchDn("uid=wildfly,dc=simple,dc=wildfly,dc=org")
-                .setSearchCredential("wildfly_password")
-                .build());
+        addAddOutboundConnectionOperations(bootOperations);
 
         super.addBootOperations(bootOperations);
     }
 
-    private AuthorizingCallbackHandler getAuthorizingCallbackHandler() {
-        return securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+    protected void addAddOutboundConnectionOperations(List<ModelNode> bootOperations) throws Exception {
+        bootOperations.add(OutboundConnectionAddBuilder.builder(MASTER_CONNECTION_NAME)
+                .setUrl("ldap://" + HOST_NAME + ":" + MASTER_LDAP_PORT)
+                .setSearchDn("uid=wildfly,dc=simple,dc=wildfly,dc=org")
+                .setSearchCredential("wildfly_password")
+                .build());
     }
 
-    private Set<RealmGroup> getUsersGroups(final String userName, final String password) throws Exception {
-        AuthorizingCallbackHandler cbh = getAuthorizingCallbackHandler();
+    private AuthorizingCallbackHandler getAuthorizingCallbackHandler(final String realmName) {
+        SecurityRealm realm;
+        if (TEST_REALM.equals(realmName)) {
+            realm = securityRealm;
+        } else {
+            ServiceContainer container = getContainer();
+            ServiceController<?> service = container.getRequiredService(SecurityRealm.ServiceUtil.createServiceName(realmName));
+
+            realm = (SecurityRealm) service.getValue();
+        }
+
+        return realm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+    }
+
+    private Set<RealmGroup> getUsersGroups(final String realmName, final String userName, final String password) throws Exception {
+        AuthorizingCallbackHandler cbh = getAuthorizingCallbackHandler(realmName);
 
         NameCallback ncb = new NameCallback("Username", userName);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -106,8 +110,12 @@ public abstract class BaseLdapSuiteTest extends SecurityRealmTestBase {
         return userInfo.getSubject().getPrincipals(RealmGroup.class);
     }
 
-    protected void verifyGroupMembership(final String userName, final String password, final String... groups) throws Exception {
-        Set<RealmGroup> groupPrincipals = getUsersGroups(userName, password);
+    protected LdapConnectionManager getConnectionManager(final String name) {
+        return (LdapConnectionManager) getContainer().getService(LdapConnectionManagerService.ServiceUtil.createServiceName(name)).getValue();
+    }
+
+    protected void verifyGroupMembership(final String realmName, final String userName, final String password, final String... groups) throws Exception {
+        Set<RealmGroup> groupPrincipals = getUsersGroups(realmName, userName, password);
         assertEquals("Number of groups", groups.length, groupPrincipals.size());
         Collection<String> expectedGroups = new HashSet<String>(Arrays.asList(groups));
         for (RealmGroup current : groupPrincipals) {

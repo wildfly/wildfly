@@ -35,7 +35,7 @@ import io.undertow.server.RenegotiationRequiredException;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 
 /**
  * Filter to redirect to the error context while the security realm is not ready.

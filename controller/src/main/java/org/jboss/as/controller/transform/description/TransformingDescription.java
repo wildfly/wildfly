@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -104,7 +104,7 @@ class TransformingDescription extends AbstractDescription implements Transformat
 
                     @Override
                     public String getFailureDescription() {
-                        return ControllerMessages.MESSAGES.rejectResourceOperationTransformation(address, operation);
+                        return ControllerLogger.ROOT_LOGGER.rejectResourceOperationTransformation(address, operation);
                     }
                 }, OperationResultTransformer.ORIGINAL_RESULT);
             case DISCARD_AND_WARN:

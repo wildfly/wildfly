@@ -27,12 +27,13 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -43,11 +44,18 @@ import org.jboss.dmr.ModelType;
  */
 public class JaasAuthenticationResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME,
-            ModelType.STRING, false).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
-            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { NAME };
+    public static final SimpleAttributeDefinition ASSIGN_GROUPS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ASSIGN_GROUPS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { NAME, ASSIGN_GROUPS };
 
     public JaasAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.JAAS),

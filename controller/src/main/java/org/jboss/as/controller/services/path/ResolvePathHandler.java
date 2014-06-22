@@ -26,7 +26,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,7 +35,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -77,14 +77,6 @@ public class ResolvePathHandler implements OperationStepHandler {
     private static final String OPERATION_NAME = "resolve-path";
     // Attributes
     public static final SimpleAttributeDefinition RELATIVE_TO_ONLY = SimpleAttributeDefinitionBuilder.create("relative-to-only", ModelType.BOOLEAN, true).build();
-
-    private static final SimpleOperationDefinition DEFAULT_OPERATION_DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, new ResolvePathResourceDescriptionResolver(OPERATION_NAME))
-            .addParameter(RELATIVE_TO_ONLY)
-            .setReplyType(ModelType.STRING)
-            .setReadOnly()
-            .setRuntimeOnly()
-            .build();
-
 
     private final AttributeDefinition parentAttribute;
     private final AttributeDefinition relativeToAttribute;
@@ -129,7 +121,7 @@ public class ResolvePathHandler implements OperationStepHandler {
         } else if (path.isDefined()) {
             result = pathManager.resolveRelativePathEntry(path.asString(), null);
         } else {
-            throw ControllerMessages.MESSAGES.noPathToResolve(relativeToAttribute.getName(), pathAttribute.getName(), model);
+            throw ControllerLogger.ROOT_LOGGER.noPathToResolve(relativeToAttribute.getName(), pathAttribute.getName(), model);
         }
         context.getResult().set(new ModelNode(result));
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -150,13 +142,14 @@ public class ResolvePathHandler implements OperationStepHandler {
     public static class Builder {
 
         private final PathManager pathManager;
-        private final OperationDefinition operationDefinition;
+        private final String operationName;
         private AttributeDefinition parentAttribute;
         private AttributeDefinition relativeToAttribute;
         private AttributeDefinition pathAttribute;
+        private ModelVersion deprecatedSince;
 
-        private Builder(final OperationDefinition operationDefinition, final PathManager pathManager) {
-            this.operationDefinition = operationDefinition;
+        private Builder(String operationName, final PathManager pathManager) {
+            this.operationName = operationName;
             this.pathManager = pathManager;
         }
 
@@ -169,9 +162,9 @@ public class ResolvePathHandler implements OperationStepHandler {
          */
         public static Builder of(final PathManager pathManager) {
             if (pathManager == null) {
-                throw ControllerMessages.MESSAGES.nullVar("pathManager");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("pathManager");
             }
-            return new Builder(DEFAULT_OPERATION_DEFINITION, pathManager);
+            return new Builder(OPERATION_NAME, pathManager);
         }
 
         /**
@@ -190,16 +183,12 @@ public class ResolvePathHandler implements OperationStepHandler {
         @Deprecated
         public static Builder of(final String operationName, final PathManager pathManager) {
             if (pathManager == null) {
-                throw ControllerMessages.MESSAGES.nullVar("pathManager");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("pathManager");
             }
             if (operationName == null) {
-                throw ControllerMessages.MESSAGES.nullVar("operationName");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("operationName");
             }
-            final OperationDefinition operationDefinition = new SimpleOperationDefinitionBuilder(operationName, new ResolvePathResourceDescriptionResolver(operationName))
-                    .addParameter(ResolvePathHandler.RELATIVE_TO_ONLY)
-                    .setReplyType(ModelType.STRING)
-                    .build();
-            return new Builder(operationDefinition, pathManager);
+            return new Builder(operationName, pathManager);
         }
 
         /**
@@ -210,7 +199,15 @@ public class ResolvePathHandler implements OperationStepHandler {
         public ResolvePathHandler build() {
             if (relativeToAttribute == null) relativeToAttribute = PathResourceDefinition.RELATIVE_TO;
             if (pathAttribute == null) pathAttribute = PathResourceDefinition.PATH;
-            return new ResolvePathHandler(operationDefinition, parentAttribute, relativeToAttribute, pathAttribute, pathManager);
+            final SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(operationName, new ResolvePathResourceDescriptionResolver(operationName))
+                    .addParameter(ResolvePathHandler.RELATIVE_TO_ONLY)
+                    .setReplyType(ModelType.STRING)
+                    .setReadOnly()
+                    .setRuntimeOnly();
+            if (deprecatedSince != null) {
+                builder.setDeprecated(deprecatedSince);
+            }
+            return new ResolvePathHandler(builder.build(), parentAttribute, relativeToAttribute, pathAttribute, pathManager);
         }
 
         /**
@@ -247,6 +244,11 @@ public class ResolvePathHandler implements OperationStepHandler {
          */
         public Builder setPathAttribute(final AttributeDefinition pathAttribute) {
             this.pathAttribute = pathAttribute;
+            return this;
+        }
+
+        public Builder setDeprecated(ModelVersion since) {
+            this.deprecatedSince = since;
             return this;
         }
     }

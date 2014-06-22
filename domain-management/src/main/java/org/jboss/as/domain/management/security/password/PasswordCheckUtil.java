@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.security.password;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.password.PasswordCheckResult.Result;
 import org.jboss.as.domain.management.security.password.simple.SimplePasswordStrengthChecker;
 
@@ -254,7 +253,7 @@ public class PasswordCheckUtil {
                 }
             } else {
                 resultAction = Result.WARN;
-                resultMessage = MESSAGES.passwordNotStrongEnough(strength.toString(), this.acceptable.toString());
+                resultMessage = DomainManagementLogger.ROOT_LOGGER.passwordNotStrongEnough(strength.toString(), this.acceptable.toString());
             }
         } else {
             if (strongEnough) {
@@ -270,7 +269,7 @@ public class PasswordCheckUtil {
                     resultMessage = strengthResult.getRestrictionFailures().get(0).getMessage();
                 } else {
                     resultAction = Result.REJECT;
-                    resultMessage = MESSAGES.passwordNotStrongEnough(strength.toString(), this.acceptable.toString());
+                    resultMessage = DomainManagementLogger.ROOT_LOGGER.passwordNotStrongEnough(strength.toString(), this.acceptable.toString());
                 }
             }
         }
@@ -303,17 +302,17 @@ public class PasswordCheckUtil {
 
     public PasswordRestriction createAlphaRestriction(int minAlpha) {
         return createRegExRestriction(minAlpha, SimplePasswordStrengthChecker.REGEX_ALPHA,
-                MESSAGES.passwordMustHaveAlphaInfo(minAlpha), MESSAGES.passwordMustHaveAlpha(minAlpha));
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveAlphaInfo(minAlpha), DomainManagementLogger.ROOT_LOGGER.passwordMustHaveAlpha(minAlpha));
     }
 
     public PasswordRestriction createDigitRestriction(int minDigit) {
         return createRegExRestriction(minDigit, SimplePasswordStrengthChecker.REGEX_DIGITS,
-                MESSAGES.passwordMustHaveDigitInfo(minDigit), MESSAGES.passwordMustHaveDigit(minDigit));
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveDigitInfo(minDigit), DomainManagementLogger.ROOT_LOGGER.passwordMustHaveDigit(minDigit));
     }
 
     public PasswordRestriction createSymbolRestriction(int minSymbol) {
         return createRegExRestriction(minSymbol, SimplePasswordStrengthChecker.REGEX_SYMBOLS,
-                MESSAGES.passwordMustHaveSymbolInfo(minSymbol), MESSAGES.passwordMustHaveSymbol(minSymbol));
+                DomainManagementLogger.ROOT_LOGGER.passwordMustHaveSymbolInfo(minSymbol), DomainManagementLogger.ROOT_LOGGER.passwordMustHaveSymbol(minSymbol));
     }
 
     private PasswordRestriction createRegExRestriction(int minChar, String regex, String requirementsMessage,

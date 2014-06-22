@@ -23,28 +23,29 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
-import java.util.Locale;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfStrings;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,7 +56,9 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
 
-    public static final JMSServerControlHandler INSTANCE = new JMSServerControlHandler();
+    private static final AttributeDefinition ADDRESS_NAME = createNonEmptyStringAttribute("address-name");
+    private static final AttributeDefinition SESSION_ID = createNonEmptyStringAttribute("session-id");
+    private static final AttributeDefinition CONNECTION_ID = createNonEmptyStringAttribute("connection-id");
 
     public static final String LIST_CONNECTIONS_AS_JSON = "list-connections-as-json";
     public static final String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
@@ -72,21 +75,9 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
     // listConnectionsAsJSON, listConsumersAsJSON, listAllConsumersAsJSON, listTargetDestinations, getLastSentMessageID,
     // getSessionCreationTime, listSessionsAsJSON, listPreparedTransactionDetailsAsJSON, listPreparedTransactionDetailsAsHTML
 
-    public static final String JMS_SERVER = "jms-server";
-    public static final String ADDRESS_NAME = "address-name";
-    public static final String CONNECTION_ID = "connection-id";
-    public static final String SESSION_ID = "session-id";
-
-    private final ParametersValidator connectionIdValidator = new ParametersValidator();
-    private final ParametersValidator sessionIdValidator = new ParametersValidator();
-    private final ParametersValidator lastSentValidator = new ParametersValidator();
+    public static final JMSServerControlHandler INSTANCE = new JMSServerControlHandler();
 
     private JMSServerControlHandler() {
-        final StringLengthValidator stringLengthValidator = new StringLengthValidator(1);
-        connectionIdValidator.registerValidator(CONNECTION_ID, stringLengthValidator);
-        sessionIdValidator.registerValidator(SESSION_ID, stringLengthValidator);
-        lastSentValidator.registerValidator(SESSION_ID, stringLengthValidator);
-        lastSentValidator.registerValidator(ADDRESS_NAME, stringLengthValidator);
     }
 
     @Override
@@ -99,8 +90,8 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         final String operationName = operation.require(OP).asString();
         final JMSServerControl serverControl = getServerControl(context, operation);
         if (serverControl == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         try {
@@ -108,32 +99,27 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 String json = serverControl.listConnectionsAsJSON();
                 context.getResult().set(json);
             } else if (LIST_CONSUMERS_AS_JSON.equals(operationName)) {
-                connectionIdValidator.validate(operation);
-                String connectionID = operation.require(CONNECTION_ID).asString();
+                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.listConsumersAsJSON(connectionID);
                 context.getResult().set(json);
             } else if (LIST_ALL_CONSUMERS_AS_JSON.equals(operationName)) {
                 String json = serverControl.listAllConsumersAsJSON();
                 context.getResult().set(json);
             } else if (LIST_TARGET_DESTINATIONS.equals(operationName)) {
-                sessionIdValidator.validate(operation);
-                String sessionID = operation.require(SESSION_ID).asString();
+                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
                 String[] list = serverControl.listTargetDestinations(sessionID);
-                reportListOfString(context, list);
+                reportListOfStrings(context, list);
             } else if (GET_LAST_SENT_MESSAGE_ID.equals(operationName)) {
-                lastSentValidator.validate(operation);
-                String sessionID = operation.require(SESSION_ID).asString();
-                String addressName = operation.require(ADDRESS_NAME).asString();
+                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
+                String addressName = ADDRESS_NAME.resolveModelAttribute(context, operation).asString();
                 String msgId = serverControl.getLastSentMessageID(sessionID, addressName);
                 context.getResult().set(msgId);
             } else if (GET_SESSION_CREATION_TIME.equals(operationName)) {
-                sessionIdValidator.validate(operation);
-                String sessionID = operation.require(SESSION_ID).asString();
+                String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
                 String time = serverControl.getSessionCreationTime(sessionID);
-                context.getResult().set(time);
+               context.getResult().set(time);
             } else if (LIST_SESSIONS_AS_JSON.equals(operationName)) {
-                connectionIdValidator.validate(operation);
-                String connectionID = operation.require(CONNECTION_ID).asString();
+                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.listSessionsAsJSON(connectionID);
                 context.getResult().set(json);
             } else if (LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON.equals(operationName)) {
@@ -144,7 +130,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(html);
             } else {
                 // Bug
-                throw MESSAGES.unsupportedOperation(operationName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
@@ -152,77 +138,49 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
-    public void registerOperations(final ManagementResourceRegistration registry) {
-
-        registry.registerOperationHandler(LIST_CONNECTIONS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_CONNECTIONS_AS_JSON, JMS_SERVER, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_CONSUMERS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, LIST_CONSUMERS_AS_JSON, JMS_SERVER,
-                        CONNECTION_ID, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_ALL_CONSUMERS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_ALL_CONSUMERS_AS_JSON, JMS_SERVER, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_TARGET_DESTINATIONS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale, LIST_TARGET_DESTINATIONS,
-                        JMS_SERVER, SESSION_ID, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(GET_LAST_SENT_MESSAGE_ID, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getGetLastSentMessageId(locale);
-            }
-        });
-
-        registry.registerOperationHandler(GET_SESSION_CREATION_TIME, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, GET_SESSION_CREATION_TIME, JMS_SERVER,
-                        SESSION_ID, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_SESSIONS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, LIST_SESSIONS_AS_JSON, JMS_SERVER,
-                        CONNECTION_ID, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON, JMS_SERVER, ModelType.STRING, true);
-            }
-        });
-
-        registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_HTML, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_HTML, JMS_SERVER, ModelType.STRING, true);
-            }
-        });
+    public void registerOperations(final ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_CONNECTIONS_AS_JSON, resolver)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_CONSUMERS_AS_JSON, resolver)
+                .setParameters(CONNECTION_ID)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_ALL_CONSUMERS_AS_JSON, resolver)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_TARGET_DESTINATIONS, resolver)
+                .setParameters(SESSION_ID)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_LAST_SENT_MESSAGE_ID, resolver)
+                .setParameters(SESSION_ID, ADDRESS_NAME)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_SESSION_CREATION_TIME, resolver)
+                .setParameters(SESSION_ID)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SESSIONS_AS_JSON, resolver)
+                .setParameters(CONNECTION_ID)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTION_JMS_DETAILS_AS_HTML, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
     }
 
     private JMSServerControl getServerControl(final OperationContext context, final ModelNode operation) {
@@ -230,13 +188,5 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return JMSServerControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_SERVER));
-    }
-
-    private void reportListOfString(OperationContext context, String[] list) {
-        final ModelNode result = context.getResult();
-        result.setEmptyList();
-        for (String tx : list) {
-            result.add(tx);
-        }
     }
 }

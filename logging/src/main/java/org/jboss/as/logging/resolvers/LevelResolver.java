@@ -23,12 +23,12 @@
 package org.jboss.as.logging.resolvers;
 
 import static org.jboss.as.logging.Logging.createOperationFailure;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.logging.Level;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,7 +50,7 @@ public class LevelResolver implements ModelNodeResolver<String> {
             Level.parse(value.asString());
             return value.asString();
         } catch (IllegalArgumentException e) {
-            throw createOperationFailure(MESSAGES.invalidLogLevel(value.asString()));
+            throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidLogLevel(value.asString()));
         }
     }
 }

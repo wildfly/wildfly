@@ -23,6 +23,8 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Handler for "add-jndi" and "remove-jndi" operations on a connection factory resource.
@@ -31,7 +33,7 @@ import org.hornetq.jms.server.JMSServerManager;
  */
 public class ConnectionFactoryUpdateJndiHandler extends AbstractUpdateJndiHandler {
 
-    protected ConnectionFactoryUpdateJndiHandler(boolean addOperation) {
+    private ConnectionFactoryUpdateJndiHandler(boolean addOperation) {
         super(addOperation);
     }
 
@@ -43,5 +45,13 @@ public class ConnectionFactoryUpdateJndiHandler extends AbstractUpdateJndiHandle
     @Override
     protected void removeJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
         jmsServerManager.removeConnectionFactoryFromJNDI(resourceName, jndiName);
+    }
+
+    static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        ConnectionFactoryUpdateJndiHandler add = new ConnectionFactoryUpdateJndiHandler(true);
+        add.registerOperation(registry, resolver);
+
+        ConnectionFactoryUpdateJndiHandler remove = new ConnectionFactoryUpdateJndiHandler(false);
+        remove.registerOperation(registry, resolver);
     }
 }

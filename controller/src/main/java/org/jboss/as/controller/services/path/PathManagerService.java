@@ -21,7 +21,6 @@
 */
 package org.jboss.as.controller.services.path;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -88,7 +88,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
             synchronized (pathEntries) {
                 pathEntry = pathEntries.get(relativeTo);
                 if (pathEntry == null) {
-                    throw MESSAGES.pathEntryNotFound(relativeTo);
+                    throw ControllerLogger.ROOT_LOGGER.pathEntryNotFound(relativeTo);
                 }
                 return RelativePathService.doResolve(pathEntry.resolvePath(), path);
             }
@@ -138,7 +138,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         synchronized (pathEntries) {
             PathEntry pathEntry = pathEntries.get(pathName);
             if (pathEntry == null) {
-                throw MESSAGES.pathEntryNotFound(pathName);
+                throw ControllerLogger.ROOT_LOGGER.pathEntryNotFound(pathName);
             }
             return pathEntry;
         }
@@ -183,12 +183,12 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         synchronized (pathEntries) {
             PathEntry pathEntry = pathEntries.get(pathName);
             if (pathEntry.isReadOnly()) {
-                throw MESSAGES.pathEntryIsReadOnly(pathName);
+                throw ControllerLogger.ROOT_LOGGER.pathEntryIsReadOnly(pathName);
             }
 
             Set<String> dependents = dependenctRelativePaths.get(pathName);
             if (check && dependents != null) {
-                throw MESSAGES.cannotRemovePathWithDependencies(pathName, dependents);
+                throw ControllerLogger.ROOT_LOGGER.cannotRemovePathWithDependencies(pathName, dependents);
             }
             pathEntries.remove(pathName);
             triggerCallbacksForEvent(pathEntry, Event.REMOVED);
@@ -229,7 +229,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         PathEntry pathEntry;
         synchronized (pathEntries) {
             if (pathEntries.containsKey(pathName)) {
-                throw MESSAGES.pathEntryAlreadyExists(pathName);
+                throw ControllerLogger.ROOT_LOGGER.pathEntryAlreadyExists(pathName);
             }
             pathEntry = new PathEntry(pathName, path, relativeTo, readOnly, relativeTo == null ? absoluteResolver : relativeResolver);
             pathEntries.put(pathName, pathEntry);
@@ -250,7 +250,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
                 dependents.remove(pathEntry.getName());
             }
             if (check && relativePath != null && pathEntries.get(relativePath) == null) {
-                throw MESSAGES.pathEntryNotFound(pathName);
+                throw ControllerLogger.ROOT_LOGGER.pathEntryNotFound(pathName);
             }
             pathEntry.setRelativeTo(relativePath);
             pathEntry.setPathResolver(relativePath == null ? absoluteResolver : relativeResolver);
@@ -283,7 +283,7 @@ public abstract class PathManagerService implements PathManager, Service<PathMan
         synchronized (pathEntries) {
             pathEntry = pathEntries.get(pathName);
             if (pathEntry == null) {
-                throw MESSAGES.pathEntryNotFound(pathName);
+                throw ControllerLogger.ROOT_LOGGER.pathEntryNotFound(pathName);
             }
         }
         return pathEntry;

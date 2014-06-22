@@ -22,8 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.NetworkUtils;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -178,7 +178,7 @@ class HornetQService implements Service<HornetQServer> {
                         if (binding == null) {
                             final SocketBinding socketBinding = socketBindings.get(name);
                             if (socketBinding == null) {
-                                throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
+                                throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                             }
                             InetSocketAddress sa = socketBinding.getSocketAddress();
                             port = sa.getPort();
@@ -212,7 +212,7 @@ class HornetQService implements Service<HornetQServer> {
                         String name = socketRef.toString();
                         SocketBinding binding = socketBindings.get(name);
                         if (binding == null) {
-                            throw MESSAGES.failedToFindConnectorSocketBinding(tc.getName());
+                            throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                         }
                         InetSocketAddress socketAddress = binding.getSocketAddress();
                         tc.getParams().put(HOST, socketAddress.getAddress().getHostAddress());
@@ -236,7 +236,7 @@ class HornetQService implements Service<HornetQServer> {
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
-                            throw MESSAGES.failedToFindBroadcastSocketBinding(name);
+                            throw MessagingLogger.ROOT_LOGGER.failedToFindBroadcastSocketBinding(name);
                         }
                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                     }
@@ -262,7 +262,7 @@ class HornetQService implements Service<HornetQServer> {
                     } else {
                         final SocketBinding binding = groupBindings.get(key);
                         if (binding == null) {
-                            throw MESSAGES.failedToFindDiscoverySocketBinding(name);
+                            throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
                         }
                         config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
                     }
@@ -286,7 +286,7 @@ class HornetQService implements Service<HornetQServer> {
             // SecurityActions.setContextClassLoader(loader);
             // server.start();
         } catch (Exception e) {
-            throw MESSAGES.failedToStartService(e);
+            throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origTCCL);
         }
@@ -300,7 +300,7 @@ class HornetQService implements Service<HornetQServer> {
             }
             pathConfig.closeCallbacks(pathManager.getValue());
         } catch (Exception e) {
-            throw MESSAGES.failedToShutdownServer(e, "HornetQ");
+            throw MessagingLogger.ROOT_LOGGER.failedToShutdownServer(e, "HornetQ");
         }
     }
 

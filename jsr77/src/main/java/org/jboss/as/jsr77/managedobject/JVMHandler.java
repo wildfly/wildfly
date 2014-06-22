@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Set;
@@ -33,6 +31,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -84,9 +83,9 @@ class JVMHandler extends BaseHandler {
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = super.getAttributeInfos();
 
-        attributes.add(createRoMBeanAttributeInfo(ATTR_JVM_NAME, String[].class.getName(), MESSAGES.attrInfoJvmName()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VENDOR, String.class.getName(), MESSAGES.attrInfoJavaVendor()));
-        attributes.add(createRoMBeanAttributeInfo(ATTR_NODE, String.class.getName(), MESSAGES.attrInfoNode()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_JVM_NAME, String[].class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoJvmName()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_JAVA_VENDOR, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoJavaVendor()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_NODE, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoNode()));
 
         return attributes;
     }

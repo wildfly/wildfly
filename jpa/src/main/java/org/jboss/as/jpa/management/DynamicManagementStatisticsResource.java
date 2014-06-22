@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.management;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.dmr.ModelNode;
 import org.jipijapa.management.spi.Statistics;
 
@@ -221,7 +221,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
         try {
             Statistics statistics = getStatistics();
             if (statistics.getChildrenNames().contains(address.getKey())) {
-                throw MESSAGES.resourcesOfTypeCannotBeRegistered(address.getKey());
+                throw JpaLogger.ROOT_LOGGER.resourcesOfTypeCannotBeRegistered(address.getKey());
             } else {
                 super.registerChild(address, resource);
             }
@@ -235,7 +235,7 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
     public Resource removeChild(PathElement address) {
         Statistics statistics = getStatistics();
         if (statistics.getChildrenNames().contains(address.getKey())) {
-            throw MESSAGES.resourcesOfTypeCannotBeRemoved(address.getKey());
+            throw JpaLogger.ROOT_LOGGER.resourcesOfTypeCannotBeRemoved(address.getKey());
         } else {
             return super.removeChild(address);
         }

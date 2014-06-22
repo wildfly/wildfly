@@ -22,12 +22,12 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.datasources.Util;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
@@ -61,9 +61,10 @@ public abstract class PoolOperations implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName;
+        ModelNode model;
         if (!address.getElement(0).getKey().equals(ModelDescriptionConstants.DEPLOYMENT) &&
-                context.readModel(PathAddress.EMPTY_ADDRESS).isDefined()) {
-            jndiName = Util.getJndiName(context.readModel(PathAddress.EMPTY_ADDRESS));
+                (model = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel()).isDefined()) {
+            jndiName = Util.getJndiName(model);
         } else {
             jndiName = address.getLastElement().getValue();
         }
@@ -80,7 +81,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             final List<Pool> pools = matcher.match(jndiName, repository);
 
                             if (pools.isEmpty()) {
-                                throw MESSAGES.failedToMatchPool(jndiName);
+                                throw ConnectorLogger.ROOT_LOGGER.failedToMatchPool(jndiName);
                             }
 
                             for (Pool pool : pools) {
@@ -88,7 +89,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToInvokeOperation(e.getLocalizedMessage())));
+                            throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage())));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
@@ -124,6 +125,31 @@ public abstract class PoolOperations implements OperationStepHandler {
         }
 
     }
+
+    public static class DumpQueuedThreadInPool extends PoolOperations {
+            public static final DumpQueuedThreadInPool DS_INSTANCE = new DumpQueuedThreadInPool(new DsPoolMatcher());
+            public static final DumpQueuedThreadInPool RA_INSTANCE = new DumpQueuedThreadInPool(new RaPoolMatcher());
+
+            protected DumpQueuedThreadInPool(PoolMatcher matcher) {
+                super(matcher);
+            }
+
+            @Override
+            protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+                ModelNode result = new ModelNode();
+                for (String line : pool.dumpQueuedThreads()) {
+                    result.add(line);
+                }
+                return result;
+            }
+
+            @Override
+            protected Object[] getParameters(OperationContext context, ModelNode operation) {
+                return null;
+            }
+
+        }
+
 
     public static class FlushAllConnectionInPool extends PoolOperations {
         public static final FlushAllConnectionInPool DS_INSTANCE = new FlushAllConnectionInPool(new DsPoolMatcher());
@@ -206,7 +232,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                 returnedValue = pool.testConnection();
             }
             if (!returnedValue)
-                throw MESSAGES.invalidConnection();
+                throw ConnectorLogger.ROOT_LOGGER.invalidConnection();
             ModelNode result = new ModelNode();
             result.add(returnedValue);
             return result;

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
@@ -115,7 +115,7 @@ class OperationDefImpl
     }
 
     public void result_def(IDLType arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ParameterDescription[] params() {
@@ -123,7 +123,7 @@ class OperationDefImpl
     }
 
     public void params(ParameterDescription[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public OperationMode mode() {
@@ -132,7 +132,7 @@ class OperationDefImpl
     }
 
     public void mode(OperationMode arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public String[] contexts() {
@@ -141,7 +141,7 @@ class OperationDefImpl
     }
 
     public void contexts(String[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ExceptionDef[] exceptions() {
@@ -149,7 +149,7 @@ class OperationDefImpl
     }
 
     public void exceptions(ExceptionDef[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     // ContainedImpl implementation ----------------------------------

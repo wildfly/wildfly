@@ -47,6 +47,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.h2.tools.Server;
@@ -68,6 +69,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Arquillian.class)
 @ServerSetup(PasswordMaskingTestCase.PasswordMaskingTestCaseSetup.class)
+@Ignore("WFLY-3289")
 public class PasswordMaskingTestCase {
 
    private static Logger LOGGER = Logger.getLogger(PasswordMaskingTestCase.class);

@@ -23,13 +23,13 @@
 package org.jboss.as.jpa.container;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.io.Serializable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.SynchronizationType;
 
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 
 /**
@@ -133,7 +133,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
             EntityManager existing = TransactionUtil.getTransactionScopedEntityManager(puScopedName);
             if (existing != null && existing != this) {
                 // should be enough to test if not the same object
-                throw MESSAGES.cannotUseExtendedPersistenceTransaction(puScopedName, existing, this);
+                throw JpaLogger.ROOT_LOGGER.cannotUseExtendedPersistenceTransaction(puScopedName, existing, this);
             } else if (existing == null) {
 
                 if (SynchronizationType.SYNCHRONIZED.equals(synchronizationType)) {
@@ -162,7 +162,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     @Override
     public void close() {
         // An extended entity manager will be closed when the EJB SFSB @remove method is invoked.
-        throw MESSAGES.cannotCloseContainerManagedEntityManager();
+        throw JpaLogger.ROOT_LOGGER.cannotCloseContainerManagedEntityManager();
 
     }
 
@@ -198,7 +198,7 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
         // referenceCount should never be negative, if it is we need to fix the bug that caused it to decrement too much
         if (referenceCount < 0) {
-            throw MESSAGES.referenceCountedEntityManagerNegativeCount(referenceCount, getScopedPuName());
+            throw JpaLogger.ROOT_LOGGER.referenceCountedEntityManagerNegativeCount(referenceCount, getScopedPuName());
         }
 
     }

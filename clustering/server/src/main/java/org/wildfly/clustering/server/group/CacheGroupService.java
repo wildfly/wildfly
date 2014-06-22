@@ -21,133 +21,65 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.infinispan.Cache;
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
-import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
-import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
  * {@link Group} implementation based on a cache view.
  * @author Paul Ferraro
  */
-@Listener
-public class CacheGroupService implements Group, Service<Group> {
+public class CacheGroupService implements Service<Group>, CacheGroupConfiguration {
 
-    private final CacheGroupConfiguration config;
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+        CacheGroupService service = new CacheGroupService();
+        return target.addService(name, service)
+                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
+                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), CacheNodeFactory.class, service.factory)
+        ;
+    }
 
-    private volatile Cache<?, ?> cache = null;
-    private volatile CacheNodeFactory factory = null;
+    @SuppressWarnings("rawtypes")
+    private final InjectedValue<Cache> cache = new InjectedValue<>();
+    private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
 
-    public CacheGroupService(CacheGroupConfiguration config) {
-        this.config = config;
+    private volatile CacheGroup group;
+
+    private CacheGroupService() {
+        // Hide
     }
 
     @Override
     public Group getValue() {
-        return this;
+        return this.group;
     }
 
     @Override
     public void start(StartContext context) {
-        this.cache = this.config.getCache();
-        this.factory = this.config.getNodeFactory();
-        this.cache.addListener(this);
+        this.group = new CacheGroup(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        this.cache.removeListener(this);
-        this.factory = null;
-        this.cache = null;
+        this.group.close();
+        this.group = null;
     }
 
     @Override
-    public String getName() {
-        return this.cache.getCacheManager().getClusterName();
+    public Cache<?, ?> getCache() {
+        return this.cache.getValue();
     }
 
     @Override
-    public boolean isCoordinator() {
-        return this.cache.getCacheManager().getAddress().equals(this.getCoordinator());
-    }
-
-    @Override
-    public Node getLocalNode() {
-        return this.factory.createNode(this.cache.getCacheManager().getAddress());
-    }
-
-    @Override
-    public Node getCoordinatorNode() {
-        return this.factory.createNode(this.getCoordinator());
-    }
-
-    private Address getCoordinator() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers().get(0) : this.cache.getCacheManager().getCoordinator();
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        List<Address> addresses = this.getAddresses();
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(address));
-        }
-        return nodes;
-    }
-
-    @TopologyChanged
-    public void topologyChanged(TopologyChangedEvent<?, ?> event) {
-        if (event.isPre()) return;
-
-        List<Address> oldAddresses = event.getConsistentHashAtStart().getMembers();
-        List<Node> oldNodes = this.getNodes(oldAddresses);
-        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
-        List<Node> newNodes = this.getNodes(newAddresses);
-
-        Set<Address> obsolete = new HashSet<>(oldAddresses);
-        obsolete.removeAll(newAddresses);
-        this.factory.invalidate(obsolete);
-
-        for (Listener listener: this.listeners) {
-            listener.membershipChanged(oldNodes, newNodes, false);
-        }
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(address));
-        }
-        return nodes;
-    }
-
-    @Override
-    public void addListener(Listener listener) {
-        this.listeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
-    }
-
-    private List<Address> getAddresses() {
-        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
-        return (dist != null) ? dist.getConsistentHash().getMembers() : this.cache.getCacheManager().getMembers();
+    public CacheNodeFactory getNodeFactory() {
+        return this.factory.getValue();
     }
 }

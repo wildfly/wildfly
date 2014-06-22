@@ -40,9 +40,8 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.repository.RemoteFileRequestAndHandler;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.operations.ServerProcessStateHandler;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -146,9 +145,9 @@ public class HostControllerClient implements Closeable {
                 ServerToHostRemoteFileRequestAndHandler.INSTANCE.handleResponse(input, localPath, ServerLogger.ROOT_LOGGER, resultHandler, context);
                 resultHandler.done(null);
             } catch (RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException e) {
-                resultHandler.failed(ServerMessages.MESSAGES.cannotCreateLocalDirectory(e.getDir()));
+                resultHandler.failed(ServerLogger.ROOT_LOGGER.cannotCreateLocalDirectory(e.getDir()));
             } catch (RemoteFileRequestAndHandler.DidNotReadEntireFileException e) {
-                resultHandler.failed(ServerMessages.MESSAGES.didNotReadEntireFile(e.getMissing()));
+                resultHandler.failed(ServerLogger.ROOT_LOGGER.didNotReadEntireFile(e.getMissing()));
             }
         }
     }
@@ -158,7 +157,7 @@ public class HostControllerClient implements Closeable {
             try {
                 return channelHandler.executeRequest(new GetFileRequest(relativePath, localDeploymentFolder), null).getResult().get();
             } catch (Exception e) {
-                throw ServerMessages.MESSAGES.failedToGetFileFromRemoteRepository(e);
+                throw ServerLogger.ROOT_LOGGER.failedToGetFileFromRemoteRepository(e);
             }
         }
     }

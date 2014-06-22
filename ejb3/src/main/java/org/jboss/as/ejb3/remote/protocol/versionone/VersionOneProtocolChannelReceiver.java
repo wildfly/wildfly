@@ -33,8 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
@@ -106,7 +105,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             this.sendNewClusterFormedMessage(clusters);
         } catch (IOException ioe) {
             // just log and don't throw an error
-            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, channel);
+            EjbLogger.ROOT_LOGGER.failedToSendClusterFormationMessageToClient(ioe, channel);
         }
         for (final Registry<String, List<ClientMapping>> cluster : clusters) {
             // add the topology update listener
@@ -124,7 +123,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             channel.close();
         } catch (IOException e) {
-            throw EjbMessages.MESSAGES.couldNotCloseChannel(e);
+            throw EjbLogger.ROOT_LOGGER.couldNotCloseChannel(e);
         } finally {
             this.cleanupOnChannelDown();
         }
@@ -228,7 +227,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            EjbLogger.EJB3_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.failedToSendModuleAvailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
         }
     }
 
@@ -237,7 +236,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             this.sendModuleUnAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {
-            EjbLogger.EJB3_LOGGER.failedToSendModuleUnavailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.failedToSendModuleUnavailabilityMessageToClient(e, deploymentModuleIdentifier, channelAssociation.getChannel());
         }
     }
 
@@ -247,7 +246,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
@@ -265,7 +264,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         final ModuleAvailabilityWriter moduleAvailabilityWriter = new ModuleAvailabilityWriter();
@@ -283,7 +282,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             EjbLogger.ROOT_LOGGER.debug("Received new cluster formation notification for cluster " + cluster.getGroup().getName());
             this.sendNewClusterFormedMessage(Collections.singleton(cluster));
         } catch (IOException ioe) {
-            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, cluster.getGroup().getName(), channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.failedToSendClusterFormationMessageToClient(ioe, cluster.getGroup().getName(), channelAssociation.getChannel());
         } finally {
             // add a listener for receiving node(s) addition/removal from the cluster
             final ClusterTopologyUpdateListener clusterTopologyUpdateListener = new ClusterTopologyUpdateListener(cluster, this);
@@ -320,7 +319,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
@@ -345,7 +344,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
@@ -401,7 +400,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesAdded(added);
             } catch (IOException ioe) {
-                EjbLogger.EJB3_LOGGER.failedToSendClusterNodeAdditionMessageToClient(ioe, channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.failedToSendClusterNodeAdditionMessageToClient(ioe, channelAssociation.getChannel());
             }
         }
 
@@ -415,7 +414,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 this.sendClusterNodesRemoved(removed.keySet());
             } catch (IOException ioe) {
-                EjbLogger.EJB3_LOGGER.failedToSendClusterNodeRemovalMessageToClient(ioe, channelAssociation.getChannel());
+                EjbLogger.ROOT_LOGGER.failedToSendClusterNodeRemovalMessageToClient(ioe, channelAssociation.getChannel());
             }
         }
 
@@ -429,7 +428,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
             } catch (Exception e) {
-                throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+                throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
             }
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
@@ -456,7 +455,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
             try {
                 messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
             } catch (Exception e) {
-                throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+                throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
             }
             outputStream = new DataOutputStream(messageOutputStream);
             final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();

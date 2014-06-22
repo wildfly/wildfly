@@ -40,8 +40,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.jberet.BatchConfiguration;
-import org.wildfly.jberet.BatchConfiguration.JobRepositoryType;
+import org.wildfly.extension.batch.job.repository.JobRepositoryFactory;
+import org.wildfly.extension.batch.job.repository.JobRepositoryType;
 
 /**
  * A job repository resource used to configure settings of a {@link BatchSubsystemDefinition#JOB_REPOSITORY_TYPE job
@@ -89,7 +89,7 @@ class JobRepositoryDefinition extends SimpleResourceDefinition {
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
             final ModelNode jndiName = JNDI_NAME.resolveModelAttribute(context, model);
             if (jndiName.isDefined()) {
-                BatchConfiguration.getInstance().setJndiName(jndiName.asString());
+                JobRepositoryFactory.getInstance().setJndiName(jndiName.asString());
             }
         }
     }

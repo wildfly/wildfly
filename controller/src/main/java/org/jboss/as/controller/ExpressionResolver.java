@@ -23,6 +23,7 @@ package org.jboss.as.controller;
 
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -75,7 +76,7 @@ public interface ExpressionResolver {
         protected void resolvePluggableExpression(ModelNode node) throws OperationFailedException {
             String expression = node.asString();
             if (EXPRESSION_PATTERN.matcher(expression).matches()) {
-                throw ControllerMessages.MESSAGES.illegalUnresolvedModel(expression);
+                throw ControllerLogger.ROOT_LOGGER.illegalUnresolvedModel(expression);
             }
             // It wasn't an expression any way; convert the node to type STRING
             node.set(expression);

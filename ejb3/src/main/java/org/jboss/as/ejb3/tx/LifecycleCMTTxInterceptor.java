@@ -25,7 +25,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.invocation.Interceptor;
@@ -67,7 +67,7 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor implements Inter
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw EjbMessages.MESSAGES.unknownTxAttributeOnInvocation(transactionAttributeType, invocation);
+                throw EjbLogger.ROOT_LOGGER.unknownTxAttributeOnInvocation(transactionAttributeType, invocation);
         }
     }
 

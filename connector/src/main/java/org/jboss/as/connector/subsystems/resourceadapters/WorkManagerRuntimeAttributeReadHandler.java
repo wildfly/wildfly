@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -31,7 +32,6 @@ import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.jca.core.api.workmanager.WorkManagerStatistics;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 public class WorkManagerRuntimeAttributeReadHandler implements OperationStepHandler {
@@ -124,7 +124,7 @@ public class WorkManagerRuntimeAttributeReadHandler implements OperationStepHand
                         }
 
                     } catch (Exception e) {
-                        throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
+                        throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                     }
 
                     context.stepCompleted();

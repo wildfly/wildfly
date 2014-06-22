@@ -246,7 +246,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition POA_QUEUE_MAX = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.POA_QUEUE_MAX, ModelType.INT, true)
             .setDefaultValue(new ModelNode().set(100))
-            .setValidator(new IntRangeValidator(1, 200, true, false))
+            .setValidator(new IntRangeValidator(1, 500, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();

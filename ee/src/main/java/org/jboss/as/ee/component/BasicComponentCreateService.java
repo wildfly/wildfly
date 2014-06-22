@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
@@ -37,8 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A service for creating a component.
@@ -113,7 +112,7 @@ public class BasicComponentCreateService implements Service<Component> {
     public synchronized Component getValue() throws IllegalStateException, IllegalArgumentException {
         Component component = this.component;
         if (component == null) {
-            throw MESSAGES.serviceNotStarted();
+            throw EeLogger.ROOT_LOGGER.serviceNotStarted();
         }
         return component;
     }

@@ -22,8 +22,7 @@
 
 package org.jboss.as.jmx;
 
-import static org.jboss.as.jmx.JmxLogger.ROOT_LOGGER;
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
+import static org.jboss.as.jmx.logging.JmxLogger.ROOT_LOGGER;
 
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -88,7 +88,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
         try {
             objectName = new ObjectName(name);
         } catch (MalformedObjectNameException e) {
-            throw MESSAGES.mbeanRegistrationFailed(e, name);
+            throw JmxLogger.ROOT_LOGGER.mbeanRegistrationFailed(e, name);
         }
 
         try {
@@ -99,7 +99,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
                 ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
                 mBeanServer.registerMBean(value, objectName);
             } catch (Exception e) {
-                throw MESSAGES.mbeanRegistrationFailed(e, name);
+                throw ROOT_LOGGER.mbeanRegistrationFailed(e, name);
             }
         } finally {
             for (SetupAction action : setupActions) {

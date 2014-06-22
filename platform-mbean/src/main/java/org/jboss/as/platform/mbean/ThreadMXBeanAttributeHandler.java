@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -53,7 +54,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+            if ((PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
                     || ThreadResourceDefinition.THREADING_READ_ATTRIBUTES.contains(name)
                     || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
                     || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
@@ -62,9 +63,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
             }
-        } catch (SecurityException e) {
-            throw new OperationFailedException(new ModelNode().set(e.toString()));
-        } catch (UnsupportedOperationException e) {
+        } catch (SecurityException | UnsupportedOperationException e) {
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
@@ -86,7 +85,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 ManagementFactory.getThreadMXBean().setThreadCpuTimeEnabled(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
             } else if (ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
-                throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl4(name);
+                throw PlatformMBeanLogger.ROOT_LOGGER.badWriteAttributeImpl(name);
             } else {
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
@@ -101,7 +100,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.THREAD_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.THREAD_COUNT.equals(name)) {
             store.set(ManagementFactory.getThreadMXBean().getThreadCount());
@@ -138,7 +137,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
                 || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl11(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         }
 
     }

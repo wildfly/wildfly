@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -43,7 +43,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -70,84 +69,24 @@ import org.jgroups.stack.Protocol;
  */
 public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement CHANNEL_PATH = PathElement.pathElement(MetricKeys.CHANNEL);
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(MetricKeys.CHANNEL, name);
+    }
 
     private final boolean runtimeRegistration;
 
-    // metrics
-    static final SimpleAttributeDefinition ADDRESS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition ADDRESS_AS_UUID =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ADDRESS_AS_UUID, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition DISCARD_OWN_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.DISCARD_OWN_MESSAGES, ModelType.BOOLEAN, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition NUM_TASKS_IN_TIMER =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TASKS_IN_TIMER, ModelType.INT, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition NUM_TIMER_THREADS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.NUM_TIMER_THREADS, ModelType.INT, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition RECEIVED_BYTES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_BYTES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition RECEIVED_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.RECEIVED_MESSAGES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition SENT_BYTES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_BYTES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition SENT_MESSAGES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.SENT_MESSAGES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition STATE =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.STATE, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition STATS_ENABLED =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.STATS_ENABLED, ModelType.BOOLEAN, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition VERSION =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.VERSION, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition VIEW =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.VIEW, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final AttributeDefinition[] CHANNEL_METRICS = {ADDRESS, ADDRESS_AS_UUID, DISCARD_OWN_MESSAGES, NUM_TASKS_IN_TIMER,
-            NUM_TIMER_THREADS, RECEIVED_BYTES, RECEIVED_MESSAGES, SENT_BYTES, SENT_MESSAGES, STATE, STATS_ENABLED, VERSION, VIEW};
-
-    public ChannelInstanceResourceDefinition(String channelName, boolean runtimeRegistration) {
-
-        super(PathElement.pathElement(MetricKeys.CHANNEL, channelName),
-                JGroupsExtension.getResourceDescriptionResolver(MetricKeys.CHANNEL),
-                null,
-                null);
+    ChannelInstanceResourceDefinition(String channelName, boolean runtimeRegistration) {
+        super(pathElement(channelName), JGroupsExtension.getResourceDescriptionResolver(MetricKeys.CHANNEL), null, null);
         this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
+    public void registerAttributes(ManagementResourceRegistration registration) {
         // register any metrics and the read-only handler
-        if (runtimeRegistration) {
-            for (AttributeDefinition attr : CHANNEL_METRICS) {
-                resourceRegistration.registerMetric(attr, ChannelMetricsHandler.INSTANCE);
+        if (this.runtimeRegistration) {
+            ChannelMetricsHandler handler = new ChannelMetricsHandler();
+            for (ChannelMetric metric: ChannelMetric.values()) {
+                registration.registerMetric(metric.getDefinition(), handler);
             }
         }
     }
@@ -163,7 +102,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
     public static void addChannelProtocolMetricsRegistrationStep(OperationContext context, String channelName, String stackName) {
 
         // set up the operation for the step
-        PathAddress rootSubsystemAddress = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH);
+        PathAddress rootSubsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode registerProtocolsOp = Util.createOperation("some_operation_name", rootSubsystemAddress);
         if (stackName != null)
             registerProtocolsOp.get(ModelKeys.STACK).set(new ModelNode(stackName));
@@ -190,13 +129,13 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
             stackName = getDefaultStack(context);
         }
         // get the stack model
-        PathElement stackElement = PathElement.pathElement(ModelKeys.STACK, stackName);
-        PathAddress stackPath = PathAddress.pathAddress(PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH), stackElement);
-        ModelNode stack = Resource.Tools.readModel(context.readResourceFromRoot(stackPath, true));
+        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        PathAddress stackAddress = address.append(StackResourceDefinition.pathElement(stackName));
+        ModelNode stack = Resource.Tools.readModel(context.readResourceFromRoot(stackAddress, true));
 
         // get the transport
         ModelNode transport = stack.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME).clone();
-        String transportName = (String) transport.get(ModelKeys.TYPE).asString();
+        String transportName = TransportResourceDefinition.TYPE.resolveModelAttribute(context, transport).asString();
         ResourceDefinition transportDefinition = getProtocolMetricResourceDefinition(context, channelName, transportName);
 
         List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();
@@ -235,9 +174,9 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
      */
     private static String getDefaultStack(OperationContext context) throws OperationFailedException {
         ModelNode resolvedValue = null;
-        PathAddress subsystemPath = PathAddress.pathAddress(JGroupsExtension.SUBSYSTEM_PATH);
+        PathAddress subsystemPath = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
         ModelNode subsystem = Resource.Tools.readModel(context.readResourceFromRoot(subsystemPath));
-        return (resolvedValue = JGroupsSubsystemRootResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, subsystem)).isDefined() ? resolvedValue.asString() : null;
+        return (resolvedValue = JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, subsystem)).isDefined() ? resolvedValue.asString() : null;
     }
 
     /*
@@ -255,7 +194,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         try {
             protocolClass = Protocol.class.getClassLoader().loadClass(className).asSubclass(Protocol.class);
         } catch (Exception e) {
-            throw JGroupsMessages.MESSAGES.unableToLoadProtocolClass(className);
+            throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(className);
         }
 
         // create the attributes
@@ -389,14 +328,17 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
            resources.putAll(map);
        }
 
+       @Override
        public Object handleGetObject(String key) {
            return resources.get(key);
        }
 
+       @Override
        public Enumeration<String> getKeys() {
            return Collections.enumeration(keySet());
        }
 
+       @Override
        protected Set<String> handleKeySet() {
            return resources.keySet();
        }

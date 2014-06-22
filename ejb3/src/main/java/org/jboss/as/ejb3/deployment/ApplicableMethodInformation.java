@@ -30,11 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.util.MethodInfoHelper;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Metadata store for method level information that can be applied to a method via various different deployment
@@ -240,7 +239,7 @@ public class ApplicableMethodInformation<T> {
      */
     public void setAttribute(MethodIntf methodIntf, String className, T attribute) {
         if (methodIntf != null && className != null)
-            throw MESSAGES.bothMethodIntAndClassNameSet(componentName);
+            throw EjbLogger.ROOT_LOGGER.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
             style1.put(className, attribute);
         } else
@@ -249,7 +248,7 @@ public class ApplicableMethodInformation<T> {
 
     public T getAttributeStyle1(MethodIntf methodIntf, String className) {
         if (methodIntf != null && className != null)
-            throw MESSAGES.bothMethodIntAndClassNameSet(componentName);
+            throw EjbLogger.ROOT_LOGGER.bothMethodIntAndClassNameSet(componentName);
         if (methodIntf == null) {
             return style1.get(className);
         } else {

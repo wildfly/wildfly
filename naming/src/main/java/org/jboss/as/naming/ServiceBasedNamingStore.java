@@ -22,8 +22,8 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -46,9 +46,11 @@ import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author John Bailey
@@ -128,8 +130,19 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (controller != null) {
                 final Object object = controller.getValue();
                 if (dereference && object instanceof ManagedReferenceFactory) {
-                    final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
-                    return managedReference != null ? managedReference.getInstance() : null;
+                    if(WildFlySecurityManager.isChecking()) {
+                        //WFLY-3487 JNDI lookups should be executed in a clean access control context
+                        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                            @Override
+                            public Object run() {
+                                final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                                return managedReference != null ? managedReference.getInstance() : null;
+                            }
+                        });
+                    } else {
+                        final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                        return managedReference != null ? managedReference.getInstance() : null;
+                    }
                 } else {
                     return object;
                 }
@@ -141,7 +154,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             n.initCause(e);
             throw n;
         } catch (Throwable t) {
-            NamingException n = MESSAGES.lookupError(name);
+            NamingException n = NamingLogger.ROOT_LOGGER.lookupError(name);
             n.initCause(t);
             throw n;
         }
@@ -226,7 +239,7 @@ public class ServiceBasedNamingStore implements NamingStore {
     private List<ServiceName> listChildren(final ServiceName name, boolean isContextBinding) throws NamingException {
         final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
         if (!isContextBinding && boundServices.contains(name)) {
-            throw MESSAGES.cannotListNonContextBinding();
+            throw NamingLogger.ROOT_LOGGER.cannotListNonContextBinding();
         }
         final NavigableSet<ServiceName> tail = boundServices.tailSet(name);
         final List<ServiceName> children = new ArrayList<ServiceName>();
@@ -255,7 +268,7 @@ public class ServiceBasedNamingStore implements NamingStore {
     public void add(final ServiceName serviceName) {
         final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
         if (boundServices.contains(serviceName)) {
-            throw MESSAGES.serviceAlreadyBound(serviceName);
+            throw NamingLogger.ROOT_LOGGER.serviceAlreadyBound(serviceName);
         }
         boundServices.add(serviceName);
     }

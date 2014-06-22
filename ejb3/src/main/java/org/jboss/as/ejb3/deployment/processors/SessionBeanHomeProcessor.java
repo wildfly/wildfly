@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptor;
@@ -55,8 +56,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Processor that hooks up home interfaces for session beans
@@ -101,7 +100,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                     if (method.getName().startsWith("create")) {
                         //we have a create method
                         if (ejbObjectView == null) {
-                            throw MESSAGES.invalidEjbLocalInterface(componentDescription.getComponentName());
+                            throw EjbLogger.ROOT_LOGGER.invalidEjbLocalInterface(componentDescription.getComponentName());
                         }
 
                         Method initMethod = resolveInitMethod(ejbComponentDescription, method);
@@ -125,7 +124,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         try {
                             ejbObjectClass = classIndex.classIndex(ejbObjectView.getViewClassName()).getModuleClass();
                         } catch (ClassNotFoundException e) {
-                            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
+                            throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }
                         final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
 
@@ -161,7 +160,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
         } else if (description instanceof StatefulComponentDescription) {
             return resolveStatefulInitMethod((StatefulComponentDescription) description, method);
         } else {
-            throw MESSAGES.localHomeNotAllow(description);
+            throw EjbLogger.ROOT_LOGGER.localHomeNotAllow(description);
         }
     }
 
@@ -196,7 +195,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
             }
         }
         if (initMethod == null) {
-            throw MESSAGES.failToCallEjbCreateForHomeInterface(method, description.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.failToCallEjbCreateForHomeInterface(method, description.getEJBClassName());
         }
         return initMethod;
     }

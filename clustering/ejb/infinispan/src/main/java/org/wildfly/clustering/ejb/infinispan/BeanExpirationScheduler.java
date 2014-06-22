@@ -21,17 +21,19 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
-import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.Time;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Schedules a bean for expiration.
@@ -42,8 +44,8 @@ import org.wildfly.clustering.ejb.Time;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> {
-    final Map<I, Future<?>> expirationFutures = new ConcurrentHashMap<>();
+public class BeanExpirationScheduler<G, I, T> implements Scheduler<I> {
+    final Map<I, Future<?>> expirationFutures = Collections.synchronizedMap(new HashMap<I, Future<?>>());
     final Batcher batcher;
     final BeanRemover<I, T> remover;
     final ExpirationConfiguration<T> expiration;
@@ -55,11 +57,10 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
     }
 
     @Override
-    public void schedule(Bean<G, I, T> bean) {
+    public void schedule(I id) {
         Time timeout = this.expiration.getTimeout();
         long value = timeout.getValue();
         if (value >= 0) {
-            I id = bean.getId();
             TimeUnit unit = timeout.getUnit();
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %d %s", id, value, unit);
             ExpirationTask task = new ExpirationTask(id);
@@ -71,10 +72,25 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
     }
 
     @Override
-    public void cancel(Bean<G, I, T> group) {
-        Future<?> future = this.expirationFutures.remove(group.getId());
+    public void cancel(I id) {
+        Future<?> future = this.expirationFutures.remove(id);
         if (future != null) {
             future.cancel(false);
+        }
+    }
+
+    @Override
+    public void cancel(Locality locality) {
+        synchronized (this.expirationFutures) {
+            Iterator<Map.Entry<I, Future<?>>> entries = this.expirationFutures.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<I, Future<?>> entry = entries.next();
+                I id = entry.getKey();
+                if (!locality.isLocal(id)) {
+                    entry.getValue().cancel(false);
+                    entries.remove();
+                }
+            }
         }
     }
 

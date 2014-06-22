@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-subsystem-test-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <!--
       Just here for the tests module to include as an optional dependency to avoid picking up
@@ -42,11 +42,6 @@
     <name>WildFly: Subsystem Test POM</name>
     <packaging>pom</packaging>
     <dependencies>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-subsystem-test-controller-7.1.2</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test-controller-7.2.0</artifactId>

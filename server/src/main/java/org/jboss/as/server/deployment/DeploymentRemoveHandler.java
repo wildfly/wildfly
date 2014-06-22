@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;

@@ -23,7 +23,6 @@
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.io.File;
 import java.net.URL;
@@ -33,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -154,7 +154,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     unregisterAll(deploymentName);
                 } finally {
                     try {
-                        context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
+                        context.failed(ConnectorLogger.ROOT_LOGGER.failedToStartRaDeployment(cause, deploymentName));
                     } finally {
                         WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                         WritableServiceBasedNamingStore.popOwner();
@@ -273,6 +273,15 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         @Override
         protected DeployersLogger getLogger() {
             return DEPLOYERS_LOGGER;
+        }
+
+        @Override
+        protected void setRecoveryForResourceAdapterInResourceAdapterRepository(String key, boolean isXA) {
+            try {
+                raRepository.getValue().setRecoveryForResourceAdapter(key, isXA);
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.unableToRegisterRecovery(key, isXA);
+            }
         }
     }
 

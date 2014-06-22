@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -117,8 +117,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
 
         AuthorizationResult authResult = context.authorize(operation, DESCRIBE_EFFECTS);
         if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
-            throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
-                    pa, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.require(OP).asString(), pa, authResult.getExplanation());
         }
 
         if (pa.size() > 0) {

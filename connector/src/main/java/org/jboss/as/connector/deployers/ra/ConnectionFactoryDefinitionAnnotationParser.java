@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.deployers.ra;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +30,7 @@ import javax.resource.ConnectionFactoryDefinition;
 import javax.resource.ConnectionFactoryDefinitions;
 import javax.resource.spi.TransactionSupport;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -74,7 +73,7 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
             for (AnnotationInstance annotation : connectionFactoryDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@ConnectionFactoryDefinitions", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@ConnectionFactoryDefinitions", target);
                 }
                 // get the nested @ConnectionFactoryDefinition out of the outer @ConnectionFactoryDefinitions
                 List<AnnotationInstance> connectionFactories = this.getNestedConnectionFactoryAnnotations(annotation);
@@ -92,7 +91,7 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
             for (AnnotationInstance connectionFactory : connectionFactories) {
                 final AnnotationTarget target = connectionFactory.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@ConnectionFactoryDefinition", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@ConnectionFactoryDefinition", target);
                 }
                 // create binding configurations out of it
                 this.processConnectionFactoryDefinition(eeModuleDescription, connectionFactory, (ClassInfo) target, applicationClasses);
@@ -116,7 +115,7 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
 
         String name = asString(connectionFactoryAnnotation, "name");
         if (name == null || name.isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing("@ConnectionFactoryDefinition", "name");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@ConnectionFactoryDefinition", "name");
         }
 
         // If the name doesn't have a namespace then it defaults to java:comp/env
@@ -126,12 +125,12 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
 
         String interfaceClz = asString(connectionFactoryAnnotation, "interfaceName");
         if (interfaceClz == null || interfaceClz.equals(Object.class.getName())) {
-            throw MESSAGES.annotationAttributeMissing("@ConnectionFactoryDefinition", "interfaceValue");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@ConnectionFactoryDefinition", "interfaceValue");
         }
 
         String ra = asString(connectionFactoryAnnotation, "resourceAdapter");
         if (ra == null || ra.equals(Object.class.getName())) {
-            throw MESSAGES.annotationAttributeMissing("@ConnectionFactoryDefinition", "resourceAdapter");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@ConnectionFactoryDefinition", "resourceAdapter");
         }
 
         final DirectConnectionFactoryInjectionSource directConnectionFactoryInjectionSource =

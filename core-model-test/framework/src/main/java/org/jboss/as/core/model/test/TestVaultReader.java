@@ -50,6 +50,12 @@ public class TestVaultReader extends AbstractVaultReader {
     }
 
     @Override
+    protected void createVault(String fqn, String module,
+            Map<String, Object> options) throws VaultReaderException {
+        createVault(fqn, options);
+    }
+
+    @Override
     protected void destroyVault() {
         this.fqn = null;
         this.options.clear();

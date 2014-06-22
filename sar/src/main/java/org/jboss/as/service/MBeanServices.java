@@ -32,6 +32,7 @@ import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.service.component.ServiceComponentInstantiator;
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,13 +76,13 @@ final class MBeanServices {
     MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target,ServiceComponentInstantiator componentInstantiator,
                   final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader) {
         if (mBeanClassHierarchy == null) {
-            throw SarMessages.MESSAGES.nullVar("mBeanName");
+            throw SarLogger.ROOT_LOGGER.nullVar("mBeanName");
         }
         if (mBeanInstance == null) {
-            throw SarMessages.MESSAGES.nullVar("mBeanInstance");
+            throw SarLogger.ROOT_LOGGER.nullVar("mBeanInstance");
         }
         if (target == null) {
-            throw SarMessages.MESSAGES.nullVar("target");
+            throw SarLogger.ROOT_LOGGER.nullVar("target");
         }
 
         final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);

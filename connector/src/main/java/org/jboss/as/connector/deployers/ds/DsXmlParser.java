@@ -37,7 +37,7 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ParserException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
-import org.jboss.jca.common.metadata.ds.v12.DsParser;
+import org.jboss.jca.common.metadata.ds.v13.DsParser;
 import org.jboss.metadata.property.PropertyResolver;
 
 /**

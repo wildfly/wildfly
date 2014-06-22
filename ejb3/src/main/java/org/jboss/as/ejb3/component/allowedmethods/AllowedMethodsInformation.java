@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.component.allowedmethods;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -135,7 +135,7 @@ public class AllowedMethodsInformation {
             }
         }
         if (invocationType != InvocationType.CONCURRENT_CONTEXT && !beanManagedTransaction && methodType == MethodType.GET_USER_TRANSACTION) {
-            throw EjbMessages.MESSAGES.unauthorizedAccessToUserTransaction();
+            throw EjbLogger.ROOT_LOGGER.unauthorizedAccessToUserTransaction();
         }
     }
 
@@ -146,7 +146,7 @@ public class AllowedMethodsInformation {
      * @param invocationType the type of invocation that caused it to be disabled
      */
     protected void throwException(MethodType methodType, InvocationType invocationType) {
-        throw EjbMessages.MESSAGES.cannotCallMethod(methodType.getLabel(), invocationType.getLabel());
+        throw EjbLogger.ROOT_LOGGER.cannotCallMethod(methodType.getLabel(), invocationType.getLabel());
     }
 
 
@@ -157,7 +157,7 @@ public class AllowedMethodsInformation {
      * @param callback   the type of invocation that caused it to be disabled
      */
     protected void throwException(MethodType methodType, CurrentSynchronizationCallback.CallbackType callback) {
-        throw EjbMessages.MESSAGES.cannotCallMethod(methodType.getLabel(), callback.name());
+        throw EjbLogger.ROOT_LOGGER.cannotCallMethod(methodType.getLabel(), callback.name());
     }
 
 

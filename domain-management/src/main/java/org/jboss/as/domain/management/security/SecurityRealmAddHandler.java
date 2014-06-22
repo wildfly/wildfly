@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_TO_PRINCIPAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
@@ -43,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_ACCESS_TIME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH_TIME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
@@ -247,7 +247,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             List<ServiceController<?>> newControllers, boolean injectServerManager, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector) throws OperationFailedException {
         ServiceName jaasServiceName = JaasCallbackHandler.ServiceUtil.createServiceName(realmName);
         String name = JaasAuthenticationResourceDefinition.NAME.resolveModelAttribute(context, jaas).asString();
-        JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(name);
+        boolean assignGroups = JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.resolveModelAttribute(context, jaas).asBoolean();
+        JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(realmName, name, assignGroups);
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(jaasServiceName, jaasCallbackHandler);
         if (injectServerManager) {
@@ -511,19 +512,21 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             String principalAttribute = GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
             boolean recursive = GroupToPrincipalResourceDefinition.RECURSIVE.resolveModelAttribute(context, groupToPrincipal).asBoolean();
             GroupName searchBy = GroupName.valueOf(GroupToPrincipalResourceDefinition.SEARCH_BY.resolveModelAttribute(context, groupToPrincipal).asString());
+            boolean preferOriginalConnection = GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, groupToPrincipal).asBoolean();
 
-            groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
+            groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy, preferOriginalConnection);
         } else {
             ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
             groupCache = principalToGroup.get(CACHE);
             String groupAttribute = PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            boolean preferOriginalConnection = PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, principalToGroup).asBoolean();
             // TODO - Why was this never used?
             String groupDnAttribute = PrincipalToGroupResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             groupName = GroupName.valueOf(PrincipalToGroupResourceDefinition.GROUP_NAME.resolveModelAttribute(context, principalToGroup).asString());
             String groupNameAttribute = PrincipalToGroupResourceDefinition.GROUP_NAME_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             iterative = PrincipalToGroupResourceDefinition.ITERATIVE.resolveModelAttribute(context, principalToGroup).asBoolean();
 
-            groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute);
+            groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute, preferOriginalConnection);
         }
 
         LdapCacheService<LdapEntry[], LdapEntry> groupCacheService = createCacheService(context, groupSearcher, groupCache);

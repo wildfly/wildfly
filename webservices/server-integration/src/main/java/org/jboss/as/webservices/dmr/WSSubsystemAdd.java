@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -45,8 +45,10 @@ import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.as.webservices.service.XTSClientIntegrationService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -70,7 +72,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ROOT_LOGGER.activatingWebservicesExtension();
+        WSLogger.ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 
@@ -91,6 +93,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), jmxAvailable));
         }
+        newControllers.add(XTSClientIntegrationService.install(serviceTarget, verificationHandler));
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient, OperationContext context) throws OperationFailedException {
@@ -133,21 +136,6 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName configServiceName = Constants.CLIENT_CONFIG.equals(configType) ? PackageUtils
                     .getClientConfigServiceName(re.getName()) : PackageUtils.getEndpointConfigServiceName(re.getName());
             serviceNames.add(configServiceName);
-            readHandlerChainServiceNames(serviceNames, re, Constants.PRE_HANDLER_CHAIN, configServiceName);
-            readHandlerChainServiceNames(serviceNames, re, Constants.POST_HANDLER_CHAIN, configServiceName);
-            for (String propertyName : re.getChildrenNames(Constants.PROPERTY)) {
-                serviceNames.add(PackageUtils.getPropertyServiceName(configServiceName, propertyName));
-            }
-        }
-    }
-
-    private static void readHandlerChainServiceNames(List<ServiceName> serviceNames, Resource configResource, String chainType, ServiceName configServiceName) {
-        for (ResourceEntry re : configResource.getChildren(chainType)) {
-            ServiceName handlerChainServiceName = PackageUtils.getHandlerChainServiceName(configServiceName, re.getName());
-            serviceNames.add(handlerChainServiceName);
-            for (String handlerName : re.getChildrenNames(Constants.HANDLER)) {
-                serviceNames.add(PackageUtils.getHandlerServiceName(handlerChainServiceName, handlerName));
-            }
         }
     }
 

@@ -23,7 +23,6 @@ package org.jboss.as.webservices.parser;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.wsf.spi.util.StAXUtils.match;
 
 import java.io.InputStream;
@@ -37,6 +36,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.ws.WebServiceException;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.ws.common.JavaUtils;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.util.StAXUtils;
@@ -95,7 +95,7 @@ public class WSDeploymentAspectParser {
                 if (match(reader, NS, DEPLOYMENT_ASPECTS)) {
                     deploymentAspects = parseDeploymentAspects(reader, loader);
                 } else {
-                    throw MESSAGES.unexpectedElement(reader.getLocalName());
+                    throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                 }
             }
         }
@@ -110,25 +110,25 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, DEPLOYMENT_ASPECTS)) {
                         return deploymentAspects;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, DEPLOYMENT_ASPECT)) {
                         deploymentAspects.add(parseDeploymentAspect(reader, loader));
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 
     private static DeploymentAspect parseDeploymentAspect(XMLStreamReader reader, ClassLoader loader) throws XMLStreamException {
         String deploymentAspectClass = reader.getAttributeValue(null, CLASS);
         if (deploymentAspectClass == null) {
-            throw MESSAGES.missingDeploymentAspectClassAttribute();
+            throw WSLogger.ROOT_LOGGER.missingDeploymentAspectClassAttribute();
         }
         DeploymentAspect deploymentAspect = null;
         try {
@@ -142,7 +142,7 @@ public class WSDeploymentAspectParser {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(orig);
             }
         } catch (Exception e) {
-            throw MESSAGES.cannotInstantiateDeploymentAspect(e, deploymentAspectClass);
+            throw WSLogger.ROOT_LOGGER.cannotInstantiateDeploymentAspect(e, deploymentAspectClass);
         }
         String priority = reader.getAttributeValue(null, PRIORITY);
         if (priority != null) {
@@ -154,19 +154,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, DEPLOYMENT_ASPECT)) {
                         return deploymentAspect;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, PROPERTY)) {
                         parseProperty(reader, deploymentAspect, loader);
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings("rawtypes")
@@ -174,11 +174,11 @@ public class WSDeploymentAspectParser {
         Class<? extends DeploymentAspect> deploymentAspectClass = deploymentAspect.getClass();
         String propName = reader.getAttributeValue(null, NAME);
         if (propName == null) {
-            throw MESSAGES.missingPropertyNameAttribute(deploymentAspect);
+            throw WSLogger.ROOT_LOGGER.missingPropertyNameAttribute(deploymentAspect);
         }
         String propClass = reader.getAttributeValue(null, CLASS);
         if (propClass == null) {
-            throw MESSAGES.missingPropertyClassAttribute(deploymentAspect);
+            throw WSLogger.ROOT_LOGGER.missingPropertyClassAttribute(deploymentAspect);
         } else {
             try {
                 if (isSupportedPropertyClass(propClass)) {
@@ -196,7 +196,7 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, PROPERTY)) {
                         return;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
@@ -218,12 +218,12 @@ public class WSDeploymentAspectParser {
                             throw new IllegalStateException(e);
                         }
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 
     private static Method selectMethod(Class<?> deploymentAspectClass, String propName, String propClass) throws ClassNotFoundException {
@@ -255,7 +255,7 @@ public class WSDeploymentAspectParser {
         } else if (boolean.class.getName().equals(propClass)) {
             return StAXUtils.elementAsBoolean(reader);
         } else {
-            throw MESSAGES.unsupportedPropertyClass(propClass);
+            throw WSLogger.ROOT_LOGGER.unsupportedPropertyClass(propClass);
         }
     }
 
@@ -266,7 +266,7 @@ public class WSDeploymentAspectParser {
         try {
             list = (List) Class.forName(propClass).newInstance();
         } catch (Exception e) {
-            throw MESSAGES.cannotInstantiateList(e, propClass);
+            throw WSLogger.ROOT_LOGGER.cannotInstantiateList(e, propClass);
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -274,19 +274,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, LIST)) {
                         return list;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, VALUE)) {
                         list.add(parseSimpleValue(reader, elementClass));
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings("rawtypes")
@@ -296,7 +296,7 @@ public class WSDeploymentAspectParser {
         try {
             map = (Map) Class.forName(propClass, true, loader).newInstance();
         } catch (Exception e) {
-            throw MESSAGES.cannotInstantiateMap(e, propClass);
+            throw WSLogger.ROOT_LOGGER.cannotInstantiateMap(e, propClass);
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -304,19 +304,19 @@ public class WSDeploymentAspectParser {
                     if (match(reader, NS, MAP)) {
                         return map;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
                     if (match(reader, NS, ENTRY)) {
                         parseMapEntry(reader, map, keyClass, valueClass);
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -332,7 +332,7 @@ public class WSDeploymentAspectParser {
                         map.put(key, value);
                         return;
                     } else {
-                        throw MESSAGES.unexpectedEndTag(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedEndTag(reader.getLocalName());
                     }
                 }
                 case XMLStreamConstants.START_ELEMENT: {
@@ -343,11 +343,11 @@ public class WSDeploymentAspectParser {
                         valueStartDone = true;
                         value = parseSimpleValue(reader, valueClass);
                     } else {
-                        throw MESSAGES.unexpectedElement(reader.getLocalName());
+                        throw WSLogger.ROOT_LOGGER.unexpectedElement(reader.getLocalName());
                     }
                 }
             }
         }
-        throw MESSAGES.unexpectedEndOfDocument();
+        throw WSLogger.ROOT_LOGGER.unexpectedEndOfDocument();
     }
 }

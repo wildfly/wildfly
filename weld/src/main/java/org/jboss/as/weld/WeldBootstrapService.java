@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
@@ -96,7 +97,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      */
     public synchronized void start(final StartContext context) {
         if (started) {
-            throw WeldMessages.MESSAGES.alreadyRunning("WeldContainer");
+            throw WeldLogger.ROOT_LOGGER.alreadyRunning("WeldContainer");
         }
         started = true;
 
@@ -126,7 +127,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      */
     public synchronized void stop(final StopContext context) {
         if (!started) {
-            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
+            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
         }
         WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(deploymentName);
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -149,11 +150,11 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      */
     public BeanManagerImpl getBeanManager(String beanArchiveId) {
         if (!started) {
-            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
+            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
         }
         BeanDeploymentArchive beanDeploymentArchive = beanDeploymentArchives.get(beanArchiveId);
         if (beanDeploymentArchive == null) {
-            throw WeldMessages.MESSAGES.beanDeploymentNotFound(beanArchiveId);
+            throw WeldLogger.ROOT_LOGGER.beanDeploymentNotFound(beanArchiveId);
         }
         return bootstrap.getManager(beanDeploymentArchive);
     }
@@ -173,7 +174,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      */
     public BeanManagerImpl getBeanManager() {
         if (!started) {
-            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
+            throw WeldLogger.ROOT_LOGGER.notStarted("WeldContainer");
         }
         return bootstrap.getManager(rootBeanDeploymentArchive);
     }

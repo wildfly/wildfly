@@ -23,8 +23,8 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -51,10 +51,8 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
 
         final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
 
-        DefaultOperationDescriptionProvider refreshDesc = new DefaultOperationDescriptionProvider(LogStoreConstants.REFRESH, getResourceDescriptionResolver());
-        resourceRegistration.registerOperationHandler(LogStoreConstants.REFRESH, refreshHandler, refreshDesc);
-        DefaultOperationDescriptionProvider recoverDesc = new DefaultOperationDescriptionProvider(LogStoreConstants.RECOVER, getResourceDescriptionResolver());
-        resourceRegistration.registerOperationHandler(LogStoreConstants.RECOVER, new LogStoreParticipantRecoveryHandler(refreshHandler), recoverDesc);
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.REFRESH, getResourceDescriptionResolver()), refreshHandler);
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.RECOVER, getResourceDescriptionResolver()), new LogStoreParticipantRecoveryHandler(refreshHandler));
     }
 
     @Override

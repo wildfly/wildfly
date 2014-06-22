@@ -27,8 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -108,7 +107,7 @@ public class ResourceRootIndexer {
             resourceRoot.putAttachment(Attachments.ANNOTATION_INDEX, index);
             ServerLogger.DEPLOYMENT_LOGGER.tracef("Generated index for archive %s", virtualFile);
         } catch (Throwable t) {
-            throw ServerMessages.MESSAGES.deploymentIndexingFailed(t);
+            throw ServerLogger.ROOT_LOGGER.deploymentIndexingFailed(t);
         }
     }
 }

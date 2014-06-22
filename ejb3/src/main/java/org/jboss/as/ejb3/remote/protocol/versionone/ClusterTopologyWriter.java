@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.remoting.PackedInteger;
 import org.wildfly.clustering.registry.Registry;
@@ -58,7 +58,7 @@ class ClusterTopologyWriter {
      */
     void writeCompleteClusterTopology(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> clientMappingsRegistries) throws IOException {
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (clientMappingsRegistries == null || clientMappingsRegistries.isEmpty()) {
             return;
@@ -86,7 +86,7 @@ class ClusterTopologyWriter {
      */
     void writeClusterRemoved(final DataOutput output, final Collection<Registry<String, List<ClientMapping>>> registries) throws IOException {
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (registries == null || registries.isEmpty()) {
             return;
@@ -104,7 +104,7 @@ class ClusterTopologyWriter {
     void writeNewNodesAdded(final DataOutput output, final String clusterName,
                             final Map<String, List<ClientMapping>> clientMappings) throws IOException {
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (clientMappings.isEmpty()) {
             return;
@@ -121,7 +121,7 @@ class ClusterTopologyWriter {
 
     void writeNodesRemoved(final DataOutput output, final String clusterName, final Set<String> removedNodes) throws IOException {
         if (output == null) {
-            throw EjbMessages.MESSAGES.cannotWriteToNullDataOutput();
+            throw EjbLogger.ROOT_LOGGER.cannotWriteToNullDataOutput();
         }
         if (removedNodes == null || removedNodes.isEmpty()) {
             return;
@@ -154,7 +154,7 @@ class ClusterTopologyWriter {
             // write the client-mapping count
             final List<ClientMapping> clientMappingsForNode = entry.getValue();
             if (clientMappingsForNode == null || clientMappingsForNode.isEmpty()) {
-                throw EjbMessages.MESSAGES.clientMappingMissing(nodeName, clusterName);
+                throw EjbLogger.ROOT_LOGGER.clientMappingMissing(nodeName, clusterName);
             }
             PackedInteger.writePackedInteger(output, clientMappingsForNode.size());
 

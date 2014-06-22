@@ -30,7 +30,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.security.JSSESecurityDomain;
 
 /**
@@ -46,16 +46,16 @@ class Util {
             sslCtx = SSLContext.getInstance("TLS");
             KeyManager[] keyManagers = securityDomain.getKeyManagers();
             if (keyManagers == null)
-                throw JacORBMessages.MESSAGES.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
+                throw JacORBLogger.ROOT_LOGGER.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
             TrustManager[] trustManagers = securityDomain.getTrustManagers();
             sslCtx.init(keyManagers, trustManagers, null);
             return sslCtx;
         } catch (NoSuchAlgorithmException e) {
-            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JacORBLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         } catch (KeyManagementException e) {
-            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JacORBLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         } catch (SecurityException e) {
-            throw JacORBMessages.MESSAGES.failedToGetSSLContext(e);
+            throw JacORBLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         }
     }
 }

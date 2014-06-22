@@ -33,18 +33,8 @@ public class RootSubsystemResource extends SimpleResourceDefinition {
 
     private RootSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "test-subsystem"),
-                new NonResolvingResourceDescriptionResolver());
-    }
-
-    @Override
-    public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
-        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
-        // Ops to add and remove the root resource
-
-        final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
-        rootResourceRegistration.registerOperationHandler(ADD, NoopOperationStepHandler.WITHOUT_RESULT,
-                subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-        final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
-        rootResourceRegistration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, subsystemRemoveDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
+                new NonResolvingResourceDescriptionResolver(),
+                NoopOperationStepHandler.WITHOUT_RESULT,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 }

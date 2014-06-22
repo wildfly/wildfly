@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.subsystem;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.Set;
@@ -49,6 +47,7 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.jsr77.managedobject.ManagedObjectHandlerRegistry;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 
@@ -271,13 +270,13 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
     @Override
     public void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException,
             InvalidAttributeValueException, MBeanException, ReflectionException {
-        throw MESSAGES.mbeanIsReadOnly(name);
+        throw JSR77Logger.ROOT_LOGGER.mbeanIsReadOnly(name);
     }
 
     @Override
     public AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException,
             ReflectionException {
-        throw MESSAGES.mbeanIsReadOnly(name);
+        throw JSR77Logger.ROOT_LOGGER.mbeanIsReadOnly(name);
     }
 
     @Override

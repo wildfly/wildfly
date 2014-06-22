@@ -37,8 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.weld.WeldLogger;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
 import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
@@ -135,7 +134,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         try {
             return parser.parse(beansXmlFile.asFileURL());
         } catch (MalformedURLException e) {
-            throw WeldMessages.MESSAGES.couldNotGetBeansXmlAsURL(beansXmlFile.toString(), e);
+            throw WeldLogger.ROOT_LOGGER.couldNotGetBeansXmlAsURL(beansXmlFile.toString(), e);
         } catch (RuntimeException e) {
             throw new DeploymentUnitProcessingException(e);
         }

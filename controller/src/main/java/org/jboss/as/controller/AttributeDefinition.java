@@ -38,6 +38,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDescriptionProv
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -600,7 +601,7 @@ public abstract class AttributeDefinition {
      *          if thrown by {@code writer}
      */
     public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
-        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(getName());
+        throw ControllerLogger.ROOT_LOGGER.couldNotMarshalAttributeAsElement(getName());
     }
 
     /**

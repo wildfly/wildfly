@@ -28,6 +28,7 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,7 +43,7 @@ import javax.ejb.LocalHome;
 import javax.ejb.RemoteHome;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Merging processor for home and local home views
  *
@@ -77,7 +78,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                 try {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentConfiguration);
                 } catch (Exception e) {
-                    throw MESSAGES.failToMergeData(componentConfiguration.getComponentName(),e);
+                    throw EjbLogger.ROOT_LOGGER.failToMergeData(componentConfiguration.getComponentName(), e);
                 }
             }
         }
@@ -87,7 +88,7 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
                     try {
                         processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (SessionBeanComponentDescription) componentDescription);
                     } catch (Exception e) {
-                        throw MESSAGES.failToMergeData(componentDescription.getComponentName(),e);
+                        throw EjbLogger.ROOT_LOGGER.failToMergeData(componentDescription.getComponentName(), e);
                     }
                 }
             }
@@ -168,13 +169,13 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
         for (final Method method : index.getMethods()) {
             if (method.getName().startsWith("create")) {
                 if (remote != null && remote != method.getReturnType()) {
-                    throw MESSAGES.multipleCreateMethod(homeClass);
+                    throw EjbLogger.ROOT_LOGGER.multipleCreateMethod(homeClass);
                 }
                 remote = method.getReturnType();
             }
         }
         if(remote == null) {
-            throw MESSAGES.couldNotDetermineRemoteInterfaceFromHome(homeClassName, description.getEJBName());
+            throw EjbLogger.ROOT_LOGGER.couldNotDetermineRemoteInterfaceFromHome(homeClassName, description.getEJBName());
         }
         return remote.getName();
     }
@@ -186,13 +187,13 @@ public class HomeViewMergingProcessor implements DeploymentUnitProcessor {
         for (final Method method : index.getMethods()) {
             if (method.getName().startsWith("create")) {
                 if (localClass != null && localClass != method.getReturnType()) {
-                    throw MESSAGES.multipleCreateMethod(localHomeClass);
+                    throw EjbLogger.ROOT_LOGGER.multipleCreateMethod(localHomeClass);
                 }
                 localClass = method.getReturnType();
             }
         }
         if (localClass == null) {
-            throw MESSAGES.couldNotDetermineLocalInterfaceFromLocalHome(localHomeClassName, description.getEJBName());
+            throw EjbLogger.ROOT_LOGGER.couldNotDetermineLocalInterfaceFromLocalHome(localHomeClassName, description.getEJBName());
         }
         return localClass.getName();
     }

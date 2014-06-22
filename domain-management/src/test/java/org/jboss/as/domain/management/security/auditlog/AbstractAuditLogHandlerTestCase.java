@@ -79,22 +79,26 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
 
     protected final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
 
-    public AbstractAuditLogHandlerTestCase(boolean enabled) {
+    public AbstractAuditLogHandlerTestCase(boolean enabled, boolean addFile) {
 
         bootOperations.add(Util.createAddOperation(AUDIT_ADDR));
         ModelNode add = Util.createAddOperation(createJsonFormatterAddress("test-formatter"));
         bootOperations.add(add);
 
-        add = createAddFileHandlerOperation("test-file", "test-formatter", "test-file.log");
-        add.get(FileAuditLogHandlerResourceDefinition.MAX_FAILURE_COUNT.getName()).set(3);
-        bootOperations.add(add);
+        if (addFile) {
+            add = createAddFileHandlerOperation("test-file", "test-formatter", "test-file.log");
+            add.get(FileAuditLogHandlerResourceDefinition.MAX_FAILURE_COUNT.getName()).set(3);
+            bootOperations.add(add);
+        }
 
         add = Util.createAddOperation(
                 AUDIT_ADDR.append(AuditLogLoggerResourceDefinition.PATH_ELEMENT));
         add.get(ModelDescriptionConstants.ENABLED).set(enabled);
         add.get(ModelDescriptionConstants.LOG_READ_ONLY).set(true);
         bootOperations.add(add);
-        bootOperations.add(createAddHandlerReferenceOperation("test-file"));
+        if (addFile) {
+            bootOperations.add(createAddHandlerReferenceOperation("test-file"));
+        }
     }
 
 

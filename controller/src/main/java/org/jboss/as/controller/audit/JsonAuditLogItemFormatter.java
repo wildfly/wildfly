@@ -119,9 +119,10 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
             formatted.get(METHOD_PARAMETERS).add(param == null ? UNDEFINED : new ModelNode(param.toString()));
         }
 
-        if (item.getError() != null) {
+        final Throwable throwable = item.getError();
+        if (throwable != null) {
             //TODO include stack trace?
-            formatted.get(ERROR).set(item.getError().getMessage());
+            formatted.get(ERROR).set(throwable.getMessage());
         }
 
         return cacheString(createRecordText(item, formatted));

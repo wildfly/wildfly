@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jaxrs.deployment;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;

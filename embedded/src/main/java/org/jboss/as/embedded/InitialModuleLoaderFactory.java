@@ -21,8 +21,7 @@
  */
 package org.jboss.as.embedded;
 
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
-
+import org.jboss.as.embedded.logging.EmbeddedLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
@@ -49,9 +48,9 @@ final class InitialModuleLoaderFactory {
      */
     public static ModuleLoader getModuleLoader(File modulePath, String... systemPackages) {
         if (modulePath == null)
-            throw MESSAGES.nullVar("modulePath");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("modulePath");
         if (modulePath.isDirectory() == false)
-            throw MESSAGES.invalidModulePath(modulePath.getAbsolutePath());
+            throw EmbeddedLogger.ROOT_LOGGER.invalidModulePath(modulePath.getAbsolutePath());
 
         String oldClassPath = WildFlySecurityManager.getPropertyPrivileged("java.class.path", null);
         try {

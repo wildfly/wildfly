@@ -27,6 +27,6 @@
 <config>
    <subsystems name="default">
       <!-- Each subsystem to be included relative to the src/main/resources directory -->
-      <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>logging.xml</subsystem>
    </subsystems>
 </config>

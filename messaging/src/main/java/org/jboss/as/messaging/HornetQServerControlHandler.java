@@ -25,17 +25,16 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.registry.OperationEntry.Flag.READ_ONLY;
-import static org.jboss.as.controller.registry.OperationEntry.Flag.RUNTIME_ONLY;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfStrings;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.OperationDefinitionHelper.createNonEmptyStringAttribute;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeOnlyOperation;
+import static org.jboss.as.messaging.OperationDefinitionHelper.runtimeReadOnlyOperation;
 import static org.jboss.dmr.ModelType.BOOLEAN;
-
-import java.util.EnumSet;
-import java.util.Locale;
+import static org.jboss.dmr.ModelType.LIST;
+import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.server.HornetQServer;
@@ -45,13 +44,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -110,24 +109,16 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         // forceFailover
 
     public static final String HQ_SERVER = "hornetq-server";
-    public static final String TRANSACTION_AS_BASE_64 = "transaction-as-base-64";
-    public static final String ADDRESS_MATCH = "address-match";
-    public static final String CONNECTION_ID = "connection-id";
-    public static final String IP_ADDRESS = "ip-address";
-
-    private final ParametersValidator transactionValidator = new ParametersValidator();
-    private final ParametersValidator addressValidator = new ParametersValidator();
-    private final ParametersValidator ipAddressValidator = new ParametersValidator();
-    private final ParametersValidator optionalIpAddressValidator = new ParametersValidator();
-    private final ParametersValidator connectionIdValidator = new ParametersValidator();
+    public static final AttributeDefinition TRANSACTION_AS_BASE_64 = createNonEmptyStringAttribute("transaction-as-base-64");
+    public static final AttributeDefinition ADDRESS_MATCH = createNonEmptyStringAttribute("address-match");
+    public static final AttributeDefinition CONNECTION_ID = createNonEmptyStringAttribute("connection-id");
+    public static final AttributeDefinition REQUIRED_IP_ADDRESS = createNonEmptyStringAttribute("ip-address");
+    public static final AttributeDefinition OPTIONAL_IP_ADDRESS = SimpleAttributeDefinitionBuilder.create("ip-address", ModelType.STRING)
+            .setAllowNull(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .build();
 
     private HornetQServerControlHandler() {
-        final StringLengthValidator stringLengthValidator = new StringLengthValidator(1);
-        transactionValidator.registerValidator(TRANSACTION_AS_BASE_64, stringLengthValidator);
-        addressValidator.registerValidator(ADDRESS_MATCH, stringLengthValidator);
-        ipAddressValidator.registerValidator(IP_ADDRESS, stringLengthValidator);
-        optionalIpAddressValidator.registerValidator(IP_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        connectionIdValidator.registerValidator(CONNECTION_ID, stringLengthValidator);
     }
 
     @Override
@@ -137,7 +128,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         if (hqService == null || hqService.getState() != ServiceController.State.UP) {
-            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+            throw MessagingLogger.ROOT_LOGGER.hornetQServerNotInstalled(hqServiceName.getSimpleName());
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
 
@@ -165,7 +156,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult();
             } else if (LIST_PREPARED_TRANSACTIONS.equals(operationName)) {
                 String[] list = serverControl.listPreparedTransactions();
-                reportListOfString(context, list);
+                reportListOfStrings(context, list);
             } else if (LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON.equals(operationName)) {
                 String json = serverControl.listPreparedTransactionDetailsAsJSON();
                 context.getResult().set(json);
@@ -174,57 +165,54 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(html);
             } else if (LIST_HEURISTIC_COMMITTED_TRANSACTIONS.equals(operationName)) {
                 String[] list = serverControl.listHeuristicCommittedTransactions();
-                reportListOfString(context, list);
+                reportListOfStrings(context, list);
             } else if (LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS.equals(operationName)) {
                 String[] list = serverControl.listHeuristicRolledBackTransactions();
-                reportListOfString(context, list);
+                reportListOfStrings(context, list);
             } else if (COMMIT_PREPARED_TRANSACTION.equals(operationName)) {
-                transactionValidator.validate(operation);
-                String txId = operation.require(TRANSACTION_AS_BASE_64).asString();
+                String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
                 boolean committed = serverControl.commitPreparedTransaction(txId);
                 context.getResult().set(committed);
             } else if (ROLLBACK_PREPARED_TRANSACTION.equals(operationName)) {
-                transactionValidator.validate(operation);
-                String txId = operation.require(TRANSACTION_AS_BASE_64).asString();
+                String txId = TRANSACTION_AS_BASE_64.resolveModelAttribute(context, operation).asString();
                 boolean committed = serverControl.rollbackPreparedTransaction(txId);
                 context.getResult().set(committed);
             } else if (LIST_REMOTE_ADDRESSES.equals(operationName)) {
-                optionalIpAddressValidator.validate(operation);
-                ModelNode addr = operation.get(IP_ADDRESS);
-                String[] list = addr.isDefined() ? serverControl.listRemoteAddresses(addr.asString()) : serverControl.listRemoteAddresses();
-                reportListOfString(context, list);
+                ModelNode address = OPTIONAL_IP_ADDRESS.resolveModelAttribute(context, operation);
+                String[] list = address.isDefined() ? serverControl.listRemoteAddresses(address.asString()) : serverControl.listRemoteAddresses();
+                reportListOfStrings(context, list);
             } else if (CLOSE_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
-                ipAddressValidator.validate(operation);
-                boolean closed = serverControl.closeConnectionsForAddress(operation.require(IP_ADDRESS).asString());
+                String address = REQUIRED_IP_ADDRESS.resolveModelAttribute(context, operation).asString();
+                boolean closed = serverControl.closeConnectionsForAddress(address);
                 context.getResult().set(closed);
             } else if (LIST_CONNECTION_IDS.equals(operationName)) {
                 String[] list = serverControl.listConnectionIDs();
-                reportListOfString(context, list);
+                reportListOfStrings(context, list);
             } else if (LIST_PRODUCERS_INFO_AS_JSON.equals(operationName)) {
                 String json = serverControl.listProducersInfoAsJSON();
                 context.getResult().set(json);
             } else if (LIST_SESSIONS.equals(operationName)) {
-                connectionIdValidator.validate(operation);
-                String[] list = serverControl.listSessions(operation.require(CONNECTION_ID).asString());
-                reportListOfString(context, list);
+                String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
+                String[] list = serverControl.listSessions(connectionID);
+                reportListOfStrings(context, list);
             } else if (GET_ROLES.equals(operationName)) {
-                addressValidator.validate(operation);
-                String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
+                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                String json = serverControl.getRolesAsJSON(addressMatch);
                 reportRoles(context, json);
             } else if (GET_ROLES_AS_JSON.equals(operationName)) {
-                addressValidator.validate(operation);
-                String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
+                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                String json = serverControl.getRolesAsJSON(addressMatch);
                 reportRolesAsJSON(context, json);
             } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
-                addressValidator.validate(operation);
-                String json = serverControl.getAddressSettingsAsJSON(operation.require(ADDRESS_MATCH).asString());
+                String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                String json = serverControl.getAddressSettingsAsJSON(addressMatch);
                 context.getResult().set(json);
             } else if (FORCE_FAILOVER.equals(operationName)) {
                 serverControl.forceFailover();
                 context.getResult();
             } else {
                 // Bug
-                throw MESSAGES.unsupportedOperation(operationName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
@@ -232,7 +220,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
@@ -242,151 +230,104 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    public void registerOperations(final ManagementResourceRegistration registry) {
+    public void registerOperations(final ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
 
-        final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(READ_ONLY);
-        final EnumSet<OperationEntry.Flag> runtimeOnly = EnumSet.of(RUNTIME_ONLY);
-        final EnumSet<OperationEntry.Flag> readOnlyRuntimeOnly = EnumSet.of(READ_ONLY, RUNTIME_ONLY);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_CONNECTORS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(RESET_ALL_MESSAGE_COUNTERS, resolver)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(RESET_ALL_MESSAGE_COUNTER_HISTORIES, resolver)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_HEURISTIC_COMMITTED_TRANSACTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS, resolver)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(COMMIT_PREPARED_TRANSACTION, resolver)
+                .setParameters(TRANSACTION_AS_BASE_64)
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(ROLLBACK_PREPARED_TRANSACTION, resolver)
+                .setParameters(TRANSACTION_AS_BASE_64)
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_REMOTE_ADDRESSES, resolver)
+                .setParameters(OPTIONAL_IP_ADDRESS)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(CLOSE_CONNECTIONS_FOR_ADDRESS, resolver)
+                .setParameters(REQUIRED_IP_ADDRESS)
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_CONNECTION_IDS, resolver)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_PRODUCERS_INFO_AS_JSON, resolver)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(LIST_SESSIONS, resolver)
+                .setParameters(CONNECTION_ID)
+                .setReplyType(LIST)
+                .setReplyValueType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_ROLES_AS_JSON, resolver)
+                .setParameters(ADDRESS_MATCH)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_ADDRESS_SETTINGS_AS_JSON, resolver)
+                .setParameters(ADDRESS_MATCH)
+                .setReplyType(STRING)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(FORCE_FAILOVER, resolver)
+                .build(),
+                this);
 
-        registry.registerOperationHandler(GET_CONNECTORS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, GET_CONNECTORS_AS_JSON, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnly);
-
-        registry.registerOperationHandler(RESET_ALL_MESSAGE_COUNTERS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESET_ALL_MESSAGE_COUNTERS, HQ_SERVER);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(RESET_ALL_MESSAGE_COUNTER_HISTORIES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, RESET_ALL_MESSAGE_COUNTER_HISTORIES, HQ_SERVER);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(LIST_PREPARED_TRANSACTIONS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_PREPARED_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PREPARED_TRANSACTION_DETAILS_AS_HTML, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_HEURISTIC_COMMITTED_TRANSACTIONS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_HEURISTIC_COMMITTED_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_HEURISTIC_ROLLED_BACK_TRANSACTIONS, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(COMMIT_PREPARED_TRANSACTION, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, COMMIT_PREPARED_TRANSACTION,
-                        HQ_SERVER, TRANSACTION_AS_BASE_64, ModelType.STRING, true, ModelType.BOOLEAN, true);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(ROLLBACK_PREPARED_TRANSACTION, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, ROLLBACK_PREPARED_TRANSACTION,
-                        HQ_SERVER, TRANSACTION_AS_BASE_64, ModelType.STRING, true, ModelType.BOOLEAN, true);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(LIST_REMOTE_ADDRESSES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale,  LIST_REMOTE_ADDRESSES,
-                        HQ_SERVER, IP_ADDRESS, ModelType.STRING, true, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(CLOSE_CONNECTIONS_FOR_ADDRESS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, CLOSE_CONNECTIONS_FOR_ADDRESS,
-                        HQ_SERVER, IP_ADDRESS, ModelType.STRING, false, ModelType.BOOLEAN, true);
-            }
-        }, runtimeOnly);
-
-        registry.registerOperationHandler(LIST_CONNECTION_IDS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleListReplyOperation(locale, LIST_CONNECTION_IDS, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_PRODUCERS_INFO_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getNoArgSimpleReplyOperation(locale, LIST_PRODUCERS_INFO_AS_JSON, HQ_SERVER, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(LIST_SESSIONS, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleListReplyOperation(locale,  LIST_SESSIONS,
-                        HQ_SERVER, CONNECTION_ID, ModelType.STRING, true, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(GET_ROLES, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getGetRoles(locale);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(GET_ROLES_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, GET_ROLES_AS_JSON, HQ_SERVER,
-                        ADDRESS_MATCH, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(GET_ADDRESS_SETTINGS_AS_JSON, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, GET_ADDRESS_SETTINGS_AS_JSON, HQ_SERVER,
-                        ADDRESS_MATCH, ModelType.STRING, false, ModelType.STRING, true);
-            }
-        }, readOnlyRuntimeOnly);
-
-        registry.registerOperationHandler(FORCE_FAILOVER, this, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return MessagingDescriptions.getDescriptionOnlyOperation(locale, FORCE_FAILOVER, HQ_SERVER);
-            }
-        }, runtimeOnly);
+        registry.registerOperationHandler(runtimeReadOnlyOperation(GET_ROLES, resolver)
+                .setParameters(ADDRESS_MATCH)
+                .setReplyType(LIST)
+                .setReplyParameters(SecurityRoleDefinition.NAME,
+                        SecurityRoleDefinition.SEND,
+                        SecurityRoleDefinition.CONSUME,
+                        SecurityRoleDefinition.CREATE_DURABLE_QUEUE,
+                        SecurityRoleDefinition.DELETE_DURABLE_QUEUE,
+                        SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE,
+                        SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
+                        SecurityRoleDefinition.MANAGE)
+                .build(),
+                this);
     }
 
     private void handleReadAttribute(OperationContext context, ModelNode operation, final HornetQServer server) throws OperationFailedException {
@@ -403,7 +344,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(active);
         } else {
             // Bug
-            throw MESSAGES.unsupportedAttribute(name);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
         }
     }
 
@@ -411,7 +352,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         if (hqService == null || hqService.getState() != ServiceController.State.UP) {
-            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+            throw MessagingLogger.ROOT_LOGGER.hornetQServerNotInstalled(hqServiceName.getSimpleName());
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();

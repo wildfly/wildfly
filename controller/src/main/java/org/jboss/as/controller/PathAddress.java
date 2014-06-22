@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
@@ -35,6 +34,8 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -150,13 +151,13 @@ public class PathAddress implements Iterable<PathElement> {
     }
 
     private static OperationFailedRuntimeException duplicateElement(final String name) {
-        return MESSAGES.duplicateElement(name);
+        return ControllerLogger.ROOT_LOGGER.duplicateElement(name);
     }
 
     private final List<PathElement> pathAddressList;
 
     PathAddress(final List<PathElement> pathAddressList) {
-        assert pathAddressList != null : MESSAGES.nullVar("pathAddressList").getLocalizedMessage();
+        assert pathAddressList != null : ControllerLogger.ROOT_LOGGER.nullVar("pathAddressList").getLocalizedMessage();
         this.pathAddressList = pathAddressList;
     }
 

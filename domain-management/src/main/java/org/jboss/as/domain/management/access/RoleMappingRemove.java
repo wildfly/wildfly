@@ -23,7 +23,6 @@
 package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -34,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -77,7 +77,7 @@ public class RoleMappingRemove implements OperationStepHandler {
                 Object undoKey = authorizerConfiguration.removeRoleMapping(roleName);
                 if (undoKey == null) {
                     context.restartRequired();
-                    throw MESSAGES.inconsistentRbacRuntimeState();
+                    throw DomainManagementLogger.ROOT_LOGGER.inconsistentRbacRuntimeState();
                 }
 
                 registerRollbackHandler(context, undoKey);

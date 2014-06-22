@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.security;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 import java.util.Collections;
 import java.util.Set;
@@ -46,7 +46,7 @@ public class EJBMethodSecurityAttribute {
 
     private EJBMethodSecurityAttribute(final boolean permitAll, final boolean denyAll, final Set<String> rolesAllowed) {
         if (rolesAllowed == null)
-            throw EjbMessages.MESSAGES.paramCannotBeNull("rolesAllowed");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("rolesAllowed");
         this.permitAll = permitAll;
         this.denyAll = denyAll;
         this.rolesAllowed = rolesAllowed;

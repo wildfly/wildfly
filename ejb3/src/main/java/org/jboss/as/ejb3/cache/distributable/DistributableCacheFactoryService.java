@@ -10,8 +10,6 @@ import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,12 +35,10 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K>> exte
         DistributableCacheFactoryService<K, V> service = new DistributableCacheFactoryService<>();
         return target.addService(name, service)
                 .addDependency(factoryServiceName, BeanManagerFactory.class, (Injector) service.factory)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
         ;
     }
 
     private final InjectedValue<BeanManagerFactory<UUID, K, V>> factory = new InjectedValue<>();
-    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
 
     private DistributableCacheFactoryService() {
         // Hide
@@ -56,6 +52,6 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K>> exte
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
         BeanManager<UUID, K, V> manager = this.factory.getValue().createBeanManager(new GroupIdentifierFactory(), identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
-        return new DistributableCache<>(manager, factory, this.environment.getValue());
+        return new DistributableCache<>(manager, factory);
     }
 }

@@ -29,6 +29,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
@@ -37,8 +38,7 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.component.stateful.StatefulComponentInstanceInterceptor.getComponentInstance;
 
 /**
@@ -85,7 +85,7 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
             // so that it can released on the tx synchronization callbacks
             boolean acquired = lock.tryLock(timeout.getValue(), timeout.getTimeUnit());
             if (!acquired) {
-                throw MESSAGES.failToObtainLock(context, timeout.getValue(), timeout.getTimeUnit());
+                throw EjbLogger.ROOT_LOGGER.failToObtainLock(context, timeout.getValue(), timeout.getTimeUnit());
             }
             synchronized (threadLock) {
                 if (ROOT_LOGGER.isTraceEnabled()) {

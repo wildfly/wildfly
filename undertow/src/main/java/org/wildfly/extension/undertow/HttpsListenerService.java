@@ -28,6 +28,7 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
@@ -52,15 +53,16 @@ public class HttpsListenerService extends HttpListenerService {
     private volatile AcceptingChannel<SslConnection> sslServer;
     static final String PROTOCOL = "https";
 
-    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions) {
-        super(name, serverName, listenerOptions, false, false);
+    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions, OptionMap socketOptions) {
+        super(name, serverName, listenerOptions, socketOptions, false, false);
     }
 
     @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
-        Builder builder = OptionMap.builder().addAll(listenerOptions);
+        Builder builder = OptionMap.builder().addAll(commonOptions);
+        builder.addAll(socketOptions);
         builder.set(Options.USE_DIRECT_BUFFERS, true);
         OptionMap combined = builder.getMap();
 

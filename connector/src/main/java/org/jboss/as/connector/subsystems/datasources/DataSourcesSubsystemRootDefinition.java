@@ -98,6 +98,17 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
     static void registerTransformers(SubsystemRegistration subsystem) {
         TransformationDescription.Tools.register(get110TransformationDescription(), subsystem, ModelVersion.create(1, 1, 0));
         TransformationDescription.Tools.register(get111TransformationDescription(), subsystem, ModelVersion.create(1, 1, 1));
+        TransformationDescription.Tools.register(get200TransformationDescription(), subsystem, ModelVersion.create(2, 0, 0));
+    }
+
+    static TransformationDescription get200TransformationDescription() {
+
+            ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+            //No change
+            //JdbcDriverDefinition.registerTransformers110(builder);
+            DataSourceDefinition.registerTransformers200(builder);
+            XaDataSourceDefinition.registerTransformers200(builder);
+            return builder.build();
     }
 
     static TransformationDescription get110TransformationDescription() {

@@ -22,8 +22,7 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 import static org.jboss.as.naming.util.NamingUtils.isEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingEnumeration;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
@@ -52,6 +51,7 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.JndiPermission.Action;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.util.NameParser;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -150,11 +150,11 @@ public class NamingContext implements EventContext {
      */
     public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable environment) {
         if(prefix == null) {
-            throw MESSAGES.nullVar("Naming prefix");
+            throw NamingLogger.ROOT_LOGGER.nullVar("Naming prefix");
         }
         this.prefix = prefix;
         if(namingStore == null) {
-            throw MESSAGES.nullVar("NamingStore");
+            throw NamingLogger.ROOT_LOGGER.nullVar("NamingStore");
         }
         this.namingStore = namingStore;
         if(environment != null) {
@@ -252,7 +252,7 @@ public class NamingContext implements EventContext {
             }
             getWritableNamingStore().bind(absoluteName, object);
         } else {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
 
     }
@@ -273,7 +273,7 @@ public class NamingContext implements EventContext {
             }
             getWritableNamingStore().rebind(absoluteName, object);
         } else {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
     }
 
@@ -290,7 +290,7 @@ public class NamingContext implements EventContext {
             final Name absoluteName = getAbsoluteName(name);
             getWritableNamingStore().unbind(absoluteName);
         } else {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
     }
 
@@ -310,7 +310,7 @@ public class NamingContext implements EventContext {
             bind(newName, lookup(oldName));
             unbind(oldName);
         } else {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
     }
 
@@ -372,7 +372,7 @@ public class NamingContext implements EventContext {
         check(name, Action.DESTROY_SUBCONTEXT);
 
         if(!(namingStore instanceof WritableNamingStore)) {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
     }
 
@@ -389,7 +389,7 @@ public class NamingContext implements EventContext {
             final Name absoluteName = getAbsoluteName(name);
             return getWritableNamingStore().createSubcontext(absoluteName);
         } else {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
     }
 
@@ -413,7 +413,7 @@ public class NamingContext implements EventContext {
             }
             return link;
         } catch (Exception e) {
-            throw namingException(MESSAGES.cannotLookupLink(), e, name);
+            throw namingException(NamingLogger.ROOT_LOGGER.cannotLookupLink(), e, name);
         }
     }
 
@@ -523,7 +523,7 @@ public class NamingContext implements EventContext {
         } catch(NamingException e) {
             throw e;
         } catch(Throwable t) {
-            throw MESSAGES.cannotDeferenceObject(t);
+            throw NamingLogger.ROOT_LOGGER.cannotDeferenceObject(t);
         }
     }
 
@@ -538,7 +538,7 @@ public class NamingContext implements EventContext {
                 linkResult = new InitialContext().lookup(referenceName);
             }
         } catch (Throwable t) {
-            throw MESSAGES.cannotDeferenceObject(t);
+            throw NamingLogger.ROOT_LOGGER.cannotDeferenceObject(t);
         }
         return linkResult;
     }

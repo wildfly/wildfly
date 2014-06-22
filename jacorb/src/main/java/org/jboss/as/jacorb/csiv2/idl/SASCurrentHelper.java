@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2.idl;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Object;
@@ -68,7 +68,7 @@ public final class SASCurrentHelper {
         } else if (obj instanceof SASCurrent) {
             return (SASCurrent) obj;
         } else {
-            throw JacORBMessages.MESSAGES.sasCurrentNarrowFailed();
+            throw JacORBLogger.ROOT_LOGGER.sasCurrentNarrowFailed();
         }
     }
 
@@ -78,7 +78,7 @@ public final class SASCurrentHelper {
         } else if (obj instanceof SASCurrent) {
             return (SASCurrent) obj;
         } else {
-            throw JacORBMessages.MESSAGES.sasCurrentNarrowFailed();
+            throw JacORBLogger.ROOT_LOGGER.sasCurrentNarrowFailed();
         }
     }
 }

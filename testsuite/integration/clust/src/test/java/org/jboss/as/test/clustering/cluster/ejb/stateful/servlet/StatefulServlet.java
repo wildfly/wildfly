@@ -66,8 +66,8 @@ public class StatefulServlet extends HttpServlet {
         HttpSession session = req.getSession(true);
         Incrementor incrementor = (Incrementor) session.getAttribute(BEAN);
         if (incrementor == null) {
-            try {
-                incrementor = new LocalEJBDirectory(module).lookupStateful(bean, Incrementor.class);
+            try (LocalEJBDirectory directory = new LocalEJBDirectory(module)) {
+                incrementor = directory.lookupStateful(bean, Incrementor.class);
             } catch (NamingException e) {
                 throw new ServletException(e);
             }

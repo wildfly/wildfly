@@ -41,11 +41,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
@@ -57,7 +57,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
@@ -82,17 +81,19 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_ACCESS_TIME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH_TIME;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -407,8 +408,11 @@ public class ManagementXml {
                         case DOMAIN_1_5:
                             parseLdapConnection_1_4(reader, address, list);
                             break;
-                        default:
+                        case DOMAIN_2_0:
                             parseLdapConnection_2_0(reader, address, expectedNs, list);
+                            break;
+                        default:
+                            parseLdapConnection_2_1(reader, address, expectedNs, list);
                             break;
                     }
                     break;
@@ -605,6 +609,92 @@ public class ManagementXml {
         }
     }
 
+    private static void parseLdapConnection_2_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        final ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+
+        list.add(add);
+
+        ModelNode connectionAddress = null;
+
+        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.URL);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        connectionAddress = address.clone().add(LDAP_CONNECTION, value);
+                        add.get(OP_ADDR).set(connectionAddress);
+                        break;
+                    }
+                    case URL: {
+                        LdapConnectionResourceDefinition.URL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SEARCH_DN: {
+                        LdapConnectionResourceDefinition.SEARCH_DN.parseAndSetParameter(value,  add, reader);
+                        break;
+                    }
+                    case SEARCH_CREDENTIAL: {
+                        LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        LdapConnectionResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case INITIAL_CONTEXT_FACTORY: {
+                        LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case REFERRALS: {
+                        LdapConnectionResourceDefinition.REFERRALS.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case HANDLES_REFERRALS_FOR: {
+                        for (String url : reader.getListAttributeValue(i)) {
+                            LdapConnectionResourceDefinition.HANDLES_REFERRALS_FOR.parseAndAddParameterElement(url, add, reader);
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        boolean propertiesFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTIES: {
+                    if (propertiesFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    propertiesFound = true;
+                    parseLdapConnectionProperties(reader, connectionAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
     private static void parseLdapConnectionProperties(final XMLExtendedStreamReader reader, final ModelNode address,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
@@ -1179,7 +1269,7 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, realmAddress, list);
+                    parseJaasAuthentication_1_1(reader, realmAddress, list);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1242,7 +1332,18 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                        case DOMAIN_2_0:
+                        case DOMAIN_2_1:
+                            parseJaasAuthentication_1_1(reader, realmAddress, list);
+                            break;
+                        default:
+                            parseJaasAuthentication_3_0(reader, realmAddress, list);
+                            break;
+                    }
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1326,7 +1427,7 @@ public class ManagementXml {
         }
     }
 
-    private static void parseJaasAuthentication(final XMLExtendedStreamReader reader,
+    private static void parseJaasAuthentication_1_1(final XMLExtendedStreamReader reader,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
         ModelNode jaas = Util.getEmptyOperation(ADD, addr);
@@ -1347,6 +1448,44 @@ public class ManagementXml {
                         }
                         nameFound = true;
                         JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        if (nameFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        requireNoContent(reader);
+    }
+
+    private static void parseJaasAuthentication_3_0(final XMLExtendedStreamReader reader,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
+        ModelNode jaas = Util.getEmptyOperation(ADD, addr);
+        list.add(jaas);
+
+        boolean nameFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        if (nameFound) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        nameFound = true;
+                        JaasAuthenticationResourceDefinition.NAME.parseAndSetParameter(value, jaas, reader);
+                        break;
+                    case ASSIGN_GROUPS:
+                        JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.parseAndSetParameter(value, jaas, reader);
                         break;
                     default: {
                         throw unexpectedAttribute(reader, i);
@@ -2159,7 +2298,6 @@ public class ManagementXml {
         final ModelNode childAdd = new ModelNode();
         childAdd.get(OP).set(ADD);
 
-        boolean forceFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -2169,7 +2307,6 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case FORCE:
-                        forceFound = true;
                         BaseLdapUserSearchResource.FORCE.parseAndSetParameter(value, childAdd, reader);
                         break;
                     default: {
@@ -2177,10 +2314,6 @@ public class ManagementXml {
                     }
                 }
             }
-        }
-
-        if (forceFound == false) {
-            throw missingRequired(reader, Collections.singleton(Attribute.FORCE));
         }
 
         boolean filterFound = false;
@@ -2225,7 +2358,6 @@ public class ManagementXml {
         final ModelNode childAdd = new ModelNode();
         childAdd.get(OP).set(ADD);
 
-        boolean forceFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -2235,7 +2367,6 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case FORCE:
-                        forceFound = true;
                         BaseLdapUserSearchResource.FORCE.parseAndSetParameter(value, childAdd, reader);
                         break;
                     default: {
@@ -2244,11 +2375,6 @@ public class ManagementXml {
                 }
             }
         }
-
-        if (forceFound == false) {
-            throw missingRequired(reader, Collections.singleton(Attribute.FORCE));
-        }
-
         boolean filterFound = false;
         ModelNode cacheAdd = null;
         ModelNode address = ldapAddress.clone().add(USERNAME_TO_DN);
@@ -2443,7 +2569,7 @@ public class ManagementXml {
                     break;
                 case PRINCIPAL_TO_GROUP:
                     filterFound = true;
-                    parsePrincipalToGroup(reader, expectedNs, address, childAdd);
+                    parsePrincipalToGroup_1_5(reader, expectedNs, address, childAdd);
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -2514,7 +2640,15 @@ public class ManagementXml {
                     break;
                 case PRINCIPAL_TO_GROUP:
                     filterFound = true;
-                    parsePrincipalToGroup(reader, expectedNs, address, childAdd);
+                    switch (expectedNs) {
+                        case DOMAIN_2_0:
+                            parsePrincipalToGroup_1_5(reader, expectedNs, address, childAdd);
+                            break;
+                        default:
+                            parsePrincipalToGroup_2_1(reader, expectedNs, address, childAdd);
+                            break;
+                    }
+
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -2533,8 +2667,7 @@ public class ManagementXml {
         }
     }
 
-    private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
-            final ModelNode addOp) throws XMLStreamException {
+    private static void parseGroupToPrincipalAttributes_1_5_2_0(final XMLExtendedStreamReader reader, final ModelNode addOp) throws XMLStreamException {
         boolean baseDnFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -2566,6 +2699,59 @@ public class ManagementXml {
         if (baseDnFound == false) {
             throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
         }
+    }
+
+    private static void parseGroupToPrincipalAttributes_3_0(final XMLExtendedStreamReader reader, final ModelNode addOp) throws XMLStreamException {
+        boolean baseDnFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BASE_DN: {
+                        baseDnFound = true;
+                        GroupToPrincipalResourceDefinition.BASE_DN.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        GroupToPrincipalResourceDefinition.RECURSIVE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SEARCH_BY:
+                        GroupToPrincipalResourceDefinition.SEARCH_BY.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    case PREFER_ORIGINAL_CONNECTION:
+                        GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (baseDnFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+    }
+
+    private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp) throws XMLStreamException {
+
+        switch (expectedNs) {
+            case DOMAIN_1_5:
+            case DOMAIN_2_0:
+            case DOMAIN_2_1:
+                parseGroupToPrincipalAttributes_1_5_2_0(reader, addOp);
+                break;
+            default:
+                parseGroupToPrincipalAttributes_3_0(reader, addOp);
+                break;
+        }
+
 
         boolean elementFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -2619,7 +2805,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private static void parsePrincipalToGroup(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+    private static void parsePrincipalToGroup_1_5(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
             final ModelNode addOp) throws XMLStreamException {
 
         final int count = reader.getAttributeCount();
@@ -2632,6 +2818,37 @@ public class ManagementXml {
                 switch (attribute) {
                     case GROUP_ATTRIBUTE: {
                         PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(PRINCIPAL_TO_GROUP));
+    }
+
+    private static void parsePrincipalToGroup_2_1(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case GROUP_ATTRIBUTE: {
+                        PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case PREFER_ORIGINAL_CONNECTION: {
+                        PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default: {
@@ -3427,9 +3644,7 @@ public class ManagementXml {
                 writeAuthentication(writer, realm);
             }
 
-            if (realm.hasDefined(AUTHORIZATION)) {
-                writeAuthorization(writer, realm);
-            }
+            writeAuthorization(writer, realm);
             writer.writeEndElement();
         }
         writer.writeEndElement();
@@ -3526,6 +3741,7 @@ public class ManagementXml {
             ModelNode jaas = authentication.get(JAAS);
             writer.writeStartElement(Element.JAAS.getLocalName());
             JaasAuthenticationResourceDefinition.NAME.marshallAsAttribute(jaas, writer);
+            JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.marshallAsAttribute(jaas, writer);
             writer.writeEndElement();
         } else if (authentication.hasDefined(LDAP)) {
             ModelNode userLdap = authentication.get(LDAP);
@@ -3590,21 +3806,28 @@ public class ManagementXml {
     }
 
     private void writeAuthorization(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
-        writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
-        SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
-        ModelNode authorization = realm.require(AUTHORIZATION);
-        if (authorization.hasDefined(PROPERTIES)) {
-            ModelNode properties = authorization.require(PROPERTIES);
-            writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
-            PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
-            PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
-        } else if (authorization.hasDefined(PLUG_IN)) {
-            writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
-        } else if (authorization.hasDefined(LDAP)) {
-            writeLdapAuthorization(writer,authorization.get(LDAP));
-        }
+        // A String comparison in-case it is an expression.
+        String defaultMapGroupsToRoles = Boolean.toString(SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.getDefaultValue().asBoolean());
+        String mapGroupsToRoles = realm.hasDefined(MAP_GROUPS_TO_ROLES) ? realm.require(MAP_GROUPS_TO_ROLES).asString() : defaultMapGroupsToRoles;
 
-        writer.writeEndElement();
+        if (realm.hasDefined(AUTHORIZATION) || defaultMapGroupsToRoles.equals(mapGroupsToRoles) == false) {
+            writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
+            SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
+            if (realm.hasDefined(AUTHORIZATION)) {
+                ModelNode authorization = realm.require(AUTHORIZATION);
+                if (authorization.hasDefined(PROPERTIES)) {
+                    ModelNode properties = authorization.require(PROPERTIES);
+                    writer.writeEmptyElement(Element.PROPERTIES.getLocalName());
+                    PropertiesAuthorizationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
+                    PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
+                } else if (authorization.hasDefined(PLUG_IN)) {
+                    writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
+                } else if (authorization.hasDefined(LDAP)) {
+                    writeLdapAuthorization(writer, authorization.get(LDAP));
+                }
+            }
+            writer.writeEndElement();
+        }
     }
 
     private void writeLdapAuthorization(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
@@ -3661,6 +3884,7 @@ public class ManagementXml {
                     GroupToPrincipalResourceDefinition.SEARCH_BY.marshallAsAttribute(groupToPrincipal, writer);
                     GroupToPrincipalResourceDefinition.BASE_DN.marshallAsAttribute(groupToPrincipal, writer);
                     GroupToPrincipalResourceDefinition.RECURSIVE.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.PREFER_ORIGINAL_CONNECTION.marshallAsAttribute(groupToPrincipal, writer);
                     writer.writeStartElement(Element.MEMBERSHIP_FILTER.getLocalName());
                     GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.marshallAsAttribute(groupToPrincipal, writer);
                     writer.writeEndElement();
@@ -3674,6 +3898,7 @@ public class ManagementXml {
                     writeLdapCacheIfDefined(writer, principalToGroup);
                     writer.writeStartElement(Element.PRINCIPAL_TO_GROUP.getLocalName());
                     PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.marshallAsAttribute(principalToGroup, writer);
+                    PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.marshallAsAttribute(principalToGroup, writer);
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -3711,6 +3936,9 @@ public class ManagementXml {
             LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SECURITY_REALM.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.marshallAsAttribute(connection, writer);
+            LdapConnectionResourceDefinition.REFERRALS.marshallAsAttribute(connection, writer);
+            LdapConnectionResourceDefinition.HANDLES_REFERRALS_FOR.marshallAsElement(connection, writer);
+
             if (connection.hasDefined(PROPERTY)) {
                 List<Property> propertyList = connection.get(PROPERTY).asPropertyList();
                 if (propertyList.size() > 0) {

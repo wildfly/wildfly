@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.transform;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -35,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -114,7 +113,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
 
                 @Override
                 public String getFailureDescription() {
-                    return context.getLogger().getAttributeWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attributes);
+                    return context.getLogger().getAttributeWarning(address, operation, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), attributes);
                 }
             };
         } else {
@@ -133,7 +132,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
         if (attributes.size() > 0) {
             if (context.getTarget().isIgnoredResourceListAvailableAtRegistration()) {
                 // Slave is 7.2.x or higher and we know this resource is not ignored
-                List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(address, null, MESSAGES.attributesDontSupportExpressions(), attributes));
+                List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(address, null, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), attributes));
 
                 final TransformationTarget tgt = context.getTarget();
                 final String legacyHostName = tgt.getHostName();
@@ -143,12 +142,12 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
 
                 // Target is  7.2.x or higher so we should throw an error
                 if (subsystemName != null) {
-                    throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
+                    throw ControllerLogger.ROOT_LOGGER.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
                 }
-                throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
+                throw ControllerLogger.ROOT_LOGGER.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                context.getLogger().logAttributeWarning(address, MESSAGES.attributesDontSupportExpressions(), attributes);
+                context.getLogger().logAttributeWarning(address, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), attributes);
             }
         }
 
@@ -218,7 +217,7 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
 
                     @Override
                     public String getFailureDescription() {
-                        return context.getLogger().getAttributeWarning(address, operation, MESSAGES.attributesDontSupportExpressions(), attribute);
+                        return context.getLogger().getAttributeWarning(address, operation, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), attribute);
                     }
                 };
                 return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);

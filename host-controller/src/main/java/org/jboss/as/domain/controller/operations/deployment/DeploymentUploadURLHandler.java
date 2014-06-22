@@ -20,7 +20,6 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +29,7 @@ import java.net.URL;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
@@ -76,9 +76,9 @@ extends AbstractDeploymentUploadHandler {
             URL url = new URL(urlSpec);
             return url.openStream();
         } catch (MalformedURLException e) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidUrl(urlSpec, e.toString())));
+            throw new OperationFailedException(new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.invalidUrl(urlSpec, e.toString())));
         } catch (IOException e) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.errorObtainingUrlStream(urlSpec, e.toString())));
+            throw new OperationFailedException(new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.errorObtainingUrlStream(urlSpec, e.toString())));
         }
     }
 

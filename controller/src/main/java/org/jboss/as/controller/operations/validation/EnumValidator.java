@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -128,7 +128,7 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
                 enumValue = toStringMap.get(tuString);
             }
             if (enumValue == null || !allowedValues.contains(enumValue)) {
-                throw ControllerMessages.MESSAGES.invalidEnumValue(tuString, parameterName, toStringMap.keySet());
+                throw ControllerLogger.ROOT_LOGGER.invalidEnumValue(tuString, parameterName, toStringMap.keySet());
             }
             // Hack to store the allowed value in the model, not the user input
             if (type != ModelType.EXPRESSION) {

@@ -24,18 +24,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jgroups.JChannel;
 
 /**
@@ -45,112 +40,22 @@ import org.jgroups.JChannel;
  */
 public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-    public static final ChannelMetricsHandler INSTANCE = new ChannelMetricsHandler();
-
-    public enum ChannelMetrics {
-        ADDRESS(ChannelInstanceResourceDefinition.ADDRESS),
-        ADDRESS_AS_UUID(ChannelInstanceResourceDefinition.ADDRESS_AS_UUID),
-        DISCARD_OWN_MESSAGES(ChannelInstanceResourceDefinition.DISCARD_OWN_MESSAGES),
-        NUM_TASKS_IN_TIMER(ChannelInstanceResourceDefinition.NUM_TASKS_IN_TIMER),
-        NUM_TIMER_THREADS(ChannelInstanceResourceDefinition.NUM_TIMER_THREADS),
-        RECEIVED_BYTES(ChannelInstanceResourceDefinition.RECEIVED_BYTES),
-        RECEIVED_MESSAGES(ChannelInstanceResourceDefinition.RECEIVED_MESSAGES),
-        SENT_BYTES(ChannelInstanceResourceDefinition.SENT_BYTES),
-        SENT_MESSAGES(ChannelInstanceResourceDefinition.SENT_MESSAGES),
-        STATE(ChannelInstanceResourceDefinition.STATE),
-        STATS_ENABLED(ChannelInstanceResourceDefinition.STATS_ENABLED),
-        VERSION(ChannelInstanceResourceDefinition.VERSION),
-        VIEW(ChannelInstanceResourceDefinition.VIEW);
-
-        private static final Map<String, ChannelMetrics> MAP = new HashMap<String, ChannelMetrics>();
-
-        static {
-            for (ChannelMetrics metric : ChannelMetrics.values()) {
-                MAP.put(metric.toString(), metric);
-            }
-        }
-
-        final AttributeDefinition definition ;
-
-        private ChannelMetrics(AttributeDefinition definition) {
-            this.definition = definition;
-        }
-
-        @Override
-        public String toString() {
-            return definition.getName();
-        }
-
-        public static ChannelMetrics getStat(final String stringForm) {
-            return MAP.get(stringForm);
-        }
-    }
-
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         // get the channel name and channel attribute
         PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String channelName = pathAddress.getElement(pathAddress.size()-1).getValue();
-        String attrName = operation.require(NAME).asString();
-        ChannelMetrics metric = ChannelMetrics.getStat(attrName);
-
-        // lookup the channel
-        ServiceName channelServiceName = ChannelInstanceResource.CHANNEL_PARENT.append(channelName);
-        ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
-
-        // check that the service has been installed and started
-        boolean started = controller != null && controller.getValue() != null;
-        ModelNode result = new ModelNode();
+        String channelName = pathAddress.getLastElement().getValue();
+        String name = operation.require(NAME).asString();
+        ChannelMetric metric = ChannelMetric.forName(name);
 
         if (metric == null) {
-            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
-        } else if (!started) {
-            // when the cache service is not available, return a null result
+            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
         } else {
-            JChannel channel = (JChannel) controller.getValue();
-            switch (metric) {
-                case ADDRESS:
-                    result.set(channel.getAddressAsString());
-                    break;
-                case ADDRESS_AS_UUID:
-                    result.set(channel.getAddressAsUUID());
-                    break;
-                case DISCARD_OWN_MESSAGES:
-                    result.set(channel.getDiscardOwnMessages());
-                    break;
-                case NUM_TASKS_IN_TIMER:
-                    result.set(channel.getNumberOfTasksInTimer());
-                    break;
-                case NUM_TIMER_THREADS:
-                    result.set(channel.getTimerThreads());
-                    break;
-                case RECEIVED_BYTES:
-                    result.set(channel.getReceivedBytes());
-                    break;
-                case RECEIVED_MESSAGES:
-                    result.set(channel.getReceivedMessages());
-                    break;
-                case SENT_BYTES:
-                    result.set(channel.getSentBytes());
-                    break;
-                case SENT_MESSAGES:
-                    result.set(channel.getSentMessages());
-                    break;
-                case STATE:
-                    result.set(channel.getState());
-                    break;
-                case STATS_ENABLED:
-                    result.set(channel.statsEnabled());
-                    break;
-                case VERSION:
-                    result.set(JChannel.getVersion());
-                    break;
-                case VIEW:
-                    result.set(channel.getViewAsString());
-                    break;
+            JChannel channel = ServiceContainerHelper.findValue(context.getServiceRegistry(false), ChannelService.getServiceName(channelName));
+            if (channel != null) {
+                context.getResult().set(metric.getValue(channel));
             }
-            context.getResult().set(result);
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }

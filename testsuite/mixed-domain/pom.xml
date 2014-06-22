@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>

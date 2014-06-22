@@ -54,6 +54,9 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
+
+        CLITestSuite.createSupport(DeployAllServerGroupsTestCase.class.getSimpleName());
+
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
@@ -68,6 +71,8 @@ public class DeployAllServerGroupsTestCase extends AbstractCliTestBase {
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
         Assert.assertTrue(warFile.delete());
+
+        CLITestSuite.stopSupport();
     }
 
     @Test

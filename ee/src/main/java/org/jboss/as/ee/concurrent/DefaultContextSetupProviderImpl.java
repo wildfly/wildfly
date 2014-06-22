@@ -22,7 +22,7 @@
 package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
-import org.jboss.as.ee.EeLogger;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.NullContextHandle;
 

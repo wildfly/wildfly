@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -57,12 +59,12 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         PathAddress realmPA = null;
         for (int i = pa.size() - 1; i > 0; i--) {
             PathElement pe = pa.getElement(i);
-            if (ModelDescriptionConstants.SECURITY_REALM.equals(pe.getKey())) {
+            if (SECURITY_REALM.equals(pe.getKey())) {
                 realmPA = pa.subAddress(0, i + 1);
                 break;
             }
         }
-        assert realmPA != null : "operationToValidate did not have an address that included a " + ModelDescriptionConstants.SECURITY_REALM;
+        assert realmPA != null : "operationToValidate did not have an address that included a " + SECURITY_REALM;
         return Util.getEmptyOperation("validate-authentication", realmPA.toModelNode());
     }
 
@@ -83,7 +85,7 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         if (children.size() > 1) {
             Set<String> invalid = new HashSet<String>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);
-            throw DomainManagementMessages.MESSAGES.multipleAuthenticationMechanismsDefined(realmName, invalid);
+            throw DomainManagementLogger.ROOT_LOGGER.multipleAuthenticationMechanismsDefined(realmName, invalid);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

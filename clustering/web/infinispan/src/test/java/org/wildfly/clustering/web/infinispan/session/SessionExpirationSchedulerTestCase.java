@@ -26,9 +26,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
 import org.wildfly.clustering.web.Batch;
@@ -66,18 +66,22 @@ public class SessionExpirationSchedulerTestCase {
         when(shortTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(1L);
         when(longTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(10000L);
 
+        Date now = new Date();
+        when(shortTimeoutMetaData.getLastAccessedTime()).thenReturn(now);
+        when(longTimeoutMetaData.getLastAccessedTime()).thenReturn(now);
+        
         when(immortalSession.getId()).thenReturn(immortalSessionId);
         when(expiringSession.getId()).thenReturn(expiringSessionId);
         when(canceledSession.getId()).thenReturn(canceledSessionId);
         
-        try (Scheduler<ImmutableSession> scheduler = new SessionExpirationScheduler(batcher, remover)) {
+        try (Scheduler scheduler = new SessionExpirationScheduler(batcher, remover)) {
             scheduler.schedule(immortalSession);
             scheduler.schedule(canceledSession);
             scheduler.schedule(expiringSession);
 
             Thread.sleep(1000);
 
-            scheduler.cancel(canceledSession);
+            scheduler.cancel(canceledSessionId);
             scheduler.schedule(canceledSession);
         }
 

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.tm;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -59,7 +59,7 @@ public class TxIORInterceptorInitializer extends LocalObject implements ORBIniti
             Codec codec = info.codec_factory().create_codec(encoding);
             info.add_ior_interceptor(new TxIORInterceptor(codec));
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 }

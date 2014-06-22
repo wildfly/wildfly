@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jmx.model;
 
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -45,6 +43,7 @@ import javax.management.ReflectionException;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.jmx.BaseMBeanServerPlugin;
+import org.jboss.as.jmx.logging.JmxLogger;
 
 /**
  * An MBeanServer wrapper that exposes the ModelController via JMX.
@@ -104,14 +103,14 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         if (getHelper(loaderName).resolvePathAddress(loaderName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
-        throw MESSAGES.mbeanNotFound(loaderName);
+        throw JmxLogger.ROOT_LOGGER.mbeanNotFound(loaderName);
     }
 
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) throws InstanceNotFoundException {
         if (getHelper(mbeanName).resolvePathAddress(mbeanName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
-        throw MESSAGES.mbeanNotFound(mbeanName);
+        throw JmxLogger.ROOT_LOGGER.mbeanNotFound(mbeanName);
     }
 
     public String[] getDomains() {
@@ -227,6 +226,6 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
             return exprHelper;
         }
         //This should not happen
-        throw MESSAGES.unknownDomain(domain);
+        throw JmxLogger.ROOT_LOGGER.unknownDomain(domain);
     }
 }

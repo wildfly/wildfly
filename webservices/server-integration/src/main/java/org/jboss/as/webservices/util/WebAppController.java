@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.util;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.io.File;
 import javax.servlet.Servlet;
 
@@ -30,6 +28,7 @@ import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebHost;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -112,12 +111,12 @@ public class WebAppController {
             deployment.create();
 
         } catch (Exception e) {
-            throw MESSAGES.createContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.createContextPhaseFailed(e);
         }
         try {
             deployment.start();
         } catch (Exception e) {
-            throw MESSAGES.startContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.startContextPhaseFailed(e);
         }
         return deployment;
     }
@@ -126,12 +125,12 @@ public class WebAppController {
         try {
             context.stop();
         } catch (Exception e) {
-            throw MESSAGES.stopContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.stopContextPhaseFailed(e);
         }
         try {
             context.destroy();
         } catch (Exception e) {
-            throw MESSAGES.destroyContextPhaseFailed(e);
+            throw WSLogger.ROOT_LOGGER.destroyContextPhaseFailed(e);
         }
     }
 }

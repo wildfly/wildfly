@@ -22,6 +22,7 @@
 
 package org.jboss.as.protocol;
 
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
@@ -114,9 +115,9 @@ public class ProtocolConnectionUtils {
             return future.get();
         }
         if (status == IoFuture.Status.FAILED) {
-            throw ProtocolMessages.MESSAGES.failedToConnect(configuration.getUri(), future.getException());
+            throw ProtocolLogger.ROOT_LOGGER.failedToConnect(configuration.getUri(), future.getException());
         }
-        throw ProtocolMessages.MESSAGES.couldNotConnect(configuration.getUri());
+        throw ProtocolLogger.ROOT_LOGGER.couldNotConnect(configuration.getUri());
     }
 
     private static OptionMap getOptions(final ProtocolConnectionConfiguration configuration) {

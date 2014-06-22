@@ -169,6 +169,16 @@ public abstract class SimpleSyslogServer implements Runnable {
         @Override
         void close() {
             closed.set(true);
+            if (socket != null) {
+                try {
+                    socket.shutdownInput();
+                } catch (Throwable e) {
+                }
+                try {
+                    socket.shutdownOutput();
+                } catch (Throwable e) {
+                }
+            }
             IoUtils.safeClose(serverSocket);
             IoUtils.safeClose(socket);
         }
@@ -256,20 +266,4 @@ public abstract class SimpleSyslogServer implements Runnable {
             }
         }
     }
-//
-//    private static class Tls extends Tcp {
-//        private final boolean requireClientAuth;
-//        Tls(ServerSocket servetSocket, boolean octetCounting, boolean requireClientAuth) throws IOException {
-//            super(servetSocket, octetCounting);
-//            this.requireClientAuth = requireClientAuth;
-//        }
-//
-//        Socket accept(ServerSocket serverSocket) throws IOException {
-//            SSLSocket socket = (SSLSocket)serverSocket.accept();
-//            socket.setNeedClientAuth(requireClientAuth);
-//            return socket;
-//        }
-//
-//    }
-
 }

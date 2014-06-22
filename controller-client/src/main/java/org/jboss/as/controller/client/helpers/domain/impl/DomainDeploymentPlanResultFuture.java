@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.client.ControllerClientMessages;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentActionResult;
@@ -132,7 +132,7 @@ class DomainDeploymentPlanResultFuture implements Future<DeploymentPlanResult> {
                     } else if (planResultNode.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
                         updateFailedException = new UpdateFailedException(planResultNode.get(ClientConstants.FAILURE_DESCRIPTION).toString());
                     } else {
-                        updateFailedException = new UpdateFailedException(ControllerClientMessages.MESSAGES.noFailureDetails());
+                        updateFailedException = new UpdateFailedException(ControllerClientLogger.ROOT_LOGGER.noFailureDetails());
                     }
                     final BasicDomainUpdateResult domainUpdateResult;
                     if (isDomainFailure) {

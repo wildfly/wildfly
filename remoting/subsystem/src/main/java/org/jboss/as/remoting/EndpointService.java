@@ -22,10 +22,9 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
-
 import java.io.IOException;
 
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -87,7 +86,7 @@ public class EndpointService implements Service<Endpoint> {
                 }
             }
         } catch (IOException e) {
-            throw MESSAGES.couldNotStart(e);
+            throw RemotingLogger.ROOT_LOGGER.couldNotStart(e);
         }
         this.endpoint = endpoint;
     }
@@ -109,7 +108,7 @@ public class EndpointService implements Service<Endpoint> {
     /** {@inheritDoc} */
     public synchronized Endpoint getValue() throws IllegalStateException {
         final Endpoint endpoint = this.endpoint;
-        if (endpoint == null) throw MESSAGES.endpointEmpty();
+        if (endpoint == null) throw RemotingLogger.ROOT_LOGGER.endpointEmpty();
         return endpoint;
     }
 

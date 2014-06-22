@@ -23,7 +23,6 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.Collections;
-import java.util.Locale;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
@@ -34,8 +33,8 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -228,7 +227,7 @@ public class RecursiveDiscardAndRemoveTestCase {
     }
 
     private ResourceTransformationContext createContext(final TransformationTarget target) {
-        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.DEFAULT, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
+        return Transformers.Factory.create(target, resourceRoot, resourceRegistration, ExpressionResolver.TEST_RESOLVER, RunningMode.NORMAL, ProcessType.STANDALONE_SERVER);
     }
 
     private Transformers getTransfomers(final TransformationTarget target) {
@@ -243,14 +242,7 @@ public class RecursiveDiscardAndRemoveTestCase {
         return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type, null);
     }
 
-    private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
-
-    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 
     protected void assertRejected(final ModelNode original, final TransformedOperation transformed) {
         Assert.assertNotNull(transformed);

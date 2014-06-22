@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.utils;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -31,8 +32,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Locale;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Utility class for injection framework.
@@ -51,7 +50,7 @@ public final class InjectionUtils {
         try {
             injectionTargetClass = classLoader.loadClass(injectionTargetClassName);
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.cannotLoad(e, injectionTargetClassName);
+            throw EeLogger.ROOT_LOGGER.cannotLoad(e, injectionTargetClassName);
         }
         final ClassReflectionIndex<?> index = deploymentReflectionIndex.getClassIndex(injectionTargetClass);
         String methodName = "set" + injectionTargetName.substring(0, 1).toUpperCase(Locale.ENGLISH) + injectionTargetName.substring(1);
@@ -68,7 +67,7 @@ public final class InjectionUtils {
                         continue;
                     }
                     if (methodFound) {
-                        throw MESSAGES.multipleSetterMethodsFound(injectionTargetName, injectionTargetClassName);
+                        throw EeLogger.ROOT_LOGGER.multipleSetterMethodsFound(injectionTargetName, injectionTargetClassName);
                     }
                     methodFound = true;
                     method = m;
@@ -87,10 +86,9 @@ public final class InjectionUtils {
             }
         }
         if (field == null && method == null) {
-            throw MESSAGES.cannotResolveInjectionPoint(injectionTargetName, injectionTargetClassName);
+            throw EeLogger.ROOT_LOGGER.cannotResolveInjectionPoint(injectionTargetName, injectionTargetClassName);
         }
 
         return field != null ? field : method;
     }
-
 }

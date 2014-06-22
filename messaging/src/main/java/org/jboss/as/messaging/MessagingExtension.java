@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
@@ -30,6 +30,7 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_4;
 import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
+import static org.jboss.as.messaging.Namespace.MESSAGING_3_0;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -54,14 +56,21 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
- *   <dt>AS 8.0.1</dt>
+ *   <dt>WildFly 9</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:3.0
+ *       <li>Management model: 3.0.0
+ *     </ul>
+ *   </dd>
+ *   <dt>WildFly 8.0.1</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:2.0
  *       <li>Management model: 2.1.0
  *     </ul>
  *   </dd>
- *   <dt>AS 8.0.0</dt>
+ *   <dt>WildFly 8.0.0</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:2.0
@@ -106,14 +115,15 @@ public class MessagingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
-    static final PathElement SUBSYSTEM_PATH  = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    static final PathElement SUBSYSTEM_PATH  = pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    public static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     public static final ModelVersion VERSION_1_4_0 = ModelVersion.create(1, 4, 0);
     public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
@@ -204,17 +214,15 @@ public class MessagingExtension implements Extension {
 
         // Messaging paths
         //todo, shouldn't we leverage Path service from AS? see: package org.jboss.as.controller.services.path
-        for (final String path : MessagingPathHandlers.PATHS.keySet()) {
-            ManagementResourceRegistration bindings = serverRegistration.registerSubModel(PathElement.pathElement(PATH, path),
-                    new MessagingSubsystemProviders.PathProvider(path));
-            MessagingPathHandlers.register(bindings, path);
+        for (final String path : PathDefinition.PATHS.keySet()) {
+            ManagementResourceRegistration binding = serverRegistration.registerSubModel(new PathDefinition(pathElement(ModelDescriptionConstants.PATH, path)));
             // Create the path resolver operation
             if (context.getProcessType().isServer()) {
                 final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                        .setPathAttribute(MessagingPathHandlers.PATHS.get(path))
-                        .setRelativeToAttribute(MessagingPathHandlers.RELATIVE_TO)
+                        .setPathAttribute(PathDefinition.PATHS.get(path))
+                        .setRelativeToAttribute(PathDefinition.RELATIVE_TO)
                         .build();
-                bindings.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+                binding.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
             }
         }
 
@@ -263,5 +271,6 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging14SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_2_0.getUriString(), Messaging20SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_3_0.getUriString(), Messaging30SubsystemParser.getInstance());
     }
 }

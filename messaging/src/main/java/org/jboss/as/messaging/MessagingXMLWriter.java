@@ -51,10 +51,9 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
-import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 import static org.jboss.as.messaging.Namespace.CURRENT;
+import static org.jboss.as.messaging.PathDefinition.PATHS;
+import static org.jboss.as.messaging.PathDefinition.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +69,7 @@ import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -439,7 +439,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         boolean wroteHandler = false;
         for (Property handler : node.asPropertyList()) {
             if (wroteHandler) {
-                throw MESSAGES.multipleChildrenFound(GROUPING_HANDLER);
+                throw MessagingLogger.ROOT_LOGGER.multipleChildrenFound(GROUPING_HANDLER);
             } else {
                 wroteHandler = true;
             }
