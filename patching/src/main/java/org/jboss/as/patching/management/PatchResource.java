@@ -136,7 +136,10 @@ class PatchResource extends AbstractModelResource {
 
         @Override
         public Set<String> children() {
-            final InstallationManager manager = imController.getValue();
+            final InstallationManager manager = getInstallationManager();
+            if (manager == null) {
+                return Collections.emptySet();
+            }
             final Collection<? extends PatchableTarget> targets = getChildTargets(manager);
             if (targets.isEmpty()) {
                 return Collections.emptySet();
@@ -162,5 +165,16 @@ class PatchResource extends AbstractModelResource {
             throw new UnsupportedOperationException();
         }
 
+
+        private InstallationManager getInstallationManager() {
+            while (imController != null && imController.getState() == ServiceController.State.UP) {
+                try {
+                    return imController.getValue();
+                } catch (IllegalStateException e) {
+                    // ignore, caused by race from WFLY-3505
+                }
+            }
+            return null;
+        }
     }
 }
