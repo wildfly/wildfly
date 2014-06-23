@@ -31,10 +31,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public interface BeanContext {
     /**
-     * Returns the type of the bean instance.
-     * @return a bean class
+     * Returns the name of the bean..
+     * @return a bean name
      */
-    Class<?> getBeanClass();
+    String getBeanName();
 
     /**
      * Returns the service name of the deployment unit to which this bean is associated.
