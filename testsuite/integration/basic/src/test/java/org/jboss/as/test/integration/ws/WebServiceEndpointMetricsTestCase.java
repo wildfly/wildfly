@@ -66,10 +66,10 @@ public class WebServiceEndpointMetricsTestCase extends ContainerResourceMgmtTest
         webserviceAddress.add("subsystem", "webservices");
 
         wsEndpointAddress = new ModelNode();
-        wsEndpointAddress.add("deployment", "ws-endpoint-example.war");
+        wsEndpointAddress.add("deployment", "ws-endpoint-metrics.war");
         wsEndpointAddress.add("subsystem", "webservices");
         try {
-			wsEndpointAddress.add("endpoint", URLEncoder.encode("ws-endpoint-example:TestService", "UTF-8"));
+			wsEndpointAddress.add("endpoint", URLEncoder.encode("ws-endpoint-metrics:TestService", "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 		}
         wsEndpointAddress.protect();        
@@ -78,7 +78,7 @@ public class WebServiceEndpointMetricsTestCase extends ContainerResourceMgmtTest
 
     @Deployment
     public static WebArchive createDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-endpoint-example.war");
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "ws-endpoint-metrics.war");
         war.addPackage(SimpleWebserviceEndpointImpl.class.getPackage());
         war.addClass(SimpleWebserviceEndpointImpl.class);
         war.addAsWebInfResource(SimpleWebserviceEndpointTestCase.class.getPackage(),"web.xml","web.xml");
@@ -89,7 +89,7 @@ public class WebServiceEndpointMetricsTestCase extends ContainerResourceMgmtTest
     @Test
     public void testStatisticsEnabled() throws Exception {    	   	
         final QName serviceName = new QName("org.jboss.as.test.integration.ws", "SimpleService");
-        final URL wsdlURL = new URL(baseUrl, "/ws-endpoint-example/SimpleService?wsdl");
+        final URL wsdlURL = new URL(baseUrl, "/ws-endpoint-metrics/SimpleService?wsdl");
         final Service service = Service.create(wsdlURL, serviceName);
         final SimpleWebserviceEndpointIface port = service.getPort(SimpleWebserviceEndpointIface.class);
            
