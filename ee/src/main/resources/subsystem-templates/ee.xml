@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config default-supplement="default">
    <extension-module>org.jboss.as.ee</extension-module>
-   <subsystem xmlns="urn:jboss:domain:ee:2.0">
+    <subsystem xmlns="urn:jboss:domain:ee:2.0">
         <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
         <concurrent>
             <context-services>
@@ -17,12 +17,26 @@
             <managed-thread-factories>
                 <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
             </managed-thread-factories>
-       </concurrent>
-       <default-bindings context-service="java:jboss/ee/concurrency/context/default"
-                         datasource="java:jboss/datasources/ExampleDS"
-                         jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
-                         managed-executor-service="java:jboss/ee/concurrency/executor/default"
-                         managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
-                         managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
-   </subsystem>
+        </concurrent>
+        <?DEFAULT_BINDINGS?>
+    </subsystem>
+    <supplement name="default">
+        <replacement placeholder="DEFAULT_BINDINGS">
+            <default-bindings context-service="java:jboss/ee/concurrency/context/default"
+                              datasource="java:jboss/datasources/ExampleDS"
+                              managed-executor-service="java:jboss/ee/concurrency/executor/default"
+                              managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
+                              managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
+        </replacement>
+    </supplement>
+    <supplement name="full">
+        <replacement placeholder="DEFAULT_BINDINGS">
+            <default-bindings context-service="java:jboss/ee/concurrency/context/default"
+                              datasource="java:jboss/datasources/ExampleDS"
+                              jms-connection-factory="java:jboss/DefaultJMSConnectionFactory"
+                              managed-executor-service="java:jboss/ee/concurrency/executor/default"
+                              managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
+                              managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
+        </replacement>
+    </supplement>
 </config>
