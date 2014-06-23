@@ -33,8 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import javax.net.ssl.SSLHandshakeException;
-import javax.security.sasl.SaslException;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +45,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
+import javax.net.ssl.SSLHandshakeException;
+import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
@@ -424,25 +426,24 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
-
-        context.asynchronous();
-        Thread executorShutdown = new Thread(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 try {
                     StreamUtils.safeClose(connection);
                     scheduledExecutorService.shutdownNow();
                 } finally {
-                    try {
-                        executor.shutdown();
-                    } finally {
-                        context.complete();
-                    }
+                    context.complete();
                 }
             }
-        }, RemoteDomainConnectionService.class.getSimpleName() + " ExecutorService Shutdown Thread");
-
-        executorShutdown.start();
+        };
+        try {
+            executor.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */
