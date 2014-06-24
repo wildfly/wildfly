@@ -128,7 +128,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
         final boolean securityRequired = beanHasMethodLevelSecurityMetadata || ejbComponentDescription.hasBeanLevelSecurityMetadata();
         // setup the security context interceptor
-        viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired), InterceptorOrder.View.SECURITY_CONTEXT);
+        viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired, true, contextID), InterceptorOrder.View.SECURITY_CONTEXT);
         // now add the security interceptor if the bean has *any* security metadata applicable
         if (securityRequired) {
             // also check the missing-method-permissions-deny-access configuration and add the authorization interceptor
