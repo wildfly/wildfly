@@ -23,9 +23,11 @@ package org.jboss.as.ejb3.security;
 
 import static java.security.AccessController.doPrivileged;
 
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javax.ejb.EJBAccessException;
+import javax.security.jacc.PolicyContext;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -40,6 +42,7 @@ import org.jboss.security.SecurityRolesAssociation;
 public class SecurityContextInterceptor implements Interceptor {
     private final PrivilegedAction<Void> pushAction;
     private final PrivilegedAction<Void> popAction;
+    private final String policyContextID;
 
     public SecurityContextInterceptor(final SecurityContextInterceptorHolder holder) {
         this.pushAction = new PrivilegedAction<Void>() {
@@ -66,11 +69,13 @@ public class SecurityContextInterceptor implements Interceptor {
                 return null;
             }
         };
+        this.policyContextID = holder.policyContextID;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         // TODO - special cases need to be handled where SecurityContext not established or minimal unauthenticated principal context instead.
+        String previousContextID = this.setContextID(this.policyContextID);
         boolean securityManager = System.getSecurityManager() != null;
         if(securityManager) {
             doPrivileged(pushAction);
@@ -80,6 +85,7 @@ public class SecurityContextInterceptor implements Interceptor {
         try {
             return context.proceed();
         } finally {
+            this.setContextID(previousContextID);
             if(securityManager) {
                 doPrivileged(popAction);
             } else {
@@ -87,4 +93,43 @@ public class SecurityContextInterceptor implements Interceptor {
             }
         }
     }
+
+    /**
+     * <p>
+     * Sets the JACC contextID using a privileged action and returns the previousID from the {@code PolicyContext}.
+     * </p>
+     *
+     * @param contextID the JACC contextID to be set.
+     * @return the previous contextID as retrieved from the {@code PolicyContext}.
+     */
+    protected String setContextID(final String contextID) {
+        if(System.getSecurityManager() == null) {
+            final String previousID = PolicyContext.getContextID();
+            PolicyContext.setContextID(contextID);
+            return previousID;
+        } else {
+            final PrivilegedAction<String> action = new SetContextIDAction(contextID);
+            return AccessController.doPrivileged(action);
+        }
+    }
+
+    /**
+     * PrivilegedAction that sets the {@code PolicyContext} id.
+     */
+    private static class SetContextIDAction implements PrivilegedAction<String> {
+
+        private String contextID;
+
+        SetContextIDAction(final String contextID) {
+            this.contextID = contextID;
+        }
+
+        @Override
+        public String run() {
+            final String previousID = PolicyContext.getContextID();
+            PolicyContext.setContextID(this.contextID);
+            return previousID;
+        }
+    }
+
 }

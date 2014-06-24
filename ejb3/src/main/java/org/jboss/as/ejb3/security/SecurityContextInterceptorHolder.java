@@ -34,6 +34,7 @@ import org.jboss.as.core.security.ServerSecurityManager;
 class SecurityContextInterceptorHolder {
     ServerSecurityManager securityManager;
     String securityDomain, runAs, runAsPrincipal;
+    String policyContextID;
     Set<String> extraRoles;
     Map<String, Set<String>> principalVsRolesMap;
 
@@ -57,6 +58,11 @@ class SecurityContextInterceptorHolder {
 
     public SecurityContextInterceptorHolder setRunAsPrincipal(String ras) {
         this.runAsPrincipal = ras;
+        return this;
+    }
+
+    public SecurityContextInterceptorHolder setPolicyContextID(String policyContextID) {
+        this.policyContextID = policyContextID;
         return this;
     }
 
