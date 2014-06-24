@@ -62,7 +62,7 @@
       <subsystem>logging.xml</subsystem>
       <subsystem>batch.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
-      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="full">ee.xml</subsystem>
       <subsystem supplement="full">ejb3.xml</subsystem>
       <subsystem>io.xml</subsystem>
       <subsystem>infinispan.xml</subsystem>
@@ -92,7 +92,7 @@
       <subsystem>logging.xml</subsystem>
       <subsystem>batch.xml</subsystem>
       <subsystem>datasources.xml</subsystem>
-      <subsystem>ee.xml</subsystem>
+      <subsystem supplement="full">ee.xml</subsystem>
       <subsystem supplement="full-ha">ejb3.xml</subsystem>
       <subsystem>io.xml</subsystem>
       <subsystem supplement="ha">infinispan.xml</subsystem>
