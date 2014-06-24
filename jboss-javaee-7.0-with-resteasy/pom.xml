@@ -27,7 +27,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.0.0.Final</version>
+        <version>8.1.0.Final</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -66,6 +66,14 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Enforce correct JUnit version. -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
+            
             <!--  Resteasy BOM -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>

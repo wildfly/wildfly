@@ -13,8 +13,8 @@ To use the BOM, import into your dependency management:
             <dependency>
                <groupId>org.wildfly.bom</groupId>
                <artifactId>jboss-javaee-7.0-with-resteasy</artifactId>
-               <version>8.0.0-SNAPSHOT</version>
-               <type>pom</scope>
+               <version>8.1.0.Final</version>
+               <type>pom</type>
                <scope>import</scope>
             </dependency>
         </dependencies>

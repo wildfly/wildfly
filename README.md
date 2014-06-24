@@ -13,7 +13,7 @@ To use the BOM, import into your dependency management. For example, if you want
             <dependency>
                 <groupId>org.wildfly.bom</groupId>
                 <artifactId>jboss-javaee-7.0-with-tools</artifactId>
-                <version>8.0.0-SNAPSHOT</version>
+                <version>8.1.0.Final</version>
                 <scope>import</scope>
             </dependency>
         </dependencies>
@@ -26,7 +26,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. The 
             <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.10</version>
+                <version>2.17</version>
             </plugin>
             <!-- The WildFly Maven Plugin deploys your war to a local WildFly container -->
             <!-- To use, set the JBOSS_HOME environment variable and run:
@@ -34,7 +34,7 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. The 
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
-                <version>1.0.0.Beta1</version>
+                <version>1.0.2.Final</version>
             </plugin>
         </plugins>
     </pluginManagement>
