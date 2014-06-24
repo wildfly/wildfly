@@ -50,6 +50,7 @@
                 <path name="com/sun/jndi/url/iiopname"/>
                 <path name="com/sun/jndi/url/ldap"/>
                 <path name="com/sun/jndi/url/ldaps"/>
+                <path name="com/sun/jndi/url/rmi"/>
                 <path name="com/sun/crypto/provider"/>
                 <path name="com/sun/org/apache/xml/internal/security/transforms/implementations"/>
                 <path name="com/sun/security/auth"/>
