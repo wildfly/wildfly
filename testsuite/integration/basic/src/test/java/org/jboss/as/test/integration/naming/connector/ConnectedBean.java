@@ -22,50 +22,43 @@
 
 package org.jboss.as.test.integration.naming.connector;
 
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.management.MBeanServerConnection;
+import javax.ejb.Stateless;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.management.remote.rmi.RMIConnection;
+import javax.management.remote.rmi.RMIServer;
 import javax.naming.InitialContext;
 
-import org.xnio.IoUtils;
-
 /**
- * Simple bean to check if we can init everything properly.
+ * Simple bean to check access MBean server count through JMXConnector and JNDI.
  * 
  * @author baranowb
- * 
+ * @author Eduardo Martins
  */
-@Singleton
-@Startup
+@Stateless
 public class ConnectedBean implements ConnectedBeanInterface {
 
-    public void testConnector(String uri) throws Exception {
-        JMXConnector connector = null;
-        MBeanServerConnection connection = null;
+    public int getMBeanCountFromConnector(JMXServiceURL jmxServiceURL) throws Exception {
+        final JMXConnector connector = JMXConnectorFactory.connect(jmxServiceURL, null);
         try {
-            String urlString = System.getProperty("jmx.service.url", uri);
-            JMXServiceURL serviceURL = new JMXServiceURL(urlString);
-            connector = JMXConnectorFactory.connect(serviceURL, null);
-            connection = connector.getMBeanServerConnection();
+            return connector.getMBeanServerConnection().getMBeanCount();
         } finally {
             if (connector != null) {
-                IoUtils.safeClose(connector);
+                connector.close();
             }
         }
     }
 
-    public boolean testDirectLookup(String uri) throws Exception {
-
-        InitialContext ic = new InitialContext();
-        Object o = ic.lookup(uri);
-        if (o != null) {
-            return true;
-        } else {
-            return false;
+    public int getMBeanCountFromJNDI(String rmiServerJndiName) throws Exception {
+        final RMIServer rmiServer = InitialContext.doLookup(rmiServerJndiName);
+        final RMIConnection rmiConnection = rmiServer.newClient(null);
+        try {
+            return rmiConnection.getMBeanCount(null);
+        } finally {
+            if (rmiConnection != null) {
+                rmiConnection.close();
+            }
         }
-
     }
 }
