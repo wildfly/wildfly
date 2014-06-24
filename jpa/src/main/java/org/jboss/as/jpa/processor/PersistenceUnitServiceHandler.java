@@ -54,6 +54,7 @@ import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.interceptor.WebNonTxEmCloserAction;
 import org.jboss.as.jpa.messages.JpaLogger;
@@ -127,6 +128,10 @@ public class PersistenceUnitServiceHandler {
         handleWarDeployment(phaseContext, startEarly, platform);
         handleEarDeployment(phaseContext, startEarly, platform);
         handleJarDeployment(phaseContext, startEarly, platform);
+
+        if( startEarly) {
+            nextPhaseDependsOnPersistenceUnit(phaseContext, platform);
+        }
     }
 
     public static void undeploy(DeploymentUnit context) {
@@ -420,10 +425,6 @@ public class PersistenceUnitServiceHandler {
              */
             entityManagerFactoryBind(eeModuleDescription, serviceTarget, pu, puServiceName);
 
-            if (startEarly) {   // require that the pu service start before the next deployment phase starts
-                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
-            }
-
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addInjection(service.getPropertiesInjector(), properties);
 
@@ -546,8 +547,6 @@ public class PersistenceUnitServiceHandler {
             finally {
                 CacheDeploymentListener.clearInternalDeploymentServiceBuilder();
             }
-
-            phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
                 .addInjection(service.getPropertiesInjector(), properties);
@@ -1020,6 +1019,40 @@ public class PersistenceUnitServiceHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * The sub-deployment phases run in parallel, ensure that no deployment/sub-deployment moves past
+     * Phase.FIRST_MODULE_USE, until the applications persistence unit services are started.
+     *
+     * Note that some application persistence units will not be created until the Phase.INSTALL, in which case
+     * NEXT_PHASE_DEPS is not needed.
+     */
+    private static void nextPhaseDependsOnPersistenceUnit(final DeploymentPhaseContext phaseContext, final Platform platform) throws DeploymentUnitProcessingException {
+        final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
+        final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+            for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+
+                if (deployPU) {
+
+                    final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                    final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(phaseContext.getDeploymentUnit());
+
+                    final PersistenceProvider provider = lookupProvider(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit());
+
+                    final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit(), provider, platform);
+                    final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
+                    // only add the next phase dependency, if the persistence unit service is starting early.
+                    if( Configuration.needClassFileTransformer(pu)) {
+                        // wait until the persistence unit service is started before starting the next deployment phase
+                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, twoPhaseBootStrapCapable ? puServiceName.append(FIRST_PHASE) : puServiceName);
+                    }
+                }
+            }
+        }
     }
 
     static boolean isEarDeployment(final DeploymentUnit context) {
