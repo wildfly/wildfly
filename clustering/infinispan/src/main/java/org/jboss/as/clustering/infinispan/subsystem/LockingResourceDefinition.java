@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -36,6 +37,8 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -82,6 +85,14 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING };
 
     private final boolean allowRuntimeOnlyRegistration;
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING);
+        }
+    }
 
     LockingResourceDefinition(boolean allowRuntimeOnlyRegistration) {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);

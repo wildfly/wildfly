@@ -23,6 +23,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -35,6 +36,9 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -135,6 +139,30 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container.alias"))
             .setParameters(NAME)
             .build();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    // discard statistics if set to true, reject otherwise
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, STATISTICS_ENABLED)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STATISTICS_ENABLED)
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), STATISTICS_ENABLED);
+
+            if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE);
+            }
+        }
+
+        TransportResourceDefinition.buildTransformation(version, builder);
+
+        DistributedCacheResourceDefinition.buildTransformation(version, builder);
+        ReplicatedCacheResourceDefinition.buildTransformation(version, builder);
+        InvalidationCacheResourceDefinition.buildTransformation(version, builder);
+        LocalCacheResourceDefinition.buildTransformation(version, builder);
+    }
 
     private final ResolvePathHandler resolvePathHandler;
     private final boolean allowRuntimeOnlyRegistration;

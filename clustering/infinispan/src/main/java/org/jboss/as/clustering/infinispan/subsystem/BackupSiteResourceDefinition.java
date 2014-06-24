@@ -32,6 +32,7 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -123,6 +125,10 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
             .setRuntimeOnly()
             .setReadOnly()
             .build();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        // ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+    }
 
     private final boolean runtimeRegistration;
 

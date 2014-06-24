@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -34,6 +35,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -75,6 +78,14 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT };
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STACK, EXECUTOR, LOCK_TIMEOUT);
+        }
+    }
 
     TransportResourceDefinition() {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);

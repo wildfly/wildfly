@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -35,6 +36,9 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -104,6 +108,37 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, STATISTICS_ENABLED)
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STATISTICS_ENABLED)
+                    .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), STATISTICS_ENABLED);
+
+            if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+                // The following attributes now support expressions
+                builder.getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BATCHING, INDEXING, JNDI_NAME, MODULE, START)
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, INDEXING_PROPERTIES)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, INDEXING_PROPERTIES);
+            }
+        }
+
+        LockingResourceDefinition.buildTransformation(version, builder);
+        EvictionResourceDefinition.buildTransformation(version, builder);
+        ExpirationResourceDefinition.buildTransformation(version, builder);
+        TransactionResourceDefinition.buildTransformation(version, builder);
+
+        FileStoreResourceDefinition.buildTransformation(version, builder);
+        BinaryKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
+        MixedKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
+        StringKeyedJDBCStoreResourceDefinition.buildTransformation(version, builder);
+        RemoteStoreResourceDefinition.buildTransformation(version, builder);
+        CustomStoreResourceDefinition.buildTransformation(version, builder);
+    }
 
     private final ResolvePathHandler resolvePathHandler;
     final boolean allowRuntimeOnlyRegistration;

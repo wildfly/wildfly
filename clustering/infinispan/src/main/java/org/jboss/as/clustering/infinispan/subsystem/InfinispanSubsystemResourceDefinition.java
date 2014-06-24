@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -29,6 +30,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
 /**
  * The root resource of the Infinispan subsystem.
@@ -38,6 +42,14 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
+
+    static TransformationDescription buildTransformation(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        CacheContainerResourceDefinition.buildTransformation(version, builder);
+
+        return builder.build();
+    }
 
     private final ResolvePathHandler resolvePathHandler;
     private final boolean allowRuntimeOnlyRegistration;

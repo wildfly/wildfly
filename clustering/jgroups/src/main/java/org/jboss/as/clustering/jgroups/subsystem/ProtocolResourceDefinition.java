@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -37,6 +38,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -95,6 +98,16 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
 
     static final OperationStepHandler ADD_HANDLER = new ProtocolAddHandler(PARAMETERS);
     static final OperationStepHandler REMOVE_HANDLER = new ProtocolRemoveHandler();
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES);
+        }
+
+        PropertyResourceDefinition.buildTransformation(version, builder);
+    }
 
     // registration
     ProtocolResourceDefinition() {

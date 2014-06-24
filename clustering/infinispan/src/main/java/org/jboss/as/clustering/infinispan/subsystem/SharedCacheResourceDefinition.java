@@ -23,9 +23,11 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * Base class for cache resources which require common cache attributes, clustered cache attributes
@@ -35,7 +37,22 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
  */
 public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    public SharedCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        StateTransferResourceDefinition.buildTransformation(version, builder);
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.rejectChildResource(BackupSiteResourceDefinition.WILDCARD_PATH);
+            builder.rejectChildResource(BackupForResourceDefinition.PATH);
+        } else {
+            BackupSiteResourceDefinition.buildTransformation(version, builder);
+            BackupForResourceDefinition.buildTransformation(version, builder);
+        }
+
+        ClusteredCacheResourceDefinition.buildTransformation(version, builder);
+    }
+
+    SharedCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
         super(key, addHandler, removeHandler, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 

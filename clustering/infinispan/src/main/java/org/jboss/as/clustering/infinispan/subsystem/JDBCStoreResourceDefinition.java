@@ -22,8 +22,12 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -34,6 +38,9 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -135,6 +142,37 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
             ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE
     };
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(), DIALECT)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, DIALECT);
+
+            if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+                Map<String, RejectAttributeChecker> columnCheckers = new HashMap<>();
+                columnCheckers.put(COLUMN_NAME.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+                columnCheckers.put(COLUMN_TYPE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+                RejectAttributeChecker columnChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(columnCheckers);
+
+                Map<String, RejectAttributeChecker> tableCheckers = new HashMap<>();
+                tableCheckers.put(PREFIX.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+                tableCheckers.put(BATCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+                tableCheckers.put(FETCH_SIZE.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS);
+                tableCheckers.put(ID_COLUMN.getName(), columnChecker);
+                tableCheckers.put(DATA_COLUMN.getName(), columnChecker);
+                tableCheckers.put(TIMESTAMP_COLUMN.getName(), columnChecker);
+                RejectAttributeChecker tableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(tableCheckers);
+
+                builder.getAttributeBuilder()
+                        .addRejectCheck(tableChecker, BINARY_KEYED_TABLE, STRING_KEYED_TABLE)
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATA_SOURCE);
+            }
+        }
+
+        StoreResourceDefinition.buildTransformation(version, builder);
+    }
 
     JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, boolean allowRuntimeOnlyRegistration) {
         super(pathElement, descriptionResolver, addHandler, removeHandler, allowRuntimeOnlyRegistration);

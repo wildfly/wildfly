@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -58,6 +60,10 @@ public class BackupForResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REMOTE_CACHE, REMOTE_SITE };
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        // ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+    }
 
     BackupForResourceDefinition() {
         super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP_FOR),

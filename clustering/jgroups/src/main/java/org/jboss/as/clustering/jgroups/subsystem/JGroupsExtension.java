@@ -23,6 +23,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.clustering.jgroups.LogFactory;
@@ -35,10 +36,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jgroups.Global;
@@ -52,13 +50,9 @@ import org.jgroups.Global;
 public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
-    public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + "." +"LocalDescriptions";
+    public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
-
-    // Temporary workaround for JGRP-1475
+    // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
     static {
         PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
@@ -88,8 +82,8 @@ public class JGroupsExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
 
-        // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        ModelVersion current = JGroupsModel.CURRENT.getVersion();
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
 
         ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, new JGroupsSubsystemDescribeHandler());
@@ -97,8 +91,11 @@ public class JGroupsExtension implements Extension {
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {
-            // Register the model transformers
-            registerTransformers(registration);
+            // Register transformers for all but the current model
+            for (JGroupsModel model: EnumSet.complementOf(EnumSet.of(JGroupsModel.CURRENT))) {
+                ModelVersion version = model.getVersion();
+                TransformationDescription.Tools.register(JGroupsSubsystemResourceDefinition.buildTransformers(version), registration, version);
+            }
         }
     }
 
@@ -114,70 +111,5 @@ public class JGroupsExtension implements Extension {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
             }
         }
-    }
-
-    // Transformation
-
-    /**
-     * Register the transformers for older model versions.
-     *
-     * @param subsystem the subsystems registration
-     */
-    private static void registerTransformers(final SubsystemRegistration subsystem) {
-        registerTransformers_1_1_0(subsystem);
-        registerTransformers_1_2_0(subsystem);
-    }
-
-    /*
-     * Register transformer to transform from current model version to model version 1.1.0
-     */
-    private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
-        final ModelVersion version = ModelVersion.create(1,1,0);
-
-        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        final ResourceTransformationDescriptionBuilder stackBuilder = subsystemBuilder.addChildResource(StackResourceDefinition.WILDCARD_PATH);
-
-        // reject expressions in certain transport usages
-        final ResourceTransformationDescriptionBuilder transportBuilder = stackBuilder.addChildResource(TransportResourceDefinition.PATH);
-        transportBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransportResourceDefinition.SHARED)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransportResourceDefinition.PROPERTIES)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder transportPropertyBuilder = transportBuilder.addChildResource(PropertyResourceDefinition.WILDCARD_PATH);
-        transportPropertyBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PropertyResourceDefinition.VALUE)
-                .end();
-
-        final ResourceTransformationDescriptionBuilder protocolBuilder = stackBuilder.addChildResource(ProtocolResourceDefinition.WILDCARD_PATH);
-        protocolBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ProtocolResourceDefinition.PROPERTIES)
-                .end();
-        final ResourceTransformationDescriptionBuilder protocolPropertyBuilder = protocolBuilder.addChildResource(PropertyResourceDefinition.WILDCARD_PATH);
-        protocolPropertyBuilder.getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PropertyResourceDefinition.VALUE)
-                .end();
-
-        // reject relay
-        stackBuilder.rejectChildResource(RelayResourceDefinition.PATH);
-
-        // now register the completed transform
-        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
-    }
-
-    /*
-     * Register transformer to transform from current model version to model version 1.2.0
-     */
-    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
-        final ModelVersion version = ModelVersion.create(1,2,0);
-
-        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        final ResourceTransformationDescriptionBuilder stackBuilder = subsystemBuilder.addChildResource(StackResourceDefinition.WILDCARD_PATH);
-
-        // reject relay
-        stackBuilder.rejectChildResource(RelayResourceDefinition.PATH);
-
-        // now register the completed transform
-        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
 }
