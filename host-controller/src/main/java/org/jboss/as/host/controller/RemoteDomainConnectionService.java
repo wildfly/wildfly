@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
@@ -483,23 +484,24 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
-        Thread executorShutdown = new Thread(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
                 try {
                     StreamUtils.safeClose(connection);
                     scheduledExecutorService.shutdownNow();
                 } finally {
-                    try {
-                        executor.shutdown();
-                    } finally {
-                        context.complete();
-                    }
+                    context.complete();
                 }
             }
-        }, RemoteDomainConnectionService.class.getSimpleName() + " ExecutorService Shutdown Thread");
-        executorShutdown.start();
-        context.asynchronous();
+        };
+        try {
+            executor.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */
