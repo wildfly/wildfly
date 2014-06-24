@@ -38,6 +38,7 @@ import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -178,9 +179,10 @@ public class ReadOperationHandler extends BaseOperationCommand {
                     final SimpleTable table = new SimpleTable(2);
                     StringBuilder vtBuf = null;
                     for(Property prop : props) {
+                        ModelType modelType = prop.getValue().getType();
                         if(prop.getName().equals(Util.DESCRIPTION)) {
                             buf.append('\t').append(prop.getValue().asString()).append("\n\n");
-                        } else if(prop.getName().equals(Util.VALUE_TYPE)) {
+                        } else if(prop.getName().equals(Util.VALUE_TYPE) && (prop.getValue().getType() == ModelType.OBJECT || prop.getValue().getType() == ModelType.LIST)) {
                             final List<Property> vtProps = prop.getValue().asPropertyList();
                             if(!vtProps.isEmpty()) {
                                 vtBuf = new StringBuilder();
