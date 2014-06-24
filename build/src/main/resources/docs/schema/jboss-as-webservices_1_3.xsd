@@ -107,12 +107,12 @@
       </xs:element>
       <xs:element name="endpoint-config" type="endpointConfigType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="client-config" type="clientConfigType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
-        <xs:annotation>
-          <xs:documentation>Whether statistics are to be gathered</xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
     </xs:sequence>
+    <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>Whether statistics are to be gathered</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="endpointConfigType">
