@@ -56,7 +56,7 @@ public class PromptNewUserState implements State {
             }
             // The user could have pressed Ctrl-D, in which case we do not use the default value.
             if (temp == null || existingUsername == null || existingUsername.length() == 0) {
-                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noUsernameExiting());
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noUsernameExiting(), stateValues);
             }
             stateValues.setUserName(existingUsername);
         }

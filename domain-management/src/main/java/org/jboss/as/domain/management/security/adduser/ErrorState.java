@@ -41,6 +41,10 @@ public class ErrorState implements State {
         this(theConsole, errorMessage, null, null);
     }
 
+    public ErrorState(ConsoleWrapper theConsole, String errorMessage, StateValues stateValues) {
+        this(theConsole, errorMessage, null, stateValues);
+    }
+
     public ErrorState(ConsoleWrapper theConsole, String errorMessage, State nextState) {
         this(theConsole, errorMessage, nextState, null);
     }

@@ -151,7 +151,7 @@ public class ValidateUserState extends AbstractValidationState {
                                 stateValues.getOptions().setDisable(true);
                                 return new PreModificationState(theConsole, stateValues);
                             default:
-                                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.invalidChoiceUpdateUserResponse(), this);
+                                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.invalidChoiceUpdateUserResponse(), this, stateValues);
                         }
                         return ValidateUserState.this;
                     }
