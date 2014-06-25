@@ -40,7 +40,7 @@ public class ModClusterStop implements OperationStepHandler {
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.STOP, descriptionResolver)
-                .addParameter(ModClusterDefinition.WAIT_TIME)
+                .addParameter(ModClusterSubsystemResourceDefinition.WAIT_TIME)
                 .setRuntimeOnly()
                 .build();
     }
@@ -61,7 +61,7 @@ public class ModClusterStop implements OperationStepHandler {
                         dummyOp.get(CommonAttributes.WAIT_TIME).set(ContextHost.RemoveQuotes(operation.get(CommonAttributes.WAIT_TIME).asString()));
                     }
 
-                    int waittime = ModClusterDefinition.WAIT_TIME.resolveModelAttribute(context, dummyOp).asInt();
+                    int waittime = ModClusterSubsystemResourceDefinition.WAIT_TIME.resolveModelAttribute(context, dummyOp).asInt();
                     service.stop(waittime, TimeUnit.SECONDS);
 
                     context.completeStep(new OperationContext.RollbackHandler() {

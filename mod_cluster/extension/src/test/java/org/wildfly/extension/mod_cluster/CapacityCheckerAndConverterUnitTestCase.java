@@ -30,13 +30,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link ModClusterExtension.CapacityCheckerAndConverter}.
+ * Unit tests for {@link CapacityCheckerAndConverter}.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class CapacityCheckerAndConverterUnitTestCase {
 
-    private static final ModClusterExtension.CapacityCheckerAndConverter testee = ModClusterExtension.CapacityCheckerAndConverter.INSTANCE;
+    private static final CapacityCheckerAndConverter testee = CapacityCheckerAndConverter.INSTANCE;
 
     @Test
     public void testSimpleDouble() {

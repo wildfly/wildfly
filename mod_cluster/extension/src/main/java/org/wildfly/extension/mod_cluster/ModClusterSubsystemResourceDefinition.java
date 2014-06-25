@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -30,13 +31,17 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class ModClusterDefinition extends SimpleResourceDefinition {
+public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinition {
+
     public static final SimpleAttributeDefinition PORT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PORT, ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
@@ -63,8 +68,15 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
 
     private final boolean runtimeOnly;
 
+    static TransformationDescription buildTransformation(ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-    protected ModClusterDefinition(boolean runtimeOnly) {
+        ModClusterConfigResourceDefinition.buildTransformation(version, builder);
+
+        return builder.build();
+    }
+
+    protected ModClusterSubsystemResourceDefinition(boolean runtimeOnly) {
         super(ModClusterExtension.SUBSYSTEM_PATH,
                 ModClusterExtension.getResourceDescriptionResolver(),
                 ModClusterSubsystemAdd.INSTANCE,

@@ -22,34 +22,9 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.wildfly.extension.mod_cluster.CustomLoadMetricDefinition.CLASS;
-import static org.wildfly.extension.mod_cluster.DynamicLoadProviderDefinition.DECAY;
-import static org.wildfly.extension.mod_cluster.DynamicLoadProviderDefinition.HISTORY;
-import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.CAPACITY;
-import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.PROPERTY;
-import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.TYPE;
-import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.WEIGHT;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.CIPHER_SUITE;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
-import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.PROTOCOL;
-
-import java.util.List;
-import java.util.Map;
-import javax.xml.stream.XMLStreamConstants;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -58,15 +33,15 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.DefaultCheckersAndConverter;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
+
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
@@ -78,9 +53,6 @@ import org.jboss.staxmapper.XMLElementReader;
 public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
     static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
@@ -113,9 +85,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debugf("Activating mod_cluster extension");
 
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterDefinition(context.isRuntimeOnlyRegistrationValid()));
+        ModelVersion current = ModClusterModel.CURRENT.getVersion();
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterSubsystemResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
 
         final ManagementResourceRegistration configuration = registration.registerSubModel(new ModClusterConfigResourceDefinition());
 
@@ -127,9 +99,11 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
 
         if (context.isRegisterTransformers()) {
-            registerTransformers_1_2_0(subsystem);
-            registerTransformers_1_3_0(subsystem); // AS 7.2.0
-            registerTransformers_1_4_0(subsystem); // EAP 6.2.0
+            // Register transformers for all versions except for the current one
+            for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
+                ModelVersion version = model.getVersion();
+                TransformationDescription.Tools.register(ModClusterSubsystemResourceDefinition.buildTransformation(version), subsystem, version);
+            }
         }
     }
 
@@ -143,197 +117,4 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
     }
 
-    /**
-     * Transformation that rejects expressions, discards/rejects session draining strategy, and converts load provider capacity.
-     *
-     * @param subsystem
-     */
-    private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
-        ResourceTransformationDescriptionBuilder dynamicLoadProvider = configurationBuilder
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
-                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
-                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
-                .end()
-            .addChildResource(DYNAMIC_LOAD_PROVIDER_PATH)
-                .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
-                    .end();
-        dynamicLoadProvider.addChildResource(CUSTOM_LOAD_METRIC_PATH)
-                    .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS, WEIGHT)
-                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                        .end();
-        dynamicLoadProvider.addChildResource(LOAD_METRIC_PATH)
-                    .getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
-                        .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                        .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
-                        .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
-                        .setValueConverter(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
-                        .end();
-        configurationBuilder.addChildResource(SSL_CONFIGURATION_PATH)
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
-                .end();
-
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
-    }
-
-    private static void registerTransformers_1_3_0(SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 3, 0));
-    }
-
-    private static void registerTransformers_1_4_0(SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 4, 0));
-    }
-
-    /**
-     * Transformation that discards/rejects session draining strategy.
-     *
-     * @return TransformationDescription
-     */
-    private static TransformationDescription get1_3_0_1_4_0Description() {
-
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
-
-        configurationBuilder
-                .getAttributeBuilder()
-                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
-                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
-                .end();
-
-        return builder.build();
-    }
-
-    /**
-     * Converts doubles to ints, rejects expressions or double values that are not equivalent to integers.
-     *
-     * Package protected solely to allow unit testing.
-     */
-    static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
-
-        static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
-
-        @Override
-        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterLogger.ROOT_LOGGER.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
-        }
-
-        @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (checkForExpression(attributeValue)
-                    || (attributeValue.isDefined() && !isIntegerValue(attributeValue.asDouble()))) {
-                return true;
-            }
-            Long converted = convert(attributeValue);
-            return (converted != null && (converted > Integer.MAX_VALUE || converted < Integer.MIN_VALUE));
-        }
-
-        @Override
-        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            Long converted = convert(attributeValue);
-            if (converted != null && converted <= Integer.MAX_VALUE && converted >= Integer.MIN_VALUE) {
-                attributeValue.set((int)converted.longValue());
-            }
-        }
-
-        @Override
-        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            //Not used for discard
-            return false;
-        }
-
-        private Long convert(ModelNode attributeValue) {
-            if (attributeValue.isDefined() && !checkForExpression(attributeValue)) {
-                double raw = attributeValue.asDouble();
-                if (isIntegerValue(raw)) {
-                    return Math.round(raw);
-                }
-            }
-            return null;
-        }
-
-        private boolean isIntegerValue(double raw) {
-            return raw == Double.valueOf(Math.round(raw)).doubleValue();
-        }
-
-    }
-
-    private static class PropertyCheckerAndConverter extends DefaultCheckersAndConverter {
-        private static final PropertyCheckerAndConverter INSTANCE = new PropertyCheckerAndConverter();
-        @Override
-        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterLogger.ROOT_LOGGER.propertyCanOnlyHaveOneEntry();
-        }
-
-        @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-              if (attributeValue.isDefined()) {
-                  if (attributeValue.asPropertyList().size() > 1) {
-                      return true;
-                  }
-              }
-              return false;
-        }
-
-        @Override
-        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                List<Property> list = attributeValue.asPropertyList();
-                if (list.size() == 1) {
-                    attributeValue.set(list.get(0).getName(), list.get(0).getValue().asString());
-                }
-            }
-        }
-
-        @Override
-        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            //Not used for discard
-            return false;
-        }
-    }
-
-    private static class SessionDrainingStrategyChecker extends DefaultCheckersAndConverter {
-        private static final SessionDrainingStrategyChecker INSTANCE = new SessionDrainingStrategyChecker();
-
-        @Override
-        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterLogger.ROOT_LOGGER.sessionDrainingStrategyMustBeUndefinedOrDefault();
-        }
-
-        @Override
-        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                if (checkForExpression(attributeValue)) {
-                    return true;
-                }
-                return !attributeValue.asString().equals("DEFAULT");
-            }
-            return false;
-        }
-
-        @Override
-        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                TransformationContext context) {
-            //No conversion needed
-        }
-
-        @Override
-        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue,
-                TransformationContext context) {
-            if (attributeValue.isDefined()) {
-                if (checkForExpression(attributeValue)) {
-                    return false;
-                }
-                return attributeValue.asString().equals("DEFAULT");
-            }
-            return false;
-        }
-    }
 }

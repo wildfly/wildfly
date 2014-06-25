@@ -23,13 +23,19 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
+
+import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.CAPACITY;
+import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.WEIGHT;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -47,6 +53,17 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = {
             CLASS, LoadMetricDefinition.WEIGHT, LoadMetricDefinition.CAPACITY, LoadMetricDefinition.PROPERTY
     };
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+            builder.addChildResource(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CLASS, WEIGHT)
+                    .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                    .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                    .end();
+        }
+    }
 
     private CustomLoadMetricDefinition() {
         super(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH,

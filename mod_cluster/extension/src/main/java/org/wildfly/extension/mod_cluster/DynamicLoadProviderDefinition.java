@@ -23,12 +23,15 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
@@ -62,6 +65,19 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
             HISTORY, DECAY
     };
+
+
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+            builder.addChildResource(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
+                    .end();
+        }
+
+        LoadMetricDefinition.buildTransformation(version, builder);
+        CustomLoadMetricDefinition.buildTransformation(version, builder);
+    }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {

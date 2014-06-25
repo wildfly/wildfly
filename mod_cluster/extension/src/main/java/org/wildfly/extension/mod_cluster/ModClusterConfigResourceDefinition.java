@@ -23,6 +23,7 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -37,6 +38,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -270,6 +273,26 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             attrs.put(attr.getName(), (SimpleAttributeDefinition) attr);
         }
         ATTRIBUTES_BY_NAME = Collections.unmodifiableMap(attrs);
+    }
+
+    public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(ModClusterExtension.CONFIGURATION_PATH);
+
+        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version) || ModClusterModel.VERSION_1_4_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                    .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                    .end();
+
+            if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+                builder.getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
+                        .end();
+            }
+        }
+
+        DynamicLoadProviderDefinition.buildTransformation(version, builder);
+        ModClusterSSLResourceDefinition.buildTransformation(version, builder);
     }
 
     public ModClusterConfigResourceDefinition() {
