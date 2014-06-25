@@ -45,14 +45,20 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
 
     private final boolean securityRequired;
     private final boolean propagateSecurity;
+    private final String policyContextID;
 
     public SecurityContextInterceptorFactory(final boolean securityRequired) {
         this(securityRequired, true);
     }
 
     public SecurityContextInterceptorFactory(final boolean securityRequired, final boolean propagateSecurity) {
+        this(securityRequired, propagateSecurity, null);
+    }
+
+    public SecurityContextInterceptorFactory(final boolean securityRequired, final boolean propagateSecurity, final String policyContextID) {
         this.securityRequired = securityRequired;
         this.propagateSecurity = propagateSecurity;
+        this.policyContextID = policyContextID;
     }
 
     @Override
@@ -88,7 +94,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
         }
         SecurityContextInterceptorHolder holder = new SecurityContextInterceptorHolder();
         holder.setSecurityManager(securityManager).setSecurityDomain(securityDomain)
-        .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal)
+        .setRunAs(runAs).setRunAsPrincipal(runAsPrincipal).setPolicyContextID(this.policyContextID)
         .setExtraRoles(extraRoles).setPrincipalVsRolesMap(principalVsRolesMap)
         .setSkipAuthentication(securityRequired == false);
 
