@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.BinderServiceUtil;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -62,9 +63,15 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
+        // Do not pass the JNDI bindings to HornetQ but install them directly instead so that the
+        // dependencies from the BinderServices to the JMSQueueService are not broken
+        JMSTopicService jmsTopicService = JMSTopicService.installService(verificationHandler, newControllers, name, hqServiceName, serviceTarget, new String[0]);
+
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        JMSTopicService.installService(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
+        for (String jndiBinding : jndiBindings) {
+            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, jmsTopicService);
+        }
     }
 
     /**

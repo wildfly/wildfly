@@ -24,6 +24,8 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.ArrayList;
+
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.server.HornetQServer;
@@ -31,8 +33,11 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -46,7 +51,14 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JMSTopicRemove extends AbstractRemoveStepHandler {
 
-    public static final JMSTopicRemove INSTANCE = new JMSTopicRemove();
+    public static final JMSTopicRemove INSTANCE = new JMSTopicRemove(JMSTopicAdd.INSTANCE);
+
+    private final JMSTopicAdd addOperation;
+
+    private JMSTopicRemove(JMSTopicAdd addOperation) {
+
+        this.addOperation = addOperation;
+    }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
@@ -65,9 +77,17 @@ public class JMSTopicRemove extends AbstractRemoveStepHandler {
         }
 
         context.removeService(JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name));
+
+        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
+        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
+        for (String jndiBinding : jndiBindings) {
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiBinding);
+            ServiceName binderServiceName = bindInfo.getBinderServiceName();
+            context.removeService(binderServiceName);
+        }
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        addOperation.performRuntime(context, operation, model, new ServiceVerificationHandler(), new ArrayList<ServiceController<?>>());
     }
 }

@@ -28,6 +28,8 @@ import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.List;
 
+import javax.jms.Queue;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,9 +37,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.BinderServiceUtil;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -68,9 +72,16 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
         final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
+
+        // Do not pass the JNDI bindings to HornetQ but install them directly instead so that the
+        // dependencies from the BinderServices to the JMSQueueService are not broken
+        Service<Queue> queueService = JMSQueueService.installService(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, new String[0]);
+
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        JMSQueueService.installService(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
+        for (String jndiBinding : jndiBindings) {
+            BinderServiceUtil.installBinderService(serviceTarget, jndiBinding, queueService);
+        }
     }
 
     /**
