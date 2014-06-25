@@ -205,8 +205,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     }
 
     @Override
-    public Class<?> getBeanClass() {
-        return this.getComponentClass();
+    public String getBeanName() {
+        return this.getComponentName();
     }
 
     @Override
