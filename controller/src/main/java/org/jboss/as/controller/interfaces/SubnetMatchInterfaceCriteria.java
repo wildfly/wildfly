@@ -51,7 +51,7 @@ public class SubnetMatchInterfaceCriteria extends AbstractInterfaceCriteria {
      *
      * @param network an InetAddress in byte[] form.
      *                 Cannot be <code>null</code>
-     * @param mask the number of bytes in <code>network</code> that represent
+     * @param mask the number of bits in <code>network</code> that represent
      *             the network
      *
      * @throws IllegalArgumentException if <code>network</code> is <code>null</code>
@@ -70,19 +70,29 @@ public class SubnetMatchInterfaceCriteria extends AbstractInterfaceCriteria {
      */
     @Override
     protected InetAddress isAcceptable(NetworkInterface networkInterface, InetAddress address) throws SocketException {
+        return verifyAddressByMask(address.getAddress()) ? address : null;
+    }
 
-        byte[] addr = address.getAddress();
+    boolean verifyAddressByMask(byte[] addr) {
         if (addr.length != network.length) {
             // different address type
-            return null;
+            return false;
         }
-        int last = addr.length - mask;
-        for (int i = 0; i < last; i++) {
-            if (addr[i] != network[i]) {
-                return null;
-            }
+
+        int max = network.length * 8;
+        int maskOffset = 0;
+        int bitMask = 0xFF;
+        while (maskOffset < mask && maskOffset < max) {
+            if ((mask - maskOffset) < 8)
+                bitMask = 0xFF << (8 - (mask - maskOffset));
+
+            if ((addr[maskOffset / 8] & bitMask) != (network[maskOffset / 8] & bitMask))
+                return false;
+
+            maskOffset += 8;
         }
-        return address;
+
+        return true;
     }
 
     @Override
