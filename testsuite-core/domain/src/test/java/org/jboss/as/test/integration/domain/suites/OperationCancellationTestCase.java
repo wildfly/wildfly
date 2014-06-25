@@ -909,9 +909,10 @@ public class OperationCancellationTestCase {
         op.get(CHILD_TYPE).set(ACTIVE_OPERATION);
         long maxTime = TimeoutUtil.adjust(5000);
         long timeout = executionStart + maxTime;
-        List<Property> activeOps = new ArrayList<Property>();
+        List<String> activeOps = new ArrayList<String>();
         String opToCancel = null;
         do {
+            activeOps.clear();
             ModelNode result = executeForResult(op, client);
             if (result.isDefined()) {
                 assertEquals(result.asString(), ModelType.OBJECT, result.getType());
@@ -919,17 +920,15 @@ public class OperationCancellationTestCase {
                     if (prop.getValue().get(OP).asString().equals(opName)) {
                         PathAddress pa = PathAddress.pathAddress(prop.getValue().get(OP_ADDR));
                         if (!serverOpOnly || pa.size() > 2 && pa.getElement(1).getKey().equals(SERVER)) {
-                            activeOps.add(prop);
+                            activeOps.add(prop.getName() + " -- " + prop.getValue().toString());
                             if (targetStatus == null || prop.getValue().get(EXECUTION_STATUS).asString().equals(targetStatus.toString())) {
                                 opToCancel = prop.getName();
-                                break;
                             }
                         }
                     }
                 }
             }
             if (opToCancel == null) {
-                activeOps.clear();
                 Thread.sleep(50);
             }
 
