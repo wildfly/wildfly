@@ -25,6 +25,7 @@ package org.wildfly.extension.mod_cluster;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -58,6 +59,8 @@ import java.util.Map;
  * @author Radoslav Husar
  */
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
 
     static final SimpleAttributeDefinition ADVERTISE_SOCKET = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE_SOCKET, ModelType.STRING, true)
             .setRestartAllServices()
@@ -276,7 +279,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     }
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(ModClusterExtension.CONFIGURATION_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
         if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version) || ModClusterModel.VERSION_1_4_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
@@ -296,7 +299,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     }
 
     public ModClusterConfigResourceDefinition() {
-        super(ModClusterExtension.CONFIGURATION_PATH,
+        super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
                 ModClusterConfigAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());

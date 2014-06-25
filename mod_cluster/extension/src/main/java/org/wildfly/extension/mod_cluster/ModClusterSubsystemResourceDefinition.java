@@ -23,10 +23,12 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -41,6 +43,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
 
     public static final SimpleAttributeDefinition PORT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PORT, ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -77,7 +81,7 @@ public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinit
     }
 
     protected ModClusterSubsystemResourceDefinition(boolean runtimeOnly) {
-        super(ModClusterExtension.SUBSYSTEM_PATH,
+        super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(),
                 ModClusterSubsystemAdd.INSTANCE,
                 ModClusterSubsystemRemove.INSTANCE

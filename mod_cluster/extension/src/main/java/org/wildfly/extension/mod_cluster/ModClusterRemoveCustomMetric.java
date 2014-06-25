@@ -41,9 +41,9 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress parent = PathAddress.pathAddress(
-                ModClusterExtension.SUBSYSTEM_PATH,
-                ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
+                ModClusterSubsystemResourceDefinition.PATH,
+                ModClusterConfigResourceDefinition.PATH,
+                DynamicLoadProviderDefinition.PATH);
 
         String clazz = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, operation).asString();
 
@@ -52,14 +52,14 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
         if (name == null) {
             context.setRollbackOnly();
         } else {
-            ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH.getKey(), name)));
+            ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(CustomLoadMetricDefinition.PATH.getKey(), name)));
             context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.MODEL, true);
         }
         context.stepCompleted();
     }
 
     private String getMetricName(OperationContext context, String type) {
-        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(DynamicLoadProviderDefinition.PATH)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
         for (String name : metrics) {
             if (name.equals(type)) {
                 return name;

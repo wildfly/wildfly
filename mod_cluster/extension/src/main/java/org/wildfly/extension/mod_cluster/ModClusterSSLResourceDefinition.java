@@ -24,6 +24,7 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -49,6 +50,8 @@ import java.util.Map;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
 
     public static final SimpleAttributeDefinition KEY_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.KEY_ALIAS, ModelType.STRING, true)
             .setAllowExpression(true)
@@ -108,14 +111,14 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
-            builder.addChildResource(ModClusterExtension.SSL_CONFIGURATION_PATH)
+            builder.addChildResource(PATH)
                     .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL);
         }
     }
 
     public ModClusterSSLResourceDefinition() {
-        super(ModClusterExtension.SSL_CONFIGURATION_PATH,
+        super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
                 ModClusterAddSSL.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()

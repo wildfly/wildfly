@@ -24,6 +24,7 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -40,6 +41,9 @@ import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
+
     protected static final DynamicLoadProviderDefinition INSTANCE = new DynamicLoadProviderDefinition();
 
     static final SimpleAttributeDefinition DECAY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DECAY, ModelType.INT, true)
@@ -55,7 +59,7 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
             .build();
 
     private DynamicLoadProviderDefinition() {
-        super(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH,
+        super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER),
                 DynamicLoadProviderAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
@@ -69,7 +73,7 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
         if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
-            builder.addChildResource(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)
+            builder.addChildResource(PATH)
                     .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
                     .end();
