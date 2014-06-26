@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import org.jboss.as.ee.beanvalidation.BeanValidationFactoryResourceReferenceProcessor;
-import org.jboss.as.ee.beanvalidation.BeanValidationResourceReferenceProcessor;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.concurrent.deployers.injection.ContextServiceResourceReferenceProcessor;
 import org.jboss.as.ee.concurrent.deployers.injection.ManagedExecutorServiceResourceReferenceProcessor;
@@ -47,8 +45,6 @@ public class ResourceReferenceRegistrySetupProcessor implements DeploymentUnitPr
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if(deploymentUnit.getParent() == null) {
             final EEResourceReferenceProcessorRegistry registry = new EEResourceReferenceProcessorRegistry();
-            registry.registerResourceReferenceProcessor(BeanValidationFactoryResourceReferenceProcessor.INSTANCE);
-            registry.registerResourceReferenceProcessor(BeanValidationResourceReferenceProcessor.INSTANCE);
             registry.registerResourceReferenceProcessor(ContextServiceResourceReferenceProcessor.INSTANCE);
             registry.registerResourceReferenceProcessor(ManagedExecutorServiceResourceReferenceProcessor.INSTANCE);
             registry.registerResourceReferenceProcessor(ManagedScheduledExecutorServiceResourceReferenceProcessor.INSTANCE);

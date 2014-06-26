@@ -66,7 +66,8 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case EE_2_0: {
+                case EE_2_0:
+                case EE_3_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (!encountered.add(element)) {
                         throw unexpectedElement(reader);
