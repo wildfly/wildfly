@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -808,7 +809,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
-                DomainRootDefinition def = new DomainRootDefinition(null, null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER, null, authorizer);
+                DomainRootDefinition def = new DomainRootDefinition(null, null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER, null, authorizer, null);
                 def.initialize(rootRegistration);
             }
         });

@@ -82,6 +82,10 @@ public class SlaveHostPinger {
         this.remoteConnectionID = remoteConnectionID;
     }
 
+    public Long getRemoteConnectionID() {
+        return remoteConnectionID;
+    }
+
     public void schedulePing(long timeout, long delay) {
         PingTask task = new PingTask(timeout, delay);
         scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);

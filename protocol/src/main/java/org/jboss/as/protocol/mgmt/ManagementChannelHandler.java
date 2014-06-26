@@ -25,10 +25,14 @@ package org.jboss.as.protocol.mgmt;
 import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.jboss.threads.AsyncFuture;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.security.Principal;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
@@ -84,6 +88,26 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
     @Override
     public Channel getChannel() throws IOException {
         return strategy.getChannel();
+    }
+
+    /**
+     * Get the remote address.
+     *
+     * @return the remote address, {@code null} if not available
+     */
+    public InetAddress getRemoteAddress() {
+        try {
+            final Channel channel = strategy.getChannel();
+            final Connection connection = channel.getConnection();
+            for (Principal principal : connection.getPrincipals()) {
+                if (principal instanceof InetAddressPrincipal) {
+                    return ((InetAddressPrincipal)principal).getInetAddress();
+                }
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
     }
 
     @Override

@@ -26,6 +26,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -33,9 +34,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.domain.controller.HostConnectionInfo.Event;
+import static org.jboss.as.domain.controller.HostConnectionInfo.Events.create;
 import static org.jboss.as.host.controller.logging.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
+import javax.security.auth.callback.CallbackHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -44,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -52,9 +57,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -86,10 +90,14 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.ResourceProvider;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostConnectionInfo;
+import org.jboss.as.domain.controller.HostRegistrations;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResourcesHandler;
@@ -145,7 +153,7 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DomainModelControllerService extends AbstractControllerService implements DomainController, HostModelUtil.HostModelRegistrar {
+public class DomainModelControllerService extends AbstractControllerService implements DomainController, HostModelUtil.HostModelRegistrar, HostRegistrations {
 
     public static final ServiceName SERVICE_NAME = HostControllerService.HC_SERVICE_NAME.append("model", "controller");
 
@@ -157,7 +165,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         } catch (Exception e) {
             // TODO log
         } finally {
-            PINGER_POOL_SIZE = poolSize > 0 ? poolSize : 5;
+            PINGER_POOL_SIZE = Math.max(1, poolSize);
         }
     }
 
@@ -169,7 +177,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final RemoteFileRepository remoteFileRepository;
     private final InjectedValue<ProcessControllerConnectionService> injectedProcessControllerConnection = new InjectedValue<ProcessControllerConnectionService>();
     private final ConcurrentMap<String, ProxyController> hostProxies;
-    private final ConcurrentMap<String, HostRegistration> hostRegistrationMap = new ConcurrentHashMap<String, HostRegistration>();
+    private final DomainSlaveHostRegistrations slaveHostRegistrations = new DomainSlaveHostRegistrations();
     private final Map<String, ProxyController> serverProxies;
     private final PrepareStepHandler prepareStepHandler;
     private final BootstrapListener bootstrapListener;
@@ -303,8 +311,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw SlaveRegistrationException.forHostAlreadyExists(pe.getValue());
         }
 
-        SlaveHostPinger pinger = remoteConnectionId == null ? null : new SlaveHostPinger(hostName, handler, pingScheduler, remoteConnectionId);
-        hostRegistrationMap.put(hostName, new HostRegistration(remoteConnectionId, handler, pinger));
+        final SlaveHostPinger pinger = remoteConnectionId == null ? null : new SlaveHostPinger(hostName, handler, pingScheduler, remoteConnectionId);
+        final String address = handler.getRemoteAddress().getHostAddress();
+        slaveHostRegistrations.registerHost(hostName, pinger, address);
 
         runtimeIgnoreTransformationRegistry.registerHost(hostName, runtimeIgnoreTransformation);
 
@@ -319,22 +328,32 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public boolean isHostRegistered(String id) {
-        return hostControllerInfo.getLocalHostName().equals(id) || hostRegistrationMap.containsKey(id);
+        final DomainSlaveHostRegistrations.DomainHostConnection registration = slaveHostRegistrations.getRegistration(id);
+        return registration != null && registration.isConnected();
     }
 
     @Override
-    public void unregisterRemoteHost(String id, Long remoteConnectionId) {
-        HostRegistration hostRegistration = hostRegistrationMap.get(id);
+    public void unregisterRemoteHost(String id, Long remoteConnectionId, boolean cleanShutdown) {
+        DomainSlaveHostRegistrations.DomainHostConnection hostRegistration = slaveHostRegistrations.getRegistration(id);
         if (hostRegistration != null) {
-            if ((remoteConnectionId == null || remoteConnectionId.equals(hostRegistration.remoteConnectionId)) && hostRegistrationMap.remove(id, hostRegistration)) {
-                if (hostRegistration.pinger != null) {
-                    hostRegistration.pinger.cancel();
+            if ((remoteConnectionId == null || remoteConnectionId.equals(hostRegistration.getRemoteConnectionId()))) {
+                final SlaveHostPinger pinger = hostRegistration.getPinger();
+                if (pinger != null) {
+                    pinger.cancel();
                 }
                 boolean registered = hostProxies.remove(id) != null;
                 runtimeIgnoreTransformationRegistry.unregisterHost(id);
                 modelNodeRegistration.unregisterProxyController(PathElement.pathElement(HOST, id));
+
                 if (registered) {
-                    DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
+                    final String address = hostRegistration.getAddress();
+                    final Event event = cleanShutdown ? create(HostConnectionInfo.EventType.UNREGISTERED, address) : create(HostConnectionInfo.EventType.UNCLEAN_UNREGISTRATION, address);
+                    slaveHostRegistrations.unregisterHost(id, event);
+                    if (!cleanShutdown) {
+                        DOMAIN_LOGGER.lostConnectionToRemoteHost(id);
+                    } else {
+                        DOMAIN_LOGGER.unregisteredRemoteSlaveHost(id);
+                    }
                 }
             }
         }
@@ -342,10 +361,30 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     @Override
+    public void addHostEvent(String hostName, Event event) {
+        slaveHostRegistrations.addEvent(hostName, event);
+    }
+
+    @Override
+    public void pruneExpired() {
+        slaveHostRegistrations.pruneExpired();
+    }
+
+    @Override
+    public void pruneDisconnected() {
+        slaveHostRegistrations.pruneDisconnected();
+    }
+
+    @Override
+    public HostConnectionInfo getHostInfo(String hostName) {
+        return slaveHostRegistrations.getRegistration(hostName);
+    }
+
+    @Override
     public void pingRemoteHost(String id) {
-        HostRegistration reg = hostRegistrationMap.get(id);
-        if (reg != null && reg.pinger != null && !reg.pinger.isCancelled()) {
-            reg.pinger.schedulePing(SlaveHostPinger.SHORT_TIMEOUT, 0);
+        DomainSlaveHostRegistrations.DomainHostConnection reg = slaveHostRegistrations.getRegistration(id);
+        if (reg != null && reg.getPinger() != null && !reg.getPinger().isCancelled()) {
+            reg.getPinger().schedulePing(SlaveHostPinger.SHORT_TIMEOUT, 0);
         }
     }
 
@@ -415,6 +454,18 @@ public class DomainModelControllerService extends AbstractControllerService impl
         pingScheduler = Executors.newScheduledThreadPool(PINGER_POOL_SIZE, pingerThreadFactory);
 
         super.start(context);
+
+        pingScheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    slaveHostRegistrations.pruneExpired();
+                } catch (Exception e) {
+                    HostControllerLogger.DOMAIN_LOGGER.debugf(e, "failed to execute eviction task");
+                }
+            }
+        }, 1, 1, TimeUnit.MINUTES);
+
     }
 
     @Override
@@ -423,6 +474,45 @@ public class DomainModelControllerService extends AbstractControllerService impl
         VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
         CoreManagementResourceDefinition.registerDomainResource(rootResource, authorizer.getWritableAuthorizerConfiguration());
         this.modelNodeRegistration = rootRegistration;
+
+        // Register the slave host info
+        ResourceProvider.Tool.addResourceProvider(HOST_CONNECTION, new ResourceProvider() {
+            @Override
+            public boolean has(String name) {
+                return slaveHostRegistrations.contains(name);
+            }
+
+            @Override
+            public Resource get(String name) {
+                return PlaceholderResource.INSTANCE;
+            }
+
+            @Override
+            public boolean hasChildren() {
+                return true;
+            }
+
+            @Override
+            public Set<String> children() {
+                return slaveHostRegistrations.getHosts();
+            }
+
+            @Override
+            public void register(String name, Resource resource) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Resource remove(String name) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public ResourceProvider clone() {
+                return this;
+            }
+        }, rootResource.getChild(CoreManagementResourceDefinition.PATH_ELEMENT));
+
     }
 
     // See superclass start. This method is invoked from a separate non-MSC thread after start. So we can do a fair
@@ -535,13 +625,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     if (ok) {
                         InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry, environment.getDomainTempDir()),
+                                new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry, environment.getDomainTempDir(), this),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
                                 HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
                         // Block for the ServerInventory
                         establishServerInventory(inventoryFuture);
                     }
+
+                    // register local host controller
+                    final String hostName = hostControllerInfo.getLocalHostName();
+                    slaveHostRegistrations.registerHost(hostName, null, "local");
                 }
             }
 
@@ -741,35 +835,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
             final PathManagerService pathManager) {
 
         DomainRootDefinition domainRootDefinition = new DomainRootDefinition(this, environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo,
-                extensionRegistry, ignoredDomainResourceRegistry, pathManager, isMaster ? runtimeIgnoreTransformationRegistry : null, authorizer);
+                extensionRegistry, ignoredDomainResourceRegistry, pathManager, isMaster ? runtimeIgnoreTransformationRegistry : null, authorizer, this);
         rootResourceDefinition.setDelegate(domainRootDefinition, root);
-    }
-
-    private static class HostRegistration {
-        private final Long remoteConnectionId;
-        private final ManagementChannelHandler channelHandler;
-        private final SlaveHostPinger pinger;
-
-
-        private HostRegistration(Long remoteConnectionId, ManagementChannelHandler channelHandler, SlaveHostPinger pinger) {
-            this.remoteConnectionId = remoteConnectionId;
-            this.channelHandler = channelHandler;
-            this.pinger = pinger;
-        }
-
-        @Override
-        public int hashCode() {
-            return remoteConnectionId == null ? Integer.MIN_VALUE : channelHandler.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof HostRegistration && safeEquals(remoteConnectionId, ((HostRegistration) obj).remoteConnectionId);
-        }
-
-        private static boolean safeEquals(Object a, Object b) {
-            return a == b || (a != null && a.equals(b));
-        }
     }
 
     private class DelegatingServerInventory implements ServerInventory {

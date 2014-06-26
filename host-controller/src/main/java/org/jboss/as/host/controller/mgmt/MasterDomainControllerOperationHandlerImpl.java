@@ -76,7 +76,7 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
 
         @Override
         void handleRequest(String hostId, DataInput input, ManagementRequestContext<Void> context) throws IOException {
-            domainController.unregisterRemoteHost(hostId, null);
+            domainController.unregisterRemoteHost(hostId, null, true);
             final FlushableDataOutput os = writeGenericResponseHeader(context);
             try {
                 os.write(ManagementProtocol.RESPONSE_END);

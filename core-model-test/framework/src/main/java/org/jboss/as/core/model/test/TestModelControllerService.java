@@ -300,7 +300,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             }
 
             @Override
-            public void unregisterRemoteHost(String id, Long remoteConnectionId) {
+            public void unregisterRemoteHost(String id, Long remoteConnectionId, boolean cleanShutdown) {
             }
 
             @Override
@@ -512,7 +512,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final DomainController domainController = new MockDomainController();
 
             DomainRootDefinition domainDefinition = new DomainRootDefinition(domainController, env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null, authorizer);
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null, authorizer, null);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 
@@ -589,7 +589,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
 
         @Override
-        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
+        public void unregisterRemoteHost(String id, Long remoteConnectionId, boolean cleanShutdown) {
         }
 
         @Override

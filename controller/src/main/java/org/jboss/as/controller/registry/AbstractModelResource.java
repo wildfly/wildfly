@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractModelResource implements Resource {
+public abstract class AbstractModelResource extends ResourceProvider.ResourceProviderRegistry implements Resource {
 
     /** The children. */
     private final Map<String, ResourceProvider> children = new LinkedHashMap<String, ResourceProvider>();
@@ -136,11 +136,18 @@ public abstract class AbstractModelResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        final ResourceProvider provider = getProvider(address.getKey());
-        if(provider == null) {
-            return null;
+        synchronized (children) {
+            final ResourceProvider provider = getProvider(address.getKey());
+            if(provider == null) {
+                return null;
+            }
+            final Resource removed = provider.remove(address.getValue());
+            // Cleanup default resource providers
+            if ((provider instanceof DefaultResourceProvider) && !provider.hasChildren()) {
+                children.remove(address.getKey());
+            }
+            return removed;
         }
-        return provider.remove(address.getValue());
     }
 
     @Override
@@ -183,6 +190,14 @@ public abstract class AbstractModelResource implements Resource {
 
     @Override
     public abstract Resource clone();
+
+    protected void cloneProviders(AbstractModelResource clone) {
+        synchronized (children) {
+            for (final Map.Entry<String, ResourceProvider> entry : children.entrySet()) {
+                clone.registerResourceProvider(entry.getKey(), entry.getValue().clone());
+            }
+        }
+    }
 
     static class DefaultResourceProvider implements ResourceProvider {
 
@@ -232,6 +247,17 @@ public abstract class AbstractModelResource implements Resource {
             synchronized (children) {
                 return children.remove(name);
             }
+        }
+
+        @Override
+        public ResourceProvider clone() {
+            final DefaultResourceProvider provider = new DefaultResourceProvider();
+            synchronized (children) {
+                for (final Map.Entry<String, Resource> entry : children.entrySet()) {
+                    provider.register(entry.getKey(), entry.getValue().clone());
+                }
+            }
+            return provider;
         }
     }
 

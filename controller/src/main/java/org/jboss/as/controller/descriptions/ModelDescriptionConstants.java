@@ -168,6 +168,7 @@ public class ModelDescriptionConstants {
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
     public static final String HOSTS = "hosts";
+    public static final String HOST_CONNECTION = "host-connection";
     public static final String HOST_CONTROLLER = "host-controller";
     public static final String HOST_ENVIRONMENT = "host-environment";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";

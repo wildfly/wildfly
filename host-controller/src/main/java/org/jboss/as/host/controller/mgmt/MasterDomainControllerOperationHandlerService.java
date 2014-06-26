@@ -40,6 +40,7 @@ import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostRegistrations;
 import org.jboss.as.domain.controller.operations.PullDownDataForServerConfigOnSlaveHandler;
 import org.jboss.as.domain.controller.operations.coordination.DomainControllerLockIdUtils;
 import org.jboss.as.host.controller.logging.HostControllerLogger;
@@ -69,13 +70,17 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
     private final File tempDir;
+    private final HostRegistrations slaveHostRegistrations;
 
-    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor, TransactionalOperationExecutor txOperationExecutor, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry, File tempDir) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor,
+                                                         TransactionalOperationExecutor txOperationExecutor, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
+                                                         final File tempDir, final HostRegistrations slaveHostRegistrations) {
         this.domainController = domainController;
         this.operationExecutor = operationExecutor;
         this.txOperationExecutor = txOperationExecutor;
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
         this.tempDir = tempDir;
+        this.slaveHostRegistrations = slaveHostRegistrations;
     }
 
     @Override
@@ -90,7 +95,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         handler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         // Assemble the request handlers for the domain channel
         handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor,
-                getExecutor(), runtimeIgnoreTransformationRegistry));
+                getExecutor(), runtimeIgnoreTransformationRegistry, slaveHostRegistrations));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
         handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController, getExecutor()));
         handler.addHandlerFactory(pongRequestHandler);

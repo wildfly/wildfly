@@ -59,7 +59,7 @@ class BasicResource extends AbstractModelResource implements Resource {
     @SuppressWarnings({"CloneDoesntCallSuperClone"})
     @Override
     public Resource clone() {
-        final Resource clone = new BasicResource();
+        final BasicResource clone = new BasicResource();
         for (;;) {
             try {
                 clone.writeModel(model);
@@ -68,11 +68,7 @@ class BasicResource extends AbstractModelResource implements Resource {
                 // TODO horrible hack :(
             }
         }
-        for(final String childType : getChildTypes()) {
-            for(final ResourceEntry child : getChildren(childType)) {
-                clone.registerChild(child.getPathElement(), child.clone());
-            }
-        }
+        cloneProviders(clone);
         return clone;
     }
 
