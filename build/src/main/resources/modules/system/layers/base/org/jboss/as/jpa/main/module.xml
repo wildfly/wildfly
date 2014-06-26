@@ -49,6 +49,7 @@
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.infinispan"/>
         <module name="org.jboss.common-beans"/>
+        <module name="org.wildfly.extension.bean-validation"/>
         <module name="org.jboss.as.connector" />
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.clustering.common"/>
