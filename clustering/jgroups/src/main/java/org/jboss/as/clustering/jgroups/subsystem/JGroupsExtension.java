@@ -24,7 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.EnumSet;
-import java.util.List;
 
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
@@ -37,8 +36,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
 import org.jgroups.Global;
 
 /**
@@ -50,7 +47,8 @@ import org.jgroups.Global;
 public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
-    public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    private static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     // Workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
@@ -105,11 +103,8 @@ public class JGroupsExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (Namespace namespace: Namespace.values()) {
-            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
-            if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
-            }
+        for (JGroupsSchema schema: JGroupsSchema.values()) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new JGroupsSubsystemXMLReader(schema));
         }
     }
 }
