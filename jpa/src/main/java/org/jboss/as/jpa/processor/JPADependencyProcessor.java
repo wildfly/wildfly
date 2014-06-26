@@ -101,7 +101,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
     private void addDependency(ModuleSpecification moduleSpecification, ModuleLoader moduleLoader,
                                DeploymentUnit deploymentUnit, ModuleIdentifier... moduleIdentifiers) {
         for ( ModuleIdentifier moduleIdentifier : moduleIdentifiers) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, false, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
             ROOT_LOGGER.debugf("added %s dependency to %s", moduleIdentifier, deploymentUnit.getName());
         }
     }

@@ -45,13 +45,17 @@ public class MessagingDependencyProcessor implements DeploymentUnitProcessor {
      * We include this module so that the CDI producer method for JMSContext is available for the deployment unit.
      */
     public static final ModuleIdentifier AS_MESSAGING = ModuleIdentifier.create("org.jboss.as.messaging");
+    public static final ModuleIdentifier JMS_API = ModuleIdentifier.create("javax.jms.api");
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
+        addDependency(moduleSpecification, moduleLoader, JMS_API);
+
         if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
-            final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
             addDependency(moduleSpecification, moduleLoader, AS_MESSAGING);
         }
 

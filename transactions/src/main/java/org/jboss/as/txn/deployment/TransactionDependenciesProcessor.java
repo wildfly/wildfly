@@ -44,16 +44,23 @@ import java.util.List;
  * Looks for usage of the @Transactional CDI interceptor (JTA 1.2) or the @TransactionScoped CDI context (JTA 1.2)
  * and adds the org.jboss.jts module dependency if they are found.
  *
+ * Also adds the transaction API to deployments
+ *
  * @author Paul Robinson
  */
-public class TransactionCDIProcessor implements DeploymentUnitProcessor {
+public class TransactionDependenciesProcessor implements DeploymentUnitProcessor {
 
     public static final ModuleIdentifier JTS_MODULE = ModuleIdentifier.create("org.jboss.jts");
+    public static final ModuleIdentifier TRANSACTION_API = ModuleIdentifier.create("javax.transaction.api");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
+        final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, TRANSACTION_API, false, false, true, false));
 
         final CompositeIndex compositeIndex = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (compositeIndex == null) {

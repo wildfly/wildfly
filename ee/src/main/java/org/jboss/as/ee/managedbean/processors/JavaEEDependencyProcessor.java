@@ -50,32 +50,14 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
     private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
 
     private static final ModuleIdentifier[] JAVA_EE_API_MODULES = {
-            ModuleIdentifier.create("javax.activation.api"),
             ModuleIdentifier.create("javax.annotation.api"),
-            ModuleIdentifier.create("javax.ejb.api"),
-            ModuleIdentifier.create("javax.enterprise.api"),
             ModuleIdentifier.create("javax.enterprise.concurrent.api"),
-            ModuleIdentifier.create("javax.inject.api"),
             ModuleIdentifier.create("javax.interceptor.api"),
             ModuleIdentifier.create("javax.json.api"),
-            ModuleIdentifier.create("javax.jms.api"),
-            ModuleIdentifier.create("javax.jws.api"),
-            ModuleIdentifier.create("javax.mail.api"),
-            ModuleIdentifier.create("javax.management.j2ee.api"),
-            ModuleIdentifier.create("javax.persistence.api"),
             ModuleIdentifier.create("javax.resource.api"),
             ModuleIdentifier.create("javax.rmi.api"),
-            ModuleIdentifier.create("javax.security.auth.message.api"),
-            ModuleIdentifier.create("javax.security.jacc.api"),
-            ModuleIdentifier.create("javax.servlet.api"),
-            ModuleIdentifier.create("javax.servlet.jsp.api"),
-            ModuleIdentifier.create("javax.transaction.api"),
             ModuleIdentifier.create("javax.validation.api"),
-            ModuleIdentifier.create("javax.ws.rs.api"),
-            ModuleIdentifier.create("javax.websocket.api"),
             ModuleIdentifier.create("javax.xml.bind.api"),
-            ModuleIdentifier.create("javax.xml.soap.api"),
-            ModuleIdentifier.create("javax.xml.ws.api"),
             ModuleIdentifier.create("javax.api"),
             ModuleIdentifier.create("org.glassfish.javax.el"),
             ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")
@@ -95,7 +77,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         // TODO: Post 7.0, we have to rethink this whole hibernate dependencies that we add to user deployments
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, true, false, true, false));
 
         //add jboss-invocation classes needed by the proxies
         ModuleDependency invocation = new ModuleDependency(moduleLoader, JBOSS_INVOCATION_ID, false, false, false, false);
@@ -115,7 +97,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         //we do not just add the javaee.api module, as this breaks excludes
 
         for (final ModuleIdentifier moduleIdentifier : JAVA_EE_API_MODULES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
+            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
         }
     }
 

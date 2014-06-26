@@ -53,6 +53,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
     private static final ModuleIdentifier JACORB = ModuleIdentifier.create("org.jboss.as.jacorb");
+    private static final ModuleIdentifier EJB_API = ModuleIdentifier.create("javax.ejb.api");
 
 
     /**
@@ -72,6 +73,8 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
+        //always add EE API
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_API, false, false, true, false));
         //we always give them the EJB client
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_IIOP_CLIENT, false, false, false, false));
