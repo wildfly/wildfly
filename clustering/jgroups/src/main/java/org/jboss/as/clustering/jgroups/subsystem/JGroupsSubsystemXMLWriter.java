@@ -42,7 +42,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
      */
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
+        context.startSubsystemElement(JGroupsSchema.CURRENT.getNamespaceUri(), false);
         ModelNode model = context.getModelNode();
 
         if (model.isDefined()) {
