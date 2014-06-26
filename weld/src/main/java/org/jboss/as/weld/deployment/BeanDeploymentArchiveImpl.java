@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.weld.WeldModuleResourceLoader;
+import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleDependencySpec;
@@ -37,6 +38,7 @@ import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
+import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 
 /**
@@ -85,6 +87,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.serviceRegistry = new SimpleServiceRegistry();
         this.resourceLoader = new WeldModuleResourceLoader(module);
         this.serviceRegistry.add(ResourceLoader.class, resourceLoader);
+        this.serviceRegistry.add(EjbServices.class, new WeldEjbServices());
         this.module = module;
         this.ejbDescriptors = new HashSet<EjbDescriptor<?>>();
         this.beanArchiveType = beanArchiveType;

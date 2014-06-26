@@ -21,31 +21,24 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.weld.ejb.EjbDescriptorImpl;
 import org.jboss.as.weld.ejb.SessionObjectReferenceImpl;
 import org.jboss.as.weld.ejb.StatefulSessionObjectReferenceImpl;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * EjbServices implementation
  */
 public class WeldEjbServices implements EjbServices {
 
-    private final ServiceRegistry serviceRegistry;
-
     private volatile Map<String, InterceptorBindings> bindings = Collections.emptyMap();
-
-    public WeldEjbServices(ServiceRegistry serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
 
     @Override
     public synchronized void registerInterceptors(EjbDescriptor<?> ejbDescriptor, InterceptorBindings interceptorBindings) {
@@ -65,7 +58,7 @@ public class WeldEjbServices implements EjbServices {
 
     @Override
     public void cleanup() {
-
+        bindings.clear();
     }
 
     public InterceptorBindings getBindings(String ejbName) {
