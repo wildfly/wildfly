@@ -24,9 +24,6 @@ package org.jboss.as.test.integration.management.http;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,19 +32,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Tests all management operation types which are available via HTTP GET requests.
+ *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class HttpMgmtPrettyTestCase {
 
     private static final int MGMT_PORT = 9990;
     private static final String MGMT_CTX = "/management";
-    @ArquillianResource
-    URL url;
     private HttpMgmtProxy httpMgmt;
 
     @Deployment
@@ -59,7 +55,7 @@ public class HttpMgmtPrettyTestCase {
 
     @Before
     public void before() throws Exception {
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         httpMgmt = new HttpMgmtProxy(mgmtURL);
     }
 

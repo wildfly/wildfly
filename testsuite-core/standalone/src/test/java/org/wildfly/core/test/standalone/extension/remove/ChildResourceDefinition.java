@@ -22,7 +22,7 @@
  * /
  */
 
-package org.jboss.as.test.integration.extension.remove;
+package org.wildfly.core.test.standalone.extension.remove;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationFailedException;

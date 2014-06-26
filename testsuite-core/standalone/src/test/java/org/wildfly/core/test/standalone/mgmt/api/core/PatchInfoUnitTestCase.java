@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.management.api.core;
+package org.wildfly.core.test.standalone.mgmt.api.core;
 
 import java.io.IOException;
 
@@ -32,12 +32,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -45,12 +42,13 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.test.standalone.base.ContainerResourceMgmtTestBase;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * @author Emanuel Muckenhuber
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class PatchInfoUnitTestCase extends ContainerResourceMgmtTestBase {
 
     private static final PathAddress ROOT_RESOURCE = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, "patching"));

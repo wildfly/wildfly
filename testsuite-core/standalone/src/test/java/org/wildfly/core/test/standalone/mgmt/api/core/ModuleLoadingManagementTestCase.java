@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.management.api.core;
+package org.wildfly.core.test.standalone.mgmt.api.core;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
@@ -31,25 +31,22 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestSup
 import java.io.File;
 import java.util.List;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.test.standalone.base.ContainerResourceMgmtTestBase;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Tests of the core-service=module-loading resource.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ModuleLoadingManagementTestCase extends ContainerResourceMgmtTestBase {
     private static final PathAddress RESOURCE = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MODULE_LOADING));
 
@@ -85,7 +82,7 @@ public class ModuleLoadingManagementTestCase extends ContainerResourceMgmtTestBa
     public void testListResourceLoaderPaths() throws Exception {
 
         ModelNode op = Util.createEmptyOperation("list-resource-loader-paths", RESOURCE);
-        op.get(MODULE).set("org.hibernate");
+        op.get(MODULE).set("org.jboss.dmr");
 
         ModelNode response = getModelControllerClient().execute(op);
         List<ModelNode> hostResult = validateResponse(response).asList();

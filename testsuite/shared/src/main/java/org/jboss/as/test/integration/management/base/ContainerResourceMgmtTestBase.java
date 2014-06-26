@@ -15,7 +15,6 @@ public abstract class ContainerResourceMgmtTestBase extends AbstractMgmtTestBase
     private ManagementClient managementClient;
 
 
-
     public ManagementClient getManagementClient() {
         return managementClient;
     }

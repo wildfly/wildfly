@@ -20,11 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.management.api.core;
+package org.wildfly.core.test.standalone.mgmt.api.core;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -32,6 +29,8 @@ import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.test.standalone.base.ContainerResourceMgmtTestBase;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
@@ -40,8 +39,7 @@ import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNo
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ManagementVersionTestCase extends ContainerResourceMgmtTestBase {
 
 

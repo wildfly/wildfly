@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.http;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
@@ -32,46 +33,31 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Tests all management operation types which are available via HTTP POST requests.
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class HttpPostMgmtOpsTestCase {
 
     private static final int MGMT_PORT = 9990;
     private static final String MGMT_CTX = "/management";
-    @ArquillianResource
-    URL url;
     private HttpMgmtProxy httpMgmt;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(HttpPostMgmtOpsTestCase.class);
-        return ja;
-    }
 
     @Before
     public void before() throws Exception {
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         httpMgmt = new HttpMgmtProxy(mgmtURL);
     }
 
@@ -87,7 +73,7 @@ public class HttpPostMgmtOpsTestCase {
 
     private void testReadResource(boolean recursive) throws Exception {
 
-        ModelNode op = httpMgmt.getOpNode("subsystem=undertow", "read-resource");
+        ModelNode op = httpMgmt.getOpNode("subsystem=logging", "read-resource");
         if (recursive) { op.get("recursive").set(true); }
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
@@ -95,20 +81,21 @@ public class HttpPostMgmtOpsTestCase {
 
         ModelNode result = ret.get("result");
 
-        assertTrue(result.has("server"));
-        ModelNode server = result.get("server");
+        assertTrue(result.has("root-logger"));
+        ModelNode rootLogger = result.get("root-logger");
 
 
-        assertTrue(server.has("default-server"));
-        ModelNode vServer = server.get("default-server");
+        assertTrue(rootLogger.has("ROOT"));
+        ModelNode root = rootLogger.get("ROOT");
         if (recursive) {
-            assertTrue(vServer.has("host"));
-            ModelNode hosts = vServer.get("host");
+            assertTrue(root.has("level"));
+            ModelNode level = root.get("level");
+            assertTrue(level.isDefined());
 
-            assertTrue(hosts.has("default-host"));
-            ModelNode host = hosts.get("default-host");
+            assertTrue(root.has("handlers"));
+            ModelNode handlers = root.get("handlers");
 
-            assertTrue(host.has("alias"));
+            assertFalse(handlers.asList().isEmpty());
         }
 
     }
@@ -116,22 +103,22 @@ public class HttpPostMgmtOpsTestCase {
     @Test
     public void testReadAttribute() throws Exception {
 
-        ModelNode op = httpMgmt.getOpNode("subsystem=undertow", "read-attribute");
-        op.get("name").set("default-servlet-container");
+        ModelNode op = httpMgmt.getOpNode("subsystem=logging", "read-attribute");
+        op.get("name").set("add-logging-api-dependencies");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         ModelNode result = ret.get("result");
         // check that a boolean is returned
-        assertEquals(result.getType(), ModelType.STRING);
+        assertEquals(result.getType(), ModelType.BOOLEAN);
 
     }
 
     @Test
     public void testReadResourceDescription() throws Exception {
 
-        ModelNode ret = httpMgmt.sendPostCommand("subsystem=undertow", "read-resource-description");
+        ModelNode ret = httpMgmt.sendPostCommand("subsystem=logging", "read-resource-description");
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         ModelNode result = ret.get("result");
@@ -142,7 +129,7 @@ public class HttpPostMgmtOpsTestCase {
     @Test
     public void testReadOperationNames() throws Exception {
 
-        ModelNode ret = httpMgmt.sendPostCommand("subsystem=undertow", "read-operation-names");
+        ModelNode ret = httpMgmt.sendPostCommand("subsystem=logging", "read-operation-names");
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         List<ModelNode> names = ret.get("result").asList();
@@ -166,7 +153,7 @@ public class HttpPostMgmtOpsTestCase {
     @Test
     public void testReadOperationDescription() throws Exception {
 
-        ModelNode op = httpMgmt.getOpNode("subsystem=undertow", "read-operation-description");
+        ModelNode op = httpMgmt.getOpNode("subsystem=logging", "read-operation-description");
         op.get("name").set("add");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
@@ -182,7 +169,7 @@ public class HttpPostMgmtOpsTestCase {
     @Test
     public void testReadChildrenTypes() throws Exception {
 
-        ModelNode ret = httpMgmt.sendPostCommand("subsystem=undertow", "read-children-types");
+        ModelNode ret = httpMgmt.sendPostCommand("subsystem=logging", "read-children-types");
         assertTrue("success".equals(ret.get("outcome").asString()));
         ModelNode result = ret.get("result");
 
@@ -192,15 +179,15 @@ public class HttpPostMgmtOpsTestCase {
         }
 
 
-        assertTrue(strNames.contains("server"));
-        assertTrue(strNames.contains("servlet-container"));
+        assertTrue(strNames.contains("logging-profile"));
+        assertTrue(strNames.contains("logger"));
     }
 
     @Test
     public void testReadChildrenNames() throws Exception {
 
-        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=undertow", "read-children-names");
-        op.get("child-type").set("server");
+        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=logging", "read-children-names");
+        op.get("child-type").set("root-logger");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
         assertTrue("success".equals(ret.get("outcome").asString()));
@@ -211,25 +198,26 @@ public class HttpPostMgmtOpsTestCase {
         Set<String> strNames = new TreeSet<>();
         for (ModelNode n : names) { strNames.add(n.asString()); }
 
-        assertTrue(strNames.contains("default-server"));
+        assertTrue(strNames.contains("ROOT"));
 
     }
 
     @Test
     public void testReadChildrenResources() throws Exception {
 
-        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=undertow", "read-children-resources");
-        op.get("child-type").set("server");
+        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=logging", "read-children-resources");
+        op.get("child-type").set("logger");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         ModelNode result = ret.get("result");
 
-        assertTrue(result.has("default-server"));
+        assertFalse(result.asList().isEmpty());
     }
 
     @Test
+    @Ignore("needs to be moved somewhere else")
     public void testAddRemoveOperation() throws Exception {
 
         // add new connector
@@ -247,7 +235,7 @@ public class HttpPostMgmtOpsTestCase {
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         // check that the connector is live
-        String cURL = "http://" + url.getHost() + ":8181";
+        String cURL = "http://localhost:8181";
 
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);

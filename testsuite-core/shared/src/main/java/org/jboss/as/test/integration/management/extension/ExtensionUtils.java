@@ -63,7 +63,6 @@ public class ExtensionUtils {
     }
 
     public static void createExtensionModule(File extensionModuleRoot, Class<? extends Extension> extension, Package... additionalPackages) throws IOException {
-
         deleteRecursively(extensionModuleRoot.toPath());
 
         if (extensionModuleRoot.exists()) {
@@ -152,6 +151,9 @@ public class ExtensionUtils {
     private static void deleteRecursively(Path path) {
         if (path == null) {
             return;
+        }
+        if (!Files.exists(path)){
+            return ;
         }
         try {
             Files.walkFileTree(path, new SimpleFileVisitor<Path>() {

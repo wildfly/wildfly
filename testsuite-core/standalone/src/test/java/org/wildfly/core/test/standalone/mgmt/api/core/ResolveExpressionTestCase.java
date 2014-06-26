@@ -20,29 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.management.api.core;
+package org.wildfly.core.test.standalone.mgmt.api.core;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import org.wildfly.core.test.standalone.base.ContainerResourceMgmtTestBase;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Test for functionality added with AS7-2139.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ResolveExpressionTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
-    public void testResolveExpression() throws Exception  {
+    public void testResolveExpression() throws Exception {
         ModelNode op = createOpNode(null, "resolve-expression");
         op.get("expression").set("${file.separator}");
 
@@ -50,7 +48,7 @@ public class ResolveExpressionTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void testNonExpression() throws Exception  {
+    public void testNonExpression() throws Exception {
         ModelNode op = createOpNode(null, "resolve-expression");
         op.get("expression").set("hello");
 
@@ -58,7 +56,7 @@ public class ResolveExpressionTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void testUndefined() throws Exception  {
+    public void testUndefined() throws Exception {
         ModelNode op = createOpNode(null, "resolve-expression");
 
         Assert.assertFalse(executeOperation(op).isDefined());
@@ -69,7 +67,7 @@ public class ResolveExpressionTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void testUnresolvableExpression() throws Exception  {
+    public void testUnresolvableExpression() throws Exception {
         ModelNode op = createOpNode(null, "resolve-expression");
         op.get("expression").set("${unresolvable}");
 

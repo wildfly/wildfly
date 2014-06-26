@@ -19,21 +19,20 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.test.integration.management.api;
+package org.wildfly.core.test.standalone.mgmt.api;
 
 import java.io.IOException;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.test.standalone.base.ContainerResourceMgmtTestBase;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
@@ -46,8 +45,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author <a href="alex@jboss.org">Alexey Loubyansky</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ValidateAddressOperationTestCase extends ContainerResourceMgmtTestBase {
 
     @Test
@@ -66,7 +64,7 @@ public class ValidateAddressOperationTestCase extends ContainerResourceMgmtTestB
         ModelNode op = ModelUtil.createOpNode(null, ValidateAddressOperationHandler.OPERATION_NAME);
         final ModelNode addr = op.get(VALUE);
         addr.add("socket-binding-group", "standard-sockets");
-        addr.add("socket-binding", "http");
+        addr.add("socket-binding", "management-http");
         final ModelNode result = executeOperation(op);
         assertTrue(result.hasDefined(VALID));
         final ModelNode value = result.get(VALID);

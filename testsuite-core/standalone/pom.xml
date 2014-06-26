@@ -35,6 +35,10 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-core-build</artifactId>
             <type>zip</type>
         </dependency>
@@ -81,8 +85,9 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
+                <version>${version.antrun.plugin}</version>
                 <executions>
                     <execution>
                         <phase>process-test-resources</phase>
@@ -91,6 +96,7 @@
                                 <delete dir="${project.build.directory}/dependency-maven-plugin-markers" />
                                 <move file="${project.build.directory}/wildfly-core-${project.version}"
                                       tofile="${project.build.directory}/wildfly-core" overwrite="true" force="true"/>
+                                <copy file="${project.build.testOutputDirectory}/mgmt-users.properties" todir="${project.build.directory}/wildfly-core/standalone/configuration" overwrite="true" />
                             </target>
                         </configuration>
                         <goals>

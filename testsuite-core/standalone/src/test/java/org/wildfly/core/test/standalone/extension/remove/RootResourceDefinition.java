@@ -22,7 +22,7 @@
  * /
  */
 
-package org.jboss.as.test.integration.extension.remove;
+package org.wildfly.core.test.standalone.extension.remove;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 

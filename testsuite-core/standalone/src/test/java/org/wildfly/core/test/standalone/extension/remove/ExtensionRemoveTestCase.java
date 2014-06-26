@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.test.integration.extension.remove;
+package org.wildfly.core.test.standalone.extension.remove;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -37,10 +37,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
+import javax.inject.Inject;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -51,17 +49,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ExtensionRemoveTestCase {
 
     private static final String MODULE_NAME = "extensionremovemodule";
 
-    @ContainerResource
+    @Inject
     private ManagementClient managementClient;
 
     @Before

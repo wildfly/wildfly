@@ -21,47 +21,33 @@
  */
 package org.jboss.as.test.integration.management.http;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Tests all management operation types which are available via HTTP GET requests.
+ *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class HttpGetMgmtOpsTestCase {
 
-    private static final int    MGMT_PORT = 9990;
+    private static final int MGMT_PORT = 9990;
     private static final String MGMT_CTX = "/management";
 
-    @ArquillianResource URL url;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(HttpGetMgmtOpsTestCase.class);
-        return ja;
-    }
 
     @BeforeClass
     public static void before() {
@@ -80,46 +66,45 @@ public class HttpGetMgmtOpsTestCase {
 
     private void testReadResource(boolean recursive) throws Exception {
 
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        String cmd = recursive ? "/subsystem/undertow/server/default-server?operation=resource&recursive=true" : "/subsystem/undertow/server/default-server?operation=resource";
+        String cmd = recursive ? "/subsystem/logging?operation=resource&recursive=true" : "/subsystem/logging?operation=resource";
 
         ModelNode node = httpMgmt.sendGetCommand(cmd);
 
-        assertTrue(node.has("host"));
-        ModelNode vServer = node.get("host");
-        assertTrue(vServer.has("default-host"));
-        ModelNode host = vServer.get("default-host");
+        assertTrue(node.has("root-logger"));
+        ModelNode rootLogger = node.get("root-logger");
+        assertTrue(rootLogger.has("ROOT"));
+        ModelNode root = rootLogger.get("ROOT");
 
         if (recursive) {
-            assertTrue(host.has("alias"));
+            assertTrue(root.has("level"));
         } else {
-            assertFalse(host.isDefined());
+            assertFalse(root.isDefined());
         }
     }
 
     @Test
     public void testReadAttribute() throws Exception {
 
-       URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=attribute&name=default-servlet-container");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=attribute&name=add-logging-api-dependencies");
 
         // check that a boolean is returned
-        assertTrue(node.getType() == ModelType.STRING);
-
+        assertTrue(node.getType() == ModelType.BOOLEAN);
     }
 
 
     @Test
     public void testReadResourceDescription() throws Exception {
 
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=resource-description");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=resource-description");
 
         assertTrue(node.has("description"));
         assertTrue(node.has("attributes"));
@@ -128,16 +113,16 @@ public class HttpGetMgmtOpsTestCase {
 
     @Test
     public void testReadOperationNames() throws Exception {
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-names");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=operation-names");
 
         List<ModelNode> names = node.asList();
 
         System.out.println(names.toString());
         Set<String> strNames = new TreeSet<String>();
-        for (ModelNode n : names) strNames.add(n.asString());
+        for (ModelNode n : names) { strNames.add(n.asString()); }
 
         assertTrue(strNames.contains("read-attribute"));
 
@@ -154,10 +139,10 @@ public class HttpGetMgmtOpsTestCase {
     @Test
     public void testReadOperationDescription() throws Exception {
 
-        URL mgmtURL = new URL(url.getProtocol(), url.getHost(), MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
-        ModelNode node = httpMgmt.sendGetCommand("/subsystem/undertow?operation=operation-description&name=add");
+        ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=operation-description&name=add");
 
         assertTrue(node.has("operation-name"));
         assertTrue(node.has("description"));
