@@ -55,7 +55,7 @@ public class ExpirationResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(60000))
+            .setDefaultValue(new ModelNode().set(60000L))
             .build();
 
     static final SimpleAttributeDefinition LIFESPAN = new SimpleAttributeDefinitionBuilder(ModelKeys.LIFESPAN, ModelType.LONG, true)
@@ -63,7 +63,7 @@ public class ExpirationResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(-1))
+            .setDefaultValue(new ModelNode().set(-1L))
             .build();
 
     static final SimpleAttributeDefinition MAX_IDLE = new SimpleAttributeDefinitionBuilder(ModelKeys.MAX_IDLE, ModelType.LONG, true)
@@ -71,7 +71,7 @@ public class ExpirationResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(-1))
+            .setDefaultValue(new ModelNode().set(-1L))
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MAX_IDLE, LIFESPAN, INTERVAL };

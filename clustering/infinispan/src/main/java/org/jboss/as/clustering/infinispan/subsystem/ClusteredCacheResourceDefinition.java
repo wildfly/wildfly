@@ -65,7 +65,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(10))
+            .setDefaultValue(new ModelNode().set(10L))
             .build();
 
     static final SimpleAttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
@@ -80,7 +80,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(17500))
+            .setDefaultValue(new ModelNode().set(17500L))
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };

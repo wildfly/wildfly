@@ -57,7 +57,7 @@ public class LockingResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(15000))
+            .setDefaultValue(new ModelNode().set(15000L))
             .build();
 
     static final SimpleAttributeDefinition CONCURRENCY_LEVEL = new SimpleAttributeDefinitionBuilder(ModelKeys.CONCURRENCY_LEVEL, ModelType.INT, true)
