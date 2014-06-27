@@ -22,3 +22,15 @@ unzip maven.zip
 rm maven.zip
 mv apache-maven* maven
 
+#
+# work around for incompatibility of maven 3.2.2 with SunOS: ./tools/maven/bin/mvn: syntax error at line 86: `(' unexpected
+#
+case `uname -s` in
+"SunOS")
+	cp -p maven/bin/mvn maven/bin/mvn.original
+	echo >> maven/bin/mvn.original
+	cat maven/bin/mvn.original | sed "s/JAVA_HOME=\$(\/usr\/libexec\/java_home)/JAVA_HOME=\/usr\/libexec\/java_home/" > maven/bin/mvn
+	;;
+*)
+	;;
+esac
