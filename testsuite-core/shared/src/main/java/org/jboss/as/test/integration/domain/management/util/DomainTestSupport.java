@@ -102,35 +102,35 @@ public class DomainTestSupport {
         }
     }
 
-    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
+    public static WildFlyManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
                                                                      String testName, boolean readOnlyDomain, boolean readOnlyHost) {
         return getMasterConfiguration(domainConfigPath, hostConfigPath, testName, null, readOnlyDomain, readOnlyHost);
     }
 
-    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
-                String testName, JBossAsManagedConfiguration baseConfig,
+    public static WildFlyManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
+                String testName, WildFlyManagedConfiguration baseConfig,
                 boolean readOnlyDomain, boolean readOnlyHost) {
         return Configuration.getMasterConfiguration(domainConfigPath, hostConfigPath, testName, baseConfig, readOnlyDomain, readOnlyHost);
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
+    public static WildFlyManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
                                                                     boolean readOnlyHost) {
-        return getSlaveConfiguration("slave", hostConfigPath, testName, new JBossAsManagedConfiguration(), readOnlyHost);
+        return getSlaveConfiguration("slave", hostConfigPath, testName, new WildFlyManagedConfiguration(), readOnlyHost);
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
+    public static WildFlyManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
                                                                     boolean readOnlyHost) {
-        return getSlaveConfiguration(hostName, hostConfigPath, testName, new JBossAsManagedConfiguration(), readOnlyHost);
+        return getSlaveConfiguration(hostName, hostConfigPath, testName, new WildFlyManagedConfiguration(), readOnlyHost);
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
-                                                                    JBossAsManagedConfiguration baseConfig,
+    public static WildFlyManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
+                                                                    WildFlyManagedConfiguration baseConfig,
                                                                     boolean readOnlyHost) {
         return getSlaveConfiguration("slave", hostConfigPath, testName, baseConfig, readOnlyHost);
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
-                                                                    JBossAsManagedConfiguration baseConfig,
+    public static WildFlyManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
+                                                                    WildFlyManagedConfiguration baseConfig,
                                                                     boolean readOnlyHost) {
         return Configuration.getSlaveConfiguration(hostConfigPath, testName, hostName, baseConfig, readOnlyHost);
     }
@@ -268,7 +268,7 @@ public class DomainTestSupport {
         }
     }
 
-    private static void configureModulePath(JBossAsManagedConfiguration config, File... extraModules) {
+    private static void configureModulePath(WildFlyManagedConfiguration config, File... extraModules) {
         String basePath = config.getModulePath();
         if (basePath == null || basePath.isEmpty()) {
             basePath = config.getJbossHome() + File.separatorChar + "modules";
@@ -281,8 +281,8 @@ public class DomainTestSupport {
         config.setModulePath(path.toString());
     }
 
-    private final JBossAsManagedConfiguration masterConfiguration;
-    private final JBossAsManagedConfiguration slaveConfiguration;
+    private final WildFlyManagedConfiguration masterConfiguration;
+    private final WildFlyManagedConfiguration slaveConfiguration;
     private final DomainLifecycleUtil domainMasterLifecycleUtil;
     private final DomainLifecycleUtil domainSlaveLifecycleUtil;
     private final DomainControllerClientConfig sharedClientConfig;
@@ -291,21 +291,21 @@ public class DomainTestSupport {
 
 
     protected DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig,
-                                final String slaveConfig, JBossAsManagedConfiguration masterBase,
-                                final JBossAsManagedConfiguration slaveBase) throws Exception {
+                                final String slaveConfig, WildFlyManagedConfiguration masterBase,
+                                final WildFlyManagedConfiguration slaveBase) throws Exception {
         this(testClass, domainConfig, masterConfig, slaveConfig, masterBase, slaveBase, false, false, false);
     }
 
     protected DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig,
-                                final String slaveConfig, JBossAsManagedConfiguration masterBase,
-                                final JBossAsManagedConfiguration slaveBase, final boolean readOnlyDomainConfig,
+                                final String slaveConfig, WildFlyManagedConfiguration masterBase,
+                                final WildFlyManagedConfiguration slaveBase, final boolean readOnlyDomainConfig,
                                 final boolean readOnlyMasterHostConfig, final boolean readOnlySlaveHostConfig) throws Exception {
         this(testClass, getMasterConfiguration(domainConfig, masterConfig, testClass, masterBase, readOnlyDomainConfig, readOnlyMasterHostConfig),
                 slaveConfig == null ? null : getSlaveConfiguration(slaveConfig, testClass, slaveBase, readOnlySlaveHostConfig));
     }
 
-    protected DomainTestSupport(final String testClass, final JBossAsManagedConfiguration masterConfiguration,
-                                final JBossAsManagedConfiguration slaveConfiguration) throws Exception {
+    protected DomainTestSupport(final String testClass, final WildFlyManagedConfiguration masterConfiguration,
+                                final WildFlyManagedConfiguration slaveConfiguration) throws Exception {
         this.testClass = testClass;
         this.sharedClientConfig = DomainControllerClientConfig.create();
         this.masterConfiguration = masterConfiguration;
@@ -326,12 +326,12 @@ public class DomainTestSupport {
         return new DomainTestSupport(testClass, configuration.getMasterConfiguration(), configuration.getSlaveConfiguration());
     }
 
-    public static DomainTestSupport create(final String testClass, final JBossAsManagedConfiguration masterConfiguration,
-                                           final JBossAsManagedConfiguration slaveConfiguration) throws Exception {
+    public static DomainTestSupport create(final String testClass, final WildFlyManagedConfiguration masterConfiguration,
+                                           final WildFlyManagedConfiguration slaveConfiguration) throws Exception {
         return new DomainTestSupport(testClass, masterConfiguration, slaveConfiguration);
     }
 
-    public JBossAsManagedConfiguration getDomainMasterConfiguration() {
+    public WildFlyManagedConfiguration getDomainMasterConfiguration() {
         return masterConfiguration;
     }
 
@@ -339,7 +339,7 @@ public class DomainTestSupport {
         return domainMasterLifecycleUtil;
     }
 
-    public JBossAsManagedConfiguration getDomainSlaveConfiguration() {
+    public WildFlyManagedConfiguration getDomainSlaveConfiguration() {
         return slaveConfiguration;
     }
 
@@ -393,12 +393,12 @@ public class DomainTestSupport {
     public static class Configuration {
 
         private final String testName;
-        private final JBossAsManagedConfiguration masterConfiguration;
-        private final JBossAsManagedConfiguration slaveConfiguration;
+        private final WildFlyManagedConfiguration masterConfiguration;
+        private final WildFlyManagedConfiguration slaveConfiguration;
 
 
-        protected Configuration(final String testName, JBossAsManagedConfiguration masterConfiguration,
-                                JBossAsManagedConfiguration slaveConfiguration) {
+        protected Configuration(final String testName, WildFlyManagedConfiguration masterConfiguration,
+                                WildFlyManagedConfiguration slaveConfiguration) {
             this.testName = testName;
             this.masterConfiguration = masterConfiguration;
             this.slaveConfiguration = slaveConfiguration;
@@ -408,11 +408,11 @@ public class DomainTestSupport {
             return testName;
         }
 
-        public JBossAsManagedConfiguration getMasterConfiguration() {
+        public WildFlyManagedConfiguration getMasterConfiguration() {
             return masterConfiguration;
         }
 
-        public JBossAsManagedConfiguration getSlaveConfiguration() {
+        public WildFlyManagedConfiguration getSlaveConfiguration() {
             return slaveConfiguration;
         }
 
@@ -425,20 +425,20 @@ public class DomainTestSupport {
                                            boolean readOnlyMasterDomain, boolean readOnlyMasterHost,
                                            boolean readOnlySlaveHost) {
 
-            JBossAsManagedConfiguration masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testName, null, readOnlyMasterDomain, readOnlyMasterHost);
-            JBossAsManagedConfiguration slaveConfiguration = slaveConfig == null ? null : getSlaveConfiguration(slaveConfig, testName, "slave", null, readOnlySlaveHost);
+            WildFlyManagedConfiguration masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testName, null, readOnlyMasterDomain, readOnlyMasterHost);
+            WildFlyManagedConfiguration slaveConfiguration = slaveConfig == null ? null : getSlaveConfiguration(slaveConfig, testName, "slave", null, readOnlySlaveHost);
             return new Configuration(testName, masterConfiguration, slaveConfiguration);
         }
 
-        private static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
-                                                                         String testName, JBossAsManagedConfiguration baseConfig,
+        private static WildFlyManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath,
+                                                                         String testName, WildFlyManagedConfiguration baseConfig,
                                                                          boolean readOnlyDomain, boolean readOnlyHost) {
             final String hostName = "master";
             File domains = getBaseDir(testName);
             File extraModules = getAddedModulesDir(testName);
             File overrideModules = getHostOverrideModulesDir(testName, hostName);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            final JBossAsManagedConfiguration masterConfig = baseConfig == null ? new JBossAsManagedConfiguration() : baseConfig;
+            final WildFlyManagedConfiguration masterConfig = baseConfig == null ? new WildFlyManagedConfiguration() : baseConfig;
             configureModulePath(masterConfig, overrideModules, extraModules);
             masterConfig.setHostControllerManagementAddress(masterAddress);
             masterConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
@@ -459,14 +459,14 @@ public class DomainTestSupport {
             return masterConfig;
         }
 
-        private static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
-                                                                         String hostName, JBossAsManagedConfiguration baseConfig,
+        private static WildFlyManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
+                                                                         String hostName, WildFlyManagedConfiguration baseConfig,
                                                                          boolean readOnlyHost) {
             File domains = getBaseDir(testName);
             File extraModules = getAddedModulesDir(testName);
             File overrideModules = getHostOverrideModulesDir(testName, hostName);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            final JBossAsManagedConfiguration slaveConfig = baseConfig == null ? new JBossAsManagedConfiguration() : baseConfig;
+            final WildFlyManagedConfiguration slaveConfig = baseConfig == null ? new WildFlyManagedConfiguration() : baseConfig;
             configureModulePath(slaveConfig, overrideModules, extraModules);
             slaveConfig.setHostName(hostName);
             slaveConfig.setHostControllerManagementAddress(slaveAddress);

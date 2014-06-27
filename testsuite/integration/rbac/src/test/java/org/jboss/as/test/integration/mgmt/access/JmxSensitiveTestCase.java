@@ -25,14 +25,13 @@ package org.jboss.as.test.integration.mgmt.access;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.junit.runner.RunWith;
 
 /**
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(StandardUsersSetupTask.class)
 public class JmxSensitiveTestCase extends AbstractJmxNonCoreMBeansSensitivityTestCase {
     @Override
     protected boolean isReadAllowed(String userName) {

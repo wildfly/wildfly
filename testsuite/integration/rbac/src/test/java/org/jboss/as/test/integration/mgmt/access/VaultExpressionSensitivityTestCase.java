@@ -59,7 +59,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -72,7 +71,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({UserRolesMappingServerSetupTask.StandardUsersSetup.class,VaultExpressionSensitivityTestCase.VaultSetupTask.class})
+@ServerSetup({StandardUsersSetupTask.class,VaultExpressionSensitivityTestCase.VaultSetupTask.class})
 public class VaultExpressionSensitivityTestCase extends AbstractRbacTestCase {
     private static final String VAULT_EXPRESSION_SENSITIVITY = "core-service=management/access=authorization/constraint=vault-expression";
 

@@ -152,7 +152,7 @@ public class ExtensionUtils {
         if (path == null) {
             return;
         }
-        if (!Files.exists(path)){
+        if (Files.notExists(path)){
             return ;
         }
         try {

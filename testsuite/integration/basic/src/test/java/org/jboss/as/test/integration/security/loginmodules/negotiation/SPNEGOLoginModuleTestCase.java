@@ -57,7 +57,6 @@ import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
-import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;

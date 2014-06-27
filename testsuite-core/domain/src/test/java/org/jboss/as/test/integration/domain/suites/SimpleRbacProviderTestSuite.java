@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.domain.rbac.AccessConstraintUtilizationTestCase;
 import org.jboss.as.test.integration.domain.rbac.SimpleProviderHostScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.SimpleProviderServerGroupScopedRolesTestCase;
@@ -103,7 +103,7 @@ public class SimpleRbacProviderTestSuite {
         try {
             final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(testName,
                     "domain-configs/domain-rbac.xml", "host-configs/host-master-rbac.xml", "host-configs/host-slave-rbac.xml");
-            String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
+            String mgmtUserProperties = WildFlyManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
             configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
             configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);

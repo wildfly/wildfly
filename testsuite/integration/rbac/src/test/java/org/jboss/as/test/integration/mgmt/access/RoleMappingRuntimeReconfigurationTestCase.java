@@ -45,6 +45,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.interfaces.CliManagementInterface;
@@ -199,7 +200,7 @@ public class RoleMappingRuntimeReconfigurationTestCase {
      * {@link UserRolesMappingServerSetupTask} that adds a single user mapping for each standard
      * role, with the username the same as the role name.
      */
-    public static class BasicUsersSetup extends UserRolesMappingServerSetupTask {
+    public static class BasicUsersSetup extends UserRolesMappingServerSetupTask implements ServerSetupTask{
 
         static {
             Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
@@ -210,6 +211,16 @@ public class RoleMappingRuntimeReconfigurationTestCase {
         private static final Map<String, Set<String>> STANDARD_USERS;
 
         public static final StandardUsersSetup INSTANCE = new StandardUsersSetup();
+
+        @Override
+        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            setup(managementClient.getControllerClient());
+        }
+
+        @Override
+        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            tearDown(managementClient.getControllerClient());
+        }
 
         public BasicUsersSetup() {
             super(STANDARD_USERS);

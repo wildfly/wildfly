@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.domain.rbac.PropertiesRoleMappingHostScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.PropertiesRoleMappingServerGroupScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.PropertiesRoleMappingStandardRolesTestCase;
@@ -102,8 +102,8 @@ public class FullRbacProviderPropertiesRoleMappingTestSuite {
         try {
             final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(testName,
                     "domain-configs/domain-rbac.rbac", "host-configs/host-master-rbac-properties.xml", "host-configs/host-slave-rbac-properties.xml");
-            String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
-            String mgmtGroupsProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-groups.properties");
+            String mgmtUserProperties = WildFlyManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
+            String mgmtGroupsProperties = WildFlyManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-groups.properties");
             configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
             configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
             configuration.getMasterConfiguration().setMgmtGroupsFile(mgmtGroupsProperties);

@@ -5,8 +5,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
-import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.wildfly.test.api.Authentication;
 
 /**
  * Class that allows for non arquillian tests to access the current server address and port, and other testsuite environment

@@ -46,7 +46,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.After;
@@ -168,7 +168,7 @@ public class AdminOnlyPolicyTestCase {
 
         String hostConfigPath = "host-configs/" + (discovery ? "admin-only-discovery.xml" : "admin-only-no-discovery.xml");
 
-        JBossAsManagedConfiguration slaveConfig = DomainTestSupport.getSlaveConfiguration(hostName, hostConfigPath,
+        WildFlyManagedConfiguration slaveConfig = DomainTestSupport.getSlaveConfiguration(hostName, hostConfigPath,
                 getClass().getSimpleName(), false);
         slaveConfig.setHostControllerManagementPort(29999);
         slaveConfig.setAdminOnly(true);

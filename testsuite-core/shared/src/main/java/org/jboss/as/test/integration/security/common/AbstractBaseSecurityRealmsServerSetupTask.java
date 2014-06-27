@@ -1,23 +1,25 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  JBoss, Home of Professional Open Source.
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
+ *  as indicated by the @author tags. See the copyright.txt file in the
+ *  distribution for a full listing of individual contributors.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *  This is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of
+ *  the License, or (at your option) any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *  This software is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this software; if not, write to the Free
+ *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * /
  */
 package org.jboss.as.test.integration.security.common;
 
@@ -61,8 +63,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
@@ -76,46 +76,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 
 /**
- * {@link ServerSetupTask} instance for security realms setup.
  *
- * @see SecurityRealm
+ * @see org.jboss.as.test.integration.security.common.config.realm.SecurityRealm
  * @author Josef Cacek
  */
-public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSetupTask {
+public abstract class AbstractBaseSecurityRealmsServerSetupTask {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractSecurityRealmsServerSetupTask.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractBaseSecurityRealmsServerSetupTask.class);
     private static final String KEYSTORE_PATH = "keystore-path";
 
-    protected ManagementClient managementClient;
-
     private SecurityRealm[] securityRealms;
-
-    // Public methods --------------------------------------------------------
-
-    /**
-     * Adds security realms retrieved from {@link #getSecurityRealms()}.
-     *
-     * @param managementClient
-     * @param containerId
-     * @throws Exception
-     * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-     *      java.lang.String)
-     */
-    public void setup(final ManagementClient managementClient, String containerId) throws Exception {
-        this.managementClient = managementClient;
-        setup(managementClient.getControllerClient(), containerId);
-    }
-
-    /**
-     * Removes the security realms from the AS configuration.
-     *
-     * @param managementClient
-     * @param containerId
-     */
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        tearDown(managementClient.getControllerClient(), containerId);
-        this.managementClient = null;
-    }
 
     // Protected methods -----------------------------------------------------
 

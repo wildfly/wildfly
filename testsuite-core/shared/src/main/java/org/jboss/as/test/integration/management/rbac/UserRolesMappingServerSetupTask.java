@@ -22,20 +22,20 @@
 
 package org.jboss.as.test.integration.management.rbac;
 
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleMapping;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleUser;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleMapping;
@@ -47,16 +47,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
- * {@link ServerSetupTask} that can add user->role mappings to the access=authorization configuration.
+  Task that can add user->role mappings to the access=authorization configuration.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class UserRolesMappingServerSetupTask implements ServerSetupTask {
+public class UserRolesMappingServerSetupTask {
 
     private final Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
 
@@ -64,10 +62,6 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
         this.rolesToUsers.putAll(rolesToUsers);
     }
 
-    @Override
-    public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        setup(managementClient.getControllerClient());
-    }
 
     public void setup(ModelControllerClient client) throws IOException {
         for (Map.Entry<String, Set<String>> roleEntry : rolesToUsers.entrySet()) {
@@ -77,11 +71,6 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
                 addRoleUser(role, user, client);
             }
         }
-    }
-
-    @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        tearDown(managementClient.getControllerClient());
     }
 
     public void tearDown(ModelControllerClient client) throws IOException {

@@ -22,16 +22,14 @@
 package org.jboss.as.test.integration.management.http;
 
 import java.net.URL;
+import javax.inject.Inject;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
 import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
@@ -46,16 +44,12 @@ public class HttpMgmtPrettyTestCase {
     private static final String MGMT_CTX = "/management";
     private HttpMgmtProxy httpMgmt;
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(HttpMgmtPrettyTestCase.class);
-        return ja;
-    }
+    @Inject
+    protected ManagementClient managementClient;
 
     @Before
     public void before() throws Exception {
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         httpMgmt = new HttpMgmtProxy(mgmtURL);
     }
 

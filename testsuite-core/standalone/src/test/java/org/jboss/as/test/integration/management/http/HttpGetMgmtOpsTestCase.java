@@ -29,12 +29,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.inject.Inject;
+
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
 import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
@@ -48,6 +51,8 @@ public class HttpGetMgmtOpsTestCase {
     private static final int MGMT_PORT = 9990;
     private static final String MGMT_CTX = "/management";
 
+    @Inject
+    protected ManagementClient managementClient;
 
     @BeforeClass
     public static void before() {
@@ -66,7 +71,7 @@ public class HttpGetMgmtOpsTestCase {
 
     private void testReadResource(boolean recursive) throws Exception {
 
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         String cmd = recursive ? "/subsystem/logging?operation=resource&recursive=true" : "/subsystem/logging?operation=resource";
@@ -88,7 +93,7 @@ public class HttpGetMgmtOpsTestCase {
     @Test
     public void testReadAttribute() throws Exception {
 
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=attribute&name=add-logging-api-dependencies");
@@ -101,7 +106,7 @@ public class HttpGetMgmtOpsTestCase {
     @Test
     public void testReadResourceDescription() throws Exception {
 
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=resource-description");
@@ -113,7 +118,7 @@ public class HttpGetMgmtOpsTestCase {
 
     @Test
     public void testReadOperationNames() throws Exception {
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=operation-names");
@@ -139,7 +144,7 @@ public class HttpGetMgmtOpsTestCase {
     @Test
     public void testReadOperationDescription() throws Exception {
 
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         HttpMgmtProxy httpMgmt = new HttpMgmtProxy(mgmtURL);
 
         ModelNode node = httpMgmt.sendGetCommand("/subsystem/logging?operation=operation-description&name=add");

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
 
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.HttpMgmtProxy;
@@ -41,6 +42,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
 import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
@@ -55,9 +57,13 @@ public class HttpPostMgmtOpsTestCase {
     private static final String MGMT_CTX = "/management";
     private HttpMgmtProxy httpMgmt;
 
+    @Inject
+    protected ManagementClient managementClient;
+
+
     @Before
     public void before() throws Exception {
-        URL mgmtURL = new URL("http", "localhost", MGMT_PORT, MGMT_CTX);
+        URL mgmtURL = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, MGMT_CTX);
         httpMgmt = new HttpMgmtProxy(mgmtURL);
     }
 
