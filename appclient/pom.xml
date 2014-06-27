@@ -40,16 +40,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-connector</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-security</artifactId>
         </dependency>
 
@@ -59,17 +59,17 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-webservices-server-integration</artifactId>
         </dependency>
 

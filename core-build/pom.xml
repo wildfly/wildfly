@@ -261,7 +261,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-embedded</artifactId>
+            <artifactId>wildfly-deployment-scanner</artifactId>
         </dependency>
 
         <dependency>
