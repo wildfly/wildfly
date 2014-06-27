@@ -84,10 +84,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
         // setup the JACC contextID.
         DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-        String contextID = deploymentUnit.getName();
-        if (deploymentUnit.getParent() != null) {
-            contextID = deploymentUnit.getParent().getName() + "!" + contextID;
-        }
+        String contextID = SecurityContextInterceptorFactory.contextIdForDeployment(deploymentUnit);
 
         final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder;
         final ServiceName viewMethodSecurityAttributesServiceName;

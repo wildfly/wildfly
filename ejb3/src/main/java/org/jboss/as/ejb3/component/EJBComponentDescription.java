@@ -251,6 +251,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      */
     private Boolean missingMethodPermissionsDenyAccess = null;
 
+    private String policyContextID;
+
     /**
      * Construct a new instance.
      *
@@ -294,6 +296,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             @Override
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
+                policyContextID = SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit());
                 //make sure java:comp/env is always available, even if nothing is bound there
                 if (description.getNamingMode() == ComponentNamingMode.CREATE) {
                     description.getBindingConfigurations().add(new BindingConfiguration("java:comp/env", new ContextInjectionSource("env", "java:comp/env")));
@@ -310,7 +313,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
                     if (isSecurityEnabled()) {
-                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(), InterceptorOrder.View.SECURITY_CONTEXT);
+                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(policyContextID), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                     for (final Method method : configuration.getClassIndex().getClassMethods()) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
@@ -984,6 +987,14 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
         }
         return this.allContainerInterceptors;
+    }
+
+    public String getPolicyContextID() {
+        return policyContextID;
+    }
+
+    public void setPolicyContextID(String policyContextID) {
+        this.policyContextID = policyContextID;
     }
 
     @Override

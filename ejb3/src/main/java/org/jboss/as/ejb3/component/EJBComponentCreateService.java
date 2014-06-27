@@ -45,6 +45,7 @@ import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
@@ -87,6 +88,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
+    private final String policyContextID;
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -110,6 +112,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
         this.timerService = ejbComponentDescription.getTimerService();
+        this.policyContextID = ejbComponentDescription.getPolicyContextID();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
@@ -358,4 +361,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return this.serverSecurityManagerInjectedValue;
     }
 
+    public String getPolicyContextID() {
+        return policyContextID;
+    }
 }

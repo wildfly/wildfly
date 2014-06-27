@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -44,12 +45,16 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
     private final boolean propagateSecurity;
     private final String policyContextID;
 
-    public SecurityContextInterceptorFactory() {
-        this(true, null);
+    public static String contextIdForDeployment(final DeploymentUnit du) {
+        String contextID = du.getName();
+        if (du.getParent() != null) {
+            contextID = du.getParent().getName() + "!" + contextID;
+        }
+        return contextID;
     }
 
-    public SecurityContextInterceptorFactory(final boolean propagateSecurity) {
-        this(propagateSecurity, null);
+    public SecurityContextInterceptorFactory(final String policyContextID) {
+        this(true, policyContextID);
     }
 
     public SecurityContextInterceptorFactory(final boolean propagateSecurity, final String policyContextID) {

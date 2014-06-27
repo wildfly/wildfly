@@ -111,7 +111,7 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
             getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                        configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(false), InterceptorOrder.View.SECURITY_CONTEXT);
+                        configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(false, SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit())), InterceptorOrder.View.SECURITY_CONTEXT);
                     }
                 });
         }

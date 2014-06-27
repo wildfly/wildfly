@@ -26,12 +26,12 @@ import static java.security.AccessController.doPrivileged;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.CodeSource;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.acl.Group;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +44,7 @@ import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.core.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
+import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.ISecurityManagement;
@@ -53,6 +54,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
+import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectInfo;
 import org.jboss.security.audit.AuditEvent;
@@ -171,6 +173,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
+    @Override
+    public boolean isCallerInRole(String ejbName, Object mappedRoles, Map<String, Collection<String>> roleLinks, String... roleNames) {
+        return isCallerInRole(ejbName, PolicyContext.getContextID(), mappedRoles, roleLinks, roleNames);
+    }
+
+
     /**
      * @param ejbName The name of the EJB component where isCallerInRole was invoked.
      * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
@@ -179,7 +187,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param roleNames The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
-    public boolean isCallerInRole(final String ejbName, final Object incommingMappedRoles,
+    public boolean isCallerInRole(final String ejbName, final String policyContextID, final Object incommingMappedRoles,
                                   final Map<String, Collection<String>> roleLinks, final String... roleNames) {
 
         final SecurityContext securityContext = doPrivileged(securityContext());
@@ -189,7 +197,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
         final EJBResource resource = new EJBResource(new HashMap<String, Object>());
         resource.setEjbName(ejbName);
-        resource.setPolicyContextID(PolicyContext.getContextID());
+        resource.setPolicyContextID(policyContextID);
         resource.setCallerRunAsIdentity(securityContext.getIncomingRunAs());
         resource.setCallerSubject(securityContext.getUtil().getSubject());
         Principal userPrincipal = securityContext.getUtil().getUserPrincipal();
@@ -206,7 +214,14 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             resource.setSecurityRoleReferences(roleRefs);
         }
 
+        Map<String, Set<String>> previousRolesAssociationMap = null;
         try {
+            // ensure the security roles association contains the incoming principal x roles map.
+            if (incommingMappedRoles != null) {
+                SecurityRolesMetaData rolesMetaData = (SecurityRolesMetaData) incommingMappedRoles;
+                previousRolesAssociationMap = this.setSecurityRolesAssociation(rolesMetaData.getPrincipalVersusRolesMap());
+            }
+
             AbstractEJBAuthorizationHelper helper = SecurityHelperFactory.getEJBAuthorizationHelper(securityContext);
             for (String roleName : roleNames) {
                 if (helper.isCallerInRole(resource, roleName)) {
@@ -217,6 +232,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         catch (Exception e) {
             throw new RuntimeException(e);
+        }
+        finally {
+            // reset the security roles association state.
+            if (incommingMappedRoles != null) {
+                this.setSecurityRolesAssociation(previousRolesAssociationMap);
+            }
         }
     }
 
@@ -465,5 +486,33 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         ctxMap.put("Action", "authentication");
         auditEvent.setContextMap(ctxMap);
         auditManager.audit(auditEvent);
+    }
+
+    private Map<String, Set<String>> setSecurityRolesAssociation(Map<String, Set<String>> mappedRoles) {
+        if (System.getSecurityManager() == null) {
+            Map<String, Set<String>> previousMappedRoles = SecurityRolesAssociation.getSecurityRoles();
+            SecurityRolesAssociation.setSecurityRoles(mappedRoles);
+            return previousMappedRoles;
+        }
+        else {
+            SetSecurityRolesAssociationAction action = new SetSecurityRolesAssociationAction(mappedRoles);
+            return AccessController.doPrivileged(action);
+        }
+    }
+
+    private static class SetSecurityRolesAssociationAction implements PrivilegedAction<Map<String, Set<String>>> {
+
+        private final Map<String, Set<String>> mappedRoles;
+
+        SetSecurityRolesAssociationAction(Map<String, Set<String>> mappedRoles) {
+            this.mappedRoles = mappedRoles;
+        }
+
+        @Override
+        public Map<String, Set<String>> run() {
+            Map<String, Set<String>> previousMappedRoles = SecurityRolesAssociation.getSecurityRoles();
+            SecurityRolesAssociation.setSecurityRoles(this.mappedRoles);
+            return previousMappedRoles;
+        }
     }
 }
