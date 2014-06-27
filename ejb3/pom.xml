@@ -40,43 +40,43 @@ vi:ts=4:sw=4:expandtab
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-connector</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-spi</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jacorb</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-security</artifactId>
         </dependency>
 
@@ -86,7 +86,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
