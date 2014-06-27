@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jca:2.0">
+<subsystem xmlns="urn:jboss:domain:jca:3.0">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
             <bean-validation enabled="true"/>
             <default-workmanager>

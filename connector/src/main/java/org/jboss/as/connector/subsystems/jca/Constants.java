@@ -32,6 +32,8 @@ public class Constants {
 
     static final String BEAN_VALIDATION = "bean-validation";
 
+    static final String TRACER = "tracer";
+
     static final String CACHED_CONNECTION_MANAGER = "cached-connection-manager";
 
     public static final String DEFAULT_NAME = "default";
