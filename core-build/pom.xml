@@ -261,11 +261,6 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-embedded</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-host-controller</artifactId>
         </dependency>
 
