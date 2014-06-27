@@ -87,6 +87,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
+    private final String policyContextID;
 
     private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
@@ -110,6 +111,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.transactionManagementType = ejbComponentDescription.getTransactionManagementType();
 
         this.timerService = ejbComponentDescription.getTimerService();
+        this.policyContextID = ejbComponentDescription.getPolicyContextID();
 
         // CMTTx
         if (transactionManagementType.equals(TransactionManagementType.CONTAINER)) {
@@ -346,4 +348,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         return this.serverSecurityManagerInjectedValue;
     }
 
+    public String getPolicyContextID() {
+        return this.policyContextID;
+    }
 }
