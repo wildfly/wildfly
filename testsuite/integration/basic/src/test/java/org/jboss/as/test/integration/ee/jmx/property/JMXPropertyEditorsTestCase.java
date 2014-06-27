@@ -96,14 +96,14 @@ public class JMXPropertyEditorsTestCase {
         connection = getMBeanServerConnection();
         Assert.assertNotNull(connection);
 
-		String osName = System.getProperty("os.name");
-		if ( osName.contains( "Windows" ) ) {
-			USER_SYS_PROP = "USERNAME";
-		} else if ( osName.contains( "SunOS" ) ) {
-			USER_SYS_PROP = "LOGNAME";
-		} else {
-			USER_SYS_PROP = "USER";
-		}
+        String osName = System.getProperty("os.name");
+        if ( osName.contains( "Windows" ) ) {
+            USER_SYS_PROP = "USERNAME";
+        } else if ( osName.contains( "SunOS" ) ) {
+            USER_SYS_PROP = "LOGNAME";
+        } else {
+            USER_SYS_PROP = "USER";
+        }
     }
 
     @After
