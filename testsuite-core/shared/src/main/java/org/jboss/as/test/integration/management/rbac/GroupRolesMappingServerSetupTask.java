@@ -33,25 +33,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
- * {@link org.jboss.as.arquillian.api.ServerSetupTask} that can add group->role mappings to the access=authorization configuration.
+ * {@link org.wildfly.core.testrunner.ServerSetupTask} that can add group->role mappings to the access=authorization configuration.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class GroupRolesMappingServerSetupTask implements ServerSetupTask {
+public class GroupRolesMappingServerSetupTask {
     private final Map<String, Set<String>> rolesToGroups = new HashMap<String, Set<String>>();
 
     protected GroupRolesMappingServerSetupTask(final Map<String, Set<String>> rolesToGroups) {
         this.rolesToGroups.putAll(rolesToGroups);
-    }
-
-    @Override
-    public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        setup(managementClient.getControllerClient());
     }
 
     public void setup(ModelControllerClient client) throws IOException {
@@ -62,11 +55,6 @@ public class GroupRolesMappingServerSetupTask implements ServerSetupTask {
                 addRoleGroup(role, entity, client);
             }
         }
-    }
-
-    @Override
-    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        tearDown(managementClient.getControllerClient());
     }
 
     public void tearDown(ModelControllerClient client) throws IOException {

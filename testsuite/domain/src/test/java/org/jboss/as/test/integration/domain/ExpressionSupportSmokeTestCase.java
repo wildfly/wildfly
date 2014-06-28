@@ -61,12 +61,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.dmr.ValueExpression;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -155,7 +155,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
 
     @Before
     public void setUp() throws IOException {
-        final JBossAsManagedConfiguration config = createConfiguration("domain.xml", "host.xml", getClass().getSimpleName());
+        final WildFlyManagedConfiguration config = createConfiguration("domain.xml", "host.xml", getClass().getSimpleName());
         config.setAdminOnly(true);
 
         // Trigger the servers to fail on boot if there are runtime errors

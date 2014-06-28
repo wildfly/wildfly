@@ -60,7 +60,7 @@ import java.util.Map;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
@@ -101,7 +101,7 @@ public abstract class AbstractRbacTestCase {
     private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
     private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
     protected static DomainTestSupport testSupport;
-    protected static JBossAsManagedConfiguration masterClientConfig;
+    protected static WildFlyManagedConfiguration masterClientConfig;
 
     @AfterClass
     public static void cleanUpClients() {
@@ -143,7 +143,7 @@ public abstract class AbstractRbacTestCase {
 
 
     public ModelControllerClient getClientForUser(String userName, boolean allowLocalAuth,
-                                                  JBossAsManagedConfiguration clientConfig) throws UnknownHostException {
+                                                  WildFlyManagedConfiguration clientConfig) throws UnknownHostException {
         Map<String, ModelControllerClient> clients = allowLocalAuth ? localAuthClients : nonLocalAuthclients;
         ModelControllerClient result = clients.get(userName);
         if (result == null) {
@@ -154,7 +154,7 @@ public abstract class AbstractRbacTestCase {
     }
 
     private ModelControllerClient createClient(String userName, boolean allowLocalAuth,
-                                               JBossAsManagedConfiguration clientConfig) throws UnknownHostException {
+                                               WildFlyManagedConfiguration clientConfig) throws UnknownHostException {
 
         return ModelControllerClient.Factory.create(clientConfig.getHostControllerManagementProtocol(),
                 clientConfig.getHostControllerManagementAddress(),

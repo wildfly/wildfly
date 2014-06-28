@@ -58,7 +58,6 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.network.NetworkUtils;
@@ -302,38 +301,7 @@ public class CoreUtils {
         archive.as(ZipExporter.class).exportTo(exportFile, true);
     }
 
-    /**
-     * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link org.jboss.as.arquillian.container.ManagementClient#getMgmtAddress()}. Returned value can be converted to canonical hostname if
-     * useCanonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
-     * for instance "::1")
-     *
-     * @param mgmtClient       management client instance (may be <code>null</code>)
-     * @param useCanonicalHost
-     * @return
-     */
-    public static String getSecondaryTestAddress(final ManagementClient mgmtClient, final boolean useCanonicalHost) {
-        String address = System.getProperty("secondary.test.address");
-        if (StringUtils.isBlank(address) && mgmtClient != null) {
-            address = mgmtClient.getMgmtAddress();
-        }
-        if (useCanonicalHost) {
-            address = getCannonicalHost(address);
-        }
-        return stripSquareBrackets(address);
-    }
 
-    /**
-     * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link org.jboss.as.arquillian.container.ManagementClient#getMgmtAddress()}. Returned value is formatted to use in URLs (i.e. if it's IPv6 address, then
-     * square brackets are placed around - e.g. "[::1]")
-     *
-     * @param mgmtClient management client instance (may be <code>null</code>)
-     * @return
-     */
-    public static String getSecondaryTestAddress(final ManagementClient mgmtClient) {
-        return NetworkUtils.formatPossibleIpv6Address(getSecondaryTestAddress(mgmtClient, false));
-    }
 
     /**
      * Requests given URL and checks if the returned HTTP status code is the
@@ -380,27 +348,6 @@ public class CoreUtils {
     }
 
     /**
-     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the returned value is IPv6 address then
-     * square brackets around are stripped.
-     *
-     * @param managementClient
-     * @return
-     */
-    public static final String getHost(final ManagementClient managementClient) {
-        return stripSquareBrackets(managementClient.getMgmtAddress());
-    }
-
-    /**
-     * Returns canonical hostname retrieved from management address of the givem {@link org.jboss.as.arquillian.container.ManagementClient}.
-     *
-     * @param managementClient
-     * @return
-     */
-    public static final String getCannonicalHost(final ManagementClient managementClient) {
-        return getCannonicalHost(managementClient.getMgmtAddress());
-    }
-
-    /**
      * Returns canonical hostname form of the given address.
      *
      * @param address hosname or IP address
@@ -431,25 +378,6 @@ public class CoreUtils {
             return uri;
         }
         return new URI(uri.toString().replace(origHost, newHost));
-    }
-
-    /**
-     * Returns servlet URL, as concatenation of webapp URL and servlet path.
-     *
-     * @param webAppURL        web application context URL (e.g. injected by Arquillian)
-     * @param servletPath      Servlet path starting with slash (must be not-<code>null</code>)
-     * @param mgmtClient       Management Client (may be null)
-     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
-     * @return
-     * @throws java.net.URISyntaxException
-     */
-    public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-                                          boolean useCanonicalHost) throws URISyntaxException {
-        URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
-        if (useCanonicalHost) {
-            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
-        }
-        return resultURI;
     }
 
     /**

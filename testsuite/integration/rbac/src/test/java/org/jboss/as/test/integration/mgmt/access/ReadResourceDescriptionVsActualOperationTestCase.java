@@ -46,7 +46,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +58,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(StandardUsersSetupTask.class)
 public class ReadResourceDescriptionVsActualOperationTestCase extends AbstractRbacTestCase {
     private static final String TEST_DS = "subsystem=datasources/data-source=TestDS";
 

@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.mgmt.access;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.as.test.integration.management.interfaces.CliManagementInterface;
 import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.junit.runner.RunWith;
@@ -35,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(StandardUsersSetupTask.class)
 public class CliInterfaceStandardRolesBasicTestCase extends StandardRolesBasicTestCase {
     @Override
     protected ManagementInterface createClient(String userName) {

@@ -53,7 +53,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.test.integration.domain.management.util.Authentication;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -91,7 +91,7 @@ public class SlaveHostControllerAuthenticationTestCase {
 
         // Tweak the callback handler so the master test driver client can authenticate
         // To keep setup simple it uses the same credentials as the slave host
-        JBossAsManagedConfiguration masterConfig = testSupport.getDomainMasterConfiguration();
+        WildFlyManagedConfiguration masterConfig = testSupport.getDomainMasterConfiguration();
         CallbackHandler callbackHandler = Authentication.getCallbackHandler("slave", RIGHT_PASSWORD, "ManagementRealm");
         masterConfig.setCallbackHandler(callbackHandler);
 

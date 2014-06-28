@@ -79,7 +79,6 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -93,7 +92,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup({UserRolesMappingServerSetupTask.StandardUsersSetup.class, ValidateAddressOrOperationTestCase.VaultSetupTask.class})
+@ServerSetup({StandardUsersSetupTask.class, ValidateAddressOrOperationTestCase.VaultSetupTask.class})
 public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
 
     private static String[] LEGAL_ADDRESS_RESP_FIELDS;

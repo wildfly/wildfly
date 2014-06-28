@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
-
 import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.commons.io.FileUtils;
@@ -53,8 +52,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
+import org.jboss.as.test.integration.security.common.AbstractBaseSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.CoreUtils;
 import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
@@ -77,7 +76,7 @@ import org.junit.Test;
  */
 public class HTTPSManagementInterfaceTestCase {
 
-    private static final File WORK_DIR = new File("target" + File.separatorChar +  "https-mgmt-workdir");
+    private static final File WORK_DIR = new File("target" + File.separatorChar + "https-mgmt-workdir");
     public static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_KEYSTORE);
     public static final File SERVER_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_TRUSTSTORE);
     public static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
@@ -99,7 +98,7 @@ public class HTTPSManagementInterfaceTestCase {
 
         DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(
                 HTTPSManagementInterfaceTestCase.class.getSimpleName(), "domain-configs/domain-minimal.xml", "host-configs/host-master-no-http.xml", null);
-        JBossAsManagedConfiguration masterConfig = configuration.getMasterConfiguration();
+        WildFlyManagedConfiguration masterConfig = configuration.getMasterConfiguration();
         masterConfig.setAdminOnly(true);
         String args = masterConfig.getJavaVmArguments();
         args = args == null ? "" : args + " ";
@@ -145,17 +144,15 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     /**
+     * @throws Exception
      * @test.tsfi tsfi.port.management.http
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
      * @test.objective Testing authentication over management-http port. Test with user who has right/wrong certificate
-     *                 to login into management web interface. Also provides check for web administration console
-     *                 authentication, which goes through /management context.
-     *
+     * to login into management web interface. Also provides check for web administration console
+     * authentication, which goes through /management context.
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     *
-     * @throws Exception
      */
     @Test
     public void testHTTP() throws Exception {
@@ -163,17 +160,15 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     /**
+     * @throws Exception
      * @test.tsfi tsfi.port.management.http
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
      * @test.objective Testing authentication over management-http port. Test with user who has right/wrong certificate
-     *                 to login into management web interface. Also provides check for web administration console
-     *                 authentication, which goes through /management context.
-     *
+     * to login into management web interface. Also provides check for web administration console
+     * authentication, which goes through /management context.
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     *
-     * @throws Exception
      */
     @Test
     public void testHTTPWithSecureInterface() throws Exception {
@@ -204,17 +199,15 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     /**
+     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      * @test.tsfi tsfi.port.management.https
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
      * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate
-     *                 to login into management web interface. Also provides check for web administration console
-     *                 authentication, which goes through /management context.
-     *
+     * to login into management web interface. Also provides check for web administration console
+     * authentication, which goes through /management context.
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     *
-     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      */
     @Test
     public void testHTTPS() throws Exception {
@@ -222,17 +215,15 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     /**
+     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      * @test.tsfi tsfi.port.management.https
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
      * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate
-     *                 to login into management web interface. Also provides check for web administration console
-     *                 authentication, which goes through /management context.
-     *
+     * to login into management web interface. Also provides check for web administration console
+     * authentication, which goes through /management context.
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     *
-     * @throws org.apache.http.client.ClientProtocolException, IOException, URISyntaxException
      */
     @Test
     public void testHTTPSWithSecureInterface() throws Exception {
@@ -315,7 +306,7 @@ public class HTTPSManagementInterfaceTestCase {
 
     }
 
-    static class HttpManagementRealmSetup extends AbstractSecurityRealmsServerSetupTask {
+    static class HttpManagementRealmSetup extends AbstractBaseSecurityRealmsServerSetupTask {
 
         // Overridden just to expose locally
         @Override
@@ -344,7 +335,7 @@ public class HTTPSManagementInterfaceTestCase {
                             .keystorePath(SERVER_TRUSTSTORE_FILE.getAbsolutePath()).build()).build();
             final SecurityRealm realm = new SecurityRealm.Builder().name(MANAGEMENT_WEB_REALM).serverIdentity(serverIdentity)
                     .authentication(authentication).build();
-            return new SecurityRealm[] { realm };
+            return new SecurityRealm[]{realm};
         }
     }
 

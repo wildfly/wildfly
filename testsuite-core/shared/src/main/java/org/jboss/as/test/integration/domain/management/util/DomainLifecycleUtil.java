@@ -86,20 +86,20 @@ public class DomainLifecycleUtil {
 //    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
     private ExecutorService executor;
 
-    private final JBossAsManagedConfiguration configuration;
+    private final WildFlyManagedConfiguration configuration;
     private final DomainControllerClientConfig clientConfiguration;
     private final PathAddress address;
     private final boolean closeClientConfig;
 
-    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) throws IOException {
+    public DomainLifecycleUtil(final WildFlyManagedConfiguration configuration) throws IOException {
         this(configuration, DomainControllerClientConfig.create(), true);
     }
 
-    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration, final DomainControllerClientConfig clientConfiguration) {
+    public DomainLifecycleUtil(final WildFlyManagedConfiguration configuration, final DomainControllerClientConfig clientConfiguration) {
         this(configuration, clientConfiguration, false);
     }
 
-    private DomainLifecycleUtil(final JBossAsManagedConfiguration configuration,
+    private DomainLifecycleUtil(final WildFlyManagedConfiguration configuration,
                                 final DomainControllerClientConfig clientConfiguration, final boolean closeClientConfig) {
         assert configuration != null : "configuration is null";
         assert clientConfiguration != null : "clientConfiguration is null";
@@ -109,7 +109,7 @@ public class DomainLifecycleUtil {
         this.closeClientConfig = closeClientConfig;
     }
 
-    public JBossAsManagedConfiguration getConfiguration() {
+    public WildFlyManagedConfiguration getConfiguration() {
         return configuration;
     }
 

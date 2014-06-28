@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 
 import java.io.IOException;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,7 +55,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(StandardUsersSetupTask.class)
 public class RolesIntegrityCheckingTestCase {
     @ContainerResource
     private ManagementClient managementClient;

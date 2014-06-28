@@ -55,6 +55,7 @@ import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.logging.syslogserver.BlockedSyslogServerEventHandler;
 import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.dmr.ModelNode;
 import org.productivity.java.syslog4j.server.SyslogServer;
 import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
@@ -135,7 +136,7 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
         SyslogServer.shutdown();
 
         // start and set syslog server
-        final String host = CoreUtils.getHost(managementClient);
+        final String host = Utils.getHost(managementClient);
         SyslogServerConfigIF config = getSyslogConfig();
         config.setUseStructuredData(true);
         config.setHost(host);

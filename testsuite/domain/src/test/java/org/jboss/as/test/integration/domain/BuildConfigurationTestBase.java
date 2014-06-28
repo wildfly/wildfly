@@ -33,7 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 /**
@@ -48,14 +48,14 @@ public abstract class BuildConfigurationTestBase {
 
     static final File CONFIG_DIR = new File("target/jbossas/domain/configuration/");
 
-    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
+    static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
         return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9999);
     }
 
-    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
+    static WildFlyManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
                                                            final String testConfiguration, final String hostName,
                                                            final String hostAddress, final int hostPort) {
-        final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration();
+        final WildFlyManagedConfiguration configuration = new WildFlyManagedConfiguration();
 
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);

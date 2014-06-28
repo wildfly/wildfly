@@ -944,4 +944,44 @@ public class Utils extends CoreUtils{
         }
         return response;
     }
+
+    /**
+     * Returns management address (host) from the givem {@link org.jboss.as.arquillian.container.ManagementClient}. If the returned value is IPv6 address then
+     * square brackets around are stripped.
+     *
+     * @param managementClient
+     * @return
+     */
+    public static final String getHost(final ManagementClient managementClient) {
+        return CoreUtils.stripSquareBrackets(managementClient.getMgmtAddress());
+    }
+
+    /**
+     * Returns canonical hostname retrieved from management address of the givem {@link org.jboss.as.arquillian.container.ManagementClient}.
+     *
+     * @param managementClient
+     * @return
+     */
+    public static final String getCannonicalHost(final ManagementClient managementClient) {
+        return getCannonicalHost(managementClient.getMgmtAddress());
+    }
+
+    /**
+     * Returns servlet URL, as concatenation of webapp URL and servlet path.
+     *
+     * @param webAppURL        web application context URL (e.g. injected by Arquillian)
+     * @param servletPath      Servlet path starting with slash (must be not-<code>null</code>)
+     * @param mgmtClient       Management Client (may be null)
+     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
+     * @return
+     * @throws java.net.URISyntaxException
+     */
+    public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
+                                          boolean useCanonicalHost) throws URISyntaxException {
+        URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
+        if (useCanonicalHost) {
+            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
+        }
+        return resultURI;
+    }
 }

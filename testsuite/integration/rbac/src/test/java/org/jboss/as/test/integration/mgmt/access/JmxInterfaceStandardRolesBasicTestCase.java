@@ -36,7 +36,6 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.management.interfaces.JmxManagementInterface;
 import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 
@@ -45,7 +44,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(StandardUsersSetupTask.class)
 public class JmxInterfaceStandardRolesBasicTestCase extends StandardRolesBasicTestCase {
     private static final String EXAMPLE_DS = "subsystem=datasources,data-source=ExampleDS";
     private static final String HTTP_SOCKET_BINDING = "socket-binding-group=standard-sockets,socket-binding=http";

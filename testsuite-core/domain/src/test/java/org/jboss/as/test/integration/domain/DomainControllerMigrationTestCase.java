@@ -45,7 +45,7 @@ import org.jboss.as.test.deployment.trivial.ServiceActivatorDeploymentUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -110,7 +110,7 @@ public class DomainControllerMigrationTestCase {
         Assert.assertTrue(jarFile.delete());
     }
 
-    private static JBossAsManagedConfiguration getHostConfiguration(int host) throws Exception {
+    private static WildFlyManagedConfiguration getHostConfiguration(int host) throws Exception {
 
         final String testName = DomainControllerMigrationTestCase.class.getSimpleName();
         File domains = new File("target" + File.separator + "domains" + File.separator + testName);
@@ -119,7 +119,7 @@ public class DomainControllerMigrationTestCase {
         assert hostConfigDir.mkdirs() || hostConfigDir.isDirectory();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        final JBossAsManagedConfiguration hostConfig = new JBossAsManagedConfiguration();
+        final WildFlyManagedConfiguration hostConfig = new WildFlyManagedConfiguration();
         hostConfig.setHostControllerManagementAddress(host == 1 ? masterAddress : slaveAddress);
         hostConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress + " -Djboss.test.host.slave.address=" + slaveAddress);
         URL url = tccl.getResource("domain-configs/domain-standard.xml");
