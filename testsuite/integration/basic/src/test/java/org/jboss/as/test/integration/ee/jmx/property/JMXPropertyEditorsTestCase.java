@@ -89,7 +89,17 @@ public class JMXPropertyEditorsTestCase {
 
     private MBeanServerConnection connection;
     private JMXConnector connector;
-    private static final String USER_SYS_PROP = System.getProperty("os.name","linux").contains("indows")?"USERNAME":"USER";
+    private static final String USER_SYS_PROP;
+    static {
+        String osName = System.getProperty("os.name");
+        if ( osName.contains( "Windows" ) ) {
+            USER_SYS_PROP = "USERNAME";
+        } else if ( osName.contains( "SunOS" ) ) {
+            USER_SYS_PROP = "LOGNAME";
+        } else {
+            USER_SYS_PROP = "USER";
+        }
+    }
 
     @Before
     public void initialize() throws Exception {
