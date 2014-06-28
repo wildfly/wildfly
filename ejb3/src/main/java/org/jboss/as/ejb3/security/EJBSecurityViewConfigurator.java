@@ -43,7 +43,6 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -80,11 +79,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         final EJBViewDescription ejbViewDescription = (EJBViewDescription) viewDescription;
 
         // setup the JACC contextID.
-        DeploymentUnit deploymentUnit = context.getDeploymentUnit();
-        String contextID = deploymentUnit.getName();
-        if (deploymentUnit.getParent() != null) {
-            contextID = deploymentUnit.getParent().getName() + "!" + contextID;
-        }
+        String contextID = SecurityContextInterceptorFactory.contextIdForDeployment(context.getDeploymentUnit());
 
         final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder;
         final ServiceName viewMethodSecurityAttributesServiceName;

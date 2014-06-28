@@ -97,6 +97,7 @@ public abstract class EJBComponent extends BasicComponent {
     private final String earApplicationName;
     private final String moduleName;
     private final String distinctName;
+    private final String policyContextID;
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
@@ -149,6 +150,7 @@ public abstract class EJBComponent extends BasicComponent {
         this.applicationName = ejbComponentCreateService.getApplicationName();
         this.earApplicationName = ejbComponentCreateService.getEarApplicationName();
         this.distinctName = ejbComponentCreateService.getDistinctName();
+        this.policyContextID = ejbComponentCreateService.getPolicyContextID();
         this.moduleName = ejbComponentCreateService.getModuleName();
         this.ejbObjectViewServiceName = ejbComponentCreateService.getEjbObject();
         this.ejbLocalObjectViewServiceName = ejbComponentCreateService.getEjbLocalObject();
@@ -396,11 +398,11 @@ public abstract class EJBComponent extends BasicComponent {
         if (WildFlySecurityManager.isChecking()) {
             return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
                 public Boolean run() {
-                    return serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+                    return serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
                 }
             });
         } else {
-            return this.serverSecurityManager.isCallerInRole(getComponentName(), securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
+            return this.serverSecurityManager.isCallerInRole(getComponentName(), policyContextID, securityMetaData.getSecurityRoles(), securityMetaData.getSecurityRoleLinks(), roleName);
         }
     }
 
