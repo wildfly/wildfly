@@ -55,6 +55,7 @@ import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.StringConfigurationPersister;
+import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.xnio.IoUtils;
@@ -64,6 +65,9 @@ import org.xnio.IoUtils;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class MainKernelServicesImpl extends AbstractKernelServicesImpl {
+
+    private static final ModelVersion CURRENT_CORE_VERSION = ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION,
+            Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION);
 
     protected MainKernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService,
             StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
@@ -177,10 +181,12 @@ class MainKernelServicesImpl extends AbstractKernelServicesImpl {
 
         InputStream in = this.getClass().getResourceAsStream("/" + fileName);
         if (in == null) {
-            throw new IllegalArgumentException("Version " + legacyModelVersion + " of " + mainSubsystemName + " is not a known version. Please add it to " +
-                    KnownVersions.class.getName() + ". Or if that is not possible, " +
-                    "include a src/test/resources/" + fileName +
-                    " file, which maps AS versions to model versions. E.g.:\n1.1.0=7.1.2\n1.2.0=7.1.3");
+//            throw new IllegalArgumentException("Version " + legacyModelVersion + " of " + mainSubsystemName + " is not a known version. Please add it to " +
+//                    KnownVersions.class.getName() + ". Or if that is not possible, " +
+//                    "include a src/test/resources/" + fileName +
+//                    " file, which maps AS versions to model versions. E.g.:\n1.1.0=7.1.2\n1.2.0=7.1.3");
+            // Use current
+            return CURRENT_CORE_VERSION;
         }
         Properties props = new Properties();
         try {
@@ -193,15 +199,19 @@ class MainKernelServicesImpl extends AbstractKernelServicesImpl {
 
         String asVersion = (String)props.get(legacyModelVersion.toString());
         if (asVersion == null) {
-            throw new IllegalArgumentException("src/test/resources/" + fileName +
-                    " does not contain an AS mapping for modelversion + " +
-                    legacyModelVersion + "'. It needs to map AS versions to model versions. E.g.:\n1.1.0=7.1.2\n1.2.0=7.1.3");
+//            throw new IllegalArgumentException("src/test/resources/" + fileName +
+//                    " does not contain an AS mapping for modelversion + " +
+//                    legacyModelVersion + "'. It needs to map AS versions to model versions. E.g.:\n1.1.0=7.1.2\n1.2.0=7.1.3");
+            // Use current
+            return CURRENT_CORE_VERSION;
         }
 
         coreModelVersion = KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.get(asVersion);
         if (coreModelVersion == null) {
-            throw new IllegalArgumentException("Unknown AS version '" + asVersion + "' determined from src/test/resources/" + fileName +
-                    ". Known AS versions are " + KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.keySet());
+//            throw new IllegalArgumentException("Unknown AS version '" + asVersion + "' determined from src/test/resources/" + fileName +
+//                    ". Known AS versions are " + KnownVersions.AS_CORE_MODEL_VERSION_BY_AS_VERSION.keySet());
+            // Use current
+            coreModelVersion = CURRENT_CORE_VERSION;
         }
         return coreModelVersion;
     }
