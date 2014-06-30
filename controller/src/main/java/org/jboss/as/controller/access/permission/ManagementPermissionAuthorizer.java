@@ -97,6 +97,9 @@ public class ManagementPermissionAuthorizer implements Authorizer {
             return AuthorizationResult.PERMITTED;
         }
         PermissionCollection userPerms = permissionFactory.getUserPermissions(caller, callEnvironment, action, target);
+        if (userPerms == AllPermissionsCollection.INSTANCE) {
+            return AuthorizationResult.PERMITTED;
+        }
         PermissionCollection requiredPerms = permissionFactory.getRequiredPermissions(action, target);
         return authorize(userPerms, requiredPerms);
     }

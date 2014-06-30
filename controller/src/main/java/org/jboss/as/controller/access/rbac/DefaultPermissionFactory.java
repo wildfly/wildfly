@@ -54,6 +54,7 @@ import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionConstraint;
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
 import org.jboss.as.controller.access.constraint.TopRoleConstraint;
+import org.jboss.as.controller.access.permission.AllPermissionsCollection;
 import org.jboss.as.controller.access.permission.CombinationManagementPermission;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.permission.JmxPermissionFactory;
@@ -117,8 +118,13 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
     }
 
     private PermissionCollection getUserPermissions(Set<String> roles) {
+        PermissionCollection result = checkAllPermissions(roles);
+        if (result != null) {
+            return result;
+        }
+
         PermsHolder currentPerms = configureRolePermissions();
-        PermissionCollection result = currentPerms.getPermissions(roles);
+        result = currentPerms.getPermissions(roles);
         if (result != null) {
             return result;
         }
@@ -173,6 +179,15 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         }
         currentPerms.storePermissions(roles, result);
         return result;
+    }
+
+    private PermissionCollection checkAllPermissions(Set<String> roles) {
+        if (roles.contains(StandardRole.SUPERUSER.toString())
+                && (authorizerConfiguration.getPermissionCombinationPolicy() == CombinationPolicy.PERMISSIVE
+                    || roles.size() == 1)) {
+            return AllPermissionsCollection.INSTANCE;
+        }
+        return null;
     }
 
     @Override
