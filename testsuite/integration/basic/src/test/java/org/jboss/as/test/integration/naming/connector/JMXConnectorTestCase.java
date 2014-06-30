@@ -16,76 +16,60 @@
  */
 package org.jboss.as.test.integration.naming.connector;
 
-import java.lang.management.ManagementFactory;
-import java.rmi.registry.LocateRegistry;
-import java.util.logging.Logger;
-
-import javax.ejb.EJB;
-import javax.management.MBeanServer;
-import javax.management.remote.JMXConnectorServer;
-import javax.management.remote.JMXConnectorServerFactory;
-import javax.management.remote.JMXServiceURL;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.management.MBeanServer;
+import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.naming.Context;
+import java.lang.management.ManagementFactory;
+import java.rmi.registry.LocateRegistry;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Tests that JMX Connector work properly from container.
  *
  * @author baranowb
+ * @author Eduardo Martins
  *
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class JMXConnectorTestCase {
     // NOTE: this test may fail on Ubuntu, since it has definition of localhost as 127.0.1.1
     private static final Logger log = Logger.getLogger(JMXConnectorTestCase.class.getName());
 
     private static final String CB_DEPLOYMENT_NAME = "naming-connector-bean"; // module
 
+    private JMXConnectorServer connectorServer;
+    private final int port = 11090;
+    private JMXServiceURL jmxServiceURL;
+    private String rmiServerJndiName;
+
     @ArquillianResource
     private ManagementClient managementClient;
 
-    @EJB(mappedName = "java:global/naming-connector-bean/ConnectedBean!org.jboss.as.test.integration.naming.connector.ConnectedBeanInterface")
-    private ConnectedBeanInterface connectedBean;
-
-    // ---------- deployment
-    // java:global/naming-connector-bean/ConnectedBean!org.jboss.as.test.integration.naming.connector.ConnectedBeanInterface
-    @Deployment
-    public static JavaArchive createTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
-        archive.addClass(ConnectedBean.class);
-        archive.addClass(ConnectedBeanInterface.class);
-        // archive.addClass(JMXConnectorTestCase.class);
-        archive.addAsManifestResource(new StringAsset("Dependencies: org.jboss.xnio\n"), "MANIFEST.MF");
-        log.info(archive.toString(true));
-        return archive;
-    }
-
-    @Test
-    public void testLookup() throws Exception {
-        connectedBean.testConnector(getJMXURI());
-    }
-
-    private JMXConnectorServer connectorServer;
-    private final int port = 11090;
-    private String jmxUri;
-
     @Before
     public void beforeTest() throws Exception {
-
         LocateRegistry.createRegistry(port);
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        JMXServiceURL url = new JMXServiceURL(getJMXURI());
-        connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
+        final String address = managementClient.getMgmtAddress();
+        rmiServerJndiName = "rmi://" + address + ":" + port + "/jmxrmi";
+        jmxServiceURL = new JMXServiceURL("service:jmx:rmi:///jndi/"+rmiServerJndiName);
+        connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(jmxServiceURL, null, mbs);
         connectorServer.start();
     }
 
@@ -96,13 +80,33 @@ public class JMXConnectorTestCase {
         }
     }
 
-    private String getJMXURI() {
-        if (jmxUri != null) {
-            return jmxUri;
-        }
-
-        final String address = managementClient.getMgmtAddress();
-        final String jmxUri = "service:jmx:rmi:///jndi/rmi://" + address + ":" + port + "/jmxrmi";
-        return jmxUri;
+    @Deployment
+    public static JavaArchive createTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
+        archive.addClass(ConnectedBean.class);
+        archive.addClass(ConnectedBeanInterface.class);
+        log.info(archive.toString(true));
+        return archive;
     }
+
+    @Test
+    public void testMBeanCount() throws Exception {
+        final Properties env = new Properties();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
+        env.put("jboss.naming.client.ejb.context", true);
+        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+        final javax.naming.InitialContext initialContext = new javax.naming.InitialContext(env);
+        try {
+            ConnectedBeanInterface connectedBean = (ConnectedBeanInterface) initialContext.lookup(CB_DEPLOYMENT_NAME + "/" + ConnectedBean.class.getSimpleName() + "!" + ConnectedBeanInterface.class.getName());
+            int mBeanCountFromJNDI = connectedBean.getMBeanCountFromJNDI(rmiServerJndiName);
+            log.info("MBean server count from jndi: " + mBeanCountFromJNDI);
+            int mBeanCountFromConnector = connectedBean.getMBeanCountFromConnector(jmxServiceURL);
+            log.info("MBean server count from connector: " + mBeanCountFromConnector);
+            Assert.assertEquals(mBeanCountFromConnector, mBeanCountFromJNDI);
+        } finally {
+            initialContext.close();
+        }
+    }
+
 }
