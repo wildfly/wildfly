@@ -58,6 +58,8 @@ import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
  *
+ * TODO: All the OSGI stuff needs to be moved into some kind of extension, as OSGI is not present in core or web
+ *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
  * @since 17-Nov-2010
@@ -211,22 +213,28 @@ public class ArquillianService implements Service<ArquillianService> {
             try {
                 return super.runTestMethod(className, methodName);
             } finally {
-                contextManager.teardown(properties);
+                if(contextManager != null) {
+                    contextManager.teardown(properties);
+                }
             }
         }
 
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
-            final ContextManagerBuilder builder = new ContextManagerBuilder();
-            final DeploymentUnit depUnit = config.getDeploymentUnit();
-            final Module module = depUnit.getAttachment(Attachments.MODULE);
-            final Bundle bundle = ArquillianConfig.getAssociatedBundle(module);
-            if (bundle == null && module != null) {
-                builder.add(new TCCLSetupAction(module.getClassLoader()));
-            }
-            builder.addAll(depUnit);
-            ContextManager contextManager = builder.build();
-            contextManager.setup(properties);
+            try {
+                final ContextManagerBuilder builder = new ContextManagerBuilder();
+                final DeploymentUnit depUnit = config.getDeploymentUnit();
+                final Module module = depUnit.getAttachment(Attachments.MODULE);
+                final Bundle bundle = (Bundle) ArquillianConfig.getAssociatedBundle(module);
+                if (bundle == null && module != null) {
+                    builder.add(new TCCLSetupAction(module.getClassLoader()));
+                }
+                builder.addAll(depUnit);
+                ContextManager contextManager = builder.build();
+                contextManager.setup(properties);
             return contextManager;
+            } catch (Throwable t) {
+                return null;
+            }
         }
     }
 
@@ -240,8 +248,13 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
 
             // Make the BundleContext available to the {@link OSGiTestEnricher}
-            BundleContext bundleContext = arqConfig.getBundleContext();
-            BundleContextAssociation.setBundleContext(bundleContext);
+            try {
+                BundleContext bundleContext = (BundleContext) arqConfig.getBundleContext();
+                BundleContextAssociation.setBundleContext(bundleContext);
+            } catch (Throwable t) {
+                log.warn("Could not set bundle context");
+                log.debug("Could not set bundle context", t);
+            }
 
             return arqConfig.loadClass(className);
         }

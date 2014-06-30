@@ -57,6 +57,10 @@
            <artifactId>arquillian-core-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.remotingjmx</groupId>
+            <artifactId>remoting-jmx</artifactId>
+        </dependency>
+        <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
            <scope>test</scope>
@@ -64,20 +68,13 @@
         <!-- Super Hack to get things to run in the correct order-->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-dist</artifactId>
+            <artifactId>wildfly-core-build</artifactId>
             <version>${project.version}</version>
+            <type>zip</type>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-build</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-build</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

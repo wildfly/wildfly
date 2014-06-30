@@ -17,11 +17,10 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.embedded.archive.GreetingService;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -30,29 +29,24 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.inject.Inject;
+
 /**
- * Tests CDI and injection
- *
- * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ * Tests basic deployment
  */
 @RunWith(Arquillian.class)
-@Ignore("We don't have a dependency on the full server, just the core, to avoid nasty circular dep")
-public class CdiTestCase {
+public class DeploymentTestCase {
 
     @Deployment
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class).addClass(GreetingService.class);
-        archive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class)
+                .addClass(SystemPropertyServiceActivator.class)
+                .addAsServiceProvider(ServiceActivator.class, SystemPropertyServiceActivator.class);
         return archive;
     }
 
-    @Inject
-    private GreetingService service;
-
     @Test
-    public void shouldBeAbleToInject() throws Exception {
-        Assert.assertNotNull(service);
-        final String name = "ALR";
-        Assert.assertEquals(GreetingService.GREETING_PREPENDED + name, service.greet(name));
+    public void testSystemPropSet() throws Exception {
+        Assert.assertEquals(SystemPropertyServiceActivator.VALUE, System.getProperty(SystemPropertyServiceActivator.TEST_PROPERTY));
     }
 }
