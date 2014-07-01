@@ -53,7 +53,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
 
     @Override
     public Object removeAttribute(String name) {
-        return this.attributes.remove(name) ? this.marshaller.read(this.invoker.invoke(this.cache, new Remover.RemoveOperation<SessionAttributeCacheKey, V>(this.createKey(name)))) : null;
+        return this.attributes.remove(name) ? this.marshaller.read(this.invoker.invoke(this.cache, new Remover.RemoveOperation<SessionAttributeCacheKey, V>(this.createKey(name)), Flag.FORCE_SYNCHRONOUS)) : null;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
                 return cache.put(key, value);
             }
         };
-        return this.marshaller.read(this.invoker.invoke(this.cache, operation, this.attributes.add(name) ? new Flag[] { Flag.IGNORE_RETURN_VALUES } : new Flag[0]));
+        return this.marshaller.read(this.invoker.invoke(this.cache, operation, this.attributes.add(name) ? Flag.IGNORE_RETURN_VALUES : Flag.FORCE_SYNCHRONOUS));
     }
 
     @Override

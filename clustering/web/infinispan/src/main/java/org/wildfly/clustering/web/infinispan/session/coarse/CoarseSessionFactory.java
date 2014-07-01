@@ -93,14 +93,14 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
     @Override
     public CoarseSessionEntry<L> createValue(String id) {
         CoarseSessionCacheEntry<L> cacheEntry = new CoarseSessionCacheEntry<>(new SimpleSessionMetaData());
-        CoarseSessionCacheEntry<L> existingCacheEntry = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, cacheEntry));
+        CoarseSessionCacheEntry<L> existingCacheEntry = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, cacheEntry), Flag.FORCE_SYNCHRONOUS);
         if (existingCacheEntry != null) {
             MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)));
             return new CoarseSessionEntry<>(existingCacheEntry, value);
         }
         Map<String, Object> map = new HashMap<>();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = this.marshaller.write(map);
-        MarshalledValue<Map<String, Object>, MarshallingContext> existingValue = this.invoker.invoke(this.attributesCache, new CreateOperation<>(new SessionAttributesCacheKey(id), value));
+        MarshalledValue<Map<String, Object>, MarshallingContext> existingValue = this.invoker.invoke(this.attributesCache, new CreateOperation<>(new SessionAttributesCacheKey(id), value), Flag.FORCE_SYNCHRONOUS);
         return new CoarseSessionEntry<>(cacheEntry, (existingValue != null) ? existingValue : value);
     }
 

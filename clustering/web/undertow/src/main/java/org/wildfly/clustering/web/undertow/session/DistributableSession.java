@@ -104,6 +104,9 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
             context.setAuthenticatedSession(session);
             return old;
         }
+        if (!(value instanceof java.io.Serializable)) {
+            throw new IllegalArgumentException(new java.io.NotSerializableException(value.getClass().getName()));
+        }
         Object old = this.getSession().getAttributes().setAttribute(name, value);
         if (old == null) {
             this.manager.getSessionListeners().attributeAdded(this, name, value);

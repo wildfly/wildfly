@@ -33,6 +33,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.Locator;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.group.Group;
@@ -88,7 +89,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
             @Override
             public Set<Node> invoke(Cache<Object, Set<Node>> cache) {
                 Set<Node> nodes = new HashSet<>(Collections.singleton(node));
-                Set<Node> existing = cache.putIfAbsent(service, nodes);
+                Set<Node> existing = cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
                 if (existing != null) {
                     if (existing.add(node)) {
                         cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
@@ -125,13 +126,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
 
     @Override
     public Set<Node> getProviders(final Object service) {
-        Operation<Set<Node>> operation = new Operation<Set<Node>>() {
-            @Override
-            public Set<Node> invoke(Cache<Object, Set<Node>> cache) {
-                return cache.get(service);
-            }
-        };
-        Set<Node> nodes = this.invoker.invoke(this.cache, operation);
+        Set<Node> nodes = this.invoker.invoke(this.cache, new Locator.FindOperation<Object, Set<Node>>(service));
         return (nodes != null) ? Collections.unmodifiableSet(nodes) : Collections.<Node>emptySet();
     }
 
@@ -166,7 +161,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
                             List<Object> services = CacheServiceProviderRegistrationFactory.this.getServices(node);
                             for (Object service: services) {
                                 Set<Node> nodes = new HashSet<>(Collections.singleton(node));
-                                Set<Node> existing = cache.putIfAbsent(service, nodes);
+                                Set<Node> existing = cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
                                 if (existing != null) {
                                     if (existing.add(node)) {
                                         cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
