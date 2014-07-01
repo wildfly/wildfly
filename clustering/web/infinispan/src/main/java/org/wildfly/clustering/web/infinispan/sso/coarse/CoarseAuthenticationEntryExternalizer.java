@@ -50,6 +50,7 @@ public class CoarseAuthenticationEntryExternalizer<A, D> extends AbstractSimpleE
         output.writeObject(entry.getAuthentication());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public CoarseAuthenticationEntry<A, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         CoarseAuthenticationEntry<A, D, ?> entry = new CoarseAuthenticationEntry<>();
