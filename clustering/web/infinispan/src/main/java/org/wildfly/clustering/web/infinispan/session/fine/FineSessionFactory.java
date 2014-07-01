@@ -90,13 +90,13 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     @Override
     public FineSessionCacheEntry<L> createValue(String id) {
         FineSessionCacheEntry<L> entry = new FineSessionCacheEntry<>(new SimpleSessionMetaData());
-        FineSessionCacheEntry<L> existing = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, entry));
+        FineSessionCacheEntry<L> existing = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, entry), Flag.FORCE_SYNCHRONOUS);
         return (existing != null) ? existing : entry;
     }
 
     @Override
     public void remove(final String id) {
-        final FineSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new RemoveOperation<String, FineSessionCacheEntry<L>>(id));
+        final FineSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new RemoveOperation<String, FineSessionCacheEntry<L>>(id), Flag.FORCE_SYNCHRONOUS);
         Operation<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>, Void> attributeOperation = new Operation<SessionAttributeCacheKey, MarshalledValue<Object,MarshallingContext>, Void>() {
             @Override
             public Void invoke(Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> cache) {

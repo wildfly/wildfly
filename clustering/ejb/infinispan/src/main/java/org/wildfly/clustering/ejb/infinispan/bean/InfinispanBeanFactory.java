@@ -91,13 +91,13 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     @Override
     public BeanEntry<G> createValue(I id, G groupId) {
         BeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
-        BeanEntry<G> existing = this.invoker.invoke(this.cache, new Creator.CreateOperation<>(this.createKey(id), entry));
+        BeanEntry<G> existing = this.invoker.invoke(this.cache, new Creator.CreateOperation<>(this.createKey(id), entry), Flag.FORCE_SYNCHRONOUS);
         return (existing != null) ? existing : entry;
     }
 
     @Override
     public void remove(I id, RemoveListener<T> listener) {
-        BeanEntry<G> entry = this.invoker.invoke(this.cache, new RemoveOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)));
+        BeanEntry<G> entry = this.invoker.invoke(this.cache, new RemoveOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)), Flag.FORCE_SYNCHRONOUS);
         if (entry != null) {
             G groupId = entry.getGroupId();
             try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.findValue(groupId))) {

@@ -62,13 +62,13 @@ public class CoarseSSOFactory<I, D, L> implements SSOFactory<CoarseSSOEntry<I, D
     @Override
     public CoarseSSOEntry<I, D, L> createValue(String id) {
         CoarseAuthenticationEntry<I, D, L> entry = new CoarseAuthenticationEntry<>();
-        CoarseAuthenticationEntry<I, D, L> existingEntry = this.invoker.invoke(this.authenticationCache, new CreateOperation<>(id, entry));
+        CoarseAuthenticationEntry<I, D, L> existingEntry = this.invoker.invoke(this.authenticationCache, new CreateOperation<>(id, entry), Flag.FORCE_SYNCHRONOUS);
         if (existingEntry != null) {
             Map<D, String> value = this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)));
             return new CoarseSSOEntry<>(existingEntry, value);
         }
         Map<D, String> map = new HashMap<>();
-        Map<D, String> existingMap = this.invoker.invoke(this.sessionsCache, new CreateOperation<>(new CoarseSessionsKey(id), map));
+        Map<D, String> existingMap = this.invoker.invoke(this.sessionsCache, new CreateOperation<>(new CoarseSessionsKey(id), map), Flag.FORCE_SYNCHRONOUS);
         return new CoarseSSOEntry<>(entry, (existingMap != null) ? existingMap : map);
     }
 
