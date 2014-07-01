@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<config>
-   <subsystems name="default">
-      <!--  This is an example  -->
-      <subsystem>simple-with-text-and-comments.xml</subsystem>
-      <subsystem>empty-with-attributes.xml</subsystem>
-      <subsystem include-if-set="prop.include.me">simple.xml</subsystem>
-   </subsystems>
-</config>

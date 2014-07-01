@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<server xmlns="urn:jboss:domain:3.0">
-    <deployment-overlays>
-        <deployment-overlay name="test-overlay">
-            <content path="/test/123" content="12345678901234567890"/>
-            <deployment name="test.war"/>
-        </deployment-overlay>
-    </deployment-overlays>
-</server>

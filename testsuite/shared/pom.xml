@@ -45,9 +45,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

@@ -1,1 +1,0 @@
-This is needed since the layer fails to initialize if there is no 'base' directory

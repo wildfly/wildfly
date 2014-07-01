@@ -307,16 +307,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-           <groupId>org.wildfly</groupId>
-           <artifactId>wildfly-model-test</artifactId>
+           <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-model-test</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-model-test-framework</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>

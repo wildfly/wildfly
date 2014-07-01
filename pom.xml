@@ -260,6 +260,7 @@
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
+        <version.org.wildfly.core>1.0.0.Alpha1</version.org.wildfly.core>
         <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
         <version.osgi>5.0.0</version.osgi>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
@@ -300,31 +301,48 @@
     </properties>
 
     <modules>
+        <module>appclient</module>
+        <module>batch</module>
         <module>build</module>
-        <module>build-config</module>
-        <module>core-build</module>
-        <module>build-plugin</module>
-        <module>controller</module>
-        <module>controller-client</module>
-        <module>core-security</module>
-        <module>deployment-repository</module>
-        <module>domain-http</module>
-        <module>domain-management</module>
+        <module>arquillian</module>
+        <module>client/ejb</module>
+        <module>client/jms</module>
+        <module>client/shade</module>
+        <module>clustering</module>
+        <module>connector</module>
+        <module>dist</module>
+        <module>ee</module>
+        <module>ejb3</module>
         <module>embedded</module>
-        <module>management-client-content</module>
-        <module>io</module>
-        <module>jmx</module>
-        <module>network</module>
-        <module>patching</module>
+        <module>jacorb</module>
+        <module>jaxrs</module>
+        <module>jdr</module>
+        <module>jpa</module>
+        <module>jsf</module>
+        <module>jsr77</module>
+        <module>legacy/cmp</module>
+        <module>legacy/jaxr</module>
+        <module>legacy/web</module>
+        <module>mail</module>
+        <module>messaging</module>
+        <module>mod_cluster</module>
+        <module>naming</module>
         <module>picketlink</module>
-        <module>platform-mbean</module>
-        <module>process-controller</module>
-        <module>protocol</module>
-        <module>remoting</module>
-        <module>server</module>
-        <module>subsystem-test</module>
-        <module>threads</module>
-        <module>version</module>
+        <module>pojo</module>
+        <module>sar</module>
+        <module>security</module>
+        <module>security-manager</module>
+        <module>spec-api</module>
+        <module>transactions</module>
+        <module>undertow</module>
+        <module>web-build</module>
+        <module>web-common</module>
+        <module>webservices</module>
+        <module>weld</module>
+        <module>xts</module>
+        <module>rts</module>
+        <module>testsuite/shared</module>
+        <module>testsuite</module>
     </modules>
 
     <build>
@@ -427,9 +445,9 @@
                     </configuration>
                     <dependencies>
                         <dependency>
-                            <groupId>org.wildfly</groupId>
+                            <groupId>org.wildfly.core</groupId>
                             <artifactId>wildfly-build-config</artifactId>
-                            <version>${project.version}</version>
+                            <version>${version.org.wildfly.core}</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -790,9 +808,9 @@
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.wildfly</groupId>
+                    <groupId>org.wildfly.core</groupId>
                     <artifactId>wildfly-build-plugin</artifactId>
-                    <version>${project.version}</version>
+                    <version>${version.org.wildfly.core}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -800,7 +818,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-build-config</artifactId>
         </dependency>
     </dependencies>
@@ -897,28 +915,28 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-build</artifactId>
                 <type>zip</type>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-build-config</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-build-plugin</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-test-runner</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1036,57 +1054,57 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-controller</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-security-api</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-security</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-controller-client</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-deployment-repository</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-deployment-scanner</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-domain-http-error-context</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-domain-http-interface</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-domain-management</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1097,16 +1115,16 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-cli</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-cli</artifactId>
                 <classifier>client</classifier>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1116,27 +1134,27 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-model-test</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-model-test-framework</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-model-test-controller-optional</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
              </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-model-test-controller-7.2.0</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1177,15 +1195,15 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-host-controller</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-io</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1213,9 +1231,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-jmx</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1232,15 +1250,15 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-logging</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-management-client-content</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1268,9 +1286,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-model-test</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1280,9 +1298,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-network</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1308,33 +1326,33 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-patching</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-platform-mbean</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-process-controller</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-protocol</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-remoting</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1362,40 +1380,40 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-server</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-subsystem-test</artifactId>
                 <type>pom</type>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-subsystem-test-controller-7.2.0</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-subsystem-test-framework</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-system-jmx</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-threads</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1411,9 +1429,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly</groupId>
+                <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-version</artifactId>
-                <version>${project.version}</version>
+                <version>${version.org.wildfly.core}</version>
             </dependency>
 
             <dependency>
@@ -1500,6 +1518,11 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-testsuite-shared</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
             <!-- External Dependencies -->
 
             <dependency>
@@ -6663,66 +6686,6 @@
             <properties>
                 <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y</surefire.jpda.args>
             </properties>
-        </profile>
-
-        <profile>
-            <id>normal</id>
-            <activation>
-                <property><name>!minimalistic</name></property>
-            </activation>
-            <modules>
-                <module>appclient</module>
-                <module>batch</module>
-                <module>build</module>
-                <module>build-config</module>
-                <module>arquillian</module>
-                <module>cli</module>
-                <module>client/ejb</module>
-                <module>client/jms</module>
-                <module>client/shade</module>
-                <module>clustering</module>
-                <module>connector</module>
-                <module>core-model-test</module>
-                <module>core-security</module>
-                <module>deployment-scanner</module>
-                <module>dist</module>
-                <module>ee</module>
-                <module>ejb3</module>
-                <module>host-controller</module>
-                <module>jacorb</module>
-                <module>jaxrs</module>
-                <module>jdr</module>
-                <module>jpa</module>
-                <module>jsf</module>
-                <module>jsr77</module>
-                <module>legacy/cmp</module>
-                <module>legacy/jaxr</module>
-                <module>legacy/web</module>
-                <module>logging</module>
-                <module>mail</module>
-                <module>messaging</module>
-                <module>mod_cluster</module>
-                <module>model-test</module>
-                <module>naming</module>
-                <module>picketlink</module>
-                <module>pojo</module>
-                <module>sar</module>
-                <module>security</module>
-                <module>security-manager</module>
-                <module>spec-api</module>
-                <module>system-jmx</module>
-                <module>transactions</module>
-                <module>undertow</module>
-                <module>web-build</module>
-                <module>web-common</module>
-                <module>webservices</module>
-                <module>weld</module>
-                <module>xts</module>
-                <module>rts</module>
-                <module>testsuite/shared</module>
-                <module>testsuite-core</module>
-                <module>testsuite</module>
-            </modules>
         </profile>
 
         <profile>

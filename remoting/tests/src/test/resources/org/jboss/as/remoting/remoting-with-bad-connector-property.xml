@@ -1,8 +1,0 @@
-<subsystem xmlns="urn:jboss:domain:remoting:1.0">
-
-   <connector name="test-connector" socket-binding="test">
-      <properties>
-         <property name="WORKER_ACCEPT_THREAD_BAD" value="1"/><!-- proper name is WORKER_ACCEPT_THREADS -->
-      </properties>
-    </connector>
-</subsystem>

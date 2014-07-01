@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<server xmlns="urn:jboss:domain:3.0">
-    <paths>
-         <path name="absolute" path="${test.exp:/}"/>
-         <path name="relative" path="${test.exp:test}" relative-to="path"/>
-    </paths>
-</server>
