@@ -33,8 +33,9 @@ public enum InfinispanSchema {
     VERSION_1_3(1, 3),
     VERSION_1_4(1, 4),
     VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
-    static final InfinispanSchema CURRENT = VERSION_2_0;
+    static final InfinispanSchema CURRENT = VERSION_3_0;
 
     private final int major;
     private final int minor;

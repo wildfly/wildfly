@@ -146,7 +146,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
         CacheResourceDefinition.START.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.BATCHING.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.JNDI_NAME.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.MODULE.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(cache, writer);

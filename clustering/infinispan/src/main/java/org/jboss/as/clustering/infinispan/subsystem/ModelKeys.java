@@ -38,7 +38,7 @@ public class ModelKeys {
     static final String BACKUP_STRATEGY = "strategy";
     static final String BACKUPS = "backups";
     static final String BATCH_SIZE = "batch-size";
-    static final String BATCHING = "batching";
+    @Deprecated static final String BATCHING = "batching";
     static final String BINARY_KEYED_TABLE = "binary-keyed-table";
     static final String BINARY_KEYED_TABLE_NAME = "BINARY_KEYED_TABLE";
     static final String BRING_SITE_ONLINE = "bring-site-online";

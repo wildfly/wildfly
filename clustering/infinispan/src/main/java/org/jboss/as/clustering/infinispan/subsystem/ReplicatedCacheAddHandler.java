@@ -22,12 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import org.infinispan.configuration.cache.CacheMode;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
@@ -35,13 +30,6 @@ import org.jboss.dmr.ModelNode;
 public class ReplicatedCacheAddHandler extends SharedStateCacheAddHandler {
 
     static final ReplicatedCacheAddHandler INSTANCE = new ReplicatedCacheAddHandler();
-
-    // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        INSTANCE.populate(model, operation);
-        return operation;
-    }
 
     private ReplicatedCacheAddHandler() {
         super(CacheMode.REPL_SYNC);

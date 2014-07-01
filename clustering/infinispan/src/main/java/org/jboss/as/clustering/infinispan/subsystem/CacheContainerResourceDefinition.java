@@ -55,13 +55,13 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
         return PathElement.pathElement(ModelKeys.CACHE_CONTAINER, containerName);
     }
 
-    // attributes
-    static final AttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelKeys.ALIAS, ModelType.STRING, true)
+    private static final AttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
             .setXmlName(Attribute.NAME.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    // attributes
     static final SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS)
             .setAllowNull(true)
             .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
@@ -125,19 +125,12 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, MODULE, STATISTICS_ENABLED
     };
 
-    // This is not an attribute, but is used to build the alias add/remove operations.
-    private static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
-            .setXmlName(Attribute.NAME.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container"))
+            .setParameters(ALIAS)
             .build();
 
-    static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container.alias"))
-            .setParameters(NAME)
-            .build();
-
-    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container.alias"))
-            .setParameters(NAME)
+    static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container"))
+            .setParameters(ALIAS)
             .build();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {

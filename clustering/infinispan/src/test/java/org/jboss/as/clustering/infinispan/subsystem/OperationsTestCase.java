@@ -34,8 +34,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
     // cache test operations
     static final ModelNode localCacheAddOp = getCacheAddOperation("maximal2", ModelKeys.LOCAL_CACHE, "new-cache");
     static final ModelNode localCacheRemovekOp = getCacheRemoveOperation("maximal2", ModelKeys.LOCAL_CACHE, "new-cache");
-    static final ModelNode readLocalCacheBatchingOp = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", "batching");
-    static final ModelNode writeLocalCacheBatchingOp = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", "batching", "false");
 
     // cache locking test operations
     // TODO
@@ -81,20 +79,27 @@ public class OperationsTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
+        String initialValue = "EAGER";
+        ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START);
+
         // read the cache container batching attribute
-        ModelNode result = servicesA.executeOperation(readLocalCacheBatchingOp);
+        ModelNode result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("true", result.get(RESULT).asString());
+        Assert.assertEquals(initialValue, result.get(RESULT).asString());
+
+        String newValue = "LAZY";
+        ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START, newValue);
 
         // write the batching attribute
-        result = servicesA.executeOperation(writeLocalCacheBatchingOp);
+        result = servicesA.executeOperation(writeOperation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the batching attribute
-        result = servicesA.executeOperation(readLocalCacheBatchingOp);
+        result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("false", result.get(RESULT).asString());
+        Assert.assertEquals(newValue, result.get(RESULT).asString());
     }
+
     /*
      * Tests access to local cache attributes
      */
