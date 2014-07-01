@@ -30,8 +30,36 @@
     <dependencies>
         <system export="true">
             <paths>
+                <!-- todo create new nashorn/scripting module-->
                 <path name="com/sun/script/javascript"/>
                 <path name="jdk/nashorn/api/scripting"/>
+                <path name="jdk/nashorn/api/scripting/resources"/>
+                <path name="jdk/nashorn/internal/codegen"/>
+                <path name="jdk/nashorn/internal/codegen/types"/>
+                <path name="jdk/nashorn/internal/ir"/>
+                <path name="jdk/nashorn/internal/ir/annotations"/>
+                <path name="jdk/nashorn/internal/ir/debug"/>
+                <path name="jdk/nashorn/internal/ir/visitor"/>
+                <path name="jdk/nashorn/internal/lookup"/>
+                <path name="jdk/nashorn/internal/objects"/>
+                <path name="jdk/nashorn/internal/objects/annotations"/>
+                <path name="jdk/nashorn/internal/parser"/>
+                <path name="jdk/nashorn/internal/runtime"/>
+                <path name="jdk/nashorn/internal/runtime/arrays"/>
+                <path name="jdk/nashorn/internal/runtime/linker"/>
+                <path name="jdk/nashorn/internal/runtime/options"/>
+                <path name="jdk/nashorn/internal/runtime/regexp"/>
+                <path name="jdk/nashorn/internal/runtime/regexp/joni"/>
+                <path name="jdk/nashorn/internal/runtime/resources"/>
+                <path name="jdk/nashorn/internal/runtime/resources/fx"/>
+                <path name="jdk/nashorn/internal/runtime/scripts"/>
+                <path name="jdk/nashorn/internal/tools"/>
+                <path name="jdk/nashorn/internal/tools/resources"/>
+                <path name="jdk/internal/dynalink"/>
+                <path name="jdk/internal/dynalink/beans"/>
+                <path name="jdk/internal/dynalink/linker"/>
+                <path name="jdk/internal/dynalink/support"/>
+                <!-- END SCRIPTING-->
                 <path name="com/sun/image/codec/jpeg"/>
                 <path name="com/sun/imageio/plugins/bmp"/>
                 <path name="com/sun/imageio/plugins/common"/>
