@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jboss.as.patching.logging.PatchLogger;
+import org.jboss.as.patching.validation.PatchingFileRenamingCollector;
 import org.jboss.as.patching.validation.PatchingGarbageLocator;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
@@ -68,6 +69,15 @@ public class InstallationManagerService implements Service<InstallationManager> 
                     cleanupMaker.delete();
                 } catch (Exception e) {
                     PatchLogger.ROOT_LOGGER.debugf(e, "failed to garbage collect changes");
+                }
+            }
+            final File renamingMaker = new File(manager.getInstalledImage().getInstallationMetadata(), "cleanup-renaming-files");
+            if (renamingMaker.exists()) {
+                try {
+                    final PatchingFileRenamingCollector renaming = new PatchingFileRenamingCollector(renamingMaker);
+                    renaming.renameFiles();
+                } catch (Exception e) {
+                    PatchLogger.ROOT_LOGGER.debugf(e, "failed to rename files");
                 }
             }
         } catch (Exception e) {
