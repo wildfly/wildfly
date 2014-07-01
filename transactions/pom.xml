@@ -39,7 +39,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
@@ -91,7 +91,7 @@
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
             <scope>test</scope>

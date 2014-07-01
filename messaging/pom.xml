@@ -45,7 +45,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
 
@@ -110,8 +110,8 @@
         </dependency>
 
 	    <dependency>
-	        <groupId>org.wildfly</groupId>
-	        <artifactId>wildfly-network</artifactId>
+	        <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-network</artifactId>
 	    </dependency>
 
         <dependency>
@@ -179,7 +179,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
 						<type>pom</type>
             <scope>test</scope>

@@ -1,9 +1,0 @@
-{
-    "model-description" => {
-        "description" => "JBoss Diagnostic Reporter (JDR) Subsystem.",
-        "attributes" => {},
-        "operations" => undefined,
-        "children" => {}
-    },
-    "address" => [("subsystem" => "jdr")]
-}

@@ -57,8 +57,8 @@
         <finalName>wildfly-${project.version}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-build-plugin</artifactId>
+                <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-build-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>create-server</id>

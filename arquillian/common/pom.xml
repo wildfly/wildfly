@@ -76,11 +76,11 @@
             <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-jmx</artifactId>
         </dependency>
         <dependency>

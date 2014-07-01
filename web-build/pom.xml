@@ -357,74 +357,74 @@
 
         <!-- Add this dependency to make sure that the core model is tested before we build the server -->
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-model-test-framework</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-model-test</artifactId>
+                    <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-model-test</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-build</artifactId>
             <type>zip</type>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller-client</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-security</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-security-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-host-controller</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-deployment-repository</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-deployment-scanner</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-domain-http-error-context</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-domain-http-interface</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-domain-management</artifactId>
         </dependency>
 
@@ -440,27 +440,27 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-io</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-logging</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-management-client-content</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-jmx</artifactId>
         </dependency>
 
@@ -476,27 +476,27 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-patching</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-platform-mbean</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-process-controller</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-protocol</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-remoting</artifactId>
         </dependency>
 
@@ -549,17 +549,17 @@
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-system-jmx</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-threads</artifactId>
         </dependency>
 
@@ -574,7 +574,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-version</artifactId>
         </dependency>
 
@@ -609,8 +609,8 @@
                 <executions></executions>
             </plugin>
             <plugin>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-build-plugin</artifactId>
+                <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-build-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>create-server</id>

@@ -1,9 +1,0 @@
-{
-    "model-description" => {
-        "description" => "The SAR subsystem allowing you to deploy sar archives containing MBeans configured by META-INF/jboss-service.xml",
-        "head-comment-allowed" => true,
-        "tail-comment-allowed" => true,
-        "namespace" => "urn:jboss:domain:sar:1.0"
-    },
-    "address" => [("subsystem" => "sar")]
-}

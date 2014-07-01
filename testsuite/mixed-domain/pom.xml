@@ -54,8 +54,8 @@
 
     <dependencies>
        <dependency>
-         <groupId>org.wildfly</groupId>
-         <artifactId>wildfly-model-test</artifactId>
+         <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-model-test</artifactId>
          <scope>test</scope>
        </dependency>
     </dependencies>

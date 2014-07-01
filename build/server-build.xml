@@ -110,8 +110,8 @@
         <copy-artifact artifact="org.jboss.seam.integration:jboss-seam-int-jbossas" to-location="modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
 
         <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
-        <copy-artifact artifact="org.wildfly:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
-        <copy-artifact artifact="org.wildfly:wildfly-version" to-location="modules/system/layers/base/org/jboss/as/version/main/jboss-as-version-${project.version}.jar"/>
+        <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
+        <copy-artifact artifact="org.wildfly.core:wildfly-version" to-location="modules/system/layers/base/org/jboss/as/version/main/jboss-as-version-${project.version}.jar"/>
         <copy-artifact artifact="org.hornetq:hornetq-native" to-location="modules/system/layers/base/org/hornetq/main" extract="true" >
             <filter pattern="lib/*" include="true" />
             <filter pattern="*" include="false"/>

@@ -45,7 +45,7 @@
             <artifactId>jbossws-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller-client</artifactId>
         </dependency>
         <dependency>
