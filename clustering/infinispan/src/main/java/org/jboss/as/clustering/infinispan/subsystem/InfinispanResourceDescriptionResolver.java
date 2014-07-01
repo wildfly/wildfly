@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
@@ -34,6 +36,14 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
     }
 
     @Override
+    public String getResourceAttributeDeprecatedDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+        if (sharedAttributeResolver.containsKey(attributeName)) {
+            return bundle.getString(getVariableBundleKey(attributeName, ModelDescriptionConstants.DEPRECATED));
+        }
+        return super.getResourceAttributeDeprecatedDescription(attributeName, locale, bundle);
+    }
+
+    @Override
     public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
         // don't apply the default bundle prefix to these attributes
         if (sharedAttributeResolver.containsKey(attributeName)) {
@@ -49,6 +59,14 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
             return bundle.getString(getBundleKey(paramName));
         }
         return super.getOperationParameterDescription(operationName, paramName, locale, bundle);
+    }
+
+    @Override
+    public String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+        if (sharedAttributeResolver.containsKey(paramName)) {
+            return bundle.getString(getVariableBundleKey(paramName, ModelDescriptionConstants.DEPRECATED));
+        }
+        return super.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
     }
 
     @Override
@@ -77,58 +95,32 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
         final String prefix = sharedAttributeResolver.get(name);
         StringBuilder sb = new StringBuilder(InfinispanExtension.SUBSYSTEM_NAME);
         // construct the key prefix
-        if (prefix == null) {
-            sb = sb.append('.').append(name);
-        } else {
-            sb = sb.append('.').append(prefix).append('.').append(name);
+        if (prefix != null) {
+            sb.append('.').append(prefix);
         }
+        sb.append('.').append(name);
         // construct the key suffix
         if (variable != null) {
             for (String arg : variable) {
-                if (sb.length() > 0)
-                    sb.append('.');
-                sb.append(arg);
+                sb.append('.').append(arg);
             }
         }
         return sb.toString();
     }
 
     private void initMap() {
-        // shared cache attributes
-        sharedAttributeResolver.put(CacheResourceDefinition.BATCHING.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.MODULE.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.INDEXING.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.INDEXING_PROPERTIES.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.JNDI_NAME.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.NAME.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.START.getName(), "cache");
-        sharedAttributeResolver.put(CacheResourceDefinition.STATISTICS_ENABLED.getName(), "cache");
-
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.MODE.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.QUEUE_SIZE.getName(), "clustered-cache");
-        sharedAttributeResolver.put(ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.getName(), "clustered-cache");
-
-        sharedAttributeResolver.put(StoreResourceDefinition.FETCH_STATE.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.PASSIVATION.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.PRELOAD.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.PURGE.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.SHARED.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.SINGLETON.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.PROPERTY.getName(), "store");
-        sharedAttributeResolver.put(StoreResourceDefinition.PROPERTIES.getName(), "store");
-
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.DATA_SOURCE.getName(), "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.DIALECT.getName(), "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.BATCH_SIZE.getName(), "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.FETCH_SIZE.getName(), "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.PREFIX.getName(), "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.ID_COLUMN.getName() + ".column", "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.DATA_COLUMN.getName() + ".column", "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.TIMESTAMP_COLUMN.getName() + ".column", "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.ENTRY_TABLE.getName() + "table", "jdbc-store");
-        sharedAttributeResolver.put(JDBCStoreResourceDefinition.BUCKET_TABLE.getName() + "table", "jdbc-store");
+        for (AttributeDefinition attribute: CacheResourceDefinition.ATTRIBUTES) {
+            sharedAttributeResolver.put(attribute.getName(), "cache");
+        }
+        for (AttributeDefinition attribute: ClusteredCacheResourceDefinition.ATTRIBUTES) {
+            sharedAttributeResolver.put(attribute.getName(), "clustered-cache");
+        }
+        for (AttributeDefinition attribute: StoreResourceDefinition.PARAMETERS) {
+            sharedAttributeResolver.put(attribute.getName(), "store");
+        }
+        for (AttributeDefinition attribute: JDBCStoreResourceDefinition.ATTRIBUTES) {
+            sharedAttributeResolver.put(attribute.getName(), "jdbc-store");
+        }
 
         this.initMetric(CacheMetric.class, "cache");
         this.initMetric(ClusteredCacheMetric.class, "clustered-cache");

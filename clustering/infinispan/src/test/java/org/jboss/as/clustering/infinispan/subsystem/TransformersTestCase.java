@@ -21,29 +21,23 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.CACHE_CONTAINER;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DISTRIBUTED_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.INVALIDATION_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.LOCAL_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.REPLICATED_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.STATISTICS_ENABLED;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.VIRTUAL_NODES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.OperationFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
@@ -71,12 +65,11 @@ import org.junit.Test;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-//@RunWith(BMUnitRunner.class)
 public class TransformersTestCase extends OperationTestCaseBase {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("infinispan-transformer-2_0.xml");
+        return readResource("infinispan-transformer.xml");
     }
 
     @Test
@@ -104,6 +97,17 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 "org.jboss.as:jboss-as-clustering-infinispan:" + ModelTestControllerVersion.V7_2_0_FINAL.getMavenGavVersion(),
                 "org.infinispan:infinispan-core:5.3.0.Final",
                 "org.infinispan:infinispan-cachestore-jdbc:5.3.0.Final"
+        );
+    }
+
+    @Test
+    public void testTransformer800() throws Exception {
+        testTransformer_2_0_0(
+                ModelTestControllerVersion.WILDFLY_8_0_0_FINAL,
+                "org.jboss.as:jboss-as-clustering-infinispan:" + ModelTestControllerVersion.WILDFLY_8_0_0_FINAL.getMavenGavVersion(),
+                "org.infinispan:infinispan-core:6.0.1.Final",
+                "org.infinispan:infinispan-commons:6.0.1.Final",
+                "org.infinispan:infinispan-cachestore-jdbc:6.0.1.Final"
         );
     }
 
@@ -144,6 +148,25 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 );
     }
 
+    private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
+        return this.buildKernelServices(this.getSubsystemXml(), controllerVersion, version, mavenResourceURLs);
+    }
+
+    private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(xml);
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(mavenResourceURLs)
+                .skipReverseControllerCheck()
+                .dontPersistXml();
+
+        KernelServices services = builder.build();
+        Assert.assertTrue(ModelTestControllerVersion.MASTER + " boot failed", services.isSuccessfulBoot());
+        Assert.assertTrue(controllerVersion.getMavenGavVersion() + " boot failed", services.getLegacyServices(version).isSuccessfulBoot());
+        return services;
+    }
+
     /*
      * Check transformation from current model version to 1.3.0 model version,
      * when no rejections are involved.
@@ -156,37 +179,20 @@ public class TransformersTestCase extends OperationTestCaseBase {
      */
     private void testTransformer_1_3_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
 
-        ModelVersion version130 = ModelVersion.create(1, 3);
-
-        // create the builder for the current subsystem
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-        builder.setSubsystemXml(getSubsystemXml());
-
-        // initialise the legacy services
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version130)
-                // add legacy jars
-                .addMavenResourceURL(mavenResourceURLs)
-                .configureReverseControllerCheck(null, new FixReverseControllerModel130())
-                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-                //which is strange since it should be loading it all from the current jboss modules
-                //Also this works in several other tests
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version130).isSuccessfulBoot());
+        ModelVersion version = InfinispanModel.VERSION_1_3_0.getVersion();
+        KernelServices services = this.buildKernelServices(controllerVersion, version, mavenResourceURLs);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version130);
+        checkSubsystemModelTransformation(services, version);
 
         // 1.3.0 API specific checks:
         // - check that segments is translated into virtual nodes
         // - check both segments and indexing properties are removed
-        ModelNode model = mainServices.readTransformedModel(version130);
-        ModelNode distCache = model.get(SUBSYSTEM,"infinispan",ModelKeys.CACHE_CONTAINER, "maximal", ModelKeys.DISTRIBUTED_CACHE, "dist") ;
-        Assert.assertFalse(distCache.has(ModelKeys.INDEXING_PROPERTIES));
-        Assert.assertFalse(distCache.has(ModelKeys.SEGMENTS));
-        Assert.assertTrue(distCache.get(ModelKeys.VIRTUAL_NODES).isDefined());
+        ModelNode model = services.readTransformedModel(version);
+        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
+        Assert.assertFalse(cache.has(ModelKeys.INDEXING_PROPERTIES));
+        Assert.assertFalse(cache.has(ModelKeys.SEGMENTS));
+        Assert.assertTrue(cache.get(ModelKeys.VIRTUAL_NODES).isDefined());
     }
 
 
@@ -200,38 +206,21 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * - any specific requirements for discarding/renaming/converting have been performed
      */
     public void testTransformer_1_4_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version140 = ModelVersion.create(1, 4);
-
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(getSubsystemXml());
-
-        // initialise the legacy services
-        builder.createLegacyKernelServicesBuilder(null,controllerVersion, version140)
-                .addMavenResourceURL(mavenResourceURLs)
-                .configureReverseControllerCheck(null, new FixReverseControllerModel140());
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version140);
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        ModelVersion version = InfinispanModel.VERSION_1_4_0.getVersion();
+        KernelServices services = this.buildKernelServices(controllerVersion, version, mavenResourceURLs);
 
         // check that both versions of the legacy model are the same and valid
-        // TODO: need a model fixer to make this work
-        checkSubsystemModelTransformation(mainServices, version140, new VirtualNodesTransformedModelProblem());
+        checkSubsystemModelTransformation(services, version, new VirtualNodesModelFixer());
 
         // 1.4.0 API specific checks
         // - check transformation of virtual nodes into segments
         // - check that statistics is discarded
-        PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                CacheContainerResourceDefinition.pathElement("container"),
-                DistributedCacheResourceDefinition.pathElement("cache"));
-        ModelNode addOp = Util.createAddOperation(pa);
-        addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(4);
-        addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
+        PathAddress address = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH, CacheContainerResourceDefinition.pathElement("container"), DistributedCacheResourceDefinition.pathElement("cache"));
+        ModelNode operation = Util.createAddOperation(address);
+        operation.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(4);
+        operation.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
 
-        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version140, addOp);
+        OperationTransformer.TransformedOperation transformedOperation = services.transformOperation(version, operation);
         Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()));
         Assert.assertEquals(24, transformedOperation.getTransformedOperation().get(DistributedCacheResourceDefinition.SEGMENTS.getName()).asInt());
 
@@ -241,11 +230,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
 
-        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
-        writeOp.get(NAME).set(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName());
-        writeOp.get(VALUE).set(4);
+        operation = OperationFactory.createWriteAttributeOperation(address, DistributedCacheResourceDefinition.VIRTUAL_NODES.getName(), new ModelNode(4));
 
-        transformedOperation = mainServices.transformOperation(version140, writeOp);
+        transformedOperation = services.transformOperation(version, operation);
         Assert.assertEquals(DistributedCacheResourceDefinition.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());
         Assert.assertEquals(24, transformedOperation.getTransformedOperation().get(VALUE).asInt());
         Assert.assertFalse(transformedOperation.rejectOperation(result));
@@ -262,25 +249,11 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * - any specific requirements for discarding/renaming/converting have been performed
      */
     public void testTransformer_1_4_1(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version141 = ModelVersion.create(1, 4, 1);
-
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(getSubsystemXml());
-
-        // initialise the legacy services
-        builder.createLegacyKernelServicesBuilder(null,controllerVersion, version141)
-                .addMavenResourceURL(mavenResourceURLs)
-                .configureReverseControllerCheck(null, new FixReverseControllerModel141());
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version141);
-        Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        ModelVersion version = InfinispanModel.VERSION_1_4_1.getVersion();
+        KernelServices services = this.buildKernelServices(controllerVersion, version, mavenResourceURLs);
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version141);
+        checkSubsystemModelTransformation(services, version);
 
         // 1.4.1 API specific checks
         // - check transformation of virtual nodes into segments
@@ -294,9 +267,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         // what happens to virtual nodes now? current - 1.4.1
         /*
-        OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version141, addOp);
+        OperationTransformer.TransformedOperation transformedOperation = services.transformOperation(version, operation);
         Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()));
-        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(DistributedCacheResourceDefinition.SEGMENTS.getName()).asInt());
+        Assert.assertEquals(24, transformedOperation.getTransformedOperation().get(DistributedCacheResourceDefinition.SEGMENTS.getName()).asInt());
 
         ModelNode result = new ModelNode();
         result.get(OUTCOME).set(SUCCESS);
@@ -304,16 +277,41 @@ public class TransformersTestCase extends OperationTestCaseBase {
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
 
-        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, pa);
-        writeOp.get(NAME).set(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName());
-        writeOp.get(VALUE).set(1);
+        operation = OperationFactory.createWriteAttributeOperation(address, DistributedCacheResourceDefinition.VIRTUAL_NODES.getName(), new ModelNode(4));
 
-        transformedOperation = mainServices.transformOperation(version141, writeOp);
+        transformedOperation = services.transformOperation(version, operation);
         Assert.assertEquals(DistributedCacheResourceDefinition.SEGMENTS.getName(), transformedOperation.getTransformedOperation().get(NAME).asString());
-        Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(VALUE).asInt());
+        Assert.assertEquals(24, transformedOperation.getTransformedOperation().get(VALUE).asInt());
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
         */
+    }
+
+    /*
+     * Check transformation from current model version to 2.0.0 model version.
+     *
+     * We do this by checking that;
+     * - both the current kernel services and legacy kernel services boot correctly
+     * - both versions of the transformed model (resource transformation vs operation transformation)
+     * are the same and are valid according to the legacy subsystem description
+     * - any specific requirements for discarding/renaming/converting have been performed
+     */
+    public void testTransformer_2_0_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version = InfinispanModel.VERSION_2_0_0.getVersion();
+        KernelServices services = this.buildKernelServices(controllerVersion, version, mavenResourceURLs);
+
+        // check that both versions of the legacy model are the same and valid
+        checkSubsystemModelTransformation(services, version);
+
+        // Verify that mode=BATCH is translated to mode=NONE, batching=true
+        ModelNode model = services.readTransformedModel(version);
+        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
+        Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.BATCHING.getName()));
+        Assert.assertTrue(cache.get(CacheResourceDefinition.BATCHING.getName()).asBoolean());
+        ModelNode transaction = model.get(TransactionResourceDefinition.PATH.getKeyValuePair());
+        if (transaction.hasDefined(TransactionResourceDefinition.MODE.getName())) {
+            Assert.assertEquals(TransactionMode.NONE.name(), transaction.get(TransactionResourceDefinition.MODE.getName()));
+        }
     }
 
     @Test
@@ -388,13 +386,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * - elements backups and backup-for will be rejected as children of the cache element
      */
     public void testRejections_1_3_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
+        ModelVersion version = InfinispanModel.VERSION_1_3_0.getVersion();
+//        KernelServices services = this.buildKernelServices(controllerVersion, version, new ChainedModelFixer(new BatchTransactionModeModelFixer(), new EnableStatisticsModelFixer()), mavenResourceURLs);
 
         // create builder for current subsystem version
         KernelServicesBuilder builderA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialise the legacy services
-        builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
+        builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -402,21 +401,21 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .dontPersistXml();
 
         KernelServices mainServicesA = builderA.build();
-        KernelServices legacyServicesA = mainServicesA.getLegacyServices(version_1_3_0);
+        KernelServices legacyServicesA = mainServicesA.getLegacyServices(version);
         Assert.assertNotNull(legacyServicesA);
         Assert.assertTrue("main services did not boot", mainServicesA.isSuccessfulBoot());
         Assert.assertTrue(legacyServicesA.isSuccessfulBoot());
 
         // test failed operations involving expressions
-        List<ModelNode> xmlOps_expressions = builderA.parseXmlResource("infinispan-transformer-2_0-expressions.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServicesA, version_1_3_0, xmlOps_expressions, getFailedOperationConfig130());
+        List<ModelNode> xmlOps_expressions = builderA.parseXmlResource("infinispan-transformer-expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServicesA, version, xmlOps_expressions, getFailedOperationConfig130());
         mainServicesA.shutdown();
 
         // create builder for current subsystem version
         KernelServicesBuilder builderB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services
-        builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
+        builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -424,14 +423,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .dontPersistXml();
 
         KernelServices mainServicesB = builderB.build();
-        KernelServices legacyServicesB = mainServicesB.getLegacyServices(version_1_3_0);
+        KernelServices legacyServicesB = mainServicesB.getLegacyServices(version);
         Assert.assertNotNull(legacyServicesB);
         Assert.assertTrue("main services did not boot", mainServicesB.isSuccessfulBoot());
         Assert.assertTrue(legacyServicesB.isSuccessfulBoot());
 
         // test failed operations involving expressions
-        List<ModelNode> xmlOps_backup = builderB.parseXmlResource("infinispan-transformer-2_0-backup.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServicesB, version_1_3_0, xmlOps_backup, getFailedOperationConfig130());
+        List<ModelNode> xmlOps_backup = builderB.parseXmlResource("infinispan-transformer-backup.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServicesB, version, xmlOps_backup, getFailedOperationConfig130());
         mainServicesB.shutdown();
 
     }
@@ -443,13 +442,13 @@ public class TransformersTestCase extends OperationTestCaseBase {
      *
      */
     public void testRejections_1_4_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_4_0 = ModelVersion.create(1, 4, 0);
+        ModelVersion version = InfinispanModel.VERSION_1_4_0.getVersion();
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -457,14 +456,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_4_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-2_0-backup.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_4_0, xmlOps, getFailedOperationConfig140());
+        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-backup.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version, xmlOps, getFailedOperationConfig140());
     }
 
     /*
@@ -474,13 +473,13 @@ public class TransformersTestCase extends OperationTestCaseBase {
      *
      */
     public void testRejections_1_4_1(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_4_1 = ModelVersion.create(1, 4, 1);
+        ModelVersion version = InfinispanModel.VERSION_1_4_1.getVersion();
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialise the legacy services
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_1)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -488,16 +487,15 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_4_1);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-2_0-backup.xml");
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_4_1, xmlOps, getFailedOperationConfig140());
+        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer-backup.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version, xmlOps, getFailedOperationConfig140());
     }
-
 
     /**
      * Constructs a FailedOperationTransformationConfig which describes:
@@ -614,31 +612,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
         return config ;
     }
 
-    /**
-     * Constructs a FailedOperationTransformationConfig which describes:
-     * - the cache child elements backups and backup-for
-     *
-     * @return config
-     */
-    private FailedOperationTransformationConfig getFailedOperationConfig141() {
-
-        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig() ;
-
-        PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
-        // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
-        config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
-        // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
-        config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
-        config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
-
-        return config ;
-    }
-
     private static class RemoveResolvedIndexingPropertiesConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<RemoveResolvedIndexingPropertiesConfig>{
 
         protected RemoveResolvedIndexingPropertiesConfig(AttributeDefinition...attributes) {
@@ -666,108 +639,21 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     /*
-     * Returns a copy of the model generated by booting current controller with legacy operations, but
-     * with the following changes:
-     * - all instances of "statistics" attribute set to true.
-     *
-     * This is required when comparing current model with the current controller booted with legacy operations,
-     * as the statistics attribute of cache-container and cache add operations are discarded.
-     */
-    private static class FixReverseControllerModel130 implements ModelFixer {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // ModelNode fixedModelNode = modelNode.clone();
-            ModelNode fixedModelNode = modelNode;
-            // set statistics to true for cache container and caches in the model
-            // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
-
-            return fixedModelNode;
-        }
-    }
-
-    /*
-     * Returns a copy of the model generated by booting current controller with legacy operations, but
-     * with the following changes:
-     * - all instances of "statistics" attribute set to true
-     * - virtual nodes attribute
-     *
-     * This is required when comparing current model with the current controller booted with legacy operations,
-     * as the statistics attribute of ache-container and cache add operations are discarded.
-     */
-    private static class FixReverseControllerModel140 implements ModelFixer {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // ModelNode fixedModelNode = modelNode.clone();
-            ModelNode fixedModelNode = modelNode;
-            // set statistics to true for cache container and caches in the model
-            // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
-
-            return fixedModelNode;
-        }
-    }
-
-    /*
-     * Returns a copy of the model generated by booting current controller with legacy operations, but
-     * with the following changes:
-     * - all instances of "statistics" attribute set to true
-     * - virtual nodes attribute
-     *
-     * This is required when comparing current model with the current controller booted with legacy operations,
-     * as the statistics attribute of ache-container and cache add operations are discarded.
-     */
-    private static class FixReverseControllerModel141 implements ModelFixer {
-        @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // ModelNode fixedModelNode = modelNode.clone();
-            ModelNode fixedModelNode = modelNode;
-            // set statistics to true for cache container and caches in the model
-            // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
-
-            return fixedModelNode;
-        }
-    }
-
-    /*
      * Returns a copy of the model generated by booting legacy controller with legacy operations, but
      * with the following changes:
      * - virtual nodes attribute is removed
      *
      * This is required to address a problem with resource transformers: WFLY-2589
      */
-    private static class VirtualNodesTransformedModelProblem implements ModelFixer {
+    static class VirtualNodesModelFixer implements ModelFixer {
         @Override
-        public ModelNode fixModel(ModelNode modelNode) {
-            // ModelNode fixedModelNode = modelNode.clone();
-            ModelNode fixedModelNode = modelNode;
+        public ModelNode fixModel(ModelNode model) {
+            ModelNode container = model.get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair());
+            ModelNode cache = container.get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
             // remove the virtual-nodes attribute which was not marked as undefined
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").remove(VIRTUAL_NODES);
-
-            return fixedModelNode;
+            cache.remove(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName());
+//            model.get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(LocalCacheResourceDefinition.pathElement("local").getKeyValuePair()).get(TransactionResourceDefinition.PATH.getKeyValuePair()).remove(TransactionResourceDefinition.MODE.getName());
+            return model;
         }
     }
 }
