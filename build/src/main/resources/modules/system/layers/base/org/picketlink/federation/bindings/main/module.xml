@@ -60,6 +60,7 @@
             </imports>
         </module>
         <module name="org.picketlink.federation"/>
+        <module name="org.jboss.modules"/>
     </dependencies>
 
 </module>

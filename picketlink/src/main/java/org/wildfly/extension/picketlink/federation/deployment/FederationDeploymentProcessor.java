@@ -26,6 +26,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
+import org.picketlink.identity.federation.bindings.stspool.STSClientPoolFactory;
 import org.wildfly.extension.picketlink.federation.service.PicketLinkFederationService;
 
 import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
@@ -55,6 +56,7 @@ public class FederationDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        // no-op
+        // destroy all sub-pools allocated for this deployment unit
+        STSClientPoolFactory.getPoolInstance().destroyPool(deploymentUnit.getName());
     }
 }
