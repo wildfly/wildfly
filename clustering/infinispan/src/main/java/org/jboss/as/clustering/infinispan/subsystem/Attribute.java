@@ -41,7 +41,7 @@ public enum Attribute {
     ASYNC_MARSHALLING(ModelKeys.ASYNC_MARSHALLING),
     BACKUP_FAILURE_POLICY(ModelKeys.BACKUP_FAILURE_POLICY),
     BATCH_SIZE(ModelKeys.BATCH_SIZE),
-    BATCHING(ModelKeys.BATCHING),
+    @Deprecated BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),
     CHUNK_SIZE(ModelKeys.CHUNK_SIZE),
     CLASS(ModelKeys.CLASS),
@@ -110,7 +110,7 @@ public enum Attribute {
     THREAD_POOL_SIZE(ModelKeys.THREAD_POOL_SIZE),
     TIMEOUT(ModelKeys.TIMEOUT),
     TYPE(ModelKeys.TYPE),
-    @Deprecated VIRTUAL_NODES("virtual-nodes"),
+    @Deprecated VIRTUAL_NODES(ModelKeys.VIRTUAL_NODES),
     ;
 
     private final String name;

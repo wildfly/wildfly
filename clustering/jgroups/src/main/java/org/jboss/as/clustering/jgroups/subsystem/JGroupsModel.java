@@ -28,13 +28,13 @@ import org.jboss.as.controller.ModelVersion;
  * @author Paul Ferraro
  */
 public enum JGroupsModel {
+
     VERSION_1_1_0(1, 1, 0),
     VERSION_1_2_0(1, 2, 0),
     VERSION_2_0_0(2, 0, 0),
     VERSION_3_0_0(3, 0, 0),
     ;
-
-    public static final JGroupsModel CURRENT = VERSION_3_0_0;
+    static final JGroupsModel CURRENT = VERSION_3_0_0;
 
     private final ModelVersion version;
 

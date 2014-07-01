@@ -22,16 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,37 +39,30 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
 
     static final DistributedCacheAddHandler INSTANCE = new DistributedCacheAddHandler();
 
-    // used to create subsystem description
-    static ModelNode createOperation(ModelNode address, ModelNode model) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        INSTANCE.populate(model, operation);
-        return operation;
-    }
-
     private DistributedCacheAddHandler() {
         super(CacheMode.DIST_SYNC);
     }
 
     @Override
-    void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-        super.populate(fromModel, toModel);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.populateModel(operation, model);
 
         @SuppressWarnings("deprecation")
         final String deprecatedKey = ModelKeys.VIRTUAL_NODES;
-        if (fromModel.hasDefined(deprecatedKey)
-                && fromModel.get(deprecatedKey).asInt() != 1) {
+        if (operation.hasDefined(deprecatedKey)
+                && operation.get(deprecatedKey).asInt() != 1) {
             // log a WARN
             InfinispanLogger.ROOT_LOGGER.virtualNodesAttributeDeprecated();
             // convert the virtual-nodes value to segments and update the incoming model
             // TBD: what to do it both values are coded?
-            ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(fromModel.get(deprecatedKey));
-            fromModel.get(ModelKeys.SEGMENTS).set(convertedValue);
-            fromModel.remove(deprecatedKey);
+            ModelNode convertedValue = SegmentsAndVirtualNodeConverter.virtualNodesToSegments(operation.get(deprecatedKey));
+            operation.get(ModelKeys.SEGMENTS).set(convertedValue);
+            operation.remove(deprecatedKey);
         }
 
-        DistributedCacheResourceDefinition.OWNERS.validateAndSet(fromModel, toModel);
-        DistributedCacheResourceDefinition.SEGMENTS.validateAndSet(fromModel, toModel);
-        DistributedCacheResourceDefinition.L1_LIFESPAN.validateAndSet(fromModel, toModel);
+        for (AttributeDefinition attribute: DistributedCacheResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
     /**

@@ -39,7 +39,6 @@ public class InfinispanRejectedExpressions_1_3 {
 
     // attributes which never accept expressions
     public static final AttributeDefinition[] NEVER_CONTAINER_ATTRIBUTES = {
-            CacheContainerResourceDefinition.ALIAS,
             CacheContainerResourceDefinition.ALIASES,
             CacheContainerResourceDefinition.EVICTION_EXECUTOR,
             CacheContainerResourceDefinition.LISTENER_EXECUTOR,
@@ -48,10 +47,6 @@ public class InfinispanRejectedExpressions_1_3 {
 
     public static final AttributeDefinition[] NEVER_TRANSPORT_ATTRIBUTES = {
             TransportResourceDefinition.EXECUTOR
-    };
-
-    public static final AttributeDefinition[] NEVER_CACHE_ATTRIBUTES = {
-            CacheResourceDefinition.NAME
     };
 
     public static final AttributeDefinition[] NEVER_CHILD_ATTRIBUTES = {
@@ -66,8 +61,6 @@ public class InfinispanRejectedExpressions_1_3 {
             JDBCStoreResourceDefinition.TIMESTAMP_COLUMN,
             JDBCStoreResourceDefinition.ENTRY_TABLE,
             JDBCStoreResourceDefinition.BUCKET_TABLE,
-            //BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE,
-            //BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE
     };
 
      // attributes which accept in 1.4.0 and in 1.3.0
@@ -117,7 +110,10 @@ public class InfinispanRejectedExpressions_1_3 {
                 CustomStoreResourceDefinition.ATTRIBUTES,
                 FileStoreResourceDefinition.ATTRIBUTES,
                 RemoteStoreResourceDefinition.ATTRIBUTES,
-                JDBCStoreResourceDefinition.ALL_ATTRIBUTES,
+                JDBCStoreResourceDefinition.ATTRIBUTES,
+                JDBCStoreResourceDefinition.COLUMN_ATTRIBUTES,
+                JDBCStoreResourceDefinition.TABLE_ATTRIBUTES,
+                new AttributeDefinition[] { JDBCStoreResourceDefinition.ENTRY_TABLE, JDBCStoreResourceDefinition.BUCKET_TABLE, JDBCStoreResourceDefinition.STRING_KEYED_TABLE, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE },
                 StringKeyedJDBCStoreResourceDefinition.ATTRIBUTES,
                 BinaryKeyedJDBCStoreResourceDefinition.ATTRIBUTES,
                 MixedKeyedJDBCStoreResourceDefinition.ATTRIBUTES,
@@ -142,14 +138,11 @@ public class InfinispanRejectedExpressions_1_3 {
     );
 
     @SuppressWarnings("deprecation")
-    public static final AttributeDefinition[] ACCEPT14_REJECT13_CACHE_ATTRIBUTES = remove(
-            concat(
-                CacheResourceDefinition.ATTRIBUTES,
-                ClusteredCacheResourceDefinition.ATTRIBUTES,
-                DistributedCacheResourceDefinition.ATTRIBUTES,
-                new AttributeDefinition[] { DistributedCacheResourceDefinition.VIRTUAL_NODES }
-            ),
-            NEVER_CACHE_ATTRIBUTES
+    public static final AttributeDefinition[] ACCEPT14_REJECT13_CACHE_ATTRIBUTES = concat(
+            CacheResourceDefinition.ATTRIBUTES,
+            ClusteredCacheResourceDefinition.ATTRIBUTES,
+            DistributedCacheResourceDefinition.ATTRIBUTES,
+            new AttributeDefinition[] { DistributedCacheResourceDefinition.VIRTUAL_NODES }
     );
 
     public static final AttributeDefinition[] ACCEPT14_REJECT13_CHILD_ATTRIBUTES = remove(
@@ -170,7 +163,10 @@ public class InfinispanRejectedExpressions_1_3 {
                 CustomStoreResourceDefinition.ATTRIBUTES,
                 FileStoreResourceDefinition.ATTRIBUTES,
                 RemoteStoreResourceDefinition.ATTRIBUTES,
-                JDBCStoreResourceDefinition.ALL_ATTRIBUTES,
+                JDBCStoreResourceDefinition.ATTRIBUTES,
+                JDBCStoreResourceDefinition.COLUMN_ATTRIBUTES,
+                JDBCStoreResourceDefinition.TABLE_ATTRIBUTES,
+                new AttributeDefinition[] { JDBCStoreResourceDefinition.ENTRY_TABLE, JDBCStoreResourceDefinition.BUCKET_TABLE, JDBCStoreResourceDefinition.STRING_KEYED_TABLE, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE },
                 StringKeyedJDBCStoreResourceDefinition.ATTRIBUTES,
                 BinaryKeyedJDBCStoreResourceDefinition.ATTRIBUTES,
                 MixedKeyedJDBCStoreResourceDefinition.ATTRIBUTES,

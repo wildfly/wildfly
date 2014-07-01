@@ -22,11 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.NoSuchElementException;
+
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -36,6 +39,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -49,12 +54,13 @@ import org.jboss.dmr.ModelType;
  */
 public class CacheResourceDefinition extends SimpleResourceDefinition {
 
-    // attributes
+    @Deprecated
     static final SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCHING, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.BATCHING.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
+            .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
@@ -102,14 +108,34 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             BATCHING, MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS_ENABLED
     };
 
-    // here for legacy purposes only
-    static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
-            .setXmlName(Attribute.NAME.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            // Set batching=true if transaction mode=BATCH
+            AttributeConverter batchingConverter = new AttributeConverter() {
+                @Override
+                public void convertOperationParameter(PathAddress address, String name, ModelNode value, ModelNode operation, TransformationContext context) {
+                    // Nothing to convert
+                }
+
+                @Override
+                public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
+                    PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
+                    try {
+                        ModelNode transaction = context.readResourceFromRoot(transactionAddress).getModel();
+                        if (transaction.hasDefined(TransactionResourceDefinition.MODE.getName())) {
+                            TransactionMode mode = TransactionMode.valueOf(transaction.get(TransactionResourceDefinition.MODE.getName()).asString());
+                            if (mode == TransactionMode.BATCH) {
+                                value.set(true);
+                            }
+                        }
+                    } catch (NoSuchElementException e) {
+                        // Ignore, nothing to convert
+                    }
+                }
+            };
+            builder.getAttributeBuilder().setValueConverter(batchingConverter, BATCHING);
+        }
 
         if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
@@ -117,14 +143,13 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, STATISTICS_ENABLED)
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STATISTICS_ENABLED)
                     .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), STATISTICS_ENABLED);
-
-            if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
-                // The following attributes now support expressions
-                builder.getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BATCHING, INDEXING, JNDI_NAME, MODULE, START)
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, INDEXING_PROPERTIES)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, INDEXING_PROPERTIES);
-            }
+        }
+        if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
+            // The following attributes now support expressions
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BATCHING, INDEXING, JNDI_NAME, MODULE, START)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, INDEXING_PROPERTIES)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, INDEXING_PROPERTIES);
         }
 
         LockingResourceDefinition.buildTransformation(version, builder);
@@ -171,6 +196,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         registration.registerSubModel(new TransactionResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new EvictionResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new ExpirationResourceDefinition());
+
         registration.registerSubModel(new CustomStoreResourceDefinition(this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new FileStoreResourceDefinition(this.resolvePathHandler, this.allowRuntimeOnlyRegistration));
         registration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition(this.allowRuntimeOnlyRegistration));

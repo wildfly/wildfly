@@ -45,7 +45,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
      */
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
+        context.startSubsystemElement(InfinispanSchema.CURRENT.getNamespaceUri(), false);
         ModelNode model = context.getModelNode();
         if (model.isDefined()) {
             if (model.hasDefined(CacheContainerResourceDefinition.WILDCARD_PATH.getKey())) {
@@ -146,7 +146,6 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
         CacheResourceDefinition.START.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.BATCHING.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.JNDI_NAME.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.MODULE.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(cache, writer);

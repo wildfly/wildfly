@@ -21,38 +21,44 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.ModelVersion;
-
 /**
- * Enumerates the supported model versions.
+ * Enumeration of the supported subsystem xml schemas.
  * @author Paul Ferraro
  */
-public enum InfinispanModel {
+public enum InfinispanSchema {
 
-    VERSION_1_3_0(1, 3, 0),
-    VERSION_1_4_0(1, 4, 0),
-    VERSION_1_4_1(1, 4, 1),
-    VERSION_2_0_0(2, 0, 0),
-    VERSION_3_0_0(3, 0, 0),
+    VERSION_1_0(1, 0),
+    VERSION_1_1(1, 1),
+    VERSION_1_2(1, 2),
+    VERSION_1_3(1, 3),
+    VERSION_1_4(1, 4),
+    VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
-    static final InfinispanModel CURRENT = VERSION_3_0_0;
+    static final InfinispanSchema CURRENT = VERSION_3_0;
 
-    private final ModelVersion version;
+    private final int major;
+    private final int minor;
 
-    private InfinispanModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
-    }
-
-    public ModelVersion getVersion() {
-        return this.version;
+    InfinispanSchema(int major, int minor) {
+        this.major = major;
+        this.minor = minor;
     }
 
     /**
-     * Indicates whether this model is more recent than the specified version and thus requires transformation
-     * @param version a model version
-     * @return true this this model is more recent than the specified version, false otherwise
+     * Indicates whether this version of the schema is greater than or equal to the version of the specified schema.
+     * @param a schema
+     * @return true, if this version of the schema is greater than or equal to the version of the specified schema, false otherwise.
      */
-    public boolean requiresTransformation(ModelVersion version) {
-        return ModelVersion.compare(this.version, version) < 0;
+    public boolean since(InfinispanSchema schema) {
+        return (this.major > schema.major) || ((this.major == schema.major) && (this.minor >= schema.minor));
+    }
+
+    /**
+     * Get the namespace URI of this schema.
+     * @return the namespace URI
+     */
+    public String getNamespaceUri() {
+        return String.format("urn:jboss:domain:%s:%d.%d", InfinispanExtension.SUBSYSTEM_NAME, this.major, this.minor);
     }
 }
