@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.domain.mixed.util;
 import java.io.File;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
 import org.jboss.as.test.integration.domain.mixed.Version;
 
 
@@ -36,7 +36,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public MixedDomainTestSupport(String testClass, String domainConfig, String masterConfig, String slaveConfig, String jbossHome)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig, new JBossAsManagedConfiguration(), new JBossAsManagedConfiguration(jbossHome));
+        super(testClass, domainConfig, masterConfig, slaveConfig, new WildFlyManagedConfiguration(), new WildFlyManagedConfiguration(jbossHome));
     }
 
 
