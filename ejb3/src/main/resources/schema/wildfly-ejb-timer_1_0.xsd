@@ -67,8 +67,8 @@
         </xs:sequence>
         <xs:attribute name="timed-object-id" type="xs:string" use="required"/>
         <xs:attribute name="timer-id" type="xs:string" use="required"/>
-        <xs:attribute name="initial-date" use="required"/>
-        <xs:attribute name="next-date" use="required"/>
+        <xs:attribute name="initial-date" use="optional"/>
+        <xs:attribute name="next-date" use="optional"/>
         <xs:attribute name="previous-run" use="optional"/>
         <xs:attribute name="timer-state" use="required"/>
         <xs:attribute name="schedule-expr-second" use="required"/>
@@ -78,9 +78,9 @@
         <xs:attribute name="schedule-expr-day-of-month" use="required"/>
         <xs:attribute name="schedule-expr-month" use="required"/>
         <xs:attribute name="schedule-expr-year" use="required"/>
-        <xs:attribute name="schedule-expr-start-date" use="required"/>
-        <xs:attribute name="schedule-expr-end-date" use="required"/>
-        <xs:attribute name="schedule-expr-timezone" use="required"/>
+        <xs:attribute name="schedule-expr-start-date" use="optional"/>
+        <xs:attribute name="schedule-expr-end-date" use="optional"/>
+        <xs:attribute name="schedule-expr-timezone" use="optional"/>
 
     </xs:complexType>
 
