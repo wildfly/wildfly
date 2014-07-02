@@ -86,11 +86,15 @@ public class DeploymentOverlayDeploymentUnitProcessor implements DeploymentUnitP
         for (final DeploymentOverlayService deploymentOverlay : indexService.getOverrides(deploymentUnit.getName())) {
             for (final ContentService override : deploymentOverlay.getContentServices()) {
 
+                String path = override.getPath();
+                if(path.startsWith("/")) {
+                    path = path.substring(1);
+                }
                 try {
-                    if (!paths.contains(override.getPath())) {
-                        VirtualFile mountPoint = deploymentRoot.getRoot().getChild(override.getPath());
+                    if (!paths.contains(path)) {
+                        VirtualFile mountPoint = deploymentRoot.getRoot().getChild(path);
 
-                        paths.add(override.getPath());
+                        paths.add(path);
                         if (exploded) {
                             //for exploded deployments we simply copy the file
                             copyFile(override.getContentHash().getPhysicalFile(), mountPoint.getPhysicalFile());
@@ -99,12 +103,12 @@ public class DeploymentOverlayDeploymentUnitProcessor implements DeploymentUnitP
                             Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), mountPoint);
                             MountedDeploymentOverlay mounted = new MountedDeploymentOverlay(handle, override.getContentHash().getPhysicalFile(),  mountPoint, TempFileProviderService.provider());
                             deploymentUnit.addToAttachmentList(MOUNTED_FILES, mounted);
-                            mounts.put(override.getPath(), mounted);
+                            mounts.put(path, mounted);
 
                         }
                     }
                 } catch (IOException e) {
-                    throw ServerMessages.MESSAGES.deploymentOverlayFailed(e, deploymentOverlay.getName(), override.getPath());
+                    throw ServerMessages.MESSAGES.deploymentOverlayFailed(e, deploymentOverlay.getName(), path);
                 }
             }
         }
