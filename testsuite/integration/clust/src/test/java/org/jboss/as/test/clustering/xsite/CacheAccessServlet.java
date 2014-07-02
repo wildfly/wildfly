@@ -24,12 +24,11 @@ package org.jboss.as.test.clustering.xsite;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.annotation.Resource;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -57,43 +56,37 @@ import org.infinispan.Cache;
  *
  * @author Richard Achmatowicz
  */
-@WebServlet(urlPatterns = {"/cache"})
+@WebServlet(urlPatterns = { CacheAccessServlet.SERVLET_PATH })
 public class CacheAccessServlet extends HttpServlet {
-    private final String OPERATION = "operation";
-    private final String GET = "get";
-    private final String PUT = "put";
-    private final String KEY = "key";
-    private final String VALUE = "value";
-    private final String DEFAULT_CACHE_NAME = "java:jboss/infinispan/cache/web/default";
+    private static final long serialVersionUID = 9130271954748513391L;
+    private static final String SERVLET_NAME = "cache";
+    static final String SERVLET_PATH = "/" + SERVLET_NAME;
+    private static final String OPERATION = "operation";
+    private static final String GET = "get";
+    private static final String PUT = "put";
+    private static final String KEY = "key";
+    private static final String VALUE = "value";
 
-    public static final String URL = "cache";
-
-    // default is java:jboss/infinispan/cache/web/repl
-    @Resource(name="TheTargetCache")
-    Cache<String,Custom> cache;
-
-    @Override
-    public void init() throws ServletException {
-
-        // get the JNDI name of the cache we shall access
-        ServletConfig sc = getServletConfig();
-        String cacheJNDIName = sc.getInitParameter("jndi-name");
-        if (cacheJNDIName == null) {
-            cacheJNDIName = DEFAULT_CACHE_NAME ;
-        }
-
-        Context ctx = null ;
-        try {
-            ctx = (Context)new InitialContext();
-            cache = (Cache<String,Custom>) ctx.lookup(cacheJNDIName);
-            if (cache == null) {
-                throw new ServletException(String.format("Unable to access cache with JNDI name '%s'", cacheJNDIName));
-            }
-        }
-        catch(NamingException ne) {
-            throw new ServletException(String.format("Problem looking up name for cache '%s'", cacheJNDIName));
-        }
+    public static URI createGetURI(URL baseURL, String key) throws URISyntaxException {
+        return createURI(baseURL, GET, key, null);
     }
+
+    public static URI createPutURI(URL baseURL, String key, String value) throws URISyntaxException {
+        return createURI(baseURL, PUT, key, value);
+    }
+
+    public static URI createURI(URL baseURL, String operation, String key, String value) throws URISyntaxException {
+        StringBuilder builder = new StringBuilder(SERVLET_NAME);
+        builder.append('?').append(OPERATION).append('=').append(operation);
+        builder.append('&').append(KEY).append('=').append(key);
+        if (value != null) {
+            builder.append('&').append(VALUE).append('=').append(value);
+        }
+        return baseURL.toURI().resolve(builder.toString());
+    }
+
+    @Resource(name="TheTargetCache")
+    private Cache<String, Custom> cache;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
