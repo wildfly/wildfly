@@ -52,7 +52,7 @@ public class SimpleSessionMetaData implements SessionMetaData {
     @Override
     public boolean isExpired() {
         long maxInactiveInterval = this.getMaxInactiveInterval(TimeUnit.MILLISECONDS);
-        return (maxInactiveInterval > 0) ? (System.currentTimeMillis() - this.lastAccessedTime.getTime()) > maxInactiveInterval : false;
+        return (maxInactiveInterval > 0) ? (System.currentTimeMillis() - this.lastAccessedTime.getTime()) >= maxInactiveInterval : false;
     }
 
     @Override
