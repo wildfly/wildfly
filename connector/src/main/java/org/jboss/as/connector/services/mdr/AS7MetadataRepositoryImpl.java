@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.core.mdr.SimpleMetadataRepository;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
@@ -43,8 +43,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implements AS7MetadataRepository {
 
-    private final Map<String, IronJacamar> ironJacamarMetaData = new HashMap<String, IronJacamar>();
-    private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
+    private final Map<String, Activation> ironJacamarMetaData = new HashMap<>();
+    private final List<ServiceName> jndiServices = new LinkedList<>();
 
     /**
      * Constructor
@@ -53,11 +53,11 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     }
 
     @Override
-    public synchronized void registerResourceAdapter(String uniqueId, File root, Connector md, IronJacamar ijmd)
+    public synchronized void registerResourceAdapter(String uniqueId, File root, Connector md, Activation activation)
         throws AlreadyExistsException {
-        super.registerResourceAdapter(uniqueId, root, md, ijmd);
-        if (ijmd != null) {
-            ironJacamarMetaData.put(uniqueId, ijmd);
+        super.registerResourceAdapter(uniqueId, root, md, activation);
+        if (activation != null) {
+            ironJacamarMetaData.put(uniqueId, activation);
         }
     }
 
@@ -87,8 +87,8 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     }
 
     @Override
-    public synchronized IronJacamar getIronJacamar(String uniqueId) throws NotFoundException {
-        return super.getIronJacamar(uniqueId);
+    public synchronized Activation getActivation(String uniqueId) throws NotFoundException {
+        return super.getActivation(uniqueId);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class AS7MetadataRepositoryImpl extends SimpleMetadataRepository implemen
     }
 
     @Override
-    public synchronized IronJacamar getIronJcamarMetaData(String uniqueId) {
+    public synchronized Activation getIronJacamarMetaData(String uniqueId) {
         return ironJacamarMetaData.get(uniqueId);
     }
 

@@ -25,7 +25,7 @@ package org.jboss.as.connector.metadata.xmldescriptors;
 import java.io.Serializable;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 
 /**
  * A RaXmlDescriptor.
@@ -38,13 +38,13 @@ public final class IronJacamarXmlDescriptor implements Serializable {
     public static final AttachmentKey<IronJacamarXmlDescriptor> ATTACHMENT_KEY = AttachmentKey
             .create(IronJacamarXmlDescriptor.class);
 
-    private final IronJacamar ironJacamar;
+    private final Activation ironJacamar;
 
     /**
      * Create a new RaXmlDescriptor.
      * @param ironJacamar
      */
-    public IronJacamarXmlDescriptor(IronJacamar ironJacamar) {
+    public IronJacamarXmlDescriptor(Activation ironJacamar) {
         super();
         this.ironJacamar = ironJacamar;
     }
@@ -53,7 +53,7 @@ public final class IronJacamarXmlDescriptor implements Serializable {
      * Get the resource adapters.
      * @return the resource adapters.
      */
-    public IronJacamar getIronJacamar() {
+    public Activation getIronJacamar() {
         return ironJacamar;
     }
 

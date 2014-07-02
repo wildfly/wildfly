@@ -27,7 +27,7 @@ import java.io.Serializable;
 import java.net.URL;
 
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.jca.common.api.metadata.ra.Connector;
+import org.jboss.jca.common.api.metadata.spec.Connector;
 
 /**
  * A ConnectorXmlDescriptor.

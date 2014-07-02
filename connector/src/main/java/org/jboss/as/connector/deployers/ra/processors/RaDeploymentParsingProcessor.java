@@ -37,8 +37,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.metadata.ra.RaParser;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.metadata.spec.RaParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 

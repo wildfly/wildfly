@@ -300,6 +300,18 @@
 
   <xs:complexType name="validationType">
     <xs:sequence>
+      <xs:element name="validate-on-match" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              The validate-on-match element indicates whether or not connection
+              level validation should be done when a connection factory attempts to match
+              a managed connection for a given set. This is typically exclusive to the
+              use of background validation
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="background-validation" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation>

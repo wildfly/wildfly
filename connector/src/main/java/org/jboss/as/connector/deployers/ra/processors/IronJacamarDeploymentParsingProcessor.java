@@ -34,8 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.metadata.ironjacamar.v11.IronJacamarParser;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.metadata.ironjacamar.IronJacamarParser;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -88,7 +88,7 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
             return null;
 
         InputStream xmlStream = null;
-        IronJacamar result = null;
+        Activation result = null;
         try {
             xmlStream = serviceXmlFile.openStream();
             IronJacamarParser ironJacamarParser = new IronJacamarParser();

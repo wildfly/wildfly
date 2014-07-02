@@ -52,6 +52,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -145,6 +146,9 @@ public class PoolConfigurationRWHandler {
                 }
                 if (USE_FAST_FAIL.getName().equals(parameterName)) {
                     pc.setUseFastFail(newValue.asBoolean());
+                }
+                if (VALIDATE_ON_MATCH.getName().equals(parameterName)) {
+                    pc.setValidateOnMatch(newValue.asBoolean());
                 }
             }
         }

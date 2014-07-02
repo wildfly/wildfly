@@ -29,11 +29,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
-import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
+import org.jboss.jca.common.api.metadata.common.Pool;
+import org.jboss.jca.common.api.metadata.common.XaPool;
+import org.jboss.jca.common.api.metadata.ds.DsPool;
+import org.jboss.jca.common.api.metadata.ds.DsXaPool;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 
 /**
  * Runtime attribute handler for XA XML datasources
@@ -128,7 +128,7 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getXaPool().getCapacity().getDecrementer().getClassName());
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName())) {
-            CommonPool pool = dataSource.getXaPool();
+            Pool pool = dataSource.getXaPool();
             if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getIncrementer() == null)
                 return;
 
@@ -142,7 +142,7 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
 
 
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName())) {
-            CommonPool pool = dataSource.getXaPool();
+            Pool pool = dataSource.getXaPool();
             if (pool == null || ((DsPool) pool).getCapacity() == null || ((DsPool) pool).getCapacity().getDecrementer() == null)
                 return;
 
@@ -460,20 +460,20 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
         } else if (attributeName.equals(Constants.JTA.getName())) {
             setBooleanIfNotNull(context, true);
         } else if (attributeName.equals(Constants.ALLOW_MULTIPLE_USERS.getName())) {
-            CommonXaPool pool = dataSource.getXaPool();
+            XaPool pool = dataSource.getXaPool();
             if (!(pool instanceof DsXaPool)) {
                 return;
             }
             setBooleanIfNotNull(context, ((DsXaPool) pool).isAllowMultipleUsers());
         } else if (attributeName.equals(Constants.CONNECTION_LISTENER_CLASS.getName())) {
-            CommonPool pool = dataSource.getXaPool();
+            XaPool pool = dataSource.getXaPool();
             if (!(pool instanceof DsXaPool) || ((DsXaPool) pool).getConnectionListener() == null) {
                 return;
             }
             setStringIfNotNull(context, ((DsXaPool) pool).getConnectionListener().getClassName());
 
         } else if (attributeName.equals(Constants.CONNECTION_LISTENER_PROPERTIES.getName())) {
-            CommonPool pool = dataSource.getXaPool();
+            XaPool pool = dataSource.getXaPool();
             if (!(pool instanceof DsXaPool) || ((DsXaPool) pool).getConnectionListener() == null) {
                 return;
             }

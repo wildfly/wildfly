@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.jca.anno;
 
-import org.jboss.jca.common.metadata.ra.ra16.Connector16Impl;
+
+import org.jboss.jca.common.metadata.spec.ConnectorImpl;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -275,7 +276,7 @@ public class NoRaAnnoTestCase extends ContainerResourceMgmtTestBase {
 		assertTrue(ids.size() > 0);
 		String piId = getElementContaining(ids, "ra16anno");
 		assertNotNull(mdr.getResourceAdapter(piId));
-		assertTrue(mdr.getResourceAdapter(piId) instanceof Connector16Impl);
+		assertTrue(mdr.getResourceAdapter(piId) instanceof ConnectorImpl);
 	}
 
 	/**

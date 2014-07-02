@@ -40,13 +40,11 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.RaOperationUtil;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.AdminObject;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.Connector.Version;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.spec.AdminObject;
+import org.jboss.jca.common.api.metadata.spec.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
@@ -72,7 +70,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private final ClassLoader classLoader;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final Connector cmd;
-    private final IronJacamar ijmd;
+    private final Activation activation;
     private CommonDeployment raDeployment = null;
     private String deploymentName;
 
@@ -83,16 +81,16 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      *
      * @param connectorXmlDescriptor
      * @param cmd
-     * @param ijmd
+     * @activationm activation
      * @param classLoader
      * @param deploymentServiceName
      * @param duServiceName the deployment unit's service name
      */
     public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
-                                            final IronJacamar ijmd, final ClassLoader classLoader, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
+                                            final Activation activation, final ClassLoader classLoader, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.cmd = cmd;
-        this.ijmd = ijmd;
+        this.activation = activation;
         this.classLoader = classLoader;
         this.deploymentServiceName = deploymentServiceName;
         this.duServiceName = duServiceName;
@@ -107,7 +105,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final boolean fromModule = duServiceName.getParent().equals(RaOperationUtil.RAR_MODULE);
         final AS7RaDeployer raDeployer =
-            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, ijmd, deploymentServiceName, fromModule);
+            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, activation, deploymentServiceName, fromModule);
         raDeployer.setConfiguration(config.getValue());
 
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -121,7 +119,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 WritableServiceBasedNamingStore.popOwner();
             }
-            if (raDeployer.checkActivation(cmd, ijmd)) {
+            if (raDeployer.checkActivation(cmd, activation)) {
                 DEPLOYMENT_CONNECTOR_LOGGER.debugf("Activating: %s", deploymentName);
                 ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(deploymentName);
                 value = new ResourceAdapterDeployment(raDeployment, deploymentName, raServiceName);
@@ -189,13 +187,13 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
     private class AS7RaDeployer extends AbstractAS7RaDeployer {
 
-        private final IronJacamar ijmd;
+        private final Activation activation;
         private final boolean fromModule;
 
         public AS7RaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, IronJacamar ijmd,  final ServiceName deploymentServiceName, final boolean fromModule) {
+                Connector cmd, Activation activation,  final ServiceName deploymentServiceName, final boolean fromModule) {
             super(serviceContainer, url, deploymentName, root, cl, cmd, deploymentServiceName);
-            this.ijmd = ijmd;
+            this.activation = activation;
             this.fromModule = fromModule;
         }
 
@@ -206,22 +204,18 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
             this.start();
 
-            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd);
+            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, activation);
 
             return dep;
         }
 
         @Override
-        protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
+        protected boolean checkActivation(Connector cmd, Activation activation) {
             if (cmd != null) {
                 Set<String> raMcfClasses = new HashSet<String>();
                 Set<String> raAoClasses = new HashSet<String>();
 
-                if (cmd.getVersion() == Version.V_10) {
-                    ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
-                    raMcfClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
-                } else {
-                    ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
+                    ResourceAdapter ra = cmd.getResourceadapter();
                     if (ra != null && ra.getOutboundResourceadapter() != null &&
                         ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
                         List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
@@ -244,11 +238,11 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                     // Pure inflow always active except in case it is deployed as module
                     if (raMcfClasses.size() == 0 && raAoClasses.size() == 0 && ! fromModule)
                         return true;
-                }
 
-                if (ijmd != null) {
-                    if (ijmd.getConnectionDefinitions() != null) {
-                        for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
+
+                if (activation != null) {
+                    if (activation.getConnectionDefinitions() != null) {
+                        for (org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition def : activation.getConnectionDefinitions()) {
                             String clz = def.getClassName();
 
                             if (raMcfClasses.contains(clz))
@@ -256,8 +250,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                         }
                     }
 
-                    if (ijmd.getAdminObjects() != null) {
-                        for (org.jboss.jca.common.api.metadata.common.CommonAdminObject def : ijmd.getAdminObjects()) {
+                    if (activation.getAdminObjects() != null) {
+                        for (org.jboss.jca.common.api.metadata.resourceadapter.AdminObject def : activation.getAdminObjects()) {
                             String clz = def.getClassName();
 
                             if (raAoClasses.contains(clz))

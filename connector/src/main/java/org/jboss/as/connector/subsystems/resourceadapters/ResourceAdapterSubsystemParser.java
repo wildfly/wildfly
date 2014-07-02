@@ -22,29 +22,6 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.Capacity;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
-import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -61,6 +38,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
@@ -74,8 +52,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
@@ -93,7 +69,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_TO;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
@@ -102,14 +78,40 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_PRINCIPAL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_TO;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.Capacity;
+import org.jboss.jca.common.api.metadata.common.Pool;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
 * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -141,7 +143,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     }
 
     private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra, final String name) throws XMLStreamException {
-        streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
+        streamWriter.writeStartElement(Activations.Tag.RESOURCE_ADAPTER.getLocalName());
         streamWriter.writeAttribute(ResourceAdapterParser.Attribute.ID.getLocalName(), name);
         ARCHIVE.marshallAsElement(ra, streamWriter);
         MODULE.marshallAsElement(ra, streamWriter);
@@ -149,7 +151,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         BOOTSTRAP_CONTEXT.marshallAsElement(ra, streamWriter);
 
         if (ra.hasDefined(BEANVALIDATION_GROUPS.getName())) {
-            streamWriter.writeStartElement(ResourceAdapter.Tag.BEAN_VALIDATION_GROUPS.getLocalName());
+            streamWriter.writeStartElement(Activation.Tag.BEAN_VALIDATION_GROUPS.getLocalName());
             for (ModelNode bvg : ra.get(BEANVALIDATION_GROUPS.getName()).asList()) {
                 streamWriter.writeStartElement(BEANVALIDATION_GROUPS.getXmlName());
                 streamWriter.writeCharacters(bvg.asString());
@@ -167,7 +169,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             isXa = true;
         }
         if (ra.hasDefined(WM_SECURITY.getName()) && ra.get(WM_SECURITY.getName()).asBoolean()) {
-            streamWriter.writeStartElement(ResourceAdapter.Tag.WORKMANAGER.getLocalName());
+            streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
             streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
             WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
@@ -210,7 +212,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeEndElement();
         }
         if (ra.hasDefined(CONNECTIONDEFINITIONS_NAME)) {
-            streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITIONS.getLocalName());
+            streamWriter.writeStartElement(Activation.Tag.CONNECTION_DEFINITIONS.getLocalName());
             for (Property conDef : ra.get(CONNECTIONDEFINITIONS_NAME).asPropertyList()) {
                 writeConDef(streamWriter, conDef.getValue(), conDef.getName(), isXa);
             }
@@ -218,7 +220,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         }
 
         if (ra.hasDefined(ADMIN_OBJECTS_NAME)) {
-            streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECTS.getLocalName());
+            streamWriter.writeStartElement(Activation.Tag.ADMIN_OBJECTS.getLocalName());
             for (Property adminObject : ra.get(ADMIN_OBJECTS_NAME).asPropertyList()) {
                 writeAdminObject(streamWriter, adminObject.getValue(), adminObject.getName());
             }
@@ -232,7 +234,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         if (ra.hasDefined(CONFIG_PROPERTIES.getName())) {
             for (Property connectionProperty : ra.get(CONFIG_PROPERTIES.getName()).asPropertyList()) {
                 writeProperty(streamWriter, ra, connectionProperty.getName(), connectionProperty
-                        .getValue().get("value").asString(), ResourceAdapter.Tag.CONFIG_PROPERTY.getLocalName());
+                        .getValue().get("value").asString(), Activation.Tag.CONFIG_PROPERTY.getLocalName());
             }
 
         }
@@ -251,7 +253,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
 
     private void writeAdminObject(XMLExtendedStreamWriter streamWriter, ModelNode adminObject, final String poolName) throws XMLStreamException {
-        streamWriter.writeStartElement(ResourceAdapter.Tag.ADMIN_OBJECT.getLocalName());
+        streamWriter.writeStartElement(Activation.Tag.ADMIN_OBJECT.getLocalName());
         CLASS_NAME.marshallAsAttribute(adminObject, streamWriter);
         JNDINAME.marshallAsAttribute(adminObject, streamWriter);
         ENABLED.marshallAsAttribute(adminObject, streamWriter);
@@ -264,7 +266,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
     }
 
     private void writeConDef(XMLExtendedStreamWriter streamWriter, ModelNode conDef, final String poolName, final boolean isXa) throws XMLStreamException {
-        streamWriter.writeStartElement(ResourceAdapter.Tag.CONNECTION_DEFINITION.getLocalName());
+        streamWriter.writeStartElement(Activation.Tag.CONNECTION_DEFINITION.getLocalName());
         CLASS_NAME.marshallAsAttribute(conDef, streamWriter);
         JNDINAME.marshallAsAttribute(conDef, streamWriter);
         ENABLED.marshallAsAttribute(conDef, streamWriter);
@@ -289,7 +291,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         if (poolRequired) {
             if (isXa) {
 
-                streamWriter.writeStartElement(CommonConnDef.Tag.XA_POOL.getLocalName());
+                streamWriter.writeStartElement(ConnectionDefinition.Tag.XA_POOL.getLocalName());
                 MIN_POOL_SIZE.marshallAsElement(conDef, streamWriter);
                 INITIAL_POOL_SIZE.marshallAsElement(conDef, streamWriter);
                 MAX_POOL_SIZE.marshallAsElement(conDef, streamWriter);
@@ -313,7 +315,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
 
             } else {
-                streamWriter.writeStartElement(CommonConnDef.Tag.POOL.getLocalName());
+                streamWriter.writeStartElement(ConnectionDefinition.Tag.POOL.getLocalName());
                 MIN_POOL_SIZE.marshallAsElement(conDef, streamWriter);
                 INITIAL_POOL_SIZE.marshallAsElement(conDef, streamWriter);
                 MAX_POOL_SIZE.marshallAsElement(conDef, streamWriter);
@@ -323,7 +325,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
             }
             if (capacityRequired) {
-                streamWriter.writeStartElement(DsPool.Tag.CAPACITY.getLocalName());
+                streamWriter.writeStartElement(Pool.Tag.CAPACITY.getLocalName());
                 if (conDef.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                     streamWriter.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
                     CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(conDef, streamWriter);
@@ -345,7 +347,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
         if (conDef.hasDefined(APPLICATION.getName()) || conDef.hasDefined(SECURITY_DOMAIN.getName())
                 || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())) {
-            streamWriter.writeStartElement(CommonConnDef.Tag.SECURITY.getLocalName());
+            streamWriter.writeStartElement(ConnectionDefinition.Tag.SECURITY.getLocalName());
             if (conDef.hasDefined(APPLICATION.getName()) && conDef.get(APPLICATION.getName()).asBoolean()) {
                 streamWriter.writeEmptyElement(APPLICATION.getXmlName());
             } else {
@@ -359,7 +361,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
         if (conDef.hasDefined(BLOCKING_TIMEOUT_WAIT_MILLIS.getName()) || conDef.hasDefined(IDLETIMEOUTMINUTES.getName()) || conDef.hasDefined(ALLOCATION_RETRY.getName())
                 || conDef.hasDefined(ALLOCATION_RETRY_WAIT_MILLIS.getName()) || conDef.hasDefined(XA_RESOURCE_TIMEOUT.getName())) {
-            streamWriter.writeStartElement(CommonConnDef.Tag.TIMEOUT.getLocalName());
+            streamWriter.writeStartElement(ConnectionDefinition.Tag.TIMEOUT.getLocalName());
             BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsElement(conDef, streamWriter);
             IDLETIMEOUTMINUTES.marshallAsElement(conDef, streamWriter);
             ALLOCATION_RETRY.marshallAsElement(conDef, streamWriter);
@@ -368,11 +370,13 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             streamWriter.writeEndElement();
         }
 
-        if (conDef.hasDefined(BACKGROUNDVALIDATION.getName()) || conDef.hasDefined(BACKGROUNDVALIDATIONMILLIS.getName()) || conDef.hasDefined(USE_FAST_FAIL.getName()) ) {
-            streamWriter.writeStartElement(CommonConnDef.Tag.VALIDATION.getLocalName());
+        if (conDef.hasDefined(BACKGROUNDVALIDATION.getName()) || conDef.hasDefined(BACKGROUNDVALIDATIONMILLIS.getName()) ||
+                conDef.hasDefined(USE_FAST_FAIL.getName()) ||  conDef.hasDefined(VALIDATE_ON_MATCH.getName())) {
+            streamWriter.writeStartElement(ConnectionDefinition.Tag.VALIDATION.getLocalName());
             BACKGROUNDVALIDATION.marshallAsElement(conDef, streamWriter);
             BACKGROUNDVALIDATIONMILLIS.marshallAsElement(conDef, streamWriter);
             USE_FAST_FAIL.marshallAsElement(conDef, streamWriter);
+            VALIDATE_ON_MATCH.marshallAsElement(conDef, streamWriter);
             streamWriter.writeEndElement();
         }
 
@@ -380,7 +384,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()) || conDef.hasDefined(RECOVERLUGIN_CLASSNAME.getName())
                 || conDef.hasDefined(RECOVERLUGIN_PROPERTIES.getName()) || conDef.hasDefined(NO_RECOVERY.getName())) {
 
-            streamWriter.writeStartElement(CommonConnDef.Tag.RECOVERY.getLocalName());
+            streamWriter.writeStartElement(ConnectionDefinition.Tag.RECOVERY.getLocalName());
             NO_RECOVERY.marshallAsAttribute(conDef, streamWriter);
 
             if (conDef.hasDefined(RECOVERY_USERNAME.getName()) || conDef.hasDefined(RECOVERY_PASSWORD.getName())

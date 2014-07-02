@@ -38,6 +38,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -81,21 +82,19 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.Capacity;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
-import org.jboss.jca.common.api.metadata.common.v11.ConnDefXaPool;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
-import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.TimeOut;
+import org.jboss.jca.common.api.metadata.common.Validation;
+import org.jboss.jca.common.api.metadata.common.XaPool;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.DsPool;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -149,7 +148,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         boolean poolDefined = Boolean.FALSE;
 
         for (int i = 0; i < attributeSize; i++) {
-            org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
+            ConnectionDefinition.Attribute attribute = ConnectionDefinition.Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             switch (attribute) {
                 case ENABLED: {
@@ -213,7 +212,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
                 }
             } else {
-                throw ParseUtils.missingRequired(reader, EnumSet.of(CommonConnDef.Attribute.JNDI_NAME));
+                throw ParseUtils.missingRequired(reader, EnumSet.of(ConnectionDefinition.Attribute.JNDI_NAME));
             }
         }
 
@@ -221,19 +220,19 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.CONNECTION_DEFINITION) {
+                    if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.CONNECTION_DEFINITION) {
 
                         map.put(poolName, connectionDefinitionNode);
                         return;
                     } else {
-                        if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.UNKNOWN) {
+                        if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (CommonConnDef.Tag.forName(reader.getLocalName())) {
+                    switch (ConnectionDefinition.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
                             if (!configMap.containsKey(poolName)) {
                                 configMap.put(poolName, new HashMap<String, ModelNode>(0));
@@ -314,7 +313,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
             boolean poolDefined = Boolean.FALSE;
 
             for (int i = 0; i < attributeSize; i++) {
-                org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
+                ConnectionDefinition.Attribute attribute = ConnectionDefinition.Attribute.forName(reader.getAttributeLocalName(i));
                 String value = reader.getAttributeValue(i);
                 switch (attribute) {
                     case ENABLED: {
@@ -368,7 +367,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
                     }
                 } else {
-                    throw ParseUtils.missingRequired(reader, EnumSet.of(CommonConnDef.Attribute.JNDI_NAME));
+                    throw ParseUtils.missingRequired(reader, EnumSet.of(ConnectionDefinition.Attribute.JNDI_NAME));
                 }
             }
 
@@ -376,19 +375,19 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
             while (reader.hasNext()) {
                 switch (reader.nextTag()) {
                     case END_ELEMENT: {
-                        if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.CONNECTION_DEFINITION) {
+                        if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.CONNECTION_DEFINITION) {
 
                             map.put(poolName, connectionDefinitionNode);
                             return;
                         } else {
-                            if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.UNKNOWN) {
+                            if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.UNKNOWN) {
                                 throw ParseUtils.unexpectedEndElement(reader);
                             }
                         }
                         break;
                     }
                     case START_ELEMENT: {
-                        switch (CommonConnDef.Tag.forName(reader.getLocalName())) {
+                        switch (ConnectionDefinition.Tag.forName(reader.getLocalName())) {
                             case CONFIG_PROPERTY: {
                                 if (!configMap.containsKey(poolName)) {
                                     configMap.put(poolName, new HashMap<String, ModelNode>(0));
@@ -452,18 +451,18 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.VALIDATION) {
+                    if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.VALIDATION) {
 
                         return;
                     } else {
-                        if (CommonValidation.Tag.forName(reader.getLocalName()) == CommonValidation.Tag.UNKNOWN) {
+                        if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (CommonValidation.Tag.forName(reader.getLocalName())) {
+                    switch (Validation.Tag.forName(reader.getLocalName())) {
                         case BACKGROUND_VALIDATION: {
                             String value = rawElementText(reader);
                             BACKGROUNDVALIDATION.parseAndSetParameter(value, node, reader);
@@ -477,6 +476,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         case USE_FAST_FAIL: {
                             String value = rawElementText(reader);
                             USE_FAST_FAIL.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case VALIDATE_ON_MATCH: {
+                            String value = rawElementText(reader);
+                            VALIDATE_ON_MATCH.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         default:
@@ -496,11 +500,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.TIMEOUT) {
+                    if (ConnectionDefinition.Tag.forName(reader.getLocalName()) == ConnectionDefinition.Tag.TIMEOUT) {
 
                         return;
                     } else {
-                        if (CommonTimeOut.Tag.forName(reader.getLocalName()) == CommonTimeOut.Tag.UNKNOWN) {
+                        if (TimeOut.Tag.forName(reader.getLocalName()) == TimeOut.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedElement(reader);
                         }
                     }
@@ -508,7 +512,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case START_ELEMENT: {
                     String value = rawElementText(reader);
-                    switch (CommonTimeOut.Tag.forName(reader.getLocalName())) {
+                    switch (TimeOut.Tag.forName(reader.getLocalName())) {
                         case ALLOCATION_RETRY: {
                             ALLOCATION_RETRY.parseAndSetParameter(value, node, reader);
                             break;
@@ -552,7 +556,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         String poolName = null;
         String jndiName = null;
         for (int i = 0; i < attributeSize; i++) {
-            CommonAdminObject.Attribute attribute = CommonAdminObject.Attribute.forName(reader
+            AdminObject.Attribute attribute = AdminObject.Attribute.forName(reader
                     .getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
@@ -599,26 +603,26 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
                 }
             } else {
-                throw ParseUtils.missingRequired(reader, EnumSet.of(CommonAdminObject.Attribute.JNDI_NAME));
+                throw ParseUtils.missingRequired(reader, EnumSet.of(AdminObject.Attribute.JNDI_NAME));
 
             }
         }
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.ADMIN_OBJECT) {
+                    if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.ADMIN_OBJECT) {
 
                         map.put(poolName, adminObjectNode);
                         return;
                     } else {
-                        if (CommonAdminObject.Tag.forName(reader.getLocalName()) == CommonAdminObject.Tag.UNKNOWN) {
+                        if (AdminObject.Tag.forName(reader.getLocalName()) == AdminObject.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (CommonAdminObject.Tag.forName(reader.getLocalName())) {
+                    switch (AdminObject.Tag.forName(reader.getLocalName())) {
                         case CONFIG_PROPERTY: {
                             if (!configMap.containsKey(poolName)) {
                                 configMap.put(poolName, new HashMap<String, ModelNode>(0));
@@ -637,7 +641,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     }
 
     /**
-     * parse a {@link org.jboss.jca.common.api.metadata.common.CommonXaPool} object
+     * parse a {@link XaPool} object
      *
      * @param reader reader
      * @throws XMLStreamException XMLStreamException
@@ -655,14 +659,14 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         return;
 
                     } else {
-                        if (CommonXaPool.Tag.forName(reader.getLocalName()) == CommonXaPool.Tag.UNKNOWN) {
+                        if (XaPool.Tag.forName(reader.getLocalName()) == XaPool.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (ConnDefXaPool.Tag.forName(reader.getLocalName())) {
+                    switch (XaPool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
                             String value = rawElementText(reader);
                             MAX_POOL_SIZE.parseAndSetParameter(value, node, reader);
@@ -749,14 +753,14 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         return;
 
                     } else {
-                        if (CommonPool.Tag.forName(reader.getLocalName()) == CommonPool.Tag.UNKNOWN) {
+                        if (Pool.Tag.forName(reader.getLocalName()) == Pool.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (ConnDefPool.Tag.forName(reader.getLocalName())) {
+                    switch (Pool.Tag.forName(reader.getLocalName())) {
                         case MAX_POOL_SIZE: {
                             String value = rawElementText(reader);
                             MAX_POOL_SIZE.parseAndSetParameter(value, node, reader);
@@ -902,14 +906,14 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
                         return;
                     } else {
-                        if (CommonSecurity.Tag.forName(reader.getLocalName()) == CommonSecurity.Tag.UNKNOWN) {
+                        if (Security.Tag.forName(reader.getLocalName()) == Security.Tag.UNKNOWN) {
                             throw ParseUtils.unexpectedEndElement(reader);
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (CommonSecurity.Tag.forName(reader.getLocalName())) {
+                    switch (Security.Tag.forName(reader.getLocalName())) {
 
                         case SECURITY_DOMAIN: {
                             if (securtyDomainMatched) {

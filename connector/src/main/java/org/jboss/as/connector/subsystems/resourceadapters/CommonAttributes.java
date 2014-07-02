@@ -37,6 +37,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -121,7 +122,7 @@ public class CommonAttributes {
             USETRYLOCK,
             BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION,
-            USE_FAST_FAIL, USE_CCM,
+            USE_FAST_FAIL, VALIDATE_ON_MATCH, USE_CCM,
             SHARABLE, ENLISTMENT,
             RECOVERLUGIN_CLASSNAME,
             RECOVERLUGIN_PROPERTIES,

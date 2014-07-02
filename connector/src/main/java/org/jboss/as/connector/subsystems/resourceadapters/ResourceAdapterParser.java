@@ -59,13 +59,13 @@ import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
-import org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerImpl;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerSecurityImpl;
+import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
+import org.jboss.jca.common.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -83,7 +83,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
     public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
-        ResourceAdapters adapters = null;
+        Activations adapters = null;
 
 
         //iterate over tags
@@ -128,14 +128,14 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                     if (Tag.forName(reader.getLocalName()) == Tag.RESOURCE_ADAPTERS) {
                         return;
                     } else {
-                        if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.UNKNOWN) {
+                        if (Activations.Tag.forName(reader.getLocalName()) == Activations.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (ResourceAdapters.Tag.forName(reader.getLocalName())) {
+                    switch (Activations.Tag.forName(reader.getLocalName())) {
                         case RESOURCE_ADAPTER: {
                             parseResourceAdapter(reader, list, parentAddress);
                             break;
@@ -189,7 +189,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.RESOURCE_ADAPTER) {
+                    if (Activations.Tag.forName(reader.getLocalName()) == Activations.Tag.RESOURCE_ADAPTER) {
                         if (!archiveOrModuleMatched) {
                             throw new ParserException(bundle.requiredElementMissing(ARCHIVE.getName(), RESOURCEADAPTER_NAME));
 
@@ -362,10 +362,10 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (IronJacamar.Tag.forName(reader.getLocalName()) == IronJacamar.Tag.WORKMANAGER) {
+                    if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.WORKMANAGER) {
                         return new WorkManagerImpl(security);
                     } else {
-                        if (IronJacamar.Tag.forName(reader.getLocalName()) == IronJacamar.Tag.UNKNOWN) {
+                        if (Activation.Tag.forName(reader.getLocalName()) == Activation.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
                         }
                     }

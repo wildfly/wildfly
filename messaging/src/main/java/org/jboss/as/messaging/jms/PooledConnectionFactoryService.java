@@ -50,8 +50,8 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.JGroupsChannelLocator;
-import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
@@ -59,48 +59,50 @@ import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
+import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.TimeOut;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.AdminObject;
-import org.jboss.jca.common.api.metadata.ra.AuthenticationMechanism;
-import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.ra.CredentialInterfaceEnum;
-import org.jboss.jca.common.api.metadata.ra.Icon;
-import org.jboss.jca.common.api.metadata.ra.InboundResourceAdapter;
-import org.jboss.jca.common.api.metadata.ra.LocalizedXsdString;
-import org.jboss.jca.common.api.metadata.ra.MessageListener;
-import org.jboss.jca.common.api.metadata.ra.Messageadapter;
-import org.jboss.jca.common.api.metadata.ra.OutboundResourceAdapter;
-import org.jboss.jca.common.api.metadata.ra.RequiredConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.SecurityPermission;
-import org.jboss.jca.common.api.metadata.ra.XsdString;
-import org.jboss.jca.common.api.metadata.ra.ra15.Connector15;
+import org.jboss.jca.common.api.metadata.common.Validation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.spec.Activationspec;
+import org.jboss.jca.common.api.metadata.spec.AuthenticationMechanism;
+import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.CredentialInterfaceEnum;
+import org.jboss.jca.common.api.metadata.spec.Icon;
+import org.jboss.jca.common.api.metadata.spec.InboundResourceAdapter;
+import org.jboss.jca.common.api.metadata.spec.LocalizedXsdString;
+import org.jboss.jca.common.api.metadata.spec.MessageListener;
+import org.jboss.jca.common.api.metadata.spec.Messageadapter;
+import org.jboss.jca.common.api.metadata.spec.OutboundResourceAdapter;
+import org.jboss.jca.common.api.metadata.spec.RequiredConfigProperty;
+import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.spec.SecurityPermission;
+import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
-import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
-import org.jboss.jca.common.metadata.common.CommonValidationImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.jca.common.metadata.common.v10.CommonConnDefImpl;
-import org.jboss.jca.common.metadata.ironjacamar.v10.IronJacamarImpl;
-import org.jboss.jca.common.metadata.ra.common.AuthenticationMechanismImpl;
-import org.jboss.jca.common.metadata.ra.common.ConfigPropertyImpl;
-import org.jboss.jca.common.metadata.ra.common.ConnectionDefinitionImpl;
-import org.jboss.jca.common.metadata.ra.common.InboundResourceAdapterImpl;
-import org.jboss.jca.common.metadata.ra.common.MessageAdapterImpl;
-import org.jboss.jca.common.metadata.ra.common.MessageListenerImpl;
-import org.jboss.jca.common.metadata.ra.common.OutboundResourceAdapterImpl;
-import org.jboss.jca.common.metadata.ra.common.ResourceAdapter1516Impl;
-import org.jboss.jca.common.metadata.ra.ra15.Activationspec15Impl;
-import org.jboss.jca.common.metadata.ra.ra15.Connector15Impl;
+import org.jboss.jca.common.metadata.common.PoolImpl;
+import org.jboss.jca.common.metadata.common.SecurityImpl;
+import org.jboss.jca.common.metadata.common.TimeOutImpl;
+import org.jboss.jca.common.metadata.common.ValidationImpl;
+import org.jboss.jca.common.metadata.common.XaPoolImpl;
+import org.jboss.jca.common.metadata.resourceadapter.ActivationImpl;
+import org.jboss.jca.common.metadata.resourceadapter.ConnectionDefinitionImpl;
+import org.jboss.jca.common.metadata.spec.ActivationSpecImpl;
+import org.jboss.jca.common.metadata.spec.AuthenticationMechanismImpl;
+import org.jboss.jca.common.metadata.spec.ConfigPropertyImpl;
+import org.jboss.jca.common.metadata.spec.ConnectorImpl;
+import org.jboss.jca.common.metadata.spec.InboundResourceAdapterImpl;
+import org.jboss.jca.common.metadata.spec.MessageAdapterImpl;
+import org.jboss.jca.common.metadata.spec.MessageListenerImpl;
+import org.jboss.jca.common.metadata.spec.OutboundResourceAdapterImpl;
+import org.jboss.jca.common.metadata.spec.RequiredConfigPropertyImpl;
+import org.jboss.jca.common.metadata.spec.ResourceAdapterImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -400,14 +402,14 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             OutboundResourceAdapter outbound = createOutbound();
             InboundResourceAdapter inbound = createInbound();
-            ResourceAdapter1516 ra = createResourceAdapter15(properties, outbound, inbound);
-            Connector15 cmd = createConnector15(ra);
+            ResourceAdapter ra = createResourceAdapter15(properties, outbound, inbound);
+            Connector cmd = createConnector15(ra);
 
             TransactionSupportEnum transactionSupport = getTransactionSupport(txSupport);
-            CommonConnDef common = createConnDef(transactionSupport, bindInfo.getBindName(), minPoolSize, maxPoolSize);
-            IronJacamar ijmd = createIron(common, transactionSupport);
+            ConnectionDefinition common = createConnDef(transactionSupport, bindInfo.getBindName(), minPoolSize, maxPoolSize);
+            Activation activation = createActivation(common, transactionSupport);
 
-            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
+            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation,
                     PooledConnectionFactoryService.class.getClassLoader(), name);
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
@@ -468,52 +470,53 @@ public class PooledConnectionFactoryService implements Service<Void> {
         }
     }
 
-    private static IronJacamarImpl createIron(CommonConnDef common, TransactionSupportEnum transactionSupport) {
-        List<CommonConnDef> definitions = Collections.singletonList(common);
-        return new IronJacamarImpl(transactionSupport, Collections.<String, String>emptyMap(), Collections.<CommonAdminObject>emptyList(), definitions, Collections.<String>emptyList(), null);
+    private static Activation createActivation(ConnectionDefinition common, TransactionSupportEnum transactionSupport) {
+        List<ConnectionDefinition> definitions = Collections.singletonList(common);
+        return new ActivationImpl(null, null, transactionSupport, definitions, Collections.<AdminObject>emptyList(), Collections.<String, String>emptyMap(), Collections.<String>emptyList(), null, null);
     }
 
 
-    private static CommonConnDef createConnDef(TransactionSupportEnum transactionSupport, String jndiName, int minPoolSize, int maxPoolSize) throws ValidateException {
+    private static ConnectionDefinition createConnDef(TransactionSupportEnum transactionSupport, String jndiName, int minPoolSize, int maxPoolSize) throws ValidateException {
         Integer minSize = (minPoolSize == -1) ? null : minPoolSize;
         Integer maxSize = (maxPoolSize == -1) ? null : maxPoolSize;
         boolean prefill = false;
         boolean useStrictMin = false;
         FlushStrategy flushStrategy = FlushStrategy.FAILING_CONNECTION_ONLY;
         Boolean isXA = Boolean.FALSE;
-        final CommonPool pool;
+        final Pool pool;
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
-            pool = new CommonXaPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy,
+            pool = new XaPoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null,
                     Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
             isXA = Boolean.TRUE;
         } else {
-            pool = new CommonPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy);
+            pool = new PoolImpl(minSize, Defaults.INITIAL_POOL_SIZE, maxSize, prefill, useStrictMin, flushStrategy, null);
         }
-        CommonTimeOutImpl timeOut = new CommonTimeOutImpl(null, null, null, null, null);
+        TimeOut timeOut = new TimeOutImpl(null, null, null, null, null) {
+        };
         // <security>
         //   <application />
         // </security>
         // => PoolStrategy.POOL_BY_CRI
-        CommonSecurityImpl security = new CommonSecurityImpl(null, null, true);
+        Security security = new SecurityImpl(null, null, true);
         // register the XA Connection *without* recovery. HornetQ already takes care of the registration with the correct credentials
         // when its ResourceAdapter is started
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
-        CommonValidationImpl validation = new CommonValidationImpl(null, null, false);
-        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery, isXA);
+        Validation validation = new ValidationImpl(Defaults.VALIDATE_ON_MATCH, null, null, false);
+        return new ConnectionDefinitionImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, Defaults.SHARABLE, Defaults.ENLISTMENT,Defaults.CONNECTABLE, Defaults.TRACKING, pool, timeOut, validation, security, recovery, isXA);
     }
 
-    private static Connector15Impl createConnector15(ResourceAdapter1516 ra) {
-        return new Connector15Impl(str("Red Hat"), str("JMS 1.1 Server"), str("1.0"), null, ra, EMPTY_LOCL, EMPTY_LOCL, Collections.<Icon>emptyList(), null);
+    private static Connector createConnector15(ResourceAdapter ra) {
+        return new ConnectorImpl(Connector.Version.V_15, null, str("Red Hat"), str("JMS 1.1 Server"), str("1.0"), null, ra, null, false, EMPTY_LOCL, EMPTY_LOCL, Collections.<Icon>emptyList(), null);
     }
 
-    private ResourceAdapter1516Impl createResourceAdapter15(List<ConfigProperty> properties, OutboundResourceAdapter outbound, InboundResourceAdapter inbound) {
-        return new ResourceAdapter1516Impl(HQ_ADAPTER, properties, outbound, inbound, Collections.<AdminObject>emptyList(), Collections.<SecurityPermission>emptyList(), null);
+    private ResourceAdapter createResourceAdapter15(List<ConfigProperty> properties, OutboundResourceAdapter outbound, InboundResourceAdapter inbound) {
+        return new ResourceAdapterImpl(str(HQ_ADAPTER), properties, outbound, inbound, Collections.<org.jboss.jca.common.api.metadata.spec.AdminObject>emptyList(), Collections.<SecurityPermission>emptyList(), null);
     }
 
     private InboundResourceAdapter createInbound() {
-        List<RequiredConfigProperty> destination = Collections.singletonList(new RequiredConfigProperty(EMPTY_LOCL, str("destination"), null));
+        List<RequiredConfigProperty> destination = Collections.<RequiredConfigProperty>singletonList(new RequiredConfigPropertyImpl(EMPTY_LOCL, str("destination"), null));
 
-        Activationspec15Impl activation15 = new Activationspec15Impl(str(HQ_ACTIVATION), destination, null);
+        Activationspec activation15 = new ActivationSpecImpl(str(HQ_ACTIVATION), destination, null, null);
         List<MessageListener> messageListeners = Collections.<MessageListener>singletonList(new MessageListenerImpl(str(JMS_MESSAGE_LISTENER), activation15, null));
         Messageadapter message = new MessageAdapterImpl(messageListeners, null);
 
@@ -521,14 +524,14 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private static OutboundResourceAdapter createOutbound() {
-        List<ConnectionDefinition> definitions = new ArrayList<ConnectionDefinition>();
+        List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> definitions = new ArrayList<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition>();
         List<ConfigProperty> props = new ArrayList<ConfigProperty>();
         props.add(simpleProperty15(SESSION_DEFAULT_TYPE, STRING_TYPE, JMS_QUEUE));
         props.add(simpleProperty15(TRY_LOCK, INTEGER_TYPE, "0"));
-        definitions.add(new ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(HQ_SESSION), null));
+        definitions.add(new org.jboss.jca.common.metadata.spec.ConnectionDefinitionImpl(str(RAMANAGED_CONN_FACTORY), props, str(RA_CONN_FACTORY), str(RA_CONN_FACTORY_IMPL), str(JMS_SESSION), str(HQ_SESSION), null));
 
-        AuthenticationMechanism basicPassword = new AuthenticationMechanismImpl(Collections.<LocalizedXsdString>emptyList(), str(BASIC_PASS), CredentialInterfaceEnum.PasswordCredential, null);
-        return new OutboundResourceAdapterImpl(definitions, TransactionSupportEnum.XATransaction, Collections.singletonList(basicPassword), false, null);
+        AuthenticationMechanism basicPassword = new AuthenticationMechanismImpl(Collections.<LocalizedXsdString>emptyList(), str(BASIC_PASS), CredentialInterfaceEnum.PasswordCredential, null, null);
+        return new OutboundResourceAdapterImpl(definitions, TransactionSupportEnum.XATransaction, Collections.singletonList(basicPassword), false, null, null, null);
     }
 
     private static XsdString str(String str) {
@@ -536,7 +539,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     }
 
     private static ConfigProperty simpleProperty15(String name, String type, String value) {
-        return new ConfigPropertyImpl(EMPTY_LOCL, str(name), str(type), str(value), null);
+        return new ConfigPropertyImpl(EMPTY_LOCL, str(name), str(type), str(value), null, null, null, null, false, null, null, null, null);
     }
 
 

@@ -22,27 +22,6 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
-import org.jboss.jca.common.api.metadata.common.v12.CommonConnDef;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-
-import java.util.Map;
-
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -58,6 +37,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -86,6 +66,26 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USER;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+
+import java.util.Map;
+
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.Pool;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.TimeOut;
+import org.jboss.jca.common.api.metadata.common.Validation;
+import org.jboss.jca.common.api.metadata.common.XaPool;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 
 /**
  * Handler for exposing transaction logs
@@ -133,7 +133,7 @@ public class IronJacamarResourceCreator {
     }
 
 
-    private void addConnectionDefinition(final Resource parent, org.jboss.jca.common.api.metadata.common.CommonConnDef connDef) {
+    private void addConnectionDefinition(final Resource parent, ConnectionDefinition connDef) {
         final Resource connDefResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = connDefResource.getModel();
         setAttribute(model, Constants.JNDINAME, connDef.getJndiName());
@@ -146,39 +146,37 @@ public class IronJacamarResourceCreator {
         setAttribute(model, JNDINAME, connDef.getJndiName());
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
-        if (connDef instanceof CommonConnDef) {
-            setAttribute(model, CONNECTABLE, ((CommonConnDef) connDef).isConnectable());
-            if (((CommonConnDef) connDef).isTracking() != null) {
-                setAttribute(model, TRACKING, ((CommonConnDef) connDef).isTracking());
-            }
-        }
-        setAttribute(model, USE_CCM, connDef.isUseCcm());
-        if (connDef instanceof org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) {
-            setAttribute(model, SHARABLE, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isSharable());
-            setAttribute(model, ENLISTMENT, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isEnlistment());
-        }
 
-        final CommonPool pool = connDef.getPool();
+            setAttribute(model, CONNECTABLE, connDef.isConnectable());
+            if (connDef.isTracking() != null) {
+                setAttribute(model, TRACKING, connDef.isTracking());
+            }
+
+        setAttribute(model, USE_CCM, connDef.isUseCcm());
+            setAttribute(model, SHARABLE, connDef.isSharable());
+            setAttribute(model, ENLISTMENT, connDef.isEnlistment());
+
+        final Pool pool = connDef.getPool();
         if (pool != null) {
             setAttribute(model, MAX_POOL_SIZE, pool.getMaxPoolSize());
 
             setAttribute(model, MIN_POOL_SIZE, pool.getMinPoolSize());
 
-            if (pool instanceof ConnDefPool) {
-                setAttribute(model, INITIAL_POOL_SIZE, ((ConnDefPool) pool).getInitialPoolSize());
-                if (((ConnDefPool) pool).getCapacity() != null) {
-                    if (((ConnDefPool) pool).getCapacity().getIncrementer() != null) {
-                        setAttribute(model, CAPACITY_INCREMENTER_CLASS, ((ConnDefPool) pool).getCapacity().getIncrementer().getClassName());
-                        if (((ConnDefPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap() != null) {
-                            for (Map.Entry<String, String> config : ((ConnDefPool) pool).getCapacity().getIncrementer().getConfigPropertiesMap().entrySet()) {
+
+                setAttribute(model, INITIAL_POOL_SIZE, pool.getInitialPoolSize());
+                if (pool.getCapacity() != null) {
+                    if (pool.getCapacity().getIncrementer() != null) {
+                        setAttribute(model, CAPACITY_INCREMENTER_CLASS, pool.getCapacity().getIncrementer().getClassName());
+                        if ( pool.getCapacity().getIncrementer().getConfigPropertiesMap() != null) {
+                            for (Map.Entry<String, String> config : pool.getCapacity().getIncrementer().getConfigPropertiesMap().entrySet()) {
                                 model.get(CAPACITY_INCREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
                             }
                         }
                     }
-                    if (((ConnDefPool) pool).getCapacity().getDecrementer() != null) {
-                        setAttribute(model, CAPACITY_DECREMENTER_CLASS, ((ConnDefPool) pool).getCapacity().getDecrementer().getClassName());
-                        if (((ConnDefPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap() != null) {
-                            for (Map.Entry<String, String> config : ((ConnDefPool) pool).getCapacity().getDecrementer().getConfigPropertiesMap().entrySet()) {
+                    if (pool.getCapacity().getDecrementer() != null) {
+                        setAttribute(model, CAPACITY_DECREMENTER_CLASS, pool.getCapacity().getDecrementer().getClassName());
+                        if (pool.getCapacity().getDecrementer().getConfigPropertiesMap() != null) {
+                            for (Map.Entry<String, String> config : pool.getCapacity().getDecrementer().getConfigPropertiesMap().entrySet()) {
                                 model.get(CAPACITY_DECREMENTER_PROPERTIES.getName(), config.getKey()).set(config.getValue());
                             }
                         }
@@ -186,7 +184,7 @@ public class IronJacamarResourceCreator {
                     }
                 }
 
-            }
+
 
             setAttribute(model, POOL_USE_STRICT_MIN, pool.isUseStrictMin());
 
@@ -195,8 +193,8 @@ public class IronJacamarResourceCreator {
             setAttribute(model, POOL_PREFILL, pool.isPrefill());
 
             if (connDef.isXa()) {
-                assert connDef.getPool() instanceof CommonXaPool;
-                CommonXaPool xaPool = (CommonXaPool) connDef.getPool();
+                assert connDef.getPool() instanceof XaPool;
+                XaPool xaPool = (XaPool) connDef.getPool();
                 setAttribute(model, WRAP_XA_RESOURCE, xaPool.isWrapXaResource());
                 setAttribute(model, SAME_RM_OVERRIDE, xaPool.isSameRmOverride());
                 setAttribute(model, PAD_XID, xaPool.isPadXid());
@@ -204,7 +202,7 @@ public class IronJacamarResourceCreator {
                 setAttribute(model, NOTXSEPARATEPOOL, xaPool.isNoTxSeparatePool());
             }
         }
-        final CommonSecurity security = connDef.getSecurity();
+        final Security security = connDef.getSecurity();
         if (security != null) {
             setAttribute(model, SECURITY_DOMAIN_AND_APPLICATION, security.getSecurityDomainAndApplication());
 
@@ -212,7 +210,7 @@ public class IronJacamarResourceCreator {
 
             setAttribute(model, SECURITY_DOMAIN, security.getSecurityDomain());
         }
-        final CommonTimeOut timeOut = connDef.getTimeOut();
+        final TimeOut timeOut = connDef.getTimeOut();
         if (timeOut != null) {
             setAttribute(model, ALLOCATION_RETRY, timeOut.getAllocationRetry());
 
@@ -224,13 +222,15 @@ public class IronJacamarResourceCreator {
 
             setAttribute(model, XA_RESOURCE_TIMEOUT, timeOut.getXaResourceTimeout());
         }
-        final CommonValidation validation = connDef.getValidation();
+        final Validation validation = connDef.getValidation();
         if (validation != null) {
             setAttribute(model, BACKGROUNDVALIDATIONMILLIS, validation.getBackgroundValidationMillis());
 
             setAttribute(model, BACKGROUNDVALIDATION, validation.isBackgroundValidation());
 
             setAttribute(model, USE_FAST_FAIL, validation.isUseFastFail());
+
+            setAttribute(model, VALIDATE_ON_MATCH, validation.isValidateOnMatch());
         }
         final Recovery recovery = connDef.getRecovery();
         if (recovery != null) {
@@ -257,7 +257,7 @@ public class IronJacamarResourceCreator {
 
     }
 
-    private void addAdminObject(final Resource parent, CommonAdminObject adminObject) {
+    private void addAdminObject(final Resource parent, AdminObject adminObject) {
         final Resource adminObjectResource = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = adminObjectResource.getModel();
         setAttribute(model, CLASS_NAME, adminObject.getClassName());
@@ -275,17 +275,15 @@ public class IronJacamarResourceCreator {
     }
 
 
-    private void addResourceAdapter(final Resource parent, String name, IronJacamar ironJacamarMetadata) {
+    private void addResourceAdapter(final Resource parent, String name, Activation ironJacamarMetadata) {
         final Resource ijResourceAdapter = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = ijResourceAdapter.getModel();
         model.get(Constants.ARCHIVE.getName()).set(name);
         setAttribute(model, Constants.BOOTSTRAP_CONTEXT, ironJacamarMetadata.getBootstrapContext());
         if (ironJacamarMetadata.getTransactionSupport() != null)
             model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
-        if (ironJacamarMetadata instanceof org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar) {
-            org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar ij11 = (org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar) ironJacamarMetadata;
-            if (ij11.getWorkManager() != null && ij11.getWorkManager().getSecurity() != null) {
-                WorkManagerSecurity security = ij11.getWorkManager().getSecurity();
+            if (ironJacamarMetadata.getWorkManager() != null && ironJacamarMetadata.getWorkManager().getSecurity() != null) {
+                WorkManagerSecurity security = ironJacamarMetadata.getWorkManager().getSecurity();
                 model.get(Constants.WM_SECURITY.getName()).set(true);
                 if (security.getDefaultGroups() != null) {
                     for (String group : security.getDefaultGroups()) {
@@ -317,7 +315,6 @@ public class IronJacamarResourceCreator {
                     }
                 }
             }
-        }
         if (ironJacamarMetadata.getBeanValidationGroups() != null) {
             for (String bv : ironJacamarMetadata.getBeanValidationGroups()) {
                 model.get(Constants.BEANVALIDATION_GROUPS.getName()).add(new ModelNode().set(bv));
@@ -329,12 +326,12 @@ public class IronJacamarResourceCreator {
             }
         }
         if (ironJacamarMetadata.getConnectionDefinitions() != null) {
-            for (org.jboss.jca.common.api.metadata.common.CommonConnDef connDef : ironJacamarMetadata.getConnectionDefinitions()) {
+            for (ConnectionDefinition connDef : ironJacamarMetadata.getConnectionDefinitions()) {
                 addConnectionDefinition(ijResourceAdapter, connDef);
             }
         }
         if (ironJacamarMetadata.getAdminObjects() != null) {
-            for (CommonAdminObject adminObject : ironJacamarMetadata.getAdminObjects()) {
+            for (AdminObject adminObject : ironJacamarMetadata.getAdminObjects()) {
                 addAdminObject(ijResourceAdapter, adminObject);
             }
         }
@@ -349,7 +346,7 @@ public class IronJacamarResourceCreator {
         final Resource resource = Resource.Factory.create();
 
         for (String name : mdr.getResourceAdaptersWithIronJacamarMetadata()) {
-            addResourceAdapter(resource, name, mdr.getIronJcamarMetaData(name));
+            addResourceAdapter(resource, name, mdr.getIronJacamarMetaData(name));
         }
 
         return resource;

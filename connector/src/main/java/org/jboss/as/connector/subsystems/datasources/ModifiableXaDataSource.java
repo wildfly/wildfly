@@ -22,20 +22,20 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.util.Map;
+
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.DsXaPool;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
-import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.ds.v13.XADataSourceImpl;
+import org.jboss.jca.common.metadata.ds.XADataSourceImpl;
 import org.jboss.logging.Messages;
-
-import java.util.Map;
 
 /**
  * A modifiable DataSourceImpl to add connection properties

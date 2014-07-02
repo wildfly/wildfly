@@ -37,9 +37,8 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.FlushStrategy;
-import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
+import org.jboss.jca.common.api.metadata.common.Pool;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 
@@ -64,6 +63,8 @@ public class Constants {
     private static final String BACKGROUNDVALIDATION_NAME = "background-validation";
 
     private static final String USE_FAST_FAIL_NAME = "use-fast-fail";
+
+    private static final String VALIDATEONMATCH_NAME = "validate-on-match";
 
     private static final String BLOCKING_TIMEOUT_WAIT_MILLIS_NAME = "blocking-timeout-wait-millis";
 
@@ -103,7 +104,7 @@ public class Constants {
     public static final SimpleAttributeDefinition BACKGROUNDVALIDATION = new SimpleAttributeDefinitionBuilder(BACKGROUNDVALIDATION_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.BACKGROUND_VALIDATION.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(Defaults.BACKGROUND_VALIDATION))
+            //.setDefaultValue(new ModelNode(Defaults.BACKGROUND_VALIDATION))
             .build();
 
     public static final SimpleAttributeDefinition USE_FAST_FAIL = new SimpleAttributeDefinitionBuilder(USE_FAST_FAIL_NAME, ModelType.BOOLEAN, true)
@@ -112,20 +113,25 @@ public class Constants {
             .setAllowExpression(true)
             .build();
 
+    public static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
+                .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
+                .setAllowExpression(true)
+                .build();
+
     public static final SimpleAttributeDefinition MAX_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MAX_POOL_SIZE_NAME, ModelType.INT, true)
-            .setXmlName(CommonPool.Tag.MAX_POOL_SIZE.getLocalName())
+            .setXmlName(Pool.Tag.MAX_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.MAX_POOL_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition MIN_POOL_SIZE = new SimpleAttributeDefinitionBuilder(MIN_POOL_SIZE_NAME, ModelType.INT, true)
-            .setXmlName(CommonPool.Tag.MIN_POOL_SIZE.getLocalName())
+            .setXmlName(Pool.Tag.MIN_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.MIN_POOL_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition INITIAL_POOL_SIZE = new SimpleAttributeDefinitionBuilder(INITIAL_POOL_SIZE_NAME, ModelType.INT)
-            .setXmlName(ConnDefPool.Tag.INITIAL_POOL_SIZE.getLocalName())
+            .setXmlName(Pool.Tag.INITIAL_POOL_SIZE.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
@@ -183,31 +189,26 @@ public class Constants {
     public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinitionBuilder(POOL_PREFILL_NAME, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(Defaults.PREFILL))
             .setAllowExpression(true)
-            .setXmlName(CommonPool.Tag.PREFILL.getLocalName())
+            .setXmlName(Pool.Tag.PREFILL.getLocalName())
             .build();
 
     public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinitionBuilder(POOL_USE_STRICT_MIN_NAME, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(Defaults.USE_STRICT_MIN))
             .setAllowExpression(true)
-            .setXmlName(CommonPool.Tag.USE_STRICT_MIN.getLocalName())
+            .setXmlName(Pool.Tag.USE_STRICT_MIN.getLocalName())
             .build();
 
     public static final SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinitionBuilder(FLUSH_STRATEGY_NAME, ModelType.STRING)
             .setDefaultValue(new ModelNode(Defaults.FLUSH_STRATEGY.getName()))
-            .setXmlName(CommonPool.Tag.FLUSH_STRATEGY.getLocalName())
+            .setXmlName(Pool.Tag.FLUSH_STRATEGY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
             .build();
 
 
-    public static final SimpleAttributeDefinition[] POOL_ATTRIBUTES_1 = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
-            BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY};
-
-    public static final AttributeDefinition[] POOL_ATTRIBUTES_2 = {INITIAL_POOL_SIZE, CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
-
     public static final AttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
-            BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
+            BACKGROUNDVALIDATION, USE_FAST_FAIL, VALIDATE_ON_MATCH, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
             CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 
     public static SimpleAttributeDefinition POOL_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)

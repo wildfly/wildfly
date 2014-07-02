@@ -21,35 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.Capacity;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.ds.Driver;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
-import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -116,9 +87,9 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_PROPERTY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
@@ -138,6 +109,36 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.Capacity;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.common.api.metadata.ds.Driver;
+import org.jboss.jca.common.api.metadata.ds.DsPool;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.Validation;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>

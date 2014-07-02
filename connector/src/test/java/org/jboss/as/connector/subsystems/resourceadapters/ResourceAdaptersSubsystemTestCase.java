@@ -134,6 +134,8 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
@@ -193,12 +195,14 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
                         PathElement.pathElement("resource-adapter", "*"),
                         PathElement.pathElement("connection-definitions", "*")))
-                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class)).skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());

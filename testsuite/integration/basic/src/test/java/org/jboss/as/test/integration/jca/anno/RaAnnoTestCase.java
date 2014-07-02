@@ -21,13 +21,9 @@
  */
 package org.jboss.as.test.integration.jca.anno;
 
-import org.jboss.jca.common.metadata.ra.ra16.Connector16Impl;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
-import org.jboss.jca.core.spi.rar.Endpoint;
-import org.jboss.jca.core.spi.rar.MessageListener;
-import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
@@ -59,17 +55,21 @@ import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBa
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.metadata.spec.ConnectorImpl;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.Endpoint;
+import org.jboss.jca.core.spi.rar.MessageListener;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.*;
 
 /**
  * Activation of annotated RA, overridden by descriptor
@@ -271,7 +271,7 @@ public class RaAnnoTestCase extends ContainerResourceMgmtTestBase {
 		assertTrue(ids.size() > 0);
 		String piId = getElementContaining(ids, "ra16anno");
 		assertNotNull(mdr.getResourceAdapter(piId));
-		assertTrue(mdr.getResourceAdapter(piId) instanceof Connector16Impl);
+		assertTrue(mdr.getResourceAdapter(piId) instanceof ConnectorImpl);
 	}
 
 	/**
