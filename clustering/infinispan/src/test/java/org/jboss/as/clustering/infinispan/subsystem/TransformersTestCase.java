@@ -387,7 +387,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
      */
     public void testRejections_1_3_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
         ModelVersion version = InfinispanModel.VERSION_1_3_0.getVersion();
-//        KernelServices services = this.buildKernelServices(controllerVersion, version, new ChainedModelFixer(new BatchTransactionModeModelFixer(), new EnableStatisticsModelFixer()), mavenResourceURLs);
 
         // create builder for current subsystem version
         KernelServicesBuilder builderA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);

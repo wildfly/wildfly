@@ -404,7 +404,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
             builder.transaction()
                     .cacheStopTimeout(stopTimeout)
-                    .transactionMode(transactional ? org.infinispan.transaction.TransactionMode.TRANSACTIONAL : org.infinispan.transaction.TransactionMode.TRANSACTIONAL)
+                    .transactionMode(transactional ? org.infinispan.transaction.TransactionMode.TRANSACTIONAL : org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL)
                     .lockingMode(lockingMode)
                     .useSynchronization(useSynchronization)
                     .recovery().enabled(recoveryEnabled)

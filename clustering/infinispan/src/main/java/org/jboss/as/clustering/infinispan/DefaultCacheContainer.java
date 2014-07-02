@@ -182,6 +182,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     private class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+        private final boolean batchingEnabled;
+
         DelegatingCache(AdvancedCache<K, V> cache) {
             super(cache, new AdvancedCacheWrapper<K, V>() {
                     @Override
@@ -190,6 +192,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                     }
                 }
             );
+            this.batchingEnabled = cache.getCacheConfiguration().invocationBatching().enabled();
         }
 
         DelegatingCache(Cache<K, V> cache) {
@@ -199,6 +202,18 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         @Override
         public EmbeddedCacheManager getCacheManager() {
             return DefaultCacheContainer.this;
+        }
+
+        @Override
+        public boolean startBatch() {
+            return this.batchingEnabled ? this.cache.startBatch() : false;
+        }
+
+        @Override
+        public void endBatch(boolean successful) {
+            if (this.batchingEnabled) {
+                this.cache.endBatch(successful);
+            }
         }
 
         @Override
