@@ -35,7 +35,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinition {
+public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 
@@ -52,7 +52,7 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+    SharedStateCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
         super(key, addHandler, removeHandler, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
