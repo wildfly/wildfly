@@ -51,3 +51,6 @@ local-repo-eap
 #These keep hanging around
 arquillian/*/server.log*
 client/shade/dependency-reduced-pom.xml
+
+#OS X stuff
+.DS_Store
