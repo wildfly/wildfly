@@ -286,12 +286,12 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .end();
+        }
 
-            if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
-                builder.getAttributeBuilder()
-                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
-                        .end();
-            }
+        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
+                    .end();
         }
 
         DynamicLoadProviderDefinition.buildTransformation(version, builder);
