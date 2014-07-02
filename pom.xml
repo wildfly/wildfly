@@ -76,7 +76,6 @@
             For example: <version.org.jboss.hal.release-stream>
          -->
 
-        <version.ant.junit>1.8.3</version.ant.junit>
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
@@ -121,7 +120,6 @@
         <version.jsoup>1.7.1</version.jsoup>
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
-        <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.avro>1.7.6</version.org.apache.avro>
         <version.org.apache.cxf>2.7.11</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
@@ -2010,18 +2008,6 @@
                         <artifactId>oro</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-               <groupId>org.apache.ant</groupId>
-               <artifactId>ant</artifactId>
-               <version>${version.org.apache.ant}</version>
-               <exclusions>
-                   <exclusion>
-                       <groupId>org.apache.ant</groupId>
-                       <artifactId>ant-launcher</artifactId>
-                   </exclusion>
-               </exclusions>
             </dependency>
 
             <dependency>
