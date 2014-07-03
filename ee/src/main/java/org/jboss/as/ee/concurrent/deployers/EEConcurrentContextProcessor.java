@@ -14,7 +14,6 @@ import org.jboss.as.ee.concurrent.handle.ClassLoaderContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.NamingContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.OtherEESetupActionsContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.SecurityContextHandleFactory;
-import org.jboss.as.ee.concurrent.handle.TransactionLeakContextHandleFactory;
 import org.jboss.as.ee.concurrent.service.ConcurrentContextService;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -29,7 +28,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import javax.transaction.TransactionManager;
 import java.util.Collection;
 
 import static org.jboss.as.server.deployment.Attachments.MODULE;
@@ -102,13 +100,10 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         concurrentContext.addFactory(new ClassLoaderContextHandleFactory(moduleClassLoader));
         concurrentContext.addFactory(SecurityContextHandleFactory.INSTANCE);
         concurrentContext.addFactory(new OtherEESetupActionsContextHandleFactory(deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS)));
-        final TransactionLeakContextHandleFactory transactionLeakContextHandleFactory = new TransactionLeakContextHandleFactory();
-        concurrentContext.addFactory(transactionLeakContextHandleFactory);
 
         final ConcurrentContextService service = new ConcurrentContextService(concurrentContext);
         final ServiceName serviceName = ConcurrentServiceNames.getConcurrentContextServiceName(applicationName, moduleName, componentName);
         serviceTarget.addService(serviceName, service)
-                .addDependency(ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, transactionLeakContextHandleFactory)
                 .install();
     }
 

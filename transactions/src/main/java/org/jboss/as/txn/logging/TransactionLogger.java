@@ -31,6 +31,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
 
+import java.io.IOException;
+
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -160,4 +162,29 @@ public interface TransactionLogger extends BasicLogger {
      */
     @Message(id = 15, value = "Jndi names have to start with java:/ or java:jboss/")
     OperationFailedException jndiNameInvalidFormat();
+
+    @LogMessage(level = WARN)
+    @Message(id = 16, value = "Transaction started in EE Concurrent invocation left open, starting rollback to prevent leak.")
+    void rollbackOfTransactionStartedInEEConcurrentInvocation();
+
+    @LogMessage(level = WARN)
+    @Message(id = 17, value = "Failed to rollback transaction.")
+    void failedToRollbackTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18, value = "Failed to suspend transaction.")
+    void failedToSuspendTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 19, value = "System error while checking for transaction leak in EE Concurrent invocation.")
+    void systemErrorWhileCheckingForTransactionLeak(@Cause Throwable cause);
+
+    @Message(id = 20, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
+    IOException serializationMustBeHandledByTheFactory();
+
+    @Message(id = 21, value = "EE Concurrent's TransactionSetupProviderService not started.")
+    IllegalStateException transactionSetupProviderServiceNotStarted();
+
+    @Message(id = 22, value = "EE Concurrent's TransactionSetupProviderService not installed.")
+    IllegalStateException transactionSetupProviderServiceNotInstalled();
 }
