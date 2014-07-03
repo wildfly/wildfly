@@ -23,12 +23,10 @@
 package org.jboss.as.security.plugins;
 
 import java.security.Principal;
-import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
-import org.infinispan.commons.equivalence.AnyEquivalence;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap;
-import org.infinispan.util.concurrent.BoundedConcurrentHashMap.Eviction;
+import org.jboss.as.security.org.jboss.as.security.lru.LRUCache;
+import org.jboss.as.security.org.jboss.as.security.lru.RemoveCallback;
 import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
@@ -44,31 +42,14 @@ public class DefaultAuthenticationCacheFactory {
      * @return cache implementation
      */
     public ConcurrentMap<Principal, DomainInfo> getCache() {
-        ConcurrentMap<Principal, DomainInfo> map = new BoundedConcurrentHashMap<Principal, DomainInfo>(
-                1000, 16, Eviction.LIRS, new AuthenticationCacheEvictionListener(), AnyEquivalence.<Principal>getInstance(), AnyEquivalence.<DomainInfo>getInstance()) {
-
-            private static final long serialVersionUID = 1459490003748298538L;
-
-            /** {@inheritDoc} */
+        ConcurrentMap<Principal, DomainInfo> map = new LRUCache<>(1000,  new RemoveCallback<Principal, DomainInfo>() {
             @Override
-            public DomainInfo remove(Object key) {
-                DomainInfo removed = super.remove(key);
-                if (removed != null) {
-                    removed.logout();
+            public void afterRemove(Principal key, DomainInfo value) {
+                if (value != null) {
+                    value.logout();
                 }
-                return removed;
             }
-
-            /** {@inheritDoc} */
-            @Override
-            public void clear() {
-                Collection<DomainInfo> values = values();
-                for (DomainInfo domainInfo : values) {
-                    domainInfo.logout();
-                }
-                super.clear();
-            }
-        };
+        });
         return map;
     }
 }
