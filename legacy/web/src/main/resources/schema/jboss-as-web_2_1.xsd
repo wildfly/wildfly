@@ -340,7 +340,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cipher-suite" default="ALL">
+        <xs:attribute name="cipher-suite" default="HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5">
             <xs:annotation>
                 <xs:documentation>
                     comma separated list of encryption ciphers the configuration is allowed to use, that MUST NOT be

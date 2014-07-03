@@ -36,6 +36,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -75,6 +76,7 @@ public class WebSSLDefinition extends ModelOnlyResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITE, ModelType.STRING)
                     .setAllowNull(true)
                     .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode("HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5"))
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
