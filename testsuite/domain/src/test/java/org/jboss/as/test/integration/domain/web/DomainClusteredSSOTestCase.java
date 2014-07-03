@@ -81,7 +81,7 @@ import org.junit.Test;
  */
 public class DomainClusteredSSOTestCase extends BuildConfigurationTestBase {
 
-    public static final String slaveAddress = System.getProperty("jboss.test.host.slave.address", "127.0.0.1");
+    public static final String masterAddress = System.getProperty("jboss.test.host.master.address", "127.0.0.1");
     private static final Logger log = Logger.getLogger(DomainClusteredSSOTestCase.class);
     private static final String DEPLOYMENT_NAME = "clusteredsso.war";
     private static WebArchive war;
@@ -148,8 +148,8 @@ public class DomainClusteredSSOTestCase extends BuildConfigurationTestBase {
 
             // Test propagation
             DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
-            URL baseURL1 = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(slaveAddress) + ":8080/");
-            URL baseURL2 = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(slaveAddress) + ":8230/");
+            URL baseURL1 = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8080/");
+            URL baseURL2 = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8230/");
 
             final String servletPath = "clusteredsso" + SimpleSecuredServlet.SERVLET_PATH;
 
