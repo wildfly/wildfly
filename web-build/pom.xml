@@ -71,7 +71,6 @@
             <artifactId>jastow</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
