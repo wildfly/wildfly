@@ -253,6 +253,8 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.aether>1.0.0.v20140518</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
+        <version.org.testng>6.1.1</version.org.testng>
+        <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
         <version.org.wildfly.core>1.0.0.Alpha1</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha1</version.org.wildfly.arquillian>
@@ -439,9 +441,9 @@
                     </configuration>
                     <dependencies>
                         <dependency>
-                            <groupId>org.wildfly.core</groupId>
-                            <artifactId>wildfly-build-config</artifactId>
-                            <version>${version.org.wildfly.core}</version>
+                            <groupId>org.wildfly.checkstyle</groupId>
+                            <artifactId>wildfly-checkstyle-config</artifactId>
+                            <version>${version.org.wildfly.checkstyle-config}</version>
                         </dependency>
                     </dependencies>
                     <executions>
@@ -812,8 +814,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-build-config</artifactId>
+            <groupId>org.wildfly.checkstyle</groupId>
+            <artifactId>wildfly-checkstyle-config</artifactId>
         </dependency>
     </dependencies>
 
@@ -862,9 +864,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-build-config</artifactId>
-                <version>${version.org.wildfly.core}</version>
+                <groupId>org.wildfly.checkstyle</groupId>
+                <artifactId>wildfly-checkstyle-config</artifactId>
+                <version>${version.org.wildfly.checkstyle-config}</version>
             </dependency>
 
             <dependency>
