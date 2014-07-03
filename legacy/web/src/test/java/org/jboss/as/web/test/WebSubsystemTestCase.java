@@ -58,6 +58,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
@@ -268,6 +269,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new FailedOperationTransformationConfig.RejectExpressionsConfig("reauthenticate", "domain"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
+
+        checkUndefinedCipherSuite(mainServices, modelVersion);
     }
 
     @Test
@@ -554,6 +557,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new SetMissingRewriteConditionFlagsConfig("flags"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
+
+        checkUndefinedCipherSuite(mainServices, modelVersion);
     }
 
 
@@ -581,6 +586,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                             new FailedOperationTransformationConfig.NewAttributesConfig("redirect-binding", "proxy-binding"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
+
+        checkUndefinedCipherSuite(mainServices, modelVersion);
     }
 
     private void testRejectingTransformers_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -607,6 +614,28 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                             new FailedOperationTransformationConfig.NewAttributesConfig("redirect-binding", "proxy-binding"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
+
+        checkUndefinedCipherSuite(mainServices, modelVersion);
+    }
+
+    private void checkUndefinedCipherSuite(KernelServices services, ModelVersion version) throws Exception  {
+        final ModelNode success = new ModelNode();
+        success.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        success.get(ModelDescriptionConstants.RESULT);
+        success.protect();
+
+        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl"));
+
+        ModelNode op = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, addr);
+        op.get(NAME).set("cipher-suite");
+        op.get(VALUE).set(new ModelNode());
+        TransformedOperation transOp = services.transformOperation(version, op);
+        Assert.assertTrue(transOp.rejectOperation(success));
+
+        op.get(VALUE).set("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        transOp = services.transformOperation(version, op);
+        Assert.assertFalse(transOp.rejectOperation(success));
     }
 
 
