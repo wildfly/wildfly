@@ -405,7 +405,8 @@
                         <systemPropertyVariables>
                             <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                             <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-                            <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                            <org.jboss.model.test.cache.strict>true</org.jboss.model.test.cache.strict>
+                            <!--<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>-->
                         </systemPropertyVariables>
                         <systemProperties>
                               <property>
