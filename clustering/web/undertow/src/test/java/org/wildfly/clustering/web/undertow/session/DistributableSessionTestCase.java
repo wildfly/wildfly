@@ -179,7 +179,7 @@ public class DistributableSessionTestCase {
         listeners.addSessionListener(listener);
         
         String name = "name";
-        Object value = new Object();
+        Integer value = Integer.valueOf(1);
         Object expected = new Object();
 
         when(this.session.getAttributes()).thenReturn(attributes);
@@ -202,7 +202,7 @@ public class DistributableSessionTestCase {
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
         String name = "name";
-        Object value = new Object();
+        Integer value = Integer.valueOf(1);
         Object expected = null;
 
         when(this.session.getAttributes()).thenReturn(attributes);
@@ -248,7 +248,7 @@ public class DistributableSessionTestCase {
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
         String name = "name";
-        Object value = new Object();
+        Integer value = Integer.valueOf(1);
         Object expected = value;
 
         when(this.session.getAttributes()).thenReturn(attributes);

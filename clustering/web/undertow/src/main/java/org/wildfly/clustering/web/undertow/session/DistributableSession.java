@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -103,6 +105,9 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
             AuthenticatedSession old = context.getAuthenticatedSession();
             context.setAuthenticatedSession(session);
             return old;
+        }
+        if (!(value instanceof Serializable)) {
+            throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
         Object old = this.getSession().getAttributes().setAttribute(name, value);
         if (old == null) {

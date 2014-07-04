@@ -165,7 +165,7 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
                 return removed;
             }
         };
-        Map<K, V> removed = this.invoker.invoke(this.cache, operation);
+        Map<K, V> removed = this.invoker.invoke(this.cache, operation, Flag.FORCE_SYNCHRONOUS);
         if (!removed.isEmpty()) {
             for (Listener<K, V> listener: this.listeners) {
                 listener.removedEntries(removed);
