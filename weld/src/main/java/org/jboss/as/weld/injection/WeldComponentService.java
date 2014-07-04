@@ -32,6 +32,7 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.web.common.WebComponentDescription;
+import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.Service;
@@ -88,7 +89,6 @@ public class WeldComponentService implements Service<WeldComponentService> {
         return new WeldInjectionContext(beanManager.createCreationalContext(bean), bean, delegateProduce, injectionTarget, interceptorInjections);
     }
 
-
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -98,7 +98,9 @@ public class WeldComponentService implements Service<WeldComponentService> {
 
             for (final Class<?> interceptor : interceptorClasses) {
                 AnnotatedType<?> type = beanManager.createAnnotatedType(interceptor);
-                interceptorInjections.put(interceptor, beanManager.getInjectionTargetFactory(type).createInterceptorInjectionTarget());
+                @SuppressWarnings("rawtypes")
+                InjectionTarget injectionTarget = beanManager.getInjectionTargetFactory(type).createInterceptorInjectionTarget();
+                interceptorInjections.put(interceptor, beanManager.fireProcessInjectionTarget(type, injectionTarget));
             }
 
             if (ejbName != null) {
@@ -116,9 +118,12 @@ public class WeldComponentService implements Service<WeldComponentService> {
             }
 
             WeldInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !Utils.isComponentWithView(componentDescription));
-            if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
+            if (componentDescription instanceof MessageDrivenComponentDescription
+                    || componentDescription instanceof WebComponentDescription
+                    || componentDescription instanceof WSComponentDescription) {
                 // fire ProcessInjectionTarget for non-contextual components
-                this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotatedType(), injectionTarget);
+                this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotatedType(),
+                        injectionTarget);
             } else {
                 this.injectionTarget = injectionTarget;
             }
