@@ -80,7 +80,7 @@ public class InfinispanBean<G, I, T> implements Bean<G, I, T> {
         if (this.timeout == null) return false;
         Date lastAccessedTime = this.entry.getLastAccessedTime();
         long timeout = this.timeout.convert(TimeUnit.MILLISECONDS);
-        return (lastAccessedTime != null) && (timeout > 0) ? ((System.currentTimeMillis() - lastAccessedTime.getTime()) > timeout) : false;
+        return (lastAccessedTime != null) && (timeout > 0) ? ((System.currentTimeMillis() - lastAccessedTime.getTime()) >= timeout) : false;
     }
 
     @Override
