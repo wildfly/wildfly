@@ -24,10 +24,11 @@ package org.jboss.as.security.service;
 
 import javax.security.auth.login.Configuration;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.security.logging.SecurityLogger;
+import org.jboss.as.security.plugins.AuthenticationCacheFactory;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
+import org.jboss.as.security.plugins.InfinispanAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.msc.inject.Injector;
@@ -57,7 +58,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
 
     private final InjectedValue<Configuration> configurationValue = new InjectedValue<Configuration>();
 
-    private final InjectedValue<EmbeddedCacheManager> cacheManagerValue = new InjectedValue<EmbeddedCacheManager>();
+    private final InjectedValue<Object> cacheManagerValue = new InjectedValue<>();
 
     private final String name;
 
@@ -87,9 +88,9 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
             applicationPolicyRegistration.addApplicationPolicy(applicationPolicy.getName(), applicationPolicy);
         }
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
-        Object cacheFactory = null;
+        AuthenticationCacheFactory cacheFactory = null;
         if ("infinispan".equals(cacheType)) {
-            cacheFactory = cacheManagerValue.getValue();
+            cacheFactory = new InfinispanAuthenticationCacheFactory(cacheManagerValue.getValue(), name);
         } else if ("default".equals(cacheType)) {
             cacheFactory = new DefaultAuthenticationCacheFactory();
         }
@@ -150,7 +151,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
      *
      * @return target
      */
-    public Injector<EmbeddedCacheManager> getCacheManagerInjector() {
+    public Injector<Object> getCacheManagerInjector() {
         return cacheManagerValue;
     }
 
