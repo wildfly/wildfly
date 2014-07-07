@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,9 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.handle;
+package org.jboss.as.txn.ee.concurrency;
 
-import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.ee.concurrent.handle.ContextHandle;
+import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 
@@ -115,22 +117,22 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
                             case Status.STATUS_ROLLING_BACK:
                             case Status.STATUS_PREPARED:
                                 try {
-                                    EeLogger.ROOT_LOGGER.rollbackOfTransactionStartedInEEConcurrentInvocation();
+                                    TransactionLogger.ROOT_LOGGER.rollbackOfTransactionStartedInEEConcurrentInvocation();
                                     transactionManager.rollback();
                                 } catch (Throwable e) {
-                                    EeLogger.ROOT_LOGGER.failedToRollbackTransaction(e);
+                                    TransactionLogger.ROOT_LOGGER.failedToRollbackTransaction(e);
                                 } finally {
                                     try {
                                         transactionManager.suspend();
                                     } catch (Throwable e) {
-                                        EeLogger.ROOT_LOGGER.failedToSuspendTransaction(e);
+                                        TransactionLogger.ROOT_LOGGER.failedToSuspendTransaction(e);
                                     }
                                 }
                         }
                     }
 
                 } catch (SystemException e) {
-                    EeLogger.ROOT_LOGGER.systemErrorWhileCheckingForTransactionLeak(e);
+                    TransactionLogger.ROOT_LOGGER.systemErrorWhileCheckingForTransactionLeak(e);
                 }
             }
         }
@@ -143,11 +145,11 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 }

@@ -33,14 +33,11 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
-import org.jboss.as.ee.concurrent.service.TransactionSetupProviderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ImmediateValue;
 
-import javax.transaction.TransactionManager;
 import java.util.List;
 
 /**
@@ -66,11 +63,6 @@ public class ContextServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceBuilder<ContextServiceImpl> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getContextServiceServiceName(name), contextServiceService)
                 .addInjectionValue(contextServiceService.getContextSetupProvider(), new ImmediateValue<ContextSetupProvider>(new DefaultContextSetupProviderImpl()));
         if(useTransactionSetupProvider) {
-            // install the transaction setup provider's service
-            final TransactionSetupProviderService transactionSetupProviderService = new TransactionSetupProviderService();
-            final ServiceBuilder<TransactionSetupProvider> transactionSetupServiceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME, transactionSetupProviderService)
-                        .addDependency(ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, transactionSetupProviderService.getTransactionManagerInjectedValue());
-            newControllers.add(transactionSetupServiceBuilder.addListener(verificationHandler).install());
             // add it to deps of context service's service, for injection of its value
             serviceBuilder.addDependency(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME,TransactionSetupProvider.class,contextServiceService.getTransactionSetupProvider());
         }

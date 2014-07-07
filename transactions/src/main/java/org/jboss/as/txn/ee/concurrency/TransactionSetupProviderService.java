@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.concurrent.service;
+package org.jboss.as.txn.ee.concurrency;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.as.ee.concurrent.TransactionSetupProviderImpl;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -67,7 +66,7 @@ public class TransactionSetupProviderService implements Service<TransactionSetup
     public TransactionSetupProvider getValue() throws IllegalStateException {
         final TransactionSetupProvider value = this.transactionSetupProvider;
         if (value == null) {
-            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
+            throw TransactionLogger.ROOT_LOGGER.transactionSetupProviderServiceNotStarted();
         }
         return value;
     }
