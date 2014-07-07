@@ -5920,6 +5920,10 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
+                        <artifactId>cxf-rt-transports-http-hc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-transports-jms</artifactId>
                     </exclusion>
                     <exclusion>
