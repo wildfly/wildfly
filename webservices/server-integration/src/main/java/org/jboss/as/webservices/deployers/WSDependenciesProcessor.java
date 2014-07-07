@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2014, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -33,9 +33,9 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * A DUP that sets the dependencies required for using WS classes in WS deployments
+ * A DUP that sets the WS dependencies
  *
- * @author alessio.soldano@jboss.com
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
@@ -48,12 +48,20 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.xml.ws.api")
     };
 
+    private final boolean addJBossWSDependencies;
+
+    public WSDependenciesProcessor(boolean addJBossWSDependencies) {
+        this.addJBossWSDependencies = addJBossWSDependencies;
+    }
+
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
-        moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
+        if (addJBossWSDependencies) {
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_API, false, true, true, false));
+            moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, JBOSSWS_SPI, false, true, true, false));
+        }
         for(ModuleIdentifier api : JAVAEE_APIS) {
             moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, api, false, false, true, false));
         }
