@@ -164,6 +164,7 @@
                                         <include>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</include>
                                         <include>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</include>
                                         <include>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</include>
@@ -218,6 +219,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/pool/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/bmt/lazyenlist</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxr/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/bootstrap/**/*TestCase*.java</exclude>
