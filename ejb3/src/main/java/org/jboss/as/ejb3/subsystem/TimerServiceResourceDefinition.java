@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -39,6 +38,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -162,7 +162,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-            Resource original = context.readResource(address);
+            Resource original = context.readResourceFromRoot(address);
             if (original.getChildren(EJB3SubsystemModel.FILE_DATA_STORE).size() > 1){
                 return new TransformedOperation(operation,new OperationRejectionPolicy() {
                     @Override

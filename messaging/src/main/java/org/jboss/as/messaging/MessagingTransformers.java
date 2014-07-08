@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.UNDEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.SIMPLE_EXPRESSIONS;
@@ -59,7 +58,6 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_0_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY;
@@ -73,10 +71,12 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.OperationTransformationOverrideBuilder;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
@@ -229,7 +229,7 @@ public class MessagingTransformers {
                         // before discarding
 
                         // the real clustered HornetQ state
-                        Set<String> clusterConnectionNames = context.readResource(address).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+                        Set<String> clusterConnectionNames = context.readResourceFromRoot(address).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
                         boolean clustered = !clusterConnectionNames.isEmpty();
                         // whether the user wants the server to be clustered
                         // We use a short-cut vs AD.resolveModelValue to avoid having to hack in an OperationContext
