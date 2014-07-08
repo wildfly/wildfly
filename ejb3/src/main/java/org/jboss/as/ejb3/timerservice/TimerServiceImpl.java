@@ -1106,8 +1106,16 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.resource.timerRemoved(timerId);
     }
 
+    /**
+     * Check if a persistent timer is already executed from a different instance
+     * or should be executed.
+     * For non-persistent timer it always return <code>true</code>.
+     *
+     * @param timer the timer which should be checked
+     * @return <code>true</code> if the timer is not persistent or the persistent timer should start
+     */
     public boolean shouldRun(TimerImpl timer) {
-        return timerPersistence.getValue().shouldRun(timer);
+        return !timer.isPersistent() || timerPersistence.getValue().shouldRun(timer);
     }
 
     private class TimerCreationTransactionSynchronization implements Synchronization {
