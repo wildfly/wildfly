@@ -22,6 +22,12 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import java.io.Closeable;
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.jaxrs.JaxrsLogger;
 import org.jboss.as.jaxrs.JaxrsMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -51,12 +57,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Recognize Spring deployment and add the JAX-RS integration to it
@@ -93,41 +93,44 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
      */
     protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
         try {
-            Module module = Module.getBootModuleLoader().loadModule(MODULE);
-            URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);
+            if (resourceRoot == null) {
 
-            if (fileUrl == null) {
-                throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
-            }
-            File dir = new File(fileUrl.getFile());
-            File file = null;
-            for (String jar : dir.list()) {
-                if (jar.endsWith(".jar")) {
-                    file = new File(dir, jar);
-                    break;
-                }
-            }
-            if (file == null) {
-                throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
-            }
-            VirtualFile vf = VFS.getChild(file.toURI());
-            final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
-            Service<Closeable> mountHandleService = new Service<Closeable>() {
-                public void start(StartContext startContext) throws StartException {
-                }
+                Module module = Module.getBootModuleLoader().loadModule(MODULE);
+                URL fileUrl = module.getClassLoader().getResource(JAR_LOCATION);
 
-                public void stop(StopContext stopContext) {
-                    VFSUtils.safeClose(mountHandle);
+                if (fileUrl == null) {
+                    throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
                 }
+                File dir = new File(fileUrl.getFile());
+                File file = null;
+                for (String jar : dir.list()) {
+                    if (jar.endsWith(".jar")) {
+                        file = new File(dir, jar);
+                        break;
+                    }
+                }
+                if (file == null) {
+                    throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
+                }
+                VirtualFile vf = VFS.getChild(file.toURI());
+                final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
+                Service<Closeable> mountHandleService = new Service<Closeable>() {
+                    public void start(StartContext startContext) throws StartException {
+                    }
 
-                public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
-                    return mountHandle;
-                }
-            };
-            ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
-                    mountHandleService);
-            builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            resourceRoot = vf;
+                    public void stop(StopContext stopContext) {
+                        VFSUtils.safeClose(mountHandle);
+                    }
+
+                    public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
+                        return mountHandle;
+                    }
+                };
+                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
+                        mountHandleService);
+                builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                resourceRoot = vf;
+            }
 
             return resourceRoot;
         } catch (Exception e) {
