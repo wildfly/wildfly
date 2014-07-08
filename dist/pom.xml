@@ -100,6 +100,7 @@
                                     <descriptors>
                                         <descriptor>assembly.xml</descriptor>
                                     </descriptors>
+                                    <recompressZippedFiles>true</recompressZippedFiles>
                                     <finalName>${server.output.dir.prefix}-${project.version}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>

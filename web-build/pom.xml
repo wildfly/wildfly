@@ -638,6 +638,7 @@
                             <descriptors>
                                 <descriptor>assembly.xml</descriptor>
                             </descriptors>
+                            <recompressZippedFiles>true</recompressZippedFiles>
                             <finalName>${server.output.dir.prefix}-web-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <outputDirectory>target/</outputDirectory>
