@@ -116,7 +116,6 @@ public interface DeploymentMountProvider {
             public void start(StartContext context) throws StartException {
                 try {
                     final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), true, null, "%G - %t", null, null, AccessController.getContext());
-                    tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory), true);
                     scheduledExecutorService =  Executors.newScheduledThreadPool(2, threadFactory);
                     tempFileProvider = TempFileProvider.create("temp", scheduledExecutorService, true);
                 } catch (IOException e) {
