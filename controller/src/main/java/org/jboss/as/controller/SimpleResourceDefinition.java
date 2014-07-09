@@ -217,6 +217,11 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition {
     }
 
     @Override
+    public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+        // no-op
+    }
+
+    @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         // no-op
     }

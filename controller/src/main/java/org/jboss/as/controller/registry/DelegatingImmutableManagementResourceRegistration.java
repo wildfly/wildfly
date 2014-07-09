@@ -119,6 +119,11 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     }
 
     @Override
+    public Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited) {
+        return delegate.getNotificationDescriptions(address, inherited);
+    }
+
+    @Override
     public ProxyController getProxyController(PathAddress address) {
         return delegate.getProxyController(address);
     }

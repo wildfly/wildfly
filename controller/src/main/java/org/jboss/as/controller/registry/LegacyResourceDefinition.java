@@ -108,6 +108,11 @@ public class LegacyResourceDefinition implements ResourceDefinition {
 
     }
 
+    @Override
+    public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+        // no-op
+    }
+
     /**
      * Register operations associated with this resource.
      *

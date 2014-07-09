@@ -146,6 +146,16 @@ public interface ImmutableManagementResourceRegistration {
     AttributeAccess getAttributeAccess(PathAddress address, String attributeName);
 
     /**
+     * Get a map of descriptions of all notifications emitted by the resources at an address.
+     *
+     * @param address the address
+     * @param inherited true to include inherited notifications
+     * @return the notifications map
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
+     */
+    Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited);
+
+    /**
      * Get the names of the types of children for a node
      *
      * @param address the address, relative to this node

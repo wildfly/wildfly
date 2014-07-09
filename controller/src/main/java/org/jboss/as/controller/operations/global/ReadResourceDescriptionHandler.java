@@ -82,6 +82,7 @@ import org.jboss.as.controller.registry.AliasStepHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -106,6 +107,10 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    private static final SimpleAttributeDefinition NOTIFICATIONS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NOTIFICATIONS, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
     private static final SimpleAttributeDefinition ACCESS_CONTROL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ACCESS_CONTROL, ModelType.STRING)
             .setAllowNull(true)
@@ -115,7 +120,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
+            .setParameters(OPERATIONS, NOTIFICATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
@@ -180,8 +185,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final boolean recursive = recursiveDepth > 0 || RECURSIVE.resolveModelAttribute(context, operation).asBoolean();
         final boolean proxies = PROXIES.resolveModelAttribute(context, operation).asBoolean();
         final boolean ops = OPERATIONS.resolveModelAttribute(context, operation).asBoolean();
+        final boolean nots = NOTIFICATIONS.resolveModelAttribute(context, operation).asBoolean();
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean();
-        final boolean inheritedOps = INHERITED.resolveModelAttribute(context, operation).asBoolean();
+        final boolean inherited = INHERITED.resolveModelAttribute(context, operation).asBoolean();
         final AccessControl accessControl = AccessControl.forName(ACCESS_CONTROL.resolveModelAttribute(context, operation).asString());
 
 
@@ -192,6 +198,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
         final Map<String, ModelNode> operations = ops ? new HashMap<String, ModelNode>() : null;
+        final Map<String, ModelNode> notifications = nots ? new HashMap<String, ModelNode>() : null;
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
         if (accessControl != AccessControl.NONE) {
@@ -202,11 +209,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext, accessControl);
+        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, notifications, childResources, accessControlContext, accessControl);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
-            for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inheritedOps).entrySet()) {
+            for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
                 if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
                     if (context.getProcessType() != ProcessType.DOMAIN_SERVER || entry.getValue().getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY)) {
                         final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
@@ -215,6 +222,14 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 }
             }
         }
+
+        if (nots) {
+            for (final Map.Entry<String, NotificationEntry> entry : registry.getNotificationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
+                final DescriptionProvider provider = entry.getValue().getDescriptionProvider();
+                notifications.put(entry.getKey(), provider.getModelDescription(locale));
+            }
+        }
+
         if (nodeDescription.hasDefined(ATTRIBUTES)) {
             for (final String attr : nodeDescription.require(ATTRIBUTES).keys()) {
                 final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attr);
@@ -504,6 +519,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
+        private final Map<String, ModelNode> notifications;
         private final Map<PathElement, ModelNode> childResources;
         private final ReadResourceDescriptionAccessControlContext accessControlContext;
         private final AccessControl accessControl;
@@ -511,9 +527,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         /**
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
          * of the given maps.
-         *
-         * @param nodeDescription basic description of the node, of its attributes and of its child types
+         *  @param nodeDescription basic description of the node, of its attributes and of its child types
          * @param operations      descriptions of the resource's operations
+         * @param notifications   descriptions of the resource's notifications
          * @param childResources  read-resource-description response from child resources, where the key is the PathAddress
          *                        relative to the address of the operation this handler is handling and the
          *                        value is the full read-resource response. Will not be {@code null}
@@ -521,10 +537,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          * @param accessControl   type of access control output that is needed
          */
         private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations,
-                final Map<PathElement, ModelNode> childResources, final ReadResourceDescriptionAccessControlContext accessControlContext,
-                final AccessControl accessControl) {
+                                                       Map<String, ModelNode> notifications, final Map<PathElement, ModelNode> childResources, final ReadResourceDescriptionAccessControlContext accessControlContext,
+                                                       final AccessControl accessControl) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
+            this.notifications = notifications;
             this.childResources = childResources;
             this.accessControlContext = accessControlContext;
             this.accessControl = accessControl;
@@ -551,6 +568,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             if (operations != null) {
                 for (Map.Entry<String, ModelNode> entry : operations.entrySet()) {
                     nodeDescription.get(OPERATIONS.getName(), entry.getKey()).set(entry.getValue());
+                }
+            }
+
+            if (notifications != null) {
+                for (Map.Entry<String, ModelNode> entry : notifications.entrySet()) {
+                    nodeDescription.get(NOTIFICATIONS.getName(), entry.getKey()).set(entry.getValue());
                 }
             }
 
