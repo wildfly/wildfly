@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -394,7 +395,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     }
 
-    protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations) {
+    protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations, boolean notifications) {
         assertEquals("description", result.require(DESCRIPTION).asString());
         assertEquals("profile", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
 
@@ -416,17 +417,17 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertFalse(result.get(OPERATIONS).isDefined());
         }
 
-
         if (!recursive) {
             assertFalse(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).isDefined());
             return;
         }
         assertTrue(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).isDefined());
         assertEquals(1, result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).keys().size());
-        checkProfileNodeDescription(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).require("*"), true, operations);
+        checkProfileNodeDescription(result.require(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).require("*"), true, operations, notifications);
+
     }
 
-    protected void checkProfileNodeDescription(ModelNode result, boolean recursive, boolean operations) {
+    protected void checkProfileNodeDescription(ModelNode result, boolean recursive, boolean operations, boolean notifications) {
         assertEquals(ModelType.STRING, result.require(ATTRIBUTES).require(NAME).require(TYPE).asType());
         assertEquals(false, result.require(ATTRIBUTES).require(NAME).require(NILLABLE).asBoolean());
         assertEquals(1, result.require(ATTRIBUTES).require(NAME).require(MIN_LENGTH).asInt());
@@ -437,10 +438,10 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         }
         assertTrue(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
         assertEquals(5, result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).keys().size());
-        checkSubsystem1Description(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).require("subsystem1"), recursive, operations);
+        checkSubsystem1Description(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).require("subsystem1"), recursive, operations, notifications);
     }
 
-    protected void checkSubsystem1Description(ModelNode result, boolean recursive, boolean operations) {
+    protected void checkSubsystem1Description(ModelNode result, boolean recursive, boolean operations, boolean notifications) {
         assertNotNull(result);
 
         assertEquals(ModelType.LIST, result.require(ATTRIBUTES).require("attr1").require(TYPE).asType());
@@ -490,6 +491,18 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertFalse(result.get(OPERATIONS).isDefined());
         }
 
+        // TODO WFLY-3603 - add assertions for global notifications
+        /*
+        if (notifications) {
+            assertTrue(result.require(NOTIFICATIONS).isDefined());
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 2 : 3, notifs.size());
+            boolean runtimeOnly = processType != ProcessType.DOMAIN_SERVER;
+        } else {
+            assertFalse(result.get(NOTIFICATIONS).isDefined());
+        }
+        */
+
         if (!recursive) {
             assertFalse(result.require(CHILDREN).require("type1").require(MODEL_DESCRIPTION).isDefined());
             assertFalse(result.require(CHILDREN).require("type2").require(MODEL_DESCRIPTION).isDefined());
@@ -525,6 +538,11 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
         }
 
+        if (result.hasDefined(NOTIFICATIONS)) {
+            assertTrue(result.require(NOTIFICATIONS).isDefined());
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 2 : 3, notifs.size());
+        }
     }
 
     protected void checkType2Description(ModelNode result) {
@@ -546,6 +564,12 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_OPERATION_DESCRIPTION_OPERATION));
             assertEquals(processType != ProcessType.DOMAIN_SERVER, ops.contains(WRITE_ATTRIBUTE_OPERATION));
+        }
+
+        if (result.hasDefined(NOTIFICATIONS)) {
+            assertTrue(result.require(NOTIFICATIONS).isDefined());
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 2 : 3, notifs.size());
         }
     }
 

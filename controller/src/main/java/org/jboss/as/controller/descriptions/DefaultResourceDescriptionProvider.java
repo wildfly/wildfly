@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 
 import java.util.HashSet;
@@ -82,6 +83,8 @@ public class DefaultResourceDescriptionProvider implements DescriptionProvider {
         }
 
         result.get(OPERATIONS); // placeholder
+
+        result.get(NOTIFICATIONS); // placeholder
 
         final ModelNode children = result.get(CHILDREN).setEmptyObject();
 

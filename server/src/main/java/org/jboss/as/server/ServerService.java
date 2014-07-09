@@ -49,6 +49,7 @@ import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorize
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.management.NotifyingResourceDefinition;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -422,7 +423,7 @@ public final class ServerService extends AbstractControllerService {
         }
     }
 
-    private static class DelegatingResourceDefinition implements ResourceDefinition {
+    private static class DelegatingResourceDefinition implements ResourceDefinition, NotifyingResourceDefinition {
         private volatile ResourceDefinition delegate;
 
         void setDelegate(ResourceDefinition delegate) {
@@ -442,6 +443,13 @@ public final class ServerService extends AbstractControllerService {
         @Override
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
             delegate.registerAttributes(resourceRegistration);
+        }
+
+        @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            if (delegate instanceof NotifyingResourceDefinition) {
+                ((NotifyingResourceDefinition)delegate).registerNotifications(resourceRegistration);
+            }
         }
 
         @Override

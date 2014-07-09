@@ -33,6 +33,7 @@ import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -63,7 +64,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
                                  final ControlledProcessState processState, final AbstractOperationContext primaryContext,
                                  final List<ParsedBootOp> runtimeOps, final Thread controllingThread,
                                  final ModelControllerImpl controller, final int operationId, final AuditLogger auditLogger, final Resource model) {
-        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true, auditLogger);
+        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true, auditLogger, controller.getNotificationSupport());
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);
@@ -320,6 +321,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException {
         // We don't persist
         return null;
+    }
+
+    @Override
+    public void emit(Notification notification) {
+        primaryContext.emit(notification);
     }
 
     @Override

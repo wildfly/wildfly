@@ -48,12 +48,16 @@ import java.security.Principal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -64,8 +68,11 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.dmr.ModelNode;
@@ -91,6 +98,7 @@ abstract class AbstractOperationContext implements OperationContext {
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
     final ControlledProcessState processState;
+    private final NotificationSupport notificationSupport;
     private final boolean booting;
     private final ProcessType processType;
     private final RunningMode runningMode;
@@ -101,6 +109,12 @@ abstract class AbstractOperationContext implements OperationContext {
     // an uninterruptible form. This is to ensure rollback changes are not
     // interrupted
     boolean respectInterruption = true;
+
+    /**
+     * The notifications are stored when {@code emit(Notification)} is callend and effectively
+     * emitted at the end of the operation execution if it is successful
+     */
+    private final Queue<Notification> notifications;
 
     Stage currentStage = Stage.MODEL;
 
@@ -126,13 +140,16 @@ abstract class AbstractOperationContext implements OperationContext {
                              final ModelController.OperationTransactionControl transactionControl,
                              final ControlledProcessState processState,
                              final boolean booting,
-                             final AuditLogger auditLogger) {
+                             final AuditLogger auditLogger,
+                             final NotificationSupport notificationSupport) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
         this.auditLogger = auditLogger;
+        this.notificationSupport = notificationSupport;
+        this.notifications = new ConcurrentLinkedQueue<Notification>();
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
             if (booting && stage == Stage.VERIFY) {
@@ -570,6 +587,43 @@ abstract class AbstractOperationContext implements OperationContext {
         }
 
         logAuditRecord();
+
+        // fire the notifications only after the eventual persistent resource is committed
+        emitNotifications();
+    }
+
+    @Override
+    public void emit(Notification notification) {
+        // buffer the notifications but emit them only when an operation is successful.
+        notifications.add(notification);
+    }
+
+    private void emitNotifications() {
+        // emit notifications only if the action is kept
+        if (resultAction != ResultAction.ROLLBACK) {
+            synchronized (notifications) {
+                if (notifications.isEmpty()) {
+                    return;
+                }
+                checkUndefinedNotifications(notifications);
+                notificationSupport.emit(notifications.toArray(new Notification[notifications.size()]));
+                notifications.clear();
+            }
+        }
+    }
+
+    /**
+     * Check that each emitted notification is properly described by its source.
+     */
+    private void checkUndefinedNotifications(Collection<Notification> notifications) {
+        for (Notification notification : notifications) {
+            String type = notification.getType();
+            PathAddress source = notification.getSource();
+            Map<String, NotificationEntry> descriptions = getRootResourceRegistration().getNotificationDescriptions(source, true);
+            if (!descriptions.keySet().contains(type)) {
+                ControllerLogger.ROOT_LOGGER.notificationIsNotDescribed(type, source);
+            }
+        }
     }
 
     private boolean canContinueProcessing() {

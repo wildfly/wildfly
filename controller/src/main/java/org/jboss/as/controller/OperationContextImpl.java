@@ -75,6 +75,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -191,8 +192,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                          final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
                          final HostServerGroupTracker hostServerGroupTracker,
                          final ModelNode blockingTimeoutConfig,
-                         final AccessMechanism accessMechanism) {
-        super(processType, runningMode, transactionControl, processState, booting, auditLogger);
+                         final AccessMechanism accessMechanism,
+                         final NotificationSupport notificationSupport) {
+        super(processType, runningMode, transactionControl, processState, booting, auditLogger, notificationSupport);
         this.operationId = operationId;
         this.operationName = operationName;
         this.operationAddress = operationAddress.isDefined()

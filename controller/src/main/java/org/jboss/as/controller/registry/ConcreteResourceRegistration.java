@@ -24,6 +24,7 @@ package org.jboss.as.controller.registry;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -47,6 +49,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.access.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.notification.management.NotifyingResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -61,6 +64,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @SuppressWarnings("unused")
     private volatile Map<String, OperationEntry> operations;
 
+    @SuppressWarnings("unused")
+    private volatile Map<String, NotificationEntry> notifications;
+
     private final ResourceDefinition resourceDefinition;
     private final List<AccessConstraintDefinition> accessConstraintDefinitions;
 
@@ -72,6 +78,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
+    private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NotificationEntry> notificationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "notifications"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "attributes"));
 
     ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final ResourceDefinition definition,
@@ -81,6 +88,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
+        notificationsUpdater.clear(this);
         this.resourceDefinition = definition;
         this.runtimeOnly.set(runtimeOnly);
         this.accessConstraintDefinitions = buildAccessConstraints();
@@ -149,6 +157,9 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
         final ManagementResourceRegistration resourceRegistration = child.register(address.getValue(), resourceDefinition, false);
         resourceDefinition.registerAttributes(resourceRegistration);
         resourceDefinition.registerOperations(resourceRegistration);
+        if (resourceDefinition instanceof NotifyingResourceDefinition) {
+            ((NotifyingResourceDefinition) resourceDefinition).registerNotifications(resourceRegistration);
+        }
         resourceDefinition.registerChildren(resourceRegistration);
         if (constraintUtilizationRegistry != null && resourceDefinition instanceof ConstrainedResourceDefinition) {
             PathAddress childAddress = getPathAddress().append(address);
@@ -350,6 +361,27 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
+    public void registerNotification(NotificationDefinition notification, boolean inherited) {
+        NotificationEntry entry = new NotificationEntry(notification.getDescriptionProvider(), inherited);
+        checkPermission();
+        if (notificationsUpdater.putIfAbsent(this, notification.getType(), entry) != null) {
+            throw alreadyRegistered(NOTIFICATION, notification.getType());
+        }
+    }
+
+    @Override
+    public void registerNotification(NotificationDefinition notification) {
+        registerNotification(notification, false);
+    }
+
+    @Override
+         public void unregisterNotification(String notificationType) {
+        checkPermission();
+        notificationsUpdater.remove(this, notificationType);
+    }
+
+
+    @Override
     public void registerMetric(AttributeDefinition definition, OperationStepHandler metricHandler) {
         checkPermission();
         AttributeAccess aa = new AttributeAccess(AccessType.METRIC, AttributeAccess.Storage.RUNTIME, metricHandler, null, definition, definition.getFlags());
@@ -380,6 +412,41 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
             constraintUtilizationRegistry.unregisterAccessConstraintUtilizations(getPathAddress().append(childAddress));
         }
     }
+
+    @Override
+    void getNotificationDescriptions(final ListIterator<PathElement> iterator, final Map<String, NotificationEntry> providers, final boolean inherited) {
+
+        if (!iterator.hasNext() ) {
+            checkPermission();
+            providers.putAll(notificationsUpdater.get(this));
+            if (inherited) {
+                getInheritedNotifications(providers, true);
+            }
+            return;
+        }
+        final PathElement next = iterator.next();
+        try {
+            final String key = next.getKey();
+            final Map<String, NodeSubregistry> snapshot = childrenUpdater.get(this);
+            final NodeSubregistry subregistry = snapshot.get(key);
+            if (subregistry != null) {
+                subregistry.getNotificationDescriptions(iterator, next.getValue(), providers, inherited);
+            }
+        } finally {
+            iterator.previous();
+        }
+    }
+
+    @Override
+    void getInheritedNotificationEntries(final Map<String, NotificationEntry> providers) {
+        checkPermission();
+        for (final Map.Entry<String, NotificationEntry> entry : notificationsUpdater.get(this).entrySet()) {
+            if (entry.getValue().isInherited() && !providers.containsKey(entry.getKey())) {
+                providers.put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
 
     @Override
     public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {

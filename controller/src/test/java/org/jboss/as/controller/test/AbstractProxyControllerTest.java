@@ -32,6 +32,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -173,13 +176,13 @@ public abstract class AbstractProxyControllerTest {
 
         ModelNode result = proxiedControllerClient.execute(operation);
 
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), false);
+        checkRootSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), false);
+        checkRootSubModelDescription(result.get(RESULT), false, false);
     }
 
     @Test
@@ -189,10 +192,10 @@ public abstract class AbstractProxyControllerTest {
 
         ModelNode result = mainControllerClient.execute(operation);
 
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
     }
 
     @Test
@@ -203,7 +206,18 @@ public abstract class AbstractProxyControllerTest {
         operation.getOperation().get(OPERATIONS).set(true);
 
         ModelNode result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), true);
+        checkRootSubModelDescription(result.get(RESULT), true, false);
+    }
+
+    @Test
+    public void testRecursiveReadResourceDescriptionWitNotifications() throws Exception {
+        Operation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.getOperation().get(PROXIES).set(true);
+        operation.getOperation().get(RECURSIVE).set(true);
+        operation.getOperation().get(NOTIFICATIONS).set(true);
+
+        ModelNode result = mainControllerClient.execute(operation);
+        checkRootSubModelDescription(result.get(RESULT), false, true);
     }
 
     @Test
@@ -429,7 +443,7 @@ public abstract class AbstractProxyControllerTest {
         assertEquals(size, operationNamesList.asList().size());
     }
 
-    private void checkRootSubModelDescription(ModelNode result, boolean operations) {
+    private void checkRootSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
         assertEquals("description", result.get(DESCRIPTION).asString());
         assertEquals("server", result.get(CHILDREN, SERVER, DESCRIPTION).asString());
         assertEquals(1, result.get(CHILDREN, SERVER, MODEL_DESCRIPTION).keys().size());
@@ -451,14 +465,24 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
+        if (notifications) {
+            // TODO WFLY-3603 - add assertions for global notifications
+            /*
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+            */
+        }
+
         ModelNode proxy = result.get(CHILDREN, SERVER, MODEL_DESCRIPTION, "serverA");
 
-        checkHostSubModelDescription(proxy, operations);
+        checkHostSubModelDescription(proxy, operations, notifications);
     }
 
-    private void checkHostSubModelDescription(ModelNode result, boolean operations) {
+    private void checkHostSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
 
-        assertEquals(4, result.keys().size());
+        assertEquals(5, result.keys().size());
         assertEquals("description", result.get(DESCRIPTION).asString());
         assertEquals("serverchild", result.get(CHILDREN, "serverchild", DESCRIPTION).asString());
         assertEquals(1, result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION).keys().size());
@@ -478,13 +502,22 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
-        checkHostChildSubModelDescription(result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION, "*"), operations);
+        if (notifications) {
+            // TODO WFLY-3603 - add assertions for global notifications
+            /*
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+            */
+        }
+
+        checkHostChildSubModelDescription(result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
-    private void checkHostChildSubModelDescription(ModelNode result, boolean operations) {
-        int expectedChildren = operations ? 4 : 3;
-        assertEquals(expectedChildren, result.keys().size());
-        assertEquals("A server child", result.get(DESCRIPTION).asString());
+    private void checkHostChildSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
+        int expectedChildren = 3 + (operations ? 1 : 0) + (notifications ? 0 : 0);
+        assertEquals(result.toString(), expectedChildren, result.keys().size());
         assertEquals(1, result.get(ATTRIBUTES).keys().size());
         assertEquals(ModelType.STRING, result.get(ATTRIBUTES, "name", TYPE).asType());
         assertEquals("The name of the server child", result.get(ATTRIBUTES, "name", DESCRIPTION).asString());
@@ -513,14 +546,22 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
+        if (notifications) {
+            // TODO WFLY-3603 - add assertions for global notifications
+            /*
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+            */
+        }
 
-        checkHostChildChildSubModelDescription(result.get(CHILDREN, "child", MODEL_DESCRIPTION, "*"), operations);
+        checkHostChildChildSubModelDescription(result.get(CHILDREN, "child", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
-    private void checkHostChildChildSubModelDescription(ModelNode result, boolean operations) {
-        int expectedChildren = operations ? 3 : 2;
-        assertEquals(expectedChildren, result.keys().size());
-        assertEquals("A named set of children", result.get(DESCRIPTION).asString());
+    private void checkHostChildChildSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
+        int expectedChildren = 2 + (operations ? 1 : 0) + (notifications ? 0 : 0);
+        assertEquals(result.toString(), expectedChildren, result.keys().size());
         assertEquals(2, result.get(ATTRIBUTES).keys().size());
         assertEquals(ModelType.STRING, result.get(ATTRIBUTES, "name", TYPE).asType());
         assertEquals("The name of the child", result.get(ATTRIBUTES, "name", DESCRIPTION).asString());
@@ -541,6 +582,17 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
+        // TODO WFLY-3603 - add assertions for global notifications
+        /*
+        if (!notifications) {
+            assertFalse(result.hasDefined(NOTIFICATIONS));
+        } else {
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+        }
+        */
     }
 
     private void checkRootNode(ModelNode result) {

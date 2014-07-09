@@ -25,7 +25,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -618,12 +621,12 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
     public void testReadResourceDescriptionOperation() throws Exception {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, false, false);
+        checkRootNodeDescription(result, false, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
         result = executeForResult(operation);
-        checkProfileNodeDescription(result, false, false);
+        checkProfileNodeDescription(result, false, false, false);
 
         //TODO this is not possible - the wildcard address does not correspond to anything in the real model
         //operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "*");
@@ -632,7 +635,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         result = executeForResult(operation);
-        checkSubsystem1Description(result, false, false);
+        checkSubsystem1Description(result, false, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
@@ -656,13 +659,13 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(RECURSIVE).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, true, false);
+        checkRootNodeDescription(result, true, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA");
         operation.get(RECURSIVE).set(true);
         result = executeForResult(operation);
-        checkProfileNodeDescription(result, true, false);
+        checkProfileNodeDescription(result, true, false, false);
 
         //TODO this is not possible - the wildcard address does not correspond to anything in the real model
         //operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "*");
@@ -673,7 +676,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(RECURSIVE).set(true);
         result = executeForResult(operation);
-        checkSubsystem1Description(result, true, false);
+        checkSubsystem1Description(result, true, false, false);
         assertFalse(result.get(OPERATIONS).isDefined());
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
@@ -700,7 +703,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
         operation.get(OPERATIONS).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, false, true);
+        checkRootNodeDescription(result, false, true, false);
         assertTrue(result.require(OPERATIONS).isDefined());
         Set<String> ops = result.require(OPERATIONS).keys();
         assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
@@ -717,7 +720,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(OPERATIONS).set(true);
         result = executeForResult(operation);
-        checkSubsystem1Description(result, false, true);
+        checkSubsystem1Description(result, false, true, false);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
         operation.get(OPERATIONS).set(true);
@@ -741,14 +744,14 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation.get(OPERATIONS).set(true);
         operation.get(RECURSIVE).set(true);
         ModelNode result = executeForResult(operation);
-        checkRootNodeDescription(result, true, true);
+        checkRootNodeDescription(result, true, true, false);
 
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(OPERATIONS).set(true);
         operation.get(RECURSIVE).set(true);
         result = executeForResult(operation);
-        checkSubsystem1Description(result, true, true);
+        checkSubsystem1Description(result, true, true, false);
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
         operation.get(OPERATIONS).set(true);
@@ -764,6 +767,99 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
         operation.get(OPERATIONS).set(true);
+        operation.get(RECURSIVE).set(true);
+        result = executeForResult(operation);
+        checkType2Description(result);
+    }
+
+    @Test
+    public void testReadResourceDescriptionOperationWithNotifications() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(NOTIFICATIONS).set(true);
+        ModelNode result = executeForResult(operation);
+        checkRootNodeDescription(result, false, false, true);
+
+        // TODO WFLY-3603 - add assertions for global notifications
+        /*
+        assertTrue(result.require(NOTIFICATIONS).isDefined());
+        Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        for (String notif : notifs) {
+            assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+        }
+        */
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(NOTIFICATIONS).set(true);
+        result = executeForResult(operation);
+        checkSubsystem1Description(result, false, false, true);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
+        operation.get(NOTIFICATIONS).set(true);
+        result = executeForResult(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
+        operation.get(NOTIFICATIONS).set(true);
+        result = executeForResult(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
+        operation.get(NOTIFICATIONS).set(true);
+        result = executeForResult(operation);
+        checkType2Description(result);
+    }
+
+    @Test
+    public void testReadResourceDescriptionOperationWithNotInheritedNotifications() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(INHERITED).set(false);
+        ModelNode result = executeForResult(operation);
+        checkRootNodeDescription(result, false, false, true);
+        // TODO WFLY-3603 - add assertions for global notifications
+        /*
+        assertTrue(result.require(NOTIFICATIONS).isDefined());
+        Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        for (String notif : notifs) {
+            assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+        }
+        */
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(INHERITED).set(false);
+        result = executeForResult(operation);
+        checkSubsystem1Description(result, false, false, false);
+    }
+
+    @Test
+    public void testRecursiveReadResourceDescriptionOperationWithNotifications() throws Exception {
+        ModelNode operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(RECURSIVE).set(true);
+        ModelNode result = executeForResult(operation);
+        checkRootNodeDescription(result, true, false, true);
+
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(RECURSIVE).set(true);
+        result = executeForResult(operation);
+        checkSubsystem1Description(result, true, false, true);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing1");
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(RECURSIVE).set(true);
+        result = executeForResult(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type1", "thing2");
+        operation.get(NOTIFICATIONS).set(true);
+        operation.get(RECURSIVE).set(true);
+        result = executeForResult(operation);
+        checkType1Description(result);
+
+        operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1", "type2", "other");
+        operation.get(NOTIFICATIONS).set(true);
         operation.get(RECURSIVE).set(true);
         result = executeForResult(operation);
         checkType2Description(result);
