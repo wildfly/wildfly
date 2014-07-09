@@ -68,6 +68,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -167,8 +168,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                            final Integer operationId, final HostServerGroupTracker hostServerGroupTracker) {
-        super(processType, runningMode, transactionControl, processState, booting, auditLogger);
+                            final Integer operationId, final HostServerGroupTracker hostServerGroupTracker,
+                            final NotificationSupport notificationSupport) {
+        super(processType, runningMode, transactionControl, processState, booting, auditLogger, notificationSupport);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
