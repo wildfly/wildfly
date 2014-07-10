@@ -87,6 +87,9 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
                 }
             }
         }
+        for(Map.Entry<K, Entry<V>> entry : entries.entrySet()) {
+            this.factory.destroyInstance(entry.getValue().getValue());
+        }
         this.expirationFutures.clear();
         this.entries.clear();
     }
