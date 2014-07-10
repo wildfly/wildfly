@@ -61,7 +61,7 @@ public class MDBWhichDependsOnTestCase {
     @EJB(mappedName = Constants.EJB_JMS_NAME)
     private JMSMessagingUtil jmsUtil;
 
-    @EJB
+    @EJB(mappedName = Constants.SINGLETON_EJB)
     private CallCounterInterface counter;
     
     @Resource(mappedName = Constants.QUEUE_JNDI_NAME)

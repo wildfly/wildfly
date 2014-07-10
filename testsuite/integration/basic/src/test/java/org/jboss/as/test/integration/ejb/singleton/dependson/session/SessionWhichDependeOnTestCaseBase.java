@@ -25,9 +25,7 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterInterface;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterSingleton;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.Constants;
@@ -36,8 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author baranowb
@@ -51,7 +47,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
     @ArquillianResource
     Deployer deployer;
 
-    @EJB
+    @EJB(mappedName = Constants.SINGLETON_EJB)
     private CallCounterInterface counter;
 
     protected abstract Trigger getTrigger() throws Exception;
@@ -72,6 +68,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
         this.deployer.deploy(SessionConstants.DEPLOYMENT_NAME_SESSION);
         getTrigger().trigger();
         this.deployer.undeploy(SessionConstants.DEPLOYMENT_NAME_SESSION);
+
         Assert.assertTrue("PostConstruct not called!", counter.isPostConstruct());
         Assert.assertTrue("Message not called!", counter.isMessage());
         Assert.assertTrue("PreDestroy not called!", counter.isPreDestroy());
