@@ -59,7 +59,7 @@ public class PropertyValueState extends DefaultParsingState {
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
         enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));
         setIgnoreWhitespaces(true);
-        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.jboss.as.cli.CommandFormatException;
 public class WordCharacterHandler extends LineBreakHandler {
 
     public static final WordCharacterHandler IGNORE_LB_ESCAPE_ON = new WordCharacterHandler(false, true);
+    public static final WordCharacterHandler IGNORE_LB_ESCAPE_OFF = new WordCharacterHandler(false, false);
     public static final WordCharacterHandler LB_LEAVE_ESCAPE_ON = new WordCharacterHandler(true, true);
 
     public WordCharacterHandler(boolean leaveOnLnBreak, boolean fallbackToEscape) {

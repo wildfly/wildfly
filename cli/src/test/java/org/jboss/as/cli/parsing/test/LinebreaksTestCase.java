@@ -33,7 +33,6 @@ import org.jboss.as.cli.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -74,13 +73,11 @@ public class LinebreaksTestCase {
     }
 
     @Test
-    @Ignore
     public void testOp() throws Exception {
         testPieces(op);
     }
 
     @Test
-    @Ignore
     public void testCmd() throws Exception {
         testPieces(cmd);
     }
