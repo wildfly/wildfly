@@ -140,14 +140,6 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 scheduleTimeoutIfRequired(timer);
                 return;
             }
-            // If the recurring timer running longer than the interval is, we don't want to allow another
-            // execution until it is complete. See JIRA AS7-3119
-            if (timer.getState() == TimerState.IN_TIMEOUT && !timer.isCalendarTimer()) {
-                ROOT_LOGGER.skipOverlappingInvokeTimeout(timer.getTimedObjectId(), timer.getId(), now);
-                timer.setNextTimeout(this.calculateNextTimeout(timer));
-                timerService.persistTimer(timer, false);
-                return;
-            }
 
             //we lock the timer for this check, because if a cancel is in progress then
             //we do not want to do the isActive check, but wait for the cancelling transaction to finish
