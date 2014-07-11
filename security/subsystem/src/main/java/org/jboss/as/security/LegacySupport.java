@@ -183,7 +183,7 @@ class LegacySupport {
 
 
         public LoginModulesAttributeDefinition(String name, String xmlName) {
-            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator));
+            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator).setDeprecated(ModelVersion.create(1, 2, 0)));
         }
 
         @Override
@@ -263,7 +263,9 @@ class LegacySupport {
 
 
         public MappingModulesAttributeDefinition() {
-            super(LegacySupportListAttributeBuilder.of(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, validator));
+            super(LegacySupportListAttributeBuilder.of(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, validator)
+                            .setDeprecated(ModelVersion.create(1, 2, 0))
+            );
         }
 
         @Override
@@ -332,7 +334,9 @@ class LegacySupport {
 
 
         public ProviderModulesAttributeDefinition(String name, String xmlName) {
-            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator));
+            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator)
+                            .setDeprecated(ModelVersion.create(1, 2, 0))
+            );
         }
 
         @Override
