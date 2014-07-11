@@ -132,7 +132,7 @@ public class TransactionExtension implements Extension {
         }
 
 
-        ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource));
+        ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource, registerRuntimeOnly));
         if (registerRuntimeOnly) {
             ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
             transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
