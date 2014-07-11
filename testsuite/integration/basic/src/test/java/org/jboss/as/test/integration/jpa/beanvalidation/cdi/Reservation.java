@@ -41,7 +41,7 @@ public class Reservation {
     @CustomMin
     private int numberOfPeople;
 
-    @NotNull
+    @NotNull(message="may not be null")
     private String lastName;
 
     public Reservation(int numberOfPeople, String lastName) {
