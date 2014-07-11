@@ -23,6 +23,7 @@ package org.jboss.as.weld.services.bootstrap;
 
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
 
+import java.lang.reflect.Member;
 import java.util.HashMap;
 
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -70,7 +71,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         if (context == null) {
             throw WeldLogger.ROOT_LOGGER.annotationNotFound(PersistenceContext.class, injectionPoint.getMember());
         }
-        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
+        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName(), injectionPoint.getMember());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
         final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
@@ -87,7 +88,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         if (context == null) {
             throw WeldLogger.ROOT_LOGGER.annotationNotFound(PersistenceUnit.class, injectionPoint.getMember());
         }
-        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
+        final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName(), injectionPoint.getMember());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
         final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
@@ -103,11 +104,11 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         deploymentUnit = null;
     }
 
-    private String getScopedPUName(final DeploymentUnit deploymentUnit, final String persistenceUnitName) {
+    private String getScopedPUName(final DeploymentUnit deploymentUnit, final String persistenceUnitName, Member injectionPoint) {
         PersistenceUnitMetadata scopedPu;
         scopedPu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, persistenceUnitName);
         if (null == scopedPu) {
-            throw WeldLogger.ROOT_LOGGER.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName());
+            throw WeldLogger.ROOT_LOGGER.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName(), injectionPoint);
         }
         return scopedPu.getScopedPersistenceUnitName();
     }
