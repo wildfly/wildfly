@@ -22,13 +22,22 @@
 
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.NoopOperationStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -37,14 +46,15 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition[] LOG_STORE_ATTRIBUTE = new SimpleAttributeDefinition[]{
             LogStoreConstants.LOG_STORE_TYPE};
 
+    private final boolean registerRuntimeOnly;
 
-
-    public LogStoreDefinition(final LogStoreResource resource) {
+    public LogStoreDefinition(final LogStoreResource resource, final boolean registerRuntimeOnly) {
         super(TransactionExtension.LOG_STORE_PATH,
                 TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE),
                 new LogStoreAddHandler(resource),
-                ReloadRequiredRemoveStepHandler.INSTANCE,
-                OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
+                NoopOperationStepHandler.WITH_RESULT,
+                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -63,6 +73,31 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
         for (SimpleAttributeDefinition attr : LOG_STORE_ATTRIBUTE) {
             resourceRegistration.registerReadOnlyAttribute(attr, null);
+        }
+        if (registerRuntimeOnly) {
+            resourceRegistration.registerReadWriteAttribute(LogStoreConstants.EXPOSE_ALL_LOGS, null,
+                    new ExposeAllLogsWriteAttributeHandler());
+        }
+    }
+
+    static class ExposeAllLogsWriteAttributeHandler extends AbstractRuntimeOnlyHandler {
+        @Override
+        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final String attributeName = operation.require(NAME).asString();
+            ModelNode newValue = operation.hasDefined(VALUE)
+                    ? operation.get(VALUE) : LogStoreConstants.EXPOSE_ALL_LOGS.getDefaultValue();
+
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = resource.getModel();
+            final ModelNode syntheticOp = new ModelNode();
+            syntheticOp.get(attributeName).set(newValue);
+            LogStoreConstants.EXPOSE_ALL_LOGS.validateAndSet(syntheticOp, submodel);
+
+            // ExposeAllRecordsAsMBeans JMX attribute will be set in LogStoreProbeHandler prior to eventual probe operation execution,
+            // hence no need to do here anything else
+
+            context.getResult().set(new ModelNode());
+            context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
     }
 

@@ -74,7 +74,7 @@ public class TransactionExtension implements Extension {
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -133,7 +133,7 @@ public class TransactionExtension implements Extension {
         }
 
 
-        ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource));
+        ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource, registerRuntimeOnly));
         if (registerRuntimeOnly) {
             ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
             transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);

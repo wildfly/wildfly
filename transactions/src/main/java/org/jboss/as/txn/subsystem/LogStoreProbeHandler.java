@@ -148,11 +148,12 @@ public class LogStoreProbeHandler implements OperationStepHandler {
         }
     }
 
-    private Resource probeTransactions(MBeanServer mbs)
+    private Resource probeTransactions(MBeanServer mbs, boolean exposeAllLogs)
             throws OperationFailedException {
         try {
             ObjectName on = new ObjectName(osMBeanName);
 
+            mbs.setAttribute(on, new javax.management.Attribute("ExposeAllRecordsAsMBeans", Boolean.valueOf(exposeAllLogs)));
             mbs.invoke(on, "probe", null, null);
 
             Set<ObjectInstance> transactions = mbs.queryMBeans(new ObjectName(osMBeanName +  ",*"), null);
@@ -179,9 +180,12 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             assert resource instanceof LogStoreResource;
             final LogStoreResource logStore = (LogStoreResource) resource;
-            // Replace the current model with a updated one
+            // Get the expose-all-logs parameter value
+            final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            final boolean exposeAllLogs = LogStoreConstants.EXPOSE_ALL_LOGS.resolveModelAttribute(context, subModel).asBoolean();
+            // Replace the current model with an updated one
             context.acquireControllerLock();
-            final Resource storeModel = probeTransactions(mbs);
+            final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
             // WFLY-3020 -- don't drop the root model
             storeModel.writeModel(logStore.getModel());
             logStore.update(storeModel);
