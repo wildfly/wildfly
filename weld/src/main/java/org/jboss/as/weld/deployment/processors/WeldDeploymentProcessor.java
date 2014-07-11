@@ -69,7 +69,6 @@ import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.as.weld.discovery.WeldClassFileServices;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
-import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.as.weld.services.bootstrap.WeldJaxwsInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
@@ -87,7 +86,6 @@ import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.bootstrap.spi.helpers.FileBasedBootstrapConfiguration;
-import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
@@ -238,7 +236,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
         weldBootstrapService.addWeldService(ResourceInjectionServices.class, resourceInjectionServices);
-        weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
+
         if (classFileServices != null) {
             weldBootstrapService.addWeldService(ClassFileServices.class, classFileServices);
         }
