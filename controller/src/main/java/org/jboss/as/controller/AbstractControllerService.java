@@ -112,6 +112,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     private volatile ModelControllerImpl controller;
     private ConfigurationPersister configurationPersister;
     private final ManagedAuditLogger auditLogger;
+    private final BootErrorCollector bootErrorCollector;
 
     /**
      * Construct a new instance.
@@ -148,11 +149,35 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param expressionResolver      the expression resolver
      * @param auditLogger             the audit logger
      */
+    @Deprecated
     protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
                                         final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer) {
+        this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
+                prepareStep, expressionResolver, auditLogger, authorizer);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param processType             the type of process being controlled
+     * @param runningModeControl      the controller of the process' running mode
+     * @param configurationPersister  the configuration persister
+     * @param processState            the controlled process state
+     * @param rootResourceDefinition  the root resource definition
+     * @param prepareStep             the prepare step to prepend to operation execution
+     * @param expressionResolver      the expression resolver
+     * @param auditLogger             the audit logger
+     * @param bootErrorCollector      the boot error collector
+     */
+    protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
+                                        final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
+                                        final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer,
+                                        final BootErrorCollector bootErrorCollector) {
         this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
                 prepareStep, expressionResolver, auditLogger, authorizer);
     }
@@ -221,8 +246,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
         this.expressionResolver = expressionResolver;
         this.auditLogger = auditLogger;
         this.authorizer = authorizer;
+        this.bootErrorCollector = new BootErrorCollector();
     }
 
+    @Override
     public void start(final StartContext context) throws StartException {
 
         if (configurationPersister == null) {
@@ -243,7 +270,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 rootResourceRegistration,
                 new ContainerStateMonitor(container),
                 configurationPersister, processType, runningModeControl, prepareStep,
-                processState, executorService, expressionResolver, authorizer, auditLogger, notificationSupport);
+                processState, executorService, expressionResolver, authorizer, auditLogger, notificationSupport, bootErrorCollector);
 
         // Initialize the model
         initModel(controller.getRootResource(), controller.getRootRegistration(), controller.getModelControllerResource());
@@ -390,6 +417,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
 
     protected ManagedAuditLogger getAuditLogger() {
         return auditLogger;
+    }
+
+    protected BootErrorCollector getBootErrorCollector() {
+        return bootErrorCollector;
     }
 }
 

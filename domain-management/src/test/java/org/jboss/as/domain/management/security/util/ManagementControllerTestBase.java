@@ -104,7 +104,7 @@ public class ManagementControllerTestBase extends AbstractControllerTestBase {
             public String getProductName() {
                 return null;
             }
-        }));
+        }, null));
 
 
         pathManagerService.addPathManagerResources(rootResource);

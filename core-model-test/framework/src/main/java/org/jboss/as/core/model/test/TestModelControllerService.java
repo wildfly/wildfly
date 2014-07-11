@@ -412,7 +412,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     parallelBoot,
                     pathManagerService,
                     authorizer,
-                    AuditLogger.NO_OP_LOGGER));
+                    AuditLogger.NO_OP_LOGGER,
+                    getBootErrorCollector()));
         }
 
         @Override
@@ -457,7 +458,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             processState,
                             pathManagerService,
                             authorizer,
-                            AuditLogger.NO_OP_LOGGER));
+                            AuditLogger.NO_OP_LOGGER,
+                            getBootErrorCollector()));
         }
 
         @Override
@@ -490,7 +492,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     processState,
                     pathManagerService,
                     authorizer,
-                    AuditLogger.NO_OP_LOGGER);
+                    AuditLogger.NO_OP_LOGGER,
+                    getBootErrorCollector());
         }
     }
 

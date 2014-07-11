@@ -29,11 +29,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.MinMaxValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -90,28 +87,30 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
+        addValueTypeDescription(node, null, bundle);
     }
 
 
     protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(false);
-        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
-        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+        if (valueType.getType() == ModelType.OBJECT) {
+            final ModelNode param = valueType.getNoTextDescription(true);
+            final ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(param);
+            if (valueType instanceof ObjectTypeAttributeDefinition) {
+                ObjectTypeAttributeDefinition.class.cast(valueType).addOperationParameterDescription(bundle, prefix, childType);
+            }
+        } else {
+            addSimpleValueTypeDescription(node);
+        }
     }
 
     @Override
     protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(false);
-        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
-        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+        addValueTypeDescription(node, bundle);
     }
 
     @Override
     protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(true);
-        valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
-        node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+        addValueTypeDescription(node, bundle);
     }
 
     /**
@@ -134,67 +133,8 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         return allowExp ? convertStringExpression(parameterElement) : parameterElement;
     }
 
-    private ModelNode getValueTypeDescription(boolean forOperation) {
-        final ModelNode result = new ModelNode();
-        result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
-        result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
-        result.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
-        if (forOperation) {
-            result.get(ModelDescriptionConstants.REQUIRED).set(!valueType.isAllowNull());
-        }
-        result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        final ModelNode defaultValue = valueType.getDefaultValue();
-        if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
-            result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
-        }
-        MeasurementUnit measurementUnit = valueType.getMeasurementUnit();
-        if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
-            result.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
-        }
-        final String[] alternatives = valueType.getAlternatives();
-        if (alternatives != null) {
-            for (final String alternative : alternatives) {
-                result.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
-            }
-        }
-        final String[] requires = valueType.getRequires();
-        if (requires != null) {
-            for (final String required : requires) {
-                result.get(ModelDescriptionConstants.REQUIRES).add(required);
-            }
-        }
-        final ParameterValidator validator = valueType.getValidator();
-        if (validator instanceof MinMaxValidator) {
-            MinMaxValidator minMax = (MinMaxValidator) validator;
-            Long min = minMax.getMin();
-            if (min != null) {
-                switch (valueType.getType()) {
-                    case STRING:
-                    case LIST:
-                    case OBJECT:
-                    case BYTES:
-                        result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
-                        break;
-                    default:
-                        result.get(ModelDescriptionConstants.MIN).set(min);
-                }
-            }
-            Long max = minMax.getMax();
-            if (max != null) {
-                switch (valueType.getType()) {
-                    case STRING:
-                    case LIST:
-                    case OBJECT:
-                    case BYTES:
-                        result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
-                        break;
-                    default:
-                        result.get(ModelDescriptionConstants.MAX).set(max);
-                }
-            }
-        }
-        addAllowedValuesToDescription(result, validator);
-        return result;
+    private void addSimpleValueTypeDescription(final ModelNode node) {
+        node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType.getType());
     }
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,SimpleListAttributeDefinition>{

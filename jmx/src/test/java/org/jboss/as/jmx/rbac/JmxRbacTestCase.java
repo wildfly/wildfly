@@ -52,6 +52,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
@@ -578,7 +579,7 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
             public String getProductName() {
                 return null;
             }
-        }));
+        }, null, new ResourceDefinition[0]));
 
 
         pathManagerService.addPathManagerResources(rootResource);

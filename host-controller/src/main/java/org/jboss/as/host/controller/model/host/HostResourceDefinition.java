@@ -24,6 +24,7 @@ package org.jboss.as.host.controller.model.host;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
+import org.jboss.as.controller.BootErrorCollector;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -205,6 +206,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     private final PathManagerService pathManager;
     private final DelegatingConfigurableAuthorizer authorizer;
     private final ManagedAuditLogger auditLogger;
+    private final BootErrorCollector bootErrorCollector;
 
     public HostResourceDefinition(final String hostName,
                                   final HostControllerConfigurationPersister configurationPersister,
@@ -222,7 +224,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                                   final ControlledProcessState processState,
                                   final PathManagerService pathManager,
                                   final DelegatingConfigurableAuthorizer authorizer,
-                                  final ManagedAuditLogger auditLogger) {
+                                  final ManagedAuditLogger auditLogger,
+                                  final BootErrorCollector bootErrorCollector) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
         this.configurationPersister = configurationPersister;
         this.environment = environment;
@@ -240,6 +243,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         this.pathManager = pathManager;
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
+        this.bootErrorCollector = bootErrorCollector;
     }
 
     @Override
@@ -354,7 +358,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                 return null;
             }
         };
-        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, auditLogger, pathManager, environmentNameReader, nativeManagement, httpManagement));
+        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, auditLogger, pathManager, environmentNameReader, bootErrorCollector, nativeManagement, httpManagement));
 
         // Other core services
         // TODO get a DumpServicesHandler that works on the domain

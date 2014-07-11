@@ -30,10 +30,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.management.AuthorizedAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Handler for reading the 'operation' and 'address' fields of an active operation that
@@ -53,18 +52,18 @@ public class SecureOperationReadHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        AuthorizedAddress authorizedAddress = authorizeAddress(context, operation);
+        AuthorizedAddress authorizedAddress = AuthorizedAddress.authorizeAddress(context, operation);
 
         String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
         if (ActiveOperationResourceDefinition.OPERATION_NAME.getName().equals(attribute)) {
-            if (authorizedAddress.elided) {
+            if (authorizedAddress.isElided()) {
                 context.getResult().set(HIDDEN);
             } else {
                 context.getResult().set(model.get(attribute));
             }
         } else if (ActiveOperationResourceDefinition.ADDRESS.getName().equals(attribute)) {
-            if (authorizedAddress.elided) {
-                context.getResult().set(authorizedAddress.address);
+            if (authorizedAddress.isElided()) {
+                context.getResult().set(authorizedAddress.getAddress());
             } else {
                 context.getResult().set(model.get(attribute));
             }
@@ -74,47 +73,5 @@ public class SecureOperationReadHandler implements OperationStepHandler {
         }
 
         context.stepCompleted();
-    }
-
-    private AuthorizedAddress authorizeAddress(OperationContext context, ModelNode operation) {
-        ModelNode address = operation.get(ModelDescriptionConstants.OP_ADDR);
-        ModelNode testOp = new ModelNode();
-        testOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
-        testOp.get(ModelDescriptionConstants.OP_ADDR).set(address);
-
-        AuthorizationResult authResult = context.authorize(testOp, ADDRESS_EFFECT);
-        if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT) {
-            return new AuthorizedAddress(address, false);
-        }
-
-        // Failed. Now we need to see how far we can go
-        ModelNode partialAddress = new ModelNode().setEmptyList();
-        ModelNode elidedAddress = new ModelNode().setEmptyList();
-        for (Property prop : address.asPropertyList()) {
-            partialAddress.add(prop);
-            testOp.get(ModelDescriptionConstants.OP_ADDR).set(address);
-            authResult = context.authorize(testOp, ADDRESS_EFFECT);
-            if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                elidedAddress.add(prop.getName(), HIDDEN);
-                return new AuthorizedAddress(elidedAddress, false);
-            } else {
-                elidedAddress.add(prop);
-            }
-        }
-
-        // Should not be reachable, but in case of a bug, be conservative and hide data
-        ModelNode strange = new ModelNode();
-        strange.add(HIDDEN, HIDDEN);
-        return new AuthorizedAddress(strange, true);
-    }
-
-    private static class AuthorizedAddress {
-        private final ModelNode address;
-        private final boolean elided;
-
-        private AuthorizedAddress(ModelNode address, boolean elided) {
-            this.address = address;
-            this.elided = elided;
-        }
     }
 }

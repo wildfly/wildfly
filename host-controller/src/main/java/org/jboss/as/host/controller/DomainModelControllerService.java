@@ -708,7 +708,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void registerHostModel(String hostName, ManagementResourceRegistration root) {
         HostModelUtil.createHostRegistry(hostName, root, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer, getAuditLogger());
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer, getAuditLogger(),
+                getBootErrorCollector());
     }
 
 

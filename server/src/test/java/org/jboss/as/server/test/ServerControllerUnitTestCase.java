@@ -316,7 +316,8 @@ public class ServerControllerUnitTestCase {
         @Override
         public void start(StartContext context) throws StartException {
             rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(MockRepository.INSTANCE,
-                    persister, environment, processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, authorizer, AuditLogger.NO_OP_LOGGER));
+                    persister, environment, processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER,
+                    authorizer, AuditLogger.NO_OP_LOGGER, getBootErrorCollector()));
             super.start(context);
         }
     }

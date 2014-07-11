@@ -197,7 +197,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                          final ModelNode blockingTimeoutConfig,
                          final AccessMechanism accessMechanism,
                          final NotificationSupport notificationSupport) {
-        super(processType, runningMode, transactionControl, processState, booting, auditLogger, notificationSupport);
+        super(processType, runningMode, transactionControl, processState, booting, auditLogger, notificationSupport, modelController);
         this.operationId = operationId;
         this.operationName = operationName;
         this.operationAddress = operationAddress.isDefined()

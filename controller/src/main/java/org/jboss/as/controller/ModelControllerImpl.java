@@ -120,6 +120,7 @@ class ModelControllerImpl implements ModelController {
 
     private final ConcurrentMap<Integer, OperationContextImpl> activeOperations = new ConcurrentHashMap<Integer, OperationContextImpl>();
     private final ManagedAuditLogger auditLogger;
+    private final BootErrorCollector bootErrorCollector;
 
     private final NotificationSupport notificationSupport;
 
@@ -132,7 +133,7 @@ class ModelControllerImpl implements ModelController {
                         final ProcessType processType, final RunningModeControl runningModeControl,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
                         final ExpressionResolver expressionResolver, final Authorizer authorizer,
-                        final ManagedAuditLogger auditLogger, NotificationSupport notificationSupport) {
+                        final ManagedAuditLogger auditLogger, NotificationSupport notificationSupport, final BootErrorCollector bootErrorCollector) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -148,6 +149,7 @@ class ModelControllerImpl implements ModelController {
         this.expressionResolver = expressionResolver;
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
+        this.bootErrorCollector = bootErrorCollector;
         this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
         this.modelControllerResource = new ModelControllerResource();
         auditLogger.startBoot();
@@ -691,6 +693,12 @@ class ModelControllerImpl implements ModelController {
 
     AuditLogger getAuditLogger() {
         return auditLogger;
+    }
+
+    void addFailureDescription(ModelNode operation, ModelNode failure) {
+        if(bootErrorCollector != null) {
+            bootErrorCollector.addFailureDescription(operation, failure);
+        }
     }
 
     private class DefaultPrepareStepHandler implements OperationStepHandler {

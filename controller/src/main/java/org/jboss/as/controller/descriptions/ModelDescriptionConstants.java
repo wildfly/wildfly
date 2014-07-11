@@ -72,6 +72,8 @@ public class ModelDescriptionConstants {
     public static final String BLOCKING = "blocking";
     public static final String BLOCKING_TIMEOUT = "blocking-timeout";
     public static final String BOOT_TIME = "boot-time";
+    public static final String BOOT_ERROR = "boot-error";
+    public static final String BOOT_ERRORS = "boot-errors";
     public static final String BYTES = "bytes";
     public static final String CALLER_THREAD = "caller-thread";
     public static final String CALLER_TYPE = "caller-type";
@@ -143,6 +145,7 @@ public class ModelDescriptionConstants {
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
     public static final String FACILITY = "facility";
+    public static final String FAILURES = "failures";
     public static final String FAILURE_COUNT = "failure-count";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FILE = "file";
@@ -224,6 +227,7 @@ public class ModelDescriptionConstants {
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
     public static final String MESSAGE_TRANSFER = "message-transfer";
+    public static final String MISSING_DEPS = "missing-deps";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";

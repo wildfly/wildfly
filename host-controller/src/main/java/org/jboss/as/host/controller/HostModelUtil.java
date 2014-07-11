@@ -20,6 +20,7 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 
+import org.jboss.as.controller.BootErrorCollector;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
@@ -111,7 +112,8 @@ public class HostModelUtil {
                                           final ControlledProcessState processState,
                                           final PathManagerService pathManager,
                                           final DelegatingConfigurableAuthorizer authorizer,
-                                          final ManagedAuditLogger auditLogger) {
+                                          final ManagedAuditLogger auditLogger,
+                                          final BootErrorCollector bootErrorCollector) {
         // Add of the host itself
         //ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST, hostName), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         ManagementResourceRegistration hostRegistration = root.registerSubModel(
@@ -119,7 +121,7 @@ public class HostModelUtil {
                         environment, runningModeControl, localFileRepository,
                         hostControllerInfo, serverInventory, remoteFileRepository,
                         contentRepository, domainController, extensionRegistry,
-                        vaultReader, ignoredRegistry, processState, pathManager, authorizer, auditLogger));
+                        vaultReader, ignoredRegistry, processState, pathManager, authorizer, auditLogger, bootErrorCollector));
 
         //TODO See if some of all these parameters can come from domain controller
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
