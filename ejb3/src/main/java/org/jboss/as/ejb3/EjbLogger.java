@@ -617,6 +617,19 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14274, value = "Failed to refresh timers for %s")
     void failedToRefreshTimers(String timedObjectId);
 
+    /**
+     * Logs a waring message that the current datasource configuration does not ensure consistency in a clustered environment.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14275, value = "The transaction isolation need to be equal or stricter than READ_COMMITTED to ensure that the timer run once-and-only-once")
+    void wrongTransactionIsolationConfiguredForTimer();
+
+    /**
+     * Transaction rollback after problems not successful
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14276, value = "Update timer failed and it was not possible to rollback the transaction!")
+    void timerUpdateFailedAndRollbackNotPossible(@Cause Throwable rbe);
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

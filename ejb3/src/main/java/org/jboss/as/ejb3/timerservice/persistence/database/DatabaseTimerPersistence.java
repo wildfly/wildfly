@@ -73,6 +73,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.Base64;
 
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+
 /**
  * @author Stuart Douglas
  */
@@ -132,7 +136,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
-        runCreateTable();
+        checkDatabase();
         if (refreshInterval > 0) {
             refreshTask = new RefreshTask();
             timerInjectedValue.getValue().schedule(refreshTask, refreshInterval, refreshInterval);
@@ -150,7 +154,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         dataSource = null;
     }
 
-    void runCreateTable() {
+    /**
+     * Checks whether the database transaction configuration is appropriate
+     * and create the timer table if necessary.
+     */
+    private void checkDatabase() {
         String loadTimer = sql(LOAD_TIMER);
         Connection connection = null;
         Statement statement = null;
@@ -159,6 +167,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         try {
             //test for the existence of the table by running the load timer query
             connection = dataSource.getConnection();
+            if (connection.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED) {
+                EjbLogger.ROOT_LOGGER.wrongTransactionIsolationConfiguredForTimer();
+            }
             preparedStatement = connection.prepareStatement(loadTimer);
             preparedStatement.setString(1, "NON-EXISTENT");
             preparedStatement.setString(2, "NON-EXISTENT");
@@ -268,7 +279,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     }
 
     @Override
-    public boolean shouldRun(TimerImpl timer) {
+    public boolean shouldRun(TimerImpl timer, TransactionManager tm) {
         if (!allowExecution) {
             //timers never execute on this node
             return false;
@@ -277,22 +288,49 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         Connection connection = null;
         PreparedStatement statement = null;
         try {
-            connection = dataSource.getConnection();
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            statement = connection.prepareStatement(loadTimer);
-            statement.setString(1, TimerState.IN_TIMEOUT.name());
-            statement.setString(2, timer.getId());
-            statement.setString(3, TimerState.IN_TIMEOUT.name());
-            if (timer.getNextExpiration() == null) {
-                statement.setTimestamp(4, null);
-            } else {
-                statement.setTimestamp(4, new Timestamp(timer.getNextExpiration().getTime()));
+            try {
+                connection = dataSource.getConnection();
+                statement = connection.prepareStatement(loadTimer);
+                statement.setString(1, TimerState.IN_TIMEOUT.name());
+                statement.setString(2, timer.getId());
+                statement.setString(3, TimerState.IN_TIMEOUT.name());
+                if (timer.getNextExpiration() == null) {
+                    statement.setTimestamp(4, null);
+                } else {
+                    statement.setTimestamp(4, new Timestamp(timer.getNextExpiration().getTime()));
+                }
+            } catch (SQLException e) {
+                // something wrong with the preparation
+                throw new RuntimeException(e);
             }
+            tm.begin();
             int affected = statement.executeUpdate();
+            tm.commit();
             return affected == 1;
         } catch (SQLException e) {
+            // failed to update the DB
+            // TODO need to analyze the Exception and suppress the Exception if 'only' the timer should not executed
+            try {
+                tm.rollback();
+            } catch (IllegalStateException rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            } catch (SecurityException  rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            } catch (SystemException rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            }
             throw new RuntimeException(e);
-        } finally {
+        }catch (NotSupportedException e) {
+            // happen from tm.begin, no rollback necessary
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            try {
+                tm.rollback();
+            } catch (Exception rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            }
+            throw new RuntimeException(e);
+        }  finally {
             safeClose(statement);
             safeClose(connection);
         }
