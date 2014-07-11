@@ -37,6 +37,7 @@
         <module name="javax.faces.api" />
         <module name="javax.enterprise.api"/>
         <module name="com.sun.jsf-impl"/>
+        <module name="org.wildfly.extension.bean-validation"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.wildfly.security.manager"/>

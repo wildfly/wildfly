@@ -21,8 +21,8 @@
                     <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
                 <authorization>
-                    <properties path="domain/configuration/application-roles.properties" relative-to="jboss.home.dir" />                    
-                </authorization>                
+                    <properties path="domain/configuration/application-roles.properties" relative-to="jboss.home.dir" />
+                </authorization>
             </security-realm>
         </security-realms>
         <management-interfaces>
@@ -36,6 +36,7 @@
        <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
             <ignored-resources type="extension">
                 <instance name="org.wildfly.extension.batch"/>
+                <instance name="org.wildfly.extension.bean-validation"/>
                 <instance name="org.wildfly.extension.io"/>
                 <instance name="org.wildfly.extension.undertow"/>
             </ignored-resources>
@@ -43,7 +44,7 @@
                 <instance name="full-ha"/>
                 <instance name="full-ha-7.2.x"/>
             </ignored-resources>
-       </remote>       
+       </remote>
     </domain-controller>
 
     <interfaces>

@@ -31,7 +31,6 @@ import java.util.ServiceLoader;
 import javax.validation.ValidationProviderResolver;
 import javax.validation.spi.ValidationProvider;
 
-import org.hibernate.validator.HibernateValidator;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -94,7 +93,7 @@ public class WildFlyProviderResolver implements ValidationProviderResolver {
                 ValidationProvider<?> provider = providerIterator.next();
 
                 // put Hibernate Validator to the beginning of the list
-                if (provider.getClass().getName().equals(HibernateValidator.class.getName())) {
+                if (provider.getClass().getName().equals("org.hibernate.validator.HibernateValidator")) {
                     providers.addFirst(provider);
                 } else {
                     providers.add(provider);

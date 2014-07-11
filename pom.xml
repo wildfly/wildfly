@@ -300,6 +300,7 @@
     <modules>
         <module>appclient</module>
         <module>batch</module>
+        <module>bean-validation</module>
         <module>build</module>
         <module>client/ejb</module>
         <module>client/jms</module>
@@ -837,6 +838,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-bean-validation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-jberet</artifactId>
