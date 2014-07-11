@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.stateful;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -194,7 +195,17 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = getEarApplicationName() == null ? "" : getEarApplicationName();
-        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null)));
+        if(WildFlySecurityManager.isChecking()) {
+            //need to use doPrivileged rather than doUnchecked, as this can run user code in the proxy constructor
+            return AccessController.doPrivileged(new PrivilegedAction<EJBObject>() {
+                @Override
+                public EJBObject run() {
+                   return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null)));
+                }
+            });
+        } else {
+            return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null)));
+        }
     }
 
     @Override
