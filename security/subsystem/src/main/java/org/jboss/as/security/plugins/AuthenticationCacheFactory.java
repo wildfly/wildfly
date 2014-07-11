@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,22 @@
 
 package org.jboss.as.security.plugins;
 
+import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
+
 import java.security.Principal;
 import java.util.concurrent.ConcurrentMap;
-
-import org.jboss.as.security.org.jboss.as.security.lru.LRUCache;
-import org.jboss.as.security.org.jboss.as.security.lru.RemoveCallback;
-import org.jboss.security.authentication.JBossCachedAuthenticationManager.DomainInfo;
 
 /**
  * Factory that creates default {@code ConcurrentMap}s for authentication cache.
  *
- * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
+ * @author Eduardo Martins
  */
-public class DefaultAuthenticationCacheFactory implements AuthenticationCacheFactory {
+public interface AuthenticationCacheFactory {
 
     /**
-     * Returns a default cache implementation
+     * Returns a cache implementation
      *
      * @return cache implementation
      */
-    public ConcurrentMap<Principal, DomainInfo> getCache() {
-        ConcurrentMap<Principal, DomainInfo> map = new LRUCache<>(1000,  new RemoveCallback<Principal, DomainInfo>() {
-            @Override
-            public void afterRemove(Principal key, DomainInfo value) {
-                if (value != null) {
-                    value.logout();
-                }
-            }
-        });
-        return map;
-    }
+    ConcurrentMap<Principal, DomainInfo> getCache();
 }

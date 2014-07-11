@@ -70,7 +70,6 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.login.Configuration;
 import javax.transaction.TransactionManager;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -84,13 +83,13 @@ import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.security.service.SecurityManagementService;
-import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.JBossJSSESecurityDomain;
@@ -180,12 +179,12 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
                         securityDomainService.getSecurityManagementInjector())
                 .addDependency(JaasConfigurationService.SERVICE_NAME, Configuration.class,
                         securityDomainService.getConfigurationInjector())
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, TransactionManagerService.SERVICE_NAME, TransactionManager.class,
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class,
                         transactionManagerInjector);
 
         if ("infinispan".equals(cacheType)) {
             builder.addDependency(EmbeddedCacheManagerService.getServiceName(CACHE_CONTAINER_NAME),
-                    EmbeddedCacheManager.class, securityDomainService.getCacheManagerInjector());
+                    Object.class, securityDomainService.getCacheManagerInjector());
         }
 
         if (verificationHandler != null) {

@@ -22,20 +22,6 @@
 
 package org.jboss.as.security.plugins;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.security.auth.callback.CallbackHandler;
-
-import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.AuthenticationManager;
@@ -47,6 +33,15 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.identitytrust.IdentityTrustManager;
 import org.jboss.security.mapping.MappingManager;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.security.auth.callback.CallbackHandler;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JNDI based implementation of {@code ISecurityManagement}
@@ -276,34 +271,13 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
      * @return an instance of {@code SecurityDomainContext}
      * @throws Exception if an error occurs during creation
      */
-    public SecurityDomainContext createSecurityDomainContext(String securityDomain, Object cacheFactory) throws Exception {
-        log.debugf("Creating SDC for domain=" + securityDomain);
+    public SecurityDomainContext createSecurityDomainContext(String securityDomain, AuthenticationCacheFactory cacheFactory) throws Exception {
+        log.debugf("Creating SDC for domain = %s", securityDomain);
         AuthenticationManager am = createAuthenticationManager(securityDomain);
-        // create authentication cache
-        if (cacheFactory instanceof EmbeddedCacheManager) {
-            EmbeddedCacheManager cacheManager = EmbeddedCacheManager.class.cast(cacheFactory);
-            @SuppressWarnings("rawtypes")
-            Cache cache = null;
-            if (cacheManager != null) {
-                // TODO override global settings with security domain specific
-                ConfigurationBuilder builder = new ConfigurationBuilder();
-                Configuration baseCfg = cacheManager.getCacheConfiguration("auth-cache");
-                if (baseCfg != null) {
-                    builder.read(baseCfg);
-                }
-                cacheManager.defineConfiguration(securityDomain, builder.build());
-                cache = cacheManager.getCache(securityDomain);
-            }
-            if (cache != null && am instanceof CacheableManager) {
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-                CacheableManager<Map, Principal> cm = (CacheableManager<Map, Principal>) am;
-                cm.setCache(cache);
-            }
-        } else if (cacheFactory instanceof DefaultAuthenticationCacheFactory) {
-            DefaultAuthenticationCacheFactory cacheManager = DefaultAuthenticationCacheFactory.class.cast(cacheFactory);
-            @SuppressWarnings("rawtypes")
-            Map cache = cacheManager.getCache();
-            if (cache != null && am instanceof CacheableManager) {
+        if (cacheFactory != null && am instanceof CacheableManager) {
+            // create authentication cache
+            final Map<Principal, ?> cache = cacheFactory.getCache();
+            if (cache != null) {
                 @SuppressWarnings({ "unchecked", "rawtypes" })
                 CacheableManager<Map, Principal> cm = (CacheableManager<Map, Principal>) am;
                 cm.setCache(cache);
