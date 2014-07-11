@@ -177,7 +177,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     }
 
     @Override
-    public boolean shouldRun(TimerImpl timer) {
+    public boolean shouldRun(TimerImpl timer, TransactionManager tm) {
         return true;
     }
 
