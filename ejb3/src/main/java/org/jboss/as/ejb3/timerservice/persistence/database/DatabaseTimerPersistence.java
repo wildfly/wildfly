@@ -73,8 +73,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.Base64;
 
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -314,6 +312,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             // TODO need to analyze the Exception and suppress the Exception if 'only' the timer should not executed
             try {
                 tm.rollback();
+<<<<<<< HEAD
             } catch (IllegalStateException rbe) {
                 EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             } catch (SecurityException  rbe) {
@@ -321,6 +320,21 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             } catch (SystemException rbe) {
                 EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             }
+=======
+            } catch (IllegalStateException | SecurityException | SystemException rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            }
+            throw new RuntimeException(e);
+        }catch (SystemException | SecurityException | IllegalStateException | RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
+            try {
+                tm.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException rbe) {
+                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
+            }
+            throw new RuntimeException(e);
+        } catch (NotSupportedException e) {
+            // happen from tm.begin, no rollback necessary
+>>>>>>> a1bbbc4... Remove dangerous connection parameter change from the pooled connection.
             throw new RuntimeException(e);
         }catch (NotSupportedException e) {
             // happen from tm.begin, no rollback necessary
