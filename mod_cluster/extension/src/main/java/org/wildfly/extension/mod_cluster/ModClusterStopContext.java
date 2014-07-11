@@ -42,9 +42,9 @@ public class ModClusterStopContext implements OperationStepHandler {
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.STOP_CONTEXT, descriptionResolver)
-                .addParameter(ModClusterDefinition.VIRTUAL_HOST)
-                .addParameter(ModClusterDefinition.CONTEXT)
-                .addParameter(ModClusterDefinition.WAIT_TIME)
+                .addParameter(ModClusterSubsystemResourceDefinition.VIRTUAL_HOST)
+                .addParameter(ModClusterSubsystemResourceDefinition.CONTEXT)
+                .addParameter(ModClusterSubsystemResourceDefinition.WAIT_TIME)
                 .setRuntimeOnly()
                 .build();
     }

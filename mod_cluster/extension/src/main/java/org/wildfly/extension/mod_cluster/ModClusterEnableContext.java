@@ -40,8 +40,8 @@ public class ModClusterEnableContext implements OperationStepHandler {
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.ENABLE_CONTEXT, descriptionResolver)
-                .addParameter(ModClusterDefinition.VIRTUAL_HOST)
-                .addParameter(ModClusterDefinition.CONTEXT)
+                .addParameter(ModClusterSubsystemResourceDefinition.VIRTUAL_HOST)
+                .addParameter(ModClusterSubsystemResourceDefinition.CONTEXT)
                 .setRuntimeOnly()
                 .build();
     }

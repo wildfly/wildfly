@@ -40,8 +40,8 @@ public class ModClusterDisableContext implements OperationStepHandler {
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.DISABLE_CONTEXT, descriptionResolver)
-                .addParameter(ModClusterDefinition.VIRTUAL_HOST)
-                .addParameter(ModClusterDefinition.CONTEXT)
+                .addParameter(ModClusterSubsystemResourceDefinition.VIRTUAL_HOST)
+                .addParameter(ModClusterSubsystemResourceDefinition.CONTEXT)
                 .setRuntimeOnly()
                 .build();
     }

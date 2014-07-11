@@ -40,8 +40,8 @@ public class ModClusterAddProxy implements OperationStepHandler {
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_PROXY, descriptionResolver)
-                .addParameter(ModClusterDefinition.HOST)
-                .addParameter(ModClusterDefinition.PORT)
+                .addParameter(ModClusterSubsystemResourceDefinition.HOST)
+                .addParameter(ModClusterSubsystemResourceDefinition.PORT)
                 .setRuntimeOnly()
                 .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
                 .build();

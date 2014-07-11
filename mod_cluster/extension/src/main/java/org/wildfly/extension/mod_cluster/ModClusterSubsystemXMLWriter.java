@@ -48,8 +48,8 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
         ModelNode node = context.getModelNode();
-        if (node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
-            writeModClusterConfig(writer, node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()));
+        if (node.get(ModClusterConfigResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            writeModClusterConfig(writer, node.get(ModClusterConfigResourceDefinition.PATH.getKeyValuePair()));
         } else {
             writeModClusterConfig(writer, node);
         }
@@ -65,11 +65,11 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (config.hasDefined(SIMPLE_LOAD_PROVIDER_FACTOR)) {
             writeSimpleLoadProvider(writer, config);
         }
-        if (config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()).isDefined()) {
-            writeDynamicLoadProvider(writer, config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()));
+        if (config.get(DynamicLoadProviderDefinition.PATH.getKeyValuePair()).isDefined()) {
+            writeDynamicLoadProvider(writer, config.get(DynamicLoadProviderDefinition.PATH.getKeyValuePair()));
         }
-        if (config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
-            writeSSL(writer, config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()));
+        if (config.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            writeSSL(writer, config.get(ModClusterSSLResourceDefinition.PATH.getKeyValuePair()));
         }
         writer.writeEndElement();
     }

@@ -41,9 +41,9 @@ public class ModClusterAddMetric implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        PathAddress parent = opAddress.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
+        PathAddress parent = opAddress.append(DynamicLoadProviderDefinition.PATH);
         String name = LoadMetricDefinition.TYPE.resolveModelAttribute(context, operation).asString();
-        ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC_PATH.getKey(), name)));
+        ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(LoadMetricDefinition.PATH.getKey(), name)));
 
         for (AttributeDefinition def : LoadMetricDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, targetOperation);

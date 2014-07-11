@@ -23,6 +23,8 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -31,6 +33,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.load.metric.LoadMetric;
@@ -39,6 +43,8 @@ import org.jboss.modcluster.load.metric.LoadMetric;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class LoadMetricDefinition extends SimpleResourceDefinition {
+
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
 
     protected static final LoadMetricDefinition INSTANCE = new LoadMetricDefinition();
 
@@ -69,8 +75,21 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
             TYPE, WEIGHT, CAPACITY, PROPERTY
     };
 
+    static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
+        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+            builder.addChildResource(PATH)
+                    .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)
+                    .addRejectCheck(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                    .setValueConverter(CapacityCheckerAndConverter.INSTANCE, CAPACITY)
+                    .addRejectCheck(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
+                    .setValueConverter(PropertyCheckerAndConverter.INSTANCE, PROPERTY)
+                    .end();
+        }
+    }
+
     private LoadMetricDefinition() {
-        super(ModClusterExtension.LOAD_METRIC_PATH,
+        super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.LOAD_METRIC),
                 LoadMetricAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
