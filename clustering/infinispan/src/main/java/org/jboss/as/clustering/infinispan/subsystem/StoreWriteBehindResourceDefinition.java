@@ -56,7 +56,7 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
             .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1))
+            .setDefaultValue(new ModelNode().set(1L))
             .build();
 
     static final SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
@@ -70,7 +70,7 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
             .setXmlName(Attribute.SHUTDOWN_TIMEOUT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(25000))
+            .setDefaultValue(new ModelNode().set(25000L))
             .build();
 
     static final SimpleAttributeDefinition THREAD_POOL_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.THREAD_POOL_SIZE, ModelType.INT, true)

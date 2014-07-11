@@ -67,7 +67,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(240000))
+            .setDefaultValue(new ModelNode().set(240000L))
             .build();
 
     // if stack is null, use default stack

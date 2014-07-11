@@ -73,7 +73,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(60000))
+            .setDefaultValue(new ModelNode().set(60000L))
             .build();
 
     // the remote servers parameter is required (not null), and the list of remote-server objects must have size >= 1

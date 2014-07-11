@@ -71,7 +71,7 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(600000))
+            .setDefaultValue(new ModelNode().set(600000L))
             .build();
 
     static final SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
