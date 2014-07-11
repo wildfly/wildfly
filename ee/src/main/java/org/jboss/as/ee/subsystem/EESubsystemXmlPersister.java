@@ -47,7 +47,7 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
      */
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.EE_2_0.getUriString(), false);
+        context.startSubsystemElement(Namespace.EE_3_0.getUriString(), false);
 
         ModelNode eeSubSystem = context.getModelNode();
         GlobalModulesDefinition.INSTANCE.marshallAsElement(eeSubSystem, writer);

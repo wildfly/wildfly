@@ -29,21 +29,24 @@ import java.util.Map;
  */
 enum Namespace {
     // must be first
-    UNKNOWN(null),
+    UNKNOWN(null, false),
 
-    EE_1_0("urn:jboss:domain:ee:1.0"),
-    EE_1_1("urn:jboss:domain:ee:1.1"),
-    EE_2_0("urn:jboss:domain:ee:2.0"),
+    EE_1_0("urn:jboss:domain:ee:1.0", true),
+    EE_1_1("urn:jboss:domain:ee:1.1", true),
+    EE_2_0("urn:jboss:domain:ee:2.0", true),
+    EE_3_0("urn:jboss:domain:ee:3.0", false),
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = EE_2_0;
+    public static final Namespace CURRENT = EE_3_0;
 
     private final String name;
+    private final boolean beanValidationIncluded;
 
-    Namespace(final String name) {
+    Namespace(final String name, final boolean beanValidationIncluded) {
         this.name = name;
+        this.beanValidationIncluded = beanValidationIncluded;
     }
 
     /**
@@ -53,6 +56,10 @@ enum Namespace {
      */
     public String getUriString() {
         return name;
+    }
+
+    public boolean isBeanValidationIncluded() {
+        return beanValidationIncluded;
     }
 
     private static final Map<String, Namespace> MAP;

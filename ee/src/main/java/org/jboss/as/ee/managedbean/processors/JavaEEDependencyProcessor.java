@@ -44,8 +44,6 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
-
     private static ModuleIdentifier JBOSS_INVOCATION_ID = ModuleIdentifier.create("org.jboss.invocation");
     private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
 
@@ -56,7 +54,6 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.json.api"),
             ModuleIdentifier.create("javax.resource.api"),
             ModuleIdentifier.create("javax.rmi.api"),
-            ModuleIdentifier.create("javax.validation.api"),
             ModuleIdentifier.create("javax.xml.bind.api"),
             ModuleIdentifier.create("javax.api"),
             ModuleIdentifier.create("org.glassfish.javax.el"),
@@ -76,8 +73,6 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        // TODO: Post 7.0, we have to rethink this whole hibernate dependencies that we add to user deployments
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, true, false, true, false));
 
         //add jboss-invocation classes needed by the proxies
         ModuleDependency invocation = new ModuleDependency(moduleLoader, JBOSS_INVOCATION_ID, false, false, false, false);
