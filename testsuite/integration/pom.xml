@@ -64,7 +64,6 @@
                 <module>clust</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>patching</module>
                 <module>picketlink</module>
                 <module>secman</module>
             </modules>
@@ -83,7 +82,6 @@
                 <module>rbac</module>
                 <module>multinode</module>
                 <module>manualmode</module>
-                <module>patching</module>
                 <module>picketlink</module>
                 <module>secman</module>
             </modules>
@@ -167,15 +165,6 @@
             <activation><property><name>ts.rbac</name></property></activation>
             <modules>
                 <module>rbac</module>
-            </modules>
-        </profile>
-
-        <!-- -Dts.patching -->
-        <profile>
-            <id>ts.integ.group.patching</id>
-            <activation><property><name>ts.patching</name></property></activation>
-            <modules>
-                <module>patching</module>
             </modules>
         </profile>
 
