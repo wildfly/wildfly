@@ -24,9 +24,7 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.DependsOn;
 import javax.ejb.EJB;
-import javax.ejb.Remove;
 
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterProxy;
 import org.jboss.logging.Logger;
@@ -36,14 +34,12 @@ import org.jboss.logging.Logger;
  * @author baranowb
  * 
  */
-@DependsOn("CallCounterProxy")
+//@DependsOn("CallCounterProxy")
 public abstract class BeanBase implements Trigger {
     private final Logger logger = Logger.getLogger(getClass());
     @EJB
     private CallCounterProxy counter;
 
-    // This is required to trigger purge - circumvents WFLY-817
-    @Remove
     public void trigger() {
         this.logger.info("Session.trigger");
         counter.setMessage();

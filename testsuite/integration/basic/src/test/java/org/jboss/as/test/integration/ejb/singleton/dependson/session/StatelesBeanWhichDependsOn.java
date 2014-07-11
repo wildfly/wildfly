@@ -22,7 +22,9 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 
+import javax.ejb.DependsOn;
 import javax.ejb.Remote;
+import javax.ejb.Remove;
 import javax.ejb.Stateless;
 
 /**
@@ -31,6 +33,13 @@ import javax.ejb.Stateless;
  */
 @Stateless
 @Remote(Trigger.class)
+@DependsOn("CallCounterProxy")
 public class StatelesBeanWhichDependsOn extends BeanBase {
+ // This is required to trigger purge - circumvents WFLY-817
+    @Remove
+    public void trigger() {
+        // TODO Auto-generated method stub
+        super.trigger();
+    }
 
 }
