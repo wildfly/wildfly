@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
-import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -32,8 +31,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * Defines the Infinispan subsystem and its addressable resources.
@@ -44,7 +41,8 @@ import org.jboss.staxmapper.XMLElementReader;
 public class InfinispanExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
-    public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    private static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -92,11 +90,8 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        for (Namespace namespace: Namespace.values()) {
-            XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
-            if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
-            }
+        for (InfinispanSchema schema: InfinispanSchema.values()) {
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new InfinispanSubsystemXMLReader(schema));
         }
     }
 }
