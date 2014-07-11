@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -99,7 +100,6 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
         }
     }
 
-    @SuppressWarnings("deprecation")
     void parsePropConf(XMLExtendedStreamReader reader, ModelNode conf) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -108,7 +108,6 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ADVERTISE_SOCKET:
-                case PROXY_LIST:
                 case PROXY_URL:
                 case ADVERTISE:
                 case ADVERTISE_SECURITY_KEY:
@@ -128,10 +127,15 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                 case TTL:
                 case NODE_TIMEOUT:
                 case BALANCER:
-                    ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, conf, reader);
+                    ((SimpleAttributeDefinition) ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName())).parseAndSetParameter(value, conf, reader);
                     break;
                 case DOMAIN:
                     ModClusterConfigResourceDefinition.LOAD_BALANCING_GROUP.parseAndSetParameter(value, conf, reader);
+                    break;
+                case PROXY_LIST:
+                    // Keep deprecated PROXY_LIST to be able to support EAP 6.x slaves
+                    ModClusterConfigResourceDefinition.PROXY_LIST.parseAndSetParameter(value, conf, reader);
+                    ModClusterLogger.ROOT_LOGGER.proxyListAttributeIsDeprecated();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

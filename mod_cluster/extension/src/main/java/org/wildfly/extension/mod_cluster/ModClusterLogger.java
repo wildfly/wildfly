@@ -24,9 +24,9 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -126,6 +126,7 @@ interface ModClusterLogger extends BasicLogger {
 
     /**
      * A message indicating that the virtualhost or the context can't be found by modcluster.
+     *
      * @param Host
      * @param Context
      * @return the message.
@@ -157,5 +158,14 @@ interface ModClusterLogger extends BasicLogger {
      */
     @Message(id = 16, value = "No IP address could be resolved for the specified host of the proxy.")
     String couldNotResolveProxyIpAddress();
+
+    /**
+     * A message explaining that 'proxy-list' attribute has been deprecated and that 'proxies' attribute which is a list
+     * of references to outbound-socket-binding(s) should be used instead.
+     *
+     * @return the message
+     */
+    @Message(id = 17, value = "proxy-list attribute has been deprecated in favor of proxies (list of references to outbound-socket-binding)")
+    String proxyListAttributeIsDeprecated();
 
 }

@@ -34,7 +34,6 @@
                         max-attempts="${modcluster.max-attempts:10}"
                         node-timeout="${modcluster.node-timeout:123}"
                         ping="${modcluster.ping:10}"
-                        proxy-list="${modcluster.proxy-list:example.com:6666,example.com:6667}"
                         proxy-url="${modcluster.proxy-url:/}"
                         smax="${modcluster.smax:2}"
                         socket-timeout="${modcluster.socket-timeout:20}"
@@ -46,6 +45,7 @@
                         worker-timeout="${modcluster.worker-timeout:2}"
                         session-draining-strategy="${modcluster.session-draining-strategy:ALWAYS}"
                         status-interval="${modcluster.status-interval:20}"
+                        proxies="proxy1 proxy2 proxy3"
         >
         <simple-load-provider factor="${modcluster.simple-load-provider.factor:15}"/>
         <dynamic-load-provider decay="${modcluster.dynamic-load-provider.decay:2}" history="${modcluster.dynamic-load-provider.history:10}">

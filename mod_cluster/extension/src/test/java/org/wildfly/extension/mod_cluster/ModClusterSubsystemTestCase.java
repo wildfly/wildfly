@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.mod_cluster.CommonAttributes.CONFIGURATION;
@@ -41,6 +42,7 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -390,6 +392,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(addr,
                                 ChainedConfig.createBuilder(CommonAttributes.STATUS_INTERVAL)
                                         .addConfig(new StatusIntervalConfig(CommonAttributes.STATUS_INTERVAL))
+                                        .addConfig(new ProxiesConfig(CommonAttributes.PROXIES))
                                         .build())
         );
     }
@@ -485,6 +488,27 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
     }
 
+    private static class ProxiesConfig extends AttributesPathAddressConfig<ProxiesConfig> {
+        public ProxiesConfig(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.equals(new ModelNode());
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode();
+        }
+    }
+
     private static class StatusIntervalConfig extends AttributesPathAddressConfig<StatusIntervalConfig> {
         public StatusIntervalConfig(String... attributes) {
             super(attributes);
@@ -561,5 +585,19 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
             }
             return result;
         }
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization.ManagementAdditionalInitialization() {
+            @Override
+            protected void setupController(ControllerInitializer controllerInitializer) {
+                super.setupController(controllerInitializer);
+
+                controllerInitializer.addSocketBinding("modcluster", 0); // "224.0.1.105", "23364"
+                controllerInitializer.addRemoteOutboundSocketBinding("proxy1", "localhost", 6666);
+                controllerInitializer.addRemoteOutboundSocketBinding("proxy2", "localhost", 6766);
+            }
+        };
     }
 }
