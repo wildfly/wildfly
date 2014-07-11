@@ -257,6 +257,7 @@
         <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
         <version.org.wildfly.core>1.0.0.Alpha2</version.org.wildfly.core>
+	<version.org.wildfly.legacy.test>1.0.0.Alpha1</version.org.wildfly.legacy.test>
         <version.org.wildfly.arquillian>1.0.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
@@ -879,6 +880,12 @@
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-core-test-runner</artifactId>
                 <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.legacy.test</groupId>
+                <artifactId>wildfly-legacy-spi</artifactId>
+                <version>${version.org.wildfly.legacy.test}</version>
             </dependency>
 
             <dependency>
