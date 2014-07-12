@@ -631,6 +631,12 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14276, value = "Update timer failed and it was not possible to rollback the transaction!")
     void timerUpdateFailedAndRollbackNotPossible(@Cause Throwable rbe);
 
+    /**
+     * Logs a warning message indicating that the database dialect can not detected automatically
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14277, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'datasource' property in your configuration.  Known database dialect strings are %s")
+    void jdbcDatabaseDialectDetectionFailed(String validDialects);
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
