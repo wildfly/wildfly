@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -82,7 +83,12 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.util.Base64;
 
 /**
+ * <p>
+ * Database timer persistence store.
+ * </p>
+ *
  * @author Stuart Douglas
+ * @author Wolf-Dieter Fink
  */
 public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
 
@@ -95,9 +101,14 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private final Map<String, Set<String>> knownTimerIds = new HashMap<>();
 
     private final String name;
-    private final String database;
+    /** Identifier for the database dialect to be used for the timer-sql.properties */
+    private String database;
+    /** List of extracted known dialects*/
+    private final HashSet<String> databaseDialects = new HashSet<String>();
     private final String partition;
+    /** Interval in millis to refresh the timers from the persistence store*/
     private final int refreshInterval;
+    /** Flag whether this instance should execute persistent timers*/
     private final boolean allowExecution;
     private volatile ManagedReference managedReference;
     private volatile DataSource dataSource;
@@ -106,6 +117,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private MarshallingConfiguration configuration;
     private RefreshTask refreshTask;
 
+    /** Names for the different SQL commands stored in the properties*/
     private static final String CREATE_TABLE = "create-table";
     private static final String CREATE_TIMER = "create-timer";
     private static final String UPDATE_TIMER = "update-timer";
@@ -140,6 +152,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } finally {
             safeClose(stream);
         }
+        extractDialects();
+        investigateDialect();
         checkDatabase();
         if (refreshInterval > 0) {
             refreshTask = new RefreshTask();
@@ -156,6 +170,80 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         managedReference.release();
         managedReference = null;
         dataSource = null;
+    }
+
+    /**
+     * Read the properties from the timer-sql and extract the database dialects.
+     */
+    private void extractDialects() {
+        for (Object prop : sql.keySet()) {
+            int dot = ((String)prop).indexOf('.');
+            if (dot > 0) {
+                databaseDialects.add(((String)prop).substring(dot+1));
+            }
+        }
+    }
+
+    /**
+     * Check the connection MetaData and driver name to guess which database dialect
+     * to use.
+     */
+    private void investigateDialect() {
+        Connection connection = null;
+
+        if (database == null) {
+            // no database dialect from configuration guessing from MetaData
+            try {
+                connection = dataSource.getConnection();
+                DatabaseMetaData metaData = connection.getMetaData();
+                String dbProduct = metaData.getDatabaseProductName();
+                database = identifyDialect(dbProduct);
+
+                if (database == null) {
+                    EjbLogger.ROOT_LOGGER.debug("Attempting to guess on driver name.");
+                    database = identifyDialect(metaData.getDriverName());
+                }
+            } catch (Exception e) {
+                EjbLogger.ROOT_LOGGER.debug("Unable to read JDBC metadata.", e);
+            } finally {
+                safeClose(connection);
+            }
+            if (database == null) {
+                EjbLogger.ROOT_LOGGER.jdbcDatabaseDialectDetectionFailed(databaseDialects.toString());
+            } else {
+                EjbLogger.ROOT_LOGGER.debugf("Detect database dialect as '%s'.  If this is incorrect, please specify the correct dialect using the 'database' attribute in your configuration.  Supported database dialect strings are %s", database, databaseDialects);
+            }
+        } else {
+            EjbLogger.ROOT_LOGGER.debugf("Database dialect '%s' read from configuration", database);
+        }
+    }
+
+    /**
+     * Use the given name and check for different database types to have a unified identifier for the dialect
+     *
+     * @param name A database name or even a driver name which should include the database name
+     * @return A unified dialect identifier
+     */
+    private String identifyDialect(String name) {
+        String unified = null;
+
+        if (name != null) {
+            if (name.toLowerCase().contains("postgres")) {
+               unified = "postgresql";
+            } else if (name.toLowerCase().contains("mysql")) {
+                unified = "mysql";
+            } else if (name.toLowerCase().contains("db2")) {
+                unified = "db2";
+            } else if (name.toLowerCase().contains("hsql") || name.toLowerCase().contains("hypersonic")) {
+                unified = "hsql";
+            } else if (name.toLowerCase().contains("h2")) {
+                unified = "h2";
+            } else if (name.toLowerCase().contains("oracle")) {
+                unified = "oracle";
+            }
+         }
+        EjbLogger.ROOT_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
+        return unified;
     }
 
     /**
@@ -239,7 +327,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             safeClose(connection);
         }
     }
-
 
     @Override
     public void persistTimer(final TimerImpl timerEntity) {
