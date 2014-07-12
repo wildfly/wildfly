@@ -191,8 +191,8 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 36, value = "Could not determine bean class from injection point type of %s")
     IllegalArgumentException couldNotDetermineUnderlyingType(Type type);
 
-    @Message(id = 37, value = "Error injecting persistence unit into CDI managed bean. Can't find a persistence unit named %s in deployment %s")
-    IllegalArgumentException couldNotFindPersistenceUnit(String unitName, String deployment);
+    @Message(id = 37, value = "Error injecting persistence unit into CDI managed bean. Can't find a persistence unit named '%s' in deployment %s for injection point %s")
+    IllegalArgumentException couldNotFindPersistenceUnit(String unitName, String deployment, Member injectionPoint);
 
     @Message(id = 38, value = "Could not inject SecurityManager, security is not enabled")
     IllegalStateException securityNotEnabled();
