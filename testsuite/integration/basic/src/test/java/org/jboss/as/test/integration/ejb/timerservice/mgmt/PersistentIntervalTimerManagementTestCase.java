@@ -86,7 +86,7 @@ public class PersistentIntervalTimerManagementTestCase extends AbstractTimerMana
 
     @Override
     protected boolean isPersistent() {
-        return false;
+        return true;
     }
 
     @Override
