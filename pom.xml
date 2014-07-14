@@ -256,6 +256,8 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
+	<!-- When updating this to Alpha4, make sure to also upgrade version.org.wildfly.legacy.test to 1.0.0.Alpha2 
+	     (there are some changes in how the two interact in PR https://github.com/wildfly/wildfly-core/pull/27) -->
         <version.org.wildfly.core>1.0.0.Alpha3</version.org.wildfly.core>
 	<version.org.wildfly.legacy.test>1.0.0.Alpha1</version.org.wildfly.legacy.test>
         <version.org.wildfly.arquillian>1.0.0.Alpha1</version.org.wildfly.arquillian>
