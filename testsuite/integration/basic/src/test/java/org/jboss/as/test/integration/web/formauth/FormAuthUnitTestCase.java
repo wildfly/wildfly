@@ -21,12 +21,6 @@
  */
 package org.jboss.as.test.integration.web.formauth;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -55,6 +49,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -242,7 +242,7 @@ public class FormAuthUnitTestCase {
 
     /**
      * Test that a post from an unsecured form to a secured servlet does not
-     * loose its data during the redirct to the form login.
+     * loose its data during the redirect to the form login.
      */
     @Test
     @OperateOnDeployment("form-auth.war")
@@ -312,7 +312,7 @@ public class FormAuthUnitTestCase {
         // Follow the redirect to the SecureServlet
         Header location = postResponse.getFirstHeader("Location");
         URL indexURI = new URL(location.getValue());
-        HttpGet war1Index = new HttpGet(url.toURI());
+        HttpGet war1Index = new HttpGet(indexURI.toURI());
 
         log.info("Executing request " + war1Index.getRequestLine());
         HttpResponse war1Response = httpclient.execute(war1Index);
