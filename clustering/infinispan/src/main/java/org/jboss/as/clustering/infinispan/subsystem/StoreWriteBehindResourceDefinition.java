@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -35,6 +35,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -56,7 +58,7 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
             .setXmlName(Attribute.FLUSH_LOCK_TIMEOUT.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1L))
+            .setDefaultValue(new ModelNode().set(5000L))
             .build();
 
     static final SimpleAttributeDefinition MODIFICATION_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODIFICATION_QUEUE_SIZE, ModelType.INT, true)
@@ -84,13 +86,19 @@ public class StoreWriteBehindResourceDefinition extends SimpleResourceDefinition
             FLUSH_LOCK_TIMEOUT, MODIFICATION_QUEUE_SIZE, THREAD_POOL_SIZE, SHUTDOWN_TIMEOUT
     };
 
-    static final ObjectTypeAttributeDefinition WRITE_BEHIND_OBJECT = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.WRITE_BEHIND, ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix("write-behind")
-            .build();
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_2_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                @Override
+                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                    if (!attributeValue.isDefined()) {
+                        attributeValue.set(FLUSH_LOCK_TIMEOUT.getDefaultValue());
+                    }
+                }
+            }, FLUSH_LOCK_TIMEOUT);
+        }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, FLUSH_LOCK_TIMEOUT, MODIFICATION_QUEUE_SIZE, SHUTDOWN_TIMEOUT, THREAD_POOL_SIZE);
