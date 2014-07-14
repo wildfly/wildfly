@@ -37,11 +37,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,15 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.MODULE_OPTIONS;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -75,43 +63,12 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(FormAuthUnitTestCase.FormAuthUnitTestCaseSetup.class)
 public class FormAuthUnitTestCase {
 
     private static Logger log = Logger.getLogger(FormAuthUnitTestCase.class);
 
     @ArquillianResource
     private URL baseURLNoAuth;
-
-    static class FormAuthUnitTestCaseSetup  extends AbstractSecurityDomainSetup {
-
-        @Override
-        protected String getSecurityDomainName() {
-            return "jbossweb-form-auth";
-        }
-
-        @Override
-        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-            ModelNode op = new ModelNode();
-            op.get(OP).set(ADD);
-            op.get(OP_ADDR).add(SUBSYSTEM, "security");
-            op.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-
-            ModelNode rolesmodule = new ModelNode();
-            rolesmodule.get(CODE).set("org.jboss.security.auth.spi.UsersRolesLoginModule");
-            rolesmodule.get(FLAG).set("required");
-            rolesmodule.get(MODULE_OPTIONS).add("unauthenticatedIdentity", "nobody");
-            rolesmodule.get(MODULE_OPTIONS).add("usersProperties", "users.properties");
-            rolesmodule.get(MODULE_OPTIONS).add("rolesProperties", "roles.properties");
-
-            op.get(AUTHENTICATION).set(Arrays.asList(rolesmodule));
-            updates.add(op);
-
-            applyUpdates(managementClient.getControllerClient(), updates);
-        }
-    }
 
     DefaultHttpClient httpclient = new DefaultHttpClient();
 
