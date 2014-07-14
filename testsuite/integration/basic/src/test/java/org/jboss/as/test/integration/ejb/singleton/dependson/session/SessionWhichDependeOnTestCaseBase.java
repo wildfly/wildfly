@@ -25,9 +25,7 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 import javax.ejb.EJB;
 
 import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterInterface;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterSingleton;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.Constants;
@@ -36,8 +34,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author baranowb

@@ -26,7 +26,6 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jms.Message;
 import javax.jms.Queue;
-import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
