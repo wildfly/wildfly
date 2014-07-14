@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.mdb;
 
-import java.io.File;
-
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.integration.weld.modules.ModuleUtils;
 
 /**
  * @author baranowb
