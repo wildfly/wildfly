@@ -181,6 +181,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
     public static final String DEFAULT_SERVLET_NAME = "default";
+    public static final String OLD_URI_PREFIX = "http://java.sun.com";
+    public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
 
     private DeploymentInfo deploymentInfo;
 
@@ -1027,6 +1029,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
                     createTldInfo(null, metaData, ret);
                 }
+            }
+        }
+
+        //we also register them under the new namespaces
+        for(String k : new HashSet<>(ret.keySet())) {
+            if(k.startsWith(OLD_URI_PREFIX)) {
+                String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
+                ret.put(newUri, ret.get(k));
             }
         }
 
