@@ -1498,7 +1498,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>javax.el-impl</artifactId>
         </dependency>
 
         <!-- JSR-236 RI -->
