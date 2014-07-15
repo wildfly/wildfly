@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -45,17 +44,8 @@ class LogStoreAddHandler implements OperationStepHandler {
         // Add the log store resource
         final ModelNode model = resource.getModel();
 
-        for (final SimpleAttributeDefinition attribute : LogStoreDefinition.LOG_STORE_ATTRIBUTE) {
-            if (operation.get(attribute.getName()).isDefined())  {
-                attribute.validateAndSet(operation, model);
-            } else {
-                ModelNode modelAttrNode = model.get(attribute.getName());
-                ModelNode defaultValue = attribute.getDefaultValue();
-                if (defaultValue != null) {
-                    modelAttrNode.set(defaultValue);
-                }
-            }
-        }
+        LogStoreConstants.LOG_STORE_TYPE.validateAndSet(operation, model);
+
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         context.stepCompleted();
     }
