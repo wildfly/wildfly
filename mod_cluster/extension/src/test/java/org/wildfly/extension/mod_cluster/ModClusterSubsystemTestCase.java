@@ -59,7 +59,8 @@ import org.junit.Test;
  * 7.1.2 / 1.2.0 / 1_1
  * 7.1.3 / 1.2.0 / 1_1
  * 7.2.0 / 1.3.0 / 1_1
- * 8.0.0 / 2.0.0 / 1_2
+ * 8.0.0 / 2.0.0 / 1_2 (this should have been 2_0...)
+ * 9.0.0 / 3.0.0 / 2_0
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Jean-Frederic Clere
@@ -83,9 +84,14 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("subsystem_1_1.xml", false);
     }
 
+    @Test
+    public void testXsd12() throws Exception {
+        standardSubsystemTest("subsystem_1_2.xml", false);
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_2.xml");
+        return readResource("subsystem_2_0.xml");
     }
 
     // --------------------------------------------------- Transformers for 1.2 & 1.3
@@ -197,6 +203,31 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
 
+    @Test
+    public void testTransformers800() throws Exception {
+        testTransformers_2_0_0(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, "1.3.0.Final");
+    }
+
+    private void testTransformers_2_0_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = getSubsystemXml();
+        ModelVersion modelVersion = ModelVersion.create(2, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.wildfly:wildfly-mod_cluster-extension:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .setExtensionClassName("org.wildfly.extension.mod_cluster.ModClusterExtension");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
     // --------------------------------------------------- Expressions Rejected prior to 7.1.2 and 7.1.3
 
     @Test
@@ -296,7 +327,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejection1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
-        String subsystemXml = readResource("subsystem_1_2.xml");
+        String subsystemXml = readResource("subsystem_2_0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -316,9 +347,50 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(confAddr,
-                                ChainedConfig.createBuilder(CommonAttributes.SESSION_DRAINING_STRATEGY)
-                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
+                                ChainedConfig.createBuilder(CommonAttributes.SESSION_DRAINING_STRATEGY, CommonAttributes.STATUS_INTERVAL)
+                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY))
+                                        .addConfig(new StatusIntervalConfig(CommonAttributes.STATUS_INTERVAL))
+                                        .build())
 
+        );
+    }
+
+    /**
+     * Tests that:
+     * - status-interval is rejected if set to value other than 10.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testRejections800() throws Exception {
+        testRejections_2_0_0(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL, "1.3.0.Final");
+    }
+
+    private void testRejections_2_0_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_2_0-reject.xml");
+
+        ModelVersion modelVersion = ModelVersion.create(2, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.wildfly:wildfly-mod_cluster-extension:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .setExtensionClassName("org.wildfly.extension.mod_cluster.ModClusterExtension");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME))
+                .append(PathElement.pathElement(MOD_CLUSTER_CONFIG, CONFIGURATION));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(addr,
+                                ChainedConfig.createBuilder(CommonAttributes.STATUS_INTERVAL)
+                                        .addConfig(new StatusIntervalConfig(CommonAttributes.STATUS_INTERVAL))
+                                        .build())
         );
     }
 
@@ -411,8 +483,27 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode("DEFAULT");
         }
+    }
 
+    private static class StatusIntervalConfig extends AttributesPathAddressConfig<StatusIntervalConfig> {
+        public StatusIntervalConfig(String... attributes) {
+            super(attributes);
+        }
 
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.equals(new ModelNode(10));
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(10);
+        }
     }
 
     /**

@@ -43,6 +43,7 @@ interface CommonAttributes {
     String SOCKET_TIMEOUT = "socket-timeout";
     String CONNECTOR = "connector";
     String SESSION_DRAINING_STRATEGY = "session-draining-strategy";
+    String STATUS_INTERVAL = "status-interval";
 
     String STICKY_SESSION = "sticky-session";
     String STICKY_SESSION_REMOVE = "sticky-session-remove";

@@ -62,11 +62,13 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
+    private int statusInterval;
 
-    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<ListenerService> listener) {
+    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<ListenerService> listener, int statusInterval) {
         this.eventHandler = eventHandler;
         this.service = service;
         this.listener = listener;
+        this.statusInterval = statusInterval;
     }
 
     @Override
@@ -92,8 +94,7 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         ThreadGroup group = new ThreadGroup(UndertowEventHandlerAdapter.class.getSimpleName());
         ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
         this.executor = Executors.newScheduledThreadPool(1, factory);
-        // TODO make interval configurable
-        this.executor.scheduleWithFixedDelay(this, 0, 10, TimeUnit.SECONDS);
+        this.executor.scheduleWithFixedDelay(this, 0, statusInterval, TimeUnit.SECONDS);
     }
 
     @Override
