@@ -32,6 +32,7 @@ import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionsResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -79,5 +80,10 @@ public class DiscoveryOptionsWriteAttributeHandler extends ReloadRequiredWriteAt
         if (newValueList.size() != unorderedDiscoveryOptionsList.size() || !newValueList.containsAll(unorderedDiscoveryOptionsList)) {
             throw MESSAGES.invalidDiscoveryOptionsOrdering(DISCOVERY_OPTIONS);
         }
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
     }
 }

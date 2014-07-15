@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.host.controller.ServerInventory;
@@ -66,7 +67,7 @@ public class DomainSocketBindingGroupRemoveHandler extends AbstractRemoveStepHan
     }
 
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getProcessType().isServer();
+        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
     }
 
     @Override

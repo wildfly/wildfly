@@ -27,9 +27,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import org.jboss.as.controller.BootErrorCollector;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -249,7 +251,14 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration hostRegistration) {
         super.registerAttributes(hostRegistration);
-        hostRegistration.registerReadWriteAttribute(DIRECTORY_GROUPING, null, new ReloadRequiredWriteAttributeHandler(DIRECTORY_GROUPING));
+        hostRegistration.registerReadWriteAttribute(DIRECTORY_GROUPING, null, new ReloadRequiredWriteAttributeHandler(
+                DIRECTORY_GROUPING) {
+            @Override
+            protected boolean requiresRuntime(OperationContext context) {
+                return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
+            }
+
+        });
         hostRegistration.registerReadOnlyAttribute(PRODUCT_NAME, null);
         hostRegistration.registerReadOnlyAttribute(SERVER_STATE, null);
         hostRegistration.registerReadOnlyAttribute(RELEASE_VERSION, null);

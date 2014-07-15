@@ -23,13 +23,15 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.host.controller.resources.HttpManagementResourceDefinition.addValidatingHandler;
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -38,7 +40,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class HttpManagementWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 
     private final LocalHostControllerInfoImpl hostControllerInfo;
     private final HostControllerEnvironment environment;
@@ -77,13 +79,16 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
         updateHttpManagementService(context, subModel, hostControllerInfo, environment, null);
     }
 
-
-
     static void updateHttpManagementService(final OperationContext context, final ModelNode subModel, final LocalHostControllerInfoImpl hostControllerInfo,
                                             final HostControllerEnvironment environment, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         HttpManagementRemoveHandler.removeHttpManagementService(context);
         HttpManagementAddHandler.populateHostControllerInfo(hostControllerInfo, context, subModel);
         HttpManagementAddHandler.installHttpManagementServices(context.getRunningMode(), context.getServiceTarget(), hostControllerInfo, environment, verificationHandler, false);
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
     }
 
 }

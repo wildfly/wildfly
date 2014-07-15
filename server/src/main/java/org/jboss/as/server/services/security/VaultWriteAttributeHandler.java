@@ -24,9 +24,8 @@ package org.jboss.as.server.services.security;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.RunningMode;
 
 /**
  * Write attribute handler for attributes that update the core security vault resource.
@@ -34,8 +33,13 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class VaultWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-    public VaultWriteAttributeHandler(AttributeDefinition...attributes) {
+    public VaultWriteAttributeHandler(AttributeDefinition... attributes) {
         super(attributes);
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
     }
 
 }
