@@ -291,7 +291,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
-        if (ModClusterModel.VERSION_2_0_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(STATUS_INTERVAL.getDefaultValue()), STATUS_INTERVAL)
@@ -299,14 +299,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     .end();
         }
 
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version) || ModClusterModel.VERSION_1_4_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .end();
         }
 
-        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
                     .end();

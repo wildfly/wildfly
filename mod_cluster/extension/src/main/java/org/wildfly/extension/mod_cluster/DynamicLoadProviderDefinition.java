@@ -72,15 +72,17 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
 
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
-            builder.addChildResource(PATH)
+        ResourceTransformationDescriptionBuilder loadProviderBuilder = builder.addChildResource(PATH);
+
+        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
+            loadProviderBuilder
                     .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DECAY, HISTORY)
                     .end();
         }
 
-        LoadMetricDefinition.buildTransformation(version, builder);
-        CustomLoadMetricDefinition.buildTransformation(version, builder);
+        LoadMetricDefinition.buildTransformation(version, loadProviderBuilder);
+        CustomLoadMetricDefinition.buildTransformation(version, loadProviderBuilder);
     }
 
     @Override
