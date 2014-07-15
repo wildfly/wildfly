@@ -145,7 +145,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
         servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
 
-        secureResponse(exchange, sc, sam, messageInfo, cbh);
+        secureResponse(exchange, sam, messageInfo, cbh);
 
         return outcome;
 
@@ -217,10 +217,14 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
             }
         }
         Object credential = jbossSct.getUtil().getCredential();
-        return new AccountImpl(userPrincipal, stringRoles, credential);
+        Principal original = null;
+        if(cachedAccount != null) {
+            original = cachedAccount.getPrincipal();
+        }
+        return new AccountImpl(userPrincipal, stringRoles, credential, original);
     }
 
-    private void secureResponse(final HttpServerExchange exchange, final SecurityContext securityContext, final JASPIServerAuthenticationManager sam, final GenericMessageInfo messageInfo, final JASPICallbackHandler cbh) {
+    private void secureResponse(final HttpServerExchange exchange, final JASPIServerAuthenticationManager sam, final GenericMessageInfo messageInfo, final JASPICallbackHandler cbh) {
         if(exchange.getAttachment(ALREADY_WRAPPED) != null || exchange.isResponseStarted()) {
             return;
         }
