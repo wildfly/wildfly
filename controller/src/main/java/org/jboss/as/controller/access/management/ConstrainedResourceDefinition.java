@@ -31,7 +31,10 @@ import org.jboss.as.controller.ResourceDefinition;
  * In WildFly these methods should be moved to ResourceDefinition once porting of RBAC to EAP is complete.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ *
+ * @deprecated methods will be moved to the parent interface and this interface will be removed in the next major release
  */
+@Deprecated
 public interface ConstrainedResourceDefinition extends ResourceDefinition {
 
     /**
