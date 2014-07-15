@@ -22,8 +22,9 @@
 
 package org.jboss.as.ee.concurrent;
 
+import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
+import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -134,56 +135,41 @@ public class ConcurrentContext {
      * @param contextObjectProperties
      * @return
      */
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        final List<ContextHandle> handles = new ArrayList<>(factoryOrderedList.size());
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        final List<SetupContextHandle> handles = new ArrayList<>(factoryOrderedList.size());
         for (ContextHandleFactory factory : factoryOrderedList) {
             handles.add(factory.saveContext(contextService, contextObjectProperties));
         }
-        return new ChainedContextHandle(this, handles);
+        return new ChainedSetupContextHandle(this, handles);
     }
 
     /**
-     * A context handle that is a chain of other context handles
+     * A setup context handle that is a chain of other setup context handles
      */
-    private static class ChainedContextHandle implements ContextHandle {
+    private static class ChainedSetupContextHandle implements SetupContextHandle {
 
         private transient ConcurrentContext concurrentContext;
-        private transient List<ContextHandle> setupHandles;
-        private transient LinkedList<ContextHandle> resetHandles;
+        private transient List<SetupContextHandle> setupHandles;
 
-        private ChainedContextHandle(ConcurrentContext concurrentContext, List<ContextHandle> setupHandles) {
+        private ChainedSetupContextHandle(ConcurrentContext concurrentContext, List<SetupContextHandle> setupHandles) {
             this.concurrentContext = concurrentContext;
             this.setupHandles = setupHandles;
         }
 
         @Override
-        public void setup() throws IllegalStateException {
-            resetHandles = new LinkedList<>();
+        public ResetContextHandle setup() throws IllegalStateException {
+            final LinkedList<ResetContextHandle> resetHandles = new LinkedList<>();
+            final ResetContextHandle resetContextHandle = new ChainedResetContextHandle(resetHandles);
             try {
                 ConcurrentContext.pushCurrent(concurrentContext);
-                for (ContextHandle handle : setupHandles) {
-                    handle.setup();
-                    resetHandles.addFirst(handle);
+                for (SetupContextHandle handle : setupHandles) {
+                    resetHandles.addFirst(handle.setup());
                 }
             } catch (Error | RuntimeException e) {
-                reset();
+                resetContextHandle.reset();
                 throw e;
             }
-        }
-
-        @Override
-        public void reset() {
-            if(resetHandles != null) {
-                for (ContextHandle handle : resetHandles) {
-                    try {
-                        handle.reset();
-                    } catch (Throwable e) {
-                        EeLogger.ROOT_LOGGER.debug("failed to reset handle",e);
-                    }
-                }
-                resetHandles = null;
-                ConcurrentContext.popCurrent();
-            }
+            return resetContextHandle;
         }
 
         @Override
@@ -200,14 +186,14 @@ public class ConcurrentContext {
             // write each handle
             ContextHandleFactory factory = null;
             String factoryName = null;
-            for(ContextHandle handle : setupHandles) {
+            for(SetupContextHandle handle : setupHandles) {
                 factoryName = handle.getFactoryName();
                 factory = concurrentContext.factoryMap.get(factoryName);
                 if(factory == null) {
                     throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
                 }
                 out.writeUTF(factoryName);
-                factory.writeHandle(handle, out);
+                factory.writeSetupContextHandle(handle, out);
             }
         }
 
@@ -261,7 +247,7 @@ public class ConcurrentContext {
                     if(factory == null) {
                         throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
                     }
-                    setupHandles.add(factory.readHandle(in));
+                    setupHandles.add(factory.readSetupContextHandle(in));
                 }
             } finally {
                 if (sm == null) {
@@ -277,6 +263,39 @@ public class ConcurrentContext {
                 }
             }
         }
+    }
+
+    /**
+     * A reset context handle that is a chain of other reset context handles
+     */
+    private static class ChainedResetContextHandle implements ResetContextHandle {
+
+        private transient List<ResetContextHandle> resetHandles;
+
+        private ChainedResetContextHandle(List<ResetContextHandle> resetHandles) {
+            this.resetHandles = resetHandles;
+        }
+
+        @Override
+        public void reset() {
+            if(resetHandles != null) {
+                for (ResetContextHandle handle : resetHandles) {
+                    try {
+                        handle.reset();
+                    } catch (Throwable e) {
+                        EeLogger.ROOT_LOGGER.debug("failed to reset handle",e);
+                    }
+                }
+                resetHandles = null;
+                ConcurrentContext.popCurrent();
+            }
+        }
+
+        @Override
+        public String getFactoryName() {
+            return CONTEXT_HANDLE_FACTORY_NAME;
+        }
+
     }
 
     private static ServiceContainer currentServiceContainer() {

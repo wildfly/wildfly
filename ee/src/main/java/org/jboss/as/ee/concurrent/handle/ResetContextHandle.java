@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,13 +26,7 @@ package org.jboss.as.ee.concurrent.handle;
  *
  * @author Eduardo Martins
  */
-public interface ContextHandle extends org.glassfish.enterprise.concurrent.spi.ContextHandle {
-
-    /**
-     * @throws IllegalStateException
-     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#setup(org.glassfish.enterprise.concurrent.spi.ContextHandle)
-     */
-    void setup() throws IllegalStateException;
+public interface ResetContextHandle extends org.glassfish.enterprise.concurrent.spi.ContextHandle {
 
     /**
      * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#reset(org.glassfish.enterprise.concurrent.spi.ContextHandle)

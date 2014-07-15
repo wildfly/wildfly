@@ -21,8 +21,9 @@
  */
 package org.jboss.as.txn.ee.concurrency;
 
-import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
+import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
@@ -49,8 +50,8 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
     private TransactionManager transactionManager;
 
     @Override
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new TransactionLeakContextHandle(transactionManager);
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        return new TransactionLeakSetupContextHandle(transactionManager);
     }
 
     @Override
@@ -65,12 +66,12 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
     }
 
     @Override
-    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    public void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException {
     }
 
     @Override
-    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new TransactionLeakContextHandle(transactionManager);
+    public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return new TransactionLeakSetupContextHandle(transactionManager);
     }
 
     @Override
@@ -83,17 +84,17 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
         transactionManager = null;
     }
 
-    private static class TransactionLeakContextHandle implements ContextHandle {
+    private static class TransactionLeakSetupContextHandle implements SetupContextHandle {
 
         private final TransactionManager transactionManager;
-        private Transaction transactionOnSetup;
 
-        private TransactionLeakContextHandle(TransactionManager transactionManager) {
+        private TransactionLeakSetupContextHandle(TransactionManager transactionManager) {
             this.transactionManager = transactionManager;
         }
 
         @Override
-        public void setup() throws IllegalStateException {
+        public ResetContextHandle setup() throws IllegalStateException {
+            Transaction transactionOnSetup = null;
             if(transactionManager != null) {
                 try {
                     transactionOnSetup = transactionManager.getTransaction();
@@ -101,6 +102,33 @@ public class TransactionLeakContextHandleFactory implements ContextHandleFactory
                     throw new IllegalStateException(e);
                 }
             }
+            return new TransactionLeakResetContextHandle(transactionManager, transactionOnSetup);
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
+        }
+
+        // serialization
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            throw TransactionLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+    }
+
+    private static class TransactionLeakResetContextHandle implements ResetContextHandle {
+
+        private final TransactionManager transactionManager;
+        private final Transaction transactionOnSetup;
+
+        private TransactionLeakResetContextHandle(TransactionManager transactionManager, Transaction transactionOnSetup) {
+            this.transactionManager = transactionManager;
+            this.transactionOnSetup = transactionOnSetup;
         }
 
         @Override

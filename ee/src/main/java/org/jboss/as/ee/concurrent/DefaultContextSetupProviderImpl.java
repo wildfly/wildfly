@@ -22,8 +22,9 @@
 package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
+import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.NullContextHandle;
 
 import javax.enterprise.concurrent.ContextService;
@@ -54,12 +55,11 @@ public class DefaultContextSetupProviderImpl implements ContextSetupProvider {
 
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle setup(org.glassfish.enterprise.concurrent.spi.ContextHandle contextHandle) throws IllegalStateException {
-        ((ContextHandle) contextHandle).setup();
-        return contextHandle;
+        return ((SetupContextHandle) contextHandle).setup();
     }
 
     @Override
     public void reset(org.glassfish.enterprise.concurrent.spi.ContextHandle contextHandle) {
-        ((ContextHandle) contextHandle).reset();
+        ((ResetContextHandle) contextHandle).reset();
     }
 }

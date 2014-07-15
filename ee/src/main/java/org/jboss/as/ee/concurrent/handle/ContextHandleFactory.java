@@ -40,7 +40,7 @@ public interface ContextHandleFactory {
      * @return
      * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#saveContext(javax.enterprise.concurrent.ContextService, java.util.Map)
      */
-    ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties);
+    SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties);
 
     /**
      * The factory priority is used to define the order of handles when chained. The handle with the lowest priority is the first in the chain.
@@ -59,13 +59,13 @@ public interface ContextHandleFactory {
      * @param contextHandle
      * @param out
      */
-    void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException;
+    void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException;
 
     /**
      * Reads a handle from the specified input stream.
      * @param in
      * @return
      */
-    ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException;
+    SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException;
 
 }

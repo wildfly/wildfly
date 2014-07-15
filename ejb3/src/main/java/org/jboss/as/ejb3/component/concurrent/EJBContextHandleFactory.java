@@ -22,8 +22,9 @@
 package org.jboss.as.ejb3.component.concurrent;
 
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
+import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
 
@@ -47,7 +48,7 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
         return new EJBContextHandle();
     }
 
@@ -62,16 +63,16 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    public void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException {
         out.writeObject(contextHandle);
     }
 
     @Override
-    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return (ContextHandle) in.readObject();
+    public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return (SetupContextHandle) in.readObject();
     }
 
-    private static class EJBContextHandle implements ContextHandle {
+    private static class EJBContextHandle implements SetupContextHandle, ResetContextHandle {
 
         private final transient InterceptorContext interceptorContext;
 
@@ -92,10 +93,11 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
         }
 
         @Override
-        public void setup() throws IllegalStateException {
+        public ResetContextHandle setup() throws IllegalStateException {
             if(interceptorContext != null) {
                 CurrentInvocationContext.push(interceptorContext);
             }
+            return this;
         }
 
         @Override

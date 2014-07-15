@@ -48,8 +48,8 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new SecurityContextHandle();
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        return new SecuritySetupContextHandle();
     }
 
     @Override
@@ -63,21 +63,20 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    public void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException {
         out.writeObject(contextHandle);
     }
 
     @Override
-    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return (ContextHandle) in.readObject();
+    public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return (SetupContextHandle) in.readObject();
     }
 
-    private static class SecurityContextHandle implements ContextHandle {
+    private static class SecuritySetupContextHandle implements SetupContextHandle {
 
         private final SecurityContext securityContext;
-        private SecurityContext previous;
 
-        private SecurityContextHandle() {
+        private SecuritySetupContextHandle() {
             if (WildFlySecurityManager.isChecking()) {
                 this.securityContext = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
                     @Override
@@ -100,23 +99,39 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
         }
 
         @Override
-        public void setup() throws IllegalStateException {
+        public ResetContextHandle setup() throws IllegalStateException {
+            final SecurityContext previous;
             if (WildFlySecurityManager.isChecking()) {
-                this.previous = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+                previous = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
                     @Override
                     public SecurityContext run() {
                         return setupSecurityContext();
                     }
                 });
             } else {
-                this.previous = setupSecurityContext();
+                previous = setupSecurityContext();
             }
+            return new SecurityResetContextHandle(previous);
         }
 
         private SecurityContext setupSecurityContext() {
             final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
             SecurityContextAssociation.setSecurityContext(securityContext);
             return previous;
+        }
+    }
+
+    private static class SecurityResetContextHandle implements ResetContextHandle {
+
+        private final SecurityContext previous;
+
+        private SecurityResetContextHandle(SecurityContext previous) {
+            this.previous = previous;
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
         }
 
         @Override

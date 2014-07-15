@@ -46,8 +46,8 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new ClassLoaderContextHandle(classLoader);
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        return new ClassLoaderSetupContextHandle(classLoader);
     }
 
     @Override
@@ -61,27 +61,51 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    public void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException {
     }
 
     @Override
-    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new ClassLoaderContextHandle(classLoader);
+    public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return new ClassLoaderSetupContextHandle(classLoader);
     }
 
-    private static class ClassLoaderContextHandle implements ContextHandle {
+    private static class ClassLoaderSetupContextHandle implements SetupContextHandle {
 
         private final ClassLoader classLoader;
-        private ClassLoader previous;
 
-        private ClassLoaderContextHandle(ClassLoader classLoader) {
+        private ClassLoaderSetupContextHandle(ClassLoader classLoader) {
             this.classLoader = classLoader;
         }
 
         @Override
-        public void setup() throws IllegalStateException {
-            previous = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        public ResetContextHandle setup() throws IllegalStateException {
+            final ClassLoaderResetContextHandle resetContextHandle = new ClassLoaderResetContextHandle(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+            return resetContextHandle;
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
+        }
+
+        // serialization
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+    }
+
+    private static class ClassLoaderResetContextHandle implements ResetContextHandle {
+
+        private final ClassLoader previous;
+
+        private ClassLoaderResetContextHandle(ClassLoader previous) {
+            this.previous = previous;
         }
 
         @Override

@@ -6,7 +6,7 @@ import java.io.ObjectStreamException;
  * A context handle without invocation context to set.
  * @author Eduardo Martins
  */
-public class NullContextHandle implements ContextHandle {
+public class NullContextHandle implements SetupContextHandle, ResetContextHandle {
 
     public static final NullContextHandle INSTANCE = new NullContextHandle();
 
@@ -15,8 +15,8 @@ public class NullContextHandle implements ContextHandle {
     }
 
     @Override
-    public void setup() throws IllegalStateException {
-
+    public ResetContextHandle setup() throws IllegalStateException {
+        return this;
     }
 
     @Override
