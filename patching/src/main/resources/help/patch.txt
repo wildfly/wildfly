@@ -67,10 +67,24 @@ ACTION: rollback
 
 ACTION: info
 
-    Information about the installed patches
+    Without additional arguments displays brief information about
+    the installed patches. In case the patch ID is specified, displays
+    the information about that specific patch.
 
     patch info
       [--host=<host>]
+      [--patch-id=<id> [--verbose]]
+      
+      --patch-id         - Optional argument, if present the information about
+                           this specific patch will be displayed.
+                           (The name of the argument is also optional, i.e.
+                           'patch info <patch-id>' is also acceptable)
+
+      --verbose          - Optional, short version is -v, may appear only
+                           in combination with the patch-id argument.
+                           If present, the information displayed will also
+                           include details of the layer/add-on patches included
+                           in the patch.
 
 ACTION: history
 
@@ -84,11 +98,16 @@ ACTION: inspect
     Fetches key information (patch id, patch type, target identity name
     and version, description) from the patch.xml of the specified patch file.
 
-    patch inspect <file_path>
+    patch inspect <file_path> [--verbose]
 
     <file_path>          - the path to the patch to inspect.
                            The path can be either absolute or relative to the
                            current directory.
+
+    --verbose            - Optional, short version is -v.
+                           If present, the information displayed will also
+                           include details of the layer/add-on patches included
+                           in the patch.
 
 DESCRIPTION
 

@@ -63,6 +63,7 @@ import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
@@ -105,6 +106,8 @@ public class PatchHandler extends CommandHandlerWithHelp {
                     return getProperty("line.separator");
                 }
             });
+
+    private final ArgumentWithoutValue verbose;
 
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
@@ -182,16 +185,17 @@ public class PatchHandler extends CommandHandlerWithHelp {
 
         // rollback arguments
 
-        patchId = new ArgumentWithValue(this, "--patch-id") {
+        patchId = new ArgumentWithValue(this, 1, "--patch-id") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if (canOnlyAppearAfterActions(ctx, ROLLBACK)) {
+                if (canOnlyAppearAfterActions(ctx, INFO, ROLLBACK)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
             }
         };
         patchId.addRequiredPreceding(action);
+
         rollbackTo = new ArgumentWithoutValue(this, "--rollback-to") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -202,6 +206,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
         };
         rollbackTo.addRequiredPreceding(action);
+
         resetConfiguration = new ArgumentWithValue(this, SimpleTabCompleter.BOOLEAN, "--reset-configuration") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -243,6 +248,17 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
         };
 
+        verbose = new ArgumentWithoutValue(this, "--verbose", "-v") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, INFO, INSPECT)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        verbose.addRequiredPreceding(action);
+        verbose.addRequiredPreceding(patchId);
     }
 
     private boolean canOnlyAppearAfterActions(CommandContext ctx, String... actions) {
@@ -256,22 +272,23 @@ public class PatchHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
         final ParsedCommandLine parsedLine = ctx.getParsedCommandLine();
-        if(INSPECT.equals(action.getValue(parsedLine))) {
+        final String action = this.action.getValue(parsedLine);
+        if(INSPECT.equals(action)) {
             doInspect(ctx);
             return;
         }
         final PatchOperationTarget target = createPatchOperationTarget(ctx);
         final PatchOperationBuilder builder = createPatchOperationBuilder(parsedLine);
-        final ModelNode result;
+        final ModelNode response;
         try {
-            result = builder.execute(target);
+            response = builder.execute(target);
         } catch (Exception e) {
-            throw new CommandLineException("Unable to apply patch", e);
+            throw new CommandLineException(action + " failed", e);
         }
-        if (!Util.isSuccess(result)) {
-            final ModelNode fd = result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION);
+        if (!Util.isSuccess(response)) {
+            final ModelNode fd = response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION);
             if(!fd.isDefined()) {
-                throw new CommandLineException("Failed to apply patch: " + result.asString());
+                throw new CommandLineException("Failed to apply patch: " + response.asString());
             }
             if(fd.has(Constants.CONFLICTS)) {
                 final StringBuilder buf = new StringBuilder();
@@ -292,10 +309,44 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 buf.append(lineSeparator).append("Use the --override-all, --override=[] or --preserve=[] arguments in order to resolve the conflict.");
                 throw new CommandLineException(buf.toString());
             } else {
-                throw new CommandLineException(Util.getFailureDescription(result));
+                throw new CommandLineException(Util.getFailureDescription(response));
             }
         }
-        ctx.printLine(result.toJSONString(false));
+
+        if(INFO.equals(action)) {
+            if(patchId.getValue(parsedLine) != null) {
+                final ModelNode result = response.get(ModelDescriptionConstants.RESULT);
+                if(!result.isDefined()) {
+                    return;
+                }
+                SimpleTable table = new SimpleTable(2);
+                table.addLine(new String[]{"Patch ID:", result.get(Constants.PATCH_ID).asString()});
+                table.addLine(new String[]{"Type:", result.get(Constants.TYPE).asString()});
+                table.addLine(new String[]{"Identity name:", result.get(Constants.IDENTITY_NAME).asString()});
+                table.addLine(new String[]{"Identity version:", result.get(Constants.IDENTITY_VERSION).asString()});
+                table.addLine(new String[]{"Description:", result.get(Constants.DESCRIPTION).asString()});
+                ctx.printLine(table.toString(false));
+
+                final ModelNode elements = result.get(Constants.ELEMENTS);
+                if(elements.isDefined()) {
+                    ctx.printLine("");
+                    ctx.printLine("ELEMENTS");
+                    for(ModelNode e : elements.asList()) {
+                        table = new SimpleTable(2);
+                        table.addLine(new String[]{"Patch ID:", e.get(Constants.PATCH_ID).asString()});
+                        table.addLine(new String[]{"Name:", e.get(Constants.NAME).asString()});
+                        table.addLine(new String[]{"Type:", e.get(Constants.TYPE).asString()});
+                        table.addLine(new String[]{"Description:", e.get(Constants.DESCRIPTION).asString()});
+                        ctx.printLine("");
+                        ctx.printLine(table.toString(false));
+                    }
+                }
+            } else {
+                ctx.printLine(response.toJSONString(false));
+            }
+        } else {
+            ctx.printLine(response.toJSONString(false));
+        }
     }
 
     protected void doInspect(CommandContext ctx) throws CommandLineException {
@@ -340,12 +391,27 @@ public class PatchHandler extends CommandHandlerWithHelp {
         }
 
         final Identity identity = patch.getIdentity();
-        final SimpleTable table = new SimpleTable(2);
+        SimpleTable table = new SimpleTable(2);
         table.addLine(new String[]{"Patch ID:", patch.getPatchId()});
         table.addLine(new String[]{"Type:", identity.getPatchType().getName()});
-        table.addLine(new String[]{"Target:", identity.getName() + ' ' + identity.getVersion()});
+        table.addLine(new String[]{"Identity name:", identity.getName()});
+        table.addLine(new String[]{"Identity version:", identity.getVersion()});
         table.addLine(new String[]{"Description:", patch.getDescription() == null ? "n/a" : patch.getDescription()});
         ctx.printLine(table.toString(false));
+
+        if(verbose.isPresent(parsedLine)) {
+            ctx.printLine("");
+            ctx.printLine("ELEMENTS");
+            for(PatchElement e : patch.getElements()) {
+                table = new SimpleTable(2);
+                table.addLine(new String[]{"Patch ID:", e.getId()});
+                table.addLine(new String[]{"Name:", e.getProvider().getName()});
+                table.addLine(new String[]{"Type:", e.getProvider().isAddOn() ? Constants.ADD_ON : Constants.LAYER});
+                table.addLine(new String[]{"Description:", e.getDescription()});
+                ctx.printLine("");
+                ctx.printLine(table.toString(false));
+            }
+        }
     }
 
     protected void formatConflictsList(final StringBuilder buf, final ModelNode conflicts, String title, String contentType) {
@@ -395,7 +461,12 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 builder = PatchOperationBuilder.Factory.rollbackLast(resetConfig);
             }
         } else if (INFO.equals(action)) {
-            builder = PatchOperationBuilder.Factory.info();
+            final String pId = patchId.getValue(args);
+            if(pId == null) {
+                builder = PatchOperationBuilder.Factory.info();
+            } else {
+                builder = PatchOperationBuilder.Factory.info(pId, verbose.isPresent(args));
+            }
             return builder;
         } else if (HISTORY.equals(action)) {
             builder = PatchOperationBuilder.Factory.history();

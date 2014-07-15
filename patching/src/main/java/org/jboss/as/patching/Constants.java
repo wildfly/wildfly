@@ -37,6 +37,7 @@ public class Constants {
     public static final String MISC = "misc";
     public static final String MODULES = "modules";
     public static final String NAME = "name";
+    public static final String VERBOSE = "verbose";
     public static final String VERSION = "version";
 
     public static final String PATCH = "patch";
@@ -55,6 +56,9 @@ public class Constants {
     public static final String PRESERVE = "preserve";
 
     public static final String APPLIED_AT = "applied-at";
+    public static final String DESCRIPTION = "description";
+    public static final String IDENTITY_NAME = "identity-name";
+    public static final String IDENTITY_VERSION = "identity-version";
     public static final String TIMESTAMP = "timestamp";
     public static final String TYPE = "type";
 
@@ -69,7 +73,10 @@ public class Constants {
     public static final String OVERLAYS = ".overlays";
     public static final String STANDALONE = "standalone";
 
+    public static final String ELEMENTS = "elements";
+    public static final String LAYER = "layer";
     public static final String LAYERS = "layers";
+    public static final String ADD_ON = "add-on";
     public static final String ADD_ONS = "add-ons";
     public static final String DEFAULT_LAYERS_PATH = "system/layers";
     public static final String DEFAULT_ADD_ONS_PATH = "system/add-ons";

@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -109,6 +111,11 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .build();
 
+    static final AttributeDefinition VERBOSE = SimpleAttributeDefinitionBuilder.create(Constants.VERBOSE, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .build();
+
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(ROLLBACK_TO)
@@ -131,6 +138,26 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final OperationDefinition AGEOUT_HISTORY = new SimpleOperationDefinitionBuilder("ageout-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .build();
+
+    static final OperationDefinition PATCH_INFO = new SimpleOperationDefinitionBuilder("patch-info", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .addParameter(PATCH_ID)
+            .addParameter(VERBOSE)
+            .setReplyType(ModelType.OBJECT)
+            .setReplyParameters(
+                    PATCH_ID,
+                    SimpleAttributeDefinitionBuilder.create(Constants.TYPE, ModelType.STRING).build(),
+                    SimpleAttributeDefinitionBuilder.create(Constants.IDENTITY_NAME, ModelType.STRING).build(),
+                    SimpleAttributeDefinitionBuilder.create(Constants.IDENTITY_VERSION, ModelType.STRING).build(),
+                    SimpleAttributeDefinitionBuilder.create(Constants.DESCRIPTION, ModelType.STRING).build(),
+                    ObjectListAttributeDefinition.Builder.of(Constants.ELEMENTS,
+                            new ObjectTypeAttributeDefinition.Builder(Constants.ELEMENTS,
+                                    PATCH_ID,
+                                    SimpleAttributeDefinitionBuilder.create(Constants.TYPE, ModelType.STRING).build(),
+                                    SimpleAttributeDefinitionBuilder.create(Constants.NAME, ModelType.STRING).build(),
+                                    SimpleAttributeDefinitionBuilder.create(Constants.DESCRIPTION, ModelType.STRING).build())
+                            .build()).build()
+                    )
             .build();
 
     static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
@@ -252,6 +279,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
         registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
         registry.registerOperationHandler(AGEOUT_HISTORY, LocalAgeoutHistoryHandler.INSTANCE);
+        registry.registerOperationHandler(PATCH_INFO, PatchInfoHandler.INSTANCE);
     }
 
     @Override

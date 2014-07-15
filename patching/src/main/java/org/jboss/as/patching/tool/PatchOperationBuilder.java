@@ -64,6 +64,20 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         }
 
         /**
+         * Get the patch info for the specific patchId.
+         *
+         * @return the patch info
+         */
+        public static PatchOperationBuilder info(final String patchId, final boolean verbose) {
+            return new AbstractOperationBuilder() {
+                @Override
+                public ModelNode execute(PatchOperationTarget target) throws IOException {
+                    return target.info(patchId, verbose);
+                }
+            };
+        }
+
+        /**
          * Get the patching history.
          *
          * @return the patching history

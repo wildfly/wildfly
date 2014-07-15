@@ -31,7 +31,7 @@ import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
-import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.jboss.as.patching.logging.PatchLogger.ROOT_LOGGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +46,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -56,7 +56,6 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import com.google.common.base.Joiner;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.HashUtils;
@@ -80,6 +79,8 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 
+import com.google.common.base.Joiner;
+
 /**
  * @author Jan Martiska, Jeff Mesnil
  */
@@ -92,9 +93,9 @@ public class PatchingTestUtil {
     public static final String CONTAINER = "jboss";
     public static final String AS_DISTRIBUTION = System.getProperty("jbossas.dist");
     public static final String FILE_SEPARATOR = File.separator;
-    private static final String RELATIVE_PATCHES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE, OVERLAYS});
+    private static final String RELATIVE_PATCHES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[]{MODULES, SYSTEM, LAYERS, BASE, OVERLAYS});
     public static final String PATCHES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_PATCHES_PATH;
-    private static final String RELATIVE_MODULES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE});
+    private static final String RELATIVE_MODULES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[]{MODULES, SYSTEM, LAYERS, BASE});
     public static final String MODULES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_MODULES_PATH;
     public static final File BASE_MODULE_DIRECTORY = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
     public static final File BASE_BUNDLE_DIRECTORY = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), BUNDLES, SYSTEM, LAYERS, BASE);
@@ -109,9 +110,10 @@ public class PatchingTestUtil {
 
     /**
      * Converts the contents of a file into a String.
+     *
      * @param filePath
      * @return
-     * @throws FileNotFoundException
+     * @throws java.io.FileNotFoundException
      */
     public static String readFile(String filePath) throws FileNotFoundException {
         Scanner scanner = null;
@@ -119,8 +121,7 @@ public class PatchingTestUtil {
             scanner = new Scanner(new File(filePath)).useDelimiter("\\A");
             return scanner.next();
         } finally {
-            if(scanner != null)
-                scanner.close();
+            if (scanner != null) { scanner.close(); }
         }
     }
 
@@ -134,8 +135,7 @@ public class PatchingTestUtil {
             os.write(content.getBytes());
             os.flush();
         } finally {
-            if(os != null)
-                os.close();
+            if (os != null) { os.close(); }
         }
     }
 
@@ -175,7 +175,7 @@ public class PatchingTestUtil {
     public static void dump(File f, String content) throws IOException {
         final OutputStream os = new FileOutputStream(f);
         try {
-            os.write(content.getBytes(Charset.forName("UTF-8")));
+            os.write(content.getBytes(StandardCharsets.UTF_8));
             os.close();
         } finally {
             IoUtils.safeClose(os);
@@ -287,7 +287,7 @@ public class PatchingTestUtil {
         }
     }
 
-    public static void createPatchBundleXMLFile(File dir,final List<BundledPatch.BundledPatchEntry> patches) throws Exception {
+    public static void createPatchBundleXMLFile(File dir, final List<BundledPatch.BundledPatchEntry> patches) throws Exception {
         File bundleXMLFile = new File(dir, "patches.xml");
         FileOutputStream fos = new FileOutputStream(bundleXMLFile);
         try {
@@ -307,7 +307,7 @@ public class PatchingTestUtil {
     }
 
     public static File createZippedPatchFile(File sourceDir, String zipFileName, File targetDir) {
-        if(targetDir == null) {
+        if (targetDir == null) {
             targetDir = sourceDir.getParentFile();
         }
         tree(sourceDir);
@@ -319,12 +319,12 @@ public class PatchingTestUtil {
     /**
      * Creates (a part of) the distribution on the filesystem necessary to the run the tests.
      *
-     * @param env  the directory structure to be created
-     * @param identity  the identity name
-     * @param productName  release name
-     * @param productVersion  release version
-     * @return  the bin directory
-     * @throws Exception  if anything goes wrong
+     * @param env            the directory structure to be created
+     * @param identity       the identity name
+     * @param productName    release name
+     * @param productVersion release version
+     * @return the bin directory
+     * @throws Exception if anything goes wrong
      */
     public static File createInstalledImage(DirectoryStructure env, String identity, String productName, String productVersion) throws Exception {
         // start from a base installation
@@ -346,7 +346,7 @@ public class PatchingTestUtil {
 
         // create the product module
         final File modulesDir = newFile(env.getInstalledImage().getModulesDir(), SYSTEM, LAYERS, BASE);
-        if(!modulesDir.exists()) {
+        if (!modulesDir.exists()) {
             modulesDir.mkdirs();
         }
         final File moduleDir = createModule1(modulesDir, "org.jboss.as.product:" + identity, "product.jar");
@@ -377,7 +377,7 @@ public class PatchingTestUtil {
         }
 
         File modulesPatchesDir = new File(baseModuleDir, ".overlays");
-        if(!modulesPatchesDir.exists()) {
+        if (!modulesPatchesDir.exists()) {
             assertNull("Overlay directory does not exist, but it should", expectedPatchElements);
             return;
         }
@@ -387,7 +387,7 @@ public class PatchingTestUtil {
                 return pathname.isDirectory();
             }
         }));
-        if(expectedPatchElements == null) {
+        if (expectedPatchElements == null) {
             assertTrue("Overlays directory should contain no directories, but contains: " + patchDirs.toString(), patchDirs.isEmpty());
         } else {
             final List<String> ids = Arrays.asList(expectedPatchElements);
@@ -419,7 +419,7 @@ public class PatchingTestUtil {
 
         final byte[] sourceHash = HashUtils.hashFile(source);
         final byte[] targetHash = HashUtils.hashFile(target);
-        assert ! Arrays.equals(sourceHash, targetHash);
+        assert !Arrays.equals(sourceHash, targetHash);
 
         final MiscContentItem item = new MiscContentItem(fileName, new String[0], targetHash, false, false);
         return new ContentModification(item, sourceHash, ModificationType.MODIFY);
@@ -434,9 +434,8 @@ public class PatchingTestUtil {
 
     public static boolean isOneOffPatchContainedInHistory(List<ModelNode> patchingHistory, String patchID) {
         boolean found = false;
-        for(ModelNode node : patchingHistory) {
-            if(node.get("patch-id").asString().equals(patchID))
-                found = true;
+        for (ModelNode node : patchingHistory) {
+            if (node.get("patch-id").asString().equals(patchID)) { found = true; }
         }
         return found;
     }
@@ -450,7 +449,7 @@ public class PatchingTestUtil {
         };
 
         final JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class);
-        if (! ProductInfo.isProduct) {
+        if (!ProductInfo.isProduct) {
             versionModuleJar.addPackage("org.jboss.as.version");
         }
         versionModuleJar.addAsManifestResource(newManifest, "MANIFEST.MF");

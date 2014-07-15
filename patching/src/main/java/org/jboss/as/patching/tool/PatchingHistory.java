@@ -40,11 +40,11 @@ import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.installation.PatchableTarget.TargetInfo;
 import org.jboss.as.patching.management.PatchManagementMessages;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -73,6 +73,7 @@ public interface PatchingHistory {
         Map<String,String> getLayerPatches();
         Map<String,String> getAddOnPatches();
 
+        Patch getMetadata();
     }
 
     public interface Iterator extends java.util.Iterator<Entry> {
@@ -350,6 +351,7 @@ public interface PatchingHistory {
                     String appliedAt;
                     Map<String,String> layerPatches;
                     Map<String,String> addOnPatches;
+                    Patch patch;
 
                     @Override
                     public String getPatchId() {
@@ -378,7 +380,7 @@ public interface PatchingHistory {
                     @Override
                     public Map<String, String> getLayerPatches() {
                         if(layerPatches == null) {
-                            loadLayerPatches(false);
+                            layerPatches = loadLayerPatches(false);
                         }
                         return layerPatches;
                     }
@@ -386,33 +388,9 @@ public interface PatchingHistory {
                     @Override
                     public Map<String, String> getAddOnPatches() {
                         if(addOnPatches == null) {
-                            loadLayerPatches(true);
+                            addOnPatches = loadLayerPatches(true);
                         }
                         return addOnPatches;
-                    }
-
-                    private void loadLayerPatches(boolean addons) {
-                        final File patchDir = mgr.getInstalledImage().getPatchHistoryDir(entryPatchId);
-                        if(patchDir.exists()) {
-                            final File patchXml = new File(patchDir, "patch.xml");
-                            if(patchXml.exists()) {
-                                try {
-                                    Patch patch = ((PatchBuilder)PatchXml.parse(patchXml)).build();
-                                    layerPatches = new HashMap<String, String>();
-                                    for(PatchElement e : patch.getElements()) {
-                                        if (e.getProvider().isAddOn() == addons) {
-                                            layerPatches.put(e.getProvider().getName(), e.getId());
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace(); // TODO
-                                }
-                            } else {
-                                layerPatches = Collections.emptyMap();
-                            }
-                        } else {
-                            layerPatches = Collections.emptyMap();
-                        }
                     }
 
                     private String getAppliedAt(File patchDir) throws PatchingException {
@@ -422,6 +400,38 @@ public interface PatchingHistory {
                         } catch (IOException e) {
                             throw new PatchingException(PatchManagementMessages.MESSAGES.fileIsNotReadable(timestampFile.getAbsolutePath()));
                         }
+                    }
+
+                    private Map<String,String> loadLayerPatches(boolean addons) {
+                        Map<String,String> result = Collections.emptyMap();
+                        final Patch patch = getMetadata();
+                        if(patch != null) {
+                            result = new HashMap<String, String>();
+                            for (PatchElement e : patch.getElements()) {
+                                if (e.getProvider().isAddOn() == addons) {
+                                    result.put(e.getProvider().getName(), e.getId());
+                                }
+                            }
+                        }
+                        return result;
+                    }
+
+                    @Override
+                    public Patch getMetadata() {
+                        if(patch == null) {
+                            final File patchDir = mgr.getInstalledImage().getPatchHistoryDir(entryPatchId);
+                            if(patchDir.exists()) {
+                                final File patchXml = new File(patchDir, "patch.xml");
+                                if(patchXml.exists()) {
+                                    try {
+                                        patch = ((PatchBuilder)PatchXml.parse(patchXml)).build();
+                                    } catch (Exception e) {
+                                        e.printStackTrace(); // TODO
+                                    }
+                                }
+                            }
+                        }
+                        return patch;
                     }
                 };
             }

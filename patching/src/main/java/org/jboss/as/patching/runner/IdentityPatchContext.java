@@ -1,10 +1,8 @@
 package org.jboss.as.patching.runner;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -17,6 +15,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
@@ -856,6 +856,7 @@ class IdentityPatchContext implements PatchContentProvider {
         element.setProvider(patchElement.getProvider());
         // Add all the rollback actions
         element.getModifications().addAll(modifications);
+        element.setDescription(patchElement.getDescription());
         return element;
     }
 

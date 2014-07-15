@@ -2,10 +2,8 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.APPLY;
 import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.ROLLBACK;
-import static org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import static org.jboss.as.patching.runner.PatchingTasks.apply;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +11,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
@@ -34,6 +34,7 @@ import org.jboss.as.patching.metadata.PatchMetadataResolver;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.UpgradeCondition;
+import org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.as.patching.tool.PatchingResult;

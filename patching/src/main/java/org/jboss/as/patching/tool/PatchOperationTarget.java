@@ -52,6 +52,9 @@ import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchElement;
+import org.jboss.as.patching.tool.PatchingHistory.Entry;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -102,6 +105,7 @@ public abstract class PatchOperationTarget {
     //
 
     protected abstract ModelNode info() throws IOException;
+    protected abstract ModelNode info(String patchId, boolean verbose) throws IOException;
     protected abstract ModelNode history() throws IOException;
     protected abstract ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws IOException;
     protected abstract ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, final boolean restoreConfiguration) throws IOException;
@@ -183,6 +187,47 @@ public abstract class PatchOperationTarget {
             }
             return result;
         }
+
+        @Override
+        protected ModelNode info(String patchId, boolean verbose) throws IOException {
+            if(patchId == null) {
+                throw new IllegalArgumentException("patchId is null");
+            }
+            PatchingHistory history = tool.getPatchingHistory();
+            try {
+                final PatchingHistory.Iterator iterator = history.iterator();
+                while(iterator.hasNext()) {
+                    final Entry next = iterator.next();
+                    if(patchId.equals(next.getPatchId())) {
+                        final ModelNode response = new ModelNode();
+                        response.get(OUTCOME).set(SUCCESS);
+                        final ModelNode result = response.get(RESULT);
+                        result.get(Constants.PATCH_ID).set(next.getPatchId());
+                        result.get(Constants.TYPE).set(next.getType().getName());
+                        final Patch metadata = next.getMetadata();
+                        result.get(Constants.IDENTITY_NAME).set(metadata.getIdentity().getName());
+                        result.get(Constants.IDENTITY_VERSION).set(metadata.getIdentity().getVersion());
+                        result.get(Constants.DESCRIPTION).set(next.getMetadata().getDescription());
+
+                        if (verbose) {
+                            final ModelNode elements = result.get(Constants.ELEMENTS).setEmptyList();
+                            for(PatchElement e : metadata.getElements()) {
+                                final ModelNode element = new ModelNode();
+                                element.get(Constants.PATCH_ID).set(e.getId());
+                                element.get(Constants.NAME).set(e.getProvider().getName());
+                                element.get(Constants.TYPE).set(e.getProvider().isAddOn() ? Constants.ADD_ON : Constants.LAYER);
+                                element.get(Constants.DESCRIPTION).set(e.getDescription());
+                                elements.add(element);
+                            }
+                        }
+                        return response;
+                    }
+                }
+            } catch (PatchingException e) {
+                return formatFailedResponse(e);
+            }
+            return formatFailedResponse(PatchMessages.MESSAGES.patchNotFoundInHistory(patchId).getLocalizedMessage());
+        }
     }
 
     protected static class RemotePatchOperationTarget extends PatchOperationTarget {
@@ -237,6 +282,25 @@ public abstract class PatchOperationTarget {
             operation.get(Constants.RESET_CONFIGURATION).set(restoreConfiguration);
             return client.execute(operation);
         }
+
+        @Override
+        protected ModelNode info(String patchId, boolean verbose) throws IOException {
+            final ModelNode operation = new ModelNode();
+            operation.get(ModelDescriptionConstants.OP).set("patch-info");
+            operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
+            operation.get(Constants.PATCH_ID).set(patchId);
+            if(verbose) {
+                operation.get(Constants.VERBOSE).set(true);
+            }
+            return client.execute(operation);
+        }
+    }
+
+    static ModelNode formatFailedResponse(final String msg) {
+        final ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(FAILED);
+        result.get(FAILURE_DESCRIPTION, Constants.MESSAGE).set(msg);
+        return result;
     }
 
     static ModelNode formatFailedResponse(final PatchingException e) {
