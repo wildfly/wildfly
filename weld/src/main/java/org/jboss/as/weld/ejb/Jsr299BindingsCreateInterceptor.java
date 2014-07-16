@@ -17,6 +17,12 @@
 
 package org.jboss.as.weld.ejb;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Interceptor;
+
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
 import org.jboss.as.weld.WeldBootstrapService;
@@ -28,11 +34,6 @@ import org.jboss.weld.ejb.spi.InterceptorBindings;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.serialization.spi.ContextualStore;
 import org.jboss.weld.serialization.spi.helpers.SerializableContextualInstance;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Interceptor;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Interceptor that creates the CDI interceptors and attaches them to the component
@@ -55,7 +56,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
 
 
     private void addInterceptorInstance(Interceptor<Object> interceptor, BeanManagerImpl beanManager, Map<String, SerializableContextualInstance<Interceptor<Object>, Object>> instances, final CreationalContext<Object> creationalContext) {
-        Object instance = beanManager.getContext(interceptor.getScope()).get(interceptor, creationalContext);
+        Object instance = beanManager.getReference(interceptor, interceptor.getBeanClass(), creationalContext, true);
         SerializableContextualInstance<Interceptor<Object>, Object> serializableContextualInstance
                 = beanManager.getServices().get(ContextualStore.class).<Interceptor<Object>, Object>getSerializableContextualInstance(interceptor, instance, creationalContext);
         instances.put(interceptor.getBeanClass().getName(), serializableContextualInstance);
