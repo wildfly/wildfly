@@ -42,8 +42,8 @@
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git@github.com:wildfly/boms.git</connection>
-        <developerConnection>scm:git:git@github.com:wildfly/boms.git</developerConnection>
+        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
+        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
         <url>http://github.com/wildfly/boms</url>
     </scm>
 
