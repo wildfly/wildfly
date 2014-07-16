@@ -21,14 +21,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>8.1.0.Final</version>
 
     <packaging>pom</packaging>
 
@@ -45,7 +44,8 @@
         <connection>scm:git:https://github.com/wildfly/boms.git</connection>
         <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
         <url>http://github.com/wildfly/boms</url>
-    </scm>
+      <tag>jboss-bom-parent-8.1.0.Final</tag>
+  </scm>
 
     <developers>
         <developer>
