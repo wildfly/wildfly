@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.access;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -136,6 +137,10 @@ public class AccessConstraintAppliesToResourceDefinition extends SimpleResourceD
 
         @Override
         Set<String> getStringSet(AccessConstraintUtilization constraintUtilization) {
+            if (constraintUtilization.isEntireResourceConstrained()) {
+                // Showing individual attributes is redundant and confusing
+                return Collections.emptySet();
+            }
             return constraintUtilization.getAttributes();
         }
     }
@@ -144,6 +149,10 @@ public class AccessConstraintAppliesToResourceDefinition extends SimpleResourceD
 
         @Override
         Set<String> getStringSet(AccessConstraintUtilization constraintUtilization) {
+            if (constraintUtilization.isEntireResourceConstrained()) {
+                // Showing individual operations is redundant and confusing
+                return Collections.emptySet();
+            }
             return constraintUtilization.getOperations();
         }
     }
