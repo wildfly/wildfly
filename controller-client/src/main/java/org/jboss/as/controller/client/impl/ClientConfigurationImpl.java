@@ -49,9 +49,10 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
 
     // Global count of created pools
     private static final AtomicInteger executorCount = new AtomicInteger();
+    // Global thread group for created pools. WFCORE-5 static to avoid leaking whenever createDefaultExecutor is called
+    private static final ThreadGroup defaultThreadGroup = new ThreadGroup("management-client-thread");
     static ExecutorService createDefaultExecutor() {
-        final ThreadGroup group = new ThreadGroup("management-client-thread");
-        final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, AccessController.getContext());
+        final ThreadFactory threadFactory = new JBossThreadFactory(defaultThreadGroup, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, AccessController.getContext());
         return new ThreadPoolExecutor(2, DEFAULT_MAX_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
