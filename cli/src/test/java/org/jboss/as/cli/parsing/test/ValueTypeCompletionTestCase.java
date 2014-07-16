@@ -297,5 +297,10 @@ public class ValueTypeCompletionTestCase {
         i = completer.complete(null, "code=Main,flag = required,aa={ab1=1,ac1=2},bb=[", 0, candidates);
         assertEquals(Arrays.asList(new String[]{"bb1", "bb2", "bc1"}), candidates);
         assertEquals(47, i);
+
+        candidates.clear();
+        i = completer.complete(null, "code=\"UsersRoles\",flag=required,module-options=[(", 0, candidates);
+        assertEquals(Collections.emptyList(), candidates);
+        assertEquals(-1, i);
     }
 }

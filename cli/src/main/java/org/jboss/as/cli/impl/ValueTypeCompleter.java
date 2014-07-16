@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -119,7 +120,7 @@ public class ValueTypeCompleter implements CommandLineCompleter {
         }
 
         public int getCompletionIndex() {
-            //System.out.println("getCompletionIndex: " + lastStateChar + " " + lastStateIndex);
+            //System.out.println("\ngetCompletionIndex: " + lastStateChar + " " + lastStateIndex);
             switch(lastStateChar) {
                 case '{':
                 case '}':
@@ -306,7 +307,13 @@ public class ValueTypeCompleter implements CommandLineCompleter {
                 }
                 candidates = new ArrayList<String>();
                 final List<String> mentionedProps = getMentionedProps(mentionedIndex);
-                for (String candidate : propType.keys()) {
+                final Set<String> typeProps;
+                try {
+                    typeProps = propType.keys();
+                } catch(RuntimeException t) {
+                     return Collections.emptyList();
+                }
+                for (String candidate : typeProps) {
                     if (prop == null || candidate.startsWith(prop)) {
                         if(mentionedProps == null) {
                             candidates.add(candidate);
@@ -749,9 +756,18 @@ public class ValueTypeCompleter implements CommandLineCompleter {
 
         public PropertyState() {
             super(ID);
-            setHandleEntrance(true);
-            putHandler('{', GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER);
-            putHandler('[', GlobalCharacterHandlers.NOOP_CHARACTER_HANDLER);
+            this.setEnterHandler(new CharacterHandler(){
+                @Override
+                public void handle(ParsingContext ctx) throws CommandFormatException {
+                    final char ch = ctx.getCharacter();
+                    if(ch != '{' && ch != '[') {
+                        final CharacterHandler handler = getHandler(ch);
+                        handler.handle(ctx);
+                    }
+                }
+            });
+            enterState('{', StartObjectState.INSTANCE);
+            enterState('[', PropertyListState.INSTANCE);
             setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
             enterState('=', EqualsState.INSTANCE);
             setReturnHandler(new CharacterHandler(){
