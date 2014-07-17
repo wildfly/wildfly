@@ -118,7 +118,7 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>javax.el-impl</artifactId>
         </dependency>
 
         <!-- TODO: why do we need jandex in minimal? -->
