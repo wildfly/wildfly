@@ -37,11 +37,12 @@ public enum Namespace {
     MODCLUSTER_1_0(1, 0, new ModClusterSubsystemXMLReader_1_0()),
     MODCLUSTER_1_1(1, 1, new ModClusterSubsystemXMLReader_1_1()),
     MODCLUSTER_1_2(1, 2, new ModClusterSubsystemXMLReader_1_2()),
+    MODCLUSTER_2_0(2, 0, new ModClusterSubsystemXMLReader_2_0()),
     ;
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = MODCLUSTER_1_2;
+    public static final Namespace CURRENT = MODCLUSTER_2_0;
 
     private final int major;
     private final int minor;

@@ -76,7 +76,7 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
     };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
             builder.addChildResource(PATH)
                     .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TYPE, WEIGHT, CAPACITY, PROPERTY)

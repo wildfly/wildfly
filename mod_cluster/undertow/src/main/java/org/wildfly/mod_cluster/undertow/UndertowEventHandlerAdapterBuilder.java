@@ -37,12 +37,12 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
     public static final ServiceName SERVICE_NAME = ContainerEventHandlerService.SERVICE_NAME.append("undertow");
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target, String connector) {
+    public ServiceBuilder<?> build(ServiceTarget target, String connector, int statusInterval) {
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         @SuppressWarnings("rawtypes")
         InjectedValue<ListenerService> listener = new InjectedValue<>();
-        return AsynchronousService.addService(target, SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener))
+        return AsynchronousService.addService(target, SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, statusInterval))
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
                 .addDependency(UndertowService.listenerName(connector), ListenerService.class, listener)

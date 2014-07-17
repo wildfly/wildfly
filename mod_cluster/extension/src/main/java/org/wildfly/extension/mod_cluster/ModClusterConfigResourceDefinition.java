@@ -39,6 +39,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -107,6 +108,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_SECURITY_DEF)
+            .build();
+
+    static final SimpleAttributeDefinition STATUS_INTERVAL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STATUS_INTERVAL, ModelType.INT, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(10)) // This default value is used in the transformer definition, change with caution.
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .setValidator(new IntRangeValidator(1, true, true))
+            .setRestartAllServices()
             .build();
 
     // TODO: Convert into an xs:list of host:context
@@ -265,6 +274,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             LOAD_BALANCING_GROUP, // was called "domain" in the 1.0 xsd
             CONNECTOR, // not in the 1.0 xsd
             SESSION_DRAINING_STRATEGY, // not in the 1.1 xsd
+            STATUS_INTERVAL, // since 2.0 xsd
     };
 
 
@@ -281,14 +291,22 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
-        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version) || ModClusterModel.VERSION_1_4_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(STATUS_INTERVAL.getDefaultValue()), STATUS_INTERVAL)
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(STATUS_INTERVAL.getDefaultValue()), STATUS_INTERVAL)
+                    .end();
+        }
+
+        if (ModClusterModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                     .end();
         }
 
-        if (ModClusterModel.VERSION_1_2_0.requiresTransformation(version)) {
+        if (ModClusterModel.VERSION_1_3_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
                     .end();

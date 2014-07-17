@@ -44,6 +44,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
+import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STATUS_INTERVAL;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
@@ -127,6 +128,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
+        final int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, modelConfig).asInt();
         InjectedValue<SocketBindingManager> socketBindingManager = new InjectedValue<SocketBindingManager>();
         ContainerEventHandlerService service = new ContainerEventHandlerService(config, loadProvider, socketBindingManager);
         final ServiceBuilder<?> builder = AsynchronousService.addService(target, ContainerEventHandlerService.SERVICE_NAME, service, true, true)
@@ -142,7 +144,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Install services for web container integration
         for (ContainerEventHandlerAdapterBuilder adapterBuilder: ServiceLoader.load(ContainerEventHandlerAdapterBuilder.class, ContainerEventHandlerAdapterBuilder.class.getClassLoader())) {
-            newControllers.add(adapterBuilder.build(target, connector).addListener(verificationHandler).setInitialMode(Mode.PASSIVE).install());
+            newControllers.add(adapterBuilder.build(target, connector, statusInterval).addListener(verificationHandler).setInitialMode(Mode.PASSIVE).install());
         }
     }
 
