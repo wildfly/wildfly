@@ -33,9 +33,8 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
@@ -63,7 +62,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
 
-    private ResourceAdapter raxml;
+    private Activation raxml;
     private final String deployment;
 
     private String raName;
@@ -71,7 +70,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private CommonDeployment raxmlDeployment = null;
     private final ServiceName duServiceName;
 
-    public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
+    public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, Activation raxml,
                                                Module module, final String deployment, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         synchronized (this) {
@@ -93,7 +92,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             Connector cmd = mdr.getValue().getResourceAdapter(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
-            ResourceAdapter localRaXml = getRaxml();
+            Activation localRaXml = getRaxml();
             cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(localRaXml, cmd);
 
             String id = ((ModifiableResourceAdapter) raxml).getId();
@@ -106,7 +105,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 this.connectorServicesRegistrationName = id;
             }
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
-                raName, root, module.getClassLoader(), cmd, localRaXml, null, deploymentServiceName);
+                raName, root, module.getClassLoader(), cmd, localRaXml, deploymentServiceName);
 
             raDeployer.setConfiguration(config.getValue());
 
@@ -144,26 +143,24 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         return raxmlDeployment;
     }
 
-    public synchronized void setRaxml(ResourceAdapter raxml) {
+    public synchronized void setRaxml(Activation raxml) {
             this.raxml = raxml;
     }
 
-    public synchronized ResourceAdapter getRaxml() {
+    public synchronized Activation getRaxml() {
             return raxml;
     }
 
 
     private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
 
-        private final ResourceAdapter ra;
-        private final IronJacamar ijmd;
+        private final Activation activation;
 
 
         public AS7RaXmlDeployer(ServiceTarget serviceTarget, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, ResourceAdapter ra, IronJacamar ijmd,  final ServiceName deploymentServiceName) {
+                Connector cmd, Activation activation,  final ServiceName deploymentServiceName) {
             super(serviceTarget, url, deploymentName, root, cl, cmd, deploymentServiceName);
-            this.ra = ra;
-            this.ijmd = ijmd;
+            this.activation = activation;
         }
 
         @Override
@@ -173,13 +170,13 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
             this.start();
 
-            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd, ra);
+            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, activation);
 
             return dep;
         }
 
         @Override
-        protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
+        protected boolean checkActivation(Connector cmd, Activation activation) {
             return true;
         }
 

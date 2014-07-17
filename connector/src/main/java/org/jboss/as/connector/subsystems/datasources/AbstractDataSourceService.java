@@ -44,9 +44,6 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
-import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.action.GetClassLoaderAction;
-import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
@@ -59,8 +56,8 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
-import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.XsdString;
+import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
+import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
@@ -84,6 +81,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.action.GetClassLoaderAction;
+import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
 
 /**
  * Base service for managing a data-source.
@@ -539,9 +539,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
             final Validation validation = dataSourceConfig.getValidation();
             if (validation != null) {
-                if (validation.isValidateOnMatch() != null) {
-                    managedConnectionFactory.setValidateOnMatch(validation.isValidateOnMatch());
-                }
                 if (validation.getCheckValidConnectionSql() != null) {
                     managedConnectionFactory.setCheckValidConnectionSQL(validation.getCheckValidConnectionSql());
                 }

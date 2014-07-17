@@ -35,13 +35,11 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.services.resourceadapters.deployment.AbstractResourceAdapterDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.AdminObject;
-import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.Connector.Version;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
@@ -65,17 +63,17 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
     private final ClassLoader cl;
     private final Connector cmd;
-    private final IronJacamar ijmd;
+    private final Activation activation;
     private final String deploymentName;
 
     private CommonDeployment deploymentMD;
     private ContextNames.BindInfo bindInfo;
     private boolean createBinderService = true;
 
-    public ResourceAdapterActivatorService(final Connector cmd, final IronJacamar ijmd, ClassLoader cl,
+    public ResourceAdapterActivatorService(final Connector cmd, final Activation activation, ClassLoader cl,
             final String deploymentName) {
         this.cmd = cmd;
-        this.ijmd = ijmd;
+        this.activation = activation;
         this.cl = cl;
         this.deploymentName = deploymentName;
         this.connectorServicesRegistrationName = deploymentName;
@@ -108,7 +106,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
         try {
             ResourceAdapterActivator activator = new ResourceAdapterActivator(context.getChildTarget(), new URL(pathname), deploymentName,
-                    new File(pathname), cl, cmd, ijmd);
+                    new File(pathname), cl, cmd, activation);
             activator.setConfiguration(getConfig().getValue());
             // FIXME!!, this should probably be done by IJ and not the service
             ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -154,12 +152,12 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
     private class ResourceAdapterActivator extends AbstractAS7RaDeployer {
 
-        private final IronJacamar ijmd;
+        private final Activation activation;
 
         public ResourceAdapterActivator(ServiceTarget serviceTarget, URL url, String deploymentName, File root,
-                ClassLoader cl, Connector cmd, IronJacamar ijmd) {
+                ClassLoader cl, Connector cmd, Activation activation) {
             super(serviceTarget, url, deploymentName, root, cl, cmd, null);
-            this.ijmd = ijmd;
+            this.activation = activation;
         }
 
         @Override
@@ -171,47 +169,44 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
 
             this.start();
 
-            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, ijmd);
+            CommonDeployment dep = this.createObjectsAndInjectValue(url, deploymentName, root, cl, cmd, activation);
 
             return dep;
         }
 
         @Override
-        protected boolean checkActivation(Connector cmd, IronJacamar ijmd) {
+        protected boolean checkActivation(Connector cmd, Activation activation) {
             if (cmd != null) {
                 Set<String> raMcfClasses = new HashSet<String>();
                 Set<String> raAoClasses = new HashSet<String>();
 
-                if (cmd.getVersion() == Version.V_10) {
-                    ResourceAdapter10 ra10 = (ResourceAdapter10) cmd.getResourceadapter();
-                    raMcfClasses.add(ra10.getManagedConnectionFactoryClass().getValue());
-                } else {
-                    ResourceAdapter1516 ra = (ResourceAdapter1516) cmd.getResourceadapter();
-                    if (ra != null && ra.getOutboundResourceadapter() != null
-                            && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
-                        List<ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
-                        if (cdMetas.size() > 0) {
-                            for (ConnectionDefinition cdMeta : cdMetas) {
-                                raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
-                            }
+
+                ResourceAdapter ra = (ResourceAdapter) cmd.getResourceadapter();
+                if (ra != null && ra.getOutboundResourceadapter() != null
+                        && ra.getOutboundResourceadapter().getConnectionDefinitions() != null) {
+                    List<org.jboss.jca.common.api.metadata.spec.ConnectionDefinition> cdMetas = ra.getOutboundResourceadapter().getConnectionDefinitions();
+                    if (cdMetas.size() > 0) {
+                        for (org.jboss.jca.common.api.metadata.spec.ConnectionDefinition cdMeta : cdMetas) {
+                            raMcfClasses.add(cdMeta.getManagedConnectionFactoryClass().getValue());
                         }
                     }
-
-                    if (ra != null && ra.getAdminObjects() != null) {
-                        List<AdminObject> aoMetas = ra.getAdminObjects();
-                        if (aoMetas.size() > 0) {
-                            for (AdminObject aoMeta : aoMetas) {
-                                raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
-                            }
-                        }
-                    }
-
-                    // Pure inflow
-                    if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
-                        return true;
                 }
 
-                if (ijmd != null) {
+                if (ra != null && ra.getAdminObjects() != null) {
+                    List<org.jboss.jca.common.api.metadata.spec.AdminObject> aoMetas = ra.getAdminObjects();
+                    if (aoMetas.size() > 0) {
+                        for (org.jboss.jca.common.api.metadata.spec.AdminObject aoMeta : aoMetas) {
+                            raAoClasses.add(aoMeta.getAdminobjectClass().getValue());
+                        }
+                    }
+                }
+
+                // Pure inflow
+                if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
+                    return true;
+
+
+                if (activation != null) {
                     Set<String> ijMcfClasses = new HashSet<String>();
                     Set<String> ijAoClasses = new HashSet<String>();
 
@@ -221,8 +216,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                     boolean mcfOk = true;
                     boolean aoOk = true;
 
-                    if (ijmd.getConnectionDefinitions() != null) {
-                        for (org.jboss.jca.common.api.metadata.common.CommonConnDef def : ijmd.getConnectionDefinitions()) {
+                    if (activation.getConnectionDefinitions() != null) {
+                        for (ConnectionDefinition def : activation.getConnectionDefinitions()) {
                             String clz = def.getClassName();
 
                             if (clz == null) {
@@ -244,8 +239,8 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                         }
                     }
 
-                    if (ijmd.getAdminObjects() != null) {
-                        for (org.jboss.jca.common.api.metadata.common.CommonAdminObject def : ijmd.getAdminObjects()) {
+                    if (activation.getAdminObjects() != null) {
+                        for (AdminObject def : activation.getAdminObjects()) {
                             String clz = def.getClassName();
                             if (clz == null) {
                                 if (raAoClasses.size() == 1) {

@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
@@ -38,7 +40,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -46,8 +48,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -120,12 +120,12 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                 deployment = deploymentUnitName.substring(0, deploymentUnitName.lastIndexOf('.'));
             }
             if (raxmls != null) {
-                for (ResourceAdapter raxml : raxmls.getResourceAdapters()) {
+                for (Activation raxml : raxmls.getActivations()) {
 
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, (org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter) raxml, deploymentResource, null);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, null);
 
                     }
                 }

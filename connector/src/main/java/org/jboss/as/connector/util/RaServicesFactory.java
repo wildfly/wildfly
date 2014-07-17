@@ -42,7 +42,7 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -57,7 +57,7 @@ import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
 
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, Activation raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
         // Create the service
 
         ServiceName serviceName = ConnectorServices.getDeploymentServiceName(deploymentUnitName,raxml);

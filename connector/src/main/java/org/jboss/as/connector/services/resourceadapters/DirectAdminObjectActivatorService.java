@@ -37,12 +37,14 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.txn.service.TxnServices;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.metadata.common.CommonAdminObjectImpl;
-import org.jboss.jca.common.metadata.ironjacamar.v11.IronJacamarImpl;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.spec.AdminObject;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
+import org.jboss.jca.common.metadata.resourceadapter.ActivationImpl;
+import org.jboss.jca.common.metadata.resourceadapter.AdminObjectImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -110,9 +112,9 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
             if (cmd.getVersion() == Connector.Version.V_10) {
                 throw ConnectorLogger.ROOT_LOGGER.adminObjectForJCA10(resourceAdapter, jndiName);
             } else {
-                ResourceAdapter1516 ra1516 = (ResourceAdapter1516) cmd.getResourceadapter();
+                ResourceAdapter ra1516 = (ResourceAdapter) cmd.getResourceadapter();
                 if (ra1516.getAdminObjects() != null) {
-                    for (org.jboss.jca.common.api.metadata.ra.AdminObject ao : ra1516.getAdminObjects()) {
+                    for (AdminObject ao : ra1516.getAdminObjects()) {
                         if (ao.getAdminobjectClass().getValue().equals(className))
                             aoClass = ao.getAdminobjectClass().getValue();
                     }
@@ -141,16 +143,16 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
                 }
             }
 
-            CommonAdminObject ao = new CommonAdminObjectImpl(aoConfigProperties, aoClass, jndiName, poolName(aoClass, className), Boolean.TRUE, Boolean.TRUE);
+            org.jboss.jca.common.api.metadata.resourceadapter.AdminObject ao = new AdminObjectImpl(aoConfigProperties, aoClass, jndiName, poolName(aoClass, className), Boolean.TRUE, Boolean.TRUE);
 
-            IronJacamar ijmd = new IronJacamarImpl(null, raConfigProperties, Collections.singletonList(ao),
+            Activation activation = new ActivationImpl(null, null, TransactionSupportEnum.LocalTransaction, Collections.<ConnectionDefinition>emptyList(), Collections.singletonList(ao),
                     null, Collections.<String>emptyList(), null, null);
 
             String serviceName = jndiName;
             serviceName = serviceName.replace(':', '_');
             serviceName = serviceName.replace('/', '_');
 
-            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd, module.getClassLoader(), serviceName);
+            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation, module.getClassLoader(), serviceName);
             activator.setCreateBinderService(false);
             activator.setBindInfo(bindInfo);
             ServiceTarget serviceTarget = context.getChildTarget();

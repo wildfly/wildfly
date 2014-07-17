@@ -31,13 +31,13 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.v10.DataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ParserException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.jca.common.metadata.ds.DsParser;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
-import org.jboss.jca.common.metadata.ds.v13.DsParser;
 import org.jboss.metadata.property.PropertyResolver;
 
 /**
@@ -79,8 +79,8 @@ public class DsXmlParser extends DsParser {
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
-                    if (org.jboss.jca.common.api.metadata.ds.v10.DataSource.Tag.forName(reader.getLocalName()) ==
-                            org.jboss.jca.common.api.metadata.ds.v10.DataSource.Tag.SECURITY) {
+                    if (DataSource.Tag.forName(reader.getLocalName()) ==
+                            DataSource.Tag.SECURITY) {
 
                         return new DsSecurityImpl(userName, password, securityDomain, reauthPlugin);
                     } else {

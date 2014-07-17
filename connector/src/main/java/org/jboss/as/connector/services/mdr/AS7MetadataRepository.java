@@ -24,7 +24,7 @@ package org.jboss.as.connector.services.mdr;
 
 import java.util.Set;
 
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
 /**
@@ -34,7 +34,7 @@ import org.jboss.jca.core.spi.mdr.MetadataRepository;
  */
 public interface AS7MetadataRepository extends MetadataRepository {
 
-    IronJacamar getIronJcamarMetaData(String uniqueId);
+    Activation getIronJacamarMetaData(String uniqueId);
 
     Set<String> getResourceAdaptersWithIronJacamarMetadata();
 

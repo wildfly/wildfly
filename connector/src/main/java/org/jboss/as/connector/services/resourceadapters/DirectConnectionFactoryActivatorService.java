@@ -41,20 +41,18 @@ import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
+import org.jboss.jca.common.api.metadata.common.Pool;
+import org.jboss.jca.common.api.metadata.common.Security;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.ResourceAdapter1516;
-import org.jboss.jca.common.api.metadata.ra.ra10.Connector10;
-import org.jboss.jca.common.api.metadata.ra.ra10.ResourceAdapter10;
-import org.jboss.jca.common.metadata.common.CommonPoolImpl;
-import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
-import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
-import org.jboss.jca.common.metadata.common.v11.CommonConnDefImpl;
-import org.jboss.jca.common.metadata.ironjacamar.v11.IronJacamarImpl;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.spec.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.ResourceAdapter;
+import org.jboss.jca.common.metadata.common.PoolImpl;
+import org.jboss.jca.common.metadata.common.SecurityImpl;
+import org.jboss.jca.common.metadata.common.XaPoolImpl;
+import org.jboss.jca.common.metadata.resourceadapter.ActivationImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -130,20 +128,15 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
         try {
 
             Connector cmd = mdr.getValue().getResourceAdapter(raId);
-            if (cmd.getVersion() == Connector.Version.V_10) {
-                Connector10 c10 = (Connector10) cmd;
-                ResourceAdapter10 ra10 = (ResourceAdapter10) c10.getResourceadapter();
-                cfInterface = ra10.getConnectionFactoryInterface().getValue();
-            } else {
-                ResourceAdapter1516 ra1516 = (ResourceAdapter1516) cmd.getResourceadapter();
-                if (ra1516.getOutboundResourceadapter() != null) {
-                    for (org.jboss.jca.common.api.metadata.ra.ConnectionDefinition cd :
-                            ra1516.getOutboundResourceadapter().getConnectionDefinitions()) {
-                        if (cd.getConnectionFactoryInterface().getValue().equals(interfaceName))
-                            cfInterface = cd.getConnectionFactoryInterface().getValue();
-                    }
+
+            ResourceAdapter ra = cmd.getResourceadapter();
+            if (ra.getOutboundResourceadapter() != null) {
+                for (ConnectionDefinition cd : ra.getOutboundResourceadapter().getConnectionDefinitions()) {
+                    if (cd.getConnectionFactoryInterface().getValue().equals(interfaceName))
+                        cfInterface = cd.getConnectionFactoryInterface().getValue();
                 }
             }
+
 
             if (cfInterface == null || !cfInterface.equals(interfaceName)) {
                 throw ConnectorLogger.ROOT_LOGGER.invalidConnectionFactory(cfInterface, resourceAdapter, jndiName);
@@ -176,31 +169,26 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
             }
 
             String mcfClass = null;
-            if (cmd.getVersion() == Connector.Version.V_10) {
-                Connector10 c10 = (Connector10) cmd;
-                ResourceAdapter10 ra10 = (ResourceAdapter10) c10.getResourceadapter();
-                mcfClass = ra10.getManagedConnectionFactoryClass().getValue();
-            } else {
-                ResourceAdapter1516 ra1516 = (ResourceAdapter1516) cmd.getResourceadapter();
-                if (ra1516.getOutboundResourceadapter() != null) {
-                    for (org.jboss.jca.common.api.metadata.ra.ConnectionDefinition cd :
-                            ra1516.getOutboundResourceadapter().getConnectionDefinitions()) {
-                        if (cd.getConnectionFactoryInterface().getValue().equals(cfInterface))
-                            mcfClass = cd.getManagedConnectionFactoryClass().getValue();
-                    }
+
+            if (ra.getOutboundResourceadapter() != null) {
+                for (ConnectionDefinition cd :
+                        ra.getOutboundResourceadapter().getConnectionDefinitions()) {
+                    if (cd.getConnectionFactoryInterface().getValue().equals(cfInterface))
+                        mcfClass = cd.getManagedConnectionFactoryClass().getValue();
                 }
             }
 
-            CommonSecurity security = null;
+
+            Security security = null;
             if (securitySetting != null) {
                 if ("".equals(securitySetting)) {
-                    security = new CommonSecurityImpl(null, null, false);
+                    security = new SecurityImpl(null, null, false);
                 } else if ("application".equals(securitySetting)) {
-                    security = new CommonSecurityImpl(null, null, true);
+                    security = new SecurityImpl(null, null, true);
                 } else if ("domain".equals(securitySetting) && securitySettingDomain != null) {
-                    security = new CommonSecurityImpl(securitySettingDomain, null, false);
+                    security = new SecurityImpl(securitySettingDomain, null, false);
                 } else if ("domain-and-application".equals(securitySetting) && securitySettingDomain != null) {
-                    security = new CommonSecurityImpl(null, securitySettingDomain, false);
+                    security = new SecurityImpl(null, securitySettingDomain, false);
                 }
             }
 
@@ -209,16 +197,16 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
             }
 
 
-            CommonPool pool = null;
+            Pool pool = null;
             Boolean isXA = Boolean.FALSE;
             if (transactionSupport == TransactionSupport.TransactionSupportLevel.XATransaction) {
-                pool = new CommonXaPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
+                pool = new XaPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, Defaults.INITIAL_POOL_SIZE, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
                         Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY,
-                        Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+                        null, Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
                 isXA = Boolean.TRUE;
             } else {
-                pool = new CommonPoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
-                        Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY);
+                pool = new PoolImpl(minPoolSize < 0 ? Defaults.MIN_POOL_SIZE : minPoolSize, Defaults.INITIAL_POOL_SIZE, maxPoolSize < 0 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
+                        Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, null);
             }
 
             TransactionSupportEnum transactionSupportValue = TransactionSupportEnum.NoTransaction;
@@ -228,18 +216,17 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
                 transactionSupportValue = TransactionSupportEnum.LocalTransaction;
             }
 
-            CommonConnDef cd = new CommonConnDefImpl(mcfConfigProperties, mcfClass, jndiName, poolName(cfInterface),
-                    Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE,
+            org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition cd = new org.jboss.jca.common.metadata.resourceadapter.ConnectionDefinitionImpl(mcfConfigProperties, mcfClass, jndiName, poolName(cfInterface),
+                    Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE, Defaults.CONNECTABLE, Defaults.TRACKING,
                     pool, null, null, security, null, isXA);
 
-            IronJacamar ijmd = new IronJacamarImpl(transactionSupportValue, raConfigProperties, null,
-                    Collections.singletonList(cd), Collections.<String>emptyList(), null, null);
+            Activation activation = new ActivationImpl(null, null, transactionSupportValue, Collections.singletonList(cd), Collections.<AdminObject>emptyList(), raConfigProperties, Collections.<String>emptyList(), null, null);
 
             String serviceName = jndiName;
             serviceName = serviceName.replace(':', '_');
             serviceName = serviceName.replace('/', '_');
 
-            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd, module.getClassLoader(), serviceName);
+            ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, activation, module.getClassLoader(), serviceName);
             activator.setCreateBinderService(false);
             activator.setBindInfo(bindInfo);
             ServiceTarget serviceTarget = context.getChildTarget();

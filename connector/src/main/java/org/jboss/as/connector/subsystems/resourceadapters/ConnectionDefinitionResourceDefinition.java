@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_D
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
@@ -116,8 +117,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     static void registerTransformer200(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
 
     }
 
@@ -127,8 +128,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
     }
 
     static void registerTransformer110(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -146,8 +147,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                         .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
                         .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
                         .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING, VALIDATE_ON_MATCH)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING, VALIDATE_ON_MATCH);
 
     }
 }

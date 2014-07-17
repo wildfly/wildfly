@@ -30,10 +30,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -56,17 +56,17 @@ import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.XaPool;
+import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.Driver;
+import org.jboss.jca.common.api.metadata.ds.DsPool;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v13.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -369,7 +369,7 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
-            .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
+            .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
             .addAlternatives(USERNAME_NAME)
@@ -490,7 +490,6 @@ public class Constants {
 
     static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinitionBuilder(VALIDATEONMATCH_NAME, ModelType.BOOLEAN, true)
             .setXmlName(Validation.Tag.VALIDATE_ON_MATCH.getLocalName())
-            .setDefaultValue(new ModelNode(Defaults.VALIDATE_ON_MATCH))
             .setAllowExpression(true)
             .build();
 
@@ -512,30 +511,30 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition INTERLEAVING = new SimpleAttributeDefinitionBuilder(INTERLEAVING_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(CommonXaPool.Tag.INTERLEAVING.getLocalName())
+            .setXmlName(XaPool.Tag.INTERLEAVING.getLocalName())
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.INTERLEAVING))
             .build();
 
     static SimpleAttributeDefinition NO_TX_SEPARATE_POOL = new SimpleAttributeDefinitionBuilder(NOTXSEPARATEPOOL_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(CommonXaPool.Tag.NO_TX_SEPARATE_POOLS.getLocalName())
+            .setXmlName(XaPool.Tag.NO_TX_SEPARATE_POOLS.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.NO_TX_SEPARATE_POOL))
             .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition PAD_XID = new SimpleAttributeDefinitionBuilder(PAD_XID_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(CommonXaPool.Tag.PAD_XID.getLocalName())
+            .setXmlName(XaPool.Tag.PAD_XID.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.PAD_XID))
             .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition SAME_RM_OVERRIDE = new SimpleAttributeDefinitionBuilder(SAME_RM_OVERRIDE_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(CommonXaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
+            .setXmlName(XaPool.Tag.IS_SAME_RM_OVERRIDE.getLocalName())
             .setAllowExpression(true)
             .build();
 
     static SimpleAttributeDefinition WRAP_XA_RESOURCE = new SimpleAttributeDefinitionBuilder(WRAP_XA_RESOURCE_NAME, ModelType.BOOLEAN, true)
-            .setXmlName(CommonXaPool.Tag.WRAP_XA_RESOURCE.getLocalName())
+            .setXmlName(XaPool.Tag.WRAP_XA_RESOURCE.getLocalName())
             .setDefaultValue(new ModelNode(Defaults.WRAP_XA_RESOURCE))
             .setAllowExpression(true)
             .build();
@@ -624,7 +623,7 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING)
-            .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
+            .setXmlName(Security.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
             .addAlternatives(RECOVERY_USERNAME_NAME)

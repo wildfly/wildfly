@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
 
 
-public class ModifiableAdminObject implements CommonAdminObject {
+public class ModifiableAdminObject implements AdminObject {
     /**
      * The serialVersionUID
      */
@@ -196,21 +196,21 @@ public class ModifiableAdminObject implements CommonAdminObject {
         sb.append("<admin-object");
 
         if (className != null)
-            sb.append(" ").append(CommonAdminObject.Attribute.CLASS_NAME).append("=\"").append(className).append("\"");
+            sb.append(" ").append(AdminObject.Attribute.CLASS_NAME).append("=\"").append(className).append("\"");
 
         if (jndiName != null)
-            sb.append(" ").append(CommonAdminObject.Attribute.JNDI_NAME).append("=\"").append(jndiName).append("\"");
+            sb.append(" ").append(AdminObject.Attribute.JNDI_NAME).append("=\"").append(jndiName).append("\"");
 
         if (enabled != null)
-            sb.append(" ").append(CommonAdminObject.Attribute.ENABLED).append("=\"").append(enabled).append("\"");
+            sb.append(" ").append(AdminObject.Attribute.ENABLED).append("=\"").append(enabled).append("\"");
 
         if (useJavaContext != null) {
-            sb.append(" ").append(CommonAdminObject.Attribute.USE_JAVA_CONTEXT);
+            sb.append(" ").append(AdminObject.Attribute.USE_JAVA_CONTEXT);
             sb.append("=\"").append(useJavaContext).append("\"");
         }
 
         if (poolName != null)
-            sb.append(" ").append(CommonAdminObject.Attribute.POOL_NAME).append("=\"").append(poolName).append("\"");
+            sb.append(" ").append(AdminObject.Attribute.POOL_NAME).append("=\"").append(poolName).append("\"");
 
         sb.append(">");
 
@@ -219,10 +219,10 @@ public class ModifiableAdminObject implements CommonAdminObject {
             while (it.hasNext()) {
                 Map.Entry<String, String> entry = it.next();
 
-                sb.append("<").append(CommonAdminObject.Tag.CONFIG_PROPERTY);
+                sb.append("<").append(AdminObject.Tag.CONFIG_PROPERTY);
                 sb.append(" name=\"").append(entry.getKey()).append("\">");
                 sb.append(entry.getValue());
-                sb.append("</").append(CommonAdminObject.Tag.CONFIG_PROPERTY).append(">");
+                sb.append("</").append(AdminObject.Tag.CONFIG_PROPERTY).append(">");
             }
         }
 

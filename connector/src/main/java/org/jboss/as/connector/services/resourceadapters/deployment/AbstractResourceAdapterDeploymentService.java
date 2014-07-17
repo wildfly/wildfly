@@ -56,10 +56,10 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
-import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
-import org.jboss.jca.common.api.metadata.ra.Connector;
-import org.jboss.jca.common.api.metadata.ra.XsdString;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
+import org.jboss.jca.common.api.metadata.spec.Connector;
+import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
@@ -83,10 +83,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -503,7 +503,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
 
         @Override
-        protected abstract boolean checkActivation(Connector cmd, IronJacamar ijmd);
+        protected abstract boolean checkActivation(Connector cmd, Activation activation);
 
         @Override
         protected boolean checkConfigurationIsValid() {
@@ -575,7 +575,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
 
         @Override
-        protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, IronJacamar ij)
+        protected void registerResourceAdapterToMDR(URL url, File file, Connector connector, Activation ij)
                 throws AlreadyExistsException {
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Registering ResourceAdapter %s", deploymentName);
             mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);

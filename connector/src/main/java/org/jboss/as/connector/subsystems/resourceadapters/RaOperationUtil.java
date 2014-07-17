@@ -21,72 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
-import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
-import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
-import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
-import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
-import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
-import org.jboss.as.connector.util.ModelNodeUtil;
-import org.jboss.as.connector.util.RaServicesFactory;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
-import org.jboss.as.server.deployment.module.MountHandle;
-import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jandex.Index;
-import org.jboss.jca.common.api.metadata.common.Capacity;
-import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonSecurity;
-import org.jboss.jca.common.api.metadata.common.CommonTimeOut;
-import org.jboss.jca.common.api.metadata.common.CommonValidation;
-import org.jboss.jca.common.api.metadata.common.Credential;
-import org.jboss.jca.common.api.metadata.common.Extension;
-import org.jboss.jca.common.api.metadata.common.FlushStrategy;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v11.CommonConnDef;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
-import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.CommonSecurityImpl;
-import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
-import org.jboss.jca.common.metadata.common.CommonValidationImpl;
-import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.jca.common.metadata.common.v11.ConnDefPoolImpl;
-import org.jboss.jca.common.metadata.common.v11.ConnDefXaPoolImpl;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerImpl;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerSecurityImpl;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.vfs.VFS;
-import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -102,6 +36,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -125,8 +60,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
@@ -141,15 +76,81 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
+import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
+import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
+import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
+import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
+import org.jboss.as.connector.util.ModelNodeUtil;
+import org.jboss.as.connector.util.RaServicesFactory;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
+import org.jboss.as.server.deployment.module.MountHandle;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.Index;
+import org.jboss.jca.common.api.metadata.common.Capacity;
+import org.jboss.jca.common.api.metadata.common.Credential;
+import org.jboss.jca.common.api.metadata.common.Extension;
+import org.jboss.jca.common.api.metadata.common.FlushStrategy;
+import org.jboss.jca.common.api.metadata.common.Pool;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.common.Security;
+import org.jboss.jca.common.api.metadata.common.TimeOut;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.common.Validation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
+import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.jca.common.metadata.common.PoolImpl;
+import org.jboss.jca.common.metadata.common.SecurityImpl;
+import org.jboss.jca.common.metadata.common.TimeOutImpl;
+import org.jboss.jca.common.metadata.common.ValidationImpl;
+import org.jboss.jca.common.metadata.common.XaPoolImpl;
+import org.jboss.jca.common.metadata.resourceadapter.WorkManagerImpl;
+import org.jboss.jca.common.metadata.resourceadapter.WorkManagerSecurityImpl;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
+
 
 public class RaOperationUtil {
     public static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
 
     public static ModifiableResourceAdapter buildResourceAdaptersObject(final String id, final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
-        Map<String, String> configProperties = new HashMap<String, String>(0);
-        List<CommonConnDef> connectionDefinitions = new ArrayList<CommonConnDef>(0);
-        List<CommonAdminObject> adminObjects = new ArrayList<CommonAdminObject>(0);
+        Map<String, String> configProperties = new HashMap<>(0);
+        List<ConnectionDefinition> connectionDefinitions = new ArrayList<>(0);
+        List<AdminObject> adminObjects = new ArrayList<>(0);
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
         String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
@@ -211,31 +212,32 @@ public class RaOperationUtil {
         Long idleTimeoutMinutes = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, IDLETIMEOUTMINUTES);
         Integer xaResourceTimeout = ModelNodeUtil.getIntIfSetOrGetDefault(context, connDefModel, XA_RESOURCE_TIMEOUT);
 
-        CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
+        TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout);
 
         Extension incrementer = ModelNodeUtil.extractExtension(context, connDefModel, CAPACITY_INCREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES);
         Extension decrementer = ModelNodeUtil.extractExtension(context, connDefModel, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
         final Capacity capacity = new Capacity(incrementer, decrementer);
 
-        CommonPool pool;
+        Pool pool;
         if (isXa) {
-            pool = new ConnDefXaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
+            pool = new XaPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
         } else {
-            pool = new ConnDefPoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity);
+            pool = new PoolImpl(minPoolSize, initialPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, capacity);
         }
         String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN);
         String securityDomainAndApplication = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, SECURITY_DOMAIN_AND_APPLICATION);
 
         boolean application = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, APPLICATION);
-        CommonSecurity security = null;
+        Security security = null;
         if (securityDomain != null || securityDomainAndApplication != null || application) {
-            security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
+            security = new SecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
         Long backgroundValidationMillis = ModelNodeUtil.getLongIfSetOrGetDefault(context, connDefModel, BACKGROUNDVALIDATIONMILLIS);
-        boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, BACKGROUNDVALIDATION);
+        Boolean backgroundValidation = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, BACKGROUNDVALIDATION);
         boolean useFastFail = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, USE_FAST_FAIL);
-        CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail);
+        final Boolean validateOnMatch = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, VALIDATE_ON_MATCH );
+        Validation validation = new ValidationImpl(validateOnMatch, backgroundValidation, backgroundValidationMillis, useFastFail);
 
         final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_USERNAME);
         final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_PASSWORD);
@@ -294,7 +296,7 @@ public class RaOperationUtil {
                             case STOPPING_to_DOWN:
                                 try {
                                     final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, id));
-                                    ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+                                    Activation raxml = (Activation) RaxmlController.getValue();
                                     ((ResourceAdapterXmlDeploymentService) controller.getService()).setRaxml(raxml);
                                     controller.compareAndSetMode(ServiceController.Mode.NEVER, originalMode);
                                 } finally {
@@ -343,7 +345,7 @@ public class RaOperationUtil {
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
-        ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
+        Activation raxml = (Activation) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
     }
 

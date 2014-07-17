@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -119,7 +119,7 @@ public class ConnectorServices {
 
     // resource-adapter DMR resource
 
-    public static synchronized ServiceName getDeploymentServiceName(final String raName, final ResourceAdapter raxml) {
+    public static synchronized ServiceName getDeploymentServiceName(final String raName, final Activation raxml) {
         if (raName == null)
             throw ConnectorLogger.ROOT_LOGGER.undefinedVar("RaName");
 

@@ -147,6 +147,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
                 .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
@@ -192,6 +194,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
@@ -228,6 +232,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             // Add legacy subsystems
             builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                    .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-spec-api:1.1.4.Final")
+                    .addMavenResourceURL("org.jboss.ironjacamar:ironjacamar-common-api:1.1.4.Final")
                     .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
                     .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
             .skipReverseControllerCheck();

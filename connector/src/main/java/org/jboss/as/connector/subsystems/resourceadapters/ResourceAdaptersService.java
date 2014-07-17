@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
+import org.jboss.jca.common.api.metadata.resourceadapter.Activations;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -59,10 +59,10 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
         SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdapters Service");
     }
 
-    public static final class ModifiableResourceAdaptors implements ResourceAdapters {
+    public static final class ModifiableResourceAdaptors implements Activations {
 
         private static final long serialVersionUID = 9096011997958619051L;
-        private final List<ResourceAdapter> resourceAdapters = new CopyOnWriteArrayList<ResourceAdapter>();
+        private final List<Activation> resourceAdapters = new CopyOnWriteArrayList<>();
 
         /**
          * Get the resourceAdapters.
@@ -70,15 +70,15 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
          * @return the resourceAdapters.
          */
         @Override
-        public List<ResourceAdapter> getResourceAdapters() {
+        public List<Activation> getActivations() {
             return Collections.unmodifiableList(resourceAdapters);
         }
 
-        public boolean addResourceAdapter(ResourceAdapter ra) {
+        public boolean addActivation(Activation ra) {
             return resourceAdapters.add(ra);
         }
 
-        public boolean removeResourceAdapter(ResourceAdapter ra) {
+        public boolean removeActivation(Activation ra) {
             return resourceAdapters.remove(ra);
         }
 
