@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -352,10 +353,19 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     @Override
     protected ModelNode convertParameterExpressions(ModelNode parameter) {
         ModelNode result = parameter;
-        if (parameter.isDefined()) {
+
+        List<ModelNode> asList;
+        try {
+            asList = parameter.asList();
+        } catch (IllegalArgumentException iae) {
+            // We can't convert; we'll just return parameter
+            asList = null;
+        }
+
+        if (asList != null) {
             boolean changeMade = false;
             ModelNode newList = new ModelNode().setEmptyList();
-            for (ModelNode item : parameter.asList()) {
+            for (ModelNode item : asList) {
                 ModelNode converted = convertParameterElementExpressions(item);
                 newList.add(converted);
                 changeMade |= !converted.equals(item);

@@ -236,7 +236,16 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
     @Override
     protected ModelNode convertParameterExpressions(ModelNode parameter) {
         ModelNode result = parameter;
-        if (parameter.isDefined()) {
+
+        List<Property> asList;
+        try {
+            asList = parameter.asPropertyList();
+        } catch (IllegalArgumentException iae) {
+            // We can't convert; we'll just return parameter
+            asList = null;
+        }
+
+        if (asList != null) {
             boolean changeMade = false;
             ModelNode newMap = new ModelNode().setEmptyObject();
             for (Property prop : parameter.asPropertyList()) {
