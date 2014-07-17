@@ -22,9 +22,7 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.jdkorb.JdkORBMessages;
-import org.jboss.as.jdkorb.security.SSLPolicyFactory;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -62,7 +60,6 @@ public class CSIv2Initializer extends LocalObject implements ORBInitializer {
 
             // register CSIv2-related policy factories.
             info.register_policy_factory(CSIv2Policy.TYPE, new CSIv2PolicyFactory(codec));
-            info.register_policy_factory(SSL_POLICY_TYPE.value, new SSLPolicyFactory());
         } catch (Exception e) {
             throw JdkORBMessages.MESSAGES.unexpectedException(e);
         }

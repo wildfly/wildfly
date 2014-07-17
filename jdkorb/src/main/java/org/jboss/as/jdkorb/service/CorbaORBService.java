@@ -30,6 +30,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.as.jdkorb.csiv2.CSIV2IORToSocketInfo;
 import org.jboss.as.jdkorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -98,18 +99,22 @@ public class CorbaORBService implements Service<ORB> {
 
             final String persistentServerId = properties.getProperty(JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID);
 
+            properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
+            properties.setProperty(ORBConstants.IOR_TO_SOCKET_INFO_CLASS_PROPERTY, CSIV2IORToSocketInfo.class.getName());
+
             // set the JdkORB IIOP and IIOP/SSL ports from the respective socket bindings.
             if (this.jdkORBSocketBindingInjector.getValue()!= null) {
                 InetSocketAddress address = this.jdkORBSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
-                properties.setProperty(ORBConstants.PERSISTENT_NAME_SERVICE_NAME, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
-                properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
             }
             if (this.jdkORBSSLSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.jdkORBSSLSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(JdkORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
+                final String sslSocket = new StringBuilder().append(JdkORBSubsystemConstants.SSL_SOCKET_TYPE).append(":")
+                        .append(String.valueOf(address.getPort())).toString();
+                properties.setProperty(ORBConstants.LISTEN_SOCKET_PROPERTY, sslSocket);
                 if (!properties.containsKey(JdkORBSubsystemConstants.ORB_ADDRESS)) {
                     properties.setProperty(JdkORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
                 }

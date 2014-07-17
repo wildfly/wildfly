@@ -45,10 +45,10 @@ import org.omg.GSSUP.ErrorTokenHelper;
 import org.omg.GSSUP.GSS_UP_S_G_UNSPECIFIED;
 import org.omg.GSSUP.InitialContextToken;
 import org.omg.IOP.Codec;
+import org.omg.IOP.ServiceContext;
 import org.omg.IOP.CodecPackage.FormatMismatch;
 import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.CodecPackage.TypeMismatch;
-import org.omg.IOP.ServiceContext;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
@@ -63,8 +63,9 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  */
 public class SASTargetInterceptor extends LocalObject implements ServerRequestInterceptor {
 
-    //private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
-    private static final int sasContextId = 11111;
+    private static final long serialVersionUID = -4809929027984284871L;
+
+    private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
 
     private static final byte[] empty = new byte[0];
 
@@ -120,8 +121,8 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      */
     private final Any msgCtx0Rejected;
 
-    private ThreadLocal threadLocalData = new ThreadLocal() {
-        protected synchronized Object initialValue() {
+    private ThreadLocal<CurrentRequestInfo> threadLocalData = new ThreadLocal<CurrentRequestInfo>() {
+        protected synchronized CurrentRequestInfo initialValue() {
             return new CurrentRequestInfo(); // see nested class below
         }
     };
@@ -216,7 +217,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return {@code true} if an SAS context arrived with the current IIOP request; {@code false} otherwise.
      */
     boolean sasContextReceived() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.sasContextReceived;
     }
 
@@ -229,7 +230,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      *         otherwise.
      */
     boolean authenticationTokenReceived() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.authenticationTokenReceived;
     }
 
@@ -241,7 +242,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return the username that arrived in the current IIOP request.
      */
     byte[] getIncomingUsername() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.incomingUsername;
     }
 
@@ -253,7 +254,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return the password that arrived in the current IIOP request.
      */
     byte[] getIncomingPassword() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.incomingPassword;
     }
 
@@ -265,7 +266,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return the target name that arrived in the current IIOP request.
      */
     byte[] getIncomingTargetName() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.incomingTargetName;
     }
 
@@ -277,7 +278,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return the {@code IdentityToken} that arrived in the current IIOP request.
      */
     IdentityToken getIncomingIdentity() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.incomingIdentity;
     }
 
@@ -289,7 +290,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * @return the principal name that arrived in the current IIOP request.
      */
     byte[] getIncomingPrincipalName() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
         return threadLocal.incomingPrincipalName;
     }
 
@@ -299,7 +300,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
      * </p>
      */
     void rejectIncomingContext() {
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
 
         if (threadLocal.sasContextReceived) {
             threadLocal.sasReply = (threadLocal.contextId == 0) ? msgCtx0Rejected :
@@ -325,7 +326,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
     public void receive_request(ServerRequestInfo ri) {
         JdkORBLogger.ROOT_LOGGER.traceReceiveRequest(ri.operation());
 
-        CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
+        CurrentRequestInfo threadLocal = threadLocalData.get();
 
         threadLocal.sasContextReceived = false;
         threadLocal.authenticationTokenReceived = false;
@@ -373,8 +374,6 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
                             throw JdkORBMessages.MESSAGES.errorDecodingTargetInContextToken();
                         }
-
-
                         threadLocal.authenticationTokenReceived = true;
                     }
                     if (message.identity_token != null) {

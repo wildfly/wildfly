@@ -59,8 +59,12 @@ import org.omg.PortableInterceptor.ClientRequestInterceptor;
  */
 public class SASClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
-    //private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
-    private static final int sasContextId = 11111;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 7336047746181965892L;
+
+    private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
 
     private static final IdentityToken absentIdentityToken;
 

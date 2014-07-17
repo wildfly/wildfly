@@ -34,9 +34,6 @@ import javax.ejb.EJBHome;
 import javax.ejb.EJBMetaData;
 import javax.rmi.PortableRemoteObject;
 
-import org.jboss.iiop.ssl.SSLPolicyValue;
-import org.jboss.iiop.ssl.SSLPolicyValueHelper;
-import org.jboss.iiop.ssl.SSL_POLICY_TYPE;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
@@ -88,6 +85,8 @@ import org.omg.PortableServer.Current;
 import org.omg.PortableServer.CurrentHelper;
 import org.omg.PortableServer.POA;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import com.sun.corba.se.spi.extension.ZeroPortPolicy;
 
 /**
  * This is an IIOP "proxy factory" for <code>EJBHome</code>s and
@@ -294,9 +293,10 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 final Any secPolicy = orb.create_any();
                 secPolicy.insert_Value(iorSecurityConfigMetaData);
                 Policy csiv2Policy = orb.create_policy(CSIv2Policy.TYPE, secPolicy);
+
                 policyList.add(csiv2Policy);
 
-                // Create SSLPolicy (SSL_REQUIRED ensures home and remote IORs will have port 0 in the primary address).
+                //  Add ZeroPortPolicy if ssl is required (it ensures home and remote IORs will have port 0 in the primary address).
                 boolean sslRequired = false;
                 if (iorSecurityConfigMetaData != null && iorSecurityConfigMetaData.getTransportConfig() != null) {
                     IORTransportConfigMetaData tc = iorSecurityConfigMetaData.getTransportConfig();
@@ -304,12 +304,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                             || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(tc.getConfidentiality())
                             || IORTransportConfigMetaData.ESTABLISH_TRUST_IN_CLIENT_REQUIRED.equals(tc.getEstablishTrustInClient());
                 }
-                final Any sslPolicyValue = orb.create_any();
-                SSLPolicyValueHelper.insert(sslPolicyValue, (sslRequired) ? SSLPolicyValue.SSL_REQUIRED : SSLPolicyValue.SSL_NOT_REQUIRED);
-                Policy sslPolicy = orb.create_policy(SSL_POLICY_TYPE.value, sslPolicyValue);
-                policyList.add(sslPolicy);
-
-                EjbLogger.ROOT_LOGGER.debugf("container's SSL policy: %s", sslPolicy);
+                if(sslRequired){
+                    policyList.add(ZeroPortPolicy.getPolicy());
+                }
             }
 
             String securityDomain = "CORBA_REMOTE"; //TODO: what should this default to
