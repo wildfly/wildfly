@@ -181,6 +181,9 @@ public interface JdkORBMessages {
     @Message(id = 16440, value = "Invalid URI encoding: %s")
     MalformedURLException invalidURIEncoding(String encoding);
 
+    @Message(id = 16442, value = "Error configuring domain socket factory: failed to lookup JSSE security domain")
+    ConfigurationException failedToLookupJSSEDomain();
+
     @Message(id = 16443, value = "keyManager[] is null for security domain %s")
     IOException errorObtainingKeyManagers(String securityDomain);
 

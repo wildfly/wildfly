@@ -38,8 +38,6 @@ public enum JdkORBInitializer {
 
     UNKNOWN("", ""),
 
-    SECURITY("security", "org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "org.jboss.as.jdkorb.csiv2.SASClientInitializer","org.jboss.as.jdkorb.csiv2.SASInitializer"),
-
     // the security group encompasses both CSIv2 and SAS initializers.
     SECURITY_CLIENT("security", "org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "org.jboss.as.jdkorb.csiv2.SASClientInitializer"),
     SECURITY_IDENTITY("security", "org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "org.jboss.as.jdkorb.csiv2.SASInitializer"),

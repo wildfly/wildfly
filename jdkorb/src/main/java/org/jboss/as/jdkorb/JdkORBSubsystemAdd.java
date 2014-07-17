@@ -36,7 +36,6 @@ import org.jboss.as.jdkorb.deployment.JdkORBDependencyProcessor;
 import org.jboss.as.jdkorb.deployment.JdkORBMarkerProcessor;
 import org.jboss.as.jdkorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jdkorb.rmi.DelegatingStubFactoryFactory;
-import org.jboss.as.jdkorb.security.DomainServerSocketFactory;
 import org.jboss.as.jdkorb.security.DomainSocketFactory;
 import org.jboss.as.jdkorb.service.CorbaNamingService;
 import org.jboss.as.jdkorb.service.CorbaORBService;
@@ -56,6 +55,8 @@ import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import com.sun.corba.se.impl.orbutil.ORBConstants;
 
 /**
  * <p>
@@ -249,8 +250,11 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
         // check which groups of initializers are to be installed.
         String installSecurity = (String) props.remove(JdkORBSubsystemConstants.ORB_INIT_SECURITY);
-        if (installSecurity.equalsIgnoreCase("identity")) {
-            orbInitializers.addAll(Arrays.asList(JdkORBInitializer.SECURITY.getInitializerClasses()));
+        if (installSecurity.equalsIgnoreCase(JdkORBSubsystemConstants.CLIENT)) {
+            orbInitializers.addAll(Arrays.asList(JdkORBInitializer.SECURITY_CLIENT.getInitializerClasses()));
+        } else if (installSecurity.equalsIgnoreCase(JdkORBSubsystemConstants.IDENTITY)
+                || installSecurity.equalsIgnoreCase("on")) {
+            orbInitializers.addAll(Arrays.asList(JdkORBInitializer.SECURITY_IDENTITY.getInitializerClasses()));
         }
 
         String installTransaction = (String) props.remove(JdkORBSubsystemConstants.ORB_INIT_TRANSACTIONS);
@@ -276,8 +280,7 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
      *         security domain has been specified).
      */
     private void setupSSLFactories(final Properties props) throws OperationFailedException {
-        String supportSSLKey = PropertiesMap.JDKORB_PROPS_MAP.get(JdkORBSubsystemConstants.SECURITY_SUPPORT_SSL);
-        boolean supportSSL = "on".equalsIgnoreCase(props.getProperty(supportSSLKey));
+        boolean supportSSL = "on".equalsIgnoreCase(props.getProperty(JdkORBSubsystemConstants.SECURITY_SUPPORT_SSL));
 
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.
@@ -286,8 +289,8 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
                 throw JdkORBMessages.MESSAGES.noSecurityDomainSpecified();
 
             // add the domain socket factories.
-            props.setProperty(JdkORBSubsystemConstants.JDKORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());
-            props.setProperty(JdkORBSubsystemConstants.JDKORB_SSL_SERVER_SOCKET_FACTORY, DomainServerSocketFactory.class.getName());
+            DomainSocketFactory.setSecurityDomain(securityDomain);
+            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, DomainSocketFactory.class.getName());
         }
     }
 }

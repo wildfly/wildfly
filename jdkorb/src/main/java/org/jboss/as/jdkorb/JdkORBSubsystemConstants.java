@@ -114,4 +114,6 @@ public final class JdkORBSubsystemConstants {
 
     // JdkORB configuration properties that are built and set by the ORB service.
     public static final String JDKORB_NAME_SERVICE_INIT_REF = "NameService";
+
+    public static final String SSL_SOCKET_TYPE = "SSL";
 }
