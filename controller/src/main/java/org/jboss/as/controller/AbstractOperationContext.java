@@ -659,7 +659,12 @@ abstract class AbstractOperationContext implements OperationContext {
             if (currentStage != Stage.DONE) {
                 // It failed before, so consider the operation a failure.
                 if (!step.response.hasDefined(FAILURE_DESCRIPTION)) {
-                    step.response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailed(t.getLocalizedMessage()));
+                    // If the failure is an OperationClientException we just want its localized message, no class name
+                    String cause = t instanceof OperationClientException ? t.getLocalizedMessage() : t.toString();
+                    if (cause == null) {
+                        cause = t.toString();
+                    }
+                    step.response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailed(cause));
                 }
                 step.response.get(OUTCOME).set(FAILED);
                 resultAction = getFailedResultAction(t);
