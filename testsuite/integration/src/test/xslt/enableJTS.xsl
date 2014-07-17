@@ -8,7 +8,7 @@
     -->
     
     <xsl:variable name="transactions" select="'urn:jboss:domain:transactions:'"/>
-    <xsl:variable name="jacorb" select="'urn:jboss:domain:jacorb:'"/>
+    <xsl:variable name="jdkorb" select="'urn:jboss:domain:jdkorb:'"/>
     
     <!-- traverse the whole tree, so that all elements and attributes are eventually current node -->
     <xsl:template match="node()|@*">
@@ -17,7 +17,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jacorb)]
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jdkorb)]
     					  /*[local-name()='orb']">
         <xsl:copy>
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
