@@ -44,8 +44,6 @@ public class CallCounterSingleton implements CallCounterInterface {
      * @param postConstruct the postConstruct to set
      */
     public void setPostConstruct() {
-        if (this.postConstruct)
-            throw new IllegalStateException();
         this.postConstruct = true;
     }
 
@@ -60,8 +58,6 @@ public class CallCounterSingleton implements CallCounterInterface {
      * @param preDestroy the preDestroy to set
      */
     public void setPreDestroy() {
-        if (this.preDestroy)
-            throw new IllegalStateException();
         this.preDestroy = true;
     }
 
@@ -69,8 +65,6 @@ public class CallCounterSingleton implements CallCounterInterface {
      * 
      */
     public void setMessage() {
-        if (this.message)
-            throw new IllegalStateException();
         this.message = true;
     }
 
