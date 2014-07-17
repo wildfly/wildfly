@@ -21,13 +21,12 @@
  */
 package org.wildfly.clustering.web.infinispan;
 
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.infinispan.AdvancedCache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.SimpleCacheInvoker;
@@ -40,11 +39,14 @@ import org.junit.Test;
 public class CacheEntryMutatorTestCase {
 
     @Test
-    public void mutate() {
+    public void mutateWithBatching() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Object id = new Object();
         Object value = new Object();
-        
+        Configuration config = new ConfigurationBuilder().invocationBatching().enable().build();
+
+        when(cache.getCacheConfiguration()).thenReturn(config);
+
         Mutator mutator = new CacheEntryMutator<>(cache, new SimpleCacheInvoker(), id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
@@ -56,6 +58,37 @@ public class CacheEntryMutatorTestCase {
         
         mutator.mutate();
         
-        verify(cache, atMost(1)).replace(same(id), same(value));
+        verify(cache, times(1)).replace(same(id), same(value));
+        
+        mutator.mutate();
+        
+        verify(cache, times(1)).replace(same(id), same(value));
+    }
+
+    @Test
+    public void mutateWithOutBatching() {
+        AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
+        Object id = new Object();
+        Object value = new Object();
+        Configuration config = new ConfigurationBuilder().invocationBatching().disable().build();
+
+        when(cache.getCacheConfiguration()).thenReturn(config);
+
+        Mutator mutator = new CacheEntryMutator<>(cache, new SimpleCacheInvoker(), id, value);
+        
+        when(cache.getAdvancedCache()).thenReturn(cache);
+        when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);
+        
+        mutator.mutate();
+        
+        verify(cache).replace(same(id), same(value));
+        
+        mutator.mutate();
+        
+        verify(cache, times(2)).replace(same(id), same(value));
+        
+        mutator.mutate();
+        
+        verify(cache, times(3)).replace(same(id), same(value));
     }
 }

@@ -23,7 +23,7 @@ import org.jboss.dmr.ModelNode;
 
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan-2_0.xml" ;
+    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan-3_0.xml" ;
 
     public OperationTestCaseBase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
@@ -169,35 +169,35 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     // address generation
     protected static PathAddress getCacheStorePropertyAddress(String containerName, String cacheType, String cacheName, String propertyName) {
-        return getCacheStoreAddress(containerName, cacheType, cacheName).append(ModelKeys.PROPERTY, propertyName);
+        return getCacheStoreAddress(containerName, cacheType, cacheName).append(StorePropertyResourceDefinition.pathElement(propertyName));
     }
 
     protected static PathAddress getMixedKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(MixedKeyedJDBCStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getBinaryKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(BinaryKeyedJDBCStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getStringKeyedJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(StringKeyedJDBCStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getRemoteCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(RemoteStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getFileCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(ModelKeys.STORE, ModelKeys.STORE_NAME);
+        return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.PATH);
     }
 
     protected static PathAddress getCacheContainerAddress(String containerName) {
-        return PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH).append(ModelKeys.CACHE_CONTAINER, containerName);
+        return PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH).append(CacheContainerResourceDefinition.pathElement(containerName));
     }
 
     protected static PathAddress getCacheAddress(String containerName, String cacheType, String cacheName) {

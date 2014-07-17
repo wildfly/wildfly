@@ -161,8 +161,9 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        this.populate(operation, model);
+        for (AttributeDefinition attribute: CacheResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
     @Override
@@ -336,23 +337,6 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
     }
 
     /**
-     * Transfer elements common to both operations and models
-     *
-     * @param fromModel
-     * @param toModel
-     */
-    void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-
-        CacheResourceDefinition.START.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.BATCHING.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.INDEXING.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.JNDI_NAME.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.MODULE.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.INDEXING_PROPERTIES.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.STATISTICS_ENABLED.validateAndSet(fromModel, toModel);
-    }
-
-    /**
      * Create a Configuration object initialized from the operation ModelNode
      *
      * @param containerName  the name of the cache container
@@ -361,7 +345,6 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
      * @param builder        {@link ConfigurationBuilder} object to add data to
      */
     void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
-
         if (cache.hasDefined(ModelKeys.STATISTICS_ENABLED)) {
             // If the cache explicitly defines statistics-enabled, disregard cache container configuration for this cache
             builder.jmxStatistics().enabled(CacheResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, cache).asBoolean());
@@ -371,7 +354,6 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         }
 
         final Indexing indexing = Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cache).asString());
-        final boolean batching = CacheResourceDefinition.BATCHING.resolveModelAttribute(context, cache).asBoolean();
 
         // set the cache mode (may be modified when setting up clustering attributes)
         builder.clustering().cacheMode(this.mode);
@@ -415,35 +397,36 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
             TransactionMode txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
             lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
+            boolean transactional = (txMode != TransactionMode.NONE);
+            boolean batching = (txMode == TransactionMode.BATCH);
+            boolean useSynchronization = (txMode == TransactionMode.NON_XA);
+            boolean recoveryEnabled = (txMode == TransactionMode.FULL_XA);
 
             builder.transaction()
                     .cacheStopTimeout(stopTimeout)
-                    .transactionMode(txMode.getMode())
+                    .transactionMode(transactional ? org.infinispan.transaction.TransactionMode.TRANSACTIONAL : org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL)
                     .lockingMode(lockingMode)
-                    .useSynchronization(!txMode.isXAEnabled())
-                    .recovery().enabled(txMode.isRecoveryEnabled())
+                    .useSynchronization(useSynchronization)
+                    .recovery().enabled(recoveryEnabled)
+                    .invocationBatching().enable(transactional)
             ;
-            if (txMode.getMode().isTransactional()) {
-                dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector()));
-                if (!txMode.isXAEnabled()) {
-                    dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector()));
+            if (transactional) {
+                if (batching) {
+                    cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
+                } else {
+                    dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector()));
+                    if (useSynchronization) {
+                        dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector()));
+                    } else if (recoveryEnabled) {
+                        dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector()));
+                    }
                 }
-            }
-            if (txMode.isRecoveryEnabled()) {
-                dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector()));
             }
         }
 
         if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ) && this.mode.isSynchronous() && !this.mode.isInvalidation()) {
             builder.locking().writeSkewCheck(true);
             builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
-        }
-
-        if (batching) {
-            builder.transaction().transactionMode(org.infinispan.transaction.TransactionMode.TRANSACTIONAL).invocationBatching().enable();
-            cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
-        } else {
-            builder.transaction().invocationBatching().disable();
         }
 
         // eviction is a child resource

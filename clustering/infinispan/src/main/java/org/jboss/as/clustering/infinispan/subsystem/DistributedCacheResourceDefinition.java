@@ -57,7 +57,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class DistributedCacheResourceDefinition extends SharedCacheResourceDefinition {
+public class DistributedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -166,7 +166,7 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
                     .addRename(VIRTUAL_NODES, SEGMENTS.getName());
         }
 
-        SharedCacheResourceDefinition.buildTransformation(version, builder);
+        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     DistributedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {

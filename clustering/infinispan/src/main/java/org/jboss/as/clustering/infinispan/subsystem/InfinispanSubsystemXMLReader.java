@@ -371,8 +371,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case BATCHING: {
-                CacheResourceDefinition.BATCHING.parseAndSetParameter(value, operation, reader);
-                break;
+                if (!this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
+                    ModelNode transactionOperation = Util.createAddOperation(transactionAddress);
+                    transactionOperation.get(TransactionResourceDefinition.MODE.getName()).set(new ModelNode(TransactionMode.BATCH.name()));
+                    operations.put(transactionAddress, transactionOperation);
+                    break;
+                }
             }
             case INDEXING: {
                 if (!this.schema.since(InfinispanSchema.VERSION_1_4)) {
@@ -723,8 +728,11 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseTransaction(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(TransactionResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
+        if (operation == null) {
+            operation = Util.createAddOperation(address);
+            operations.put(address, operation);
+        }
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);

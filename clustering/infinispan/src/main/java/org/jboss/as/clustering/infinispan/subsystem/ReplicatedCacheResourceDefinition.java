@@ -32,7 +32,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefinition {
+public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -43,7 +43,7 @@ public class ReplicatedCacheResourceDefinition extends SharedCacheResourceDefini
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
-        SharedCacheResourceDefinition.buildTransformation(version, builder);
+        SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {

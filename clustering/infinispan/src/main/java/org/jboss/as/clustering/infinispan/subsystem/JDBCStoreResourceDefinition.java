@@ -100,48 +100,46 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             .setDefaultValue(new ModelNode().set("type"))
             .build();
 
-    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE)
+    static final AttributeDefinition[] COLUMN_ATTRIBUTES = new AttributeDefinition[] { COLUMN_NAME, COLUMN_TYPE };
+
+    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ID_COLUMN, COLUMN_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("column")
             .build();
 
-    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of("data-column", COLUMN_NAME, COLUMN_TYPE)
+    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.DATA_COLUMN, COLUMN_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("column")
             .build();
 
-    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of("timestamp-column", COLUMN_NAME, COLUMN_TYPE)
+    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.TIMESTAMP_COLUMN, COLUMN_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("column")
             .build();
 
-    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+    static final AttributeDefinition[] TABLE_ATTRIBUTES = new AttributeDefinition[] { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
+
+    @Deprecated
+    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.ENTRY_TABLE, TABLE_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("table")
             .build();
 
-    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+    @Deprecated
+    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BUCKET_TABLE, TABLE_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("table")
             .build();
 
-    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, TABLE_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("table")
             .build();
 
-    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, TABLE_ATTRIBUTES)
             .setAllowNull(true)
             .setSuffix("table")
             .build();
-
-    static final AttributeDefinition[] TABLE_ATTRIBUTES = new AttributeDefinition[] {
-            PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN
-    };
-    static final AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[] {
-            DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
-            ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE
-    };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
 

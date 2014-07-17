@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering.xsite;
 import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
@@ -132,14 +134,14 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
 
-            throws IllegalStateException, IOException, InterruptedException {
+            throws IllegalStateException, IOException, URISyntaxException {
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
-        String url1 = baseURL1.toString() + "cache?operation=put&key=a&value=100";
-        String url2 = baseURL2.toString() + "cache?operation=get&key=a";
-        String url3 = baseURL3.toString() + "cache?operation=get&key=a";
-        String url4 = baseURL4.toString() + "cache?operation=get&key=a";
+        URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", "100");
+        URI url2 = CacheAccessServlet.createGetURI(baseURL2, "a");
+        URI url3 = CacheAccessServlet.createGetURI(baseURL3, "a");
+        URI url4 = CacheAccessServlet.createGetURI(baseURL4, "a");
 
         try {
             // put a value to LON-0

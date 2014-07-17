@@ -22,15 +22,8 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +47,9 @@ import org.junit.Test;
 public class DefaultEmbeddedCacheManagerTest {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
     private final CacheContainer subject = new DefaultCacheContainer(this.manager, "default");
-    
+    private final Configuration batchingDisabledConfiguration = new ConfigurationBuilder().invocationBatching().disable().build();
+    private final Configuration batchingEnabledConfiguration = new ConfigurationBuilder().invocationBatching().enable().build();
+
     @After
     public void cleanup() {
         reset(this.manager);
@@ -69,6 +64,7 @@ public class DefaultEmbeddedCacheManagerTest {
     public void getDefaultCache() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
+        when(cache.getCacheConfiguration()).thenReturn(this.batchingDisabledConfiguration);
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
         
@@ -84,6 +80,8 @@ public class DefaultEmbeddedCacheManagerTest {
         AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
         AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
         
+        when(defaultCache.getCacheConfiguration()).thenReturn(this.batchingDisabledConfiguration);
+        when(otherCache.getCacheConfiguration()).thenReturn(this.batchingEnabledConfiguration);
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(defaultCache);
         when(this.manager.<Object, Object>getCache("other", true)).thenReturn(otherCache);
         when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
@@ -95,11 +93,33 @@ public class DefaultEmbeddedCacheManagerTest {
         assertEquals(result, defaultCache);
         assertSame(this.subject, result.getCacheManager());
 
+        // Validate no-op batching logic
+        boolean started = result.startBatch();
+
+        assertFalse(started);
+
+        verify(defaultCache, never()).startBatch();
+
+        result.endBatch(false);
+
+        verify(defaultCache, never()).endBatch(false);
+
         result = this.subject.getCache("other");
 
         assertNotSame(otherCache, result);
         assertEquals(result, otherCache);
         assertSame(this.subject, result.getCacheManager());
+
+        // Validate batching logic
+        when(otherCache.startBatch()).thenReturn(true);
+
+        started = result.startBatch();
+
+        assertTrue(started);
+
+        result.endBatch(true);
+
+        verify(otherCache).endBatch(true);
 
         result = this.subject.getCache(CacheContainer.DEFAULT_CACHE_ALIAS);
 

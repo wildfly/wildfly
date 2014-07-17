@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -43,14 +44,12 @@ public abstract class ClusteredCacheAddHandler extends CacheAddHandler {
     }
 
     @Override
-    void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
-        super.populate(fromModel, toModel);
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        super.populateModel(operation, model);
 
-        ClusteredCacheResourceDefinition.MODE.validateAndSet(fromModel, toModel);
-        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.validateAndSet(fromModel, toModel);
-        ClusteredCacheResourceDefinition.QUEUE_SIZE.validateAndSet(fromModel, toModel);
-        ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.validateAndSet(fromModel, toModel);
-        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.validateAndSet(fromModel, toModel);
+        for (AttributeDefinition attribute: ClusteredCacheResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
     /**

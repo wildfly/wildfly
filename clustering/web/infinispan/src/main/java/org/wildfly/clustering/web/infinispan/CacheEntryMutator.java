@@ -42,7 +42,7 @@ public class CacheEntryMutator<K, V> implements Mutator {
     private final K id;
     private final V value;
     private final Set<Flag> flags;
-    private final AtomicBoolean mutated = new AtomicBoolean(false);
+    private final AtomicBoolean mutated;
 
     public CacheEntryMutator(Cache<K, V> cache, CacheInvoker invoker, K id, V value, Flag... flags) {
         this.cache = cache;
@@ -50,12 +50,13 @@ public class CacheEntryMutator<K, V> implements Mutator {
         this.id = id;
         this.value = value;
         this.flags = EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags);
+        this.mutated = cache.getCacheConfiguration().invocationBatching().enabled() ? new AtomicBoolean(false) : null;
     }
 
     @Override
     public void mutate() {
         // We only ever have to perform a replace once within a batch
-        if (this.mutated.compareAndSet(false, true)) {
+        if ((this.mutated == null) || this.mutated.compareAndSet(false, true)) {
             this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.value), this.flags.toArray(new Flag[this.flags.size()]));
         }
     }

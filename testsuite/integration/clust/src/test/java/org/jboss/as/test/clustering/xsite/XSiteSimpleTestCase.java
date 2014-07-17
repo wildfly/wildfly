@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering.xsite;
 import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
@@ -119,14 +121,15 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
 
-            throws IllegalStateException, IOException, InterruptedException {
+            throws IllegalStateException, IOException, URISyntaxException {
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
-        String url1 = baseURL1.toString() + "cache?operation=put&key=a&value=100";
-        String url2 = baseURL2.toString() + "cache?operation=get&key=a";
-        String url3 = baseURL3.toString() + "cache?operation=get&key=a";
-        String url4 = baseURL4.toString() + "cache?operation=get&key=a";
+        String value = "100";
+        URI url1 = CacheAccessServlet.createPutURI(baseURL1, "a", value);
+        URI url2 = CacheAccessServlet.createGetURI(baseURL2, "a");
+        URI url3 = CacheAccessServlet.createGetURI(baseURL3, "a");
+        URI url4 = CacheAccessServlet.createGetURI(baseURL4, "a");
 
         try {
             // put a value to LON-0
@@ -143,7 +146,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             System.out.println("Executing HTTP request: " + url2);
             response = client.execute(new HttpGet(url2));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
@@ -151,7 +154,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             System.out.println("Executing HTTP request: " + url3);
             response = client.execute(new HttpGet(url3));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
@@ -159,7 +162,7 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             System.out.println("Executing HTTP request: " + url4);
             response = client.execute(new HttpGet(url4));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            Assert.assertEquals(100, Integer.parseInt(response.getFirstHeader("value").getValue()));
+            Assert.assertEquals(value, response.getFirstHeader("value").getValue());
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
         } finally {
@@ -181,12 +184,12 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
             @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
 
-            throws IllegalStateException, IOException, InterruptedException {
+            throws IllegalStateException, IOException, URISyntaxException {
 
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
-        String url1 = baseURL1.toString() + "cache?operation=get&key=b";
-        String url3 = baseURL3.toString() + "cache?operation=put&key=b&value=200";
+        URI url1 = CacheAccessServlet.createGetURI(baseURL1, "b");
+        URI url3 = CacheAccessServlet.createPutURI(baseURL3, "b", "200");
 
         try {
             // put a value to NYC-0
@@ -203,7 +206,6 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
             System.out.println("Executing HTTP request: " + url1);
             response = client.execute(new HttpGet(url1));
             Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
-            // Assert.assertEquals(500, Integer.parseInt(response.getFirstHeader("value").getValue()));
             response.getEntity().getContent().close();
             System.out.println("Executed HTTP request");
 
