@@ -43,6 +43,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.apache.commons.io.FileUtils;
@@ -160,7 +161,7 @@ public class HTTPSManagementInterfaceTestCase {
             String responseBody = makeCallWithHttpClient(mgmtURL, httpClient, 401);
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
             fail("Untrusted client should not be authenticated.");
-        } catch (SSLPeerUnverifiedException e) {
+        } catch (SSLHandshakeException e) {
             // OK
         }
 
@@ -193,7 +194,7 @@ public class HTTPSManagementInterfaceTestCase {
         try {
             String responseBody = makeCallWithHttpClient(mgmtURL, httpClientUntrusted, 401);
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
-        } catch (SSLPeerUnverifiedException e) {
+        } catch (SSLHandshakeException e) {
             // OK
         }
 

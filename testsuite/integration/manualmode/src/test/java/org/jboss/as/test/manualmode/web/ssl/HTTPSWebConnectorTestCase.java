@@ -338,21 +338,21 @@ public class HTTPSWebConnectorTestCase {
             try {
                 makeCallWithHttpClient(unsecuredUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLPeerUnverifiedException e) {
+            } catch (SSLHandshakeException e) {
                 // OK
             }
 
             try {
                 makeCallWithHttpClient(printPrincipalUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLPeerUnverifiedException e) {
+            } catch (SSLHandshakeException e) {
                 // OK
             }
 
             try {
                 makeCallWithHttpClient(securedUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLPeerUnverifiedException e) {
+            } catch (SSLHandshakeException e) {
                 // OK
             }
 
