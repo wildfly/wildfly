@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -33,6 +34,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -220,14 +224,15 @@ public class DomainServerGlobalOperationsTestCase extends AbstractGlobalOperatio
         ModelNode result = executeForResult(operation);
         checkRootNodeDescription(result, false, false, true);
 
-        // TODO WFLY-3603 - add assertions for global notifications
-        assertFalse(result.require(NOTIFICATIONS).isDefined());
-        /*
+        assertTrue(result.require(NOTIFICATIONS).isDefined());
         Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+        assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+        // not available on the domain server
+        assertFalse(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
         for (String notif : notifs) {
             assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
         }
-        */
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(NOTIFICATIONS).set(true);
