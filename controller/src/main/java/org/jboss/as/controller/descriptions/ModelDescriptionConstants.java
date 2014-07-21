@@ -59,6 +59,7 @@ public class ModelDescriptionConstants {
     public static final String APPLIES_TO = "applies-to";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTE = "attribute";
+    public static final String ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION = "attribute-value-written";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";
     public static final String AUDIT = "audit";
@@ -313,6 +314,8 @@ public class ModelDescriptionConstants {
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String REQUIRES = "requires";
+    public static final String RESOURCE_ADDED_NOTIFICATION = "resource-added";
+    public static final String RESOURCE_REMOVED_NOTIFICATION = "resource-removed";
     public static final String RESPONSE = "response";
     public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESTART = "restart";

@@ -23,6 +23,7 @@ package org.jboss.as.controller.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -53,6 +54,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -88,8 +91,10 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
@@ -466,13 +471,13 @@ public abstract class AbstractProxyControllerTest {
         }
 
         if (notifications) {
-            // TODO WFLY-3603 - add assertions for global notifications
-            /*
             Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
             for (String notif : notifs) {
                 assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
             }
-            */
         }
 
         ModelNode proxy = result.get(CHILDREN, SERVER, MODEL_DESCRIPTION, "serverA");
@@ -503,20 +508,20 @@ public abstract class AbstractProxyControllerTest {
         }
 
         if (notifications) {
-            // TODO WFLY-3603 - add assertions for global notifications
-            /*
             Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
             for (String notif : notifs) {
                 assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
             }
-            */
         }
 
         checkHostChildSubModelDescription(result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
     private void checkHostChildSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
-        int expectedChildren = 3 + (operations ? 1 : 0) + (notifications ? 0 : 0);
+        int expectedChildren = 3 + (operations ? 1 : 0) + (notifications ? 1 : 0);
         assertEquals(result.toString(), expectedChildren, result.keys().size());
         assertEquals(1, result.get(ATTRIBUTES).keys().size());
         assertEquals(ModelType.STRING, result.get(ATTRIBUTES, "name", TYPE).asType());
@@ -547,20 +552,20 @@ public abstract class AbstractProxyControllerTest {
         }
 
         if (notifications) {
-            // TODO WFLY-3603 - add assertions for global notifications
-            /*
             Set<String> notifs = result.require(NOTIFICATIONS).keys();
             for (String notif : notifs) {
                 assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
             }
-            */
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
         }
 
         checkHostChildChildSubModelDescription(result.get(CHILDREN, "child", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
     private void checkHostChildChildSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
-        int expectedChildren = 2 + (operations ? 1 : 0) + (notifications ? 0 : 0);
+        int expectedChildren = 2 + (operations ? 1 : 0) + (notifications ? 1 : 0);
         assertEquals(result.toString(), expectedChildren, result.keys().size());
         assertEquals(2, result.get(ATTRIBUTES).keys().size());
         assertEquals(ModelType.STRING, result.get(ATTRIBUTES, "name", TYPE).asType());
@@ -582,17 +587,17 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
-        // TODO WFLY-3603 - add assertions for global notifications
-        /*
         if (!notifications) {
             assertFalse(result.hasDefined(NOTIFICATIONS));
         } else {
             Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
             for (String notif : notifs) {
                 assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
             }
         }
-        */
     }
 
     private void checkRootNode(ModelNode result) {
@@ -637,6 +642,7 @@ public abstract class AbstractProxyControllerTest {
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
@@ -670,6 +676,7 @@ public abstract class AbstractProxyControllerTest {
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
             rootRegistration.registerOperationHandler("Test",
                     new OperationStepHandler() {

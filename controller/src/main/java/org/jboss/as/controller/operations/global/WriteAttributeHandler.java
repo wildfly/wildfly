@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -89,13 +91,32 @@ public class WriteAttributeHandler implements OperationStepHandler {
                         authorizationResult.getExplanation());
             }
 
+            // clone the current value before the model is modified
+            final ModelNode oldValue = currentValue.clone();
+
             OperationStepHandler handler = attributeAccess.getWriteHandler();
             ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
             try {
                 handler.execute(context, operation);
+
+                ModelNode newValue = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(attributeName);
+                // only emit a notification if the value has been successfully changed
+                if (!oldValue.equals(newValue)) {
+                    emitAttributeValueWrittenNotification(context, PathAddress.pathAddress(operation.get(OP_ADDR)), attributeName, oldValue, newValue);
+                }
+
             } finally {
                 SecurityActions.setThreadContextClassLoader(oldTccl);
             }
         }
+    }
+
+    private void emitAttributeValueWrittenNotification(OperationContext context, PathAddress address, String attributeName, ModelNode oldValue, ModelNode newValue) {
+        ModelNode data = new ModelNode();
+        data.get(NAME.getName()).set(attributeName);
+        data.get(GlobalNotifications.OLD_VALUE).set(oldValue);
+        data.get(GlobalNotifications.NEW_VALUE).set(newValue);
+        Notification notification = new Notification(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, address, ControllerMessages.MESSAGES.attributeValueWritten(attributeName, oldValue, newValue), data);
+        context.emit(notification);
     }
 }

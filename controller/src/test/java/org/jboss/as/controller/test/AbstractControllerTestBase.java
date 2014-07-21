@@ -127,7 +127,6 @@ public abstract class AbstractControllerTestBase {
     public void executeForFailure(ModelNode operation) throws OperationFailedException {
         try {
             executeForResult(operation);
-            Assert.fail("Should have given error");
         } catch (OperationFailedException expected) {
             // ignore
         }

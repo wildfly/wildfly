@@ -2770,6 +2770,15 @@ public interface ControllerMessages {
     @Message(id = 13489, value = "No response handler for request %s")
     IOException responseHandlerNotFound(int id);
 
+    @Message(id = 13490, value = "The resource was added at the address %s.")
+    String resourceWasAdded(PathAddress address);
+
+    @Message(id = 13491, value = "The resource was removed at the address %s.")
+    String resourceWasRemoved(PathAddress address);
+
+    @Message(id = 13492, value = "The attribute %s value has been changed from %s to %s.")
+    String attributeValueWritten(String attributeName, ModelNode currentValue, ModelNode newVal);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 
 }
