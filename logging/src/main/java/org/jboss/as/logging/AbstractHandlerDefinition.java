@@ -132,6 +132,7 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
     private final PropertySorter propertySorter;
+    private final boolean registerLegacyOps;
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
@@ -144,6 +145,14 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
                                         final PropertySorter propertySorter,
                                         final AttributeDefinition[] attributes) {
         this(path, type, propertySorter, attributes, null, attributes);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final boolean registerLegacyOps,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] attributes) {
+        this(path, registerLegacyOps, type, propertySorter, attributes, null, attributes);
     }
 
     protected AbstractHandlerDefinition(final PathElement path,
@@ -169,10 +178,22 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
                                         final AttributeDefinition[] readOnlyAttributes,
                                         final AttributeDefinition[] writableAttributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
+        this(path, true, type, propertySorter, addAttributes, readOnlyAttributes, writableAttributes, constructionProperties);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final boolean registerLegacyOps,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] addAttributes,
+                                        final AttributeDefinition[] readOnlyAttributes,
+                                        final AttributeDefinition[] writableAttributes,
+                                        final ConfigurationProperty<?>... constructionProperties) {
         super(path,
                 HANDLER_RESOLVER,
                 new HandlerOperations.HandlerAddOperationStepHandler(propertySorter, type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
+        this.registerLegacyOps = registerLegacyOps;
         this.writableAttributes = writableAttributes;
         writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(propertySorter, this.writableAttributes);
         this.readOnlyAttributes = readOnlyAttributes;
@@ -204,14 +225,16 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
     public void registerOperations(final ManagementResourceRegistration registration) {
         super.registerOperations(registration);
 
-        registration.registerOperationHandler(ENABLE_HANDLER, HandlerOperations.ENABLE_HANDLER);
-        registration.registerOperationHandler(DISABLE_HANDLER, HandlerOperations.DISABLE_HANDLER);
-        registration.registerOperationHandler(CHANGE_LEVEL, HandlerOperations.CHANGE_LEVEL);
-        final SimpleOperationDefinition updateProperties = new SimpleOperationDefinitionBuilder(UPDATE_OPERATION_NAME, HANDLER_RESOLVER)
-                .setDeprecated(ModelVersion.create(1, 2, 0))
-                .setParameters(writableAttributes)
-                .build();
-        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(propertySorter, writableAttributes));
+        if (registerLegacyOps) {
+            registration.registerOperationHandler(ENABLE_HANDLER, HandlerOperations.ENABLE_HANDLER);
+            registration.registerOperationHandler(DISABLE_HANDLER, HandlerOperations.DISABLE_HANDLER);
+            registration.registerOperationHandler(CHANGE_LEVEL, HandlerOperations.CHANGE_LEVEL);
+            final SimpleOperationDefinition updateProperties = new SimpleOperationDefinitionBuilder(UPDATE_OPERATION_NAME, HANDLER_RESOLVER)
+                    .setDeprecated(ModelVersion.create(1, 2, 0))
+                    .setParameters(writableAttributes)
+                    .build();
+            registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(propertySorter, writableAttributes));
+        }
     }
 
     @Override

@@ -46,6 +46,7 @@
             <xs:element name="console-handler" type="consoleHandlerType"/>
             <xs:element name="file-handler" type="fileHandlerType"/>
             <xs:element name="periodic-rotating-file-handler" type="periodicFileHandlerType"/>
+            <xs:element name="periodic-size-rotating-file-handler" type="periodicSizeFileHandlerType"/>
             <xs:element name="size-rotating-file-handler" type="sizeFileHandlerType"/>
             <xs:element name="async-handler" type="asyncHandlerType"/>
             <xs:element name="custom-handler" type="customHandlerType"/>
@@ -227,6 +228,31 @@
         <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="enabled" type="xs:boolean" use="optional" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="periodicSizeFileHandlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a
+                certain point or the time period derived from the given suffix string and keeping a fixed number of
+                backups. The suffix should be in a format understood by java.text.SimpleDateFormat.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="level" type="refType" minOccurs="0"/>
+            <xs:element name="encoding" type="valueType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
+            <xs:element name="file" type="pathType"/>
+            <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>
+            <xs:element name="max-backup-index" type="positiveIntType" minOccurs="0"/>
+            <xs:element name="suffix" type="valueType"/>
+            <xs:element name="append" type="booleanValueType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="enabled" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="rotate-on-boot" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="sizeFileHandlerType">

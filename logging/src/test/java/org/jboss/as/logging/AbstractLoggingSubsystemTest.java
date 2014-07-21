@@ -70,6 +70,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
             CustomHandlerResourceDefinition.CUSTOM_HANDLER,
             FileHandlerResourceDefinition.FILE_HANDLER,
             PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER,
+            PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER,
             SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER,
             SyslogHandlerResourceDefinition.SYSLOG_HANDLER,
     };
@@ -199,6 +200,14 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
 
     static PathAddress createPeriodicRotatingFileHandlerAddress(final String profileName, final String name) {
         return createAddress(profileName, PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createPeriodicSizeRotatingFileHandlerAddress(final String name) {
+        return createAddress(PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER, name);
+    }
+
+    static PathAddress createPeriodicSizeRotatingFileHandlerAddress(final String profileName, final String name) {
+        return createAddress(profileName, PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER, name);
     }
 
     static PathAddress createSizeRotatingFileHandlerAddress(final String name) {

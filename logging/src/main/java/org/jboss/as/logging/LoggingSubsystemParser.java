@@ -79,6 +79,7 @@ import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.SIZE_RO
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN_FORMATTER;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
+import static org.jboss.as.logging.PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
@@ -198,6 +199,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
                             parsePeriodicRotatingFileHandlerElement(reader, address, handlerOperations, handlerNames);
+                            break;
+                        }
+                        case PERIODIC_SIZE_ROTATING_FILE_HANDLER: {
+                            if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                                    namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3 ||
+                                    namespace == Namespace.LOGGING_1_4)
+                                throw unexpectedElement(reader);
+                            parsePeriodicSizeRotatingHandlerElement(reader, address, handlerOperations, handlerNames);
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
@@ -764,6 +773,99 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw missingRequired(reader, requiredElem);
         }
         list.add(node);
+    }
+    private static void parsePeriodicSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations, final Set<String> names) throws XMLStreamException {
+        final ModelNode operation = Util.createAddOperation();
+        final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+        // Attributes
+        String name = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case AUTOFLUSH: {
+                    AUTOFLUSH.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case ENABLED:
+                    ENABLED.parseAndSetParameter(value, operation, reader);
+                    break;
+                case ROTATE_ON_BOOT:
+                    ROTATE_ON_BOOT.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+        if (!names.add(name)) {
+            throw duplicateNamedElement(reader, name);
+        }
+
+        // Setup the operation address
+        addOperationAddress(operation, address, PERIODIC_SIZE_ROTATING_FILE_HANDLER, name);
+
+        final EnumSet<Element> requiredElem = EnumSet.of(Element.FILE);
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            requiredElem.remove(element);
+            switch (element) {
+                case LEVEL: {
+                    LEVEL.parseAndSetParameter(readNameAttribute(reader), operation, reader);
+                    break;
+                }
+                case ENCODING: {
+                    ENCODING.parseAndSetParameter(readValueAttribute(reader), operation, reader);
+                    break;
+                }
+                case FILTER_SPEC: {
+                    parseFilter(namespace, operation, reader);
+                    break;
+                }
+                case FORMATTER: {
+                    parseHandlerFormatterElement(reader, operation);
+                    break;
+                }
+                case FILE: {
+                    parseFileElement(operation.get(FILE.getName()), reader);
+                    break;
+                }
+                case APPEND: {
+                    APPEND.parseAndSetParameter(readValueAttribute(reader), operation, reader);
+                    break;
+                }
+                case ROTATE_SIZE: {
+                    ROTATE_SIZE.parseAndSetParameter(readValueAttribute(reader), operation, reader);
+                    break;
+                }
+                case MAX_BACKUP_INDEX: {
+                    MAX_BACKUP_INDEX.parseAndSetParameter(readValueAttribute(reader), operation, reader);
+                    break;
+                }
+                case SUFFIX: {
+                    SUFFIX.parseAndSetParameter(readValueAttribute(reader), operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        operations.add(operation);
     }
 
     static void parseSizeRotatingHandlerElement(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> list, final Set<String> names) throws XMLStreamException {
@@ -1528,6 +1630,17 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
+        if (node.hasDefined(PERIODIC_SIZE_ROTATING_FILE_HANDLER)) {
+            final ModelNode handlers = node.get(PERIODIC_SIZE_ROTATING_FILE_HANDLER);
+
+            for (Property handlerProp : handlers.asPropertyList()) {
+                final String name = handlerProp.getName();
+                final ModelNode handler = handlerProp.getValue();
+                if (handler.isDefined()) {
+                    writePeriodicSizeRotatingFileHandler(writer, handler, name);
+                }
+            }
+        }
         if (node.hasDefined(SIZE_ROTATING_FILE_HANDLER)) {
             final ModelNode handlers = node.get(SIZE_ROTATING_FILE_HANDLER);
 
@@ -1626,6 +1739,22 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeEndElement();
     }
 
+    private void writePeriodicSizeRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode model, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.PERIODIC_SIZE_ROTATING_FILE_HANDLER.getLocalName());
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
+        AUTOFLUSH.marshallAsAttribute(model, writer);
+        ENABLED.marshallAsAttribute(model, false, writer);
+        ROTATE_ON_BOOT.marshallAsAttribute(model, false, writer);
+        writeCommonHandler(writer, model);
+        FILE.marshallAsElement(model, writer);
+        ROTATE_SIZE.marshallAsElement(model, writer);
+        MAX_BACKUP_INDEX.marshallAsElement(model, writer);
+        SUFFIX.marshallAsElement(model, writer);
+        APPEND.marshallAsElement(model, writer);
+
+        writer.writeEndElement();
+    }
+
     private void writeSizeRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
@@ -1702,5 +1831,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private static String readNameAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
         return readStringAttributeElement(reader, "name");
+    }
+
+    private static String readValueAttribute(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        return readStringAttributeElement(reader, "value");
     }
 }

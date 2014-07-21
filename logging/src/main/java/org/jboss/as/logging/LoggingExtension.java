@@ -76,7 +76,7 @@ public class LoggingExtension implements Extension {
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final ModuleIdentifier[] LOGGING_API_MODULES = new ModuleIdentifier[] {
@@ -195,6 +195,9 @@ public class LoggingExtension implements Extension {
         final PeriodicHandlerResourceDefinition periodicHandlerResourceDefinition = new PeriodicHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes);
         registration.registerSubModel(periodicHandlerResourceDefinition);
 
+        final PeriodicSizeRotatingHandlerResourceDefinition periodicSizeRotatingHandlerResourceDefinition = new PeriodicSizeRotatingHandlerResourceDefinition(resolvePathHandler);
+        registration.registerSubModel(periodicSizeRotatingHandlerResourceDefinition);
+
         final SizeRotatingHandlerResourceDefinition sizeRotatingHandlerResourceDefinition = new SizeRotatingHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes);
         registration.registerSubModel(sizeRotatingHandlerResourceDefinition);
 
@@ -226,6 +229,7 @@ public class LoggingExtension implements Extension {
                     consoleHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     fileHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     periodicHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
+                    periodicSizeRotatingHandlerResourceDefinition.registerResourceTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     sizeRotatingHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     customHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     PatternFormatterResourceDefinition.INSTANCE.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);

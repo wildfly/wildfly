@@ -60,6 +60,19 @@
         <suffix value="${test.file.suffix:.yyyy-MM-dd}"/>
     </periodic-rotating-file-handler>
 
+    <periodic-size-rotating-file-handler name="psHandler" autoflush="${test.autoflush:true}" rotate-on-boot="${test.rotate-on-boot:false}">
+        <level name="${test.file.level:INFO}"/>
+        <encoding value="${test.encoding:UTF-8}"/>
+        <formatter>
+            <pattern-formatter pattern="${test.file.pattern:%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}"/>
+        </formatter>
+        <file relative-to="jboss.server.log.dir" path="${test.periodic.size.log.file:ps.log}"/>
+        <rotate-size value="${test.rotate.size:64m}"/>
+        <max-backup-index value="${test.max.backup.index:1024}"/>
+        <suffix value="${test.file.suffix:.yyyy-MM-dd}"/>
+        <append value="${test.file.append:false}"/>
+    </periodic-size-rotating-file-handler>
+
     <size-rotating-file-handler name="sizeLogger" autoflush="${test.autoflush:true}" rotate-on-boot="${test.rotate-on-boot:true}">
         <level name="${test.file.level:INFO}"/>
         <encoding value="${test.encoding:UTF-8}"/>

@@ -76,6 +76,9 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testPeriodicRotatingFileHandler(kernelServices, null);
         testPeriodicRotatingFileHandler(kernelServices, PROFILE);
 
+        testPeriodicSizeRotatingFileHandler(kernelServices, null);
+        testPeriodicSizeRotatingFileHandler(kernelServices, PROFILE);
+
         testSizeRotatingFileHandler(kernelServices, null);
         testSizeRotatingFileHandler(kernelServices, PROFILE);
     }
@@ -399,6 +402,45 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testUndefineCommonAttributes(kernelServices, address);
         testUndefine(kernelServices, address, CommonAttributes.APPEND);
         testUndefine(kernelServices, address, CommonAttributes.AUTOFLUSH);
+
+        // Clean-up
+        executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));
+        verifyRemoved(kernelServices, address);
+        removeFile(filename);
+        removeFile(newFilename);
+    }
+
+    private void testPeriodicSizeRotatingFileHandler(final KernelServices kernelServices, final String profileName) throws Exception {
+        final ModelNode address = createPeriodicSizeRotatingFileHandlerAddress(profileName, "FILE").toModelNode();
+        final String filename = "test-file.log";
+        final String newFilename = "new-test-file.log";
+
+        // Add the handler
+        final ModelNode addOp = OperationBuilder.createAddOperation(address)
+                .addAttribute(CommonAttributes.FILE, createFileValue("jboss.server.log.dir", filename))
+                .addAttribute(PeriodicHandlerResourceDefinition.SUFFIX, ".yyyy-MM-dd")
+                .build();
+        executeOperation(kernelServices, addOp);
+        verifyFile(filename);
+
+        // Write each attribute and check the value
+        testWriteCommonAttributes(kernelServices, address);
+        testWrite(kernelServices, address, CommonAttributes.APPEND, false);
+        testWrite(kernelServices, address, CommonAttributes.AUTOFLUSH, false);
+
+        final ModelNode newFile = createFileValue("jboss.server.log.dir", newFilename);
+        testWrite(kernelServices, address, CommonAttributes.FILE, newFile);
+        verifyFile(newFilename);
+
+        testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX, 20);
+        testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.ROTATE_SIZE, "50m");
+        testWrite(kernelServices, address, PeriodicHandlerResourceDefinition.SUFFIX, ".yyyy-MM-dd-HH");
+
+        // Undefine attributes
+        testUndefineCommonAttributes(kernelServices, address);
+        testUndefine(kernelServices, address, CommonAttributes.APPEND);
+        testUndefine(kernelServices, address, CommonAttributes.AUTOFLUSH);
+        testUndefine(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX);
 
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));

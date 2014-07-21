@@ -68,6 +68,7 @@ enum Element {
     OVERFLOW_ACTION(AsyncHandlerResourceDefinition.OVERFLOW_ACTION),
     PATTERN_FORMATTER(PatternFormatterResourceDefinition.PATTERN_FORMATTER),
     PERIODIC_ROTATING_FILE_HANDLER(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER),
+    PERIODIC_SIZE_ROTATING_FILE_HANDLER(PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER),
     PORT(SyslogHandlerResourceDefinition.PORT),
     PROPERTIES(CommonAttributes.PROPERTIES),
     PROPERTY("property"),

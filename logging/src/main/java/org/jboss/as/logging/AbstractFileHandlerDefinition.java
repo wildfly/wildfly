@@ -47,18 +47,29 @@ abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
             .build();
 
     private final ResolvePathHandler resolvePathHandler;
+    private final boolean registerLegacyOps;
 
     protected AbstractFileHandlerDefinition(final PathElement path, final Class<? extends Handler> type,
                                             final ResolvePathHandler resolvePathHandler,
                                             final AttributeDefinition... attributes) {
-        super(path, type,new DefaultPropertySorter(FileNameLastComparator.INSTANCE), attributes);
+        this(path, true, type, resolvePathHandler, attributes);
+    }
+
+    protected AbstractFileHandlerDefinition(final PathElement path, final boolean registerLegacyOps,
+                                            final Class<? extends Handler> type,
+                                            final ResolvePathHandler resolvePathHandler,
+                                            final AttributeDefinition... attributes) {
+        super(path, registerLegacyOps, type,new DefaultPropertySorter(FileNameLastComparator.INSTANCE), attributes);
+        this.registerLegacyOps = registerLegacyOps;
         this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
     public void registerOperations(final ManagementResourceRegistration registration) {
         super.registerOperations(registration);
-        registration.registerOperationHandler(CHANGE_FILE, HandlerOperations.CHANGE_FILE);
+        if (registerLegacyOps) {
+            registration.registerOperationHandler(CHANGE_FILE, HandlerOperations.CHANGE_FILE);
+        }
         if (resolvePathHandler != null)
             registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
     }

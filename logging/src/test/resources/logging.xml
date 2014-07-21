@@ -85,6 +85,20 @@
         <suffix value=".yyyy-MM-dd"/>
     </periodic-rotating-file-handler>
 
+    <periodic-size-rotating-file-handler name="psHandler">
+        <level name="DEBUG"/>
+        <encoding value="UTF-8"/>
+        <filter-spec value="all(levelChange(DEBUG),match(&quot;JBAS\\d&quot;))"/>
+        <formatter>
+            <named-formatter name="PATTERN"/>
+        </formatter>
+        <file relative-to="jboss.server.log.dir" path="ps.log"/>
+        <rotate-size value="64m"/>
+        <max-backup-index value="1024"/>
+        <suffix value=".yyyy-MM-dd"/>
+        <append value="false"/>
+    </periodic-size-rotating-file-handler>
+
     <size-rotating-file-handler name="sizeLogger" rotate-on-boot="true">
         <level name="DEBUG"/>
         <encoding value="UTF-8"/>
