@@ -44,12 +44,14 @@ public enum Namespace {
     LOGGING_1_3("urn:jboss:domain:logging:1.3"),
 
     LOGGING_1_4("urn:jboss:domain:logging:1.4"),
+
+    LOGGING_1_5("urn:jboss:domain:logging:1.5"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = LOGGING_1_4;
+    public static final Namespace CURRENT = LOGGING_1_5;
 
     private final String name;
 

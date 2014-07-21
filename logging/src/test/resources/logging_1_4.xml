@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:logging:1.5">
+<subsystem xmlns="urn:jboss:domain:logging:1.4">
     <add-logging-api-dependencies value="false"/>
     <async-handler name="async">
         <queue-length value="10"/>
