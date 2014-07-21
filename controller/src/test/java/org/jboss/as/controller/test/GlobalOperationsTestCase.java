@@ -22,6 +22,7 @@
 package org.jboss.as.controller.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES_ONLY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -42,6 +43,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -59,6 +62,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -786,14 +790,14 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode result = executeForResult(operation);
         checkRootNodeDescription(result, false, false, true);
 
-        // TODO WFLY-3603 - add assertions for global notifications
-        /*
         assertTrue(result.require(NOTIFICATIONS).isDefined());
         Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+        assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+        assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
         for (String notif : notifs) {
             assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
         }
-        */
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(NOTIFICATIONS).set(true);
         result = executeForResult(operation);
@@ -822,14 +826,15 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         operation.get(INHERITED).set(false);
         ModelNode result = executeForResult(operation);
         checkRootNodeDescription(result, false, false, true);
-        // TODO WFLY-3603 - add assertions for global notifications
-        /*
+
         assertTrue(result.require(NOTIFICATIONS).isDefined());
         Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+        assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+        assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
         for (String notif : notifs) {
             assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
         }
-        */
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(NOTIFICATIONS).set(true);
@@ -846,6 +851,14 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         ModelNode result = executeForResult(operation);
         checkRootNodeDescription(result, true, false, true);
 
+        assertTrue(result.require(NOTIFICATIONS).isDefined());
+        Set<String> notifs = result.require(NOTIFICATIONS).keys();
+        assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+        assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+        assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
+        for (String notif : notifs) {
+            assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+        }
 
         operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, "profile", "profileA", "subsystem", "subsystem1");
         operation.get(NOTIFICATIONS).set(true);

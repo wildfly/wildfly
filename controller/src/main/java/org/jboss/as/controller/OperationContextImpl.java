@@ -34,6 +34,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -68,6 +70,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
@@ -747,6 +750,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 }
             }
         }
+
+        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, absoluteAddress, ControllerMessages.MESSAGES.resourceWasAdded(absoluteAddress));
+        emit(notification);
     }
 
     @Override
@@ -793,6 +799,10 @@ final class OperationContextImpl extends AbstractOperationContext {
                 model = requireChild(model, element, address);
             }
         }
+
+        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address, ControllerMessages.MESSAGES.resourceWasRemoved(address));
+        emit(notification);
+
         return model;
     }
 
