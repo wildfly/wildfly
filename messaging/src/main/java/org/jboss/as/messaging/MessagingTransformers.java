@@ -28,12 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.UNDEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.DEFINED;
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.SIMPLE_EXPRESSIONS;
-import static org.jboss.as.messaging.AddressSettingDefinition.EXPIRY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.MAX_REDELIVERY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_MULTIPLIER;
-import static org.jboss.as.messaging.BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE;
-import static org.jboss.as.messaging.ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS;
-import static org.jboss.as.messaging.ClusterConnectionDefinition.NOTIFICATION_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
@@ -41,42 +37,34 @@ import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
-import static org.jboss.as.messaging.CommonAttributes.STATISTICS_ENABLED;
-import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUP_TIMEOUT;
-import static org.jboss.as.messaging.GroupingHandlerDefinition.REAPER_PERIOD;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
-import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_0_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_1_0;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_MESSAGE_PACKET_SIZE;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY;
-import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular;
 
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.OperationTransformationOverrideBuilder;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
@@ -94,28 +82,154 @@ import org.jboss.dmr.ModelNode;
 public class MessagingTransformers {
 
     static void registerTransformers(final SubsystemRegistration subsystem) {
-        registerTransformers_1_1_0(subsystem);
-        registerTransformers_1_2_0(subsystem);
-        registerTransformers_1_2_1(subsystem);
-        registerTransformers_1_3_0(subsystem);
-        registerTransformers_1_4_0(subsystem);
-        registerTransformers_2_0_0(subsystem);
-        registerTransformers_2_1_0(subsystem);
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystem.getSubsystemVersion());
+
+        // Current
+        // 3.0.0 -> 2.1.0 (WildFly 8.1.0.Final)
+        buildTransformers2_1_0(chainedBuilder.createBuilder(subsystem.getSubsystemVersion(), VERSION_2_1_0));
+        // 2.1.0 -> 2.0.0 (WildFly 8.0.0.Final)
+        buildTransformers2_0_0(chainedBuilder.createBuilder(VERSION_2_1_0, VERSION_2_0_0));
+        // 2.0.0 -> 1.3.0 (AS7 7.3.0)
+        buildTransformers1_3_0(chainedBuilder.createBuilder(VERSION_2_0_0, VERSION_1_3_0));
+        // 1.3.0 -> 1.2.1 (AS7 7.2.1)
+        buildTransformers1_2_1(chainedBuilder.createBuilder(VERSION_1_3_0, VERSION_1_2_1));
+        // 1.2.1 -> 1.2.0 (AS7 7.2.0)
+        buildTransformers1_2_0(chainedBuilder.createBuilder(VERSION_1_2_1, VERSION_1_2_0));
+        // 1.2.0 -> 1.1.0 (AS7 7.1.3, AS7 7.1.2)
+        buildTransformers1_1_0(chainedBuilder.createBuilder(VERSION_1_2_0, VERSION_1_1_0));
+
+        chainedBuilder.buildAndRegister(subsystem,  new ModelVersion[]{
+                VERSION_1_1_0,
+                VERSION_1_2_0,
+                VERSION_1_2_1,
+                VERSION_1_3_0,
+                VERSION_2_0_0,
+                VERSION_2_1_0
+        });
     }
 
-    private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
+    /**
+     * Transformation for WildFly 8.1.0.Final
+     */
+    private static void buildTransformers2_1_0(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
 
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
+    }
 
+    /**
+     * Transformation for WildFly 8.0.0.Final
+     */
+    private static void buildTransformers2_0_0(ResourceTransformationDescriptionBuilder builder) {
+        // nothing has changed from 8.1.0.Final
+    }
+
+    /**
+     * Transformation for EAP 6.2.0 / AS7 7.3.0
+     */
+    private static void buildTransformers1_3_0(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        renameAttribute(hornetqServer, CommonAttributes.STATISTICS_ENABLED, CommonAttributes.MESSAGE_COUNTER_ENABLED);
+
+        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
+
+        ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(groupingHandler, GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD);
+
+        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
+
+        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
+
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, AddressSettingDefinition.EXPIRY_DELAY);
+    }
+
+    private static void buildTransformers1_2_1(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
+        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
+        bridge.getAttributeBuilder().setDiscard(new DiscardAttributeChecker() {
+            @Override
+            public boolean isDiscardExpressions() {
+                return false;
+            }
+
+            @Override
+            public boolean isDiscardUndefined() {
+                return true;
+            }
+
+            @Override
+            public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                return false;
+            }
+
+            @Override
+            public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                return true;
+            }
+        }, FAILOVER_ON_SERVER_SHUTDOWN);
+    }
+
+    private static void buildTransformers1_2_0(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
+        hornetqServer.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker() {
+                    @Override
+                    public boolean isDiscardExpressions() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isDiscardUndefined() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+
+                        // The 'clustered' attribute is not recognized on 1.3.0. It's only supported for compatibility
+                        // with 1.2 or earlier servers, so we discard it for 1.3. For 1.3 servers, see if the desired
+                        // value conflicts with the actual configuration, and if so log a transformation warning
+                        // before discarding
+
+                        // the real clustered HornetQ state
+                        Set<String> clusterConnectionNames = context.readResourceFromRoot(address).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+                        boolean clustered = !clusterConnectionNames.isEmpty();
+                        // whether the user wants the server to be clustered
+                        // We use a short-cut vs AD.resolveModelValue to avoid having to hack in an OperationContext
+                        // This is ok since the attribute doesn't support expressions
+                        // Treat 'undefined' as 'ignore this and match the actual config' instead of the legacy default 'false'
+                        boolean wantsClustered = attributeValue.asBoolean(clustered);
+                        if (clustered && !wantsClustered) {
+                            String msg = MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(address);
+                            context.getLogger().logAttributeWarning(address, operation, msg, CLUSTERED.getName());
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return true;
+                    }
+
+                }, CLUSTERED);
+    }
+
+    private static void buildTransformers1_1_0(ResourceTransformationDescriptionBuilder builder) {
         // discard JMS bridge resources added in 1.2.0
-        subsystemRoot.rejectChildResource(JMSBridgeDefinition.PATH);
+        builder.rejectChildResource(JMSBridgeDefinition.PATH);
 
-        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
+        ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
         rejectAttributesWithExpression(hornetqServer, HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
         rejectDefinedAttribute(hornetqServer, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME, REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS);
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, CHECK_FOR_LIVE_SERVER, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, CHECK_FOR_LIVE_SERVER);
         convertUndefinedAttribute(hornetqServer, ID_CACHE_SIZE);
-        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         for (String path : PathDefinition.PATHS.keySet()) {
             ResourceTransformationDescriptionBuilder serverPaths = hornetqServer.addChildResource(pathElement(PATH, path));
@@ -143,18 +257,13 @@ public class MessagingTransformers {
             rejectAttributesWithExpression(transportParam, TransportParamDefinition.VALUE);
         }
 
-        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
-        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
-
         ResourceTransformationDescriptionBuilder broadcastGroup = hornetqServer.addChildResource(BroadcastGroupDefinition.PATH);
         rejectAttributesWithExpression(broadcastGroup, BroadcastGroupDefinition.BROADCAST_PERIOD);
         rejectDefinedAttribute(broadcastGroup, CommonAttributes.JGROUPS_CHANNEL, CommonAttributes.JGROUPS_STACK);
 
-
         ResourceTransformationDescriptionBuilder discoveryGroup = hornetqServer.addChildResource(DiscoveryGroupDefinition.PATH);
         rejectAttributesWithExpression(discoveryGroup, DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT, DiscoveryGroupDefinition.REFRESH_TIMEOUT);
         rejectDefinedAttribute(discoveryGroup, CommonAttributes.JGROUPS_CHANNEL, CommonAttributes.JGROUPS_STACK);
-
 
         ResourceTransformationDescriptionBuilder divert = hornetqServer.addChildResource(DivertDefinition.PATH);
         rejectAttributesWithExpression(divert, DivertDefinition.ROUTING_NAME, DivertDefinition.ADDRESS, DivertDefinition.FORWARDING_ADDRESS, CommonAttributes.FILTER,
@@ -165,19 +274,16 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectAttributesWithExpression(bridge, BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
         rejectAttributesWithExpression(clusterConnection, ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(clusterConnection, CALL_FAILOVER_TIMEOUT, NOTIFICATION_ATTEMPTS, NOTIFICATION_INTERVAL, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, CALL_FAILOVER_TIMEOUT, ClusterConnectionDefinition.NOTIFICATION_ATTEMPTS, ClusterConnectionDefinition.NOTIFICATION_INTERVAL, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
         rejectAttributesWithExpression(groupingHandler, GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT);
-        rejectDefinedAttributeWithDefaultValue(groupingHandler, GROUP_TIMEOUT, REAPER_PERIOD);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectAttributesWithExpression(addressSetting, AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
 
         ResourceTransformationDescriptionBuilder connectorService = hornetqServer.addChildResource(ConnectorServiceDefinition.PATH);
 
@@ -187,166 +293,19 @@ public class MessagingTransformers {
         ResourceTransformationDescriptionBuilder connectionFactory = hornetqServer.addChildResource(ConnectionFactoryDefinition.PATH);
         rejectAttributesWithExpression(connectionFactory, ConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
         rejectDefinedAttributeWithDefaultValue(connectionFactory, CALL_FAILOVER_TIMEOUT);
-        convertUndefinedAttribute(connectionFactory, FACTORY_TYPE);
+        convertUndefinedAttribute(connectionFactory, Regular.FACTORY_TYPE);
 
         ResourceTransformationDescriptionBuilder pooledConnectionFactory = hornetqServer.addChildResource(PooledConnectionFactoryDefinition.PATH);
         rejectAttributesWithExpression(pooledConnectionFactory, PooledConnectionFactoryDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
         convertUndefinedAttribute(pooledConnectionFactory, Pooled.RECONNECT_ATTEMPTS);
-        rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, CALL_FAILOVER_TIMEOUT, INITIAL_CONNECT_ATTEMPTS, COMPRESS_LARGE_MESSAGES, INITIAL_MESSAGE_PACKET_SIZE,
-                USE_AUTO_RECOVERY);
+        rejectDefinedAttributeWithDefaultValue(pooledConnectionFactory, CALL_FAILOVER_TIMEOUT, Pooled.INITIAL_CONNECT_ATTEMPTS, Common.COMPRESS_LARGE_MESSAGES, Pooled.INITIAL_MESSAGE_PACKET_SIZE,
+                Pooled.USE_AUTO_RECOVERY);
 
         ResourceTransformationDescriptionBuilder jmsQueue = hornetqServer.addChildResource(JMSQueueDefinition.PATH);
         rejectAttributesWithExpression(jmsQueue, CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE);
 
         ResourceTransformationDescriptionBuilder jmsTopic = hornetqServer.addChildResource(JMSTopicDefinition.PATH);
         rejectAttributesWithExpression(jmsTopic, CommonAttributes.DESTINATION_ENTRIES);
-
-        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_1_0);
-    }
-
-    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
-
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
-        hornetqServer.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker() {
-                    @Override
-                    public boolean isDiscardExpressions() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isDiscardUndefined() {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-
-                        // The 'clustered' attribute is not recognized on 1.4.0. It's only supported for compatibility
-                        // with 1.3 or earlier servers, so we discard it for 1.4. For 1.4 servers, see if the desired
-                        // value conflicts with the actual configuration, and if so log a transformation warning
-                        // before discarding
-
-                        // the real clustered HornetQ state
-                        Set<String> clusterConnectionNames = context.readResourceFromRoot(address).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
-                        boolean clustered = !clusterConnectionNames.isEmpty();
-                        // whether the user wants the server to be clustered
-                        // We use a short-cut vs AD.resolveModelValue to avoid having to hack in an OperationContext
-                        // This is ok since the attribute doesn't support expressions
-                        // Treat 'undefined' as 'ignore this and match the actual config' instead of the legacy default 'false'
-                        boolean wantsClustered = attributeValue.asBoolean(clustered);
-                        if (clustered && !wantsClustered) {
-                            String msg = MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(address);
-                            context.getLogger().logAttributeWarning(address, operation, msg, CLUSTERED.getName());
-                        }
-                        return true;
-                    }
-
-                    @Override
-                    public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return true;
-                    }
-
-                }, CommonAttributes.CLUSTERED)
-                .end();
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
-        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
-
-        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
-        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
-
-        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
-
-        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
-        // the FAILOVER_ON_SERVER_SHUTDOWN attribute has been deprecated in 1.2.0
-        // but it was erroneously removed from the model. Discard it always just for 1.2.0
-        discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
-
-        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
-
-        ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(groupingHandler, GROUP_TIMEOUT, REAPER_PERIOD);
-
-        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_0);
-    }
-
-    private static void registerTransformers_1_2_1(final SubsystemRegistration subsystem) {
-
-        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_2_1);
-    }
-
-    private static void registerTransformers_1_3_0(final SubsystemRegistration subsystem) {
-
-        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_3_0);
-    }
-
-    private static TransformationDescription get1_2_1_1_3_0Description() {
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
-        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
-
-        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
-        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
-
-        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
-        discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
-
-        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
-
-        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
-
-        ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(groupingHandler, GROUP_TIMEOUT, REAPER_PERIOD);
-
-        return subsystemRoot.build();
-    }
-
-    private static void registerTransformers_1_4_0(final SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_4_0);
-
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
-
-        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
-        discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
-
-        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
-
-        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
-    }
-
-    private static void registerTransformers_2_0_0(final SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get2_xDescription(), subsystem, VERSION_2_0_0);
-    }
-
-    private static void registerTransformers_2_1_0(final SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get2_xDescription(), subsystem, VERSION_2_1_0);
-    }
-
-    private static TransformationDescription get2_xDescription() {
-        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
-
-        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
-
-        return subsystemRoot.build();
     }
 
     /**
