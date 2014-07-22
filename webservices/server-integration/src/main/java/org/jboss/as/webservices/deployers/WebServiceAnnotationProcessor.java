@@ -50,6 +50,7 @@ public class WebServiceAnnotationProcessor implements DeploymentUnitProcessor {
         List<ClassAnnotationInformationFactory> factories = new ArrayList<ClassAnnotationInformationFactory>();
         factories.add(new WebServiceAnnotationInformationFactory());
         factories.add(new WebServiceProviderAnnotationInformationFactory());
+        factories.add(new WebContextAnnotationInformationFactory());
         this.factories = Collections.unmodifiableList(factories);
     }
 
