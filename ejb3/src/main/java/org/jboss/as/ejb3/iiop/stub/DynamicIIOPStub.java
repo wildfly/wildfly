@@ -26,7 +26,6 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import javax.rmi.CORBA.Util;
-import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jdkorb.rmi.marshal.strategy.StubStrategy;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;

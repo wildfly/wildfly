@@ -22,8 +22,6 @@
 package org.jboss.as.ejb3.iiop;
 
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
