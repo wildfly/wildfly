@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
+import static org.jboss.as.webservices.dmr.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -41,6 +42,7 @@ import org.jboss.dmr.ModelNode;
  * An AbstractWriteAttributeHandler extension for updating basic WS server config attributes
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler<WSServerConfigAttributeHandler.RollbackInfo> {
 
@@ -107,6 +109,9 @@ final class WSServerConfigAttributeHandler extends AbstractWriteAttributeHandler
             } else if (WSDL_SECURE_PORT.equals(attributeName)) {
                 final int securePort = value != null ? Integer.parseInt(value) : -1;
                 config.setWebServiceSecurePort(securePort, isRevert);
+            } else if (STATISTICS_ENABLED.equals(attributeName)) {
+                final boolean enabled = value != null ? Boolean.parseBoolean(value) : false;
+                config.setStatisticsEnabled(enabled);
             } else {
                 throw new IllegalArgumentException(attributeName);
             }

@@ -70,8 +70,6 @@ public final class EndpointServiceDeploymentAspect extends AbstractDeploymentAsp
 
     public Object clone() {
         EndpointServiceDeploymentAspect clone = new EndpointServiceDeploymentAspect();
-        clone.setForJaxRpc(isForJaxRpc());
-        clone.setForJaxWs(isForJaxWs());
         clone.setLast(isLast());
         clone.setProvides(getProvides());
         clone.setRelativeOrder(getRelativeOrder());

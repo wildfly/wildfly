@@ -65,11 +65,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        Attributes.STATISTICS_ENABLED.validateAndSet(operation, model);
         for (AttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
     }
-
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         WSLogger.ROOT_LOGGER.activatingWebservicesExtension();
@@ -106,6 +106,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         if (!appclient) {
             config.setModifySOAPAddress(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(context, configuration).asBoolean());
+            config.setStatisticsEnabled(Attributes.STATISTICS_ENABLED.resolveModelAttribute(context, configuration).asBoolean());
         }
         if (configuration.hasDefined(WSDL_PORT)) {
             config.setWebServicePort(Attributes.WSDL_PORT.resolveModelAttribute(context, configuration).asInt());

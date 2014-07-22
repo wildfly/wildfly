@@ -62,9 +62,11 @@ import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.ManagedEndpoint;
 import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
+import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
+import org.jboss.wsf.spi.management.EndpointMetricsFactory;
 import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
 
 /**
@@ -82,7 +84,6 @@ public final class EndpointService implements Service<Endpoint> {
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<AbstractServerConfig> serverConfigServiceValue = new InjectedValue<AbstractServerConfig>();
     private final InjectedValue<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeServiceValue = new InjectedValue<EJBViewMethodSecurityAttributesService>();
-
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
         this.name = name;
@@ -113,6 +114,8 @@ public final class EndpointService implements Service<Endpoint> {
         for (final RecordProcessor processor : processors) {
             registerRecordProcessor(processor, endpoint);
         }
+        final EndpointMetricsFactory factory = SPIProvider.getInstance().getSPI(EndpointMetricsFactory.class);
+        endpoint.setEndpointMetrics(factory.newEndpointMetrics());
         registerEndpoint(endpoint);
         endpoint.getLifecycleHandler().start(endpoint);
     }

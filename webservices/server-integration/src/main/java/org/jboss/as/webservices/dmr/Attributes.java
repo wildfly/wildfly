@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 interface Attributes {
     SimpleAttributeDefinition WSDL_HOST = new SimpleAttributeDefinitionBuilder(Constants.WSDL_HOST, ModelType.STRING)
@@ -61,8 +62,12 @@ interface Attributes {
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .build();
+    SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(Constants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
     SimpleAttributeDefinition[] SUBSYSTEM_ATTRIBUTES = {MODIFY_WSDL_ADDRESS, WSDL_HOST, WSDL_PORT, WSDL_SECURE_PORT};
-
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -76,6 +81,4 @@ interface Attributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
-
-
 }

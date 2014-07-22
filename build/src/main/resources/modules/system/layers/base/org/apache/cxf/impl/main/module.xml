@@ -33,15 +33,16 @@
         <artifact name="${org.apache.cxf:cxf-rt-bindings-object}"/>
         <artifact name="${org.apache.cxf:cxf-rt-bindings-soap}"/>
         <artifact name="${org.apache.cxf:cxf-rt-bindings-xml}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-core}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-aegis}"/>
         <artifact name="${org.apache.cxf:cxf-rt-databinding-jaxb}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
         <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-jms}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-local}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-wsdl}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-addr}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-mex}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-policy}"/>
@@ -82,6 +83,7 @@
         <module name="org.apache.ws.xmlschema" />
         <module name="org.apache.ws.security" />
         <module name="org.apache.santuario.xmlsec" />
+        <module name="org.codehaus.woodstox" />
         <module name="org.joda.time" />
         <module name="org.opensaml" />
         <module name="org.springframework.spring" optional="true">

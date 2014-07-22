@@ -40,5 +40,8 @@
       <module name="javax.api" />
       <module name="org.apache.commons.logging" />
       <module name="org.apache.xalan" />
+      <module name="org.slf4j" />
+      <module name="javax.xml.bind.api" services="import"/>
+      <module name="com.sun.xml.bind" services="import"/>
     </dependencies>
 </module>

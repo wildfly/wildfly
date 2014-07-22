@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -323,7 +323,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                     depAspects.add(aspect);
                     //add another aspect to set InvocationHandlerJAXWS to each endpoint
                     ForceJAXWSInvocationHandlerDeploymentAspect handlerAspect = new ForceJAXWSInvocationHandlerDeploymentAspect();
-                    handlerAspect.setForJaxRpc(false);
                     depAspects.add(handlerAspect);
                 } else {
                     depAspects.add(aspect);
@@ -348,7 +347,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                     publisherDepAspects.add(aspect);
                     //add another aspect to set InvocationHandlerJAXWS to each endpoint
                     ForceJAXWSInvocationHandlerDeploymentAspect handlerAspect = new ForceJAXWSInvocationHandlerDeploymentAspect();
-                    handlerAspect.setForJaxRpc(false);
                     publisherDepAspects.add(handlerAspect);
                 } else {
                     publisherDepAspects.add(aspect);

@@ -26,8 +26,10 @@ import static org.jboss.as.webservices.util.ASHelper.getEndpointClassName;
 import static org.jboss.as.webservices.util.ASHelper.getEndpointName;
 import static org.jboss.as.webservices.util.ASHelper.getJBossWebMetaData;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsDeployment;
+import static org.jboss.as.webservices.util.ASHelper.getJBossWebserviceMetaDataPortComponent;
 import static org.jboss.as.webservices.util.ASHelper.getRequiredAttachment;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsEndpoint;
+import static org.jboss.as.webservices.util.ASHelper.getWebserviceMetadataEJBEndpoint;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.as.webservices.util.WebMetaDataHelper.getServlets;
 
@@ -49,6 +51,7 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.jandex.ClassInfo;
@@ -56,8 +59,10 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.ws.api.annotation.WebContext;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
+import org.jboss.ws.common.utils.UrlPatternUtils;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -72,7 +77,7 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
     // @Override
     protected void processAnnotation(final DeploymentUnit unit, final EEModuleDescription moduleDescription)
             throws DeploymentUnitProcessingException {
-        final Map<String, EEModuleClassDescription> classDescriptionMap = new HashMap<String, EEModuleClassDescription>();
+        final Map<String, EEModuleClassDescription> classDescriptionMap = new HashMap<String, org.jboss.as.ee.component.EEModuleClassDescription>();
         final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         for (EEModuleClassDescription classDescritpion : moduleDescription.getClassDescriptions()) {
             if (isJaxwsEndpoint(classDescritpion, index) && !exclude(unit, classDescritpion)) {
@@ -119,12 +124,16 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
         for (EEModuleClassDescription classDescription : classDescriptionMap.values()) {
             ClassInfo classInfo = null;
             String serviceName = null;
+            String urlPattern = null;
+
+            // #1 use serviceName declared in a class annotation
             final ClassAnnotationInformation<WebService, WebServiceAnnotationInfo> annotationInfo = classDescription
                     .getAnnotationInformation(WebService.class);
             if (annotationInfo != null) {
                 WebServiceAnnotationInfo wsInfo = annotationInfo.getClassLevelAnnotations().get(0);
                 serviceName = wsInfo.getServiceName();
                 classInfo = (ClassInfo)wsInfo.getTarget();
+                urlPattern = UrlPatternUtils.getUrlPattern(classInfo.name().local(), serviceName, wsInfo.getName());
             }
             final ClassAnnotationInformation<WebServiceProvider, WebServiceProviderAnnotationInfo> annotationProviderInfo = classDescription
                         .getAnnotationInformation(WebServiceProvider.class);
@@ -133,14 +142,35 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
                 serviceName = wsInfo.getServiceName();
                 classInfo = (ClassInfo)wsInfo.getTarget();
             }
+
+            // #2 Override serviceName with @WebContext.urlPattern
+            final ClassAnnotationInformation<WebContext, WebContextAnnotationInfo> annotationWebContext =
+                classDescription.getAnnotationInformation(WebContext.class);
+            if (annotationWebContext != null) {
+                WebContextAnnotationInfo wsInfo = annotationWebContext.getClassLevelAnnotations().get(0);
+                if (wsInfo != null && wsInfo.getUrlPattern().length() > 0) {
+                    urlPattern = wsInfo.getUrlPattern();
+                }
+            }
+
+            // #3 Override serviceName with the explicit urlPattern from port-component/port-component-uri in jboss-webservices.xml
+            EJBEndpoint ejbEndpoint = getWebserviceMetadataEJBEndpoint(jaxwsDeployment, classDescription.getClassName());
+            if (ejbEndpoint != null) {
+                urlPattern = UrlPatternUtils.getUrlPatternByPortComponentURI(
+                    getJBossWebserviceMetaDataPortComponent(unit, ejbEndpoint.getName()));
+            }
+
             if (classInfo != null) {
                 final String endpointClassName = classDescription.getClassName();
                 final ComponentDescription pojoComponent = createComponentDescription(unit, endpointClassName,
                         endpointClassName, endpointClassName);
                 final ServiceName pojoViewName = registerView(pojoComponent, endpointClassName);
+                if (urlPattern == null) {
+                    urlPattern = UrlPatternUtils.getUrlPattern(classInfo.name().local(), serviceName);
+                }
                 // register POJO endpoint
-                final String urlPattern = getUrlPattern(classInfo, serviceName);
-                jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointClassName, pojoViewName, urlPattern));
+                jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointClassName,
+                    pojoViewName, UrlPatternUtils.getUrlPattern(urlPattern)));
             }
         }
 
@@ -165,10 +195,6 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
         return false;
     }
 
-    private static String getUrlPattern(ClassInfo clazz, String serviceName) {
-        return "/" + (!serviceName.equals("") ? serviceName : clazz.name().local());
-    }
-
     private static String getUrlPattern(final String servletName, final DeploymentUnit unit) {
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         for (final ServletMappingMetaData servletMappingMD : jbossWebMD.getServletMappings()) {
@@ -189,4 +215,5 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
         }
         return false;
     }
+
 }
