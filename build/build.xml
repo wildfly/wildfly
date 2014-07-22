@@ -444,6 +444,7 @@
         </module-def>
 
         <module-def name="com.sun.xml.bind">
+            <maven-resource group="com.sun.xml.bind" artifact="jaxb-core"/>
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-impl"/>
             <maven-resource group="com.sun.xml.bind" artifact="jaxb-xjc"/>
         </module-def>
