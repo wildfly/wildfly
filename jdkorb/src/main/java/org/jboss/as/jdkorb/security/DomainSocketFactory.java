@@ -17,9 +17,9 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
 

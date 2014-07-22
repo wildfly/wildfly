@@ -28,9 +28,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.csiv2.CSIV2IORToSocketInfo;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;

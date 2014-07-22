@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.service;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.naming.CorbaNamingContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

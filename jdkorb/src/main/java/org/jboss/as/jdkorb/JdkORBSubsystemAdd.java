@@ -34,12 +34,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jdkorb.deployment.JdkORBDependencyProcessor;
 import org.jboss.as.jdkorb.deployment.JdkORBMarkerProcessor;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jdkorb.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.jdkorb.security.DomainSocketFactory;
 import org.jboss.as.jdkorb.service.CorbaNamingService;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.as.jdkorb.service.CorbaPOAService;
+import org.jboss.as.jdkorb.service.IORSecConfigMetaDataService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -47,6 +49,10 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
+import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -200,6 +206,17 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
                         namingService.getNamingPOAInjector()).addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
+
+     // create the IOR security config metadata service.
+        IORSecurityConfigMetaData securityConfigMetaData = null;
+        if (model.hasDefined(JdkORBSubsystemConstants.IOR_SETTINGS)) {
+            securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
+                    model.get(IORSettingsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        }
+        newControllers.add(context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
+                new IORSecConfigMetaDataService(securityConfigMetaData))
+                .addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install());
     }
 
     /**
@@ -292,5 +309,28 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
             DomainSocketFactory.setSecurityDomain(securityDomain);
             props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, DomainSocketFactory.class.getName());
         }
+    }
+
+    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode node)
+            throws OperationFailedException {
+
+        final IORSecurityConfigMetaData securityConfigMetaData = new IORSecurityConfigMetaData();
+
+        final IORTransportConfigMetaData transportConfigMetaData = IORTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
+                context, node.get(IORTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (transportConfigMetaData != null)
+            securityConfigMetaData.setTransportConfig(transportConfigMetaData);
+
+        final IORASContextMetaData asContextMetaData = IORASContextDefinition.INSTANCE.getIORASContextMetaData(
+                context, node.get(IORASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (asContextMetaData != null)
+            securityConfigMetaData.setAsContext(asContextMetaData);
+
+        final IORSASContextMetaData sasContextMetaData = IORSASContextDefinition.INSTANCE.getIORSASContextMetaData(
+                context, node.get(IORSASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (sasContextMetaData != null)
+            securityConfigMetaData.setSasContext(sasContextMetaData);
+
+        return securityConfigMetaData;
     }
 }

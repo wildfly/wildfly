@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.Binding;
