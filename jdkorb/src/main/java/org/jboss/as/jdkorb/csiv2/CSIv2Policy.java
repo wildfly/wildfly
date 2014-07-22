@@ -22,9 +22,9 @@
 
 package org.jboss.as.jdkorb.csiv2;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.LocalObject;

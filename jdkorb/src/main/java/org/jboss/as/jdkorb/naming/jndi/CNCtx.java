@@ -49,8 +49,8 @@ import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.ORB;

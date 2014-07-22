@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.omg.CORBA.ArrayDef;
 import org.omg.CORBA.Contained;
 import org.omg.CORBA.ContainedHelper;

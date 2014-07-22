@@ -25,8 +25,8 @@ package org.jboss.as.jdkorb.csiv2;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.security.RunAs;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;

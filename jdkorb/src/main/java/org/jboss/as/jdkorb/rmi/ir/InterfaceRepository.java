@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.rmi.AttributeAnalysis;
 import org.jboss.as.jdkorb.rmi.ConstantAnalysis;
 import org.jboss.as.jdkorb.rmi.ContainerAnalysis;

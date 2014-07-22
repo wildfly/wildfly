@@ -23,8 +23,8 @@ package org.jboss.as.jdkorb.tm;
 
 import javax.transaction.Transaction;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;

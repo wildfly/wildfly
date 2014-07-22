@@ -21,8 +21,8 @@
  */
 package org.jboss.as.jdkorb.rmi.ir;
 
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IRObject;
 import org.omg.CORBA.IRObjectOperations;

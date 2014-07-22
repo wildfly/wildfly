@@ -25,9 +25,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.jboss.as.jdkorb.JdkORBLogger;
 import org.jboss.as.jdkorb.JdkORBMessages;
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
