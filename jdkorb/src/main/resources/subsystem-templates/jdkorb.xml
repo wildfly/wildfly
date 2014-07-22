@@ -4,7 +4,7 @@
    <extension-module>org.jboss.as.jdkorb</extension-module>
    <subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
        <orb socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
-           <initializers transactions="on" security="identity"/>
+           <initializers transactions="spec" security="identity"/>
        </orb>
    </subsystem>
    <socket-binding name="jdkorb" interface="unsecure" port="3528"/>
