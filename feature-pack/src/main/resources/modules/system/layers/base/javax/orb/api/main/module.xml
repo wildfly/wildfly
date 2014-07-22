@@ -23,11 +23,12 @@
   -->
 <module xmlns="urn:jboss:module:1.3" name="javax.orb.api">
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
     </resources>
     
     <dependencies>
       <module name="sun.jdk"/>
       <module name="javax.transaction.api"/>
+      <module name="org.jboss.iiop-client"/>
     </dependencies>
 </module>
