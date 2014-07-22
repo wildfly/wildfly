@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +55,7 @@ import org.jboss.as.jdkorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.jdkorb.service.CorbaNamingService;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.as.jdkorb.service.CorbaPOAService;
+import org.jboss.as.jdkorb.service.IORSecConfigMetaDataService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
