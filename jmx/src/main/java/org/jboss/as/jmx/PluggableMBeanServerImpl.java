@@ -71,6 +71,7 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerDelegate;
 import javax.management.NotCompliantMBeanException;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -107,14 +108,21 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     private static final String[] EMPTY_SIG = new String[0];
 
     private final MBeanServerPlugin rootMBeanServer;
+    private final MBeanServerDelegate rootMBeanServerDelegate;
     private volatile ManagedAuditLogger auditLogger;
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
     private volatile JmxAuthorizer authorizer;
 
-    PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
+    /**
+     * If no suitable delegate is found in the set of delegates, the rootMBeanServer will handle the JMX operations.
+     *  @param rootMBeanServer JMX root MBeanServer (can not be {@code null})
+     * @param rootMBeanServerDelegate can be {@code null} if the {@link PluggableMBeanServerBuilder} is not used
+     */
+    PluggableMBeanServerImpl(MBeanServer rootMBeanServer, MBeanServerDelegate rootMBeanServerDelegate) {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
+        this.rootMBeanServerDelegate = rootMBeanServerDelegate;
     }
 
     void setAuditLogger(ManagedAuditLogger auditLoggerInfo) {
@@ -144,7 +152,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            // findDelegate does not work for a pattern ObjectName
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(ADD_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -168,7 +177,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(ADD_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -449,7 +458,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(mbeanName);
+            delegate = findDelegateForNewObject(mbeanName);
             if (delegate.shouldAuthorize()) {
                 //Special authorization
                 authorizeSuperUserOrAdministrator(GET_CLASSLOADER_FOR);
@@ -749,7 +758,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(IS_INSTANCE_OF, readOnly, true);
             }
@@ -905,7 +914,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(REMOVE_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -929,7 +938,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(REMOVE_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -953,7 +962,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(REMOVE_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -977,7 +986,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(REMOVE_NOTIFICATION_LISTENER, readOnly, true);
             }
@@ -1198,6 +1207,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             return NO_ARGS;
         }
         return array;
+    }
+
+    MBeanServerDelegate getMBeanServerDelegate() {
+        return rootMBeanServerDelegate;
     }
 
     static final class LogAction implements PrivilegedAction<Void> {
