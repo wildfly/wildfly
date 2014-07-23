@@ -264,7 +264,7 @@
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver> <!-- Apache xml-resolver -->
-        <version.xom>1.2.5</version.xom>
+        <version.xom>1.2.10</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
         <version.org.zanata.plugin>3.1.1</version.org.zanata.plugin>
@@ -6470,7 +6470,7 @@
             </dependency>
 
             <dependency>
-                <groupId>xom</groupId>
+                <groupId>com.io7m.xom</groupId>
                 <artifactId>xom</artifactId>
                 <version>${version.xom}</version>
                 <exclusions>
