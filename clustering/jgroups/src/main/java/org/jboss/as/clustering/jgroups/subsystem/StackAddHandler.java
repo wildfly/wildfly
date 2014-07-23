@@ -24,9 +24,6 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +54,12 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.as.server.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -74,14 +74,7 @@ import org.jboss.threads.JBossExecutors;
 public class StackAddHandler extends AbstractAddStepHandler {
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        // this method is abstract in AbstractAddStepHandler
-        // we want to use its more explicit version below, but have to override it anyway
-    }
-
-    @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
-        populateModel(operation, resource);
         // add a step to initialize an *optional* TRANSPORT parameter
         if (operation.hasDefined(ModelKeys.TRANSPORT)) {
             // create an ADD operation to add the transport=TRANSPORT child
@@ -147,7 +140,8 @@ public class StackAddHandler extends AbstractAddStepHandler {
         // pick up the transport here and its values
         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
         ModelNode resolvedValue = null;
-        final String type = (resolvedValue = TransportResourceDefinition.TYPE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String type = ProtocolResourceDefinition.TYPE.resolveModelAttribute(context, transport).asString();
+        String module = ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, transport).asString();
         final boolean  shared = TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean();
         final String machine = (resolvedValue = TransportResourceDefinition.MACHINE.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
         final String rack = (resolvedValue = TransportResourceDefinition.RACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
@@ -157,16 +151,15 @@ public class StackAddHandler extends AbstractAddStepHandler {
         final String diagnosticsSocketBinding = (resolvedValue = TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
         final String defaultExecutor = (resolvedValue = TransportResourceDefinition.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
         final String oobExecutor = (resolvedValue = TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
-        final String transportSocketBinding = (resolvedValue = TransportResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
+        final String transportSocketBinding = (resolvedValue = ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null;
 
         // set up the transport
-        Transport transportConfig = new Transport(type);
-        transportConfig.setShared(shared);
+        Transport transportConfig = new Transport(type, module, shared);
         transportConfig.setTopology(site, rack, machine);
         initProtocolProperties(context, transport, transportConfig);
 
         Relay relayConfig = null;
-        List<Map.Entry<String, Injector<ChannelFactory>>> stacks = new LinkedList<Map.Entry<String, Injector<ChannelFactory>>>();
+        List<Map.Entry<String, Injector<ChannelFactory>>> stacks = new LinkedList<>();
         if (model.hasDefined(ModelKeys.RELAY)) {
             final ModelNode relay = model.get(ModelKeys.RELAY, ModelKeys.RELAY_NAME);
             final String siteName = RelayResourceDefinition.SITE.resolveModelAttribute(context, relay).asString();
@@ -179,7 +172,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
                     final ModelNode remoteSite = remoteSiteProperty.getValue();
                     final String cluster = RemoteSiteResourceDefinition.CLUSTER.resolveModelAttribute(context, remoteSite).asString();
                     final String stack = RemoteSiteResourceDefinition.STACK.resolveModelAttribute(context, remoteSite).asString();
-                    final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<ChannelFactory>();
+                    final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
                     remoteSites.add(new RemoteSite(remoteSiteName, cluster, channelFactory));
                     stacks.add(new AbstractMap.SimpleImmutableEntry<String, Injector<ChannelFactory>>(stack, channelFactory));
                 }
@@ -188,15 +181,16 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
         // set up the protocol stack Protocol objects
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig, relayConfig);
-        List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<Map.Entry<Protocol, String>>(orderedProtocols.size());
+        List<Map.Entry<Protocol, String>> protocolSocketBindings = new ArrayList<>(orderedProtocols.size());
         for (Property protocolProperty : orderedProtocols) {
             ModelNode protocol = protocolProperty.getValue();
-            final String protocolType = (resolvedValue = ProtocolResourceDefinition.TYPE.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
-            Protocol protocolConfig = new Protocol(protocolType);
+            String protocolType = ProtocolResourceDefinition.TYPE.resolveModelAttribute(context, protocol).asString();
+            String protocolModule = ProtocolResourceDefinition.MODULE.resolveModelAttribute(context, protocol).asString();
+            Protocol protocolConfig = new Protocol(protocolType, protocolModule);
             initProtocolProperties(context, protocol, protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
             final String protocolSocketBinding = (resolvedValue = ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
-            protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<Protocol, String>(protocolConfig, protocolSocketBinding));
+            protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<>(protocolConfig, protocolSocketBinding));
         }
 
         // install the default channel factory service
@@ -237,6 +231,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 .addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
                 .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, stackConfig.getModuleLoaderInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
         // add transport dependencies
@@ -335,13 +330,14 @@ public class StackAddHandler extends AbstractAddStepHandler {
     }
 
     static class ProtocolStack implements ProtocolStackConfiguration {
-        private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<ProtocolDefaults>();
-        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
+        private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<>();
+        private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
+        private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
 
         private final String name;
         private final TransportConfiguration transport;
         private final RelayConfiguration relay;
-        private final List<ProtocolConfiguration> protocols = new LinkedList<ProtocolConfiguration>();
+        private final List<ProtocolConfiguration> protocols = new LinkedList<>();
 
         ProtocolStack(String name, TransportConfiguration transport, RelayConfiguration relay) {
             this.name = name;
@@ -355,6 +351,10 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
         Injector<ServerEnvironment> getEnvironmentInjector() {
             return this.environment;
+        }
+
+        Injector<ModuleLoader> getModuleLoaderInjector() {
+            return this.loader;
         }
 
         @Override
@@ -386,19 +386,25 @@ public class StackAddHandler extends AbstractAddStepHandler {
         public RelayConfiguration getRelay() {
             return this.relay;
         }
+
+        @Override
+        public ModuleLoader getModuleLoader() {
+            return this.loader.getValue();
+        }
     }
 
     static class Transport extends Protocol implements TransportConfiguration {
-        private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<SocketBinding>();
-        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<Executor>();
-        private final InjectedValue<Executor> oobExecutor = new InjectedValue<Executor>();
-        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<ScheduledExecutorService>();
-        private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<ThreadFactory>();
-        private boolean shared = true;
+        private final InjectedValue<SocketBinding> diagnosticsSocketBinding = new InjectedValue<>();
+        private final InjectedValue<Executor> defaultExecutor = new InjectedValue<>();
+        private final InjectedValue<Executor> oobExecutor = new InjectedValue<>();
+        private final InjectedValue<ScheduledExecutorService> timerExecutor = new InjectedValue<>();
+        private final InjectedValue<ThreadFactory> threadFactory = new InjectedValue<>();
+        private final boolean shared;
         private Topology topology;
 
-        Transport(String name) {
-            super(name);
+        Transport(String name, String module, boolean shared) {
+            super(name, module);
+            this.shared = shared;
         }
 
         Injector<SocketBinding> getDiagnosticsSocketBindingInjector() {
@@ -419,10 +425,6 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
         Injector<ThreadFactory> getThreadFactoryInjector() {
             return this.threadFactory;
-        }
-
-        void setShared(boolean shared) {
-            this.shared = shared;
         }
 
         @Override
@@ -497,11 +499,11 @@ public class StackAddHandler extends AbstractAddStepHandler {
     }
 
     static class Relay extends Protocol implements RelayConfiguration {
-        private final List<RemoteSiteConfiguration> remoteSites = new LinkedList<RemoteSiteConfiguration>();
+        private final List<RemoteSiteConfiguration> remoteSites = new LinkedList<>();
         private final String siteName;
 
         Relay(String siteName) {
-            super("relay.RELAY2");
+            super("relay.RELAY2", ProtocolResourceDefinition.MODULE.getDefaultValue().asString());
             this.siteName = siteName;
         }
 
@@ -545,23 +547,13 @@ public class StackAddHandler extends AbstractAddStepHandler {
 
     static class Protocol implements ProtocolConfiguration {
         private final String name;
-        private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<SocketBinding>();
-        private final Map<String, String> properties = new HashMap<String, String>();
-        final Class<?> protocolClass;
+        private final ModuleIdentifier moduleId;
+        private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<>();
+        private final Map<String, String> properties = new HashMap<>();
 
-        Protocol(final String name) {
+        Protocol(final String name, String module) {
             this.name = name;
-            PrivilegedAction<Class<?>> action = new PrivilegedAction<Class<?>>() {
-                @Override
-                public Class<?> run() {
-                    try {
-                        return Protocol.this.getClass().getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + name);
-                    } catch (ClassNotFoundException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-            };
-            this.protocolClass = AccessController.doPrivileged(action);
+            this.moduleId = ModuleIdentifier.fromString(module);
         }
 
         @Override
@@ -570,23 +562,8 @@ public class StackAddHandler extends AbstractAddStepHandler {
         }
 
         @Override
-        public boolean hasProperty(final String property) {
-            PrivilegedAction<Field> action = new PrivilegedAction<Field>() {
-                @Override
-                public Field run() {
-                    return getField(Protocol.this.protocolClass, property);
-                }
-            };
-            return AccessController.doPrivileged(action) != null;
-        }
-
-        static Field getField(Class<?> targetClass, String property) {
-            try {
-                return targetClass.getDeclaredField(property);
-            } catch (NoSuchFieldException e) {
-                Class<?> superClass = targetClass.getSuperclass();
-                return (superClass != null) && org.jgroups.stack.Protocol.class.isAssignableFrom(superClass) ? getField(superClass, property) : null;
-            }
+        public ModuleIdentifier getModuleId() {
+            return this.moduleId;
         }
 
         @Override

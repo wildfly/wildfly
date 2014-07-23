@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;

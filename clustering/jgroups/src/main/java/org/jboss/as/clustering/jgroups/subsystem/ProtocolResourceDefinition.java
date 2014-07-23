@@ -22,6 +22,8 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
+import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -38,8 +40,10 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -69,13 +73,21 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+            .setXmlName(Attribute.MODULE.getLocalName())
+            .setDefaultValue(new ModelNode(JChannelFactory.DEFAULT_MODULE.getName()))
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new ModuleIdentifierValidator(true))
+            .build();
+
     static final SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
     static final SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY)
             .setAllowNull(true)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, SOCKET_BINDING };
-    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] { TYPE, SOCKET_BINDING, PROPERTIES };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING };
+    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] { TYPE, MODULE, SOCKET_BINDING, PROPERTIES };
 
     static final ObjectTypeAttributeDefinition PROTOCOL = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.PROTOCOL, ATTRIBUTES)
             .setAllowNull(true)
@@ -100,13 +112,28 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     static final OperationStepHandler REMOVE_HANDLER = new ProtocolRemoveHandler();
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        buildTransformation(version, parent, WILDCARD_PATH);
+    }
 
+    /*
+     * Builds transformations common to both protocols and transport.
+     */
+    static ResourceTransformationDescriptionBuilder buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent, PathElement path) {
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(path);
+
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MODULE.getDefaultValue()), MODULE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, MODULE)
+                    .end();
+        }
         if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES);
         }
 
         PropertyResourceDefinition.buildTransformation(version, builder);
+
+        return builder;
     }
 
     // registration

@@ -58,7 +58,7 @@ public class SubsystemFeaturesTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-jgroups-2_0.xml");
+        return readResource("subsystem-jgroups-3_0.xml");
     }
 
     @Test
