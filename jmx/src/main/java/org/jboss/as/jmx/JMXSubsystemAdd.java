@@ -83,7 +83,10 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         }
     }
 
-    private static String getDomainName(OperationContext context, ModelNode model, String child) throws OperationFailedException {
+    /**
+     * return {@code null} if the {@code child} model is not exposed in JMX.
+     */
+    static String getDomainName(OperationContext context, ModelNode model, String child) throws OperationFailedException {
         if (!model.hasDefined(CommonAttributes.EXPOSE_MODEL)) {
             return null;
         }

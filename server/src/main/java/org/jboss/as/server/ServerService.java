@@ -35,6 +35,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.auth.Policy;
+
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
@@ -236,6 +238,8 @@ public final class ServerService extends AbstractControllerService {
                         (PathManagerService)injectedPathManagerService.getValue(),
                         authorizer,
                         super.getAuditLogger()));
+
+
         super.start(context);
     }
 
@@ -379,6 +383,11 @@ public final class ServerService extends AbstractControllerService {
             final ModelControllerServiceInitialization init = iterator.next();
             init.initializeStandalone(target, rootRegistration, rootResource);
         }
+
+        // this call to the Policy class ensures that its cached instance on JDK6 will be loaded
+        // with the server's TCCL. Otherwise, the 1st call to the Policy class would use a non-deterministic
+        // TCCL and subsequents calls could fail. This call must be done at earliest.
+        Policy.getPolicy();
     }
 
     /** Temporary replacement for QueuelessThreadPoolService */
