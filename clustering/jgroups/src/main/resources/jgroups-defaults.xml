@@ -31,7 +31,6 @@
         max_bundle_size="31k"
         max_bundle_timeout="30"
         ip_ttl="2"
-        bundler_type="old"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="20"
@@ -62,7 +61,6 @@
         max_bundle_timeout="30"
         use_send_queues="false"
         sock_conn_timeout="300"
-        bundler_type="old"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="20"
@@ -86,10 +84,9 @@
         internal_thread_pool.queue_enabled="true"
         internal_thread_pool.queue_max_size="100"
         internal_thread_pool.rejection_policy="discard"/>
-    <PING timeout="2000" num_initial_members="3"/>
-    <MPING timeout="3000" num_initial_members="3" ip_ttl="2"/>
+    <MPING ip_ttl="2"/>
     <MERGE2 max_interval="100000" min_interval="20000"/>
-    <MERGE3 max_interval="100000" min_interval="20000"/>
+    <MERGE3/>
     <FD_SOCK/>
     <FD timeout="6000" max_tries="5"/>
     <FD_ALL timeout="15000" interval="3000"/>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:jg="urn:jboss:domain:jgroups:2.0">
+                xmlns:jg="urn:jboss:domain:jgroups:3.0">
 
     <!--
       XSLT stylesheet to add make a copy of an existing JGroups stack such that:
@@ -45,7 +45,7 @@
 
     <xsl:output method="xml" indent="yes"/>
     <xsl:variable name="jgns">
-        <xsl:value-of select="'urn:jboss:domain:jgroups:2.0'"/>
+        <xsl:value-of select="'urn:jboss:domain:jgroups:3.0'"/>
     </xsl:variable>
 
     <xsl:template name="copy-attributes">

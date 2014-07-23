@@ -73,6 +73,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         Object[][] data = new Object[][] {
                 { "subsystem-jgroups-1_1.xml", 22 },
                 { "subsystem-jgroups-2_0.xml", 23 },
+                { "subsystem-jgroups-3_0.xml", 23 },
         };
         return Arrays.asList(data);
     }

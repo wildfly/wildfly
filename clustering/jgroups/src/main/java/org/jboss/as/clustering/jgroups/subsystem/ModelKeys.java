@@ -33,6 +33,7 @@ class ModelKeys {
     static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
     static final String EXPORT_NATIVE_CONFIGURATION = "export-native-configuration";
     static final String MACHINE = "machine";
+    static final String MODULE = "module";
     static final String NAME = "name";
     static final String OOB_EXECUTOR = "oob-executor";
     static final String PROPERTY = "property";

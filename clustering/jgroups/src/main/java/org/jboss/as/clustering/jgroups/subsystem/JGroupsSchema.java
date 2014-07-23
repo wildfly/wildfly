@@ -30,8 +30,9 @@ public enum JGroupsSchema {
     VERSION_1_0(1, 0),
     VERSION_1_1(1, 1),
     VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
-    static final JGroupsSchema CURRENT = VERSION_2_0;
+    static final JGroupsSchema CURRENT = VERSION_3_0;
 
     private final int major;
     private final int minor;

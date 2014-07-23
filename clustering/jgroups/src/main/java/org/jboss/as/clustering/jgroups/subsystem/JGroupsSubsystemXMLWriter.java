@@ -54,36 +54,16 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                     ModelNode stack = property.getValue();
                     if (stack.get(TransportResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-                        ModelNode transport = stack.get(TransportResourceDefinition.PATH.getKeyValuePair());
-                        writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                        TransportResourceDefinition.TYPE.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.SOCKET_BINDING.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.OOB_EXECUTOR.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.TIMER_EXECUTOR.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.THREAD_FACTORY.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.MACHINE.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
-                        writeProtocolProperties(writer, transport);
-                        writer.writeEndElement();
+                        writeTransport(writer, stack.get(TransportResourceDefinition.PATH.getKeyValuePair()));
                     }
                     // write the protocols in their correct order
                     if (stack.hasDefined(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property protocolProperty: StackAddHandler.getOrderedProtocolPropertyList(stack)) {
-                            ModelNode protocol = protocolProperty.getValue();
-                            writer.writeStartElement(Element.PROTOCOL.getLocalName());
-                            ProtocolResourceDefinition.TYPE.marshallAsAttribute(protocol, writer);
-                            ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(protocol, writer);
-                            writeProtocolProperties(writer, protocol);
-                            writer.writeEndElement();
+                        for (Property protocol: StackAddHandler.getOrderedProtocolPropertyList(stack)) {
+                            writeProtocol(writer, protocol.getValue());
                         }
                     }
                     if (stack.get(RelayResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
-                        ModelNode relay = stack.get(RelayResourceDefinition.PATH.getKeyValuePair());
-                        writeRelay(writer, relay);
+                        writeRelay(writer, stack.get(RelayResourceDefinition.PATH.getKeyValuePair()));
                     }
                     writer.writeEndElement();
                 }
@@ -92,13 +72,46 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
+    private static void writeTransport(XMLExtendedStreamWriter writer, ModelNode transport) throws XMLStreamException {
+        writer.writeStartElement(Element.TRANSPORT.getLocalName());
+        writeProtocolAttributes(writer, transport);
+        TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.OOB_EXECUTOR.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.TIMER_EXECUTOR.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.THREAD_FACTORY.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.MACHINE.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.RACK.marshallAsAttribute(transport, writer);
+        TransportResourceDefinition.SITE.marshallAsAttribute(transport, writer);
+        writeProtocolElements(writer, transport);
+        writer.writeEndElement();
+    }
+
+    private static void writeProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        writer.writeStartElement(Element.PROTOCOL.getLocalName());
+        writeProtocolAttributes(writer, protocol);
+        writeProtocolElements(writer, protocol);
+        writer.writeEndElement();
+    }
+
+    private static void writeProtocolAttributes(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        ProtocolResourceDefinition.TYPE.marshallAsAttribute(protocol, writer);
+        ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(protocol, writer);
+        ProtocolResourceDefinition.MODULE.marshallAsAttribute(protocol, writer);
+    }
+
+    private static void writeProtocolElements(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+        writeProtocolProperties(writer, protocol);
+    }
+
     private static void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
         // the format of the property elements
         //  "property" => {
         //       "relative-to" => {"value" => "fred"},
         //   }
-        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property: protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 Property complexValue = property.getValue().asProperty();
