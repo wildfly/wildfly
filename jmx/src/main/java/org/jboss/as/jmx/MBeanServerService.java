@@ -25,6 +25,7 @@ package org.jboss.as.jmx;
 import java.lang.management.ManagementFactory;
 
 import javax.management.MBeanServer;
+import javax.management.MBeanServerDelegate;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
@@ -35,7 +36,6 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -87,7 +87,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
         return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)
             .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
-            .addDependency(DependencyType.OPTIONAL, Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.modelControllerValue)
+            .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.modelControllerValue)
             .install();
     }
 
@@ -95,14 +95,15 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     public synchronized void start(final StartContext context) throws StartException {
         //If the platform MBeanServer was set up to be the PluggableMBeanServer, use that otherwise create a new one and delegate
         MBeanServer platform = ManagementFactory.getPlatformMBeanServer();
-        PluggableMBeanServerImpl pluggable = platform instanceof PluggableMBeanServerImpl ? (PluggableMBeanServerImpl)platform : new PluggableMBeanServerImpl(platform);
+        PluggableMBeanServerImpl pluggable = platform instanceof PluggableMBeanServerImpl ? (PluggableMBeanServerImpl)platform : new PluggableMBeanServerImpl(platform, null);
+        MBeanServerDelegate delegate = platform instanceof PluggableMBeanServerImpl ? ((PluggableMBeanServerImpl)platform).getMBeanServerDelegate() : null;
         pluggable.setAuditLogger(auditLoggerInfo);
         pluggable.setAuthorizer(authorizer);
         authorizer.setNonFacadeMBeansSensitive(coreMBeanSensitivity);
         if (resolvedDomainName != null || expressionsDomainName != null) {
             //TODO make these configurable
             ConfiguredDomains configuredDomains = new ConfiguredDomains(resolvedDomainName, expressionsDomainName);
-            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), legacyWithProperPropertyFormat, forStandalone);
+            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), delegate, legacyWithProperPropertyFormat, forStandalone);
             pluggable.addPlugin(showModelPlugin);
         }
         mBeanServer = pluggable;

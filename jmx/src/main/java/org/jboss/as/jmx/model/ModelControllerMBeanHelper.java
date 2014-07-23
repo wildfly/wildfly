@@ -180,6 +180,17 @@ public class ModelControllerMBeanHelper {
         return ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
     }
 
+    /**
+     * Convert an ObjectName to a PathAddress.
+     *
+     * Patterns are supported: there may not be a resource at the returned PathAddress but a resource model <strong>MUST</strong>
+     * must be registered.
+     */
+
+    PathAddress toPathAddress(final ObjectName name) {
+        return ObjectNameAddressUtil.toPathAddress(domain, getRootResourceAndRegistration().getRegistration(), name);
+    }
+
     MBeanInfo getMBeanInfo(final ObjectName name) throws InstanceNotFoundException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
@@ -511,6 +522,20 @@ public class ModelControllerMBeanHelper {
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    String getDomain() {
+        return domain;
+    }
+
+    ImmutableManagementResourceRegistration getMBeanRegistration(ObjectName name) throws InstanceNotFoundException {
+        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final PathAddress address = resolvePathAddress(name, reg);
+        return getMBeanRegistration(address, reg);
+    }
+
+    TypeConverters getConverters() {
+        return converters;
     }
 
     private abstract class ObjectNameMatchResourceAction<T> implements ResourceAction<T> {
