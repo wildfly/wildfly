@@ -82,6 +82,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
         final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
+        final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
@@ -90,7 +91,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 defaultEncoding,
                 useListenerEncoding,
                 ignoreFlush,
-                eagerFilterInit);
+                eagerFilterInit,
+                sessionTimeout);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {

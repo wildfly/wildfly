@@ -126,6 +126,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                 .addAttribute(ServletContainerDefinition.DEFAULT_ENCODING)
                                 .addAttribute(ServletContainerDefinition.IGNORE_FLUSH)
                                 .addAttribute(ServletContainerDefinition.EAGER_FILTER_INIT)
+                                .addAttribute(ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)

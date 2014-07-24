@@ -34,6 +34,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -96,6 +97,16 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
+
+    protected static final AttributeDefinition DEFAULT_SESSION_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder("default-session-timeout", ModelType.INT, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setMeasurementUnit(MeasurementUnit.MINUTES)
+                    .setDefaultValue(new ModelNode(30)) //30 minutes
+                    .build();
+
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -104,7 +115,8 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
             DEFAULT_ENCODING,
             USE_LISTENER_ENCODING,
             IGNORE_FLUSH,
-            EAGER_FILTER_INIT);
+            EAGER_FILTER_INIT,
+            DEFAULT_SESSION_TIMEOUT);
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();

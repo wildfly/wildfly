@@ -178,6 +178,8 @@
         <xs:attribute name="use-listener-encoding" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="ignore-flush" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="eager-filter-initialization" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="default-session-timeout" type="xs:integer" use="optional" default="1800"/>
+
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>

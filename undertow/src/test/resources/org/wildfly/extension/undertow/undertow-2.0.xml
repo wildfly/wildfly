@@ -54,7 +54,7 @@
     </server>
 
 
-    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true" eager-filter-initialization="true">
+    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true" eager-filter-initialization="true" default-session-timeout="100">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"
