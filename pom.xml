@@ -313,6 +313,7 @@
         <module>jacorb</module>
         <module>jaxrs</module>
         <module>jdr</module>
+        <module>jmx</module>
         <module>jpa</module>
         <module>jsf</module>
         <module>jsr77</module>
@@ -1180,9 +1181,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly.core</groupId>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-jmx</artifactId>
-                <version>${version.org.wildfly.core}</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

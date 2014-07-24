@@ -78,7 +78,7 @@
             <artifactId>wildfly-ee</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jmx</artifactId>
         </dependency>
         <dependency>
