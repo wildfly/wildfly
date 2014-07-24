@@ -34,7 +34,7 @@ public final class ExtendedPersistenceShallowInheritance implements ExtendedPers
     @Override
     public void registerExtendedPersistenceContext(String scopedPuName, ExtendedEntityManager entityManager) {
         if (SFSBCallStack.getSFSBCreationBeanNestingLevel() > 0) {
-            SFSBCallStack.getSFSBCreationTimeInjectedXPCs().registerShallowInheritance(scopedPuName, entityManager);
+            SFSBCallStack.getSFSBCreationTimeInjectedXPCs(scopedPuName).registerShallowInheritance(scopedPuName, entityManager);
         }
     }
 
@@ -45,7 +45,7 @@ public final class ExtendedPersistenceShallowInheritance implements ExtendedPers
         // if current bean is injected from a parent bean that is also being created, current bean
         // can inherit only from the parent bean.
         if (SFSBCallStack.getSFSBCreationBeanNestingLevel() > 1) {
-            SFSBInjectedXPCs currentInjectedXPCs = SFSBCallStack.getSFSBCreationTimeInjectedXPCs();
+            SFSBInjectedXPCs currentInjectedXPCs = SFSBCallStack.getSFSBCreationTimeInjectedXPCs(puScopedName);
             result = currentInjectedXPCs.findExtendedPersistenceContextShallowInheritance(puScopedName);
         } else {
             // else inherit from parent bean that created current bean (if any).  The parent bean is the one

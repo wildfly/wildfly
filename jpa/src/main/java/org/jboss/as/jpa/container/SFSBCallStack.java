@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.jpa.messages.JpaLogger;
+
 /**
  * For tracking of SFSB call stack on a per thread basis.
  * When a SFSB with an extended persistence context (XPC) is injected, the SFSB call stack is searched for
@@ -102,8 +104,12 @@ public class SFSBCallStack {
         }
     }
 
-    static SFSBInjectedXPCs getSFSBCreationTimeInjectedXPCs() {
-        return sfsbCreationTimeInjectedXPCs.get();
+    static SFSBInjectedXPCs getSFSBCreationTimeInjectedXPCs(final String puScopedName) {
+        SFSBInjectedXPCs result = sfsbCreationTimeInjectedXPCs.get();
+        if (result == null) {
+            throw JpaLogger.JPA_LOGGER.xpcOnlyFromSFSB(puScopedName);
+        }
+        return result;
     }
 
 
