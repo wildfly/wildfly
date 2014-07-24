@@ -19,11 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.secman.propertypermission;
+
+import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 
 /**
- * This package contains a part of the AS integration testsuite, which checks permissions granted when running
- * the AS with Java Security Manager (JSM) enabled.<br>
- * <i>Permissions for jboss-modules are defined in src/test/config/security.policy</i>
+ * Server setup task, which adds a custom system property to AS configuration.
+ *
+ * @author Josef Cacek
  */
-package org.jboss.as.testsuite.integration.secman;
+public class SystemPropertiesSetup extends AbstractSystemPropertiesServerSetupTask {
 
+    public static final String PROPERTY_NAME = "custom-test-property";
+
+    @Override
+    protected SystemProperty[] getSystemProperties() {
+        return new SystemProperty[] { new DefaultSystemProperty(PROPERTY_NAME, PROPERTY_NAME) };
+    }
+}

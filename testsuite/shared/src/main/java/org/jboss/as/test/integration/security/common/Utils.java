@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
+import java.security.Permission;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -392,7 +393,6 @@ public class Utils extends CoreUtils{
      * @param DefaultHttpClient httpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
-     * @throws ClientProtocolException
      * @throws IOException
      * @throws URISyntaxException
      */
@@ -752,6 +752,35 @@ public class Utils extends CoreUtils{
             }
         }
         sb.append("\n</dependencies></deployment></jboss-deployment-structure>");
+        return new StringAsset(sb.toString());
+    }
+
+    /**
+     * Creates content of permissions.xml (or jboss-permissions.xml) which placed in META-INF of the deployment specifies
+     * security permissions granted to the deployment.
+     *
+     * @param permissions instances from which are &lt;permission&gt; elements generated
+     * @return not-<code>null</code> content of permissions.xml (version=7)
+     */
+    public static Asset getPermissionsXml(final Permission... permissions) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<permissions xmlns='http://xmlns.jcp.org/xml/ns/javaee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd' version='7'>");
+        if (permissions != null) {
+            for (Permission permission : permissions) {
+                if (permission != null) {
+                    sb.append("\n\t<permission>");
+                    sb.append("\n\t\t<class-name>").append(permission.getClass().getName()).append("</class-name>");
+                    if (permission.getName() != null) {
+                        sb.append("\n\t\t<name>").append(permission.getName()).append("</name>");
+                    }
+                    if (permission.getActions() != null) {
+                        sb.append("\n\t\t<actions>").append(permission.getActions()).append("</actions>");
+                    }
+                    sb.append("\n\t</permission>");
+                }
+            }
+        }
+        sb.append("\n</permissions>");
         return new StringAsset(sb.toString());
     }
 

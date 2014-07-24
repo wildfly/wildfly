@@ -21,9 +21,8 @@
  */
 
 /**
- * This package contains a part of the AS integration testsuite, which checks permissions granted when running
- * the AS with Java Security Manager (JSM) enabled.<br>
- * <i>Permissions for jboss-modules are defined in src/test/config/security.policy</i>
+ * This package contains tests related to granting java.util.PropertyPermission in AS deployments.
+ * <i>Permissions for the deployments are defined in permissions.xml and/or jboss-permissions.xml</i>
  */
-package org.jboss.as.testsuite.integration.secman;
+package org.jboss.as.testsuite.integration.secman.propertypermission;
 

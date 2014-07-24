@@ -19,11 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.testsuite.integration.secman.ejbs;
+
+import javax.ejb.Local;
+import javax.ejb.Remote;
+import javax.ejb.Stateless;
 
 /**
- * This package contains a part of the AS integration testsuite, which checks permissions granted when running
- * the AS with Java Security Manager (JSM) enabled.<br>
- * <i>Permissions for jboss-modules are defined in src/test/config/security.policy</i>
+ * A SLSB bean which reads the given system property and returns its value.
+ *
+ * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-package org.jboss.as.testsuite.integration.secman;
-
+@Stateless
+@Remote(ReadSystemPropertyRemote.class)
+@Local(ReadSystemPropertyLocal.class)
+public class ReadSystemPropertyBean {
+    public String readSystemProperty(final String propertyName) {
+        return System.getProperty(propertyName, "");
+    }
+}

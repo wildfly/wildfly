@@ -20,10 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * This package contains a part of the AS integration testsuite, which checks permissions granted when running
- * the AS with Java Security Manager (JSM) enabled.<br>
- * <i>Permissions for jboss-modules are defined in src/test/config/security.policy</i>
- */
 package org.jboss.as.testsuite.integration.secman;
 
+/**
+ * Helper class for permissions testing. This class is usually packaged to a library-like archive in a test deployment.
+ *
+ * @author Josef Cacek
+ */
+public class PermissionUtil {
+
+    /**
+     * Simply calls {@link System#getProperty(String)} method.
+     *
+     * @param property
+     * @return system property
+     */
+    public static String getSystemProperty(String property) {
+        return System.getProperty(property);
+    }
+}

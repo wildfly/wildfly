@@ -21,9 +21,6 @@
  */
 
 /**
- * This package contains a part of the AS integration testsuite, which checks permissions granted when running
- * the AS with Java Security Manager (JSM) enabled.<br>
- * <i>Permissions for jboss-modules are defined in src/test/config/security.policy</i>
+ * Package in which servlets checking JSM permissions are located.
  */
-package org.jboss.as.testsuite.integration.secman;
-
+package org.jboss.as.testsuite.integration.secman.servlets;
