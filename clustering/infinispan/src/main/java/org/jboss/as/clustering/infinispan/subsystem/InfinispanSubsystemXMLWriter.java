@@ -129,6 +129,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                             DistributedCacheResourceDefinition.OWNERS.marshallAsAttribute(cache, writer);
                             DistributedCacheResourceDefinition.SEGMENTS.marshallAsAttribute(cache, writer);
                             DistributedCacheResourceDefinition.L1_LIFESPAN.marshallAsAttribute(cache, writer);
+                            DistributedCacheResourceDefinition.CAPACITY_FACTOR.marshallAsAttribute(cache, writer);
+                            DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.marshallAsAttribute(cache, writer);
 
                             writeCacheElements(writer, cache);
 

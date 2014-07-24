@@ -71,7 +71,7 @@
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="12" async-marshalling="true" statistics-enabled="true">
+        <distributed-cache name="dist" mode="SYNC" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="12" capacity-factor="1.0" consistent-hash-strategy="INTRA_CACHE" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>

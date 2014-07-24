@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -71,14 +73,14 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(600000L))
+            .setDefaultValue(new ModelNode(600000L))
             .build();
 
     static final SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
             .setXmlName(Attribute.OWNERS.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(2))
+            .setDefaultValue(new ModelNode(2))
             .setValidator(new IntRangeValidator(1, true, true))
             .build();
 
@@ -87,7 +89,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
             .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(1))
+            .setDefaultValue(new ModelNode(1))
             .setDeprecated(InfinispanModel.VERSION_1_4_0.getVersion())
             .setAlternatives(ModelKeys.SEGMENTS)
             .build();
@@ -97,15 +99,40 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
             .setXmlName(Attribute.SEGMENTS.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
+            .setDefaultValue(new ModelNode(80)) // Recommended value is 10 * max_cluster_size.
             .setValidator(new IntRangeValidator(1, true, true))
             .setAlternatives(ModelKeys.VIRTUAL_NODES)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OWNERS, SEGMENTS, L1_LIFESPAN };
+    static final SimpleAttributeDefinition CAPACITY_FACTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.CAPACITY_FACTOR, ModelType.DOUBLE, true)
+            .setXmlName(Attribute.CAPACITY_FACTOR.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(1.0f))
+            .setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).build())
+            .build();
+
+    static final SimpleAttributeDefinition CONSISTENT_HASH_STRATEGY = new SimpleAttributeDefinitionBuilder(ModelKeys.CONSISTENT_HASH_STRATEGY, ModelType.STRING, true)
+            .setXmlName(Attribute.CONSISTENT_HASH_STRATEGY.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(ConsistentHashStrategy.DEFAULT.name()))
+            .setValidator(new EnumValidator<>(ConsistentHashStrategy.class, true, true))
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OWNERS, SEGMENTS, L1_LIFESPAN, CAPACITY_FACTOR, CONSISTENT_HASH_STRATEGY };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder()
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(CAPACITY_FACTOR.getDefaultValue()), CAPACITY_FACTOR)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CAPACITY_FACTOR)
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(CONSISTENT_HASH_STRATEGY.getDefaultValue()), CONSISTENT_HASH_STRATEGY)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, CONSISTENT_HASH_STRATEGY)
+                    .end();
+        }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
             // Convert segments to virtual-nodes if it is set
@@ -118,10 +145,11 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                 }
             };
             builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, SEGMENTS)
-                .setValueConverter(converter, SEGMENTS)
-                .addRename(SEGMENTS, VIRTUAL_NODES.getName())
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, L1_LIFESPAN, OWNERS, VIRTUAL_NODES, SEGMENTS);
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, SEGMENTS)
+                    .setValueConverter(converter, SEGMENTS)
+                    .addRename(SEGMENTS, VIRTUAL_NODES.getName())
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, L1_LIFESPAN, OWNERS, VIRTUAL_NODES, SEGMENTS)
+                    .end();
 
         } else if (InfinispanModel.VERSION_1_4_1.requiresTransformation(version)) {
             DiscardAttributeChecker checker = new DiscardAttributeChecker.DefaultDiscardAttributeChecker(false, true) {
@@ -163,7 +191,8 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
                     .setDiscard(checker, VIRTUAL_NODES)
                     .addRejectCheck(checkersAndConverter, VIRTUAL_NODES)
                     .setValueConverter(checkersAndConverter, VIRTUAL_NODES)
-                    .addRename(VIRTUAL_NODES, SEGMENTS.getName());
+                    .addRename(VIRTUAL_NODES, SEGMENTS.getName())
+                    .end();
         }
 
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);

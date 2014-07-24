@@ -27,6 +27,7 @@ import java.util.ServiceLoader;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.GroupsConfigurationBuilder;
 import org.infinispan.distribution.group.Grouper;
@@ -50,20 +51,20 @@ public class CacheConfigurationService extends AbstractCacheConfigurationService
     }
 
     interface Dependencies {
+        CacheMode getCacheMode();
+        ConfigurationBuilder getConfigurationBuilder();
+        ModuleIdentifier getModuleIdentifier();
         ModuleLoader getModuleLoader();
         EmbeddedCacheManager getCacheContainer();
         TransactionManager getTransactionManager();
         TransactionSynchronizationRegistry getTransactionSynchronizationRegistry();
+        ConsistentHashStrategy getConsistentHashStrategy();
     }
 
-    private final ConfigurationBuilder builder;
-    private final ModuleIdentifier moduleId;
     private final Dependencies dependencies;
 
-    public CacheConfigurationService(String name, ConfigurationBuilder builder, ModuleIdentifier moduleId, Dependencies dependencies) {
+    public CacheConfigurationService(String name, Dependencies dependencies) {
         super(name);
-        this.builder = builder;
-        this.moduleId = moduleId;
         this.dependencies = dependencies;
     }
 
@@ -74,13 +75,16 @@ public class CacheConfigurationService extends AbstractCacheConfigurationService
 
     @Override
     protected ConfigurationBuilder getConfigurationBuilder() {
-        if (this.moduleId != null) {
+        ConfigurationBuilder builder = this.dependencies.getConfigurationBuilder();
+        ModuleIdentifier moduleId = this.dependencies.getModuleIdentifier();
+        if (moduleId != null) {
             try {
-                Module module = this.dependencies.getModuleLoader().loadModule(this.moduleId);
+                Module module = this.dependencies.getModuleLoader().loadModule(moduleId);
+                // Override classloader with that of the specified module
                 ClassLoader loader = module.getClassLoader();
-                this.builder.classLoader(loader);
+                builder.classLoader(loader);
 
-                GroupsConfigurationBuilder groupsBuilder = this.builder.clustering().hash().groups();
+                GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups();
                 for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, loader)) {
                     groupsBuilder.addGrouper(grouper);
                 }
@@ -90,12 +94,14 @@ public class CacheConfigurationService extends AbstractCacheConfigurationService
         }
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
-            this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
+            builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
         }
         TransactionSynchronizationRegistry tsr = this.dependencies.getTransactionSynchronizationRegistry();
         if (tsr != null) {
-            this.builder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
+            builder.transaction().transactionSynchronizationRegistryLookup(new TransactionSynchronizationRegistryProvider(tsr));
         }
-        return this.builder;
+        boolean topologyAware = this.dependencies.getCacheContainer().getCacheManagerConfiguration().transport().hasTopologyInfo();
+        this.dependencies.getConsistentHashStrategy().buildHashConfiguration(builder.clustering().hash(), this.dependencies.getCacheMode(), topologyAware);
+        return builder;
     }
 }

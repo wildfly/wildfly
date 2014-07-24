@@ -76,14 +76,18 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
         // process the basic clustered configuration
         super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
-        final int owners = DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt();
-        final int segments = DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt();
-        final long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
+        int owners = DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt();
+        int segments = DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt();
+        long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
+        Double capacityFactor = DistributedCacheResourceDefinition.CAPACITY_FACTOR.resolveModelAttribute(context, cache).asDouble();
+        ConsistentHashStrategy strategy = ConsistentHashStrategy.valueOf(DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, cache).asString());
 
-        // process the additional distributed attributes and elements
+        cacheConfigurationDependencies.setConsistentHashStrategy(strategy);
+
         builder.clustering().hash()
             .numOwners(owners)
             .numSegments(segments)
+            .capacityFactor(capacityFactor.floatValue())
         ;
         if (lifespan > 0) {
             builder.clustering().l1().lifespan(lifespan);
