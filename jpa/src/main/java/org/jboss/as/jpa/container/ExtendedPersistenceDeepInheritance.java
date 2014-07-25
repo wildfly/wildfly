@@ -37,14 +37,14 @@ public final class ExtendedPersistenceDeepInheritance implements ExtendedPersist
     @Override
     public void registerExtendedPersistenceContext(String scopedPuName, ExtendedEntityManager entityManager) {
         if (SFSBCallStack.getSFSBCreationBeanNestingLevel() > 0) {
-            SFSBCallStack.getSFSBCreationTimeInjectedXPCs().registerDeepInheritance(scopedPuName, entityManager);
+            SFSBCallStack.getSFSBCreationTimeInjectedXPCs(scopedPuName).registerDeepInheritance(scopedPuName, entityManager);
         }
     }
 
     @Override
     public ExtendedEntityManager findExtendedPersistenceContext(String puScopedName) {
         ExtendedEntityManager result;
-        SFSBInjectedXPCs currentInjectedXPCs = SFSBCallStack.getSFSBCreationTimeInjectedXPCs();
+        SFSBInjectedXPCs currentInjectedXPCs = SFSBCallStack.getSFSBCreationTimeInjectedXPCs(puScopedName);
         // will look directly at the top level bean being created (registerExtendedPersistenceContext() registers xpc there).
         result = currentInjectedXPCs.findExtendedPersistenceContextDeepInheritance(puScopedName);
 

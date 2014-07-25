@@ -748,4 +748,14 @@ public interface JpaLogger extends BasicLogger {
      */
     @Message(id = 69, value =  "Persistence provider adapter module load error %s")
     DeploymentUnitProcessingException persistenceProviderAdaptorModuleLoadError(@Cause Throwable cause, String adaptorModule);
+
+    /**
+     * extended persistence context can only be used within a stateful session bean. WFLY-69
+     *
+     * @param scopedPuName
+     * @return
+     */
+    @Message(id = 70, value = "A container-managed extended persistence context can only be initiated within the scope of a stateful session bean (persistence unit '%s').")
+    IllegalStateException xpcOnlyFromSFSB(String scopedPuName);
+
 }
