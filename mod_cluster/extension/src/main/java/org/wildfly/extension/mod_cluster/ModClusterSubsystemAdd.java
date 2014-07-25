@@ -235,6 +235,9 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 config.setSslCrlFile(CA_REVOCATION_URL.resolveModelAttribute(context, ssl).asString());
             }
         }
+        if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
+            throw new OperationFailedException(ROOT_LOGGER.proxyListNotAllowedInCurrentModel());
+        }
         if (model.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
             config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asString());
         }

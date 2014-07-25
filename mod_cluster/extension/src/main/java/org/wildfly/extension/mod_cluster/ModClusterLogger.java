@@ -168,7 +168,16 @@ interface ModClusterLogger extends BasicLogger {
      *
      * @return the message
      */
-    @Message(id = 17, value = "proxy-list attribute has been deprecated in favor of proxies (list of references to outbound-socket-binding)")
-    String proxyListAttributeIsDeprecated();
+    @Message(id = 17, value = "'proxy-list' usage not allowed in the current model, can only be used to support older slaves")
+    String proxyListNotAllowedInCurrentModel();
+
+    /**
+     * Message indicating that only one of 'proxy-list' or 'proxies' attributes is allowed and the former one only
+     * to support older EAP 6.x slaves.
+     *
+     * @return the message
+     */
+    @Message(id = 18, value = "Usage of only one 'proxy-list' (only to support EAP 6.x slaves) or 'proxies' attributes allowed")
+    String proxyListAttributeUsage();
 
 }

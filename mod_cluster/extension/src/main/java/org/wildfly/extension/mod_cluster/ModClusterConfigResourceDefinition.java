@@ -345,7 +345,11 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            if (attr.equals(PROXY_LIST) || attr.equals(PROXIES)) {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new ProxyConfigurationWriteAttributeHandler(attr));
+            } else {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            }
         }
         resourceRegistration.registerReadWriteAttribute(SIMPLE_LOAD_PROVIDER, null, new ReloadRequiredWriteAttributeHandler(SIMPLE_LOAD_PROVIDER));
     }

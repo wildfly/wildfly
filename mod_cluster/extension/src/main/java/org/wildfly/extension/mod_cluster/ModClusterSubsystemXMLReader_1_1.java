@@ -68,7 +68,6 @@ public class ModClusterSubsystemXMLReader_1_1 extends ModClusterSubsystemXMLRead
                 case PROXY_LIST:
                     // Keep deprecated PROXY_LIST to be able to support EAP 6.x slaves
                     ModClusterConfigResourceDefinition.PROXY_LIST.parseAndSetParameter(value, conf, reader);
-                    ModClusterLogger.ROOT_LOGGER.proxyListAttributeIsDeprecated();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
