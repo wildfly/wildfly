@@ -130,9 +130,4 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
     public void registerSubsystemWriter(final String name, final XMLElementWriter<SubsystemMarshallingContext> writer) {
 
     }
-
-    @Override
-    public void registerSubsystemDeploymentWriter(final String name, final XMLElementWriter<SubsystemMarshallingContext> writer) {
-
-    }
 }
