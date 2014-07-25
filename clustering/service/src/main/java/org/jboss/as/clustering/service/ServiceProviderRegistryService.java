@@ -160,45 +160,49 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
 
     @Override
     public void membershipChanged(final List<ClusterNode> deadMembers, List<ClusterNode> newMembers, List<ClusterNode> allMembers) {
-        Operation<Map<String, Set<ClusterNode>>> operation = new Operation<Map<String, Set<ClusterNode>>>() {
-            @Override
-            public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
-                // Collect service provider updates
-                Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
-                ServiceProviderRegistryService.this.purgeDeadMembers(deadMembers, updates);
-                return updates;
-            }
-        };
-        this.notifyListeners(this.invoker.invoke(this.cache, operation), false);
+        if (this.dispatcher.isCoordinator()) {
+            Operation<Map<String, Set<ClusterNode>>> operation = new Operation<Map<String, Set<ClusterNode>>>() {
+                @Override
+                public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
+                    // Collect service provider updates
+                    Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
+                    ServiceProviderRegistryService.this.purgeDeadMembers(deadMembers, updates);
+                    return updates;
+                }
+            };
+            this.notifyListeners(this.invoker.invoke(this.cache, operation), false);
+        }
     }
 
     @Override
     public void membershipChangedDuringMerge(final List<ClusterNode> deadMembers, final List<ClusterNode> newMembers, List<ClusterNode> allMembers, final List<List<ClusterNode>> originatingGroups) {
-        Operation<Map<String, Set<ClusterNode>>> operation = new Operation<Map<String, Set<ClusterNode>>>() {
-            @Override
-            public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
-                // Collect service provider updates
-                Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
-                if (newMembers.isEmpty()) {
-                    for (String service: cache.keySet()) {
-                        updates.put(service, cache.get(service).keySet());
-                    }
-                } else {
-                    for (ClusterNode node: newMembers) {
-                        // Re-assert services for new members following merge since these may have been lost following split
-                        List<String> services = ServiceProviderRegistryService.this.handler.getServices(node);
-                        for (String service: services) {
-                            Map<ClusterNode, Void> nodes = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).putIfAbsent(service, null);
-                            nodes.put(node, null);
-                            updates.put(service, Collections.unmodifiableSet(nodes.keySet()));
+        if (this.dispatcher.isCoordinator()) {
+            Operation<Map<String, Set<ClusterNode>>> operation = new Operation<Map<String, Set<ClusterNode>>>() {
+                @Override
+                public Map<String, Set<ClusterNode>> invoke(Cache<String, Map<ClusterNode, Void>> cache) {
+                    // Collect service provider updates
+                    Map<String, Set<ClusterNode>> updates = new HashMap<String, Set<ClusterNode>>();
+                    if (newMembers.isEmpty()) {
+                        for (String service: cache.keySet()) {
+                            updates.put(service, cache.get(service).keySet());
+                        }
+                    } else {
+                        for (ClusterNode node: newMembers) {
+                            // Re-assert services for new members following merge since these may have been lost following split
+                            List<String> services = ServiceProviderRegistryService.this.handler.getServices(node);
+                            for (String service: services) {
+                                Map<ClusterNode, Void> nodes = cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL).putIfAbsent(service, null);
+                                nodes.put(node, null);
+                                updates.put(service, Collections.unmodifiableSet(nodes.keySet()));
+                            }
                         }
                     }
+                    ServiceProviderRegistryService.this.purgeDeadMembers(deadMembers, updates);
+                    return updates;
                 }
-                ServiceProviderRegistryService.this.purgeDeadMembers(deadMembers, updates);
-                return updates;
-            }
-        };
-        this.notifyListeners(this.invoker.invoke(this.cache, operation), true);
+            };
+            this.notifyListeners(this.invoker.invoke(this.cache, operation), true);
+        }
     }
 
     void purgeDeadMembers(List<ClusterNode> deadNodes, Map<String, Set<ClusterNode>> updates) {
