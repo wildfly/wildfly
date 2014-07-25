@@ -49,8 +49,8 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
     }
 
     @Override
-    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new OtherEESetupActionsContextHandle(setupActions);
+    public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        return new OtherEESetupActionsSetupContextHandle(setupActions);
     }
 
     @Override
@@ -64,20 +64,19 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
     }
 
     @Override
-    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    public void writeSetupContextHandle(SetupContextHandle contextHandle, ObjectOutputStream out) throws IOException {
     }
 
     @Override
-    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new OtherEESetupActionsContextHandle(setupActions);
+    public SetupContextHandle readSetupContextHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return new OtherEESetupActionsSetupContextHandle(setupActions);
     }
 
-    private static class OtherEESetupActionsContextHandle implements ContextHandle {
+    private static class OtherEESetupActionsSetupContextHandle implements SetupContextHandle {
 
         private final List<SetupAction> setupActions;
-        private LinkedList<SetupAction> resetActions;
 
-        private OtherEESetupActionsContextHandle(List<SetupAction> setupActions) {
+        private OtherEESetupActionsSetupContextHandle(List<SetupAction> setupActions) {
             this.setupActions = setupActions;
         }
 
@@ -87,17 +86,43 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
         }
 
         @Override
-        public void setup() throws IllegalStateException {
-            resetActions = new LinkedList<>();
+        public ResetContextHandle setup() throws IllegalStateException {
+            final LinkedList<SetupAction> resetActions = new LinkedList<>();
+            final OtherEESetupActionsResetContextHandle resetContextHandle = new OtherEESetupActionsResetContextHandle(resetActions);
             try {
                 for (SetupAction setupAction : this.setupActions) {
                     setupAction.setup(Collections.<String, Object>emptyMap());
                     resetActions.addFirst(setupAction);
                 }
             } catch (Error | RuntimeException e) {
-                reset();
+                resetContextHandle.reset();
                 throw e;
             }
+            return resetContextHandle;
+        }
+
+        // serialization
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
+        }
+    }
+
+    private static class OtherEESetupActionsResetContextHandle implements ResetContextHandle {
+
+        private List<SetupAction> resetActions;
+
+        private OtherEESetupActionsResetContextHandle(List<SetupAction> resetActions) {
+            this.resetActions = resetActions;
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
         }
 
         @Override
