@@ -32,7 +32,6 @@ import io.undertow.util.AttachmentKey;
 
 import io.undertow.util.ConduitFactory;
 import org.jboss.security.SecurityConstants;
-import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
@@ -53,6 +52,7 @@ import java.util.Set;
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.wildfly.extension.undertow.security.UndertowSecurityAttachments;
 import org.xnio.conduits.StreamSinkConduit;
 
 import static org.wildfly.extension.undertow.UndertowLogger.ROOT_LOGGER;
@@ -158,8 +158,8 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         return new ChallengeResult(true);
     }
 
-    private boolean wasAuthExceptionThrown() {
-        return SecurityContextAssociation.getSecurityContext().getData().get(AuthException.class.getName()) != null;
+    private boolean wasAuthExceptionThrown(HttpServerExchange exchange) {
+        return exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT).getData().get(AuthException.class.getName()) != null;
     }
 
     private JASPIServerAuthenticationManager createJASPIAuthenticationManager() {
@@ -238,7 +238,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
                 String applicationIdentifier = buildApplicationIdentifier(requestContext);
 
-                if (!wasAuthExceptionThrown()) {
+                if (!wasAuthExceptionThrown(exchange)) {
                     ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
                     sam.secureResponse(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
 
