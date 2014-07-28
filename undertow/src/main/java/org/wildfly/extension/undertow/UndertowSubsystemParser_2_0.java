@@ -32,14 +32,13 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
+import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
@@ -171,13 +170,8 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                 )
                 )
                 .addChild(
-                        builder(ErrorPageDefinition.INSTANCE)
-                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
-                                .setXmlWrapperElement(Constants.ERROR_PAGES))
-                .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
-                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
                                                 .addAttributes(
@@ -203,7 +197,6 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.FILTERS)
-                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
@@ -217,16 +210,12 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                 ).addChild(
                                         builder(GzipFilter.INSTANCE)
                                 )
+                                .addChild(
+                                                        builder(ErrorPageDefinition.INSTANCE)
+                                                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                                )
 
                 )
-                //todo why do we really need this?
-                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
-                    @Override
-                    public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
-                    }
-                })
                 .build();
     }
 

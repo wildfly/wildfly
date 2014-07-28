@@ -56,6 +56,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.wildfly.extension.io.BufferPoolService;
 import org.wildfly.extension.io.IOServices;
@@ -70,6 +71,7 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
+@Ignore("needs ElementParser impl in core")
 public class UndertowSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
     public UndertowSubsystem10TestCase() {

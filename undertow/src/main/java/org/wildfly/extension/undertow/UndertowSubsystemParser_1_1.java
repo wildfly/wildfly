@@ -32,11 +32,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
+import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
@@ -169,11 +168,11 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(ErrorPageDefinition.INSTANCE)
                                 .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                                .setNoAddOperation(true)
                                 .setXmlWrapperElement(Constants.ERROR_PAGES))
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
-                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
                                                 .addAttributes(
@@ -191,7 +190,8 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
-                                                .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID))
+                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID)
+                                                )
                                 )
 
 
@@ -199,7 +199,6 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.FILTERS)
-                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
@@ -215,14 +214,6 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                 )
 
                 )
-                //todo why do we really need this?
-                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
-                    @Override
-                    public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
-                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
-                    }
-                })
                 .build();
     }
 

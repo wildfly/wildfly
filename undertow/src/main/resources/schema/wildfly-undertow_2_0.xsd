@@ -44,7 +44,6 @@
             <xs:element name="buffer-cache" type="buffer-cacheType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="error-pages" type="errorPagesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="filters" type="filterType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -251,11 +250,6 @@
             <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="errorPagesType">
-        <xs:sequence>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>

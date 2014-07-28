@@ -79,13 +79,13 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             .build();
 
     public static final AttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder("scheme", ModelType.STRING)
-            .setAllowNull(false)
+            .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("http"))
             .build();
 
     public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING)
-            .setAllowNull(false)
+            .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("/"))
             .build();
