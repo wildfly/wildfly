@@ -22,6 +22,12 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -33,10 +39,14 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
@@ -51,14 +61,9 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author Stuart Douglas
+ * @author Tomaz Cerar
  */
 public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
@@ -66,6 +71,24 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     public static final ServiceName SERVICE_NAME = UndertowService.HANDLER.append("reverse-proxy", "host");
 
+
+    public static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING, true) //todo consider what we can do to make this non nullable
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
+
+    public static final AttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder("scheme", ModelType.STRING)
+            .setAllowNull(false)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("http"))
+            .build();
+
+    public static final AttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING)
+            .setAllowNull(false)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("/"))
+            .build();
 
     public static final AttributeDefinition INSTANCE_ID = new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING)
             .setAllowNull(true)
@@ -79,7 +102,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.singletonList(INSTANCE_ID);
+        return Arrays.asList(OUTBOUND_SOCKET_BINDING, SCHEME, INSTANCE_ID, PATH);
     }
 
 
@@ -110,19 +133,23 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String name = address.getLastElement().getValue();
             final String proxyName = address.getElement(address.size() - 2).getValue();
+            final String socketBinding = OUTBOUND_SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+            final String scheme = SCHEME.resolveModelAttribute(context, model).asString();
+            final String path = PATH.resolveModelAttribute(context, model).asString();
             final String jvmRoute;
-            if(model.hasDefined(Constants.INSTANCE_ID)) {
+            if (model.hasDefined(Constants.INSTANCE_ID)) {
                 jvmRoute = INSTANCE_ID.resolveModelAttribute(context, model).asString();
             } else {
                 jvmRoute = null;
             }
-            ReverseProxyHostService service = new ReverseProxyHostService(name, jvmRoute);
+            ReverseProxyHostService service = new ReverseProxyHostService(scheme, jvmRoute, path);
             ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(proxyName).append(name), service)
-                    .addDependency(UndertowService.HANDLER.append(proxyName), ProxyHandler.class, service.proxyHandler);
+                    .addDependency(UndertowService.HANDLER.append(proxyName), ProxyHandler.class, service.proxyHandler)
+                    .addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(socketBinding), OutboundSocketBinding.class, service.socketBinding);
+
             if (verificationHandler != null) {
                 builder.addListener(verificationHandler);
             }
@@ -136,20 +163,28 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
     private static final class ReverseProxyHostService implements Service<ReverseProxyHostService> {
 
         private final InjectedValue<ProxyHandler> proxyHandler = new InjectedValue<>();
+        private final InjectedValue<OutboundSocketBinding> socketBinding = new InjectedValue<>();
 
-        private final String name;
         private final String instanceId;
+        private final String scheme;
+        private final String path;
 
-        private ReverseProxyHostService(String name, String instanceId) {
-            this.name = name;
+        private ReverseProxyHostService(String scheme, String instanceId, String path) {
             this.instanceId = instanceId;
+            this.scheme = scheme;
+            this.path = path;
+        }
+        private URI getUri() throws URISyntaxException {
+            OutboundSocketBinding binding = socketBinding.getValue();
+            return new URI(scheme, null, binding.getUnresolvedDestinationAddress(), binding.getDestinationPort(), path, null, null);
         }
 
         @Override
         public void start(StartContext startContext) throws StartException {
             final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
+
             try {
-                client.addHost(new URI(name), instanceId);
+                client.addHost(getUri(), instanceId);
             } catch (URISyntaxException e) {
                 throw new StartException(e);
             }
@@ -159,7 +194,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         public void stop(StopContext stopContext) {
             final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
             try {
-                client.removeHost(new URI(name));
+                client.removeHost(getUri());
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e); //impossible
             }
