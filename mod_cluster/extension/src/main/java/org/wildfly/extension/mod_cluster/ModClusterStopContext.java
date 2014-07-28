@@ -35,23 +35,31 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.CONTEXT;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.VIRTUAL_HOST;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.WAIT_TIME;
 
+/**
+ * {@link OperationStepHandler} that handles stopping of the web context.
+ *
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
+ */
 public class ModClusterStopContext implements OperationStepHandler {
 
     static final ModClusterStopContext INSTANCE = new ModClusterStopContext();
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.STOP_CONTEXT, descriptionResolver)
-                .addParameter(ModClusterSubsystemResourceDefinition.VIRTUAL_HOST)
-                .addParameter(ModClusterSubsystemResourceDefinition.CONTEXT)
-                .addParameter(ModClusterSubsystemResourceDefinition.WAIT_TIME)
+                .addParameter(VIRTUAL_HOST)
+                .addParameter(CONTEXT)
+                .addParameter(WAIT_TIME)
                 .setRuntimeOnly()
                 .build();
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
@@ -59,19 +67,22 @@ public class ModClusterStopContext implements OperationStepHandler {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
                     ROOT_LOGGER.debugf("stop-context: %s", operation);
-                    final ContextHost contexthost = new ContextHost(operation);
+
+                    final String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
+                    final String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
+                    final int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
 
                     try {
-                        service.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime, TimeUnit.SECONDS);
-                    } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(contexthost.webhost, contexthost.webcontext)));
+                        service.stopContext(webHost, webContext, waitTime, TimeUnit.SECONDS);
+                    } catch (IllegalArgumentException e) {
+                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(webHost, webContext)));
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             // TODO We're assuming that the context was previously enabled, but it could have been disabled
-                            service.enableContext(contexthost.webhost, contexthost.webcontext);
+                            service.enableContext(webHost, webContext);
                         }
                     });
                 }

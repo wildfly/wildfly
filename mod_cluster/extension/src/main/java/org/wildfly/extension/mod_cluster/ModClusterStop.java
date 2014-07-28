@@ -34,35 +34,39 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.WAIT_TIME;
+
+/**
+ * {@link OperationStepHandler} that enables all web application context for all engines.
+ *
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
+ */
 public class ModClusterStop implements OperationStepHandler {
 
     static final ModClusterStop INSTANCE = new ModClusterStop();
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.STOP, descriptionResolver)
-                .addParameter(ModClusterSubsystemResourceDefinition.WAIT_TIME)
+                .addParameter(WAIT_TIME)
                 .setRuntimeOnly()
                 .build();
     }
 
-
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME);
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
-                    // TODO all this just for this ContextHost.RemoveQuotes business that shouldn't be necessary
-                    ModelNode dummyOp = new ModelNode();
-                    if (operation.hasDefined(CommonAttributes.WAIT_TIME)) {
-                        dummyOp.get(CommonAttributes.WAIT_TIME).set(ContextHost.RemoveQuotes(operation.get(CommonAttributes.WAIT_TIME).asString()));
-                    }
+                    ROOT_LOGGER.debugf("enable: %s", operation);
 
-                    int waittime = ModClusterSubsystemResourceDefinition.WAIT_TIME.resolveModelAttribute(context, dummyOp).asInt();
-                    service.stop(waittime, TimeUnit.SECONDS);
+                    final int waitTime = WAIT_TIME.resolveModelAttribute(context, operation).asInt();
+
+                    service.stop(waitTime, TimeUnit.SECONDS);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
