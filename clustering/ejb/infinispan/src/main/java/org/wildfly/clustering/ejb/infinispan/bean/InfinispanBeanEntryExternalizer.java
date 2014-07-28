@@ -46,14 +46,18 @@ public class InfinispanBeanEntryExternalizer<G> extends AbstractSimpleExternaliz
     @Override
     public void writeObject(ObjectOutput output, InfinispanBeanEntry<G> entry) throws IOException {
         output.writeObject(entry.getGroupId());
-        output.writeLong(entry.getLastAccessedTime().getTime());
+        Date lastAccessedTime = entry.getLastAccessedTime();
+        output.writeLong((lastAccessedTime != null) ? lastAccessedTime.getTime() : 0);
     }
 
     @Override
     public InfinispanBeanEntry<G> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         G groupId = (G) input.readObject();
         InfinispanBeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
-        entry.setLastAccessedTime(new Date(input.readLong()));
+        long time = input.readLong();
+        if (time > 0) {
+            entry.setLastAccessedTime(new Date(time));
+        }
         return entry;
     }
 }
