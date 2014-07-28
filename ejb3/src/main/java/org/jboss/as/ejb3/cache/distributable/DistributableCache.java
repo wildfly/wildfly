@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.cache.distributable;
 import java.util.UUID;
 
 import org.jboss.as.ejb3.cache.Cache;
+import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.server.ServerEnvironment;
@@ -46,7 +47,7 @@ import org.wildfly.clustering.ejb.RemoveListener;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCache<K, V extends Identifiable<K>> implements Cache<K, V> {
+public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
 
     private final BeanManager<UUID, K, V> manager;
     private final StatefulObjectFactory<V> factory;
@@ -113,32 +114,33 @@ public class DistributableCache<K, V extends Identifiable<K>> implements Cache<K
 
     @Override
     public V get(K id) {
-        BatchStack.pushBatch(this.manager.getBatcher().startBatch());
+        Batch batch = this.manager.getBatcher().startBatch();
         try {
             Bean<UUID, K, V> bean = this.manager.findBean(id);
             if (bean == null) {
-                BatchStack.popBatch().close();
+                batch.close();
                 return null;
             }
-            return bean.acquire();
+            V result = bean.acquire();
+            result.setContext(batch);
+            return result;
         } catch (RuntimeException | Error e) {
-            BatchStack.popBatch().discard();
+            batch.discard();
             throw e;
         }
     }
 
     @Override
     public void release(V value) {
-        K id = value.getId();
         try {
-            Bean<UUID, K, V> bean = this.manager.findBean(id);
+            Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
             if (bean != null) {
                 if (bean.release()) {
                     bean.close();
                 }
             }
         } finally {
-            BatchStack.popBatch().close();
+            value.getContext().close();
         }
     }
 
@@ -148,18 +150,17 @@ public class DistributableCache<K, V extends Identifiable<K>> implements Cache<K
         if (bean != null) {
             bean.remove(this.listener);
         }
-        // Batch will be popped in release(...) or discard(...)
     }
 
     @Override
-    public void discard(K id) {
+    public void discard(V value) {
         try {
-            Bean<UUID, K, V> bean = this.manager.findBean(id);
+            Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
             if (bean != null) {
                 bean.remove(null);
             }
         } finally {
-            BatchStack.popBatch().close();
+            value.getContext().close();
         }
     }
 

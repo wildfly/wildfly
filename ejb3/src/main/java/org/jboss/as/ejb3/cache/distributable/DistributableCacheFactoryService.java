@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.server.ServerEnvironment;
@@ -18,6 +19,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.IdentifierFactory;
@@ -30,10 +32,10 @@ import org.wildfly.clustering.ejb.PassivationListener;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class DistributableCacheFactoryService<K, V extends Identifiable<K>> extends AbstractService<CacheFactory<K, V>> implements CacheFactory<K, V> {
+public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Contextual<Batch>> extends AbstractService<CacheFactory<K, V>> implements CacheFactory<K, V> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K, V extends Identifiable<K>> ServiceBuilder<CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, ServiceName factoryServiceName) {
+    public static <K, V extends Identifiable<K> & Contextual<Batch>> ServiceBuilder<CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, ServiceName factoryServiceName) {
         DistributableCacheFactoryService<K, V> service = new DistributableCacheFactoryService<>();
         return target.addService(name, service)
                 .addDependency(factoryServiceName, BeanManagerFactory.class, (Injector) service.factory)

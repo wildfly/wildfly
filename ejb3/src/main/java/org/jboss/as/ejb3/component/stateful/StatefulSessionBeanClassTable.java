@@ -40,6 +40,7 @@ import org.jboss.as.clustering.marshalling.SimpleClassTable;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
+import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.ejb.client.SessionID;
@@ -72,6 +73,8 @@ public class StatefulSessionBeanClassTable extends SimpleClassTable {
         ManagedReference.class,
         ValueManagedReferenceFactory.ValueManagedReference.class,
         SerializedCdiInterceptorsKey.class,
+        SerializedStatefulSessionComponent.class,
+        ImmediateManagedReference.class,
     };
 
     public StatefulSessionBeanClassTable() {

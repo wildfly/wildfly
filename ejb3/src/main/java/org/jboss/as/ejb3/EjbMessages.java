@@ -2484,6 +2484,7 @@ public interface EjbMessages {
     @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
     String untransformableTimerService(PathAddress address);
 
+    @Deprecated
     @Message(id = 14583, value = "Detected asymmetric usage of cache")
     IllegalStateException asymmetricCacheUsage();
 

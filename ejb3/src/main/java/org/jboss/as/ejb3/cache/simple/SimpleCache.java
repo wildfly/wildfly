@@ -118,8 +118,8 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
     }
 
     @Override
-    public void discard(K key) {
-        this.entries.remove(key);
+    public void discard(V value) {
+        this.entries.remove(value.getId());
     }
 
     @Override
