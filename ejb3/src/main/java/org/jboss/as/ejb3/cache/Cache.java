@@ -68,9 +68,9 @@ public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>,
     /**
      * Discard the specified object from cache.
      *
-     * @param key the identifier of the object
+     * @param obj the object to discard
      */
-    void discard(K key);
+    void discard(V obj);
 
     /**
      * Remove and destroy the specified object from cache.
