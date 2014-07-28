@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.ejb.client.EJBClientContext;
@@ -45,7 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,19 +84,18 @@ public class RemoteOutboundConnectionReconnectTestCase {
     private ContextSelector<EJBClientContext> previousClientContextSelector;
 
     @Before
-    public void beforeClass() throws Exception {
-        Properties env = new Properties();
-        env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        this.context = new InitialContext(env);
+    public void before() throws Exception {
+        this.context = Util.createNamingContext();
         // setup the client context selector
         this.previousClientContextSelector = setupEJBClientContextSelector();
     }
 
     @After
-    public void after() {
+    public void after() throws NamingException {
         if (this.previousClientContextSelector != null) {
             EJBClientContext.setSelector(this.previousClientContextSelector);
         }
+        this.context.close();
     }
 
     @Deployment(name = DEFAULT_AS_DEPLOYMENT, managed = false, testable = false)
