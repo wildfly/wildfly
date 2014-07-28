@@ -242,7 +242,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
 
         @Override
         Set<ObjectName> queryObjectNames(ModelReader reader, ObjectName name, QueryExp query) {
-            throw JSR77Logger.ROOT_LOGGER.shouldNotGetCalled();
+            return Collections.emptySet();
         }
 
         @Override
