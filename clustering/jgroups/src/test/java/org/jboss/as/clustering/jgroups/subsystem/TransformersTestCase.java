@@ -86,6 +86,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    public void testTransformerWF800() throws Exception {
+        testTransformer_2_0_0(
+                ModelTestControllerVersion.WILDFLY_8_0_0_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.WILDFLY_8_0_0_FINAL.getMavenGavVersion()
+                );
+    }
+
+    @Test
     public void testTransformerEAP600() throws Exception {
         testTransformer_1_1_0(
                 ModelTestControllerVersion.EAP_6_0_0,
@@ -123,23 +131,23 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * @throws Exception
      */
     private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version110 = ModelVersion.create(1,1,0);
-        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
+        ModelVersion version = JGroupsModel.VERSION_1_1_0.getVersion();
+        String subsystemXml = readResource("subsystem-jgroups-transform.xml");
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version110)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version110).isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version110);
+        checkSubsystemModelTransformation(mainServices, version);
 
         // 1.1.0 API specific checks:
         // - check description here
@@ -151,23 +159,51 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * @throws Exception
      */
     private void testTransformer_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version120 = ModelVersion.create(1,2,0);
-        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
+        ModelVersion version = JGroupsModel.VERSION_1_2_0.getVersion();
+        String subsystemXml = readResource("subsystem-jgroups-transform.xml");
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version120)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version120).isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version120);
+        checkSubsystemModelTransformation(mainServices, version);
+
+        // 1.2.0 API specific checks:
+        // - check description here
+    }
+
+    /**
+     * Tests transformation of model from 2.0.0 version into 1.2.0 version.
+     *
+     * @throws Exception
+     */
+    private void testTransformer_2_0_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version = JGroupsModel.VERSION_2_0_0.getVersion();
+        String subsystemXml = readResource("subsystem-jgroups-transform.xml");
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+        // initialize the legacy services and add required jars
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(mavenResourceURLs);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
+
+        // check that both versions of the legacy model are the same and valid
+        checkSubsystemModelTransformation(mainServices, version);
 
         // 1.2.0 API specific checks:
         // - check description here
@@ -234,6 +270,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    public void testRejectionsWF800() throws Exception {
+        testRejections_2_0_0(
+                ModelTestControllerVersion.WILDFLY_8_0_0_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.WILDFLY_8_0_0_FINAL.getMavenGavVersion()
+                );
+    }
+
+    @Test
     public void testRejectionsEAP600() throws Exception {
         testRejections_1_1_0(
                 ModelTestControllerVersion.EAP_6_0_0,
@@ -271,12 +315,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * @throws Exception
      */
     private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        ModelVersion version = JGroupsModel.VERSION_1_1_0.getVersion();
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -285,7 +329,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
@@ -293,8 +337,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
-                version_1_1_0,
-                builder.parseXmlResource("subsystem-jgroups-2_0.xml"),
+                version,
+                builder.parseXmlResource("subsystem-jgroups-3_0.xml"),
                 new FailedOperationTransformationConfig()
                         // expect certain rejected expressions
                         .addFailedAttribute(
@@ -327,36 +371,67 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * @throws Exception
      */
     private void testRejections_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        ModelVersion version = JGroupsModel.VERSION_1_2_0.getVersion();
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // Use the real xml with expressions for testing all the attributes
-        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
+        PathAddress stackAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH, StackResourceDefinition.pathElement("maximal"));
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
-                version_1_2_0,
-                builder.parseXmlResource("subsystem-jgroups-transform-2_0-reject.xml"),
+                version,
+                builder.parseXmlResource("subsystem-jgroups-transform-reject.xml"),
                 new FailedOperationTransformationConfig()
                         // expect rejection of relay and child
-                        .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY"),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY").append("remote-site"),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(stackAddress.append(RelayResourceDefinition.PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(stackAddress.append(RelayResourceDefinition.PATH, RemoteSiteResourceDefinition.pathElement("SFO")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(stackAddress.append(RelayResourceDefinition.PATH, RemoteSiteResourceDefinition.pathElement("NYC")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(stackAddress.append(ProtocolResourceDefinition.pathElement("org.custom.CUSTOM")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        );
+    }
+
+    /**
+     * Tests rejection of resources / attributes / operations in 1.2.0 model.
+     *
+     * @throws Exception
+     */
+    private void testRejections_2_0_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version = JGroupsModel.VERSION_2_0_0.getVersion();
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // initialize the legacy services and add required jars
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL(mavenResourceURLs)
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        // Use the real xml with expressions for testing all the attributes
+        PathAddress stackAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH, StackResourceDefinition.pathElement("maximal"));
+        ModelTestUtils.checkFailedTransformedBootOperations(
+                mainServices,
+                version,
+                builder.parseXmlResource("subsystem-jgroups-transform-reject.xml"),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(stackAddress.append(ProtocolResourceDefinition.pathElement("org.custom.CUSTOM")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 }

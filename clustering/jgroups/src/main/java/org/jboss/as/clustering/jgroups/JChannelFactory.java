@@ -23,7 +23,10 @@ package org.jboss.as.clustering.jgroups;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +39,9 @@ import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -52,6 +58,8 @@ import org.jgroups.util.SocketFactory;
  *
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
+
+    public static ModuleIdentifier DEFAULT_MODULE = ModuleIdentifier.fromString("org.jgroups");
 
     public static String createNodeName(String cluster, ServerEnvironment environment) {
         return environment.getNodeName() + "/" + cluster;
@@ -125,7 +133,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {
-            channel.setAddressGenerator(new TopologyAddressGenerator(channel, topology.getSite(), topology.getRack(), topology.getMachine()));
+            channel.addAddressGenerator(new TopologyAddressGenerator(topology));
         }
 
         return channel;
@@ -190,98 +198,103 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
         }
 
+        Class<? extends TP> transportClass = loadProtocolClass(config).asSubclass(TP.class);
+
         SocketBinding binding = transport.getSocketBinding();
         if (binding != null) {
-            configureBindAddress(transport, config, binding);
-            configureServerSocket(transport, config, "bind_port", binding);
-            configureMulticastSocket(transport, config, "mcast_addr", "mcast_port", binding);
+            configureBindAddress(config, transportClass, binding);
+            configureServerSocket(config, transportClass, "bind_port", binding);
+            configureMulticastSocket(config, transportClass, "mcast_addr", "mcast_port", binding);
         }
 
         SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
         boolean diagnostics = (diagnosticsSocketBinding != null);
         properties.put("enable_diagnostics", String.valueOf(diagnostics));
         if (diagnostics) {
-            configureMulticastSocket(transport, config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
+            configureMulticastSocket(config, transportClass, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
         }
 
         configs.add(config);
 
-        boolean supportsMulticast = transport.hasProperty("mcast_addr");
+        boolean supportsMulticast = hasProperty(transportClass, "mcast_addr");
 
         for (ProtocolConfiguration protocol: this.configuration.getProtocols()) {
             config = this.createProtocol(protocol);
+            Class<? extends Protocol> protocolClass = loadProtocolClass(config).asSubclass(Protocol.class);
             binding = protocol.getSocketBinding();
             if (binding != null) {
-                configureBindAddress(protocol, config, binding);
-                configureServerSocket(protocol, config, "bind_port", binding);
-                configureServerSocket(protocol, config, "start_port", binding);
-                configureMulticastSocket(protocol, config, "mcast_addr", "mcast_port", binding);
+                configureBindAddress(config, protocolClass, binding);
+                configureServerSocket(config, protocolClass, "bind_port", binding);
+                configureServerSocket(config, protocolClass, "start_port", binding);
+                configureMulticastSocket(config, protocolClass, "mcast_addr", "mcast_port", binding);
             } else if (transport.getSocketBinding() != null) {
                 // If no socket-binding was specified, use bind address of transport
-                configureBindAddress(protocol, config, transport.getSocketBinding());
+                configureBindAddress(config, protocolClass, transport.getSocketBinding());
             }
             if (!supportsMulticast) {
-                setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
+                setProperty(config, protocolClass, "use_mcast_xmit", String.valueOf(false));
             }
             configs.add(config);
         }
-/*
-        RelayConfiguration relay = this.configuration.getRelay();
-        if (relay != null) {
-            config = this.createProtocol(relay);
-            this.setProperty(relay, config, "site", relay.getSiteName());
-            configs.add(config);
-        }
-*/
+
         return configs;
     }
 
-    private static void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        setPropertyNoOverride(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
+    private static void configureBindAddress(org.jgroups.conf.ProtocolConfiguration config, Class<? extends Protocol> protocolClass, SocketBinding binding) {
+        setPropertyNoOverride(config, protocolClass, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
-    private static void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        setPropertyNoOverride(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
+    private static void configureServerSocket(org.jgroups.conf.ProtocolConfiguration config, Class<? extends Protocol> protocolClass, String property, SocketBinding binding) {
+        setPropertyNoOverride(config, protocolClass, property, String.valueOf(binding.getSocketAddress().getPort()));
     }
 
-    private static void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
+    private static void configureMulticastSocket(org.jgroups.conf.ProtocolConfiguration config, Class<? extends Protocol> protocolClass, String addressProperty, String portProperty, SocketBinding binding) {
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            setPropertyNoOverride(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            setPropertyNoOverride(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            setPropertyNoOverride(config, protocolClass, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            setPropertyNoOverride(config, protocolClass, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
             ROOT_LOGGER.couldNotSetAddressAndPortNoMulticastSocket(e, config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
     }
 
-    private static void setPropertyNoOverride(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
+    private static void setPropertyNoOverride(org.jgroups.conf.ProtocolConfiguration config, Class<? extends Protocol> protocolClass, String name, String value) {
         try {
             Map<String, String> originalProperties = config.getOriginalProperties();
             if (originalProperties.containsKey(name)) {
-                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, protocol.getName(), value, originalProperties.get(name));
+                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, config.getProtocolName(), value, originalProperties.get(name));
             }
         } catch (Exception e) {
-            ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, protocol.getName());
+            ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, config.getProtocolName());
         }
-        setProperty(protocol, config, name, value);
+        setProperty(config, protocolClass, name, value);
     }
 
-    private static void setProperty(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
-        if (protocol.hasProperty(name)) {
+    private static void setProperty(org.jgroups.conf.ProtocolConfiguration config, Class<? extends Protocol> protocolClass, String name, String value) {
+        if (hasProperty(protocolClass, name)) {
             config.getProperties().put(name, value);
         }
     }
 
-    private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
-        String protocol = protocolConfig.getName();
-        final Map<String, String> properties = new HashMap<>(this.configuration.getDefaults().getProperties(protocol));
-        properties.putAll(protocolConfig.getProperties());
-        return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
-            @Override
-            public Map<String, String> getOriginalProperties() {
-                return properties;
+    private org.jgroups.conf.ProtocolConfiguration createProtocol(ProtocolConfiguration config) {
+        String protocol = config.getName();
+        ModuleIdentifier moduleId = config.getModuleId();
+        try {
+            Module module = this.configuration.getModuleLoader().loadModule(moduleId);
+            final Map<String, String> properties = new HashMap<>(this.configuration.getDefaults().getProperties(protocol));
+            properties.putAll(config.getProperties());
+            if (moduleId.equals(DEFAULT_MODULE) && !protocol.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
+                protocol = org.jgroups.conf.ProtocolConfiguration.protocol_prefix + "." + protocol;
             }
-        };
+            return new org.jgroups.conf.ProtocolConfiguration(protocol, properties, module.getClassLoader()) {
+                @Override
+                public Map<String, String> getOriginalProperties() {
+                    return properties;
+                }
+            };
+        } catch (ModuleLoadException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private static void setValue(Protocol protocol, String property, Object value) {
@@ -291,5 +304,33 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         } catch (IllegalArgumentException e) {
             ROOT_LOGGER.nonExistentProtocolPropertyValue(e, protocol.getName(), property, value);
         }
+    }
+
+    private static Class<?> loadProtocolClass(org.jgroups.conf.ProtocolConfiguration config) {
+        String name = config.getProtocolName();
+        try {
+            return config.getClassLoader().loadClass(name);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    private static boolean hasProperty(final Class<? extends Protocol> protocolClass, final String property) {
+        PrivilegedAction<Field> action = new PrivilegedAction<Field>() {
+            @Override
+            public Field run() {
+                return this.getField(protocolClass, property);
+            }
+
+            private Field getField(Class<?> targetClass, String property) {
+                try {
+                    return targetClass.getDeclaredField(property);
+                } catch (NoSuchFieldException e) {
+                    Class<?> superClass = targetClass.getSuperclass();
+                    return (superClass != null) && org.jgroups.stack.Protocol.class.isAssignableFrom(superClass) ? getField(superClass, property) : null;
+                }
+            }
+        };
+        return AccessController.doPrivileged(action) != null;
     }
 }

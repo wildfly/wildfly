@@ -74,7 +74,7 @@ public class TimerSchedulerAdapter implements TimeScheduler {
     @Override
     public ScheduledFuture<?> scheduleWithDynamicInterval(final Task task) {
 
-        final MutableScheduledFuture<Object> future = new MutableScheduledFuture<Object>((ScheduledFuture<Object>) this.schedule(task, task.nextInterval(), TimeUnit.MILLISECONDS));
+        final MutableScheduledFuture<Object> future = new MutableScheduledFuture<>((ScheduledFuture<Object>) this.schedule(task, task.nextInterval(), TimeUnit.MILLISECONDS));
         final long nextInterval = task.nextInterval();
         if (nextInterval > 0) {
             Runnable scheduleTask = new Runnable() {

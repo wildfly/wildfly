@@ -1,6 +1,7 @@
-<subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="minimal">
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0" default-stack="minimal">
     <stack name="maximal">
         <transport type="TCP"
+                   module="org.jgroups"
                    socket-binding="jgroups-tcp"
                    diagnostics-socket-binding="jgroups-diagnostics"
                    default-executor="jgroups"
@@ -13,7 +14,7 @@
                    site="site1">
             <property name="enable_bundling">true</property>
         </transport>
-        <protocol type="MPING"/>
+        <protocol type="MPING" module="org.jgroups"/>
         <protocol type="MERGE2"/>
         <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
         <protocol type="FD"/>
