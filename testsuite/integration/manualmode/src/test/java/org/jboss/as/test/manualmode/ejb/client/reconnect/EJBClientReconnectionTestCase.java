@@ -145,7 +145,11 @@ public class EJBClientReconnectionTestCase {
                 false);
 
         Context ctx = Util.createNamingContext();
-        return remoteClass.cast(ctx.lookup(myContext));
+        try {
+            return remoteClass.cast(ctx.lookup(myContext));
+        } finally {
+            ctx.close();
+        }
     }
 
 }
