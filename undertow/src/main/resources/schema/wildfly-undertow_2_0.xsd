@@ -301,6 +301,9 @@
 
     <xs:complexType name="reverse-proxy-hostType">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="outbound-socket-binding" use="required" type="xs:string"/>
+        <xs:attribute name="scheme" use="optional" type="xs:string" default="http"/>
+        <xs:attribute name="path" use="optional" type="xs:string" default=""/>
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
     </xs:complexType>
 

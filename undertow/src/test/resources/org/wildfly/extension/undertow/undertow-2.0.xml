@@ -90,7 +90,7 @@
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
         <reverse-proxy name="reverse-proxy" connections-per-thread="30">
-            <host name="ajp://localhost:8080" instance-id="myRoute"/>
+            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/> <!-- ajp://localhost:8080 -->
         </reverse-proxy>
     </handlers>
     <filters>
