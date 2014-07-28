@@ -21,14 +21,14 @@
  */
 package org.jboss.as.ejb3.deployment.processors.dd;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -44,11 +44,8 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.metadata.ejb.spec.InterceptorBindingMetaData;
-import org.jboss.metadata.ejb.spec.InterceptorMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.modules.Module;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Processor that handles interceptor bindings that are defined in the deployment descriptor.
  *
@@ -79,14 +76,6 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
             return;
         }
 
-        //default interceptors must be mentioned in the interceptors section
-        final Set<String> interceptorClasses = new HashSet<String>();
-        if (metaData.getInterceptors() != null) {
-            for (final InterceptorMetaData interceptor : metaData.getInterceptors()) {
-                interceptorClasses.add(interceptor.getInterceptorClass());
-            }
-        }
-
         final Map<String, List<InterceptorBindingMetaData>> bindingsPerComponent = new HashMap<String, List<InterceptorBindingMetaData>>();
         final List<InterceptorBindingMetaData> defaultInterceptorBindings = new ArrayList<InterceptorBindingMetaData>();
 
@@ -114,12 +103,7 @@ public class DeploymentDescriptorInterceptorBindingsProcessor implements Deploym
         for (InterceptorBindingMetaData binding : defaultInterceptorBindings) {
             if (binding.getInterceptorClasses() != null) {
                 for (final String clazz : binding.getInterceptorClasses()) {
-                    //we only want default interceptors referenced in the interceptors section
-                    if (interceptorClasses.contains(clazz)) {
-                        defaultInterceptors.add(new InterceptorDescription(clazz));
-                    } else {
-                        ROOT_LOGGER.defaultInterceptorClassNotListed(clazz);
-                    }
+                    defaultInterceptors.add(new InterceptorDescription(clazz));
                 }
             }
         }
