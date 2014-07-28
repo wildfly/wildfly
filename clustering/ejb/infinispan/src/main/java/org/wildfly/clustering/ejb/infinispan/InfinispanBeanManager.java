@@ -48,7 +48,6 @@ import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
@@ -70,7 +69,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <T> the bean type
  */
 @Listener(primaryOnly = true)
-public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Batcher, KeyFilter {
+public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, KeyFilter {
 
     private final Cache<G, BeanGroupEntry<I, T>> groupCache;
     private final String beanName;
@@ -86,6 +85,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final AtomicInteger passiveCount = new AtomicInteger();
+    private final Batcher batcher;
     private volatile Scheduler<I> scheduler;
     private volatile CommandDispatcher<Scheduler<I>> dispatcher;
 
@@ -95,6 +95,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
         this.beanFactory = beanConfiguration.getFactory();
         this.groupCache = groupConfiguration.getCache();
         this.beanCache = beanConfiguration.getCache();
+        this.batcher = new InfinispanBatcher(this.groupCache);
         final Address address = this.groupCache.getCacheManager().getAddress();
         final KeyGenerator<G> groupKeyGenerator = new KeyGenerator<G>() {
             @Override
@@ -140,10 +141,10 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
         final List<Scheduler<I>> schedulers = new ArrayList<>(2);
         Time timeout = this.expiration.getTimeout();
         if ((timeout != null) && (timeout.getValue() >= 0)) {
-            schedulers.add(new BeanExpirationScheduler<>(this, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
+            schedulers.add(new BeanExpirationScheduler<>(this.batcher, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
         if (this.passivation.isEvictionAllowed()) {
-            schedulers.add(new BeanEvictionScheduler<>(this.beanName + ".eviction", this, this.beanFactory, this.dispatcherFactory, this.passivation));
+            schedulers.add(new BeanEvictionScheduler<>(this.beanName + ".eviction", this.batcher, this.beanFactory, this.dispatcherFactory, this.passivation));
         }
         this.scheduler = new Scheduler<I>() {
             @Override
@@ -262,30 +263,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     @Override
     public Batcher getBatcher() {
-        return this;
-    }
-
-    @Override
-    public Batch startBatch() {
-        final Cache<?, ?> cache = this.groupCache;
-        final boolean started = cache.startBatch();
-        return new Batch() {
-            @Override
-            public void close() {
-                this.end(true);
-            }
-
-            @Override
-            public void discard() {
-                this.end(false);
-            }
-
-            private void end(boolean success) {
-                if (started) {
-                    cache.endBatch(success);
-                }
-            }
-        };
+        return this.batcher;
     }
 
     @Override
