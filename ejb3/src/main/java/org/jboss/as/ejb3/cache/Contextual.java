@@ -22,11 +22,20 @@
 package org.jboss.as.ejb3.cache;
 
 /**
- * Exposes a mechanism for attaching a context to an object
+ * Exposes a mechanism for attaching a context to a cached object
  * @author Paul Ferraro
  * @param <C> a cache context
  */
 public interface Contextual<C> {
-    C getContext();
-    void setContext(C context);
+    /**
+     * Returns the cache context of this cached object.
+     * @return a cache context
+     */
+    C getCacheContext();
+
+    /**
+     * Sets the cache context of this cached object.
+     * @param context a cache context
+     */
+    void setCacheContext(C context);
 }

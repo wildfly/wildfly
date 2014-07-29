@@ -117,7 +117,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                 return null;
             }
             V result = bean.acquire();
-            result.setContext(batch);
+            result.setCacheContext(batch);
             return result;
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -135,7 +135,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                 }
             }
         } finally {
-            value.getContext().close();
+            value.getCacheContext().close();
         }
     }
 
@@ -155,7 +155,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
                 bean.remove(null);
             }
         } finally {
-            value.getContext().close();
+            value.getCacheContext().close();
         }
     }
 
