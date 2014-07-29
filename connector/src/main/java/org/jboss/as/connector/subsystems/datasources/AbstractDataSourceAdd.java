@@ -123,7 +123,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
         boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
-        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, operation).asBoolean();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -168,8 +168,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         }
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
-        ManagementResourceRegistration overrideRegistration = registration.isAllowsOverride() ? registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC) : registration;
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, dsName, statsEnabled));
+        if (registration.isAllowsOverride()) {
+            registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
+        }
         dataSourceServiceBuilder.addListener(verificationHandler);
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 

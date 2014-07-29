@@ -41,18 +41,14 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
     private static final PathElement POOL_STATISTICS = PathElement.pathElement("statistics", "pool");
 
     private final ManagementResourceRegistration overrideRegistration;
-    private final Resource resource;
-    private final String dsName;
     private final boolean statsEnabled;
 
-    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName, final boolean statsEnabled) {
+    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, final boolean statsEnabled) {
         this.overrideRegistration = overrideRegistration;
-        this.resource = resource;
-        this.dsName = dsName;
         this.statsEnabled = statsEnabled;
     }
 
-    public void transition(final ServiceController<? extends Object> controller,
+    public void transition(final ServiceController<?> controller,
                            final ServiceController.Transition transition) {
 
         switch (transition) {
@@ -72,13 +68,11 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                         if (jdbcStatsSize > 0) {
                             ManagementResourceRegistration jdbcRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS,DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
                             jdbcRegistration.setRuntimeOnly(true);
-                            resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
 
                         if (poolStatsSize > 0) {
                             ManagementResourceRegistration poolRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
                             poolRegistration.setRuntimeOnly(true);
-                            resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
                     }
                 }
@@ -92,17 +86,27 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                     overrideRegistration.unregisterSubModel(JDBC_STATISTICS);
                     overrideRegistration.unregisterSubModel(POOL_STATISTICS);
                 }
-
-                if (resource.hasChild(JDBC_STATISTICS)) {
-                    resource.removeChild(JDBC_STATISTICS);
-                }
-
-                if (resource.hasChild(POOL_STATISTICS)) {
-                    resource.removeChild(POOL_STATISTICS);
-                }
                 break;
 
             }
+        }
+    }
+
+    public static void registerStatisticsResources(Resource datasourceResource) {
+        if (!datasourceResource.hasChild(JDBC_STATISTICS)) {
+            datasourceResource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
+        }
+        if (!datasourceResource.hasChild(POOL_STATISTICS)) {
+            datasourceResource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
+        }
+    }
+
+    public static void removeStatisticsResources(Resource datasourceResource) {
+        if (datasourceResource.hasChild(JDBC_STATISTICS)) {
+            datasourceResource.removeChild(JDBC_STATISTICS);
+        }
+        if (datasourceResource.hasChild(POOL_STATISTICS)) {
+            datasourceResource.removeChild(POOL_STATISTICS);
         }
     }
 }

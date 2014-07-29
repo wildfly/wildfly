@@ -24,6 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -39,6 +40,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -72,16 +75,19 @@ public class DataSourceEnable implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) {
 
-        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = resource.getModel();
 
         if (context.isNormalServer()) {
+            model.get(ENABLED).set(true);
+            DataSourceStatisticsListener.registerStatisticsResources(resource);
 
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                    model.get(ENABLED).set(true);
-                    addServices(context, operation, verificationHandler, model, isXa(), controllers);
+                    addServices(context, operation, verificationHandler, registration, model, isXa(), controllers);
                     context.addStep(verificationHandler, Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                                             @Override
@@ -95,7 +101,7 @@ public class DataSourceEnable implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    static void addServices(OperationContext context, ModelNode operation, ServiceVerificationHandler verificationHandler, ModelNode model, boolean isXa, final List<ServiceController<?>> controllers) throws OperationFailedException {
+    static void addServices(OperationContext context, ModelNode operation, ServiceVerificationHandler verificationHandler, ManagementResourceRegistration datasourceRegistration, ModelNode model, boolean isXa, final List<ServiceController<?>> controllers) throws OperationFailedException {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ModelNode address = operation.require(OP_ADDR);
@@ -197,6 +203,9 @@ public class DataSourceEnable implements OperationStepHandler {
 
         if (dataSourceController != null) {
             if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
+                final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+                dataSourceController.addListener(new DataSourceStatisticsListener(datasourceRegistration, statsEnabled));
+
                 dataSourceController.setMode(ServiceController.Mode.ACTIVE);
             } else {
                 throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source", dsName)));
