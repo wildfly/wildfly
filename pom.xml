@@ -699,9 +699,7 @@
                                             <goal>clean</goal>
                                             <goal>genkey</goal>
                                             <goal>generateKeyPair</goal>
-                                            <goal>
-                                            	generateSecretKey
-                                            </goal>
+                                            <goal>generateSecretKey</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
