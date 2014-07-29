@@ -224,12 +224,12 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     }
 
     @Override
-    public Object getContext() {
+    public Object getCacheContext() {
         return this.getInstanceData(Contextual.class);
     }
 
     @Override
-    public void setContext(Object context) {
+    public void setCacheContext(Object context) {
         this.setInstanceData(Contextual.class, context);
     }
 }
