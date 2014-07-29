@@ -602,6 +602,9 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14270, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
     DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
 
+    @Message(id = 14271, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
+    DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

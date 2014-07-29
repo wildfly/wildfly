@@ -26,6 +26,7 @@ import java.util.List;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.resourceadapterbinding.metadata.EJBBoundResourceAdapterBindingMetaData;
@@ -56,13 +57,15 @@ public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<Me
         if (clazz == null) {
             return;
         }
-        final ClassAnnotationInformation<ResourceAdapter, String> resourceAdaptor = clazz.getAnnotationInformation(ResourceAdapter.class);
-        if (resourceAdaptor == null) {
+        final ClassAnnotationInformation<ResourceAdapter, String> resourceAdapter = clazz.getAnnotationInformation(ResourceAdapter.class);
+        if (resourceAdapter == null || resourceAdapter.getClassLevelAnnotations().isEmpty()) {
             return;
         }
-        if (!resourceAdaptor.getClassLevelAnnotations().isEmpty()) {
-            componentConfiguration.setResourceAdapterName(resourceAdaptor.getClassLevelAnnotations().get(0));
-        }
+
+        final String configuredAdapterName = resourceAdapter.getClassLevelAnnotations().get(0);
+        final String adapterName = addEarPrefixIfRelativeName(configuredAdapterName, deploymentUnit, componentClass);
+
+        componentConfiguration.setResourceAdapterName(adapterName);
     }
 
     @Override
@@ -79,18 +82,33 @@ public class ResourceAdaptorMergingProcessor extends AbstractMergingProcessor<Me
         }
         final List<EJBBoundResourceAdapterBindingMetaData> resourceAdapterBindingDataList = assemblyDescriptor.getAny(EJBBoundResourceAdapterBindingMetaData.class);
 
-        String resourceAdapterName = null;
+        String configuredAdapterName = null;
         if (resourceAdapterBindingDataList != null) {
             for (EJBBoundResourceAdapterBindingMetaData resourceAdapterBindingData: resourceAdapterBindingDataList) {
-                if ("*".equals(resourceAdapterBindingData.getEjbName()) && resourceAdapterName == null) {
-                    resourceAdapterName = resourceAdapterBindingData.getResourceAdapterName();
+                if ("*".equals(resourceAdapterBindingData.getEjbName()) && configuredAdapterName == null) {
+                    configuredAdapterName = resourceAdapterBindingData.getResourceAdapterName();
                 } else if (ejbName.equals(resourceAdapterBindingData.getEjbName())) {
-                    resourceAdapterName = resourceAdapterBindingData.getResourceAdapterName();
+                    configuredAdapterName = resourceAdapterBindingData.getResourceAdapterName();
                 }
             }
         }
-        if (resourceAdapterName != null) {
-            componentConfiguration.setResourceAdapterName(resourceAdapterName);
+        if (configuredAdapterName != null) {
+            final String adapterName = addEarPrefixIfRelativeName(configuredAdapterName,deploymentUnit,componentClass);
+            componentConfiguration.setResourceAdapterName(adapterName);
         }
+    }
+
+    // adds ear prefix to configured adapter name if it is specified in relative form
+    private String addEarPrefixIfRelativeName(final String configuredName, final DeploymentUnit deploymentUnit,
+            final Class<?> componentClass) throws DeploymentUnitProcessingException {
+        if (!configuredName.startsWith("#")) {
+            return configuredName;
+        }
+        final DeploymentUnit parent = deploymentUnit.getParent();
+        if (parent == null) {
+            throw EjbLogger.ROOT_LOGGER.relativeResourceAdapterNameInStandaloneModule(deploymentUnit.getName(),
+                    componentClass.getName(), configuredName);
+        }
+        return new StringBuilder().append(parent.getName()).append(configuredName).toString();
     }
 }
