@@ -24,12 +24,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:jboss:domain:jca:3.0"
            xmlns="urn:jboss:domain:jca:3.0"
-           xmlns:threads="urn:jboss:domain:threads:1.1"
+           xmlns:threads="urn:jboss:domain:threads:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="2.0">
 
-    <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
+    <xs:import namespace="urn:jboss:domain:threads:2.0" schemaLocation="wildfly-threads_2_0.xsd"/>
 
     <xs:element name="subsystem" type="subsystemType"/>
 

@@ -58,7 +58,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         for (File file : jbossSchemaFiles(true)) {
             sources.add(new StreamSource(file));
         }
-        SCHEMAS = sources.toArray(new StreamSource[0]);
+        SCHEMAS = sources.toArray(new Source[sources.size()]);
     }
 
     private File tmpFile;

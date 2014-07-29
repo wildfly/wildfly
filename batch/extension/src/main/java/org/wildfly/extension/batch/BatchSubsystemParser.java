@@ -68,7 +68,11 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
-            if (namespace == Namespace.BATCH_1_0) {
+            if (namespace == Namespace.BATCH_1_0 || namespace == Namespace.BATCH_1_1) {
+                org.jboss.as.threads.Namespace threadsNamespace = org.jboss.as.threads.Namespace.THREADS_2_0;
+                if(namespace == Namespace.BATCH_1_0) {
+                    threadsNamespace = org.jboss.as.threads.Namespace.THREADS_1_1;
+                }
                 final String localName = reader.getLocalName();
                 final Element element = Element.forName(localName);
                 if (element == Element.JOB_REPOSITORY) {
@@ -77,11 +81,11 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
                 } else if (element == Element.THREAD_POOL) {
                     requiredElements.remove(Element.THREAD_POOL);
                     threadsParser.parseUnboundedQueueThreadPool(reader, namespace.getUriString(),
-                            org.jboss.as.threads.Namespace.THREADS_1_1, subsystemAddress.toModelNode(), list,
+                            threadsNamespace, subsystemAddress.toModelNode(), list,
                             BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
                 } else if (element == Element.THREAD_FACTORY) {
                     threadsParser.parseThreadFactory(reader, namespace.getUriString(),
-                            org.jboss.as.threads.Namespace.THREADS_1_1, subsystemAddress.toModelNode(), list,
+                            threadsNamespace, subsystemAddress.toModelNode(), list,
                             BatchConstants.THREAD_FACTORY, null);
                 } else {
                     throw ParseUtils.unexpectedElement(reader);

@@ -25,12 +25,12 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:jboss:domain:ejb3:3.0"
            xmlns="urn:jboss:domain:ejb3:3.0"
-           xmlns:threads="urn:jboss:domain:threads:1.1"
+           xmlns:threads="urn:jboss:domain:threads:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="3.0">
 
-    <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
+    <xs:import namespace="urn:jboss:domain:threads:2.0" schemaLocation="wildfly-threads_2_0.xsd"/>
 
     <!-- The ejb3 subsystem root element -->
     <xs:element name="subsystem" type="ejb3-subsystemType"/>

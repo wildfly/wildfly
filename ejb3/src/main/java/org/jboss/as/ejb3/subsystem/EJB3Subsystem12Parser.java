@@ -738,10 +738,23 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         final ModelNode parentAddress = SUBSYSTEM_PATH.toModelNode();
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             EJB3SubsystemNamespace readerNS = EJB3SubsystemNamespace.forUri(reader.getNamespaceURI());
+            Namespace threadsNamespace;
+            switch(readerNS) {
+                case EJB3_1_1:
+                case EJB3_1_2:
+                case EJB3_1_3:
+                case EJB3_1_4:
+                case EJB3_2_0:
+                    threadsNamespace = Namespace.THREADS_1_1;
+                    break;
+                default:
+                    threadsNamespace = Namespace.THREADS_2_0;
+                    break;
+            }
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case THREAD_POOL: {
                     ThreadsParser.getInstance().parseUnboundedQueueThreadPool(reader, readerNS.getUriString(),
-                            Namespace.THREADS_1_1, parentAddress, operations, THREAD_POOL, null);
+                            threadsNamespace, parentAddress, operations, THREAD_POOL, null);
                     break;
                 }
                 default: {

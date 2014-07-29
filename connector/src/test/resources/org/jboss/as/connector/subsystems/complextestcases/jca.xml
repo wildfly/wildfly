@@ -6,13 +6,13 @@
                     <core-threads count="50"/>
                     <queue-length count="50"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="seconds"/>
+                    <keepalive-time time="10"/>
                 </short-running-threads>
                 <long-running-threads allow-core-timeout="true">
                     <core-threads count="50"/>
                     <queue-length count="50"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="milliseconds"/>
+                    <keepalive-time time="10"/>
                     <thread-factory name="factory1"/>
                 </long-running-threads>
             </default-workmanager>
@@ -21,14 +21,14 @@
                     <core-threads count="5"/>
                     <queue-length count="5"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="minutes"/>
+                    <keepalive-time time="10"/>
                     <thread-factory name="factory"/>
                 </short-running-threads>
                 <long-running-threads>
                     <core-threads count="0"/>
                     <queue-length count="5"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="1" unit="minutes"/>
+                    <keepalive-time time="1"/>
                 </long-running-threads>
             </workmanager>
             <workmanager name="wm1">
@@ -36,14 +36,14 @@
                     <core-threads count="5"/>
                     <queue-length count="5"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="10" unit="hours"/>
+                    <keepalive-time time="10"/>
                     <thread-factory name="factory"/>
                 </short-running-threads>
                 <long-running-threads>
                     <core-threads count="0"/>
                     <queue-length count="5"/>
                     <max-threads count="50"/>
-                    <keepalive-time time="1" unit="days"/>
+                    <keepalive-time time="86400000"/>
                 </long-running-threads>
             </workmanager>
             <bootstrap-contexts>

@@ -20,14 +20,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:batch:1.0">
+<subsystem xmlns="urn:jboss:domain:batch:1.1">
     <job-repository>
         <jdbc jndi-name="java:jboss/datasources/ExampleDS"/>
     </job-repository>
 
     <thread-pool>
         <max-threads count="10"/>
-        <keepalive-time time="100" unit="milliseconds"/>
+        <keepalive-time time="100"/>
         <thread-factory name="batch"/>
     </thread-pool>
 

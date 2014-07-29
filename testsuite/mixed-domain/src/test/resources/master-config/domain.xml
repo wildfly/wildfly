@@ -98,7 +98,7 @@
                     <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:batch:1.0">
+            <subsystem xmlns="urn:jboss:domain:batch:1.1">
                 <job-repository>
                     <in-memory/>
                 </job-repository>
@@ -143,7 +143,7 @@
                 </concurrent>
                 <default-bindings context-service="java:jboss/ee/concurrency/context/default" datasource="java:jboss/datasources/ExampleDS" jms-connection-factory="java:jboss/DefaultJMSConnectionFactory" managed-executor-service="java:jboss/ee/concurrency/executor/default" managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default" managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:ejb3:2.0">
+            <subsystem xmlns="urn:jboss:domain:ejb3:3.0">
                 <session-bean>
                     <stateless>
                         <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
