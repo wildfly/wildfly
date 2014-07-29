@@ -290,9 +290,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
 
+            boolean sessionTimeoutSet = false;
             if (sessionConfig != null) {
                 if (sessionConfig.getSessionTimeoutSet()) {
                     deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
+                    sessionTimeoutSet = true;
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
                 if (config == null) {
@@ -331,6 +333,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                     config.setSessionTrackingModes(trackingModes);
                 }
+            }
+            if(!sessionTimeoutSet) {
+                deploymentInfo.setDefaultSessionTimeout(container.getValue().getDefaultSessionTimeout() * 60);
             }
             if (config != null) {
                 deploymentInfo.setServletSessionConfig(config);
