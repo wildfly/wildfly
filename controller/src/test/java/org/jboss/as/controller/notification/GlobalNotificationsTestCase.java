@@ -51,6 +51,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
@@ -74,12 +75,19 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
     public static final SimpleAttributeDefinition MY_ATTRIBUTE = create("my-attribute", LONG)
             .setDefaultValue(new ModelNode(12345))
             .build();
+    public static final SimpleAttributeDefinition MY_RUNTIME_ATTRIBUTE = create("my-runtime-attribute", LONG)
+            .setDefaultValue(new ModelNode(6789))
+            .setAllowNull(true)
+            .setStorageRuntime()
+            .build();
     public static final SimpleAttributeDefinition FAIL_ADD_OPERATION = create("fail-add-operation", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .build();
     public static final SimpleAttributeDefinition FAIL_REMOVE_OPERATION = create("fail-remove-operation", BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .build();
+
+    public static long runtimeAttributeValue;
 
     private static final PathAddress RESOURCE_ADDRESS_PATTERN = pathAddress(pathElement("profile", "*"));
     private final PathAddress resourceAddress = pathAddress(pathElement("profile", "myprofile"));
@@ -109,6 +117,7 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
 
                     @Override
                     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+                        runtimeAttributeValue = MY_RUNTIME_ATTRIBUTE.resolveModelAttribute(context, operation).asLong();
                         boolean fail = FAIL_ADD_OPERATION.resolveModelAttribute(context, model).asBoolean();
                         if (fail) {
                             throw new OperationFailedException("add operation failed");
@@ -133,6 +142,21 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
 
                     @Override
                     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Long handback) throws OperationFailedException {
+                    }
+                })
+                .addReadWriteAttribute(MY_RUNTIME_ATTRIBUTE, new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.getResult().set(runtimeAttributeValue);
+
+                        context.stepCompleted();
+                    }
+                },  new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        runtimeAttributeValue = operation.get(VALUE).asLong();
+
+                        context.stepCompleted();
                     }
                 })
                 .build();
@@ -303,6 +327,60 @@ public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
         executeForResult(undefineAttribute);
 
         assertTrue("the notification handler unexpectedly receives the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, handler.getNotifications().isEmpty());
+
+        getController().getNotificationRegistry().unregisterNotificationHandler(RESOURCE_ADDRESS_PATTERN, handler, filter);
+    }
+
+    @Test
+    public void test_ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION_isSentForUndefinedRuntimeAttribute() throws Exception {
+        /// the resource is added without a defined my-runtime-attribute
+        ModelNode add = createOperation(ADD, resourceAddress);
+        executeForResult(add);
+
+        ListBackedNotificationHandler handler = new ListBackedNotificationHandler();
+        NotificationFilter filter = new TestNotificationHandler(resourceAddress, ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION);
+        getController().getNotificationRegistry().registerNotificationHandler(RESOURCE_ADDRESS_PATTERN, handler, filter);
+
+
+        long newValue = System.currentTimeMillis();
+        ModelNode writeAttribute = createOperation(WRITE_ATTRIBUTE_OPERATION, resourceAddress);
+        writeAttribute.get(NAME).set(MY_RUNTIME_ATTRIBUTE.getName());
+        writeAttribute.get(VALUE).set(newValue);
+        executeForResult(writeAttribute);
+
+        assertEquals("the notification handler did not receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, 1, handler.getNotifications().size());
+        Notification notification = handler.getNotifications().get(0);
+        assertEquals(MY_RUNTIME_ATTRIBUTE.getName(), notification.getData().require(NAME).asString());
+        // the old-value corresponds to the actual value read from the runtime attribute before its value was changed
+        assertEquals(MY_RUNTIME_ATTRIBUTE.getDefaultValue().asLong(), notification.getData().require(OLD_VALUE).asLong());
+        assertEquals(newValue, notification.getData().require(NEW_VALUE).asLong());
+
+        getController().getNotificationRegistry().unregisterNotificationHandler(RESOURCE_ADDRESS_PATTERN, handler, filter);
+    }
+
+    @Test
+    public void test_ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION_isSentForRuntimeAttribute() throws Exception {
+        long initialValue = 42;
+        ModelNode add = createOperation(ADD, resourceAddress);
+        add.get(MY_RUNTIME_ATTRIBUTE.getName()).set(initialValue);
+        executeForResult(add);
+
+        ListBackedNotificationHandler handler = new ListBackedNotificationHandler();
+        NotificationFilter filter = new TestNotificationHandler(resourceAddress, ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION);
+        getController().getNotificationRegistry().registerNotificationHandler(RESOURCE_ADDRESS_PATTERN, handler, filter);
+
+
+        long newValue = System.currentTimeMillis();
+        ModelNode writeAttribute = createOperation(WRITE_ATTRIBUTE_OPERATION, resourceAddress);
+        writeAttribute.get(NAME).set(MY_RUNTIME_ATTRIBUTE.getName());
+        writeAttribute.get(VALUE).set(newValue);
+        executeForResult(writeAttribute);
+
+        assertEquals("the notification handler did not receive the " + ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, 1, handler.getNotifications().size());
+        Notification notification = handler.getNotifications().get(0);
+        assertEquals(MY_RUNTIME_ATTRIBUTE.getName(), notification.getData().require(NAME).asString());
+        assertEquals(initialValue, notification.getData().require(OLD_VALUE).asLong());
+        assertEquals(newValue, notification.getData().require(NEW_VALUE).asLong());
 
         getController().getNotificationRegistry().unregisterNotificationHandler(RESOURCE_ADDRESS_PATTERN, handler, filter);
     }
