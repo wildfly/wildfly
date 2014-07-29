@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.jpa.transaction;
 
+import java.util.HashSet;
+
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
@@ -44,6 +46,9 @@ import javax.transaction.UserTransaction;
 public class SFSB1 {
     @PersistenceContext(unitName = "mypc")
         EntityManager em;
+
+    @PersistenceContext(unitName = "deferdetachpc")
+        EntityManager deferDetachEm;
 
     @Resource
     SessionContext sessionContext;
@@ -78,12 +83,18 @@ public class SFSB1 {
         emp.setId(id);
         emp.setAddress(address);
         emp.setName(name);
+        Company theCompany = new Company();
+        theCompany.setId(id);   // reuse the employee id
+        HashSet set = new HashSet();
+        set.add(emp);
+        theCompany.setEmployees(set);
 
         UserTransaction tx1 = sessionContext.getUserTransaction();
         try {
             tx1.begin();
             em.joinTransaction();
             em.persist(emp);
+            em.persist(theCompany);
             tx1.commit();
         }
         catch (Exception e) {
@@ -126,4 +137,11 @@ public class SFSB1 {
         Employee employee = q.getSingleResult();
         return em.contains(employee) != true;
     }
+
+    // return true if lazy associations are accessible as per the WFLY-3674 extension (jboss.as.jpa.deferdetach)
+    public boolean isLazyAssociationAccessibleWithDeferredDetach(int id) {
+        Company company = deferDetachEm.find(Company.class, id);
+        return company.getEmployees().size() == 1;
+    }
+
 }

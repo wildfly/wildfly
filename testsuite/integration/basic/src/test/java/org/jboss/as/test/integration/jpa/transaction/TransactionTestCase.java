@@ -57,6 +57,7 @@ public class TransactionTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(TransactionTestCase.class,
             Employee.class,
+            Company.class,
             SFSB1.class,
             SFSBXPC.class,
             SFSBCMT.class,
@@ -254,5 +255,14 @@ public class TransactionTestCase {
         assertNull("entity created in SynchronizationType.UNSYNCHRONIZED XPC should not of been saved to database", employee);       // same extended persistence context
 
     }
+
+    @Test
+    @InSequence(10)
+    public void testQueryNonTXTransactionalDetachIsDeferred() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        sfsb1.createEmployee("Mad", "368 Mad Country Lane", 204);
+        assertTrue("expecting that lazily fetched association is still attached, so that we can verify its lazy fetched collection size of one", sfsb1.isLazyAssociationAccessibleWithDeferredDetach(204));
+    }
+
 
 }

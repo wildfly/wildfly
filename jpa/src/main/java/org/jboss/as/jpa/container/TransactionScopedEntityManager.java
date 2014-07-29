@@ -31,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.SynchronizationType;
 
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
@@ -59,6 +60,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     private transient EntityManagerFactory emf;
     private transient boolean isJPA21=true;          // true if persistence provider supports JPA 2.1
     private final SynchronizationType synchronizationType;
+    private transient Boolean deferDetach;
 
     public TransactionScopedEntityManager(String puScopedName, Map properties, EntityManagerFactory emf, SynchronizationType synchronizationType) {
         this.puScopedName = puScopedName;
@@ -185,6 +187,17 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         isJPA21 = value;
     }
 
+    /**
+     * return true if non-tx invocations should defer detaching of entities until entity manager is closed.
+     * Note that this is an extension for compatibility with JBoss application server 5.0/6.0 (see AS7-2781)
+     */
+    @Override
+    protected boolean deferEntityDetachUntilClose() {
+        if (deferDetach == null)
+            deferDetach =
+                    (true == Configuration.deferEntityDetachUntilClose(emf.getProperties())? Boolean.TRUE : Boolean.FALSE);
+        return deferDetach.booleanValue();
+    }
 
     /**
      * throw error if jta transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
