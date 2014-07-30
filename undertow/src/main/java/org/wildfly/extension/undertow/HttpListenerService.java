@@ -62,7 +62,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
     public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, OptionMap socketOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
         super(name, listenerOptions, socketOptions);
         this.serverName = serverName;
-        listenerHandlerWrappers.add(new HandlerWrapper() {
+        addWrapperHandler(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
                 httpUpgradeHandler.setNonUpgradeHandler(handler);
@@ -70,14 +70,15 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
             }
         });
         if (certificateForwarding) {
-            listenerHandlerWrappers.add(new HandlerWrapper() {
+            addWrapperHandler(new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(HttpHandler handler) {
                     return new SSLHeaderHandler(handler);
                 }
             });
-        }if (proxyAddressForwarding) {
-            listenerHandlerWrappers.add(new HandlerWrapper() {
+        }
+        if (proxyAddressForwarding) {
+            addWrapperHandler(new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(HttpHandler handler) {
                     return new ProxyPeerAddressHandler(handler);

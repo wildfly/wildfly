@@ -63,7 +63,7 @@ public abstract class ListenerService<T> implements Service<T> {
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
     protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
-    protected final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
+    private final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
     private final String name;
     protected final OptionMap listenerOptions;
@@ -145,6 +145,9 @@ public abstract class ListenerService<T> implements Service<T> {
         unregisterBinding();
     }
 
+    void addWrapperHandler(HandlerWrapper wrapper){
+        listenerHandlerWrappers.add(wrapper);
+    }
 
 
     protected abstract OpenListener createOpenListener();
