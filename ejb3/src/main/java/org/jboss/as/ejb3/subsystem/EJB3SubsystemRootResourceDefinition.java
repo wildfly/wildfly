@@ -24,7 +24,10 @@ package org.jboss.as.ejb3.subsystem;
 
 import java.util.Map;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -47,7 +50,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.ejb3.deployment.processors.EJBDefaultPermissionsProcessor;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.as.threads.ThreadFactoryResolver;
@@ -145,13 +147,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     public static final SimpleAttributeDefinition DISABLE_DEFAULT_EJB_PERMISSIONS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS, ModelType.BOOLEAN, true)
+                    .setDeprecated(ModelVersion.create(3, 0, 0))
                     .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(false))
+                    .setDefaultValue(new ModelNode(true))
                     .build();
 
     private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null);
     private static final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor = new MissingMethodPermissionsDenyAccessMergingProcessor();
-    private static final EJBDefaultPermissionsProcessor ejbDefaultPermissionsProcessor = new EJBDefaultPermissionsProcessor();
 
 
     private final boolean registerRuntimeOnly;
@@ -160,7 +162,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
                 EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME),
-                new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor, ejbDefaultPermissionsProcessor, missingMethodPermissionsDenyAccessMergingProcessor), EJB3SubsystemRemove.INSTANCE,
+                new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor, missingMethodPermissionsDenyAccessMergingProcessor), EJB3SubsystemRemove.INSTANCE,
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;
@@ -207,8 +209,17 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, missingMethodPermissionsDenyAccessMergingProcessor);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
 
-        final EJBDisableDefaultEJBPermissionsWriteHandler ejbDisableDefaultEJBPermissionsWriteHandler = new EJBDisableDefaultEJBPermissionsWriteHandler(DISABLE_DEFAULT_EJB_PERMISSIONS, ejbDefaultPermissionsProcessor);
-        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, ejbDisableDefaultEJBPermissionsWriteHandler);
+        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>() {
+            protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+                if (resolvedValue.asBoolean()) {
+                    throw EjbLogger.ROOT_LOGGER.disableDefaultEjbPermissionsCannotBeTrue();
+                }
+                return false;
+            }
+
+            protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
+            }
+        });
     }
 
     @Override

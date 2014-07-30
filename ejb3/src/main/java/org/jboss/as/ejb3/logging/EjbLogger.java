@@ -82,6 +82,7 @@ import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -3022,6 +3023,9 @@ public interface EjbLogger extends BasicLogger {
     void jdbcDatabaseDialectDetectionFailed(String validDialects);
 
     @LogMessage(level = WARN)
-    @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecyle method %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")
+    @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecycle method %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")
     void invalidTransactionTypeForSfsbLifecycleMethod(TransactionAttributeType txAttr, MethodIdentifier method);
+
+    @Message(id = 464, value = "The \"" + EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS + "\" attribute may not be set to true")
+    OperationFailedException disableDefaultEjbPermissionsCannotBeTrue();
 }
