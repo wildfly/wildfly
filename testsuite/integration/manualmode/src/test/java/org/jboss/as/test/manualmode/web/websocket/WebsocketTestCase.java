@@ -126,7 +126,7 @@ public class WebsocketTestCase {
 
     @Test
     @InSequence(100)
-    public void tearDownTheServer() {
+    public void tearDownTheServer() throws Exception {
         try {
             deployer.undeploy(DEPLOYMENT);
             log.info("Undeployed " + DEPLOYMENT);
@@ -135,6 +135,7 @@ public class WebsocketTestCase {
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort());
+            connectorsServerSetup.tearDown(managementClient, CONTAINER);
             container.stop(CONTAINER);
             log.info("Server stopped");
         }
