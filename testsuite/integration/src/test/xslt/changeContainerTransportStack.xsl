@@ -2,7 +2,7 @@
 
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:2.0">
+                xmlns:ispn="urn:jboss:domain:infinispan:3.0">
 
     <xsl:param name="container" select="'web'"/>
     <xsl:param name="stack" select="'udp'"/>
