@@ -81,6 +81,7 @@
                 <xs:attribute name="worker" type="xs:string" default="default"/>
                 <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
                 <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+                <xs:attribute name="resolve-peer-address" type="xs:boolean" default="false"/>
                 <xs:attribute name="max-post-size" type="xs:long" default="0"/>
                 <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
                 <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
