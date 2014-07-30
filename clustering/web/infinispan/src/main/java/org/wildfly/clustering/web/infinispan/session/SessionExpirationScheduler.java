@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -62,6 +63,7 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
     private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
         executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         return executor;
     }
 
@@ -85,13 +87,31 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
         if (timeout > 0) {
             String id = session.getId();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
-            this.expirationFutures.put(id, this.executor.schedule(new ExpirationTask(id), timeout, TimeUnit.MILLISECONDS));
+            Runnable task = new ExpirationTask(id);
+            synchronized (task) {
+                this.expirationFutures.put(id, this.executor.schedule(task, timeout, TimeUnit.MILLISECONDS));
+            }
         }
     }
 
     @Override
     public void close() {
         this.executor.shutdown();
+        for (Future<?> future: this.expirationFutures.values()) {
+            future.cancel(false);
+        }
+        for (Future<?> future: this.expirationFutures.values()) {
+            if (!future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // Ignore
+                }
+            }
+        }
+        this.expirationFutures.clear();
     }
 
     private class ExpirationTask implements Runnable {
@@ -103,18 +123,23 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
 
         @Override
         public void run() {
-            SessionExpirationScheduler.this.expirationFutures.remove(this.id);
             InfinispanWebLogger.ROOT_LOGGER.tracef("Expiring session %s", this.id);
-            Batch batch = SessionExpirationScheduler.this.batcher.startBatch();
-            boolean success = false;
             try {
-                SessionExpirationScheduler.this.remover.remove(this.id);
-                success = true;
+                Batch batch = SessionExpirationScheduler.this.batcher.startBatch();
+                boolean success = false;
+                try {
+                    SessionExpirationScheduler.this.remover.remove(this.id);
+                    success = true;
+                } finally {
+                    if (success) {
+                        batch.close();
+                    } else {
+                        batch.discard();
+                    }
+                }
             } finally {
-                if (success) {
-                    batch.close();
-                } else {
-                    batch.discard();
+                synchronized (this) {
+                    SessionExpirationScheduler.this.expirationFutures.remove(this.id);
                 }
             }
         }
