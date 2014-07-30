@@ -99,11 +99,11 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        target.addService(deploymentUnitServiceName.append(this.name, "expiration"), new RemoveOnCancelScheduledExecutorService(EXPIRATION_THREAD_FACTORY))
+        RemoveOnCancelScheduledExecutorService.build(target, deploymentUnitServiceName.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        target.addService(deploymentUnitServiceName.append(this.name, "eviction"), new CachedThreadPoolExecutorService(EVICTION_THREAD_FACTORY))
+        CachedThreadPoolExecutorService.build(target, deploymentUnitServiceName.append(this.name, "eviction"), EVICTION_THREAD_FACTORY)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

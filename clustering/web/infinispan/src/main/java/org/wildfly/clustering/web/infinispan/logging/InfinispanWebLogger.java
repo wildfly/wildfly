@@ -53,4 +53,8 @@ public interface InfinispanWebLogger extends BasicLogger {
 
     @Message(id = 3, value = "Session %s is not valid")
     IllegalStateException invalidSession(String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 4, value = "Failed to expire session %s")
+    void failedToExpireSession(@Cause Throwable cause, String sessionId);
 }

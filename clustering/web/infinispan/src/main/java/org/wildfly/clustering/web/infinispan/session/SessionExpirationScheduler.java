@@ -22,10 +22,9 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -48,7 +47,7 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  */
 public class SessionExpirationScheduler implements Scheduler {
 
-    final Map<String, Future<?>> expirationFutures = Collections.synchronizedMap(new HashMap<String, Future<?>>());
+    final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Batcher batcher;
     final Remover<String> remover;
     private final ScheduledExecutorService executor;
@@ -64,6 +63,7 @@ public class SessionExpirationScheduler implements Scheduler {
     private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
         executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         return executor;
     }
 
@@ -90,21 +90,17 @@ public class SessionExpirationScheduler implements Scheduler {
             String id = session.getId();
             Runnable task = new ExpirationTask(id);
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will expire in %d ms", id, timeout);
-            this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+            synchronized (task) {
+                this.expirationFutures.put(id, this.executor.schedule(task, delay, TimeUnit.MILLISECONDS));
+            }
         }
     }
 
     @Override
     public void cancel(Locality locality) {
-        synchronized (this.expirationFutures) {
-            Iterator<Map.Entry<String, Future<?>>> entries = this.expirationFutures.entrySet().iterator();
-            while (entries.hasNext()) {
-                Map.Entry<String, Future<?>> entry = entries.next();
-                String sessionId = entry.getKey();
-                if (!locality.isLocal(sessionId)) {
-                    entry.getValue().cancel(false);
-                    entries.remove();
-                }
+        for (String sessionId: this.expirationFutures.keySet()) {
+            if (!locality.isLocal(sessionId)) {
+                this.cancel(sessionId);
             }
         }
     }
@@ -112,6 +108,20 @@ public class SessionExpirationScheduler implements Scheduler {
     @Override
     public void close() {
         this.executor.shutdown();
+        for (Future<?> future: this.expirationFutures.values()) {
+            future.cancel(false);
+        }
+        for (Future<?> future: this.expirationFutures.values()) {
+            if (!future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // Ignore
+                }
+            }
+        }
         this.expirationFutures.clear();
     }
 
@@ -124,18 +134,25 @@ public class SessionExpirationScheduler implements Scheduler {
 
         @Override
         public void run() {
-            SessionExpirationScheduler.this.expirationFutures.remove(this.id);
             InfinispanWebLogger.ROOT_LOGGER.tracef("Expiring session %s", this.id);
-            Batch batch = SessionExpirationScheduler.this.batcher.startBatch();
-            boolean success = false;
             try {
-                SessionExpirationScheduler.this.remover.remove(this.id);
-                success = true;
+                Batch batch = SessionExpirationScheduler.this.batcher.startBatch();
+                boolean success = false;
+                try {
+                    SessionExpirationScheduler.this.remover.remove(this.id);
+                    success = true;
+                } catch (Throwable e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToExpireSession(e, this.id);
+                } finally {
+                    if (success) {
+                        batch.close();
+                    } else {
+                        batch.discard();
+                    }
+                }
             } finally {
-                if (success) {
-                    batch.close();
-                } else {
-                    batch.discard();
+                synchronized (this) {
+                    SessionExpirationScheduler.this.expirationFutures.remove(this.id);
                 }
             }
         }
