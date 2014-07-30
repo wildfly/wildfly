@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -40,6 +41,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.ContextSelector;
@@ -52,9 +54,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -79,24 +81,23 @@ public class RemoteCallWhileShuttingDownTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    private static Context context;
-    private static ContextSelector<EJBClientContext> previousClientContextSelector;
+    private Context context;
+    private ContextSelector<EJBClientContext> previousClientContextSelector;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(props);
+    @Before
+    public void before() throws Exception {
+        this.context = Util.createNamingContext();
         // setup the client context selector
-        previousClientContextSelector = setupEJBClientContextSelector();
+        this.previousClientContextSelector = setupEJBClientContextSelector();
 
     }
 
-    @AfterClass
-    public static void afterClass() {
-        if (previousClientContextSelector != null) {
-            EJBClientContext.setSelector(previousClientContextSelector);
+    @After
+    public void after() throws NamingException {
+        if (this.previousClientContextSelector != null) {
+            EJBClientContext.setSelector(this.previousClientContextSelector);
         }
+        this.context.close();
     }
 
     @Deployment(name = DEP1, managed = false, testable = false)
