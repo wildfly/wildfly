@@ -76,7 +76,6 @@ public class SSLEJBRemoteClientTestCase {
     public static final String DEPLOYMENT_STATELESS = "dep_stateless";
     public static final String DEPLOYMENT_STATEFUL = "dep_stateful";
     private static boolean serverConfigDone = false;
-    private static String resourcePath;
     private static ContextSelector<EJBClientContext> previousClientContextSelector;
 
     @ArquillianResource
@@ -184,14 +183,18 @@ public class SSLEJBRemoteClientTestCase {
         deployer.deploy(DEPLOYMENT_STATELESS);
         log.info("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
-        log.info("**** looking up StatelessBean through JNDI");
-        StatelessBeanRemote bean = (StatelessBeanRemote)
-                ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
-        log.info("**** About to perform synchronous call on stateless bean");
-        String response = bean.sayHello();
-        log.info("**** The answer is: " + response);
-        Assert.assertEquals("Remote invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
-        deployer.undeploy(DEPLOYMENT_STATELESS);
+        try {
+            log.info("**** looking up StatelessBean through JNDI");
+            StatelessBeanRemote bean = (StatelessBeanRemote)
+                    ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
+            log.info("**** About to perform synchronous call on stateless bean");
+            String response = bean.sayHello();
+            log.info("**** The answer is: " + response);
+            Assert.assertEquals("Remote invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
+            deployer.undeploy(DEPLOYMENT_STATELESS);
+        } finally {
+            ctx.close();
+        }
     }
 
     @Test
@@ -200,15 +203,19 @@ public class SSLEJBRemoteClientTestCase {
         deployer.deploy(DEPLOYMENT_STATELESS);
         log.info("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
-        log.info("**** looking up StatelessBean through JNDI");
-        StatelessBeanRemote bean = (StatelessBeanRemote)
-                ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
-        log.info("**** About to perform asynchronous call on stateless bean");
-        Future<String> futureResponse = bean.sayHelloAsync();
-        String response = futureResponse.get();
-        log.info("**** The answer is: " + response);
-        Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
-        deployer.undeploy(DEPLOYMENT_STATELESS);
+        try {
+            log.info("**** looking up StatelessBean through JNDI");
+            StatelessBeanRemote bean = (StatelessBeanRemote)
+                    ctx.lookup("ejb:/" + MODULE_NAME_STATELESS + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessBeanRemote.class.getCanonicalName());
+            log.info("**** About to perform asynchronous call on stateless bean");
+            Future<String> futureResponse = bean.sayHelloAsync();
+            String response = futureResponse.get();
+            log.info("**** The answer is: " + response);
+            Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatelessBeanRemote.ANSWER, response);
+            deployer.undeploy(DEPLOYMENT_STATELESS);
+        } finally {
+            ctx.close();
+        }
     }
 
     @Test
@@ -217,14 +224,18 @@ public class SSLEJBRemoteClientTestCase {
         deployer.deploy(DEPLOYMENT_STATEFUL);
         log.info("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
-        log.info("**** looking up StatefulBean through JNDI");
-        StatefulBeanRemote bean = (StatefulBeanRemote)
-                ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
-        log.info("**** About to perform synchronous call on stateful bean");
-        String response = bean.sayHello();
-        log.info("**** The answer is: " + response);
-        Assert.assertEquals("Remote invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
-        deployer.undeploy(DEPLOYMENT_STATEFUL);
+        try {
+            log.info("**** looking up StatefulBean through JNDI");
+            StatefulBeanRemote bean = (StatefulBeanRemote)
+                    ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
+            log.info("**** About to perform synchronous call on stateful bean");
+            String response = bean.sayHello();
+            log.info("**** The answer is: " + response);
+            Assert.assertEquals("Remote invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
+            deployer.undeploy(DEPLOYMENT_STATEFUL);
+        } finally {
+            ctx.close();
+        }
     }
 
     @Test
@@ -233,15 +244,19 @@ public class SSLEJBRemoteClientTestCase {
         deployer.deploy(DEPLOYMENT_STATEFUL);
         log.info("**** creating InitialContext");
         InitialContext ctx = new InitialContext(getEjbClientContextProperties());
-        log.info("**** looking up StatefulBean through JNDI");
-        StatefulBeanRemote bean = (StatefulBeanRemote)
-                ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
-        log.info("**** About to perform asynchronous call on stateful bean");
-        Future<String> futureResponse = bean.sayHelloAsync();
-        String response = futureResponse.get();
-        log.info("**** The answer is: " + response);
-        Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
-        deployer.undeploy(DEPLOYMENT_STATEFUL);
+        try {
+            log.info("**** looking up StatefulBean through JNDI");
+            StatefulBeanRemote bean = (StatefulBeanRemote)
+                    ctx.lookup("ejb:/" + MODULE_NAME_STATEFUL + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulBeanRemote.class.getCanonicalName()+"?stateful");
+            log.info("**** About to perform asynchronous call on stateful bean");
+            Future<String> futureResponse = bean.sayHelloAsync();
+            String response = futureResponse.get();
+            log.info("**** The answer is: " + response);
+            Assert.assertEquals("Remote asynchronous invocation of EJB was not successful", StatefulBeanRemote.ANSWER, response);
+            deployer.undeploy(DEPLOYMENT_STATEFUL);
+        } finally {
+            ctx.close();
+        }
     }
 
 

@@ -64,7 +64,11 @@ public class NonClusteredStatefulNodeNameEcho implements NodeNameEcho {
         props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
         try {
             final Context context = new InitialContext(props);
-            this.clusteredDelegate = (NodeNameEcho) context.lookup("ejb:/server-to-server-clustered-ejb-invocation//ClusteredStatefulNodeNameEcho!org.jboss.as.test.manualmode.ejb.client.cluster.NodeNameEcho?stateful");
+            try {
+                this.clusteredDelegate = (NodeNameEcho) context.lookup("ejb:/server-to-server-clustered-ejb-invocation//ClusteredStatefulNodeNameEcho!org.jboss.as.test.manualmode.ejb.client.cluster.NodeNameEcho?stateful");
+            } finally {
+                context.close();
+            }
         } catch (NamingException ne) {
             throw new RuntimeException(ne);
         }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ejb3.cache.distributable;
-
-import java.util.Deque;
-import java.util.LinkedList;
-
-import org.jboss.as.ejb3.logging.EjbLogger;
-import org.wildfly.clustering.ejb.Batch;
+package org.jboss.as.ejb3.cache;
 
 /**
- * {@link ThreadLocal} storage for a batch to allow a batch to span cache invocations.
+ * Exposes a mechanism for attaching a context to a cached object
  * @author Paul Ferraro
+ * @param <C> a cache context
  */
-public class BatchStack {
-    private static final ThreadLocal<Deque<Batch>> BATCH_STACK = new ThreadLocal<Deque<Batch>>() {
-        @Override
-        protected Deque<Batch> initialValue() {
-            return new LinkedList<>();
-        }
-    };
+public interface Contextual<C> {
+    /**
+     * Returns the cache context of this cached object.
+     * @return a cache context
+     */
+    C getCacheContext();
 
-    public static void pushBatch(Batch batch) {
-        BATCH_STACK.get().addLast(batch);
-    }
-
-    public static Batch popBatch() {
-        Deque<Batch> stack = BATCH_STACK.get();
-        if (stack.isEmpty()) {
-            throw EjbLogger.ROOT_LOGGER.asymmetricCacheUsage();
-        }
-        return stack.removeLast();
-    }
-
-    private BatchStack() {
-        // Hide
-    }
+    /**
+     * Sets the cache context of this cached object.
+     * @param context a cache context
+     */
+    void setCacheContext(C context);
 }
