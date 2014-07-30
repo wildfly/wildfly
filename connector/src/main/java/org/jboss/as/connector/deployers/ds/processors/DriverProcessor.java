@@ -52,6 +52,8 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
     /** {@inheritDoc} */
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        //TODO check profile
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ServicesAttachment servicesAttachment = deploymentUnit.getAttachment(Attachments.SERVICES);

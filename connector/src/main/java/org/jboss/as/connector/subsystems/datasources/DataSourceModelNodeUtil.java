@@ -99,6 +99,8 @@ import java.util.Map;
 import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Capacity;
@@ -131,6 +133,9 @@ class DataSourceModelNodeUtil {
 
     static ModifiableDataSource from(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> connectionProperties= Collections.emptyMap();
+        Resource rootNode = operationContext.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+        ModelNode rootModel = rootNode.getModel();
+        String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
 
         final String connectionUrl = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTION_URL);
         final String driverClass = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, DRIVER_CLASS);
@@ -216,12 +221,15 @@ class DataSourceModelNodeUtil {
 
         return new ModifiableDataSource(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
-                poolName, enabled, jndiName, spy, useCcm, jta, connectable, tracking, pool);
+                poolName, enabled, jndiName, spy, useCcm, jta, connectable, tracking, pool, profile);
     }
 
     static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
         final Map<String, String> xaDataSourceProperty;
         xaDataSourceProperty = Collections.emptyMap();
+        Resource rootNode = operationContext.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+        ModelNode rootModel = rootNode.getModel();
+        String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
 
         final String xaDataSourceClass = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, XA_DATASOURCE_CLASS);
         final String jndiName = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, JNDI_NAME);
@@ -329,7 +337,7 @@ class DataSourceModelNodeUtil {
         return new ModifiableXaDataSource(transactionIsolation, timeOut, security, statement, validation, urlDelimiter, urlProperty,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm,
                 connectable, tracking, xaDataSourceProperty,
-                xaDataSourceClass, module, newConnectionSql, xaPool, recovery);
+                xaDataSourceClass, module, newConnectionSql, xaPool, recovery, profile);
     }
 
 }

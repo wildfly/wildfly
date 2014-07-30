@@ -40,6 +40,8 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -77,6 +79,9 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
         final String xaDataSourceClassName = model.hasDefined(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()) ? model.get(
                 DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).asString() : null;
 
+        Resource rootNode = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+        ModelNode rootModel = rootNode.getModel();
+        String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
 
         final ServiceTarget target = context.getServiceTarget();
 
@@ -94,7 +99,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             if (serviceLoader != null)
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, profile);
                 }
         } else {
             try {
@@ -102,7 +107,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, profile);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
 

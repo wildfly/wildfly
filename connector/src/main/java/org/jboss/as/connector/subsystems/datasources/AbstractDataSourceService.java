@@ -288,20 +288,23 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         private final org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig;
         private final XaDataSource xaDataSourceConfig;
+        private final String profile;
 
         private ServiceContainer serviceContainer;
 
-        public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig) {
+        public AS7DataSourceDeployer(XaDataSource xaDataSourceConfig, final String profile) {
             super();
             this.xaDataSourceConfig = xaDataSourceConfig;
             this.dataSourceConfig = null;
+            this.profile = profile;
 
         }
 
-        public AS7DataSourceDeployer(org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig) {
+        public AS7DataSourceDeployer(org.jboss.jca.common.api.metadata.ds.DataSource dataSourceConfig, final String profile) {
             super();
             this.dataSourceConfig = dataSourceConfig;
             this.xaDataSourceConfig = null;
+            this.profile = profile;
 
         }
 
@@ -318,7 +321,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 DataSources dataSources = null;
                 if (dataSourceConfig != null) {
                     String driverName = dataSourceConfig.getDriver();
-                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName, profile);
                     if (installedDriver != null) {
                         String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
                                 : null;
@@ -331,7 +334,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                     dataSources = new DatasourcesImpl(Arrays.asList(dataSourceConfig), null, drivers);
                 } else if (xaDataSourceConfig != null) {
                     String driverName = xaDataSourceConfig.getDriver();
-                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName);
+                    InstalledDriver installedDriver = driverRegistry.getValue().getInstalledDriver(driverName, profile);
                     if (installedDriver != null) {
                         String moduleName = installedDriver.getModuleName() != null ? installedDriver.getModuleName().getName()
                                 : null;

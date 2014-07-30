@@ -35,6 +35,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAM
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PROFILE;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
@@ -43,6 +44,8 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -64,9 +67,12 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                     ServiceController<?> sc = context.getServiceRegistry(false).getRequiredService(
                             ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE);
                     DriverRegistry driverRegistry = DriverRegistry.class.cast(sc.getValue());
+                    Resource rootNode = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+                    ModelNode rootModel = rootNode.getModel();
+                    String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
 
                     ModelNode result = context.getResult();
-                    for (InstalledDriver driver : driverRegistry.getInstalledDrivers()) {
+                    for (InstalledDriver driver : driverRegistry.getInstalledDrivers(profile)) {
                         ModelNode driverNode = new ModelNode();
                         driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                         if (driver.isFromDeployment()) {
@@ -91,6 +97,9 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         driverNode.get(DRIVER_MAJOR_VERSION.getName()).set(driver.getMajorVersion());
                         driverNode.get(DRIVER_MINOR_VERSION.getName()).set(driver.getMinorVersion());
                         driverNode.get(JDBC_COMPLIANT.getName()).set(driver.isJdbcCompliant());
+                        if (driver.getProfile() != null) {
+                            driverNode.get(PROFILE.getName()).set(driver.getProfile());
+                        }
                         result.add(driverNode);
                     }
                     context.stepCompleted();

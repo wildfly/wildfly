@@ -41,8 +41,10 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -71,11 +73,15 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
 
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    Resource rootNode = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+                    ModelNode rootModel = rootNode.getModel();
+                    String profile = rootModel.hasDefined("profile-name") ? rootModel.get("profile-name").asString() : null;
+
                     ServiceController<?> sc = context.getServiceRegistry(false).getRequiredService(
                             ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE);
                     DriverRegistry driverRegistry = DriverRegistry.class.cast(sc.getValue());
                     ModelNode result = new ModelNode();
-                    InstalledDriver driver = driverRegistry.getInstalledDriver(name);
+                    InstalledDriver driver = driverRegistry.getInstalledDriver(name, profile);
                     ModelNode driverNode = new ModelNode();
                     driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                     if (driver.isFromDeployment()) {

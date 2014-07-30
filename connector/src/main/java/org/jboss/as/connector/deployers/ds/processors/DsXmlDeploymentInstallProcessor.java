@@ -111,6 +111,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
      */
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        //TODO check profile
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
@@ -231,7 +232,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 ds.getSecurity(), ds.getStatement(), ds.getValidation(),
                 ds.getUrlDelimiter(), ds.getUrlSelectorStrategyClassName(), ds.getNewConnectionSql(),
                 ds.isUseJavaContext(), ds.getPoolName(), ds.isEnabled(), ds.getJndiName(),
-                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.isTracking(), ds.getPool());
+                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.isTracking(), ds.getPool(), null);
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {
@@ -256,7 +257,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 xads.isUseJavaContext(), xads.getPoolName(), xads.isEnabled(), xads.getJndiName(),
                 xads.isSpy(), xads.isUseCcm(), xads.isConnectable(), xads.isTracking(),
                 xads.getXaDataSourceProperty(), xads.getXaDataSourceClass(), xads.getDriver(),
-                xads.getNewConnectionSql(), xaPool, xads.getRecovery());
+                xads.getNewConnectionSql(), xaPool, xads.getRecovery(), null);
     }
 
     private <T> T getDef(T value, T def) {
