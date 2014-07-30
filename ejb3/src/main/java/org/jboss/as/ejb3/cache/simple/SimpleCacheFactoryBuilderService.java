@@ -64,7 +64,7 @@ public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> exte
 
     @Override
     public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
-        target.addService(deploymentUnitServiceName.append(this.name, "expiration"), new RemoveOnCancelScheduledExecutorService(THREAD_FACTORY))
+        RemoveOnCancelScheduledExecutorService.build(target, deploymentUnitServiceName.append(this.name, "expiration"), THREAD_FACTORY)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

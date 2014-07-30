@@ -25,7 +25,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossExecutors;
@@ -36,16 +40,20 @@ import org.jboss.threads.JBossExecutors;
  */
 public class RemoveOnCancelScheduledExecutorService implements Service<ScheduledExecutorService> {
 
+    public static ServiceBuilder<ScheduledExecutorService> build(ServiceTarget target, ServiceName name, ThreadFactory factory) {
+        return build(target, name, factory, 1);
+    }
+
+    public static ServiceBuilder<ScheduledExecutorService> build(ServiceTarget target, ServiceName name, ThreadFactory factory, int size) {
+        return AsynchronousService.addService(target, name, new RemoveOnCancelScheduledExecutorService(size, factory), false, true);
+    }
+
     private final ThreadFactory threadFactory;
     private final int size;
 
     private volatile ScheduledExecutorService executor;
 
-    public RemoveOnCancelScheduledExecutorService(ThreadFactory threadFactory) {
-        this(1, threadFactory);
-    }
-
-    public RemoveOnCancelScheduledExecutorService(int size, ThreadFactory threadFactory) {
+    private RemoveOnCancelScheduledExecutorService(int size, ThreadFactory threadFactory) {
         this.size = size;
         this.threadFactory = threadFactory;
     }
@@ -59,11 +67,13 @@ public class RemoveOnCancelScheduledExecutorService implements Service<Scheduled
     public void start(StartContext context) {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(this.size, this.threadFactory);
         executor.setRemoveOnCancelPolicy(true);
+        executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
         this.executor = executor;
     }
 
     @Override
     public void stop(StopContext context) {
-        this.executor.shutdownNow();
+        this.executor.shutdown();
+        this.executor = null;
     }
 }
