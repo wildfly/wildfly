@@ -29,6 +29,7 @@ import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.ejb.client.Affinity;
 import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ejb.BatchContext;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.RemoveListener;
@@ -47,11 +48,11 @@ import org.wildfly.clustering.ejb.RemoveListener;
  */
 public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>> implements Cache<K, V> {
 
-    private final BeanManager<UUID, K, V> manager;
+    private final BeanManager<UUID, K, V, Batch> manager;
     private final StatefulObjectFactory<V> factory;
     private final RemoveListener<V> listener;
 
-    public DistributableCache(BeanManager<UUID, K, V> manager, StatefulObjectFactory<V> factory) {
+    public DistributableCache(BeanManager<UUID, K, V, Batch> manager, StatefulObjectFactory<V> factory) {
         this.manager = manager;
         this.factory = factory;
         this.listener = new RemoveListenerAdapter<>(factory);
@@ -127,15 +128,15 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void release(V value) {
-        try {
-            Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
-            if (bean != null) {
-                if (bean.release()) {
-                    bean.close();
+        try (BatchContext context = this.manager.getBatcher().resume(value.getCacheContext())) {
+            try (Batch batch = value.getCacheContext()) {
+                Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
+                if (bean != null) {
+                    if (bean.release()) {
+                        bean.close();
+                    }
                 }
             }
-        } finally {
-            value.getCacheContext().close();
         }
     }
 
@@ -149,13 +150,13 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void discard(V value) {
-        try {
-            Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
-            if (bean != null) {
-                bean.remove(null);
+        try (BatchContext context = this.manager.getBatcher().resume(value.getCacheContext())) {
+            try (Batch batch = value.getCacheContext()) {
+                Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
+                if (bean != null) {
+                    bean.remove(null);
+                }
             }
-        } finally {
-            value.getCacheContext().close();
         }
     }
 

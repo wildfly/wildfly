@@ -32,24 +32,17 @@ import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ejb.BatchContext;
 import org.wildfly.clustering.ejb.Batcher;
 
 /**
- * A "thread-safe" {@link Batcher} implementation, whose batches can be closed by a different thread than the thread that started the batch.
- * Infinispan's BatchContainer relies on ThreadLocals, so we must use the TransactionManager directly.
+ * A {@link Batcher} implementation based on Infinispan's {@link org.infinispan.batch.BatchContainer}, except that its transaction reference
+ * is stored within the returned Batch object instead of a ThreadLocal.  This also allows the user to call {@link Batch#close()} from a
+ * different thread than the one that created the {@link Batch}.  In this case, however, the user must first resume the batch
+ * via {@link #resume(TransactionBatch)}.
  * @author Paul Ferraro
  */
-public class InfinispanBatcher implements Batcher {
-    private static final Batch NULL_BATCH = new Batch() {
-        @Override
-        public void close() {
-        }
-
-        @Override
-        public void discard() {
-        }
-    };
+public class InfinispanBatcher implements Batcher<TransactionBatch> {
 
     private final TransactionManager tm;
 
@@ -62,62 +55,108 @@ public class InfinispanBatcher implements Batcher {
     }
 
     @Override
-    public Batch startBatch() {
+    public TransactionBatch startBatch() {
         try {
-            Transaction existingTx = this.tm.getTransaction();
-            return (existingTx == null) ? new TransactionBatch(this.tm) : NULL_BATCH;
+            Transaction tx = this.tm.getTransaction();
+            // Consolidate nested batches into a single operational batch
+            return (tx == null) ? new NewTransactionBatch(this.tm) : new ExistingTransactionBatch(tx);
         } catch (SystemException e) {
             throw new CacheException(e);
         }
     }
 
-    private static class TransactionBatch implements Batch {
+    @Override
+    public BatchContext resume(TransactionBatch batch) {
+        try {
+            Transaction tx = batch.getTransaction();
+            return new InfinispanBatchContext(this.tm, tx);
+        } catch (SystemException | InvalidTransactionException e) {
+            throw new CacheException(e);
+        }
+    }
 
+    private static class InfinispanBatchContext implements BatchContext {
         private final TransactionManager tm;
+        private final Transaction existingTx;
         private final Transaction tx;
 
-        TransactionBatch(TransactionManager tm) throws SystemException {
+        InfinispanBatchContext(TransactionManager tm, Transaction tx) throws SystemException, InvalidTransactionException {
             this.tm = tm;
+            this.tx = tx;
+            // Switch transaction context
+            this.existingTx = this.tm.suspend();
+            this.tm.resume(this.tx);
+        }
+
+        @Override
+        public void close() {
+            // Restore previous transaction context, if necessary
+            if ((this.existingTx != null) && !this.existingTx.equals(this.tx)) {
+                try {
+                    this.tm.resume(this.existingTx);
+                } catch (InvalidTransactionException | SystemException e) {
+                    throw new CacheException(e);
+                }
+            }
+        }
+    }
+
+    private static class ExistingTransactionBatch implements TransactionBatch {
+        private final Transaction tx;
+
+        ExistingTransactionBatch(Transaction tx) {
+            this.tx = tx;
+        }
+
+        @Override
+        public Transaction getTransaction() {
+            return this.tx;
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public void discard() {
+        }
+    }
+
+    private static class NewTransactionBatch extends ExistingTransactionBatch {
+        private final TransactionManager tm;
+
+        NewTransactionBatch(TransactionManager tm) throws SystemException {
+            this(tm, begin(tm));
+        }
+
+        private static Transaction begin(TransactionManager tm) throws SystemException {
             try {
-                this.tm.begin();
-                this.tx = this.tm.suspend();
+                tm.begin();
+                return tm.getTransaction();
             } catch (NotSupportedException e) {
                 throw new CacheException(e);
             }
         }
 
+        private NewTransactionBatch(TransactionManager tm, Transaction tx) {
+            super(tx);
+            this.tm = tm;
+        }
+
         @Override
         public void close() {
-            this.end(true);
+            try {
+                this.tm.commit();
+            } catch (RollbackException | HeuristicMixedException | HeuristicRollbackException | SystemException e) {
+                throw new CacheException(e);
+            }
         }
 
         @Override
         public void discard() {
-            this.end(false);
-        }
-
-        private void end(boolean success) {
             try {
-                // We can't just commit/rollback the Transaction instance
-                // Infinispan's DummyTransaction implementation assumes that the transaction is associated with the current thread
-                Transaction existingTx = this.tm.suspend();
-                this.tm.resume(this.tx);
-                try {
-                    if (success) {
-                        try {
-                            this.tm.commit();
-                        } catch (RollbackException | HeuristicMixedException | HeuristicRollbackException e) {
-                            throw new CacheException(e);
-                        }
-                    } else {
-                        this.tm.rollback();
-                    }
-                } finally {
-                    if ((existingTx != null) && !existingTx.equals(this.tx)) {
-                        this.tm.resume(existingTx);
-                    }
-                }
-            } catch (SystemException | InvalidTransactionException e) {
+                this.tm.rollback();
+            } catch (SystemException e) {
                 throw new CacheException(e);
             }
         }

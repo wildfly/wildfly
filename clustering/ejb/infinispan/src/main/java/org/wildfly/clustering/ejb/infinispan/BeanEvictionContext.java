@@ -30,7 +30,7 @@ import org.wildfly.clustering.ejb.Batcher;
  */
 public interface BeanEvictionContext<I> {
 
-    Batcher getBatcher();
+    Batcher<TransactionBatch> getBatcher();
 
     Evictor<I> getEvictor();
 }

@@ -69,7 +69,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <T> the bean type
  */
 @Listener(primaryOnly = true)
-public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, KeyFilter {
+public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, TransactionBatch>, KeyFilter {
 
     private final Cache<G, BeanGroupEntry<I, T>> groupCache;
     private final String beanName;
@@ -85,7 +85,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Key
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final AtomicInteger passiveCount = new AtomicInteger();
-    private final Batcher batcher;
+    private final Batcher<TransactionBatch> batcher;
     private volatile Scheduler<I> scheduler;
     private volatile CommandDispatcher<Scheduler<I>> dispatcher;
 
@@ -262,7 +262,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Key
     }
 
     @Override
-    public Batcher getBatcher() {
+    public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
     }
 

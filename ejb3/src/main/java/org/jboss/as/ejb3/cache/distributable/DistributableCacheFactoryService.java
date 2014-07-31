@@ -40,7 +40,7 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
         ;
     }
 
-    private final InjectedValue<BeanManagerFactory<UUID, K, V>> factory = new InjectedValue<>();
+    private final InjectedValue<BeanManagerFactory<UUID, K, V, Batch>> factory = new InjectedValue<>();
 
     private DistributableCacheFactoryService() {
         // Hide
@@ -53,7 +53,7 @@ public class DistributableCacheFactoryService<K, V extends Identifiable<K> & Con
 
     @Override
     public Cache<K, V> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, PassivationListener<V> passivationListener) {
-        BeanManager<UUID, K, V> manager = this.factory.getValue().createBeanManager(new GroupIdentifierFactory(), identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
+        BeanManager<UUID, K, V, Batch> manager = this.factory.getValue().createBeanManager(new GroupIdentifierFactory(), identifierFactory, passivationListener, new RemoveListenerAdapter<>(factory));
         return new DistributableCache<>(manager, factory);
     }
 }

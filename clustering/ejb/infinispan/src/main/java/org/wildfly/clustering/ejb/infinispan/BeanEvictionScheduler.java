@@ -43,12 +43,12 @@ import org.wildfly.clustering.ejb.Batcher;
 public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionContext<I> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
-    private final Batcher batcher;
+    private final Batcher<TransactionBatch> batcher;
     private final Evictor<I> evictor;
     private final CommandDispatcher<BeanEvictionContext<I>> dispatcher;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(String name, Batcher batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
+    public BeanEvictionScheduler(String name, Batcher<TransactionBatch> batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
@@ -56,7 +56,7 @@ public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionConte
     }
 
     @Override
-    public Batcher getBatcher() {
+    public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
     }
 

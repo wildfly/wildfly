@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
-
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;
+package org.wildfly.clustering.ejb;
 
 /**
+ * Handles batch context switching.
  * @author Paul Ferraro
  */
-public class InfinispanBeanManagerFactoryBuilderProvider implements BeanManagerFactoryBuilderProvider<TransactionBatch> {
-
+public interface BatchContext extends AutoCloseable {
+    /**
+     * Closes this batch context.
+     */
     @Override
-    public <G, I> BeanManagerFactoryBuilder<G, I, TransactionBatch> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config) {
-        return new InfinispanBeanManagerFactoryBuilder<>(name, config);
-    }
+    void close();
 }
