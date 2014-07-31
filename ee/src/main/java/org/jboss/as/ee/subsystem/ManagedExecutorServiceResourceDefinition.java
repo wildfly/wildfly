@@ -43,39 +43,28 @@ import org.jboss.dmr.ModelType;
  */
 public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String JNDI_NAME = "jndi-name";
-    public static final String CONTEXT_SERVICE = "context-service";
-    public static final String THREAD_FACTORY = "thread-factory";
-    public static final String HUNG_TASK_THRESHOLD = "hung-task-threshold";
-    public static final String LONG_RUNNING_TASKS = "long-running-tasks";
-    public static final String CORE_THREADS = "core-threads";
-    public static final String MAX_THREADS = "max-threads";
-    public static final String KEEPALIVE_TIME = "keepalive-time";
-    public static final String QUEUE_LENGTH = "queue-length";
-    public static final String REJECT_POLICY = "reject-policy";
-
     public static final SimpleAttributeDefinition JNDI_NAME_AD =
-            new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition CONTEXT_SERVICE_AD =
-            new SimpleAttributeDefinitionBuilder(CONTEXT_SERVICE, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.CONTEXT_SERVICE, ModelType.STRING, true)
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition THREAD_FACTORY_AD =
-            new SimpleAttributeDefinitionBuilder(THREAD_FACTORY, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.THREAD_FACTORY, ModelType.STRING, true)
                     .setAllowExpression(false)
                     .setValidator(new StringLengthValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    public static final SimpleAttributeDefinition HUNG_TASK_THRESHOLD_AD =
-            new SimpleAttributeDefinitionBuilder(HUNG_TASK_THRESHOLD, ModelType.LONG, true)
+    public static final DurationAttributeDefinition HUNG_TASK_THRESHOLD_AD =
+            new DurationAttributeDefinition.Builder(CommonAttributes.HUNG_TASK_THRESHOLD, true)
                     .setAllowExpression(true)
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setDefaultValue(new ModelNode(0))
@@ -83,29 +72,29 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .build();
 
     public static final SimpleAttributeDefinition LONG_RUNNING_TASKS_AD =
-            new SimpleAttributeDefinitionBuilder(LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.LONG_RUNNING_TASKS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(false))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition CORE_THREADS_AD =
-            new SimpleAttributeDefinitionBuilder(CORE_THREADS, ModelType.INT, false)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_THREADS, ModelType.INT, false)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition MAX_THREADS_AD =
-            new SimpleAttributeDefinitionBuilder(MAX_THREADS, ModelType.INT, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.MAX_THREADS, ModelType.INT, true)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(Integer.MAX_VALUE))
                     .build();
 
-    public static final SimpleAttributeDefinition KEEPALIVE_TIME_AD =
-            new SimpleAttributeDefinitionBuilder(KEEPALIVE_TIME, ModelType.LONG, true)
+    public static final DurationAttributeDefinition KEEPALIVE_TIME_AD =
+            new DurationAttributeDefinition.Builder(CommonAttributes.KEEPALIVE_TIME, true)
                     .setAllowExpression(true)
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -113,7 +102,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .build();
 
     public static final SimpleAttributeDefinition QUEUE_LENGTH_AD =
-            new SimpleAttributeDefinitionBuilder(QUEUE_LENGTH, ModelType.INT, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.QUEUE_LENGTH, ModelType.INT, true)
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -121,7 +110,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .build();
 
     public static final SimpleAttributeDefinition REJECT_POLICY_AD =
-            new SimpleAttributeDefinitionBuilder(REJECT_POLICY, ModelType.STRING, true)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.REJECT_POLICY, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(AbstractManagedExecutorService.RejectPolicy.ABORT.toString()))

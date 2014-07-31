@@ -43,10 +43,10 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
@@ -114,12 +114,18 @@ public class EeExtension implements Extension {
         context.setProfileParsingCompletionHandler(new BeanValidationProfileParsingCompletionHandler());
     }
 
+    // Transformation
     private void registerTransformers(SubsystemRegistration subsystem) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
+        final ModelVersion VERSION_1_0 = ModelVersion.create(1, 0, 0);
+        final ModelVersion VERSION_1_1 = ModelVersion.create(1, 1, 0);
+        final ModelVersion VERSION_2_0 = ModelVersion.create(2, 0, 0);
+        final ModelVersion VERSION_3_0 = ModelVersion.create(3, 0, 0);
+        ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(
+                subsystem.getSubsystemVersion());
+        ResourceTransformationDescriptionBuilder builder10 = chainedBuilder.createBuilder(VERSION_1_1, VERSION_1_0);
         GlobalModulesRejecterConverter globalModulesRejecterConverter = new GlobalModulesRejecterConverter();
 
-        builder.getAttributeBuilder()
+        builder10.getAttributeBuilder()
                 // Deal with https://issues.jboss.org/browse/AS7-4892 on 7.1.2
                 .addRejectCheck(new JBossDescriptorPropertyReplacementRejectChecker(),
                         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
@@ -129,13 +135,21 @@ public class EeExtension implements Extension {
                 // Deal with new attribute annotation-property-replacement
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
-        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
-        builder.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
-
-        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
+        builder10.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
+        builder10.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
+        builder10.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
+        builder10.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+        builder10.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
+        ResourceTransformationDescriptionBuilder builder20 = chainedBuilder.createBuilder(VERSION_3_0, VERSION_2_0);
+        builder20.addChildResource(ManagedExecutorServiceResourceDefinition.INSTANCE.getPathElement())
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                .setCustomOperationTransformer(ManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.getTransformer())
+                .setCustomOperationTransformer(ManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.getTransformer()).end();
+        builder20.addChildResource(ManagedExecutorServiceResourceDefinition.INSTANCE.getPathElement())
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                .setCustomOperationTransformer(ManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.getTransformer())
+                .setCustomOperationTransformer(ManagedScheduledExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.getTransformer()).end();
+        chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{VERSION_1_0, VERSION_1_1, VERSION_2_0});
     }
 
     /**
