@@ -71,11 +71,12 @@ public class JdkORBExtension implements Extension {
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        StringBuilder prefix = new StringBuilder(JdkORBExtension.SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
+            prefix.append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JdkORBExtension.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME,
+                JdkORBExtension.class.getClassLoader(), true, false);
     }
 
     @Override

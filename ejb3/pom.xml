@@ -69,7 +69,7 @@ vi:ts=4:sw=4:expandtab
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
-        
+ 
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-jdkorb</artifactId>
