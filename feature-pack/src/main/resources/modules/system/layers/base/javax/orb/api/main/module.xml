@@ -25,7 +25,7 @@
     <resources>
         <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
     </resources>
-    
+ 
     <dependencies>
       <module name="sun.jdk"/>
       <module name="javax.transaction.api"/>

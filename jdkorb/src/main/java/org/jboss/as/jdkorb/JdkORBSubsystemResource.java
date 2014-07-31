@@ -46,7 +46,7 @@ public class JdkORBSubsystemResource extends SimpleResourceDefinition {
 
     private JdkORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME),
-                JdkORBExtension.getResourceDescriptionResolver(JdkORBExtension.SUBSYSTEM_NAME),
+                JdkORBExtension.getResourceDescriptionResolver(),
                 JdkORBSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
