@@ -52,18 +52,12 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @Message(id = 2, value = "Failed to passivate stateful session bean group %s")
     void failedToPassivateBeanGroup(@Cause Throwable cause, Object id);
 
-
-//    @Message(id = 3, value = "Failed to serialize %s")
+    @LogMessage(level = WARN)
+    @Message(id = 3, value = "Failed to expire stateful session bean %s")
+    void failedToExpireBean(@Cause Throwable cause, Object id);
 
     @Message(id = 4, value = "Failed to deserialize %s")
     IllegalStateException deserializationFailure(@Cause Throwable cause, Object key);
-
-//    @Message(id = 5, value = "Failed to acquire ownership of %s within %d ms")
-
-//    @Message(id = 6, value = "Interrupted while acquiring ownership of %s")
-
-//    @Message(id = 7, value = "Failed to load infinispan cache store")
-//    RuntimeException cacheLoaderFailure(@Cause Throwable cause);
 
     @Message(id = 8, value = "Stateful session bean %s refers to an invalid bean group %s")
     IllegalStateException invalidBeanGroup(Object beanId, Object groupId);

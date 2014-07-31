@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:ispn="urn:jboss:domain:infinispan:2.0">
+		xmlns:ispn="urn:jboss:domain:infinispan:3.0">
     <!--
       XSLT stylesheet to add make a copy of an existing cache such that:
       - the children of the cache are copied over unchanged.
@@ -32,7 +32,7 @@
 
   <xsl:output method="xml" indent="yes"/>
   <xsl:variable name="ispnns">
-    <xsl:value-of select="'urn:jboss:domain:infinispan:2.0'"/>
+    <xsl:value-of select="'urn:jboss:domain:infinispan:3.0'"/>
   </xsl:variable>
 
   <xsl:template name="copy-attributes">

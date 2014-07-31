@@ -25,7 +25,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossExecutors;
@@ -36,11 +40,15 @@ import org.jboss.threads.JBossExecutors;
  */
 public class CachedThreadPoolExecutorService implements Service<ExecutorService> {
 
+    public static ServiceBuilder<ExecutorService> build(ServiceTarget target, ServiceName name, ThreadFactory factory) {
+        return AsynchronousService.addService(target, name, new CachedThreadPoolExecutorService(factory), false, true);
+    }
+
     private final ThreadFactory threadFactory;
 
     private volatile ExecutorService executor;
 
-    public CachedThreadPoolExecutorService(ThreadFactory threadFactory) {
+    private CachedThreadPoolExecutorService(ThreadFactory threadFactory) {
         this.threadFactory = threadFactory;
     }
 
@@ -56,6 +64,7 @@ public class CachedThreadPoolExecutorService implements Service<ExecutorService>
 
     @Override
     public void stop(StopContext context) {
-        this.executor.shutdownNow();
+        this.executor.shutdown();
+        this.executor = null;
     }
 }

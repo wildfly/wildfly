@@ -15,7 +15,7 @@
 
     <xsl:output method="xml" indent="yes"/>
 
-    <xsl:variable name="ispnns">urn:jboss:domain:infinispan:2.0</xsl:variable>
+    <xsl:variable name="ispnns">urn:jboss:domain:infinispan:3.0</xsl:variable>
    
     <xsl:template name="copy-attributes">
         <xsl:for-each select="@*">
