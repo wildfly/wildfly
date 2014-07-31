@@ -167,6 +167,11 @@ public class Configuration {
     private static final String JPA_ALLOW_DEFAULT_DATA_SOURCE_USE = "wildfly.jpa.allowdefaultdatasourceuse";
 
     /**
+     * set to true to defer detaching entities until persistence context is closed (WFLY-3674)
+     */
+    private static final String JPA_DEFER_DETACH = "jboss.as.jpa.deferdetach";
+
+    /**
      * name of the persistence provider adapter class
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
@@ -273,4 +278,19 @@ public class Configuration {
         }
         return result;
     }
+
+    /**
+     * Return true if detaching of managed entities should be deferred until the entity manager is closed.
+     * Note:  only applies to transaction scoped entity managers used without an active JTA transaction.
+     *
+     * @param properties
+     * @return
+     */
+    public static boolean deferEntityDetachUntilClose(final Map properties) {
+        boolean result = false;
+        if ( properties.containsKey(JPA_DEFER_DETACH))
+            result = Boolean.parseBoolean((String)properties.get(JPA_DEFER_DETACH));
+        return result;
+    }
+
 }

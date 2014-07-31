@@ -251,4 +251,9 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
     public SynchronizationType getSynchronizationType() {
         return SynchronizationType.SYNCHRONIZED;
     }
+
+    @Override
+    protected boolean deferEntityDetachUntilClose() {
+        return false;
+    }
 }

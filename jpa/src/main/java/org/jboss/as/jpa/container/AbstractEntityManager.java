@@ -82,6 +82,8 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     public abstract SynchronizationType getSynchronizationType();
 
+    protected abstract boolean deferEntityDetachUntilClose();
+
     public <T> T unwrap(Class<T> cls) {
         return getEntityManager().unwrap(cls);
     }
@@ -836,7 +838,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // used by TransactionScopedEntityManager to auto detach loaded entities
     // after each non-jta invocation
     protected void detachNonTxInvocation(EntityManager underlyingEntityManager) {
-        if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
+        if (!this.isExtendedPersistenceContext() && !this.isInTx() && !deferEntityDetachUntilClose()) {
             underlyingEntityManager.clear();
         }
     }
