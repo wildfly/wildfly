@@ -375,7 +375,8 @@ public class JcaExtension implements Extension {
                                 break;
                             }
                             case TRACER: {
-                                if (Namespace.forUri(reader.getNamespaceURI()).equals(Namespace.JCA_3_0) ) {
+                                Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+                                if (Namespace.JCA_3_0.equals(namespace)) {
                                     list.add(parseTracer(reader, address));
                                 } else {
                                     throw unexpectedElement(reader);
@@ -501,10 +502,18 @@ public class JcaExtension implements Extension {
                                         ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                                 break;
                             }
-                            default: {
+                            case JCA_1_1:
+                            case JCA_2_0: {
                                 org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                         ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                break;
+                            }
+                            default: {
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_2_0;
+                                ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                        ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                break;
                             }
                         }
                         break;
@@ -517,8 +526,15 @@ public class JcaExtension implements Extension {
                                         ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                 break;
                             }
-                            default: {
+                            case JCA_1_1:
+                            case JCA_2_0: {
                                 org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
+                                ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                        ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
+                                break;
+                            }
+                            default: {
+                                org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_2_0;
                                 ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                         ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                 break;
@@ -582,10 +598,18 @@ public class JcaExtension implements Extension {
                                                 ns, distributedWorkManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                                         break;
                                     }
-                                    default: {
+                                    case JCA_1_1:
+                                    case JCA_2_0: {
                                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                                 ns, distributedWorkManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                        break;
+                                    }
+                                    default: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_2_0;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
+                                        break;
                                     }
                                 }
                                 break;
@@ -598,8 +622,15 @@ public class JcaExtension implements Extension {
                                                 ns, distributedWorkManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                         break;
                                     }
-                                    default: {
+                                    case JCA_1_1:
+                                    case JCA_2_0: {
                                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
+                                        ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
+                                                ns, distributedWorkManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
+                                        break;
+                                    }
+                                    default: {
+                                        org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_2_0;
                                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                                 ns, distributedWorkManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
                                         break;
@@ -610,7 +641,7 @@ public class JcaExtension implements Extension {
                             case POLICY: {
                                 switch (readerNS) {
                                     case JCA_2_0:
-                                    case JCA_3_0: {
+                                    case JCA_3_0:{
                                         parsePolicy(reader, distributedWorkManagerOperation);
                                         break;
                                     }

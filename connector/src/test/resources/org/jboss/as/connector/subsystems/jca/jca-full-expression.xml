@@ -11,7 +11,7 @@
       <queue-length count="${test.expr:3}"/>
       <max-threads count="${test.expr:3}"/>
       <!--Optional:-->
-      <keepalive-time time="${test.expr:10}" unit="minutes"/>
+      <keepalive-time time="${test.expr:10}"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </short-running-threads>
@@ -22,7 +22,7 @@
       <queue-length count="${test.expr:3}"/>
       <max-threads count="${test.expr:3}"/>
       <!--Optional:-->
-      <keepalive-time time="${test.expr:10}" unit="milliseconds"/>
+      <keepalive-time time="${test.expr:10}"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </long-running-threads>
@@ -34,7 +34,7 @@
       <queue-length count="${test.expr:3}"/>
       <max-threads count="${test.expr:3}"/>
       <!--Optional:-->
-      <keepalive-time time="${test.expr:10}" unit="milliseconds"/>
+      <keepalive-time time="${test.expr:10}"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </short-running-threads>
@@ -45,7 +45,7 @@
       <queue-length count="${test.expr:3}"/>
       <max-threads count="${test.expr:3}"/>
       <!--Optional:-->
-      <keepalive-time time="${test.expr:10}" unit="hours"/>
+      <keepalive-time time="${test.expr:10}"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </long-running-threads>
@@ -61,7 +61,7 @@
         <core-threads count="${test.expr:50}"/>
         <queue-length count="${test.expr:50}"/>
         <max-threads count="${test.expr:50}"/>
-        <keepalive-time time="${test.expr:10}" unit="seconds"/>
+        <keepalive-time time="${test.expr:10}"/>
       </short-running-threads>
       <transport jgroups-stack="${test.expr:udp}" jgroups-cluster="${test.expr:myChannel}" request-timeout="${test.expr:100000}"/>
     </distributed-workmanager>

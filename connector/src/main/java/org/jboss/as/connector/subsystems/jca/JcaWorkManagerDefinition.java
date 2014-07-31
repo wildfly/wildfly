@@ -86,6 +86,12 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
         BoundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, WORKMANAGER_LONG_RUNNING);
     }
 
+    static void registerTransformers300(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_WORK_MANAGER);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_1(builder, WORKMANAGER_SHORT_RUNNING);
+        BoundedQueueThreadPoolResourceDefinition.registerTransformers1_1(builder, WORKMANAGER_LONG_RUNNING);
+    }
+
     public static enum WmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)

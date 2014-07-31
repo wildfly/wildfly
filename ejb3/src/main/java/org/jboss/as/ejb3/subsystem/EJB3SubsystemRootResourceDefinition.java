@@ -249,6 +249,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
         registerTransformers_1_2_1(subsystemRegistration);
+        registerTransformers_3_0(subsystemRegistration);
     }
 
     private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
@@ -311,6 +312,12 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
+    }
+
+    private static void registerTransformers_3_0(SubsystemRegistration subsystemRegistration) {
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_1(builder, EJB3SubsystemModel.THREAD_POOL);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(3, 0, 0));
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

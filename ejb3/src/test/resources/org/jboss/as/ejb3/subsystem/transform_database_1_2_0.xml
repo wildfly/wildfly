@@ -23,7 +23,7 @@
   ~
   -->
 
-<subsystem xmlns="urn:jboss:domain:ejb3:2.0">
+<subsystem xmlns="urn:jboss:domain:ejb3:3.0">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>

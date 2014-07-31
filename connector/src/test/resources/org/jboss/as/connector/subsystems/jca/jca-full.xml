@@ -11,7 +11,7 @@
       <queue-length count="3"/>
       <max-threads count="3"/>
       <!--Optional:-->
-      <keepalive-time time="10" unit="minutes"/>
+      <keepalive-time time="10"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </short-running-threads>
@@ -22,7 +22,7 @@
       <queue-length count="3"/>
       <max-threads count="3"/>
       <!--Optional:-->
-      <keepalive-time time="10" unit="milliseconds"/>
+      <keepalive-time time="10"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </long-running-threads>
@@ -35,7 +35,7 @@
       <queue-length count="3"/>
       <max-threads count="3"/>
       <!--Optional:-->
-      <keepalive-time time="10" unit="milliseconds"/>
+      <keepalive-time time="10"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </short-running-threads>
@@ -46,7 +46,7 @@
       <queue-length count="3"/>
       <max-threads count="3"/>
       <!--Optional:-->
-      <keepalive-time time="10" unit="hours"/>
+      <keepalive-time time="10"/>
       <!--Optional:-->
       <thread-factory name="string"/>
     </long-running-threads>
@@ -63,7 +63,7 @@
       <core-threads count="50"/>
       <queue-length count="50"/>
       <max-threads count="50"/>
-      <keepalive-time time="10" unit="seconds"/>
+      <keepalive-time time="10"/>
     </short-running-threads>
     <transport jgroups-stack="udp" jgroups-cluster="myChannel" request-timeout="100000"/>
   </distributed-workmanager>

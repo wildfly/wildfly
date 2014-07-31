@@ -112,7 +112,7 @@ public class AbstractValidationUnitTest {
                 if(!match.matches()) {
                     continue;
                 }
-                String name = match.group(1);
+                String name = match.group(1).replace("jboss-as", "wildfly");
                 String major = match.group(2);
                 String minor = match.group(3);
                 BigDecimal version = new BigDecimal(major + "." + minor);
@@ -127,7 +127,7 @@ public class AbstractValidationUnitTest {
                 if (!match.matches()) {
                     continue;
                 }
-                String name = match.group(1);
+                String name = match.group(1).replace("jboss-as", "wildfly");
                 if (!mostRecentNames.get(name).equals(entry.getKey())) {
                     OUTDATED_NAMESPACES.put(entry.getKey(), mostRecentNames.get(name));
                 } else {

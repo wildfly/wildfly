@@ -27,14 +27,14 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.batch</extension-module>
-    <subsystem xmlns="urn:jboss:domain:batch:1.0">
+    <subsystem xmlns="urn:jboss:domain:batch:1.1">
         <job-repository>
             <in-memory/>
         </job-repository>
 
         <thread-pool>
             <max-threads count="10"/>
-            <keepalive-time time="30" unit="seconds"/>
+            <keepalive-time time="30000"/>
         </thread-pool>
     </subsystem>
 </config>
