@@ -38,11 +38,10 @@ import org.jboss.dmr.ModelType;
  */
 public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String JNDI_NAME = "jndi-name";
     public static final String USE_TRANSACTION_SETUP_PROVIDER = "use-transaction-setup-provider";
 
     public static final SimpleAttributeDefinition JNDI_NAME_AD =
-            new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
