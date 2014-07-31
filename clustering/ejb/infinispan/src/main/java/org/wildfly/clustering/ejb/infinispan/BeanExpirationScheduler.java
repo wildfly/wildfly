@@ -44,11 +44,11 @@ import org.wildfly.clustering.ejb.Time;
  */
 public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> {
     final Map<I, Future<?>> expirationFutures = new ConcurrentHashMap<>();
-    final Batcher batcher;
+    final Batcher<TransactionBatch> batcher;
     final BeanRemover<I, T> remover;
     final ExpirationConfiguration<T> expiration;
 
-    public BeanExpirationScheduler(Batcher batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration) {
+    public BeanExpirationScheduler(Batcher<TransactionBatch> batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration) {
         this.batcher = batcher;
         this.remover = remover;
         this.expiration = expiration;

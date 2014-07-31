@@ -25,7 +25,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-public interface BeanManagerFactoryBuilder<G, I> {
+public interface BeanManagerFactoryBuilder<G, I, B extends Batch> {
     /**
      * Installs dependencies for a deployment unit
      * @param target the service target
@@ -40,5 +40,5 @@ public interface BeanManagerFactoryBuilder<G, I> {
      * @param context the bean context
      * @return a service builder
      */
-    <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T>> build(ServiceTarget target, ServiceName name, BeanContext context);
+    <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T, B>> build(ServiceTarget target, ServiceName name, BeanContext context);
 }
