@@ -351,20 +351,22 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
 
         JASPIAuthenticationInfo authenticationInfo = new JASPIAuthenticationInfo(securityDomain);
         Map<String, LoginModuleStackHolder> holders = new HashMap<String, LoginModuleStackHolder>();
-        List<Property> stacks = node.get(LOGIN_MODULE_STACK).asPropertyList();
-        for (Property stack : stacks) {
-            String name = stack.getName();
-            ModelNode stackNode = stack.getValue();
+        if(node.hasDefined(LOGIN_MODULE_STACK)){
+            List<Property> stacks = node.get(LOGIN_MODULE_STACK).asPropertyList();
+            for (Property stack : stacks) {
+                String name = stack.getName();
+                ModelNode stackNode = stack.getValue();
 
-            final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
-            holders.put(name, holder);
-            authenticationInfo.add(holder);
-            if (stackNode.hasDefined(LOGIN_MODULE)) {
-                processLoginModules(context, stackNode.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
-                    public void addAppConfigurationEntry(AppConfigurationEntry entry) {
-                        holder.addAppConfigurationEntry(entry);
-                    }
-                });
+                final LoginModuleStackHolder holder = new LoginModuleStackHolder(name, null);
+                holders.put(name, holder);
+                authenticationInfo.add(holder);
+                if (stackNode.hasDefined(LOGIN_MODULE)) {
+                    processLoginModules(context, stackNode.get(LOGIN_MODULE), authenticationInfo, new LoginModuleContainer() {
+                        public void addAppConfigurationEntry(AppConfigurationEntry entry) {
+                            holder.addAppConfigurationEntry(entry);
+                        }
+                    });
+                }
             }
         }
         for (Property moduleProperty : node.get(AUTH_MODULE).asPropertyList()) {
