@@ -217,7 +217,12 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 9, value = "Could not find stateful session bean instance with id: %s for bean: %s during destruction. Probably already removed")
     void failToFindSfsbWithId(SessionID sessionId, String componentName);
 
-    //10 - this one is free?
+//    /**
+//     * Logs a warning message indicating Default interceptor class is not listed in the <interceptors> section of ejb-jar.xml and will not be applied"
+//     */
+//    @LogMessage(level = WARN)
+//    @Message(id = 10, value = "Default interceptor class %s is not listed in the <interceptors> section of ejb-jar.xml and will not be applied")
+//    void defaultInterceptorClassNotListed(String clazz);
 
     /**
      * Logs a warning message indicating No method found on EJB while processing exclude-list element in ejb-jar.xml
