@@ -68,9 +68,9 @@ import org.wildfly.clustering.spi.ChannelServiceNames;
  * @param <T> the bean type
  */
 @SuppressWarnings("rawtypes")
-public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanManagerFactory<G, I, T>> implements BeanManagerFactory<G, I, T> {
+public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanManagerFactory<G, I, T, TransactionBatch>> implements BeanManagerFactory<G, I, T, TransactionBatch> {
 
-    public static <G, I, T> ServiceBuilder<BeanManagerFactory<G, I, T>> build(String name, ServiceTarget target, ServiceName serviceName, BeanManagerFactoryBuilderConfiguration config, BeanContext context) {
+    public static <G, I, T> ServiceBuilder<BeanManagerFactory<G, I, T, TransactionBatch>> build(String name, ServiceTarget target, ServiceName serviceName, BeanManagerFactoryBuilderConfiguration config, BeanContext context) {
         InfinispanBeanManagerFactory<G, I, T> factory = new InfinispanBeanManagerFactory<>(context, config);
         String containerName = config.getContainerName();
         ServiceName deploymentUnitServiceName = context.getDeploymentUnitServiceName();
@@ -104,7 +104,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
     }
 
     @Override
-    public BeanManager<G, I, T> createBeanManager(final IdentifierFactory<G> groupIdentifierFactory, final IdentifierFactory<I> beanIdentifierFactory, final PassivationListener<T> passivationListener, final RemoveListener<T> removeListener) {
+    public BeanManager<G, I, T, TransactionBatch> createBeanManager(final IdentifierFactory<G> groupIdentifierFactory, final IdentifierFactory<I> beanIdentifierFactory, final PassivationListener<T> passivationListener, final RemoveListener<T> removeListener) {
         MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(this.config.getValue(), this.context.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<G, BeanGroupEntry<I, T>> groupCache = this.cache.getValue();
@@ -211,7 +211,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
     }
 
     @Override
-    public BeanManagerFactory<G, I, T> getValue() {
+    public BeanManagerFactory<G, I, T, TransactionBatch> getValue() {
         return this;
     }
 

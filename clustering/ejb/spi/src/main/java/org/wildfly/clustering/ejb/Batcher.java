@@ -25,10 +25,17 @@ package org.wildfly.clustering.ejb;
  * Exposes a mechanism to start a batch.
  * @author Paul Ferraro
  */
-public interface Batcher {
+public interface Batcher<B extends Batch> {
     /**
      * Starts a batch.
      * @return a batch.
      */
-    Batch startBatch();
+    B startBatch();
+
+    /**
+     * Resumes a batch.
+     * @param batch an existing batch
+     * @return the context of the resumed batch
+     */
+    BatchContext resume(B batch);
 }
