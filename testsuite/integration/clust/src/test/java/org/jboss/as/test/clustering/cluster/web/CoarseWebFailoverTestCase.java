@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster.web;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,6 +31,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
+    private static final String DEPLOYMENT_NAME = "coarse-distributable.war";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -44,12 +46,17 @@ public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase 
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
+        ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));
         return war;
     }
 
+    @Override
+    protected String getDeploymentName() {
+        return DEPLOYMENT_NAME;
+    }
 }

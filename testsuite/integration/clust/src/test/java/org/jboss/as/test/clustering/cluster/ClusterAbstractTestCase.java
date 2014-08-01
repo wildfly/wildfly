@@ -23,7 +23,6 @@ package org.jboss.as.test.clustering.cluster;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -33,7 +32,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.NodeUtil;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.logging.Logger;
@@ -91,7 +89,6 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     public void beforeTestMethod() {
         NodeUtil.start(this.controller, CONTAINERS);
         NodeUtil.deploy(this.deployer, DEPLOYMENTS);
-        this.waitForTopologyChange();
     }
 
     /**
@@ -104,40 +101,22 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
         NodeUtil.undeploy(this.deployer, DEPLOYMENTS);
     }
 
-    protected void waitForTopologyChange() {
-        // For now, just sleep a moment
-        // TODO replace this with a server side check for rehash completion
-        this.sleep(TimeoutUtil.adjust(500), TimeUnit.MILLISECONDS);
-    }
-
-    protected void sleep(long value, TimeUnit unit) {
-        try {
-            unit.sleep(value);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     // Node and deployment lifecycle management convenience methods
 
     protected void start(String... containers) {
         NodeUtil.start(this.controller, containers);
-        this.waitForTopologyChange();
     }
 
     protected void stop(String... containers) {
         NodeUtil.stop(this.controller, containers);
-        this.waitForTopologyChange();
     }
 
     protected void deploy(String... deployments) {
         NodeUtil.deploy(this.deployer, deployments);
-        this.waitForTopologyChange();
     }
 
     protected void undeploy(String... deployments) {
         NodeUtil.undeploy(this.deployer, deployments);
-        this.waitForTopologyChange();
     }
 
     protected String findDeployment(String node) {
