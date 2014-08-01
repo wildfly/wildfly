@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster.web;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,6 +34,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @version April 2012
  */
 public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
+    private static final String MODULE_NAME = "granular-distributable";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -47,12 +49,18 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
     }
 
     private static Archive<?> createDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "granular-distributable.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClass(SimpleServlet.class);
+        ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
         log.info(war.toString(true));
         return war;
+    }
+
+    @Override
+    protected String getModuleName() {
+        return MODULE_NAME;
     }
 }
