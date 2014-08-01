@@ -25,9 +25,11 @@
 <module xmlns="urn:jboss:module:1.3" name="org.hornetq.protocol.amqp">
     <resources>
         <artifact name="${org.hornetq:hornetq-amqp-protocol}"/>
+        <artifact name="${org.hornetq:hornetq-proton-plug}"/>
     </resources>
 
     <dependencies>
+        <module name="javax.jms.api"/>
         <module name="org.apache.qpid.proton"/>
         <!-- required to load HornetQ protocol SPI -->
         <module name="org.hornetq"/>

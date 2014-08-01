@@ -800,4 +800,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 77, value = "Can not remove unknown entry %s")
     OperationFailedException canNotRemoveUnknownEntry(String entry);
 
+    @Message(id = 78, value = "Only one %s child resource is allowed, found children: %s")
+    OperationFailedException onlyOneChildIsAllowed(String childType, Set<String> childrenNames);
 }

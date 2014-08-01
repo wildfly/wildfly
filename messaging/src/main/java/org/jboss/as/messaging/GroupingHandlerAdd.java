@@ -106,12 +106,13 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
             final int timeout = TIMEOUT.resolveModelAttribute(context, node).asInt();
             final long groupTimeout = GROUP_TIMEOUT.resolveModelAttribute(context, node).asLong();
             final long reaperPeriod = REAPER_PERIOD.resolveModelAttribute(context, node).asLong();
-            final GroupingHandlerConfiguration conf = new GroupingHandlerConfiguration(SimpleString.toSimpleString(name),
-                    type,
-                    SimpleString.toSimpleString(address),
-                    timeout,
-                    groupTimeout,
-                    reaperPeriod);
+            final GroupingHandlerConfiguration conf = new GroupingHandlerConfiguration()
+                    .setName(SimpleString.toSimpleString(name))
+                    .setType(type)
+                    .setAddress(SimpleString.toSimpleString(address))
+                    .setTimeout(timeout)
+                    .setGroupTimeout(groupTimeout)
+                    .setReaperPeriod(reaperPeriod);
             configuration.setGroupingHandlerConfiguration(conf);
         }
     }

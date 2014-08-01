@@ -144,7 +144,10 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         final long refreshTimeout = DiscoveryGroupDefinition.REFRESH_TIMEOUT.resolveModelAttribute(context, model).asLong();
         final long initialWaitTimeout = DiscoveryGroupDefinition.INITIAL_WAIT_TIMEOUT.resolveModelAttribute(context, model).asLong();
         // Requires runtime service
-        return new DiscoveryGroupConfiguration(name, refreshTimeout, initialWaitTimeout, null);
+        return new DiscoveryGroupConfiguration()
+                .setName(name)
+                .setRefreshTimeout(refreshTimeout)
+                .setDiscoveryInitialWaitTimeout(initialWaitTimeout);
     }
 
     static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
@@ -154,9 +157,17 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         final int groupPort = socketBinding.getMulticastPort();
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
-        final UDPBroadcastGroupConfiguration endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localAddress, -1);
+        final UDPBroadcastGroupConfiguration endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+                .setGroupAddress(groupAddress)
+                .setGroupPort(groupPort)
+                .setLocalBindAddress(localAddress)
+                .setLocalBindPort(-1);
 
-        return new DiscoveryGroupConfiguration(name, refreshTimeout, initialWaitTimeout, endpointFactoryConfiguration );
+        return new DiscoveryGroupConfiguration()
+                .setName(name)
+                .setRefreshTimeout(refreshTimeout)
+                .setDiscoveryInitialWaitTimeout(initialWaitTimeout)
+                .setBroadcastEndpointFactoryConfiguration(endpointFactoryConfiguration);
     }
 
 
@@ -165,7 +176,11 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
         final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(channel, channelName);
 
-        return new DiscoveryGroupConfiguration(name, refreshTimeout, initialWaitTimeout, endpointFactoryConfiguration );
+        return new DiscoveryGroupConfiguration()
+                .setName(name)
+                .setRefreshTimeout(refreshTimeout)
+                .setDiscoveryInitialWaitTimeout(initialWaitTimeout)
+                .setBroadcastEndpointFactoryConfiguration(endpointFactoryConfiguration);
     }
 
 }

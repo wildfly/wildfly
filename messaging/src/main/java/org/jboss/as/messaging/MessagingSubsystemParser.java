@@ -279,6 +279,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     processJmsDestinations(reader, address, list);
                     break;
                 }
+                case HA_POLICY: {
+                    processHaPolicy(reader, address, list);
+                    break;
+                }
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
                 case THREAD_POOL_MAX_SIZE: {
                     // Use the "server" variant
@@ -302,7 +306,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw unexpectedEndElement(reader);
                     }
                     break;
+                case SHARED_STORE:
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                    // handle this attribute manually as its definition is now used for the ha-policy subresources
+                    CommonAttributes.SHARED_STORE.parseAndSetParameter(reader.getElementText(), operation, reader);
+                    break;
+                case BACKUP:
                 case CLUSTERED:
+                case ALLOW_FAILBACK:
+                case FAILBACK_DELAY:
+                case FAILOVER_ON_SHUTDOWN:
                     // log that the attribute is deprecated but handle it anyway
                     MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
                 default:
@@ -319,6 +332,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
             }
         } while (reader.hasNext() && localName.equals(elementName) == false);
+    }
+
+    protected void processHaPolicy(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> list) throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     protected void handleComplexConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {

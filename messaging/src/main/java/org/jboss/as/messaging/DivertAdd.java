@@ -100,7 +100,14 @@ public class DivertAdd extends AbstractAddStepHandler {
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final ModelNode transformerNode =  CommonAttributes.TRANSFORMER_CLASS_NAME.resolveModelAttribute(context, model);
         final String transformerClassName = transformerNode.isDefined() ? transformerNode.asString() : null;
-        return new DivertConfiguration(name, routingName, address, forwardingAddress, exclusive, filter, transformerClassName);
+        return new DivertConfiguration()
+                .setName(name)
+                .setRoutingName(routingName)
+                .setAddress(address)
+                .setForwardingAddress(forwardingAddress)
+                .setExclusive(exclusive)
+                .setFilterString(filter)
+                .setTransformerClassName(transformerClassName);
     }
 
     static void createDivert(String name, DivertConfiguration divertConfiguration, HornetQServerControl serverControl) {

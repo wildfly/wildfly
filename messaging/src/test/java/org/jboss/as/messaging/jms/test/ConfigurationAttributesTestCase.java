@@ -1,6 +1,7 @@
 package org.jboss.as.messaging.jms.test;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -19,37 +20,42 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
     static {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES = new TreeSet<String>();
         //List type stuff we dont care about
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("acceptorConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("addressesSettings");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("bridgeConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("broadcastGroupConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("clusterConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("connectorConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("connectorServiceConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("discoveryGroupConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("divertConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("queueConfigurations");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("groupingHandlerConfiguration");
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("acceptorConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("addressesSettings".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("bridgeConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("broadcastGroupConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("clusterConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("connectorConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("connectorServiceConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("discoveryGroupConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("divertConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("queueConfigurations".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("groupingHandlerConfiguration".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("HAPolicy".toLowerCase());
 
         //stuff we dont want supported
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("fileDeployerScanPeriod");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("fileDeploymentEnabled");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityRoles");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("passwordCodec");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_AIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_AIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_AIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_NIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_NIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_NIO");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("fileDeployerScanPeriod".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("fileDeploymentEnabled".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityRoles".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("passwordCodec".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("HAPolicyConfiguration".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_AIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_AIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_AIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferSize_NIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalBufferTimeout_NIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("journalMaxIO_NIO".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("scaleDownClustername".toLowerCase());
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("backupStrategy".toLowerCase());
         // messaging protocols are automatically resolved by HornetQ using a ServiceLoader
-        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("resolveProtocols");
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("resolveProtocols".toLowerCase());
 
         //stuff we arent bothered about
         KNOWN_ATTRIBUTES = new TreeSet<String>();
+        KNOWN_ATTRIBUTES.add("allowAutoFailBack");
         KNOWN_ATTRIBUTES.add("journalBufferSize");
         KNOWN_ATTRIBUTES.add("journalBufferTimeout");
         KNOWN_ATTRIBUTES.add("journalMaxIo");
@@ -84,13 +90,21 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
             attributes.add(path);
         }
         convert(attributes);
-        attributes.removeAll(KNOWN_ATTRIBUTES);
+        for (String name : KNOWN_ATTRIBUTES) {
+            attributes.remove(name.toLowerCase());
+        }
 
         SortedSet<String> configurationProperties = findAllPropertyNames(Configuration.class);
-        configurationProperties.removeAll(UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES);
+        for (String name : UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES) {
+            configurationProperties.remove(name);
+        }
+        SortedSet<String> lowerCaseConfigurationProperties = new TreeSet<>();
+        for (String name : configurationProperties) {
+            lowerCaseConfigurationProperties.add(name.toLowerCase());
+        }
 
         compare("AS7 Configuration Attributes", attributes,
-                "ConfigurationImpl", configurationProperties);
+                "ConfigurationImpl", lowerCaseConfigurationProperties);
     }
 
     private void convert(SortedSet<String> attributes) {
@@ -112,7 +126,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
             if(DODGY_NAME.containsKey(name)) {
                 name = DODGY_NAME.get(name);
             }
-            newAttributes.add(name);
+            newAttributes.add(name.toLowerCase());
         }
         attributes.clear();
         attributes.addAll(newAttributes);

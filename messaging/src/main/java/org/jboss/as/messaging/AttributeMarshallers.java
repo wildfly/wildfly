@@ -72,19 +72,28 @@ public final class AttributeMarshallers {
         };
     };
 
-    public static final AttributeMarshaller CONNECTORS_MARSHALLER = new AttributeMarshaller() {
+    public static final AttributeMarshaller CONNECTORS_MARSHALLER = new ConnectorsMarshaller(CommonAttributes.CONNECTOR);
+
+    public static final class ConnectorsMarshaller extends AttributeMarshaller {
+        // WildFly management attribute name
+        private final String attributeName;
+
+        public ConnectorsMarshaller(final String attributeName) {
+            this.attributeName = attributeName;
+        }
+
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-            if (resourceModel.hasDefined(Element.CONNECTOR.getLocalName())) {
+            if (resourceModel.hasDefined(attributeName)) {
                 writer.writeStartElement(Element.CONNECTORS.getLocalName());
-                for (Property connProp : resourceModel.get(Element.CONNECTOR.getLocalName()).asPropertyList()) {
+                for (Property connProp : resourceModel.get(attributeName).asPropertyList()) {
                     writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
                     writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }
-        };
-    };
+        }
+    }
 
     public static final AttributeMarshaller SELECTOR_MARSHALLER = new AttributeMarshaller() {
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {

@@ -30,6 +30,7 @@
            <?BROADCAST-GROUPS?>
            <?DISCOVERY-GROUPS?>
            <?CLUSTER-CONNECTIONS?>
+           <?HA_POLICY?>
 
            <security-settings>
                <security-setting match="#">
@@ -121,6 +122,10 @@
                    <discovery-group-ref discovery-group-name="dg-group1"/>
                </cluster-connection>
            </cluster-connections>
+       </replacement>
+       <replacement placeholder="HA_POLICY">
+           <ha-policy>
+           </ha-policy>
        </replacement>
        <replacement placeholder="REDISTRIBUTION-DELAY">
            <redistribution-delay>1000</redistribution-delay>

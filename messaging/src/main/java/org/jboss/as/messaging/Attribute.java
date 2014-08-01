@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.ha.HAAttributes;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
@@ -36,17 +37,31 @@ public enum Attribute {
    UNKNOWN((String) null),
    /* Messaging 1.0 attributes, in alpha order */
    ALLOW_DIRECT_CONNECTIONS_ONLY(ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY),
+   ALLOW_FAILBACK(HAAttributes.ALLOW_FAILBACK),
    // backup-connector-name is no longer used by HornetQ configuration
    @Deprecated
    BACKUP_CONNECTOR_NAME("backup-connector-name"),
+   BACKUP_PORT_OFFSET(HAAttributes.BACKUP_PORT_OFFSET),
+   BACKUP_REQUEST_RETRIES(HAAttributes.BACKUP_REQUEST_RETRIES),
+   BACKUP_REQUEST_RETRY_INTERVAL(HAAttributes.BACKUP_REQUEST_RETRY_INTERVAL),
+   CHECK_FOR_LIVE_SERVER(CommonAttributes.CHECK_FOR_LIVE_SERVER),
+   CLUSTER_NAME(CommonAttributes.CLUSTER_NAME),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    CONNECTOR_REF(CommonAttributes.CONNECTOR_REF_STRING),
+   ENABLED(CommonAttributes.ENABLED),
+   FAILBACK_DELAY(HAAttributes.FAILBACK_DELAY),
+   FAILOVER_ON_SERVER_SHUTDOWN(HAAttributes.FAILOVER_ON_SERVER_SHUTDOWN),
+   GROUP_NAME(CommonAttributes.GROUP_NAME),
    HTTP_LISTENER(CommonAttributes.HTTP_LISTENER),
    KEY(CommonAttributes.KEY),
    MATCH(CommonAttributes.MATCH),
+   MAX_BACKUPS(HAAttributes.MAX_BACKUPS),
+   MAX_SAVED_REPLICATED_JOURNAL_SIZE(HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE),
    NAME(CommonAttributes.NAME),
    PATH(ModelDescriptionConstants.PATH),
    RELATIVE_TO(PathDefinition.RELATIVE_TO),
+   REQUEST_BACKUP(HAAttributes.REQUEST_BACKUP),
+   RESTART_BACKUP(HAAttributes.RESTART_BACKUP),
    ROLES_ATTR_NAME(CommonAttributes.ROLES_ATTR_NAME),
    SERVER_ID(InVMTransportDefinition.SERVER_ID),
    SOCKET_BINDING(RemoteTransportDefinition.SOCKET_BINDING),
@@ -54,7 +69,6 @@ public enum Attribute {
    TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
    VALUE(ConnectorServiceParamDefinition.VALUE),
    MODULE(JMSBridgeDefinition.MODULE);
-
 
    private final String name;
    private final AttributeDefinition definition;

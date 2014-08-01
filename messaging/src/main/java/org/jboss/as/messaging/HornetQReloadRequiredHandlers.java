@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -39,8 +40,12 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat, inc
  */
-interface HornetQReloadRequiredHandlers {
+public interface HornetQReloadRequiredHandlers {
     static class AddStepHandler extends AbstractAddStepHandler {
+
+        public AddStepHandler(Collection<? extends AttributeDefinition> attributes) {
+            super(attributes);
+        }
 
         public AddStepHandler(AttributeDefinition... attributes) {
             super(attributes);
@@ -78,7 +83,11 @@ interface HornetQReloadRequiredHandlers {
         }
     }
 
-    static final class WriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+    static class WriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+
+        public WriteAttributeHandler(Collection<? extends AttributeDefinition> definitions) {
+            super(definitions.toArray(new AttributeDefinition[definitions.size()]));
+        }
 
         public WriteAttributeHandler(AttributeDefinition... definitions) {
             super(definitions);

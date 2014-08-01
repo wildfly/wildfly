@@ -131,25 +131,33 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final String user = BridgeDefinition.USER.resolveModelAttribute(context, model).asString();
         final String password = BridgeDefinition.PASSWORD.resolveModelAttribute(context, model).asString();
 
+        BridgeConfiguration config = new BridgeConfiguration()
+                .setName(name)
+                .setQueueName(queueName)
+                .setForwardingAddress(forwardingAddress)
+                .setFilterString(filterString)
+                .setTransformerClassName(transformerClassName)
+                .setMinLargeMessageSize(minLargeMessageSize)
+                .setClientFailureCheckPeriod(clientFailureCheckPeriod)
+                .setConnectionTTL(connectionTTL)
+                .setRetryInterval(retryInterval)
+                .setMaxRetryInterval(maxRetryInterval)
+                .setRetryIntervalMultiplier(retryIntervalMultiplier)
+                .setInitialConnectAttempts(initialConnectAttempts)
+                .setReconnectAttempts(reconnectAttempts)
+                .setReconnectAttemptsOnSameNode(reconnectAttemptsOnSameNode)
+                .setUseDuplicateDetection(useDuplicateDetection)
+                .setConfirmationWindowSize(confirmationWindowSize)
+                .setHA(ha)
+                .setUser(user)
+                .setPassword(password);
+
         if (discoveryGroupName != null) {
-            return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
-                              minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                              retryInterval, maxRetryInterval, retryIntervalMultiplier,
-                              initialConnectAttempts, reconnectAttempts, reconnectAttemptsOnSameNode,
-                              useDuplicateDetection, confirmationWindowSize,
-                              discoveryGroupName,
-                              ha,
-                              user, password);
+            config.setDiscoveryGroupName(discoveryGroupName);
         } else {
-            return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
-                              minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                              retryInterval, maxRetryInterval, retryIntervalMultiplier,
-                              initialConnectAttempts, reconnectAttempts, reconnectAttemptsOnSameNode,
-                              useDuplicateDetection, confirmationWindowSize,
-                              staticConnectors,
-                              ha,
-                              user, password);
+            config.setStaticConnectors(staticConnectors);
         }
+        return config;
     }
 
     private static List<String> getStaticConnectors(ModelNode model) {

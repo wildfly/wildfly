@@ -147,6 +147,8 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
             case CHECK_FOR_LIVE_SERVER:
             case BACKUP_GROUP_NAME:
             case REPLICATION_CLUSTERNAME:
+                // log that the attribute is deprecated (now handled by the ha-policy subresources) but add it to the hornetq-server model anyway
+                MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
                 handleElementText(reader, element, operation);
                 break;
             default: {

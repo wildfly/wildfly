@@ -35,12 +35,19 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
+import static org.jboss.as.messaging.CommonAttributes.HA_POLICY;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_LOCK_ACQUISITION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_MASTER;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_SLAVE;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE_MASTER;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE_SLAVE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
@@ -65,6 +72,9 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker.Dis
 import org.jboss.as.controller.transform.description.OperationTransformationOverrideBuilder;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.messaging.ha.LiveOnlyDefinition;
+import org.jboss.as.messaging.ha.ReplicationColocatedDefinition;
+import org.jboss.as.messaging.ha.SharedStoreColocatedDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
@@ -113,7 +123,31 @@ public class MessagingTransformers {
      */
     private static void buildTransformers2_1_0(ResourceTransformationDescriptionBuilder builder) {
         ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY, JOURNAL_LOCK_ACQUISITION_TIMEOUT);
+        // shared-store attribute has been deprecate *and* its default value has changed to false in HornetQ 2.5.0
+        // we transform it so that it is set to false for legacvy version if it not defined.
+        hornetqServer.getAttributeBuilder().setValueConverter(new AttributeConverter() {
+            @Override
+            public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                if (!attributeValue.isDefined()) {
+                    attributeValue.set(false);
+                }
+            }
+
+            @Override
+            public void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                if (!attributeValue.isDefined()) {
+                    attributeValue.set(false);
+                }
+            }
+        }, SHARED_STORE);
+        hornetqServer.rejectChildResource(LiveOnlyDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(HA_POLICY, REPLICATION_MASTER));
+        hornetqServer.rejectChildResource(pathElement(HA_POLICY, REPLICATION_SLAVE));
+        hornetqServer.rejectChildResource(ReplicationColocatedDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(HA_POLICY, SHARED_STORE_MASTER));
+        hornetqServer.rejectChildResource(pathElement(HA_POLICY, SHARED_STORE_SLAVE));
+        hornetqServer.rejectChildResource(SharedStoreColocatedDefinition.PATH);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);

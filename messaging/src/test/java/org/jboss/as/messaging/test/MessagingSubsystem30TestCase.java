@@ -45,6 +45,7 @@ import static org.jboss.as.messaging.test.ModelFixers.FIXER_EAP_6_1_0;
 import static org.jboss.as.messaging.test.ModelFixers.PATH_FIXER;
 import static org.jboss.as.messaging.test.TransformerUtils.concat;
 import static org.jboss.as.messaging.test.TransformerUtils.createChainedConfig;
+import static org.jboss.as.messaging.test.Validator.validateXML;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_1;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_1_0;
@@ -85,6 +86,7 @@ import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.QueueDefinition;
 import org.jboss.as.messaging.TransportParamDefinition;
+import org.jboss.as.messaging.ha.LiveOnlyDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
@@ -108,6 +110,8 @@ import org.junit.Test;
  */
 public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
 
+    private static String XSD_SCHEMA = "schema/jboss-as-messaging_3_0.xsd";
+
     public MessagingSubsystem30TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
@@ -116,6 +120,26 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem_3_0_expressions.xml");
     }
+
+    @Test
+    public void testSchemaValidation() throws Exception {
+        validateXML(getSubsystemXml(), XSD_SCHEMA);
+    }
+
+    /////////////////////////////////////////
+    //  Tests for HA Policy Configuration  //
+    /////////////////////////////////////////
+
+    @Test
+    public void testHAPolicyConfiguration() throws Exception {
+        standardSubsystemTest("subsystem_3_0_ha-policy.xml");
+    }
+
+    @Test
+    public void testHAPolicySchemaValidation() throws Exception {
+        validateXML(readResource("subsystem_3_0_ha-policy.xml"), XSD_SCHEMA);
+    }
+
 
     ////////////////////////////////////////
     //      Tests for WidlFly versions    //
@@ -288,6 +312,9 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                         concat(new AttributeDefinition[]{CommonAttributes.BACKUP_GROUP_NAME, CommonAttributes.REPLICATION_CLUSTERNAME,
                                                 CommonAttributes.REMOTING_INCOMING_INTERCEPTORS, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS}, MAX_SAVED_REPLICATED_JOURNAL_SIZE, CHECK_FOR_LIVE_SERVER, OVERRIDE_IN_VM_SECURITY)))
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, LiveOnlyDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(ModelDescriptionConstants.PATH)),
                                 new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
                         .addFailedAttribute(
@@ -440,6 +467,9 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY}))
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, LiveOnlyDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, BridgeDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE})
@@ -501,6 +531,9 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, LiveOnlyDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
@@ -556,6 +589,9 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{OVERRIDE_IN_VM_SECURITY}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, LiveOnlyDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},

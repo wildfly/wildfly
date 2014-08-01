@@ -59,6 +59,11 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-selector</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms-client</artifactId>
         </dependency>
 

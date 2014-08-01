@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.ha.HAAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
@@ -48,15 +49,21 @@ public enum Element {
    ADDRESS(getAttributeDefinitions(QueueDefinition.ADDRESS, DivertDefinition.ADDRESS,
            GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, ClusterConnectionDefinition.ADDRESS)),
    ADDRESS_SETTINGS(CommonAttributes.ADDRESS_SETTINGS),
+   @Deprecated
    ALLOW_FAILBACK(CommonAttributes.ALLOW_FAILBACK),
    ASYNC_CONNECTION_EXECUTION_ENABLED(CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED),
+   @Deprecated
    BACKUP(CommonAttributes.BACKUP),
+   BACKUP_PORT_OFFSET(HAAttributes.BACKUP_PORT_OFFSET),
+   BACKUP_REQUEST_RETRIES(HAAttributes.BACKUP_REQUEST_RETRIES),
+   BACKUP_REQUEST_RETRY_INTERVAL(HAAttributes.BACKUP_REQUEST_RETRY_INTERVAL),
    BINDINGS_DIRECTORY(CommonAttributes.BINDINGS_DIRECTORY),
    BRIDGE(CommonAttributes.BRIDGE),
    BRIDGES(CommonAttributes.BRIDGES),
    BROADCAST_GROUP(CommonAttributes.BROADCAST_GROUP),
    BROADCAST_GROUPS(CommonAttributes.BROADCAST_GROUPS),
    BROADCAST_PERIOD(BroadcastGroupDefinition.BROADCAST_PERIOD),
+   @Deprecated
    CHECK_FOR_LIVE_SERVER(CommonAttributes.CHECK_FOR_LIVE_SERVER),
    CLASS_NAME(CommonAttributes.CLASS_NAME),
    @Deprecated
@@ -65,6 +72,7 @@ public enum Element {
    CLUSTER_CONNECTIONS(CommonAttributes.CLUSTER_CONNECTIONS),
    CLUSTER_PASSWORD(CommonAttributes.CLUSTER_PASSWORD),
    CLUSTER_USER(CommonAttributes.CLUSTER_USER),
+   COLOCATED(CommonAttributes.COLOCATED),
    CONNECTION_TTL_OVERRIDE(CommonAttributes.CONNECTION_TTL_OVERRIDE),
    CONNECTOR_SERVICE(CommonAttributes.CONNECTOR_SERVICE),
    CONNECTOR_SERVICES(CommonAttributes.CONNECTOR_SERVICES),
@@ -77,8 +85,11 @@ public enum Element {
    DIVERT(CommonAttributes.DIVERT),
    DIVERTS(CommonAttributes.DIVERTS),
    DURABLE(CommonAttributes.DURABLE),
+   EXCLUDES(CommonAttributes.EXCLUDES),
    EXCLUSIVE(DivertDefinition.EXCLUSIVE),
+   @Deprecated
    FAILBACK_DELAY(CommonAttributes.FAILBACK_DELAY),
+   @Deprecated
    FAILOVER_ON_SHUTDOWN(CommonAttributes.FAILOVER_ON_SHUTDOWN),
    FILE_DEPLOYMENT_ENABLED(CommonAttributes.FILE_DEPLOYMENT_ENABLED),
    FORWARDING_ADDRESS(getForwardingAddressDefinitions()),
@@ -87,6 +98,7 @@ public enum Element {
    GROUP_PORT(CommonAttributes.GROUP_PORT),
    GROUPING_HANDLER(CommonAttributes.GROUPING_HANDLER),
    GROUP_TIMEOUT(GroupingHandlerDefinition.GROUP_TIMEOUT),
+   HA_POLICY(CommonAttributes.HA_POLICY),
    HORNETQ_SERVER(CommonAttributes.HORNETQ_SERVER),
    HTTP_ACCEPTOR(CommonAttributes.HTTP_ACCEPTOR),
    HTTP_CONNECTOR(CommonAttributes.HTTP_CONNECTOR),
@@ -104,6 +116,7 @@ public enum Element {
    JOURNAL_COMPACT_PERCENTAGE(CommonAttributes.JOURNAL_COMPACT_PERCENTAGE),
    JOURNAL_DIRECTORY(CommonAttributes.JOURNAL_DIRECTORY),
    JOURNAL_FILE_SIZE(CommonAttributes.JOURNAL_FILE_SIZE),
+   JOURNAL_LOCK_ACQUISITION_TIMEOUT(CommonAttributes.JOURNAL_LOCK_ACQUISITION_TIMEOUT),
    JOURNAL_MAX_IO(CommonAttributes.JOURNAL_MAX_IO),
    JOURNAL_MIN_FILES(CommonAttributes.JOURNAL_MIN_FILES),
    JOURNAL_SYNC_NON_TRANSACTIONAL(CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL),
@@ -117,9 +130,11 @@ public enum Element {
    LOG_JOURNAL_WRITE_RATE(CommonAttributes.LOG_JOURNAL_WRITE_RATE),
    MANAGEMENT_ADDRESS(CommonAttributes.MANAGEMENT_ADDRESS),
    MANAGEMENT_NOTIFICATION_ADDRESS(CommonAttributes.MANAGEMENT_NOTIFICATION_ADDRESS),
+   MASTER(CommonAttributes.MASTER),
+   MAX_BACKUPS(HAAttributes.MAX_BACKUPS),
    MAX_HOPS(ClusterConnectionDefinition.MAX_HOPS),
    MAX_REDELIVERY_DELAY(AddressSettingDefinition.MAX_REDELIVERY_DELAY),
-   MAX_SAVED_REPLICATED_JOURNAL_SIZE(CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE),
+   MAX_SAVED_REPLICATED_JOURNAL_SIZE(HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE),
    MEMORY_MEASURE_INTERVAL(CommonAttributes.MEMORY_MEASURE_INTERVAL),
    MEMORY_WARNING_THRESHOLD(CommonAttributes.MEMORY_WARNING_THRESHOLD),
    MESSAGE_COUNTER_ENABLED(CommonAttributes.MESSAGE_COUNTER_ENABLED),
@@ -130,6 +145,8 @@ public enum Element {
    NAME(CommonAttributes.NAME),
    NETTY_ACCEPTOR(CommonAttributes.NETTY_ACCEPTOR),
    NETTY_CONNECTOR(CommonAttributes.NETTY_CONNECTOR),
+   LIVE_ONLY(CommonAttributes.LIVE_ONLY),
+   @Deprecated
    BACKUP_GROUP_NAME(CommonAttributes.BACKUP_GROUP_NAME),
    OVERRIDE_IN_VM_SECURITY(CommonAttributes.OVERRIDE_IN_VM_SECURITY),
    PAGE_MAX_CONCURRENT_IO(CommonAttributes.PAGE_MAX_CONCURRENT_IO),
@@ -138,22 +155,30 @@ public enum Element {
    PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY(CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY),
    PERSIST_ID_CACHE(CommonAttributes.PERSIST_ID_CACHE),
    PERSISTENCE_ENABLED(CommonAttributes.PERSISTENCE_ENABLED),
+   //POLICY_TYPE(HAPolicyDefinition.POLICY_TYPE),
    QUEUE(CommonAttributes.QUEUE),
    REAPER_PERIOD(GroupingHandlerDefinition.REAPER_PERIOD),
    REDELIVERY_MULTIPLIER(AddressSettingDefinition.REDELIVERY_MULTIPLIER),
    REFRESH_TIMEOUT(DiscoveryGroupDefinition.REFRESH_TIMEOUT),
+   REMOTE_CONNECTORS(CommonAttributes.REMOTE_CONNECTORS),
    REMOTING_INTERCEPTORS(CommonAttributes.REMOTING_INTERCEPTORS),
    REMOTING_INCOMING_INTERCEPTORS(CommonAttributes.REMOTING_INCOMING_INTERCEPTORS),
    REMOTING_OUTGOING_INTERCEPTORS(CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS),
+   REPLICATION(CommonAttributes.REPLICATION),
+   @Deprecated
    REPLICATION_CLUSTERNAME(CommonAttributes.REPLICATION_CLUSTERNAME),
+   REQUEST_BACKUP(HAAttributes.REQUEST_BACKUP),
+   RESTART_BACKUP(HAAttributes.RESTART_BACKUP),
    ROUTING_NAME(DivertDefinition.ROUTING_NAME),
    RUN_SYNC_SPEED_TEST(CommonAttributes.RUN_SYNC_SPEED_TEST),
+   SCALE_DOWN(CommonAttributes.SCALE_DOWN),
    SECURITY_DOMAIN(CommonAttributes.SECURITY_DOMAIN),
    SECURITY_ENABLED(CommonAttributes.SECURITY_ENABLED),
    SECURITY_INVALIDATION_INTERVAL(CommonAttributes.SECURITY_INVALIDATION_INTERVAL),
    SECURITY_SETTINGS(CommonAttributes.SECURITY_SETTINGS),
    SERVER_DUMP_INTERVAL(CommonAttributes.SERVER_DUMP_INTERVAL),
-   SHARED_STORE(CommonAttributes.SHARED_STORE),
+   SHARED_STORE("shared-store"),
+   SLAVE(CommonAttributes.SLAVE),
    STATISTICS_ENABLED(CommonAttributes.STATISTICS_ENABLED),
    SUBSYSTEM(CommonAttributes.SUBSYSTEM),
    TRANSACTION_TIMEOUT(CommonAttributes.TRANSACTION_TIMEOUT),

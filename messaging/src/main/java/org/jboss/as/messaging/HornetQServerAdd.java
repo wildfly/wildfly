@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
@@ -52,6 +51,7 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_MIN_FILES;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_PERCENTAGE;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_LOCK_ACQUISITION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MAX_IO;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL;
@@ -92,6 +92,7 @@ import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_P
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
 import static org.jboss.as.messaging.PathDefinition.PATHS;
 import static org.jboss.as.messaging.PathDefinition.RELATIVE_TO;
+import static org.jboss.as.messaging.ha.HAPolicyConfigurationBuilder.addHAPolicyConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -364,8 +365,6 @@ class HornetQServerAdd implements OperationStepHandler {
 
         configuration.setName(serverName);
 
-        // --
-        configuration.setAllowAutoFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
         ModelNode backupGroupName = BACKUP_GROUP_NAME.resolveModelAttribute(context, model);
@@ -406,6 +405,7 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setJournalCompactMinFiles(JOURNAL_COMPACT_MIN_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalCompactPercentage(JOURNAL_COMPACT_PERCENTAGE.resolveModelAttribute(context, model).asInt());
         configuration.setJournalFileSize(JOURNAL_FILE_SIZE.resolveModelAttribute(context, model).asInt());
+        configuration.setJournalLockAcquisitionTimeout(JOURNAL_LOCK_ACQUISITION_TIMEOUT.resolveModelAttribute(context, model).asInt());
         configuration.setJournalMinFiles(JOURNAL_MIN_FILES.resolveModelAttribute(context, model).asInt());
         configuration.setJournalSyncNonTransactional(JOURNAL_SYNC_NON_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
         configuration.setJournalSyncTransactional(JOURNAL_SYNC_TRANSACTIONAL.resolveModelAttribute(context, model).asBoolean());
@@ -443,6 +443,8 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
         configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
+
+        addHAPolicyConfiguration(context, configuration, model);
 
         processAddressSettings(context, configuration, model);
         processSecuritySettings(context, configuration, model);
@@ -488,7 +490,7 @@ class HornetQServerAdd implements OperationStepHandler {
         }
     }
 
-       /**
+    /**
      * Process the HornetQ server-side old style interceptors.
      */
     static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {

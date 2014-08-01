@@ -303,7 +303,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="shared-store" type="xs:boolean">
               <xs:annotation>
                   <xs:documentation>
-                      Whether this server is using a shared store for failover.
+                      Deprecated. shared storage is now configured by the ha-policy element.
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
@@ -391,6 +391,13 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="journal-lock-acquisition-timeout" type="xs:long">
+              <xs:annotation>
+                  <xs:documentation>
+                      How long (in ms) to wait to acquire a file lock on the journal.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="journal-min-files" type="xs:int">
               <xs:annotation>
                   <xs:documentation>
@@ -419,7 +426,7 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
-          <xs:element maxOccurs="1" minOccurs="0" name="max-saved-replicated-journal-size" type="xs:int">
+          <xs:element maxOccurs="1" minOccurs="0" name="max-saved-replicated-journals-size" type="xs:int">
               <xs:annotation>
                   <xs:documentation>
                       The maximum number of backup journals to keep after failback occurs.
@@ -537,6 +544,13 @@
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="cluster-connection" type="clusterConnectionType" />
                   </xs:sequence>
               </xs:complexType>
+          </xs:element>
+          <xs:element name="ha-policy" type="ha-policyType" maxOccurs="1" minOccurs="0">
+              <xs:annotation>
+                  <xs:documentation>
+                      The HA policy of this server
+                  </xs:documentation>
+              </xs:annotation>
           </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType" />
           <xs:element maxOccurs="1" minOccurs="0" name="security-settings" type="security-settingsType" />
@@ -1337,13 +1351,6 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
-          <xs:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xs:long">
-              <xs:annotation>
-                  <xs:documentation>
-                      How often the cluster connection will broadcast itself
-                  </xs:documentation>
-              </xs:annotation>
-          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="notification-attempts" type="xs:int">
               <xs:annotation>
                   <xs:documentation>
@@ -1351,6 +1358,13 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xs:long">
+               <xs:annotation>
+                   <xs:documentation>
+                       How often the cluster connection will broadcast itself
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
           <xs:choice>
              <xs:element maxOccurs="1" minOccurs="0" name="static-connectors">
                 <xs:complexType>
@@ -1377,6 +1391,423 @@
            </xs:annotation>
        </xs:attribute>
     </xs:complexType>
+    <xs:complexType name="ha-policyType">
+        <xs:choice>
+            <xs:element name="live-only" type="ha-live-onlyType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A live only server with no HA capabilities apart from scale down.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="replication" type="ha-replicationType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configuration for a replicated server, either master, slave or colocated.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="shared-store" type="ha-shared-storeType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configuration for a shared store server, either master, slave or colocated.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="ha-live-onlyType">
+        <xs:all>
+            <xs:element name="scale-down" type="scale-downType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The scale down configuration of this live server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="ha-replicationType">
+        <xs:choice>
+            <xs:element name="master" type="replication-masterType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A live server configured to replicate.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="slave" type="replication-slaveType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A backup server configured to replicate.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="colocated" type="replication-colocatedType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        a replicated lives server that will allow requests to create colocated replicated backup servers.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="replication-masterType">
+        <xs:attribute name="cluster-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the cluster configuration to use for replication. This setting is only necessary in case you
+                    configure multiple cluster connections. It is used by a replicating backups and by live servers that
+                    may attempt fail-back.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="group-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    used for replication, if set, (remote) backup servers will only pair with live servers with matching
+                    group-name
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="check-for-live-server" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether to check the cluster for a (live) server using our own server ID when starting
+                    up. This option is only necessary for performing 'fail-back' on replicating
+                    servers. Strictly speaking this setting only applies to live servers and not to
+                    backups.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="replication-slaveType">
+        <xs:sequence>
+            <xs:element name="scale-down" type="scale-downType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        if provided then this backup will scale down rather than becoming live after fail over.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="group-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    used for replication, if set, (remote) backup servers will only pair with live servers with matching
+                    group-name
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cluster-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the cluster configuration to use for replication. This setting is only necessary in case you
+                    configure multiple cluster connections. It is used by a replicating backups and by live servers that
+                    may attempt fail-back.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-saved-replicated-journal-size" type="xs:int" default="2" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    This specifies how many times a replicated backup server can restart after moving its files on start.
+                    Once there are this number of backup journal files the server will stop permanently after if fails
+                    back.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="restart-backup" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Will this server, if a backup, restart once it has been stopped because of failback or scaling down.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="allow-failback" type="xs:boolean" default="true" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether a server will automatically stop when a another places a request to take over
+                    its place. The use case is when a regular server stops and its backup takes over its
+                    duties, later the main server restarts and requests the server (the former backup) to
+                    stop operating.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="failback-delay" type="xs:long" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    if we have to start as a replicated server this is the delay to wait before fail-back occurs
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="replication-colocatedType">
+        <xs:all>
+            <xs:element name="excludes" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        the remote connectors that shouldn't have their ports offset, typically remote connectors or the
+                        connector used in the cluster connection if scaling down
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="connectors" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="connector-ref" type="connector-refType" minOccurs="1" maxOccurs="unbounded"></xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="master" type="replication-masterType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The configuration for the live replicated server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="slave" type="replication-slaveType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The configuration for any slaves created.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="request-backup" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    If true then the server will request a backup on another node
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-request-retries" type="xs:int" default="-1" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    How many times the live server will try to request a backup, -1 means for ever.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-request-retry-interval" type="xs:long" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    How long to wait for retries between attempts to request a backup server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-backups" type="xs:int" default="1" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether or not this live server will accept backup requests from other live servers.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-port-offset" type="xs:int" default="100" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The offset to use for the Connectors and Acceptors when creating a new backup server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="ha-shared-storeType">
+        <xs:choice>
+            <xs:element name="master" type="shared-store-masterType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A shared store live server configuration.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="slave" type="shared-store-slaveType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A shared store backup server configuration.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="colocated" type="shared-store-colocatedType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A shared store colocated configuration
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="shared-store-masterType">
+        <xs:attribute name="failback-delay" type="xs:long" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    delay to wait before fail-back occurs on (live's) restart
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="failover-on-server-shutdown" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Will this backup server come live on a normal server shutdown
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="shared-store-slaveType">
+        <xs:all>
+            <xs:element name="scale-down" type="scale-downType" maxOccurs="1" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        if provided then this backup will scale down rather than becoming live after fail over.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="allow-failback" type="xs:boolean" default="true" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether a server will automatically stop when a another places a request to take over
+                    its place. The use case is when a regular server stops and its backup takes over its
+                    duties, later the main server restarts and requests the server (the former backup) to
+                    stop operating.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="failback-delay" type="xs:long" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    delay to wait before fail-back occurs on (live's) restart
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="failover-on-server-shutdown" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Will this backup server come live on a normal server shutdown
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="restart-backup" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Will this server, if a backup, restart once it has been stopped because of failback or scaling down.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="shared-store-colocatedType">
+        <xs:all>
+            <xs:element name="master" type="shared-store-masterType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The configuration for the live shared store server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="slave" type="shared-store-slaveType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The configuration for any shared store backups created.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="request-backup" type="xs:boolean" default="false" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    If true then the server will request a backup on another node
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-request-retries" type="xs:int" default="-1" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    How many times the live server will try to request a backup, -1 means for ever.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-request-retry-interval" type="xs:long" default="5000" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    How long to wait for retries between attempts to request a backup server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-backups" type="xs:int" default="1" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether or not this live server will accept backup requests from other live servers.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="backup-port-offset" type="xs:int" default="100" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The offset to use for the Connectors and Acceptors when creating a new backup server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="scale-downType">
+        <xs:choice>
+            <xs:element name="discovery-group-ref" type="discovery-group-refType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        The discovery group to use for scale down, if not supplied then the scale-down connectors or first
+                        invm connector will be used
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connectors" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        A list of connectors to use for scaling down, if not supplied then the scale-down-discovery-group or
+                        first invm connector will be used
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="connector-ref" type="connector-refType" minOccurs="1" maxOccurs="unbounded"></xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="enabled" type="xs:boolean" default="true" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    its possible that you only want a server to partake in scale down as a receiver, via a group.
+                    In this case set scale-down to false
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cluster-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The scale down cluster to scale down to, a server will only scale down to a server within the same cluster
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="group-name" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The scale down group to scale down to, a server will only scale down to a server within the same group
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
     <xs:complexType name="divertType">
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="0" name="routing-name" type="xs:string">
@@ -2514,10 +2945,10 @@
                  </xs:documentation>
              </xs:annotation>
          </xs:element>
-         <xs:element maxOccurs="1" minOccurs="1" name="destination" type="jms-bridgeResourceType">
+         <xs:element maxOccurs="1" minOccurs="1" name="target" type="jms-bridgeResourceType">
              <xs:annotation>
                  <xs:documentation>
-                     The destination of the JMS bridge.
+                     The target of the JMS bridge.
                  </xs:documentation>
              </xs:annotation>
          </xs:element>
