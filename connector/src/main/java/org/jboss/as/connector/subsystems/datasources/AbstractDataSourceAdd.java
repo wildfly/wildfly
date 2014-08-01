@@ -118,7 +118,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
         boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
-        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, operation).asBoolean();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -164,7 +164,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
 
         }
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName, statsEnabled));
         dataSourceServiceBuilder.addListener(verificationHandler);
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
