@@ -75,7 +75,6 @@ public class DataSourceEnable implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) {
 
-        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
@@ -85,6 +84,7 @@ public class DataSourceEnable implements OperationStepHandler {
 
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
                     addServices(context, operation, verificationHandler, registration, model, isXa(), controllers);
