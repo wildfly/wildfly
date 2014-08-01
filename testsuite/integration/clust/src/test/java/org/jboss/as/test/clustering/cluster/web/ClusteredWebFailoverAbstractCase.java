@@ -30,13 +30,14 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.junit.Assert;
@@ -52,6 +53,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTestCase {
+
+    protected abstract String getDeploymentName();
 
     /**
      * Test simple graceful shutdown failover:
@@ -97,11 +100,13 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         testFailover(new RedeployLifecycle(), baseURL1, baseURL2);
     }
 
-    private static void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+    private void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
+        HttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
         URI uri1 = SimpleServlet.createURI(baseURL1);
         URI uri2 = SimpleServlet.createURI(baseURL2);
+
+        this.establishTopology(baseURL1, NODES);
 
         try {
             HttpResponse response = client.execute(new HttpGet(uri1));
@@ -128,6 +133,8 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully shutdown the 1st container.
             lifecycle.stop(NODE_1);
+
+            this.establishTopology(baseURL2, NODE_2);
 
             // Now check on the 2nd server
 
@@ -158,6 +165,8 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             lifecycle.start(NODE_1);
 
+            this.establishTopology(baseURL2, NODES);
+
             response = client.execute(new HttpGet(uri2));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -181,6 +190,8 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully shutdown the 1st container.
             lifecycle.stop(NODE_2);
+
+            this.establishTopology(baseURL1, NODE_1);
 
             // Now check on the 2nd server
 
@@ -211,6 +222,8 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             lifecycle.start(NODE_2);
 
+            this.establishTopology(baseURL1, NODES);
+
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -234,5 +247,9 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
+    }
+
+    private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.getDeploymentName(), nodes);
     }
 }

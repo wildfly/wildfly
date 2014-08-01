@@ -21,6 +21,14 @@
  */
 package org.jboss.as.test.clustering;
 
+import javax.naming.NamingException;
+
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.container.ClassContainer;
+import org.jboss.shrinkwrap.api.container.ManifestContainer;
+
 /**
  * Utility class for cluster test.
  *
@@ -41,7 +49,17 @@ public class ClusterTestUtil {
         }
     }
 
-    private ClusterTestUtil() {
+    public static <A extends Archive<A> & ClassContainer<A> & ManifestContainer<A>> A addTopologyListenerDependencies(A archive) {
+        archive.addClasses(TopologyChangeListener.class, TopologyChangeListenerBean.class, TopologyChangeListenerServlet.class);
+        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.jboss.as.server, org.infinispan\n"));
+        return archive;
     }
 
+    public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws NamingException, InterruptedException {
+        TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
+        listener.establishTopology(container, cache, nodes);
+    }
+
+    private ClusterTestUtil() {
+    }
 }
