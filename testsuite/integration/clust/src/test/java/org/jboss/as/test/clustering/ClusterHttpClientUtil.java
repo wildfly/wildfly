@@ -21,17 +21,24 @@
  */
 package org.jboss.as.test.clustering;
 
+import static org.junit.Assert.*;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.GRACE_TIME_TO_REPLICATE;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * Helper class to start and stop container including a deployment.
@@ -40,6 +47,25 @@ import org.apache.http.client.methods.HttpUriRequest;
  * @version April 2012
  */
 public final class ClusterHttpClientUtil {
+
+    public static void establishTopology(URL baseURL, String container, String cache, String... nodes) throws URISyntaxException, IOException {
+        HttpClient client = new DefaultHttpClient();
+        try {
+            establishTopology(client, baseURL, container, cache, nodes);
+        } finally {
+            HttpClientUtils.closeQuietly(client);
+        }
+    }
+
+    public static void establishTopology(HttpClient client, URL baseURL, String container, String cache, String... nodes) throws URISyntaxException, IOException {
+        URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, nodes);
+        HttpResponse response = client.execute(new HttpGet(uri));
+        try {
+            assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+        } finally {
+            HttpClientUtils.closeQuietly(response);
+        }
+    }
 
     /**
      * Tries a get on the provided client with default GRACE_TIME_TO_MEMBERSHIP_CHANGE.

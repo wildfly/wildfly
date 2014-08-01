@@ -22,6 +22,8 @@
 package org.jboss.as.test.clustering.cluster.web;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +36,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -43,6 +46,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWebFailoverAbstractCase {
+    private static final String MODULE_NAME = "negotiationAuthenticator";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -57,31 +61,32 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
     }
        
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "negotiationAuthenticator.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addClass(SimpleServlet.class);
+        ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");    
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),"jboss-deployment-structure.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset("other", "org.jboss.security.negotiation.NegotiationAuthenticator"), "jboss-web.xml");
         return war;
     }
-    
-    @Test      
+
+    @Test
     public void testOneRequestSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException {
+            throws IOException, URISyntaxException {
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
-        String url1 = baseURL1.toString() + "simple";
-        String url2 = baseURL2.toString() + "simple";
+        URI uri1 = SimpleServlet.createURI(baseURL1);
+        URI uri2 = SimpleServlet.createURI(baseURL2);
 
         try {
             
-            HttpResponse response = client.execute(new HttpGet(url1));
+            HttpResponse response = client.execute(new HttpGet(uri1));
             try {
-                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -90,9 +95,9 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
             
             // Now check on the 2nd server
             
-            response = client.execute(new HttpGet(url2));
+            response = client.execute(new HttpGet(uri2));
             try {
-                log.info("Requested " + url2 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + uri2 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was shutdown.", 2, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -100,9 +105,9 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
             }
            
             //and back on the 1st server
-            response = client.execute(new HttpGet(url1));
+            response = client.execute(new HttpGet(uri1));
             try {
-                log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
+                log.info("Requested " + uri1 + ", got " + response.getFirstHeader("value").getValue() + ".");
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals("Session failed to replicate after container 1 was brough up.", 3, Integer.parseInt(response.getFirstHeader("value").getValue()));
             } finally {
@@ -115,4 +120,8 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
 
     }
 
+    @Override
+    protected String getModuleName() {
+        return MODULE_NAME;
+    }
 }
