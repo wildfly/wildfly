@@ -288,7 +288,7 @@ public class ManagementClient {
     }
 
     private void readRootNode() throws Exception {
-        rootNode = readResource(new ModelNode(), true, true);
+        rootNode = readResource(new ModelNode());
     }
 
     private String getSocketBindingGroup(String serverGroup) {
@@ -393,15 +393,11 @@ public class ManagementClient {
     }
 
     private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
-        return readResource(address, includeRuntime, false);
-    }
-
-    private ModelNode readResource(ModelNode address, boolean includeRuntime, boolean proxies) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(RECURSIVE).set("true");
         operation.get(INCLUDE_RUNTIME).set(includeRuntime);
-        operation.get(PROXIES).set(proxies);
+        operation.get(PROXIES).set("true");
         operation.get(OP_ADDR).set(address);
 
         return executeForResult(operation);
