@@ -40,6 +40,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -74,8 +75,8 @@ public class DeploySingleServerGroupTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void after() throws Exception {
         AbstractCliTestBase.closeCLI();
-        if (warFile!=null) {
-            warFile.delete();
+        if (warFile != null && warFile.exists()) {
+            Assert.assertTrue(warFile.delete());
         }
 
         CLITestSuite.stopSupport();
