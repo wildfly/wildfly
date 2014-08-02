@@ -26,6 +26,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.INCLUDE_RUN
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
+import static org.jboss.as.controller.client.helpers.ClientConstants.PROXIES;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
@@ -287,7 +288,7 @@ public class ManagementClient {
     }
 
     private void readRootNode() throws Exception {
-        rootNode = readResource(new ModelNode());
+        rootNode = readResource(new ModelNode(), true, true);
     }
 
     private String getSocketBindingGroup(String serverGroup) {
@@ -392,10 +393,15 @@ public class ManagementClient {
     }
 
     private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
+        return readResource(address, includeRuntime, false);
+    }
+
+    private ModelNode readResource(ModelNode address, boolean includeRuntime, boolean proxies) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(RECURSIVE).set("true");
         operation.get(INCLUDE_RUNTIME).set(includeRuntime);
+        operation.get(PROXIES).set(proxies);
         operation.get(OP_ADDR).set(address);
 
         return executeForResult(operation);
