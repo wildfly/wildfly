@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0"
-		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:ispn="urn:jboss:domain:infinispan:3.0">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:ispn="urn:jboss:domain:infinispan:3.0">
     <!--
       XSLT stylesheet to add make a copy of an existing cache such that:
       - the children of the cache are copied over unchanged.
@@ -25,49 +25,49 @@
 
     -->
 
-  <xsl:param name="container.name" select="'web'"/>
-  <xsl:param name="cache.base" select="'repl'"/>
-  <xsl:param name="cache.name" select="'new-cache'"/>
-  <xsl:param name="cache-type" select="'replicated-cache'"/>
+    <xsl:param name="container.name" select="'web'"/>
+    <xsl:param name="cache.base" select="'repl'"/>
+    <xsl:param name="cache.name" select="'new-cache'"/>
+    <xsl:param name="cache-type" select="'replicated-cache'"/>
 
-  <xsl:output method="xml" indent="yes"/>
-  <xsl:variable name="ispnns">
-    <xsl:value-of select="'urn:jboss:domain:infinispan:3.0'"/>
-  </xsl:variable>
+    <xsl:output method="xml" indent="yes"/>
+    <xsl:variable name="ispnns">
+        <xsl:value-of select="'urn:jboss:domain:infinispan:3.0'"/>
+    </xsl:variable>
 
-  <xsl:template name="copy-attributes">
-    <xsl:for-each select="@*">
-      <xsl:copy/>
-    </xsl:for-each>
-  </xsl:template>
+    <xsl:template name="copy-attributes">
+        <xsl:for-each select="@*">
+            <xsl:copy/>
+        </xsl:for-each>
+    </xsl:template>
 
-  <xsl:template name="copy-cache-attributes-and-override">
-    <!-- copy all attributes of the specified cache here -->
-    <xsl:copy-of select="*[local-name()=$cache-type and starts-with(namespace-uri(),$ispnns) and @name=$cache.base]/@*"/>
-    <!-- override the ones we need to override -->
-    <xsl:attribute name="name">
-      <xsl:value-of select="$cache.name"/>
-    </xsl:attribute>
-  </xsl:template>
+    <xsl:template name="copy-cache-attributes-and-override">
+        <!-- copy all attributes of the specified cache here -->
+        <xsl:copy-of select="*[local-name()=$cache-type and starts-with(namespace-uri(),$ispnns) and @name=$cache.base]/@*"/>
+        <!-- override the ones we need to override -->
+        <xsl:attribute name="name">
+            <xsl:value-of select="$cache.name"/>
+        </xsl:attribute>
+    </xsl:template>
 
-  <!-- copy the container -->
-  <xsl:template match="//ispn:subsystem/ispn:cache-container[@name=$container.name]">
-    <xsl:copy>
-      <xsl:call-template name="copy-attributes"/>
-      <xsl:apply-templates select="@*|node()"/>
-      <!-- create copy of specified cache element -->
-      <xsl:element name="{$cache-type}" namespace="{$ispnns}">
-	<xsl:call-template name="copy-cache-attributes-and-override"/>
-	<xsl:copy-of select="*[local-name()=$cache-type and starts-with(namespace-uri(),$ispnns) and @name=$cache.base]/child::*"/>
-      </xsl:element>
-    </xsl:copy>
-  </xsl:template>
+    <!-- copy the container -->
+    <xsl:template match="//ispn:subsystem/ispn:cache-container[@name=$container.name]">
+        <xsl:copy>
+            <xsl:call-template name="copy-attributes"/>
+            <xsl:apply-templates select="@*|node()"/>
+            <!-- create copy of specified cache element -->
+            <xsl:element name="{$cache-type}" namespace="{$ispnns}">
+                <xsl:call-template name="copy-cache-attributes-and-override"/>
+                <xsl:copy-of select="*[local-name()=$cache-type and starts-with(namespace-uri(),$ispnns) and @name=$cache.base]/child::*"/>
+            </xsl:element>
+        </xsl:copy>
+    </xsl:template>
 
-  <!-- copy everything else -->
-  <xsl:template match="@*|node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
+    <!-- copy everything else -->
+    <xsl:template match="@*|node()">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()"/>
+        </xsl:copy>
+    </xsl:template>
 
 </xsl:stylesheet>

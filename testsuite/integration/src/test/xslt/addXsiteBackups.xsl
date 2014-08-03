@@ -35,7 +35,7 @@
     <!-- populate the <backup/> element by input parameters -->
     <xsl:variable name="new-backup-element">
         <ispn:backup site="{$backup.site}" failure-policy="{$backup.failure-policy}" strategy="{$backup.strategy}"
-                timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
+                     timeout="{$backup.replication-timeout}" enabled="{$backup.enabled}"/>
     </xsl:variable>
 
     <xsl:template name="copy-attributes">
@@ -45,12 +45,12 @@
     </xsl:template>
 
     <xsl:template name="add-backups-element">
-      <xsl:if test="count(ispn:backups) = 0">
-        <!-- create a new <backups/> element and add the new backup -->
-        <ispn:backups>
-          <xsl:copy-of select="$new-backup-element"/>
-        </ispn:backups>
-      </xsl:if>
+        <xsl:if test="count(ispn:backups) = 0">
+            <!-- create a new <backups/> element and add the new backup -->
+            <ispn:backups>
+                <xsl:copy-of select="$new-backup-element"/>
+            </ispn:backups>
+        </xsl:if>
     </xsl:template>
 
     <!-- copy the cache over and add the backup element -->

@@ -43,8 +43,7 @@
     </xsl:template>
 
     <!-- copy the cache over and add the backup element -->
-    <xsl:template
-            match="ispn:cache-container[@name=$container]/*[local-name()=$cache-type and @name=$cache]/ispn:backups">
+    <xsl:template match="ispn:cache-container[@name=$container]/*[local-name()=$cache-type and @name=$cache]/ispn:backups">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
             <xsl:copy-of select="child::*"/>
