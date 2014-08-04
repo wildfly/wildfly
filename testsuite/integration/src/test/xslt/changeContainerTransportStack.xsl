@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <xsl:stylesheet version="1.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:3.0">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:param name="container" select="'web'"/>
     <xsl:param name="stack" select="'udp'"/>
+
+    <xsl:variable name="infinispanns" select="'urn:jboss:domain:infinispan:'"/>
 
     <xsl:output method="xml" indent="yes"/>
 
@@ -16,7 +16,9 @@
     </xsl:template>
 
     <!-- update the stack -->
-    <xsl:template match="//ispn:subsystem/ispn:cache-container[@name=$container]/ispn:transport">
+    <xsl:template match="//*[local-name() = 'subsystem' and starts-with(namespace-uri(), $infinispanns)]
+                          /*[local-name() = 'cache-container' and @name=$container]
+                          /*[local-name() = 'transport']">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
             <xsl:attribute name="stack">
