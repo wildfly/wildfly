@@ -203,5 +203,11 @@ projects that depend on this project.-->
             <artifactId>groovy-all</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.rmi</groupId>
+            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+            <scope>test</scope>
+      </dependency>
     </dependencies>
 </project>
