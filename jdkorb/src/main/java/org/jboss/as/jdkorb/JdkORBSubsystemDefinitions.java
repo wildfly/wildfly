@@ -66,58 +66,15 @@ class JdkORBSubsystemDefinitions {
 
     static final SensitiveTargetAccessConstraintDefinition JDKORB_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDKORB_SECURITY);
 
-    // orb attribute definitions.
-    public static final SimpleAttributeDefinition ORB_NAME = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.NAME, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("JBoss"))
-            .setAllowExpression(true)
+    public static final SimpleAttributeDefinition ORB_PERSISTENT_SERVER_ID = new SimpleAttributeDefinitionBuilder(
+            JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("1"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    public static final SimpleAttributeDefinition ORB_PRINT_VERSION = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_PRINT_VERSION, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_USE_IMR = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_USE_IMR, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_USE_BOM = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_USE_BOM, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CACHE_TYPECODES = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CACHE_TYPECODES, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CACHE_POA_NAMES = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CACHE_POA_NAMES, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_GIOP_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_GIOP_MINOR_VERSION, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(2))
-            .setValidator(new IntRangeValidator(0, 2, true, false))
+    public static final SimpleAttributeDefinition ORB_GIOP_VERSION = new SimpleAttributeDefinitionBuilder(
+            JdkORBSubsystemConstants.ORB_GIOP_VERSION, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("1.2"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -136,73 +93,18 @@ class JdkORBSubsystemDefinitions {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
-    public static final SimpleAttributeDefinition ORB_PERSISTENT_SERVER_ID = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("1"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
     // connection attribute definitions.
-    public static final SimpleAttributeDefinition ORB_CONN_RETRIES = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_RETRIES, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(5))
-            .setValidator(new IntRangeValidator(0, 50, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
 
-    public static final SimpleAttributeDefinition ORB_CONN_RETRY_INTERVAL = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_RETRY_INTERVAL, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(500))
+    public static final SimpleAttributeDefinition ORB_TCP_HIGH_WATER_MARK = new SimpleAttributeDefinitionBuilder(
+            JdkORBSubsystemConstants.TCP_HIGH_WATER_MARK, ModelType.INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
 
-    public static final SimpleAttributeDefinition ORB_CONN_CLIENT_TIMEOUT = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_CLIENT_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
+    public static final SimpleAttributeDefinition ORB_TCP_NUMBER_TO_RECLAIM_PROPERTY = new SimpleAttributeDefinitionBuilder(
+            JdkORBSubsystemConstants.TCP_NUMBER_TO_RECLAIM, ModelType.INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CONN_SERVER_TIMEOUT = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_SERVER_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(0))
-            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CONN_MAX_SERVER_CONNECTIONS = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_MAX_SERVER_CONNECTIONS, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(Integer.MAX_VALUE))
-            .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CONN_MAX_MANAGED_BUF_SIZE = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_MAX_MANAGED_BUF_SIZE, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(24))
-            .setValidator(new IntRangeValidator(0, 64, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CONN_OUTBUF_SIZE = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_OUTBUF_SIZE, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(2048))
-            .setValidator(new IntRangeValidator(0, 65536, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition ORB_CONN_OUTBUF_CACHE_TIMEOUT = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.ORB_CONN_OUTBUF_CACHE_TIMEOUT, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(-1))
-            .setValidator(new IntRangeValidator(-1, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -225,56 +127,6 @@ class JdkORBSubsystemDefinitions {
             .setAllowExpression(true)
             .build();
 
-    // poa attribute definitions.
-    public static final SimpleAttributeDefinition POA_MONITORING = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_MONITORING, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition POA_QUEUE_WAIT = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_QUEUE_WAIT, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition POA_QUEUE_MIN = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_QUEUE_MIN, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(10))
-            .setValidator(new IntRangeValidator(1, 100, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition POA_QUEUE_MAX = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_QUEUE_MAX, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(100))
-            .setValidator(new IntRangeValidator(1, 200, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    // request processor attribute definitions.
-    public static final SimpleAttributeDefinition POA_REQUEST_PROC_POOL_SIZE = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_RP_POOL_SIZE, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(5))
-            .setValidator(new IntRangeValidator(1, 100, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition POA_REQUEST_PROC_MAX_THREADS = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.POA_RP_MAX_THREADS, ModelType.INT, true)
-            .setDefaultValue(new ModelNode().set(32))
-            .setValidator(new IntRangeValidator(5, 150, true, false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
     // naming attribute definitions.
     public static final SimpleAttributeDefinition NAMING_ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
             JdkORBSubsystemConstants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
@@ -286,63 +138,6 @@ class JdkORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition NAMING_EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
             JdkORBSubsystemConstants.NAMING_EXPORT_CORBALOC, ModelType.STRING, true)
             .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    // interoperability attribute definitions.
-    public static final SimpleAttributeDefinition INTEROP_SUN = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_SUN, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_COMET = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_COMET, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_IONA = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_IONA, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_CHUNK_RMI_VALUETYPES = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_CHUNK_RMI_VALUETYPES, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_LAX_BOOLEAN_ENCODING = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_LAX_BOOLEAN_ENCODING, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_INDIRECT_ENCODING_DISABLE = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_INDIRECTION_ENCODING_DISABLE, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
-            .setValidator(ON_OFF_VALIDATOR)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true)
-            .build();
-
-    public static final SimpleAttributeDefinition INTEROP_STRICT_CHECK_ON_TC_CREATION = new SimpleAttributeDefinitionBuilder(
-            JdkORBSubsystemConstants.INTEROP_STRICT_CHECK_ON_TC_CREATION, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
             .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
@@ -418,34 +213,19 @@ class JdkORBSubsystemDefinitions {
 
 
     // list that contains the orb attribute definitions.
-    static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
-            ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES, ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION,
-            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING, ORB_PERSISTENT_SERVER_ID);
+    static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_GIOP_VERSION, ORB_SOCKET_BINDING,
+            ORB_SSL_SOCKET_BINDING, ORB_PERSISTENT_SERVER_ID);
 
     // list that contains the orb connection attribute definitions.
-    static final List<SimpleAttributeDefinition> ORB_CONN_ATTRIBUTES = Arrays.asList(ORB_CONN_RETRIES,
-            ORB_CONN_RETRY_INTERVAL, ORB_CONN_CLIENT_TIMEOUT, ORB_CONN_SERVER_TIMEOUT, ORB_CONN_MAX_SERVER_CONNECTIONS,
-            ORB_CONN_MAX_MANAGED_BUF_SIZE, ORB_CONN_OUTBUF_SIZE, ORB_CONN_OUTBUF_CACHE_TIMEOUT);
+    static final List<SimpleAttributeDefinition> ORB_TCP_ATTRIBUTES = Arrays.asList(ORB_TCP_HIGH_WATER_MARK,
+            ORB_TCP_NUMBER_TO_RECLAIM_PROPERTY);
 
     // list that contains the orb initializer attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_INIT_ATTRIBUTES = Arrays.asList(ORB_INIT_SECURITY, ORB_INIT_TX);
 
-    // list that contains the poa attribute definitions.
-    static final List<SimpleAttributeDefinition> POA_ATTRIBUTES = Arrays.asList(POA_MONITORING, POA_QUEUE_WAIT,
-            POA_QUEUE_MIN, POA_QUEUE_MAX);
-
-    // list that contains the poa request processor attribute definitions.
-    static final List<SimpleAttributeDefinition> POA_RP_ATTRIBUTES = Arrays.asList(POA_REQUEST_PROC_POOL_SIZE,
-            POA_REQUEST_PROC_MAX_THREADS);
-
     // list that contains the naming attribute definitions.
     static final List<SimpleAttributeDefinition> NAMING_ATTRIBUTES = Arrays.asList(NAMING_ROOT_CONTEXT,
             NAMING_EXPORT_CORBALOC);
-
-    // list that contains the interoperability attribute definitions.
-    static final List<SimpleAttributeDefinition> INTEROP_ATTRIBUTES = Arrays.asList(INTEROP_SUN, INTEROP_COMET,
-            INTEROP_IONA, INTEROP_CHUNK_RMI_VALUETYPES, INTEROP_LAX_BOOLEAN_ENCODING, INTEROP_INDIRECT_ENCODING_DISABLE,
-            INTEROP_STRICT_CHECK_ON_TC_CREATION);
 
     // list that contains the security attribute definitions.
     static final List<SimpleAttributeDefinition> SECURITY_ATTRIBUTES = Arrays.asList(SECURITY_SUPPORT_SSL,
@@ -464,12 +244,9 @@ class JdkORBSubsystemDefinitions {
     static {
         SUBSYSTEM_ATTRIBUTES = new ArrayList<AttributeDefinition>();
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(ORB_CONN_ATTRIBUTES);
+        SUBSYSTEM_ATTRIBUTES.addAll(ORB_TCP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(ORB_INIT_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(POA_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(POA_RP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(NAMING_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(INTEROP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.add(PROPERTIES);
 

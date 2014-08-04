@@ -238,6 +238,11 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
                 String value = resolvedModelAttribute.asString();
+
+                String jdkorbProperty = PropertiesMap.JDKORB_PROPS_MAP.get(name);
+                if (jdkorbProperty != null){
+                    name = jdkorbProperty;
+                }
                 props.setProperty(name, value);
             }
         }

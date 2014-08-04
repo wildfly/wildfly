@@ -97,9 +97,6 @@ public class CorbaORBService implements Service<ORB> {
             SecurityActions.setSystemProperty(JdkORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
             SecurityActions.setSystemProperty(JdkORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
 
-            final String persistentServerId = properties.getProperty(JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID);
-
-            properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
             properties.setProperty(ORBConstants.IOR_TO_SOCKET_INFO_CLASS_PROPERTY, CSIV2IORToSocketInfo.class.getName());
 
             // set the JdkORB IIOP and IIOP/SSL ports from the respective socket bindings.
