@@ -59,7 +59,6 @@ import org.junit.experimental.theories.suppliers.TestedOn;
  * @author Emanuel Muckenhuber
  */
 
-@Ignore
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     public Ejb3SubsystemUnitTestCase() {
