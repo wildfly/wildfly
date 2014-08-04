@@ -38,6 +38,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
 import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
@@ -105,14 +106,14 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                                         .addAttributes(LocationDefinition.HANDLER)
                                                         .addChild(
                                                                 builder(FilterRefDefinition.INSTANCE)
-                                                                        .addAttributes(FilterRefDefinition.PREDICATE)
+                                                                        .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
                                                         )
                                         ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
                                                     .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
-                                                    .addAttributes(FilterRefDefinition.PREDICATE)
+                                                    .addAttributes(FilterRefDefinition.PREDICATE, FilterRefDefinition.PRIORITY)
                                         ).addChild(
                                                 builder(SingleSignOnDefinition.INSTANCE)
                                                     .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
@@ -208,15 +209,18 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                         builder(ConnectionLimitHandler.INSTANCE)
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
                                 ).addChild(
-                                        builder(ResponseHeaderFilter.INSTANCE)
-                                                .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
-                                ).addChild(
+                                builder(ResponseHeaderFilter.INSTANCE)
+                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
+                        ).addChild(
                                         builder(GzipFilter.INSTANCE)
-                                )
-                                .addChild(
-                                                        builder(ErrorPageDefinition.INSTANCE)
-                                                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
-                                )
+                                ).addChild(
+                                builder(ErrorPageDefinition.INSTANCE)
+                                        .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                        ).addChild(
+                                builder(CustomFilterDefinition.INSTANCE)
+                                        .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)
+                                        .setXmlElementName("filter")
+                        )
 
                 )
                 .build();

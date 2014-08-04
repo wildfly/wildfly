@@ -22,16 +22,31 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Collection;
-import java.util.Collections;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.PredicateParser;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -39,9 +54,15 @@ import org.wildfly.extension.undertow.UndertowExtension;
 public class FilterRefDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
-                .setAllowNull(true)
-                .setAllowExpression(true)
-                .build();
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+    public static final AttributeDefinition PRIORITY = new SimpleAttributeDefinitionBuilder("priority", ModelType.INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(1))
+            .setValidator(new IntRangeValidator(1, true, true))
+            .build();
 
     public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();
 
@@ -55,6 +76,37 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.singleton(PREDICATE);
+        return Arrays.asList(PREDICATE, PRIORITY);
+    }
+
+
+    static class FilterRefAdd extends AbstractAddStepHandler {
+        FilterRefAdd() {
+            super(FilterRefDefinition.PREDICATE, PRIORITY);
+        }
+
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+
+            Predicate predicate = null;
+            if (model.hasDefined(PREDICATE.getName())) {
+                String predicateString = model.get(PREDICATE.getName()).asString();
+                predicate = PredicateParser.parse(predicateString, getClass().getClassLoader());
+            }
+
+            int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
+            final FilterRef service = new FilterRef(predicate, priority);
+            final ServiceTarget target = context.getServiceTarget();
+            ServiceController<?> sc = target.addService(UndertowService.getFilterRefServiceName(address, name), service)
+                    .addDependency(UndertowService.FILTER.append(name), FilterService.class, service.getFilter())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+
+            if (newControllers != null) {
+                newControllers.add(sc);
+            }
+        }
     }
 }

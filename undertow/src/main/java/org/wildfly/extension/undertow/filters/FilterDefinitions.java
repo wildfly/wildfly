@@ -45,7 +45,8 @@ public class FilterDefinitions extends PersistentResourceDefinition {
             ConnectionLimitHandler.INSTANCE,
             ResponseHeaderFilter.INSTANCE,
             GzipFilter.INSTANCE,
-            ErrorPageDefinition.INSTANCE
+            ErrorPageDefinition.INSTANCE,
+            CustomFilterDefinition.INSTANCE
     ));
 
     private FilterDefinitions() {
