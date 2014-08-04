@@ -59,20 +59,19 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, model, verificationHandler, auditLoggerInfo, authorizer, newControllers);
+        launchServices(context, Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)), auditLoggerInfo, authorizer, verificationHandler, newControllers);
     }
 
-    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler,
-                               ManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ModelNode recursiveModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+    static void launchServices(OperationContext context, ModelNode model, ManagedAuditLogger auditLoggerInfo,
+                               JmxAuthorizer authorizer, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         // Add the MBean service
-        String resolvedDomain = getDomainName(context, recursiveModel, CommonAttributes.RESOLVED);
-        String expressionsDomain = getDomainName(context, recursiveModel, CommonAttributes.EXPRESSION);
+        String resolvedDomain = getDomainName(context, model, CommonAttributes.RESOLVED);
+        String expressionsDomain = getDomainName(context, model, CommonAttributes.EXPRESSION);
         boolean legacyWithProperPropertyFormat = false;
         if (model.hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT)) {
-            legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
+            legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, model).asBoolean();
         }
-        boolean coreMBeanSensitivity = JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.resolveModelAttribute(context, recursiveModel).asBoolean();
+        boolean coreMBeanSensitivity = JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.resolveModelAttribute(context, model).asBoolean();
         boolean forStandalone = context.getProcessType() == ProcessType.STANDALONE_SERVER;
         ServiceController<?> controller = verificationHandler != null ?
                 MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat,

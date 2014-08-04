@@ -80,7 +80,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 new JMXSubsystemAdd(auditLogger, authorizer),
-                JMXSubsystemRemove.INSTANCE);
+                new JMXSubsystemRemove(auditLogger, authorizer));
         this.accessConstraints = JMXExtension.JMX_SENSITIVITY_DEF.wrapAsList();
         this.auditLogger = auditLogger;
         this.authorizer = authorizer;

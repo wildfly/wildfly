@@ -24,6 +24,9 @@ package org.jboss.as.jmx;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.access.management.JmxAuthorizer;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,13 +36,38 @@ import org.jboss.dmr.ModelNode;
  */
 public class JMXSubsystemRemove extends AbstractRemoveStepHandler {
 
-    static final JMXSubsystemRemove INSTANCE = new JMXSubsystemRemove();
+    private final ManagedAuditLogger auditLoggerInfo;
+    private final JmxAuthorizer authorizer;
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        context.removeService(MBeanServerService.SERVICE_NAME);
+    JMXSubsystemRemove(ManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer) {
+        this.auditLoggerInfo = auditLoggerInfo;
+        this.authorizer = authorizer;
     }
 
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        // TODO:  RE-ADD SERVICES
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        if (isRemoveService(context, operation)) {
+            //Since so many things can depend on this, only remove if the user set the ALLOW_RESOURCE_SERVICE_RESTART operation header
+            context.removeService(MBeanServerService.SERVICE_NAME);
+        } else {
+            context.reloadRequired();
+        }
+    }
+
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        if (isRemoveService(context, operation)) {
+            JMXSubsystemAdd.launchServices(context, model, auditLoggerInfo, authorizer, null, null);
+        } else {
+            context.revertReloadRequired();
+        }
+    }
+
+    private boolean isRemoveService(OperationContext context, ModelNode operation) {
+        if (context.isNormalServer()) {
+            if (context.isResourceServiceRestartAllowed()) {
+                context.removeService(MBeanServerService.SERVICE_NAME);
+                return true;
+            }
+        }
+        return false;
     }
 }
