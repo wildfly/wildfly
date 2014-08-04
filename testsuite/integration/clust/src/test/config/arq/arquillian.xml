@@ -10,9 +10,9 @@
 
     <container qualifier="clustering-udp-single">
         <configuration>
-            <property name="jbossHome">${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0 -Djboss.node.name=node-0</property>
-            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="jbossHome">${basedir}/target/wildfly-SYNC-tcp-0</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-SYNC-tcp-0 -Djboss.node.name=node-0</property>
+            <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
 
@@ -24,9 +24,9 @@
 
     <container qualifier="clustering-udp-single-jdbc-store">
         <configuration>
-            <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-jdbc-store</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-jdbc-store -Djboss.node.name=node-0</property>
-            <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
+            <property name="jbossHome">${basedir}/target/wildfly-udp-jdbc-store</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-udp-jdbc-store -Djboss.node.name=node-0</property>
+            <property name="serverConfig">${jboss.server.config.file.name}</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
 
@@ -40,10 +40,10 @@
 
         <container qualifier="container-0" mode="custom" managed="false" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-clustering-${cacheMode}-${stack}-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-${cacheMode}-${stack}-0 -Djboss.node.name=node-0</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-0 -Djboss.node.name=node-0</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
 
@@ -55,9 +55,9 @@
 
         <container qualifier="container-1" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-clustering-${cacheMode}-${stack}-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-${cacheMode}-${stack}-1 -Djboss.node.name=node-1 -Djboss.port.offset=100</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-${cacheMode}-${stack}-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-${cacheMode}-${stack}-1 -Djboss.node.name=node-1 -Djboss.port.offset=100</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
 
@@ -69,8 +69,8 @@
 
         <container qualifier="container-single" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0 -Djboss.node.name=node-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-SYNC-tcp-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-SYNC-tcp-0 -Djboss.node.name=node-0</property>
                 <property name="serverConfig">standalone.xml</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -85,10 +85,10 @@
 
         <container qualifier="container-0" mode="custom" managed="false" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-LON-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-LON-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-LON-0 -Djboss.node.name=LON-0</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-LON-0 -Djboss.node.name=LON-0</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
 
@@ -100,9 +100,9 @@
 
         <container qualifier="container-1" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-LON-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-LON-1 -Djboss.node.name=LON-1 -Djboss.port.offset=100</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-LON-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-LON-1 -Djboss.node.name=LON-1 -Djboss.port.offset=100</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
 
@@ -114,9 +114,9 @@
 
         <container qualifier="container-2" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-NYC-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-NYC-0 -Djboss.node.name=NYC-0 -Djboss.port.offset=200</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-NYC-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-NYC-0 -Djboss.node.name=NYC-0 -Djboss.port.offset=200</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node2}</property>
                 <property name="managementPort">10190</property>
 
@@ -128,9 +128,9 @@
 
         <container qualifier="container-3" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-SFO-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-SFO-0 -Djboss.node.name=SFO-0 -Djboss.port.offset=300</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-SFO-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-SFO-0 -Djboss.node.name=SFO-0 -Djboss.port.offset=300</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node3}</property>
                 <property name="managementPort">10290</property>
 
@@ -146,10 +146,10 @@
 
         <container qualifier="container-0" mode="custom" managed="false" default="true">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-LON-0</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-LON-0</property>
                 <!-- AS7-2493 different jboss.node.name must be specified -->
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-LON-0 -Djboss.node.name=LON-0</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-LON-0 -Djboss.node.name=LON-0</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
 
@@ -161,9 +161,9 @@
 
         <container qualifier="container-1" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-LON-1</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-LON-1 -Djboss.node.name=LON-1 -Djboss.port.offset=100</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-LON-1</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-LON-1 -Djboss.node.name=LON-1 -Djboss.port.offset=100</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
 
@@ -175,9 +175,9 @@
 
         <container qualifier="container-2" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-NYC-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-NYC-0 -Djboss.node.name=NYC-0 -Djboss.port.offset=200</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-NYC-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-NYC-0 -Djboss.node.name=NYC-0 -Djboss.port.offset=200</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node2}</property>
                 <property name="managementPort">10190</property>
 
@@ -189,9 +189,9 @@
 
         <container qualifier="container-3" mode="custom" managed="false">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-clustering-xsite-SFO-0-backupFor</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-clustering-xsite-SFO-0-backupFor -Djboss.node.name=SFO-0-backupFor -Djboss.port.offset=300</property>
-                <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossHome">${basedir}/target/wildfly-xsite-SFO-0-backupFor</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/wildfly-xsite-SFO-0-backupFor -Djboss.node.name=SFO-0-backupFor -Djboss.port.offset=300</property>
+                <property name="serverConfig">${jboss.server.config.file.name}</property>
                 <property name="managementAddress">${node3}</property>
                 <property name="managementPort">10290</property>
 
