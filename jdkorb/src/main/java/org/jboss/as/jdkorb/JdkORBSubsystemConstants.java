@@ -28,6 +28,7 @@ package org.jboss.as.jdkorb;
  * </p>
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public final class JdkORBSubsystemConstants {
 
@@ -43,48 +44,20 @@ public final class JdkORBSubsystemConstants {
 
     public static final String CLIENT = "client";
     public static final String ORB = "orb";
-    public static final String NAME = "name";
-    public static final String ORB_PRINT_VERSION = "print-version";
-    public static final String ORB_USE_IMR = "use-imr";
-    public static final String ORB_USE_BOM = "use-bom";
-    public static final String ORB_CACHE_TYPECODES = "cache-typecodes";
-    public static final String ORB_CACHE_POA_NAMES = "cache-poa-names";
-    public static final String ORB_GIOP_MINOR_VERSION = "giop-minor-version";
-    public static final String ORB_CONN = "connection";
-    public static final String ORB_CONN_RETRIES = "retries";
-    public static final String ORB_CONN_RETRY_INTERVAL = "retry-interval";
-    public static final String ORB_CONN_CLIENT_TIMEOUT = "client-timeout";
-    public static final String ORB_CONN_SERVER_TIMEOUT = "server-timeout";
-    public static final String ORB_CONN_MAX_SERVER_CONNECTIONS = "max-server-connections";
-    public static final String ORB_CONN_MAX_MANAGED_BUF_SIZE = "max-managed-buf-size";
-    public static final String ORB_CONN_OUTBUF_SIZE = "outbuf-size";
-    public static final String ORB_CONN_OUTBUF_CACHE_TIMEOUT = "outbuf-cache-timeout";
+    public static final String ORB_GIOP_VERSION = "giop-version";
+    public static final String ORB_TCP = "tcp";
+    public static final String TCP_HIGH_WATER_MARK = "high-water-mark";
+    public static final String TCP_NUMBER_TO_RECLAIM = "number-to-reclaim";
     public static final String ORB_SOCKET_BINDING = "socket-binding";
     public static final String ORB_SSL_SOCKET_BINDING = "ssl-socket-binding";
     public static final String ORB_PERSISTENT_SERVER_ID = "persistent-server-id";
     public static final String ORB_INIT = "initializers";
     public static final String ORB_INIT_SECURITY = "security";
     public static final String ORB_INIT_TRANSACTIONS = "transactions";
-    public static final String POA = "poa";
-    public static final String POA_MONITORING = "monitoring";
-    public static final String POA_QUEUE_WAIT = "queue-wait";
-    public static final String POA_QUEUE_MIN = "queue-min";
-    public static final String POA_QUEUE_MAX = "queue-max";
-    public static final String POA_RP = "request-processors";
-    public static final String POA_RP_POOL_SIZE = "pool-size";
-    public static final String POA_RP_MAX_THREADS = "max-threads";
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
     public static final String NAMING_ROOT_CONTEXT = "root-context";
     public static final String IDENTITY = "identity";
-    public static final String INTEROP = "interop";
-    public static final String INTEROP_SUN = "sun";
-    public static final String INTEROP_COMET = "comet";
-    public static final String INTEROP_IONA = "iona";
-    public static final String INTEROP_CHUNK_RMI_VALUETYPES = "chunk-custom-rmi-valuetypes";
-    public static final String INTEROP_LAX_BOOLEAN_ENCODING = "lax-boolean-encoding";
-    public static final String INTEROP_INDIRECTION_ENCODING_DISABLE = "indirection-encoding-disable";
-    public static final String INTEROP_STRICT_CHECK_ON_TC_CREATION = "strict-check-on-tc-creation";
     public static final String SECURITY = "security";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";
     public static final String SECURITY_SECURITY_DOMAIN = "security-domain";
@@ -97,7 +70,7 @@ public final class JdkORBSubsystemConstants {
     public static final String SECURITY_USE_DOMAIN_SSF = "use-domain-server-socket-factory";
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";
-    public static final String PROPERTY_KEY = "key";
+    public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_VALUE = "value";
 
     public static final String SETTING = "setting";

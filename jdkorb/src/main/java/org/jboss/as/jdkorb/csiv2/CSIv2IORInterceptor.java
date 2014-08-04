@@ -108,12 +108,11 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             JdkORBLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
         }
 
-        boolean interopIONA = "on".equalsIgnoreCase(CorbaORBService.getORBProperty(JdkORBSubsystemConstants.INTEROP_IONA));
         if (csiv2Policy != null) {
             // if csiv2Policy effective, stuff a copy of the TaggedComponents already created by the CSIv2Policy into the IOR's IIOP profile.
             TaggedComponent sslComponent = csiv2Policy.getSSLTaggedComponent();
             // if interop with IONA ASP is on, don't add the SSL component to the IOR.
-            if (sslComponent != null && !interopIONA) {
+            if (sslComponent != null) {
                 info.add_ior_component_to_profile(sslComponent, TAG_INTERNET_IOP.value);
             }
             TaggedComponent csiv2Component = csiv2Policy.getSecurityTaggedComponent();
@@ -121,7 +120,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
                 info.add_ior_component_to_profile(csiv2Component, TAG_INTERNET_IOP.value);
             }
         } else {
-            if (defaultSSLComponent != null && !interopIONA) {
+            if (defaultSSLComponent != null) {
                 // otherwise stuff the default SSL component (with the minimum set of SSL options) into the IOR's IIOP profile.
                 info.add_ior_component_to_profile(defaultSSLComponent, TAG_INTERNET_IOP.value);
             }

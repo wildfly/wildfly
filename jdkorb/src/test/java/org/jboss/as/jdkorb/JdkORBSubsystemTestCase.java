@@ -52,6 +52,7 @@ import org.junit.Test;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -111,7 +112,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         // now try parsing a valid element in an invalid position.
         subsystemXml =
                 "<subsystem xmlns=\"urn:jboss:domain:jdkorb:1.0\">" +
-                "    <orb name=\"JBoss\" print-version=\"off\">" +
+                "    <orb>" +
                 "        <poa/>" +
                 "    </orb>" +
                 "</subsystem>";
