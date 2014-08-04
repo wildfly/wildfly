@@ -238,7 +238,7 @@
 
 
                             <!-- Multinode UDP clustering tests with manual containers with unmanaged deployment. -->
-                            <!-- Tests which are placed in clust module but they're not run by default -->
+                            <!-- Tests which are placed in clustering module but they're not run by default -->
                             <execution>
                                 <id>ts.surefire.clustering.multinode-manual-tcp-sync-extended</id>
                                 <phase>test</phase> 
@@ -281,7 +281,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.config-as.clustering.jdbc-store</id> 
+                                <id>ts.config-as.clustering.jdbc-store</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -291,11 +291,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.surefire.clustering.jdbc-store</id>  
+                                <id>ts.surefire.clustering.jdbc-store</id>
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clustering.single-node</id> 
+                                <id>ts.surefire.clustering.single-node</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
