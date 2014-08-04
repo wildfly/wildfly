@@ -252,6 +252,7 @@
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="filter" type="customFilterType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -274,6 +275,22 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="code" use="required" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="paramType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+
+
+
+    <xs:complexType name="customFilterType">
+        <xs:sequence>
+            <xs:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="class-name" use="required" type="xs:string"/>
+        <xs:attribute name="module" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="file-handlerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -318,6 +335,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="priority" use="optional" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="singleSignOnType">

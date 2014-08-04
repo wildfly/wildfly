@@ -32,13 +32,10 @@ import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -72,14 +69,11 @@ public class ErrorPageDefinition extends Filter{
 
     @Override
     public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
-        try {
-            int code = CODE.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asInt();
-            String path = PATH.resolveModelAttribute(ExpressionResolver.DEFAULT, model).asString();
-            FileErrorPageHandler handler = new FileErrorPageHandler(Paths.get(path).toFile(), code);
-            handler.setNext(next);
-            return Handlers.predicate(predicate, handler, next);
-        } catch (OperationFailedException e) {
-            throw UndertowLogger.ROOT_LOGGER.cannotCreateHttpHandler(FileErrorPageHandler.class, model, e);
-        }
+        int code = model.get(CODE.getName()).asInt();
+        String path = model.get(PATH.getName()).asString();
+        FileErrorPageHandler handler = new FileErrorPageHandler(Paths.get(path).toFile(), code);
+        handler.setNext(next);
+        return Handlers.predicate(predicate, handler, next);
+
     }
 }

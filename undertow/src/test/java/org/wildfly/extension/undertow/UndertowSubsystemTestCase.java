@@ -134,6 +134,8 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
 
+        //testCustomFilters(mainServices);
+
         ServiceController<Host> defaultHostSC = (ServiceController<Host>) mainServices.getContainer().getService(UndertowService.DEFAULT_HOST);
         defaultHostSC.setMode(ServiceController.Mode.ACTIVE);
         Host defaultHost = defaultHostSC.getValue();
@@ -143,6 +145,15 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
         Server defaultServer = defaultServerSC.getValue();
         Assert.assertNotNull("Default host should exist", defaultServer);
+    }
+
+    private void testCustomFilters(KernelServices mainServices) {
+        ServiceController<FilterService> customFilter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("custom-filter"));
+        customFilter.setMode(ServiceController.Mode.ACTIVE);
+        FilterService connectionLimiterService = customFilter.getService().getValue();
+        HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
+        Assert.assertNotNull("handler should have been created", result);
+
     }
 
     @Override

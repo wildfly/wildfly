@@ -39,6 +39,9 @@
             <location name="/" handler="welcome-content">
                 <!--<filter-ref name="security-other"/>-->
                 <filter-ref name="limit-connections"/>
+                <filter-ref name="headers" priority="${some.priority:10}"/>
+                <filter-ref name="404-handler"/>
+                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
             </location>
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
             <single-sign-on domain="${prop.domain:myDomain}" http-only="true" secure="true" path="/" cookie-name="SSOID"/>
@@ -47,7 +50,7 @@
             <location name="/" handler="welcome-content">
                 <filter-ref name="limit-connections"/>
                 <filter-ref name="headers"/>
-                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']" />
+                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
                 <filter-ref name="404-handler"/>
             </location>
             <filter-ref name="headers"/>
@@ -55,7 +58,8 @@
     </server>
 
 
-    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true" eager-filter-initialization="true" default-session-timeout="100">
+    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true"
+                       eager-filter-initialization="true" default-session-timeout="100">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"
@@ -87,15 +91,17 @@
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
         <reverse-proxy name="reverse-proxy" connections-per-thread="30">
-            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/> <!-- ajp://localhost:8080 -->
+            <host name="localhost" scheme="ajp" outbound-socket-binding="ajp-remote" instance-id="myRoute" path="/test"/>
+            <!-- ajp://localhost:8080 -->
         </reverse-proxy>
     </handlers>
     <filters>
         <!--<basic-auth name="security-other" security-domain="other"/>-->
         <connection-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
-        <gzip name="static-gzip" />
+        <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
+        <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
     </filters>
 
 </subsystem>

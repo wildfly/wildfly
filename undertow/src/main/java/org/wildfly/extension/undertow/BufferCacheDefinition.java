@@ -46,17 +46,20 @@ public class BufferCacheDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setValidator(new IntRangeValidator(0, false, true))
             .setDefaultValue(new ModelNode(1024))
+            .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition BUFFERS_PER_REGION = new SimpleAttributeDefinitionBuilder(Constants.BUFFERS_PER_REGION, ModelType.INT)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setValidator(new IntRangeValidator(0, false, true))
             .setDefaultValue(new ModelNode(1024))
+            .setAllowExpression(true)
             .build();
     protected static final SimpleAttributeDefinition MAX_REGIONS = new SimpleAttributeDefinitionBuilder(Constants.MAX_REGIONS, ModelType.INT)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setValidator(new IntRangeValidator(0, false, true))
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
             .build();
     static final BufferCacheDefinition INSTANCE = new BufferCacheDefinition();
