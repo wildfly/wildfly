@@ -10,10 +10,8 @@
         <version>9.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ</artifactId>
     <packaging>pom</packaging>
-    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration</name>
 
@@ -40,9 +38,6 @@
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
-
-        <!-- used to override HA configuration file names to test with alternative configuration files -->
-        <standalone.ha.xml>standalone-ha.xml</standalone.ha.xml>
 
         <ts.skipTests>${skipTests}</ts.skipTests>
         <enforcer.skip>true</enforcer.skip>

@@ -44,9 +44,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.JDBCResourceManagerConnectionFactoryIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.NestedIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.PassivationIncapableIncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.ResourceManagerConnectionFactoryIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.JMSResourceManagerConnectionFactoryIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.PersistenceIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.SimpleIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.IncrementorDDInterceptor;
@@ -152,14 +153,24 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     /**
-     * Validates failover on redeploy of a @Stateful bean containing injected resource manager connection factories
+     * Validates failover on redeploy of a @Stateful bean containing injected JDBC resource manager connection factories
      */
     @Test
     @Ignore("WFLY-30 @Resource injection of Datasource on clustered SFSB fails with serialization error")
     public void connectionFactoryFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        this.failover(ResourceManagerConnectionFactoryIncrementorBean.class, baseURL1, baseURL2);
+        this.failover(JDBCResourceManagerConnectionFactoryIncrementorBean.class, baseURL1, baseURL2);
+    }
+
+    /**
+     * Validates failover on redeploy of a @Stateful bean containing injected JMS resource manager connection factories
+     */
+    @Test
+    public void jmsConnectionFactoryFailover(
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+        this.failover(JMSResourceManagerConnectionFactoryIncrementorBean.class, baseURL1, baseURL2);
     }
 
     /**

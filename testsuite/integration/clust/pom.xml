@@ -94,7 +94,7 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
@@ -190,7 +190,7 @@
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>ASYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
@@ -209,7 +209,7 @@
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>SYNC</cacheMode>
                                         <stack>udp</stack>
                                     </systemPropertyVariables>
@@ -228,7 +228,7 @@
                                     </includes>
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>ASYNC</cacheMode>
                                         <stack>udp</stack>
                                     </systemPropertyVariables>
@@ -252,7 +252,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
@@ -448,7 +448,7 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-xsite</arquillian.launch>
-                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <stack>udp</stack>
                                     </systemPropertyVariables>
                                 </configuration>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.clustering.cluster.ejb.stateful.bean;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,12 +28,15 @@ import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.sql.DataSource;
 
+/**
+ * @author Paul Ferraro
+ */
 @Stateful
-public class ResourceManagerConnectionFactoryIncrementorBean implements Incrementor {
+public class JDBCResourceManagerConnectionFactoryIncrementorBean implements Incrementor {
 
     @Resource
     private DataSource dataSource;
-
+    
     private final AtomicInteger count = new AtomicInteger(0);
 
     @Override
