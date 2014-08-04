@@ -7,7 +7,7 @@
 
 SMOKE_TESTS="-Dts.smoke"
 BASIC_TESTS="-Dts.basic"
-CLUSTER_TESTS="-Dts.clust"
+CLUSTER_TESTS="-Dts.clustering"
 IIOP_TESTS="-Dts.iiop"
 
 DOMAIN_TESTS="-Ddomain.module  -Dts.noSmoke"

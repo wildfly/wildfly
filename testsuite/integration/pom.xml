@@ -56,7 +56,7 @@
                 <module>xts</module>
                 <module>rts</module>
                 <module>rbac</module>
-                <module>clust</module>
+                <module>clustering</module>
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>picketlink</module>
@@ -70,7 +70,7 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>clust</module>
+                <module>clustering</module>
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
@@ -100,12 +100,12 @@
             </modules>
         </profile>
 
-        <!-- -Dts.clust -->
+        <!-- -Dts.clustering -->
         <profile>
-            <id>ts.integ.group.clust</id>
-            <activation><property><name>ts.clust</name></property></activation>
+            <id>ts.integ.group.clustering</id>
+            <activation><property><name>ts.clustering</name></property></activation>
             <modules>
-                <module>clust</module>
+                <module>clustering</module>
             </modules>
         </profile>
 

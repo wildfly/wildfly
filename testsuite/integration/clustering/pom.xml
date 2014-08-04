@@ -13,7 +13,7 @@
     <!-- ********************************************************************************** -->
     <!-- *********************************** Clustering *********************************** -->
     <!-- ********************************************************************************** -->
-    <artifactId>wildfly-ts-integ-clust</artifactId>
+    <artifactId>wildfly-ts-integ-clustering</artifactId>
 
     <name>WildFly Test Suite: Integration - Clustering</name>
 
@@ -39,7 +39,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust</id>
+                                <id>ts.config-as.clustering</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -81,7 +81,7 @@
 
                             <!-- TCP clustering tests with custom containers with manual deployments. -->
                             <execution>
-                                <id>ts.surefire.clust.custom-manual-tcp-sync</id>
+                                <id>ts.surefire.clustering.custom-manual-tcp-sync</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -106,7 +106,7 @@
 
                             <!-- Single node clustering tests. TODO: move from clustering TS. -->
                             <execution>
-                                <id>ts.surefire.clust.single-node</id> <phase>test</phase> <goals><goal>test</goal></goals>
+                                <id>ts.surefire.clustering.single-node</id> <phase>test</phase> <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
@@ -143,7 +143,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.udp</id>
+                                <id>ts.config-as.clustering.udp</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -181,7 +181,7 @@
 
                             <!-- TCP-ASYNC -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-tcp-async</id>
+                                <id>ts.surefire.clustering.multinode-manual-tcp-async</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -200,7 +200,7 @@
 
                             <!-- UDP-SYNC -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-udp-sync</id>
+                                <id>ts.surefire.clustering.multinode-manual-udp-sync</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -219,7 +219,7 @@
 
                             <!-- UDP-ASYNC -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-udp-async</id>
+                                <id>ts.surefire.clustering.multinode-manual-udp-async</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -240,7 +240,7 @@
                             <!-- Multinode UDP clustering tests with manual containers with unmanaged deployment. -->
                             <!-- Tests which are placed in clust module but they're not run by default -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-tcp-sync-extended</id>
+                                <id>ts.surefire.clustering.multinode-manual-tcp-sync-extended</id>
                                 <phase>test</phase> 
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -272,7 +272,7 @@
            Disable Surefire and AntRun executions when using -Dtest=... which would cause it running twice.
         -->
         <profile>
-            <id>ts.clust.prevent-2nd-run-on-Dtest.profile</id>
+            <id>ts.clustering.prevent-2nd-run-on-Dtest.profile</id>
             <activation><property><name>test</name></property></activation>
             <build>
                 <plugins>
@@ -281,7 +281,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.config-as.clust.jdbc-store</id> 
+                                <id>ts.config-as.clustering.jdbc-store</id> 
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -291,11 +291,11 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>ts.surefire.clust.jdbc-store</id>  
+                                <id>ts.surefire.clustering.jdbc-store</id>  
                                 <phase>none</phase>
                             </execution>
                             <execution>
-                                <id>ts.surefire.clust.single-node</id> 
+                                <id>ts.surefire.clustering.single-node</id> 
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -307,7 +307,7 @@
         
 
         <profile>
-            <id>ts.clust.jdbc-cachestore.profile</id>
+            <id>ts.clustering.jdbc-cachestore.profile</id>
             <activation><property><name>!ts.noClustering</name></property></activation>
 
             <!--
@@ -320,7 +320,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.enable-jdbc-store</id>
+                                <id>ts.config-as.clustering.enable-jdbc-store</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -357,7 +357,7 @@
 
                             <!-- Single node clustering tests. -->
                             <execution>
-                                <id>ts.surefire.clust.jdbc-store</id>
+                                <id>ts.surefire.clustering.jdbc-store</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -381,7 +381,7 @@
         </profile>
 
         <profile>
-            <id>ts.clust.xsite.profile</id>
+            <id>ts.clustering.xsite.profile</id>
             <activation><property><name>!ts.noClustering</name></property></activation>
 
             <!--
@@ -394,7 +394,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.xsite</id>
+                                <id>ts.config-as.clustering.xsite</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -436,7 +436,7 @@
 
                             <!-- Single node clustering tests. -->
                             <execution>
-                                <id>ts.surefire.clust.xsite</id>
+                                <id>ts.surefire.clustering.xsite</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -461,7 +461,7 @@
         </profile>
         
         <profile>
-            <id>ts.clust.session-db-persistence.profile</id>
+            <id>ts.clustering.session-db-persistence.profile</id>
             <activation>
                 <property>
                     <name>ds</name>
@@ -481,7 +481,7 @@
                         <executions combine.children="append">
 
                             <execution>
-                                <id>ts.config-as.clust</id>
+                                <id>ts.config-as.clustering</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>run</goal>
@@ -553,7 +553,7 @@
 
         <!-- Enable using -Dts.noClustering. -->
         <profile>
-            <id>ts.clust.do-nothing.profile</id>
+            <id>ts.clustering.do-nothing.profile</id>
             <activation>
                 <property>
                     <name>ts.noClustering</name>
