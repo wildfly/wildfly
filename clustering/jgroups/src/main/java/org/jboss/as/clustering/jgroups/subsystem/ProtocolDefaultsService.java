@@ -32,8 +32,11 @@ import java.util.Map;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -48,16 +51,20 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME, "defaults");
 
+    public static ServiceBuilder<ProtocolDefaults> build(ServiceTarget target) {
+        return AsynchronousService.addService(target, SERVICE_NAME, new ProtocolDefaultsService());
+    }
+
     private static final String DEFAULTS = "jgroups-defaults.xml";
 
     private final String resource;
     private volatile ProtocolDefaults defaults;
 
-    public ProtocolDefaultsService() {
+    private ProtocolDefaultsService() {
         this(DEFAULTS);
     }
 
-    public ProtocolDefaultsService(String resource) {
+    private ProtocolDefaultsService(String resource) {
         this.resource = resource;
     }
 
@@ -116,7 +123,7 @@ public class ProtocolDefaultsService implements Service<ProtocolDefaults> {
     }
 
     static class Defaults implements ProtocolDefaults {
-        private final Map<String, Map<String, String>> map = new HashMap<String, Map<String, String>>();
+        private final Map<String, Map<String, String>> map = new HashMap<>();
 
         void add(String protocol, Map<String, String> properties) {
             this.map.put(protocol, Collections.unmodifiableMap(properties));

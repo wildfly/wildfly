@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
-<xsl:stylesheet version="1.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <!--
         XSLT stylesheet to add an x-site relay protocol element to an existing JGroups stack.
@@ -39,8 +38,21 @@
         </xsl:for-each>
     </xsl:template>
 
+    <!-- replace the old definition with the new -->
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name()='channels']">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()" />
+            <xsl:element name="channel" namespace="{namespace-uri()}">
+                <xsl:attribute name="name"><xsl:value-of select="$remote-site.cluster"/></xsl:attribute>
+                <xsl:attribute name="stack"><xsl:value-of select="$remote-site.stack"/></xsl:attribute>
+            </xsl:element>
+        </xsl:copy>
+    </xsl:template>
+
     <!-- copy the stack and add a relay protocol -->
     <xsl:template match="//*[local-name() = 'subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name() = 'stacks']
                           /*[local-name() = 'stack' and @name=$stack]">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
@@ -53,10 +65,7 @@
                     <xsl:attribute name="name">
                         <xsl:value-of select="$remote-site.site"/>
                     </xsl:attribute>
-                    <xsl:attribute name="stack">
-                        <xsl:value-of select="$remote-site.stack"/>
-                    </xsl:attribute>
-                    <xsl:attribute name="cluster">
+                    <xsl:attribute name="channel">
                         <xsl:value-of select="$remote-site.cluster"/>
                     </xsl:attribute>
                 </xsl:element>

@@ -37,6 +37,7 @@ import org.jgroups.JChannel;
  * Handler for reading run-time only attributes from an underlying channel service.
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
+ * @author Paul Ferraro
  */
 public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
 

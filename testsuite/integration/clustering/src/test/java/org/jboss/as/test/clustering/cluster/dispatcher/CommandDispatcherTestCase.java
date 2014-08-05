@@ -52,7 +52,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
-        String cluster = "server";
+        String cluster = "ee";
         String nodeNameFormat = "%s/%s";
         String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
         String nodeName2 = String.format(nodeNameFormat, NODE_2, cluster);

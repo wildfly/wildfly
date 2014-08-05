@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -34,19 +33,13 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class ReplicatedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.REPLICATED_CACHE, name);
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(CacheType.REPLICATED.pathElement());
 
         SharedStateCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     ReplicatedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.REPLICATED_CACHE, ReplicatedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+        super(CacheType.REPLICATED, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 }

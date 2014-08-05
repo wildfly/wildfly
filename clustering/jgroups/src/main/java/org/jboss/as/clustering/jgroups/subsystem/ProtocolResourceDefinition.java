@@ -56,7 +56,7 @@ public class ProtocolResourceDefinition extends SimpleResourceDefinition {
     }
 
     // attributes
-    static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, false)
             .setXmlName(Attribute.TYPE.getLocalName())
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

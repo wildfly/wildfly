@@ -21,12 +21,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0"/>
 <subsystem xmlns="urn:jboss:domain:infinispan:3.0">
     <cache-container name="minimal" default-cache="local" statistics-enabled="true">
         <local-cache name="local" statistics-enabled="true"/>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="${test.xxx:java:global/infinispan/maximal}" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="${test.xxx:org.infinispan}" start="${test.xxx:EAGER}" statistics-enabled="true">
-        <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="${test.xxx:120000}" stack="${test.xxx:tcp}"/>
+        <transport channel="{$test.xxx:maximal-cluster}" executor="transport-executor" lock-timeout="${test.xxx:120000}"/>
         <local-cache name="local" start="${test.xxx:EAGER}" module="${test.xxx:org.infinispan}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:NONE}" striping="${test.xxx:true}"/>
             <transaction mode="${test.xxx:FULL_XA}" stop-timeout="${test.xxx:60000}"  locking="${tst.xxx:OPTIMISTIC}"/>

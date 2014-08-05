@@ -21,12 +21,22 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0">
+    <channels>
+        <channel name="maximal-channel"/>
+    </channels>
+    <stacks default="tcp">
+        <stack name="tcp">
+            <transport type="TCP"/>
+        </stack>
+    </stacks>
+</subsystem>
 <subsystem xmlns="urn:jboss:domain:infinispan:3.0">
     <cache-container name="minimal" default-cache="local" statistics-enabled="true">
         <local-cache name="local" statistics-enabled="true"/>
     </cache-container>
     <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan" statistics-enabled="true">
-        <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="120000" stack="tcp"/>
+        <transport channel="maximal-channel" executor="transport-executor" lock-timeout="120000"/>
         <local-cache name="local" start="EAGER" module="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="BATCH" stop-timeout="60000"  locking="OPTIMISTIC"/>

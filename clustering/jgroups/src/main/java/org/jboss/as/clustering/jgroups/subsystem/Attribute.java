@@ -30,11 +30,14 @@ public enum Attribute {
     // must be first
     UNKNOWN(null),
 
+    CHANNEL(ModelKeys.CHANNEL),
     CLUSTER(ModelKeys.CLUSTER),
     DEFAULT_EXECUTOR(ModelKeys.DEFAULT_EXECUTOR),
-    DEFAULT_STACK(ModelKeys.DEFAULT_STACK),
+    DEFAULT("default"),
+    @Deprecated DEFAULT_STACK(ModelKeys.DEFAULT_STACK),
     DIAGNOSTICS_SOCKET_BINDING(ModelKeys.DIAGNOSTICS_SOCKET_BINDING),
     MACHINE(ModelKeys.MACHINE),
+    MODULE(ModelKeys.MODULE),
     NAME(ModelKeys.NAME),
     NAMESPACE(XMLConstants.XMLNS_ATTRIBUTE),
     OOB_EXECUTOR(ModelKeys.OOB_EXECUTOR),
@@ -60,22 +63,22 @@ public enum Attribute {
      * @return the local name
      */
     public String getLocalName() {
-        return name;
+        return this.name;
     }
 
-    private static final Map<String, Attribute> attributes;
+    private static final Map<String, Attribute> attributes = new HashMap<>();
 
     static {
-        final Map<String, Attribute> map = new HashMap<String, Attribute>();
         for (Attribute attribute : values()) {
-            final String name = attribute.getLocalName();
-            if (name != null) map.put(name, attribute);
+            String name = attribute.getLocalName();
+            if (name != null) {
+                attributes.put(name, attribute);
+            }
         }
-        attributes = map;
     }
 
     public static Attribute forName(String localName) {
-        final Attribute attribute = attributes.get(localName);
-        return attribute == null ? UNKNOWN : attribute;
+        Attribute attribute = attributes.get(localName);
+        return (attribute != null) ? attribute : UNKNOWN;
     }
 }

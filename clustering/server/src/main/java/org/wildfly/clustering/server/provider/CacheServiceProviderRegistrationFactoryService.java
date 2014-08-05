@@ -41,7 +41,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Service provider registration factory implementation.
@@ -54,7 +54,7 @@ public class CacheServiceProviderRegistrationFactoryService implements Service<S
         return AsynchronousService.addService(target, name, service)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, service.group)
-                .addDependency(ChannelServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, service.dispatcherFactory)
+                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, service.dispatcherFactory)
         ;
     }
 

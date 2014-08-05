@@ -65,7 +65,11 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.spi.CacheServiceInstaller;
+import org.wildfly.clustering.spi.CacheServiceNameFactory;
+import org.wildfly.clustering.spi.GroupServiceInstaller;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
+import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -112,7 +116,7 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
 
-        final List<ServiceController<?>> services = new ArrayList<ServiceController<?>>();
+        final List<ServiceController<?>> services = new ArrayList<>();
         final ServiceTarget target = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector
@@ -137,9 +141,12 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         PathElement infinispanPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "infinispan");
         if (!rootResource.hasChild(infinispanPath) || !rootResource.getChild(infinispanPath).hasChild(PathElement.pathElement("cache-container", BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME))) {
             // Install services that would normally be installed by this container/cache
-            ModuleIdentifier moduleId = Module.forClass(this.getClass()).getIdentifier();
-            for (LocalServiceInstaller installer: ServiceLoader.load(LocalServiceInstaller.class, LocalServiceInstaller.class.getClassLoader())) {
-                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, moduleId);
+            ModuleIdentifier module = Module.forClass(this.getClass()).getIdentifier();
+            for (GroupServiceInstaller installer: ServiceLoader.load(LocalGroupServiceInstaller.class, LocalGroupServiceInstaller.class.getClassLoader())) {
+                services.addAll(installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module));
+            }
+            for (CacheServiceInstaller installer: ServiceLoader.load(LocalCacheServiceInstaller.class, LocalCacheServiceInstaller.class.getClassLoader())) {
+                services.addAll(installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheServiceNameFactory.DEFAULT_CACHE));
             }
         }
 

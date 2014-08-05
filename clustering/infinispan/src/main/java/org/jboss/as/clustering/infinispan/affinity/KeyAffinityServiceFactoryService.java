@@ -33,8 +33,11 @@ import org.infinispan.affinity.KeyAffinityServiceImpl;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
@@ -52,6 +55,10 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
 
     public static ServiceName getServiceName(String container) {
         return SERVICE_NAME.append(container);
+    }
+
+    public static ServiceBuilder<KeyAffinityServiceFactory> build(ServiceTarget target, String containerName, int bufferSize) {
+        return AsynchronousService.addService(target, KeyAffinityServiceFactoryService.getServiceName(containerName), new KeyAffinityServiceFactoryService(bufferSize), false, true);
     }
 
     private final int bufferSize;

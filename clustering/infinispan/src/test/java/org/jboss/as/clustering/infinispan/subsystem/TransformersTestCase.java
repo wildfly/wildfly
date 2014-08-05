@@ -32,12 +32,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.OperationFactory;
+import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
@@ -45,11 +45,11 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpress
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -91,6 +91,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore("The method signature of org.jboss.as.core.model.bridge.impl.ChildFirstClassLoaderKernelServicesFactory.create(...) is not the same between versions")
     public void testTransformer720() throws Exception {
         testTransformer_1_4_0(
                 ModelTestControllerVersion.V7_2_0_FINAL,
@@ -153,10 +154,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(xml);
+        KernelServicesBuilder builder = this.createKernelServicesBuilder().setSubsystemXml(xml);
 
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
@@ -189,7 +189,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // - check that segments is translated into virtual nodes
         // - check both segments and indexing properties are removed
         ModelNode model = services.readTransformedModel(version);
-        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
+        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(CacheType.DISTRIBUTED.pathElement("dist").getKeyValuePair());
         Assert.assertFalse(cache.has(ModelKeys.INDEXING_PROPERTIES));
         Assert.assertFalse(cache.has(ModelKeys.SEGMENTS));
         Assert.assertTrue(cache.get(ModelKeys.VIRTUAL_NODES).isDefined());
@@ -215,7 +215,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // 1.4.0 API specific checks
         // - check transformation of virtual nodes into segments
         // - check that statistics is discarded
-        PathAddress address = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH, CacheContainerResourceDefinition.pathElement("container"), DistributedCacheResourceDefinition.pathElement("cache"));
+        PathAddress address = PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH, CacheContainerResourceDefinition.pathElement("container"), CacheType.DISTRIBUTED.pathElement("cache"));
         ModelNode operation = Util.createAddOperation(address);
         operation.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(4);
         operation.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
@@ -260,7 +260,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // - check that statistics is discarded
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
                 CacheContainerResourceDefinition.pathElement("container"),
-                DistributedCacheResourceDefinition.pathElement("cache"));
+                CacheType.DISTRIBUTED.pathElement("cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(1);
         addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
@@ -305,7 +305,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         // Verify that mode=BATCH is translated to mode=NONE, batching=true
         ModelNode model = services.readTransformedModel(version);
-        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
+        ModelNode cache = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()).get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(CacheType.DISTRIBUTED.pathElement("dist").getKeyValuePair());
         Assert.assertTrue(cache.hasDefined(CacheResourceDefinition.BATCHING.getName()));
         Assert.assertTrue(cache.get(CacheResourceDefinition.BATCHING.getName()).asBoolean());
         ModelNode transaction = model.get(TransactionResourceDefinition.PATH.getKeyValuePair());
@@ -333,6 +333,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
+    @Ignore("The method signature of org.jboss.as.core.model.bridge.impl.ChildFirstClassLoaderKernelServicesFactory.create(...) is not the same between versions")
     public void testRejections720() throws Exception {
         testRejections_1_4_0(
                 ModelTestControllerVersion.V7_2_0_FINAL,
@@ -389,10 +390,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_3_0.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builderA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builderA = this.createKernelServicesBuilder();
 
         // initialise the legacy services
-        builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builderA.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -411,10 +412,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
         mainServicesA.shutdown();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builderB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builderB = this.createKernelServicesBuilder();
 
         // initialize the legacy services
-        builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builderB.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -444,10 +445,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_4_0.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = this.createKernelServicesBuilder();
 
         // initialize the legacy services
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -475,10 +476,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_4_1.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = this.createKernelServicesBuilder();
 
         // initialise the legacy services
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builder.createLegacyKernelServicesBuilder(this.createAdditionalInitialization(), controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -514,13 +515,6 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress transportAddress = containerAddress.append(TransportResourceDefinition.PATH);
         config.addFailedAttribute(transportAddress, new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_TRANSPORT_ATTRIBUTES));
 
-        PathElement[] cachePaths = {
-                LocalCacheResourceDefinition.WILDCARD_PATH,
-                InvalidationCacheResourceDefinition.WILDCARD_PATH,
-                ReplicatedCacheResourceDefinition.WILDCARD_PATH,
-                DistributedCacheResourceDefinition.WILDCARD_PATH
-        };
-
         PathElement[] childPaths = {
                 LockingResourceDefinition.PATH,
                 TransactionResourceDefinition.PATH,
@@ -539,8 +533,8 @@ public class TransformersTestCase extends OperationTestCaseBase {
         } ;
 
         // cache attributes
-        for (PathElement cachePath: cachePaths) {
-            PathAddress cacheAddress = containerAddress.append(cachePath);
+        for (CacheType type: CacheType.values()) {
+            PathAddress cacheAddress = containerAddress.append(type.pathElement());
             FailedOperationTransformationConfig.ChainedConfig.Builder builder = ChainedConfig.createBuilder(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES);
             builder.addConfig(new RejectExpressionsConfig(InfinispanRejectedExpressions_1_3.ACCEPT14_REJECT13_CACHE_ATTRIBUTES));
             builder.addConfig(new RemoveResolvedIndexingPropertiesConfig(CacheResourceDefinition.INDEXING_PROPERTIES));
@@ -574,12 +568,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // x-site related resources where we expect failure
 
         // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
+        PathAddress replicatedCacheAddress = containerAddress.append(CacheType.REPLICATED.pathElement());
         config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
+        PathAddress distributedCacheAddress = containerAddress.append(CacheType.DISTRIBUTED.pathElement());
         config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -599,12 +593,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         // replicated cache case
-        PathAddress replicatedCacheAddress = containerAddress.append(ReplicatedCacheResourceDefinition.WILDCARD_PATH);
+        PathAddress replicatedCacheAddress = containerAddress.append(CacheType.REPLICATED.pathElement());
         config.addFailedAttribute(replicatedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(replicatedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
         // distributed cache case
-        PathAddress distributedCacheAddress = containerAddress.append(DistributedCacheResourceDefinition.WILDCARD_PATH);
+        PathAddress distributedCacheAddress = containerAddress.append(CacheType.DISTRIBUTED.pathElement());
         config.addFailedAttribute(distributedCacheAddress.append("backup"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
         config.addFailedAttribute(distributedCacheAddress.append("backup-for", "BACKUP_FOR"),FailedOperationTransformationConfig.REJECTED_RESOURCE);
 
@@ -648,7 +642,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         @Override
         public ModelNode fixModel(ModelNode model) {
             ModelNode container = model.get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair());
-            ModelNode cache = container.get(DistributedCacheResourceDefinition.pathElement("dist").getKeyValuePair());
+            ModelNode cache = container.get(CacheType.DISTRIBUTED.pathElement("dist").getKeyValuePair());
             // remove the virtual-nodes attribute which was not marked as undefined
             cache.remove(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName());
 //            model.get(CacheContainerResourceDefinition.pathElement("maximal").getKeyValuePair()).get(LocalCacheResourceDefinition.pathElement("local").getKeyValuePair()).get(TransactionResourceDefinition.PATH.getKeyValuePair()).remove(TransactionResourceDefinition.MODE.getName());

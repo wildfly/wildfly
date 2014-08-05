@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -60,12 +59,6 @@ import org.jboss.dmr.ModelType;
  * @author Radoslav Husar
  */
 public class DistributedCacheResourceDefinition extends SharedStateCacheResourceDefinition {
-
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE, name);
-    }
 
     // attributes
     static final SimpleAttributeDefinition L1_LIFESPAN = new SimpleAttributeDefinitionBuilder(ModelKeys.L1_LIFESPAN, ModelType.LONG, true)
@@ -123,7 +116,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { OWNERS, SEGMENTS, L1_LIFESPAN, CAPACITY_FACTOR, CONSISTENT_HASH_STRATEGY };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(CacheType.DISTRIBUTED.pathElement());
 
         if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
@@ -199,7 +192,7 @@ public class DistributedCacheResourceDefinition extends SharedStateCacheResource
     }
 
     DistributedCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.DISTRIBUTED_CACHE, DistributedCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+        super(CacheType.DISTRIBUTED, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override

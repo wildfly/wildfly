@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -37,9 +38,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
 
-    static final DistributedCacheAddHandler INSTANCE = new DistributedCacheAddHandler();
-
-    private DistributedCacheAddHandler() {
+    DistributedCacheAddHandler() {
         super(CacheMode.DIST_SYNC);
     }
 
@@ -76,19 +75,15 @@ public class DistributedCacheAddHandler extends SharedStateCacheAddHandler {
         // process the basic clustered configuration
         super.processModelNode(context, containerName, containerModel, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
-        int owners = DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt();
-        int segments = DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt();
-        long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
-        Double capacityFactor = DistributedCacheResourceDefinition.CAPACITY_FACTOR.resolveModelAttribute(context, cache).asDouble();
-        ConsistentHashStrategy strategy = ConsistentHashStrategy.valueOf(DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, cache).asString());
-
-        cacheConfigurationDependencies.setConsistentHashStrategy(strategy);
+        cacheConfigurationDependencies.setConsistentHashStrategy(ConsistentHashStrategy.valueOf(DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.resolveModelAttribute(context, cache).asString()));
 
         builder.clustering().hash()
-            .numOwners(owners)
-            .numSegments(segments)
-            .capacityFactor(capacityFactor.floatValue())
+            .numOwners(DistributedCacheResourceDefinition.OWNERS.resolveModelAttribute(context, cache).asInt())
+            .numSegments(DistributedCacheResourceDefinition.SEGMENTS.resolveModelAttribute(context, cache).asInt())
+            .capacityFactor(ModelNodes.asFloat(DistributedCacheResourceDefinition.CAPACITY_FACTOR.resolveModelAttribute(context, cache)))
         ;
+
+        long lifespan = DistributedCacheResourceDefinition.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
         if (lifespan > 0) {
             builder.clustering().l1().lifespan(lifespan);
         } else {

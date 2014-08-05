@@ -1,0 +1,5 @@
+org.wildfly.clustering.server.group.CacheNodeFactoryServiceInstaller
+org.wildfly.clustering.server.group.LocalCacheGroupServiceInstaller
+org.wildfly.clustering.server.provider.LocalServiceProviderRegistrationFactoryServiceInstaller
+org.wildfly.clustering.server.registry.LocalRegistryFactoryServiceInstaller
+org.wildfly.clustering.server.singleton.LocalSingletonServiceBuilderFactoryServiceInstaller

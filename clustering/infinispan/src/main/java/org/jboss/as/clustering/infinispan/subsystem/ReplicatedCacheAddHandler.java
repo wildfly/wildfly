@@ -29,9 +29,7 @@ import org.infinispan.configuration.cache.CacheMode;
  */
 public class ReplicatedCacheAddHandler extends SharedStateCacheAddHandler {
 
-    static final ReplicatedCacheAddHandler INSTANCE = new ReplicatedCacheAddHandler();
-
-    private ReplicatedCacheAddHandler() {
+    ReplicatedCacheAddHandler() {
         super(CacheMode.REPL_SYNC);
     }
 }

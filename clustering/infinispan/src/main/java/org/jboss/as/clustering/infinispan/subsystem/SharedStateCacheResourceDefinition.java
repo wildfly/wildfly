@@ -22,9 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -52,8 +50,8 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
-    SharedStateCacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(key, addHandler, removeHandler, resolvePathHandler, allowRuntimeOnlyRegistration);
+    SharedStateCacheResourceDefinition(CacheType type, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(type, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 
     @Override

@@ -27,7 +27,7 @@ import org.jboss.msc.service.ServiceName;
  * Factory for creating a {@link ServiceName} for a cache-based clustering service.
  * @author Paul Ferraro
  */
-public interface CacheServiceNameFactory extends ChannelServiceNameFactory {
+public interface CacheServiceNameFactory extends GroupServiceNameFactory {
     /** The name of the default cache of a cache container */
     String DEFAULT_CACHE = "default";
 

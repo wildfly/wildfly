@@ -31,19 +31,24 @@ public enum CacheServiceNames implements CacheServiceNameFactory {
     NODE_FACTORY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return ChannelServiceNames.NODE_FACTORY.getServiceName(container).append(cache);
+            return GroupServiceNames.NODE_FACTORY.getServiceName(container).append(cache);
         }
     },
     GROUP() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return ChannelServiceNames.GROUP.getServiceName(container).append(cache);
+            return GroupServiceNames.GROUP.getServiceName(container).append(cache);
         }
     },
     REGISTRY() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return BASE_SERVICE_NAME.append("registry", container, cache);
+            return GroupServiceNameFactory.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+        }
+
+        @Override
+        public String toString() {
+            return "registry";
         }
     },
     REGISTRY_ENTRY() {
@@ -61,13 +66,18 @@ public enum CacheServiceNames implements CacheServiceNameFactory {
     SERVICE_PROVIDER_REGISTRATION() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return BASE_SERVICE_NAME.append("providers", container, cache);
+            return GroupServiceNameFactory.BASE_SERVICE_NAME.append(this.toString(), container, cache);
+        }
+
+        @Override
+        public String toString() {
+            return "providers";
         }
     },
     SINGLETON_SERVICE_BUILDER() {
         @Override
         public ServiceName getServiceName(String container, String cache) {
-            return BASE_SERVICE_NAME.append("singleton", "builder", container, cache);
+            return GroupServiceNameFactory.BASE_SERVICE_NAME.append("singleton", "builder", container, cache);
         }
     };
 

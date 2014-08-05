@@ -21,19 +21,40 @@
  */
 package org.wildfly.clustering.server.singleton;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.server.CacheServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusterServiceInstaller;
+import org.wildfly.clustering.spi.CacheServiceInstaller;
+import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryServiceInstaller extends AbstractSingletonServiceBuilderFactoryServiceInstaller implements ClusterServiceInstaller {
+public class SingletonServiceBuilderFactoryServiceInstaller implements CacheServiceInstaller {
+
+    private final CacheServiceBuilder<SingletonServiceBuilderFactory> builder;
+
+    protected SingletonServiceBuilderFactoryServiceInstaller(CacheServiceBuilder<SingletonServiceBuilderFactory> builder) {
+        this.builder = builder;
+    }
 
     @Override
-    protected ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target, ServiceName name, String container, String cache) {
-        return target.addService(name, new SingletonServiceBuilderFactoryService(container, cache));
+    public Collection<ServiceName> getServiceNames(String container, String cache) {
+        return Collections.singleton(CacheServiceNames.SINGLETON_SERVICE_BUILDER.getServiceName(container, cache));
+    }
+
+    @Override
+    public Collection<ServiceController<?>> install(ServiceTarget target, String container, String cache) {
+        ServiceName name = CacheServiceNames.SINGLETON_SERVICE_BUILDER.getServiceName(container, cache);
+
+        ServiceBuilder<SingletonServiceBuilderFactory> builder = this.builder.build(target, name, container, cache);
+
+        return Collections.<ServiceController<?>>singleton(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
     }
 }

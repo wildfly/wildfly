@@ -24,16 +24,23 @@ package org.wildfly.clustering.server.singleton;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.server.CacheServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryServiceInstaller extends AbstractSingletonServiceBuilderFactoryServiceInstaller implements LocalServiceInstaller {
+public class LocalSingletonServiceBuilderFactoryServiceInstaller extends SingletonServiceBuilderFactoryServiceInstaller implements LocalCacheServiceInstaller {
 
-    @Override
-    protected ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target, ServiceName name, String container, String cache) {
-        return target.addService(name, new LocalSingletonServiceBuilderFactoryService());
+    private static final CacheServiceBuilder<SingletonServiceBuilderFactory> BUILDER = new CacheServiceBuilder<SingletonServiceBuilderFactory>() {
+        @Override
+        public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target, ServiceName name, String container, String cache) {
+            return target.addService(name, new LocalSingletonServiceBuilderFactoryService());
+        }
+    };
+
+    public LocalSingletonServiceBuilderFactoryServiceInstaller() {
+        super(BUILDER);
     }
 }

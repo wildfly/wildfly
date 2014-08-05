@@ -31,7 +31,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Service providing a non-clustered {@link Group}.
@@ -39,15 +39,15 @@ import org.wildfly.clustering.spi.ChannelServiceNames;
  */
 public class LocalGroupService implements Service<Group> {
 
-    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String cluster) {
-        LocalGroupService service = new LocalGroupService(cluster);
+    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String group) {
+        LocalGroupService service = new LocalGroupService(group);
         return target.addService(name, service)
-                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(cluster), ChannelNodeFactory.class, service.factory)
+                .addDependency(GroupServiceNames.NODE_FACTORY.getServiceName(group), JGroupsNodeFactory.class, service.factory)
         ;
     }
 
     private final String name;
-    private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
+    private final InjectedValue<JGroupsNodeFactory> factory = new InjectedValue<>();
 
     private volatile Group group;
 
@@ -62,7 +62,7 @@ public class LocalGroupService implements Service<Group> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        ChannelNodeFactory factory = this.factory.getValue();
+        JGroupsNodeFactory factory = this.factory.getValue();
         Node node = factory.createNode(null);
         this.group = new LocalGroup(this.name, node);
     }

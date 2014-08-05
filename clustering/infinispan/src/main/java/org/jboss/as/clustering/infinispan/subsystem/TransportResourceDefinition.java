@@ -23,9 +23,14 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
+import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter.ModelOperationConverter;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -35,6 +40,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource.NoSuchResourceException;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -49,12 +56,12 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
-    // attributes
-    static final SimpleAttributeDefinition CLUSTER = new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
-            .setXmlName(Attribute.CLUSTER.getLocalName())
+    static final SimpleAttributeDefinition CHANNEL = new SimpleAttributeDefinitionBuilder(ModelKeys.CHANNEL, ModelType.STRING, true)
+            .setXmlName(Attribute.CHANNEL.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+            .build()
+    ;
 
     static final SimpleAttributeDefinition EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
             .setXmlName(Attribute.EXECUTOR.getLocalName())
@@ -70,17 +77,72 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(240000L))
             .build();
 
-    // if stack is null, use default stack
+    @Deprecated
     static final SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
             .setXmlName(Attribute.STACK.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT };
+    @Deprecated
+    static final SimpleAttributeDefinition CLUSTER = new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
+            .setXmlName(Attribute.CLUSTER.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(InfinispanModel.VERSION_3_0_0.getVersion())
+            .build();
+
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CHANNEL, STACK, EXECUTOR, LOCK_TIMEOUT };
 
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
+
+        if (InfinispanModel.VERSION_3_0_0.requiresTransformation(version)) {
+            ModelOperationConverter converter = new ModelOperationConverter() {
+                @Override
+                public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
+                    if (!value.isDefined()) {
+                        PathAddress rootAddress = address.subAddress(0, address.size() - 3);
+                        PathAddress subsystemAddress = rootAddress.append(JGroupsSubsystemResourceDefinition.PATH);
+                        ModelNode subsystemModel = context.readResourceFromRoot(subsystemAddress).getModel();
+                        String channelName = null;
+                        if (model.hasDefined(CHANNEL.getName())) {
+                            channelName = model.get(CHANNEL.getName()).asString();
+                        } else {
+                            if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName())) {
+                                channelName = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.getName()).asString();
+                            }
+                        }
+                        if (channelName != null) {
+                            String stack = null;
+                            PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channelName));
+                            try {
+                                ModelNode channel = context.readResourceFromRoot(channelAddress).getModel();
+                                if (channel.hasDefined(ChannelResourceDefinition.STACK.getName())) {
+                                     stack = channel.get(ChannelResourceDefinition.STACK.getName()).asString();
+                                } else {
+                                    if (subsystemModel.hasDefined(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName())) {
+                                        stack = subsystemModel.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).asString();
+                                    }
+                                }
+                            } catch (NoSuchResourceException e) {
+                                // Ignore
+                            }
+                            if (stack != null) {
+                                value.set(stack);
+                            }
+                        }
+                    }
+                }
+            };
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CHANNEL)
+                    .setValueConverter(new SimpleAttributeConverter(converter), STACK)
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, STACK)
+                    .addRename(CHANNEL, CLUSTER.getName())
+                    .end();
+        }
 
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, STACK, EXECUTOR, LOCK_TIMEOUT);
