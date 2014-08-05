@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,33 +22,14 @@
 
 package org.jboss.as.jdkorb;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
-import static org.jboss.as.jdkorb.JdkORBSubsystemConstants.IDENTITY;
-import static org.jboss.as.jdkorb.JdkORBSubsystemConstants.SECURITY;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.controller.transform.description.TransformationDescription;
-import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * <p>
@@ -86,72 +67,10 @@ public class JdkORBExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JdkORBSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
-
-        if (context.isRegisterTransformers()) {
-            // Register the model transformers
-            registerTransformers(subsystem);
-        }
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JdkORBSubsystemParser.Namespace.JdkORB_1_0.getUriString(), PARSER);
-    }
-
-    /**
-     * Register the transformers for older model versions.
-     *
-     * @param subsystem the subsystems registration
-     */
-    protected static void registerTransformers(final SubsystemRegistration subsystem) {
-        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
-        final Set<String> expressionKeys = new HashSet<String>();
-        for(final AttributeDefinition def : JdkORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
-            if(def.isAllowExpression()) {
-                expressionKeys.add(def.getName());
-            }
-        }
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        builder.getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, expressionKeys.toArray(new String[expressionKeys.size()]))
-            .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-                @Override
-                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return JdkORBMessages.MESSAGES.cannotUseSecurityClient();
-                }
-
-                @Override
-                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                        TransformationContext context) {
-                    return attributeValue.getType() == ModelType.STRING && attributeValue.asString().equals(JdkORBSubsystemConstants.CLIENT);
-                }
-            }, SECURITY)
-            .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-
-                @Override
-                protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                        TransformationContext context) {
-                    final String security = attributeValue.asString();
-                    //security=IDENTITY in the new model == security=ON in the old model
-                    if (security.equals(IDENTITY)) {
-                        attributeValue.set("on");
-                    }
-                }
-            }, SECURITY)
-            .end();
-        TransformationDescription.Tools.register(builder.build(), subsystem, version110);
-    }
-
-    private static ModelNode replaceSecurityClient(ModelNode model) {
-        if (model.hasDefined(SECURITY) && model.get(SECURITY).asString().equals(JdkORBSubsystemConstants.CLIENT)) {
-            //security=CLIENT in the new model == security=OFF plus these extra initializers in the old model
-            //Since the write-attribute is restart-required I am not doing anything for the write-attribute operation
-            model.get(SECURITY).set("off");
-            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "");
-            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jdkorb.csiv2.SASClientInitializer", "");
-            return model;
-        }
-        return null;
     }
 }
