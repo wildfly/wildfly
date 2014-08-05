@@ -52,7 +52,8 @@
     </xsl:template>
 
     <!-- copy the subsystem -->
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name()='stacks']">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
             <xsl:apply-templates select="@*|node()"/>

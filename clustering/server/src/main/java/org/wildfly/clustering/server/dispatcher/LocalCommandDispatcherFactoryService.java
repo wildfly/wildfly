@@ -31,7 +31,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Service that provides a non-clustered {@link CommandDispatcherFactory}.
@@ -42,7 +42,7 @@ public class LocalCommandDispatcherFactoryService implements Service<CommandDisp
     public static ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String cluster) {
         LocalCommandDispatcherFactoryService service = new LocalCommandDispatcherFactoryService();
         return target.addService(name, service)
-                .addDependency(ChannelServiceNames.GROUP.getServiceName(cluster), Group.class, service.group)
+                .addDependency(GroupServiceNames.GROUP.getServiceName(cluster), Group.class, service.group)
         ;
     }
 

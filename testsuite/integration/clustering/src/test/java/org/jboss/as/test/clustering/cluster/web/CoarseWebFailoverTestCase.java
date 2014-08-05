@@ -33,6 +33,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
     private static final String DEPLOYMENT_NAME = "coarse-distributable.war";
 
+    public CoarseWebFailoverTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
@@ -53,10 +57,5 @@ public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase 
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         log.info(war.toString(true));
         return war;
-    }
-
-    @Override
-    protected String getDeploymentName() {
-        return DEPLOYMENT_NAME;
     }
 }

@@ -1,0 +1,3 @@
+org.wildfly.clustering.server.dispatcher.ChannelCommandDispatcherFactoryServiceInstaller
+org.wildfly.clustering.server.group.ChannelGroupServiceInstaller
+org.wildfly.clustering.server.group.ChannelNodeFactoryServiceInstaller

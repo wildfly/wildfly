@@ -26,15 +26,22 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.server.GroupServiceBuilder;
+import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactoryServiceInstaller extends AbstractCommandDispatcherFactoryServiceInstaller implements LocalServiceInstaller {
+public class LocalCommandDispatcherFactoryServiceInstaller extends CommandDispatcherFactoryServiceInstaller implements LocalGroupServiceInstaller {
 
-    @Override
-    protected ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier moduleId) {
-        return LocalCommandDispatcherFactoryService.build(target, name, group);
+    private static final GroupServiceBuilder<CommandDispatcherFactory> BUILDER = new GroupServiceBuilder<CommandDispatcherFactory>() {
+        @Override
+        public ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier module) {
+            return LocalCommandDispatcherFactoryService.build(target, name, group);
+        }
+    };
+
+    public LocalCommandDispatcherFactoryServiceInstaller() {
+        super(BUILDER);
     }
 }

@@ -43,13 +43,13 @@ public class CacheGroupService implements Service<Group>, CacheGroupConfiguratio
         CacheGroupService service = new CacheGroupService();
         return target.addService(name, service)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
-                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), CacheNodeFactory.class, service.factory)
+                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), InfinispanNodeFactory.class, service.factory)
         ;
     }
 
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
+    private final InjectedValue<InfinispanNodeFactory> factory = new InjectedValue<>();
 
     private volatile CacheGroup group;
 
@@ -79,7 +79,7 @@ public class CacheGroupService implements Service<Group>, CacheGroupConfiguratio
     }
 
     @Override
-    public CacheNodeFactory getNodeFactory() {
+    public InfinispanNodeFactory getNodeFactory() {
         return this.factory.getValue();
     }
 }

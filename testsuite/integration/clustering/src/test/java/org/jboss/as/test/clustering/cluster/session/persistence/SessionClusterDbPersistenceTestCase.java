@@ -19,6 +19,10 @@ import org.junit.runner.RunWith;
 public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbstractCase {
     private static final String DEPLOYMENT_NAME = "session-db-cluster.war";
 
+    public SessionClusterDbPersistenceTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
@@ -39,10 +43,5 @@ public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbs
         war.addAsWebInfResource("WEB-INF/jboss-web.xml","jboss-web.xml");
         log.info(war.toString(true));
         return war;
-    }
-
-    @Override
-    protected String getDeploymentName() {
-        return DEPLOYMENT_NAME;
     }
 }

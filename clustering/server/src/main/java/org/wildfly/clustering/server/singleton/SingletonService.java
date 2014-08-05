@@ -60,7 +60,7 @@ import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
@@ -117,7 +117,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                 .addAliases(this.singletonServiceName.append("singleton"))
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, this.group)
                 .addDependency(CacheServiceNames.SERVICE_PROVIDER_REGISTRATION.getServiceName(containerName, cacheName), ServiceProviderRegistrationFactory.class, this.registrationFactory)
-                .addDependency(ChannelServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
+                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, this.dispatcherFactory)
                 .addListener(listener)
         ;
         // Add dependencies to the target service builder, but install should return the installed singleton controller

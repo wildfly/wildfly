@@ -50,6 +50,7 @@
 
     <!-- Configure for all transport=UDP -->
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name()='stacks']
                           /*[local-name()='stack']
                           /*[local-name()='transport' and @type='UDP']">
         <xsl:copy>
@@ -60,6 +61,7 @@
 
     <!-- Configure for all protocol=MPING -->
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name()='stacks']
                           /*[local-name()='stack']
                           /*[local-name()='protocol' and @type='MPING']">
         <xsl:copy>

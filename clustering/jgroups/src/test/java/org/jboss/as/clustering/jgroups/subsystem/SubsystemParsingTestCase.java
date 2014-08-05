@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -59,20 +58,19 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(value = Parameterized.class)
 public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
-    String xmlFile = null ;
-    int operations = 0 ;
+    private final int expectedOperationCount;
 
-    public SubsystemParsingTestCase(String xmlFile, int operations) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), xmlFile);
-        this.xmlFile = xmlFile ;
-        this.operations = operations ;
+    public SubsystemParsingTestCase(JGroupsSchema schema, int expectedOperationCount) {
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema.format("subsystem-jgroups-%d_%d.xml"));
+        this.expectedOperationCount = expectedOperationCount;
     }
 
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-                { "subsystem-jgroups-1_1.xml", 22 },
-                { "subsystem-jgroups-2_0.xml", 23 },
+                { JGroupsSchema.VERSION_1_1, 22 },
+                { JGroupsSchema.VERSION_2_0, 24 },
+                { JGroupsSchema.VERSION_3_0, 25 },
         };
         return Arrays.asList(data);
     }
@@ -91,20 +89,20 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        String[] protocolList = { "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
+        String[] protocols = { "UDP", "TCP", "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
                 "pbcast.NAKACK", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC",
-                "MFC", "FRAG2", "pbcast.STATE_TRANSFER", "pbcast.FLUSH",  "RSVP"};
+                "MFC", "FRAG2", "pbcast.STATE_TRANSFER", "pbcast.FLUSH",  "RSVP", "relay.RELAY2" };
 
-        PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        List<PathAddress> addresses = new ArrayList<PathAddress>();
+        Set<PathAddress> addresses = new HashSet<>();
 
-        PathAddress maximalStack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
-        for (String protocol : protocolList) {
-            PathAddress ignoredChild = maximalStack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
-            addresses.add(ignoredChild);
+        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        for (String protocol : protocols) {
+            addresses.add(address.append(StackResourceDefinition.pathElement("maximal")).append(ProtocolResourceDefinition.pathElement(protocol)));
+            addresses.add(address.append(ChannelResourceDefinition.pathElement("bridge")).append(ProtocolResourceDefinition.pathElement(protocol)));
+            addresses.add(address.append(ChannelResourceDefinition.pathElement("ee")).append(ProtocolResourceDefinition.pathElement(protocol)));
         }
 
-        return new HashSet<PathAddress>(addresses);
+        return addresses;
     }
 
     /**
@@ -125,7 +123,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
        // Check that we have the expected number of operations
        // one for each resource instance
-       Assert.assertEquals(this.operations, operations.size());
+       Assert.assertEquals(this.expectedOperationCount, operations.size());
 
        // Check that each operation has the correct content
        ModelNode addSubsystem = operations.get(0);

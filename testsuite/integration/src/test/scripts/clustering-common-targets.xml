@@ -440,30 +440,6 @@
     </macrodef>
 
     <!--
-        Add a backup element to a cache in the Infinispan subsystem.
-    -->
-    <macrodef name="ts.config-as.change-container-transport-stack" description="Change the transport stack for a container in the Infinispan subsystem">
-
-        <attribute name="name" default="wildfly"/>
-        <attribute name="output.dir" default="${project.build.directory}"/>
-        <attribute name="config.dir.name" default="standalone/configuration"/>
-
-        <attribute name="container" default="web"/>
-        <attribute name="stack" default="udp"/>
-
-        <sequential>
-            <echo message="Change transport stack in container @{container} in Infinispan subsystem for config @{name}"/>
-
-            <execute-xslt-transform transform="changeContainerTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="container" expression="@{container}"/>
-                    <param name="stack" expression="@{stack}"/>
-                </transform-params>
-            </execute-xslt-transform>
-        </sequential>
-    </macrodef>
-
-    <!--
         Execute an XSLT transform in place.
     -->
     <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">

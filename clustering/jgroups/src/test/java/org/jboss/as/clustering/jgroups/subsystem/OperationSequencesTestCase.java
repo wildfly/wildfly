@@ -1,7 +1,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
@@ -152,7 +151,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         Assert.assertNotNull("channel factory service not installed", servicesA.getContainer().getService(channelFactoryServiceName));
     }
 
-     private void listMSCServices(KernelServices services, String marker) {
+    private void listMSCServices(KernelServices services, String marker) {
         ServiceRegistry registry = services.getContainer() ;
         List<ServiceName> names = registry.getServiceNames() ;
         System.out.println("Services: " + marker);
@@ -162,7 +161,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
     }
 
     private boolean isMSCServicePresent(KernelServices services, ServiceName serviceName) {
-       ServiceRegistry registry = services.getContainer() ;
-       return (registry.getService(serviceName) != null);
+        ServiceRegistry registry = services.getContainer() ;
+        return (registry.getService(serviceName) != null);
     }
 }

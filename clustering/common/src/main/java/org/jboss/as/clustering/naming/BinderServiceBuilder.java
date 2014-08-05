@@ -32,7 +32,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Encapsulates the common logic for installing a JNDI binding for a given service.
+ * Encapsulates the common logic for building a JNDI binding for a given service.
  * @author Paul Ferraro
  */
 public class BinderServiceBuilder {

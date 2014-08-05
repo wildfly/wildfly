@@ -46,7 +46,7 @@ public class SingleSignOnManagerService implements Service<io.undertow.security.
             builder.build(target, factoryName, hostName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         } else {
             SingleSignOnManagerFactory factory = new InMemorySingleSignOnManagerFactory();
-            target.addService(factoryName, new ValueService<>(new ImmediateValue<>(factory)));
+            target.addService(factoryName, new ValueService<>(new ImmediateValue<>(factory))).install();
         }
         SingleSignOnManagerService service = new SingleSignOnManagerService();
         return target.addService(name, service)

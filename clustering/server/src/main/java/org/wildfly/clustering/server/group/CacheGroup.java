@@ -44,7 +44,7 @@ public class CacheGroup implements Group, AutoCloseable {
 
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final Cache<?, ?> cache;
-    private final CacheNodeFactory factory;
+    private final InfinispanNodeFactory factory;
 
     public CacheGroup(CacheGroupConfiguration config) {
         this.cache = config.getCache();

@@ -21,18 +21,26 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.server.GroupServiceBuilder;
+import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalNodeFactoryServiceInstaller extends AbstractChannelNodeFactoryServiceInstaller implements LocalServiceInstaller {
+public class LocalNodeFactoryServiceInstaller extends GroupNodeFactoryServiceInstaller implements LocalGroupServiceInstaller {
 
-    @Override
-    protected ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String group) {
-        return LocalNodeFactoryService.build(target, name, group);
+    private static final GroupServiceBuilder<JGroupsNodeFactory> BUILDER = new GroupServiceBuilder<JGroupsNodeFactory>() {
+        @Override
+        public ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier module) {
+            return LocalNodeFactoryService.build(target, name, group);
+        }
+    };
+
+    public LocalNodeFactoryServiceInstaller() {
+        super(BUILDER);
     }
 }

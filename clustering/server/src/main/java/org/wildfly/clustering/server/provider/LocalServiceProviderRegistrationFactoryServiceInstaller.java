@@ -25,15 +25,22 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.server.CacheServiceBuilder;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalServiceProviderRegistrationFactoryServiceInstaller extends AbstractServiceProviderRegistrationFactoryServiceInstaller implements LocalServiceInstaller {
+public class LocalServiceProviderRegistrationFactoryServiceInstaller extends ServiceProviderRegistrationFactoryServiceInstaller implements LocalCacheServiceInstaller {
 
-    @Override
-    protected ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target, ServiceName name, String container, String cache) {
-        return LocalServiceProviderRegistrationFactoryService.build(target, name, container, cache);
+    private static final CacheServiceBuilder<ServiceProviderRegistrationFactory> BUILDER = new CacheServiceBuilder<ServiceProviderRegistrationFactory>() {
+        @Override
+        public ServiceBuilder<ServiceProviderRegistrationFactory> build(ServiceTarget target, ServiceName name, String container, String cache) {
+            return LocalServiceProviderRegistrationFactoryService.build(target, name, container, cache);
+        }
+    };
+
+    public LocalServiceProviderRegistrationFactoryServiceInstaller() {
+        super(BUILDER);
     }
 }

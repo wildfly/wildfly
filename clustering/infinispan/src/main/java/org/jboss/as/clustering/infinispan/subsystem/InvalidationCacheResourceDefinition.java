@@ -23,7 +23,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
@@ -34,19 +33,13 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
-    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
-
-    static PathElement pathElement(String name) {
-        return PathElement.pathElement(ModelKeys.INVALIDATION_CACHE, name);
-    }
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(CacheType.INVALIDATION.pathElement());
 
         ClusteredCacheResourceDefinition.buildTransformation(version, builder);
     }
 
     InvalidationCacheResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(ModelKeys.INVALIDATION_CACHE, InvalidationCacheAddHandler.INSTANCE, CacheRemoveHandler.INSTANCE, resolvePathHandler, allowRuntimeOnlyRegistration);
+        super(CacheType.INVALIDATION, resolvePathHandler, allowRuntimeOnlyRegistration);
     }
 }

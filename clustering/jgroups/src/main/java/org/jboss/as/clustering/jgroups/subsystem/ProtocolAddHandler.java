@@ -86,10 +86,10 @@ public class ProtocolAddHandler implements OperationStepHandler {
         // Process type specific properties if required
 
         // The protocol parameters  <property name=>value</property>
-        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        if (operation.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
+            for (Property property : operation.get(ProtocolResourceDefinition.PROPERTIES.getName()).asPropertyList()) {
                 // create a new property=name resource
-                final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
+                final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PropertyResourceDefinition.pathElement(property.getName())));
                 final ModelNode value = property.getValue();
                 if (!value.isDefined()) {
                     throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), protocolRelativePath.toString());

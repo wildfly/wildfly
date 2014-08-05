@@ -21,20 +21,20 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -55,27 +55,74 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(value = Parameterized.class)
 public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
-    String xmlFile = null ;
-    int operations = 0 ;
+    private final InfinispanSchema schema;
+    private final int operations;
 
-    public SubsystemParsingTestCase(String xmlFile, int operations) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), xmlFile);
-        this.xmlFile = xmlFile ;
-        this.operations = operations ;
+    public SubsystemParsingTestCase(InfinispanSchema schema, int operations) {
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema.format("subsystem-infinispan-%d_%d.xml"));
+        this.schema = schema;
+        this.operations = operations;
     }
 
     @Parameters
     public static Collection<Object[]> data() {
         Object[][] data = new Object[][] {
-                { "subsystem-infinispan-1_0.xml", 33 },
-                { "subsystem-infinispan-1_1.xml", 33 },
-                { "subsystem-infinispan-1_2.xml", 37 },
-                { "subsystem-infinispan-1_3.xml", 37 },
-                { "subsystem-infinispan-1_4.xml", 75 },
-                { "subsystem-infinispan-2_0.xml", 79 },
-                { "subsystem-infinispan-3_0.xml", 79 },
+            { InfinispanSchema.VERSION_1_0, 34 },
+            { InfinispanSchema.VERSION_1_1, 34 },
+            { InfinispanSchema.VERSION_1_2, 38 },
+            { InfinispanSchema.VERSION_1_3, 38 },
+            { InfinispanSchema.VERSION_1_4, 78 },
+            { InfinispanSchema.VERSION_2_0, 82 },
+            { InfinispanSchema.VERSION_3_0, 79 },
         };
         return Arrays.asList(data);
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new JGroupsSubsystemInitialization();
+    }
+/*
+    @Override
+    protected String normalizeXML(String xml) throws Exception {
+        QName test = new QName("urn.org.jboss.test:1.0", "test");
+        // We need to add a wrapper element around the 2 subsystem elements, to make it valid xml
+        XMLEventReader reader = XMLInputFactory.newInstance().createXMLEventReader(new StringReader(String.format("<%1$s xmlns=\"%2$s\">%3$s</%1$s>", test.getLocalPart(), test.getNamespaceURI(), xml)));
+        // Strip jgroups subsystem from xml - since this will not be written
+        QName jgroups = new QName(JGroupsSchema.CURRENT.getNamespaceUri(), SUBSYSTEM);
+        StringWriter output = new StringWriter();
+        XMLEventWriter eventWriter = XMLOutputFactory.newInstance().createXMLEventWriter(output);
+        XMLEvent event = reader.nextEvent();
+        while (!event.isEndDocument()) {
+            if (event.isStartElement() && event.asStartElement().getName().equals(jgroups)) {
+                // Swallow jgroups subsystem
+                while (!(event.isEndElement() && event.asEndElement().getName().equals(jgroups))) {
+                    event = reader.nextEvent();
+                }
+            } else if (!(event.isStartElement() && event.asStartElement().getName().equals(test)) && !(event.isEndElement() && event.asEndElement().getName().equals(test))) {
+                eventWriter.add(event);
+            }
+            event = reader.nextEvent();
+        }
+        eventWriter.add(event);
+        eventWriter.close();
+        return super.normalizeXML(output.toString());
+    }
+*/
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, original, marshalled);
+    }
+
+    @Override
+    protected void compare(ModelNode model1, ModelNode model2) {
+        purgeJGroupsModel(model1);
+        purgeJGroupsModel(model2);
+        super.compare(model1, model2);
+    }
+
+    private static void purgeJGroupsModel(ModelNode model) {
+        model.get(JGroupsSubsystemResourceDefinition.PATH.getKey()).remove(JGroupsSubsystemResourceDefinition.PATH.getValue());
     }
 
     @Override
@@ -89,29 +136,12 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testParseSubsystem() throws Exception {
-       // Parse the subsystem xml into operations
-       List<ModelNode> operations = super.parse(getSubsystemXml());
+        // Parse the subsystem xml into operations
+        List<ModelNode> operations = this.parse(this.createAdditionalInitialization(), getSubsystemXml());
 
-       /*
-       // print the operations
-       System.out.println("List of operations");
-       for (ModelNode op : operations) {
-           System.out.println("operation = " + op.toString());
-       }
-       */
-
-       // Check that we have the expected number of operations
-       // one for each resource instance
-       Assert.assertEquals(this.operations, operations.size());
-
-       // Check that each operation has the correct content
-       ModelNode addSubsystem = operations.get(0);
-       Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
-       PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
-       Assert.assertEquals(1, addr.size());
-       PathElement element = addr.getElement(0);
-       Assert.assertEquals(SUBSYSTEM, element.getKey());
-       Assert.assertEquals(getMainSubsystemName(), element.getValue());
+        // Check that we have the expected number of operations
+        // one for each resource instance
+        Assert.assertEquals(operations.toString(), this.operations, operations.size());
     }
 
     /**
@@ -119,21 +149,19 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testInstallIntoController() throws Exception {
-       // Parse the subsystem xml and install into the controller
-       KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+        // Parse the subsystem xml and install into the controller
+        KernelServices services = createKernelServicesBuilder().setSubsystemXml(getSubsystemXml()).build();
 
-       // Read the whole model and make sure it looks as expected
-       ModelNode model = services.readWholeModel();
+        // Read the whole model and make sure it looks as expected
+        ModelNode model = services.readWholeModel();
 
-       // System.out.println("model = " + model.asString());
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
 
-       Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
-
-       checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, mainSubsystemName));
+        checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, this.getMainSubsystemName()));
     }
 
     private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
-        if (xmlFile.endsWith("1_0.xml") || xmlFile.endsWith("1_1.xml") || xmlFile.endsWith("1_2.xml") || xmlFile.endsWith("1_3.xml") || xmlFile.endsWith("1_4.xml")) {
+        if (!this.schema.since(InfinispanSchema.VERSION_2_0)) {
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
                         containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
@@ -152,26 +180,32 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
             }
         }
     }
+
+    private KernelServicesBuilder createKernelServicesBuilder() throws Exception {
+        return this.createKernelServicesBuilder(this.createAdditionalInitialization());
+    }
+
     /**
      * Starts a controller with a given subsystem xml and then checks that a second controller
      * started with the xml marshalled from the first one results in the same model
      */
     @Test
     public void testParseAndMarshalModel() throws Exception {
-       // Parse the subsystem xml and install into the first controller
+        // Parse the subsystem xml and install into the first controller
 
-       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
 
-       // Get the model and the persisted xml from the first controller
-       ModelNode modelA = servicesA.readWholeModel();
-       String marshalled = servicesA.getPersistedSubsystemXml();
+        // Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
 
-       // Install the persisted xml from the first controller into a second controller
-       KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
-       ModelNode modelB = servicesB.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
 
-       // Make sure the models from the two controllers are identical
-       super.compare(modelA, modelB);
+        // Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = this.createKernelServicesBuilder().setSubsystemXml(marshalled).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        // Make sure the models from the two controllers are identical
+        this.compare(modelA, modelB);
     }
 
     /**
@@ -180,20 +214,19 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
      */
     @Test
     public void testDescribeHandler() throws Exception {
-       // Parse the subsystem xml and install into the first controller
-       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
-       // Get the model and the describe operations from the first controller
-       ModelNode modelA = servicesA.readWholeModel();
-       ModelNode describeOp = new ModelNode();
-       describeOp.get(OP).set(DESCRIBE);
-       describeOp.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())).toModelNode());
-       List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        // Parse the subsystem xml and install into the first controller
+        KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
+        // Get the model and the describe operations from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
 
-       // Install the describe options from the first controller into a second controller
-       KernelServices servicesB = createKernelServicesBuilder(null).setBootOperations(operations).build();
-       ModelNode modelB = servicesB.readWholeModel();
+        ModelNode describeOp = Util.createOperation(DESCRIBE, PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH));
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-       // Make sure the models from the two controllers are identical
-       super.compare(modelA, modelB);
+        // Install the describe options from the first controller into a second controller
+        KernelServices servicesB = this.createKernelServicesBuilder().setBootOperations(operations).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        // Make sure the models from the two controllers are identical
+        this.compare(modelA, modelB);
     }
 }

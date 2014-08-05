@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
@@ -50,27 +51,13 @@ import org.jboss.dmr.ModelType;
  */
 public class TransportResourceDefinition extends SimpleResourceDefinition {
 
-    static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-
-    // attributes
-    static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelKeys.TYPE, ModelType.STRING, false)
-            .setXmlName(Attribute.TYPE.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+    public static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
     static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.SHARED.getLocalName())
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(true))
+            .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
-
-    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_BINDING, ModelType.STRING, true)
-            .setXmlName(Attribute.SOCKET_BINDING.getLocalName())
-            .setAllowExpression(false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     static final SimpleAttributeDefinition DIAGNOSTICS_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(ModelKeys.DIAGNOSTICS_SOCKET_BINDING, ModelType.STRING, true)
@@ -130,13 +117,13 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     // the list of attributes used by the transport resource
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
-            TYPE, SHARED, SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
+            ProtocolResourceDefinition.TYPE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
             OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
     };
 
     // the list of parameters accepted by a /subsystem=jgroups/stack=X/transport=TRANSPORT:add() operation
     static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] {
-            TYPE, SHARED, SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
+            ProtocolResourceDefinition.TYPE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING, DEFAULT_EXECUTOR,
             OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE, PROPERTIES
     };
 
@@ -158,6 +145,9 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(PATH);
 
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(SHARED), SHARED);
+        }
         if (JGroupsModel.VERSION_1_2_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SHARED, PROPERTIES);
         }

@@ -49,6 +49,10 @@ import org.junit.Test;
 public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWebFailoverAbstractCase {
     private static final String DEPLOYMENT_NAME = "negotiationAuthenticator.war";
 
+    public ReplicationForNegotiationAuthenticatorTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
@@ -62,7 +66,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
     }
        
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "negotiationAuthenticator.war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
@@ -119,10 +123,5 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
             HttpClientUtils.closeQuietly(client);
         }
 
-    }
-
-    @Override
-    protected String getDeploymentName() {
-        return DEPLOYMENT_NAME;
     }
 }

@@ -25,12 +25,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -124,8 +122,8 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
                     try {
                         ModelNode transaction = context.readResourceFromRoot(transactionAddress).getModel();
                         if (transaction.hasDefined(TransactionResourceDefinition.MODE.getName())) {
-                            TransactionMode mode = TransactionMode.valueOf(transaction.get(TransactionResourceDefinition.MODE.getName()).asString());
-                            if (mode == TransactionMode.BATCH) {
+                            ModelNode mode = transaction.get(TransactionResourceDefinition.MODE.getName());
+                            if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
                                 value.set(true);
                             }
                         }
@@ -169,8 +167,8 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
     private final ResolvePathHandler resolvePathHandler;
     final boolean allowRuntimeOnlyRegistration;
 
-    public CacheResourceDefinition(String key, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(PathElement.pathElement(key), InfinispanExtension.getResourceDescriptionResolver(key), addHandler, removeHandler);
+    public CacheResourceDefinition(CacheType type, ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
+        super(type.pathElement(), type.getResourceDescriptionResolver(), type.getAddHandler(), type.getRemoveHandler());
         this.resolvePathHandler = resolvePathHandler;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }

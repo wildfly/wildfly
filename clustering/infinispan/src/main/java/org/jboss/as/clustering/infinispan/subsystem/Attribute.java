@@ -44,6 +44,7 @@ public enum Attribute {
     @Deprecated BATCHING(ModelKeys.BATCHING),
     CACHE(ModelKeys.CACHE),
     CAPACITY_FACTOR(ModelKeys.CAPACITY_FACTOR),
+    CHANNEL(ModelKeys.CHANNEL),
     CHUNK_SIZE(ModelKeys.CHUNK_SIZE),
     CLASS(ModelKeys.CLASS),
     CLUSTER(ModelKeys.CLUSTER),

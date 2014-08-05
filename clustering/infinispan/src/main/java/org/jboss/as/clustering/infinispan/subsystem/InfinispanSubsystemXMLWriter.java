@@ -71,16 +71,15 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     if (container.hasDefined(TransportResourceDefinition.PATH.getKey())) {
                         writer.writeStartElement(Element.TRANSPORT.getLocalName());
                         ModelNode transport = container.get(TransportResourceDefinition.PATH.getKeyValuePair());
-                        TransportResourceDefinition.STACK.marshallAsAttribute(transport,false,  writer);
-                        TransportResourceDefinition.CLUSTER.marshallAsAttribute(transport,false,  writer);
-                        TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport,false,  writer);
-                        TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport,false,  writer);
+                        TransportResourceDefinition.CHANNEL.marshallAsAttribute(transport, writer);
+                        TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport, writer);
+                        TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport, writer);
                         writer.writeEndElement();
                     }
 
                     // write any existent cache types
-                    if (container.hasDefined(LocalCacheResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property property : container.get(LocalCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    if (container.hasDefined(CacheType.LOCAL.pathElement().getKey())) {
+                        for (Property property : container.get(CacheType.LOCAL.pathElement().getKey()).asPropertyList()) {
                             ModelNode cache = property.getValue();
 
                             writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
@@ -92,8 +91,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         }
                     }
 
-                    if (container.hasDefined(InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property property : container.get(InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    if (container.hasDefined(CacheType.INVALIDATION.pathElement().getKey())) {
+                        for (Property property : container.get(CacheType.INVALIDATION.pathElement().getKey()).asPropertyList()) {
                             ModelNode cache = property.getValue();
 
                             writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
@@ -105,8 +104,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         }
                     }
 
-                    if (container.hasDefined(ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property property : container.get(ReplicatedCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    if (container.hasDefined(CacheType.REPLICATED.pathElement().getKey())) {
+                        for (Property property : container.get(CacheType.REPLICATED.pathElement().getKey()).asPropertyList()) {
                             ModelNode cache = property.getValue();
 
                             writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
@@ -118,8 +117,8 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         }
                     }
 
-                    if (container.hasDefined(DistributedCacheResourceDefinition.WILDCARD_PATH.getKey())) {
-                        for (Property property : container.get(DistributedCacheResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    if (container.hasDefined(CacheType.DISTRIBUTED.pathElement().getKey())) {
+                        for (Property property : container.get(CacheType.DISTRIBUTED.pathElement().getKey()).asPropertyList()) {
                             ModelNode cache = property.getValue();
 
                             writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());

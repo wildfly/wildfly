@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import org.jgroups.Channel;
+
 /**
  * Configuration of a channel to a remote site, used by the RELAY2 protocol.
  * @author Paul Ferraro
@@ -28,7 +30,7 @@ package org.jboss.as.clustering.jgroups;
 public interface RemoteSiteConfiguration {
     String getName();
 
-    ChannelFactory getChannelFactory();
+    Channel getChannel();
 
     String getClusterName();
 }

@@ -24,14 +24,12 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -58,7 +56,7 @@ public class SubsystemFeaturesTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-jgroups-2_0.xml");
+        return readResource(JGroupsSchema.CURRENT.format("subsystem-jgroups-%d_%d.xml"));
     }
 
     @Test
@@ -153,18 +151,20 @@ public class SubsystemFeaturesTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        // create a collection of resources in the test which are not removed by a "remove" command
-        // i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*
+        String[] protocols = { "UDP", "TCP", "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
+                "pbcast.NAKACK", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC",
+                "MFC", "FRAG2", "pbcast.STATE_TRANSFER", "pbcast.FLUSH",  "RSVP", "relay.RELAY2" };
 
-        String[] protocolList = { "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2", "RSVP" };
-        PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        PathAddress stack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
-        List<PathAddress> addresses = new ArrayList<PathAddress>();
-        for (String protocol : protocolList) {
-            PathAddress ignoredChild = stack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
-            addresses.add(ignoredChild);
+        Set<PathAddress> addresses = new HashSet<>();
+
+        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        for (String protocol : protocols) {
+            addresses.add(address.append(StackResourceDefinition.pathElement("maximal")).append(ProtocolResourceDefinition.pathElement(protocol)));
+            addresses.add(address.append(ChannelResourceDefinition.pathElement("bridge")).append(ProtocolResourceDefinition.pathElement(protocol)));
+            addresses.add(address.append(ChannelResourceDefinition.pathElement("ee")).append(ProtocolResourceDefinition.pathElement(protocol)));
         }
-        return new HashSet<PathAddress>(addresses);
+
+        return addresses;
     }
 
     @Override
