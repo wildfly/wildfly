@@ -41,6 +41,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -98,7 +99,7 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
-        testFailoverOnShutdown(baseURL1, baseURL2);
+        testFailover(new RestartLifecycle(), baseURL1, baseURL2);
     }
 
     /**
@@ -120,10 +121,10 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(CdiServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
-        testFailoverOnUndeploy(baseURL1, baseURL2);
+        testFailover(new RedeployLifecycle(), baseURL1, baseURL2);
     }
 
-    private void testFailoverOnShutdown(URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
+    private static void testFailover(Lifecycle lifecycle, URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -137,12 +138,12 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(3, queryCount(client, uri2));
             assertEquals(4, queryCount(client, uri2));
 
-            stop(CONTAINER_2);
+            lifecycle.stop(NODE_2);
 
             assertEquals(5, queryCount(client, uri1));
             assertEquals(6, queryCount(client, uri1));
 
-            start(CONTAINER_2);
+            lifecycle.start(NODE_2);
 
             assertEquals(7, queryCount(client, uri1));
             assertEquals(8, queryCount(client, uri1));
@@ -150,12 +151,12 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(9, queryCount(client, uri2));
             assertEquals(10, queryCount(client, uri2));
 
-            stop(CONTAINER_1);
+            lifecycle.stop(NODE_1);
 
             assertEquals(11, queryCount(client, uri2));
             assertEquals(12, queryCount(client, uri2));
 
-            start(CONTAINER_1);
+            lifecycle.start(NODE_1);
 
             assertEquals(13, queryCount(client, uri1));
             assertEquals(14, queryCount(client, uri1));
@@ -163,54 +164,8 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
-
-    }
-
-    private void testFailoverOnUndeploy(URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
-
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
-
-        URI uri1 = CdiServlet.createURI(baseURL1);
-        URI uri2 = CdiServlet.createURI(baseURL2);
-
-        try {
-            assertEquals(1, queryCount(client, uri1));
-            assertEquals(2, queryCount(client, uri1));
-
-            assertEquals(3, queryCount(client, uri2));
-            assertEquals(4, queryCount(client, uri2));
-
-            undeploy(DEPLOYMENT_2);
-
-            assertEquals(5, queryCount(client, uri1));
-            assertEquals(6, queryCount(client, uri1));
-
-            deploy(DEPLOYMENT_2);
-
-            assertEquals(7, queryCount(client, uri1));
-            assertEquals(8, queryCount(client, uri1));
-
-            assertEquals(9, queryCount(client, uri2));
-            assertEquals(10, queryCount(client, uri2));
-
-            undeploy(DEPLOYMENT_1);
-
-            assertEquals(11, queryCount(client, uri2));
-            assertEquals(12, queryCount(client, uri2));
-
-            deploy(DEPLOYMENT_1);
-
-            assertEquals(13, queryCount(client, uri1));
-            assertEquals(14, queryCount(client, uri1));
-
-            assertEquals(15, queryCount(client, uri2));
-            assertEquals(16, queryCount(client, uri2));
-        } finally {
-            client.getConnectionManager().shutdown();
-        }
-
     }
 
     private static int queryCount(HttpClient client, URI uri) throws IOException {
@@ -222,5 +177,4 @@ public class CdiFailoverTestCase extends ClusterAbstractTestCase {
             HttpClientUtils.closeQuietly(response);
         }
     }
-
 }

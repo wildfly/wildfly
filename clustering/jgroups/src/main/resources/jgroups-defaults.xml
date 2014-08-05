@@ -24,14 +24,13 @@
 <!-- This file supplies the internal defaults per protocol -->
 <config xmlns="urn:org:jgroups">
     <UDP
-        ucast_recv_buf_size="20000000"
-        ucast_send_buf_size="640000"
-        mcast_recv_buf_size="25000000"
-        mcast_send_buf_size="640000"
+        ucast_recv_buf_size="20m"
+        ucast_send_buf_size="640k"
+        mcast_recv_buf_size="25m"
+        mcast_send_buf_size="640k"
         max_bundle_size="31k"
-        max_bundle_timeout="30"
+        bundler_type="sender-sends-with-timer"
         ip_ttl="2"
-        bundler_type="old"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="20"
@@ -40,7 +39,7 @@
         thread_pool.queue_enabled="true"
         thread_pool.queue_max_size="1000"
         thread_pool.rejection_policy="discard"
-        
+
         oob_thread_pool.enabled="true"
         oob_thread_pool.min_threads="20"
         oob_thread_pool.max_threads="300"
@@ -56,13 +55,10 @@
         internal_thread_pool.queue_max_size="100"
         internal_thread_pool.rejection_policy="discard"/>
     <TCP
-        recv_buf_size="20000000"
-        send_buf_size="640000"
+        recv_buf_size="20m"
+        send_buf_size="640k"
         max_bundle_size="31k"
-        max_bundle_timeout="30"
-        use_send_queues="false"
-        sock_conn_timeout="300"
-        bundler_type="old"
+        bundler_type="sender-sends-with-timer"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="20"
@@ -86,23 +82,16 @@
         internal_thread_pool.queue_enabled="true"
         internal_thread_pool.queue_max_size="100"
         internal_thread_pool.rejection_policy="discard"/>
-    <PING timeout="2000" num_initial_members="3"/>
-    <MPING timeout="3000" num_initial_members="3" ip_ttl="2"/>
+    <MPING ip_ttl="2"/>
     <MERGE2 max_interval="100000" min_interval="20000"/>
-    <MERGE3 max_interval="100000" min_interval="20000"/>
+    <MERGE3/>
     <FD_SOCK/>
     <FD timeout="6000" max_tries="5"/>
     <FD_ALL timeout="15000" interval="3000"/>
     <VERIFY_SUSPECT timeout="1500"/>
     <BARRIER/>
-    <pbcast.NAKACK use_mcast_xmit="true"
-        retransmit_timeout="300,600,1200,2400,4800"
-        discard_delivered_msgs="true"/>
-    <pbcast.NAKACK2 max_msg_batch_size="100"
-        xmit_interval="1000"
-        xmit_table_num_rows="100"
-        xmit_table_msgs_per_row="10000"
-        xmit_table_max_compaction_time="10000"/>
+    <pbcast.NAKACK retransmit_timeout="300,600,1200,2400,4800"/>
+    <pbcast.NAKACK2 xmit_table_num_rows="100"/>
     <UNICAST timeout="300,600,1200,2400,3600"
         stable_interval="5000"
         max_bytes="1m"/>
@@ -112,21 +101,21 @@
         xmit_table_num_rows="20"
         xmit_table_msgs_per_row="10000"
         xmit_table_max_compaction_time="10000"/>
-    <UNICAST3 xmit_table_num_rows="20"
+    <UNICAST3 conn_expiry_timeout="0"
+        max_msg_batch_size="100"
+        xmit_table_num_rows="20"
         xmit_table_msgs_per_row="10000"
         xmit_table_max_compaction_time="10000"/>
-    <pbcast.STABLE stability_delay="1000"
-        desired_avg_gossip="50000"
-        max_bytes="400000"/>
-    <pbcast.GMS print_local_addr="true" 
-        join_timeout="3000"
-        view_bundling="true"
-        view_ack_collection_timeout="5000"
-        resume_task_timeout="7500"/>
-    <UFC max_credits="1m" min_threshold="0.40"/>
-    <MFC max_credits="1m" min_threshold="0.40"/>
+    <pbcast.STABLE stability_delay="500"
+        desired_avg_gossip="5000"
+        max_bytes="1m"/>
+    <pbcast.GMS print_local_addr="false"/>
+    <UFC max_credits="2m"/>
+    <MFC max_credits="2m"/>
     <FRAG2 frag_size="30k"/>
-    <RSVP timeout="60000" resend_interval="500" ack_on_delivery="false"/>
+    <RSVP timeout="60000"
+        resend_interval="500"
+        ack_on_delivery="false"/>
     <pbcast.STATE_TRANSFER/>
     <pbcast.FLUSH timeout="0" start_flush_timeout="10000"/>
 </config>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:jg="urn:jboss:domain:jgroups:2.0">
+		xmlns:jg="urn:jboss:domain:jgroups:3.0">
 
     <!--
         XSLT stylesheet to add an x-site relay protocol element to an existing JGroups stack.
