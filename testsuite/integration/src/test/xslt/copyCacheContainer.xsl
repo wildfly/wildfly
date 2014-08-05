@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <xsl:stylesheet version="1.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ispn="urn:jboss:domain:infinispan:3.0">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <!--
       XSLT stylesheet to add make a copy of an existing cache container such that:
@@ -36,10 +35,9 @@
     <xsl:param name="container.base" select="'web'"/>
     <xsl:param name="container.default-cache" select="'default-cache'"/>
 
+    <xsl:variable name="infinispanns" select="'urn:jboss:domain:infinispan:'"/>
+
     <xsl:output method="xml" indent="yes"/>
-    <xsl:variable name="ispnns">
-        <xsl:value-of select="'urn:jboss:domain:infinispan:3.0'"/>
-    </xsl:variable>
 
     <xsl:template name="copy-attributes">
         <xsl:for-each select="@*">
@@ -49,7 +47,7 @@
 
     <xsl:template name="copy-container-attributes-and-override">
         <!-- copy all attributes of cache-container here -->
-        <xsl:copy-of select="ispn:cache-container[@name=$container.base]/@*"/>
+        <xsl:copy-of select="*[local-name() = 'cache-container' and starts-with(namespace-uri(), $infinispanns) and @name=$container.base]/@*"/>
         <!-- override the ones we need to override -->
         <xsl:attribute name="name">
             <xsl:value-of select="$container.name"/>
@@ -60,14 +58,14 @@
     </xsl:template>
 
     <!-- copy the subsystem -->
-    <xsl:template match="ispn:subsystem">
+    <xsl:template match="//*[local-name() = 'subsystem' and starts-with(namespace-uri(), $infinispanns)]">
         <xsl:copy>
             <xsl:call-template name="copy-attributes"/>
             <xsl:apply-templates select="@*|node()"/>
             <!-- create copy of specified stack element -->
-            <xsl:element name="cache-container" namespace="{$ispnns}">
+            <xsl:element name="cache-container" namespace="{namespace-uri()}">
                 <xsl:call-template name="copy-container-attributes-and-override"/>
-                <xsl:copy-of select="ispn:cache-container[@name=$container.base]/child::*"/>
+                <xsl:copy-of select="*[local-name() = 'cache-container' and starts-with(namespace-uri(), $infinispanns) and @name=$container.base]/child::*"/>
             </xsl:element>
         </xsl:copy>
     </xsl:template>
