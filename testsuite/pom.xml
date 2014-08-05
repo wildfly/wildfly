@@ -469,8 +469,8 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
-            <id>integ-clust.module.profile</id>
-            <activation><property><name>ts.clust</name></property></activation>
+            <id>integ-clustering.module.profile</id>
+            <activation><property><name>ts.clustering</name></property></activation>
             <modules><module>integration</module></modules>
         </profile>
         <profile>
