@@ -439,7 +439,20 @@
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="600000">
                     <xs:annotation>
-                        <xs:documentation></xs:documentation>
+                        <xs:documentation>Maximum lifespan in milliseconds of an entry placed in the L1 cache.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="capacity-factor" type="xs:float" default="1.0">
+                    <xs:annotation>
+                        <xs:documentation>Controls the proportion of entries that will reside on the local node, compared to the other nodes in the cluster.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="consistent-hash-strategy" type="tns:consistent-hash-strategy" default="INTRA_CACHE">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Defines the consistent hash strategy for the cache.
+                            This determines the consistent hash factory to use for generating the consistent hash.
+                        </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -1078,6 +1091,25 @@
             <xs:enumeration value="SQL_SERVER"/>
             <xs:enumeration value="SQLITE"/>
             <xs:enumeration value="SYBASE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="consistent-hash-strategy">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="INTER_CACHE">
+                <xs:annotation>
+                    <xs:documentation>
+                        A given cache key will have the same consistent hash on every node on any cache with the same topology.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="INTRA_CACHE">
+                <xs:annotation>
+                    <xs:documentation>
+                        A given cache key will have the same consistent hash on every node within a given cache with the same topology.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

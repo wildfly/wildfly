@@ -309,6 +309,18 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                         break;
                     }
                 }
+                case CAPACITY_FACTOR: {
+                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                        DistributedCacheResourceDefinition.CAPACITY_FACTOR.parseAndSetParameter(value, operation, reader);
+                        break;
+                    }
+                }
+                case CONSISTENT_HASH_STRATEGY: {
+                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                        DistributedCacheResourceDefinition.CONSISTENT_HASH_STRATEGY.parseAndSetParameter(value, operation, reader);
+                        break;
+                    }
+                }
                 default: {
                     this.parseClusteredCacheAttribute(reader, i, address, operations);
                 }

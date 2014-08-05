@@ -46,10 +46,12 @@ public class ModelKeys {
     static final String CACHE = "cache";
     // static final String CACHE_MODE = "cache-mode";
     static final String CACHE_CONTAINER = "cache-container";
+    static final String CAPACITY_FACTOR = "capacity-factor";
     static final String CHUNK_SIZE = "chunk-size";
     static final String CLASS = "class";
     static final String CLUSTER = "cluster";
     static final String CONCURRENCY_LEVEL = "concurrency-level";
+    static final String CONSISTENT_HASH_STRATEGY = "consistent-hash-strategy";
     static final String DATA_COLUMN = "data-column";
     static final String DATASOURCE = "datasource";
     static final String DIALECT = "dialect";

@@ -66,7 +66,7 @@
             </store>
             <indexing index="${test.xxx:NONE}" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" start="${test.xxx:EAGER}" segments="${test.xxx:2}"  async-marshalling="${test.xxx:true}" statistics-enabled="true">
+        <distributed-cache name="dist" mode="SYNC" l1-lifespan="${test.xxx:1200000}" owners="${test.xxx:4}" remote-timeout="${test.xxx:35000}" start="${test.xxx:EAGER}" segments="${test.xxx:2}" capacity-factor=${test.xxx:2.0}" consistent-hash-strategy="${test.xxx:INTER_CACHE}" async-marshalling="${test.xxx:true}" statistics-enabled="true">
             <locking acquire-timeout="${test.xxx:30000}" concurrency-level="${test.xxx:2000}" isolation="${test.xxx:READ_COMMITTED}" striping="${test.xxx:true}"/>
             <transaction mode="${test.xxx:FULL_XA}" stop-timeout="${test.xxx:60000}"  locking="${test.xxx:OPTIMISTIC}"/>
             <eviction max-entries="${test.xxx:20000}" strategy="${test.xxx:UNORDERED}"/>
