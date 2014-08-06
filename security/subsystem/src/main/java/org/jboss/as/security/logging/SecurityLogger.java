@@ -727,7 +727,7 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
-    @Message(id = NONE, value = "'%s' parameter type or length is incorrect")
+    @Message(id = 84, value = "'%s' parameter type or length is incorrect")
     IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
 
 }
