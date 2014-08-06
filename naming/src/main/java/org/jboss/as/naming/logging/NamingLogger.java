@@ -590,4 +590,15 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 63, value = "%s service not started")
     IllegalStateException serviceNotStarted(ServiceName serviceName);
 
+    /**
+     * Creates exception which indicate that part of JNDI URL is not correct. That is it does not follow
+     * 'java:context/restOfURL'
+     *
+     * @param culprit - section of JNDI URL which violates specification.
+     * @param context - whole entry
+     * @return a {@link NamingException} with explanation of error
+     */
+    @Message(id = 64, value = "Context part '%s' violates JNDI name syntax in '%s' entry.")
+    IllegalArgumentException jndiNameViolation(String culprit, String context);
+
 }
