@@ -193,7 +193,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
                             handler = AppClientModuleHandler.INSTANCE;
                         } else if (j2eeType.equals(J2EE_TYPE_EJB_MODULE) && actualDeployment.endsWith(".jar") &&
                                 (deploymentNode.hasDefined(SUBSYSTEM) && deploymentNode.get(SUBSYSTEM).asString().equals("ejb3"))) {
-                            handler = AppClientModuleHandler.INSTANCE;
+                            handler = EJBModuleHandler.INSTANCE;
                         } else if (j2eeType.equals(J2EE_TYPE_WEB_MODULE) && actualDeployment.endsWith(".war")) {
                             handler = WebModuleHandler.INSTANCE;
                         } else {
@@ -214,7 +214,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
 
         @Override
         Set<ObjectName> queryObjectNames(ModelReader reader, ObjectName name, QueryExp query) {
-            throw JSR77Logger.ROOT_LOGGER.shouldNotGetCalled();
+            return Collections.singleton(name);
         }
 
         @Override
@@ -242,7 +242,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
 
         @Override
         Set<ObjectName> queryObjectNames(ModelReader reader, ObjectName name, QueryExp query) {
-            throw JSR77Logger.ROOT_LOGGER.shouldNotGetCalled();
+            return Collections.singleton(name);
         }
 
         @Override
