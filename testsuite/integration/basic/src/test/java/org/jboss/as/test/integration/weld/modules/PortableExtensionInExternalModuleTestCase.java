@@ -22,10 +22,6 @@
 package org.jboss.as.test.integration.weld.modules;
 
 import static org.jboss.as.test.shared.ModuleUtils.createTestModule;
-import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
-
-import java.io.File;
 
 import javax.ejb.EJB;
 import javax.enterprise.inject.spi.BeanManager;
@@ -33,6 +29,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -68,6 +65,7 @@ public class PortableExtensionInExternalModuleTestCase {
     private static final String MANIFEST = "MANIFEST.MF";
 
     private static final String MODULE_NAME = "portable-extension";
+    private static TestModule testModule;
 
     @Inject
     private PortableExtension extension;
@@ -79,14 +77,13 @@ public class PortableExtensionInExternalModuleTestCase {
     private PortableExtensionLookup ejbInjectionTarget;
 
     public static void doSetup() throws Exception {
-        tearDown();
-        createTestModule(MODULE_NAME, MODULE_NAME + "-module.xml", PortableExtension.class, PortableExtensionLookup.class,
+        testModule = createTestModule(MODULE_NAME, MODULE_NAME + "-module.xml", PortableExtension.class, PortableExtensionLookup.class,
                 PortableExtensionModuleLookup.class);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        testModule.remove();
     }
 
     @Deployment
@@ -105,6 +102,7 @@ public class PortableExtensionInExternalModuleTestCase {
 
         WebArchive webSubdeployment = ShrinkWrap.create(WebArchive.class, "web-subdeployment.war")
                 .addClass(PortableExtensionInExternalModuleTestCase.class)
+                .addClass(TestModule.class)
                 .addAsWebInfResource(newBeans11Descriptor("annotated"), "beans.xml");
 
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(library).addAsModule(ejbSubdeployment)
