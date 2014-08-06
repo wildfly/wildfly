@@ -22,15 +22,12 @@
 package org.jboss.as.test.integration.weld.modules.access;
 
 import static org.jboss.as.test.shared.ModuleUtils.createTestModule;
-import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
-
-import java.io.File;
 
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -46,15 +43,18 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
 
     @Inject
     private InjectedBean injectedBean;
+    private static TestModule testModule;
 
     public static void doSetup() throws Exception {
         tearDown();
-        createTestModule("module-accessibility", "test-module.xml", BuiltInBeanWithPackagePrivateConstructor.class);
+        testModule = createTestModule("module-accessibility", "test-module.xml", BuiltInBeanWithPackagePrivateConstructor.class);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        if (testModule != null) {
+            testModule.remove();
+        }
     }
 
     @Deployment

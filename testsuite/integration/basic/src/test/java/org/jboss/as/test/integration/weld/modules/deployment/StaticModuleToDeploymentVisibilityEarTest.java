@@ -21,15 +21,11 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
-
-import java.io.File;
-
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -54,22 +50,22 @@ import org.junit.runner.RunWith;
 public class StaticModuleToDeploymentVisibilityEarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-ear";
+    private static TestModule testModule;
 
     public static void doSetup() throws Exception {
-        tearDown();
-        ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
+        testModule = ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        testModule.remove();
     }
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         WebArchive war1 = ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityEarTest.class, FooImpl1.class)
+                .addClasses(StaticModuleToDeploymentVisibilityEarTest.class, FooImpl1.class, TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         WebArchive war2 = ShrinkWrap.create(WebArchive.class)
                 .addClasses(FooImpl2.class)
