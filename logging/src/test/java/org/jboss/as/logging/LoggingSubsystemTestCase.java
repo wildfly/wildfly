@@ -31,6 +31,12 @@ import static org.jboss.as.logging.CommonAttributes.FILE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -58,6 +64,7 @@ import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -92,6 +99,40 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final FileInputStream in = new FileInputStream(new File(dir, "logging.properties"));
         config.configure(in);
         compare(currentModel, config);
+    }
+
+
+    @Test
+    public void testLegacyConfigurations() throws Exception {
+        // Get a list of all the logging_x_x.xml files
+        final Pattern pattern = Pattern.compile("(logging|expressions)_\\d+_\\d+\\.xml");
+        // Using the CP as that's the standardSubsystemTest will use to find the config file
+        final String cp = WildFlySecurityManager.getPropertyPrivileged("java.class.path", ".");
+        final String[] entries = cp.split(Pattern.quote(File.pathSeparator));
+        final List<String> configs = new ArrayList<>();
+        for (String entry : entries) {
+            final Path path = Paths.get(entry);
+            if (Files.isDirectory(path)) {
+                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                        final String name = file.getFileName().toString();
+                        if (pattern.matcher(name).matches()) {
+                            configs.add("/" + name);
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+        }
+
+        // The paths shouldn't be empty
+        Assert.assertFalse("No configs were found", configs.isEmpty());
+
+        for (String configId : configs) {
+            // Run the standard subsystem test, but don't compare the XML as it should never match
+            standardSubsystemTest(configId, false);
+        }
     }
 
     @Test
