@@ -22,11 +22,14 @@
 
 package org.jboss.as.naming.deployment;
 
+import javax.naming.NamingException;
+
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingLogger;
+import org.jboss.as.naming.NamingMessages;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.external.ExternalContexts;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -34,8 +37,6 @@ import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import javax.naming.NamingException;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
@@ -126,6 +127,7 @@ public class ContextNames {
      * @param comp    the component name
      * @param context the context to check
      * @return the BindInfo
+     * @throws NamingException - if context violates JNDI contract
      */
     public static BindInfo bindInfoFor(String app, String module, String comp, String context) {
         if (context.startsWith("java:")) {
@@ -140,6 +142,7 @@ public class ContextNames {
                 namespace = context.substring(5, i);
             }
 
+            sanitazeNameSpace(namespace,context);
             if (namespace.equals("global")) {
                 return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, context.substring(12));
             } else if (namespace.equals("jboss")) {
@@ -163,6 +166,13 @@ public class ContextNames {
         }
     }
 
+    private static void sanitazeNameSpace(final String namespace, final String inContext) {
+        // URL might be:
+        // java:context/restOfURL - where nameSpace is part between ':' and '/'
+        if (namespace.contains(":")) {
+            throw NamingMessages.MESSAGES.jndiNameViolation(namespace, inContext);
+        }
+    }
     /**
      * Get the service name of an environment entry
      *
@@ -172,6 +182,7 @@ public class ContextNames {
      * @param useCompNamespace If the component has its own comp namespace
      * @param envEntryName     The env entry name
      * @return the service name or {@code null} if there is no service
+     * @throws NamingException if 'envEntryName' violates JNDI contract.
      */
     public static BindInfo bindInfoForEnvEntry(String app, String module, String comp, boolean useCompNamespace, final String envEntryName) {
         if (envEntryName.startsWith("java:")) {
