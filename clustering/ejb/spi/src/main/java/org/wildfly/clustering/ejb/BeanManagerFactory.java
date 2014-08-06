@@ -30,6 +30,6 @@ package org.wildfly.clustering.ejb;
  * @param <I> the bean identifier type
  * @param <T> the bean type
  */
-public interface BeanManagerFactory<G, I, T> {
-    BeanManager<G, I, T> createBeanManager(IdentifierFactory<G> groupIdentifierFactory, IdentifierFactory<I> beanIdentifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
+public interface BeanManagerFactory<G, I, T, B extends Batch> {
+    BeanManager<G, I, T, B> createBeanManager(IdentifierFactory<G> groupIdentifierFactory, IdentifierFactory<I> beanIdentifierFactory, PassivationListener<T> passivationListener, RemoveListener<T> removeListener);
 }

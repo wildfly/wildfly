@@ -53,21 +53,21 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     }
 
     private final String name;
-    private final BeanManagerFactoryBuilder<UUID, K> builder;
+    private final BeanManagerFactoryBuilder<UUID, K, Batch> builder;
     private final BeanManagerFactoryBuilderConfiguration config;
 
     public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderConfiguration config) {
         this(name, load(), config);
     }
 
-    private static BeanManagerFactoryBuilderProvider load() {
-        for (BeanManagerFactoryBuilderProvider provider: ServiceLoader.load(BeanManagerFactoryBuilderProvider.class, BeanManagerFactoryBuilderProvider.class.getClassLoader())) {
+    private static BeanManagerFactoryBuilderProvider<Batch> load() {
+        for (BeanManagerFactoryBuilderProvider<Batch> provider: ServiceLoader.load(BeanManagerFactoryBuilderProvider.class, BeanManagerFactoryBuilderProvider.class.getClassLoader())) {
             return provider;
         }
         return null;
     }
 
-    public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderProvider provider, BeanManagerFactoryBuilderConfiguration config) {
+    public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderProvider<Batch> provider, BeanManagerFactoryBuilderConfiguration config) {
         this.name = name;
         this.config = config;
         this.builder = provider.<UUID, K>getBeanManagerFactoryBuilder(name, config);

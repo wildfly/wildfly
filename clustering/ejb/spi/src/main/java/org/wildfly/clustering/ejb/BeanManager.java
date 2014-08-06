@@ -30,7 +30,7 @@ package org.wildfly.clustering.ejb;
  * @param <I> the bean identifier type
  * @param <T> the bean instance type
  */
-public interface BeanManager<G, I, T> extends AffinitySupport<I>, BeanManagerStatistics {
+public interface BeanManager<G, I, T, B extends Batch> extends AffinitySupport<I>, BeanManagerStatistics {
     Bean<G, I, T> createBean(I id, G group, T bean);
     Bean<G, I, T> findBean(I id);
 
@@ -39,7 +39,7 @@ public interface BeanManager<G, I, T> extends AffinitySupport<I>, BeanManagerSta
     IdentifierFactory<G> getGroupIdentifierFactory();
     IdentifierFactory<I> getBeanIdentifierFactory();
 
-    Batcher getBatcher();
+    Batcher<B> getBatcher();
 
     void start();
     void stop();

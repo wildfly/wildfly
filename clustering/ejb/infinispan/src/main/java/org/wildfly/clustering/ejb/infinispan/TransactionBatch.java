@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;
+import javax.transaction.Transaction;
+
+import org.wildfly.clustering.ejb.Batch;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanBeanManagerFactoryBuilderProvider implements BeanManagerFactoryBuilderProvider<TransactionBatch> {
-
-    @Override
-    public <G, I> BeanManagerFactoryBuilder<G, I, TransactionBatch> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config) {
-        return new InfinispanBeanManagerFactoryBuilder<>(name, config);
-    }
+public interface TransactionBatch extends Batch {
+    /**
+     * Returns the transaction associated with this batch
+     * @return a transaction
+     */
+    Transaction getTransaction();
 }

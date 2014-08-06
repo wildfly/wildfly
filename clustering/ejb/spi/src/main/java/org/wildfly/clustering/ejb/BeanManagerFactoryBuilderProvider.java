@@ -24,6 +24,6 @@ package org.wildfly.clustering.ejb;
 /**
  * @author Paul Ferraro
  */
-public interface BeanManagerFactoryBuilderProvider {
-    <G, I> BeanManagerFactoryBuilder<G, I> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config);
+public interface BeanManagerFactoryBuilderProvider<B extends Batch> {
+    <G, I> BeanManagerFactoryBuilder<G, I, B> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config);
 }

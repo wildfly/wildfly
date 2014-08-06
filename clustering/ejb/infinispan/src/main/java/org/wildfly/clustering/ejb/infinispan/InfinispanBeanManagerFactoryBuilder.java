@@ -54,7 +54,7 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  * @param <G> the group identifier type
  * @param <I> the bean identifier type
  */
-public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFactoryBuilder<G, I> {
+public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFactoryBuilder<G, I, TransactionBatch> {
 
     private static final ThreadFactory EXPIRATION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
     private static final ThreadFactory EVICTION_THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
@@ -99,18 +99,18 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        target.addService(deploymentUnitServiceName.append(this.name, "expiration"), new RemoveOnCancelScheduledExecutorService(EXPIRATION_THREAD_FACTORY))
+        RemoveOnCancelScheduledExecutorService.build(target, deploymentUnitServiceName.append(this.name, "expiration"), EXPIRATION_THREAD_FACTORY)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        target.addService(deploymentUnitServiceName.append(this.name, "eviction"), new CachedThreadPoolExecutorService(EVICTION_THREAD_FACTORY))
+        CachedThreadPoolExecutorService.build(target, deploymentUnitServiceName.append(this.name, "eviction"), EVICTION_THREAD_FACTORY)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
     }
 
     @Override
-    public <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T>> build(ServiceTarget target, ServiceName name, BeanContext context) {
+    public <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T, TransactionBatch>> build(ServiceTarget target, ServiceName name, BeanContext context) {
         return InfinispanBeanManagerFactory.build(this.name, target, name, this.config, context);
     }
 }

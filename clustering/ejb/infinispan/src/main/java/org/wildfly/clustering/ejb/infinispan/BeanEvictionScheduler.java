@@ -43,11 +43,11 @@ import org.wildfly.clustering.ejb.Bean;
 public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> {
 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
-    final Batcher batcher;
+    final Batcher<TransactionBatch> batcher;
     final Evictor<I> evictor;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(Batcher batcher, Evictor<I> evictor, PassivationConfiguration<?> config) {
+    public BeanEvictionScheduler(Batcher<TransactionBatch> batcher, Evictor<I> evictor, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;

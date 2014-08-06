@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.ejb.infinispan;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.junit.Test;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ejb.BatchContext;
 import org.wildfly.clustering.ejb.Batcher;
 
 /**
@@ -39,24 +39,22 @@ import org.wildfly.clustering.ejb.Batcher;
 public class InfinispanBatcherTestCase {
     private final TransactionManager tm = mock(TransactionManager.class);
 
-    private final Batcher batcher = new InfinispanBatcher(this.tm);
+    private final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.tm);
 
     @Test
     public void commit() throws Exception {
         Transaction tx = mock(Transaction.class);
 
-        when(this.tm.getTransaction()).thenReturn(null);
-        when(this.tm.suspend()).thenReturn(tx);
+        when(this.tm.getTransaction()).thenReturn(null, tx);
 
-        Batch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.startBatch();
 
         verify(this.tm).begin();
 
-        when(this.tm.suspend()).thenReturn(null);
+        assertSame(tx, batch.getTransaction());
 
         batch.close();
 
-        verify(this.tm).resume(same(tx));
         verify(this.tm).commit();
     }
 
@@ -64,77 +62,60 @@ public class InfinispanBatcherTestCase {
     public void rollback() throws Exception {
         Transaction tx = mock(Transaction.class);
 
-        when(this.tm.getTransaction()).thenReturn(null);
-        when(this.tm.suspend()).thenReturn(tx);
+        when(this.tm.getTransaction()).thenReturn(null, tx);
 
-        Batch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.startBatch();
 
         verify(this.tm).begin();
 
-        when(this.tm.suspend()).thenReturn(null);
+        assertSame(tx, batch.getTransaction());
 
         batch.discard();
 
-        verify(this.tm).resume(same(tx));
         verify(this.tm).rollback();
     }
 
     @Test
     public void existing() throws Exception {
-        Transaction existing = mock(Transaction.class);
+        Transaction tx = mock(Transaction.class);
 
-        when(this.tm.getTransaction()).thenReturn(existing);
+        when(this.tm.getTransaction()).thenReturn(tx);
 
-        Batch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.startBatch();
 
-        verify(this.tm, never()).suspend();
         verify(this.tm, never()).begin();
+
+        assertSame(tx, batch.getTransaction());
 
         batch.close();
 
         verify(this.tm, never()).commit();
-        verify(this.tm, never()).suspend();
-        verify(this.tm, never()).resume(any(Transaction.class));
+
+        batch.discard();
+
+        verify(this.tm, never()).rollback();
     }
 
     @Test
-    public void nested() throws Exception {
+    public void activate() throws Exception {
         Transaction tx = mock(Transaction.class);
 
-        when(this.tm.getTransaction()).thenReturn(null);
-        when(this.tm.suspend()).thenReturn(tx);
+        when(this.tm.getTransaction()).thenReturn(tx);
 
-        Batch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.startBatch();
 
-        verify(this.tm).begin();
+        assertSame(tx, batch.getTransaction());
 
         Transaction existing = mock(Transaction.class);
 
         when(this.tm.suspend()).thenReturn(existing);
 
-        batch.close();
+        BatchContext context = this.batcher.resume(batch);
 
         verify(this.tm).resume(same(tx));
-        verify(this.tm).commit();
+
+        context.close();
+
         verify(this.tm).resume(same(existing));
-    }
-
-    @Test
-    public void resume() throws Exception {
-        Transaction tx = mock(Transaction.class);
-
-        when(this.tm.getTransaction()).thenReturn(null);
-        when(this.tm.suspend()).thenReturn(tx);
-
-        Batch batch = this.batcher.startBatch();
-
-        verify(this.tm).begin();
-
-        when(this.tm.suspend()).thenReturn(tx);
-
-        batch.close();
-
-        verify(this.tm, times(1)).resume(same(tx));
-        verify(this.tm).commit();
     }
 }

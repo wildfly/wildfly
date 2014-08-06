@@ -87,8 +87,8 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     @Before
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void beforeTestMethod() {
-        this.start(CONTAINERS);
-        this.deploy(DEPLOYMENTS);
+        NodeUtil.start(this.controller, CONTAINERS);
+        NodeUtil.deploy(this.deployer, DEPLOYMENTS);
     }
 
     /**
@@ -97,26 +97,26 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     @After
     @RunAsClient // Does not work, see https://issues.jboss.org/browse/ARQ-351
     public void afterTestMethod() {
-        this.start(CONTAINERS);
-        this.undeploy(DEPLOYMENTS);
+        NodeUtil.start(this.controller, CONTAINERS);
+        NodeUtil.undeploy(this.deployer, DEPLOYMENTS);
     }
 
     // Node and deployment lifecycle management convenience methods
 
     protected void start(String... containers) {
-        NodeUtil.start(controller, containers);
+        NodeUtil.start(this.controller, containers);
     }
 
     protected void stop(String... containers) {
-        NodeUtil.stop(controller, containers);
+        NodeUtil.stop(this.controller, containers);
     }
 
     protected void deploy(String... deployments) {
-        NodeUtil.deploy(deployer, deployments);
+        NodeUtil.deploy(this.deployer, deployments);
     }
 
     protected void undeploy(String... deployments) {
-        NodeUtil.undeploy(deployer, deployments);
+        NodeUtil.undeploy(this.deployer, deployments);
     }
 
     protected String findDeployment(String node) {
@@ -145,48 +145,50 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
     public class RestartLifecycle implements Lifecycle {
         @Override
         public void start(String... nodes) {
-            for (String node: nodes) {
-                ClusterAbstractTestCase.this.controller.start(this.getContainer(node));
-            }
+            ClusterAbstractTestCase.this.start(this.getContainers(nodes));
         }
 
         @Override
         public void stop(String... nodes) {
-            for (String node: nodes) {
-                ClusterAbstractTestCase.this.controller.stop(this.getContainer(node));
-            }
+            ClusterAbstractTestCase.this.stop(this.getContainers(nodes));
         }
 
-        private String getContainer(String node) {
-            String container = NODE_TO_CONTAINER.get(node);
-            if (container == null) {
-                throw new IllegalArgumentException(node);
+        private String[] getContainers(String... nodes) {
+            String[] containers = new String[nodes.length];
+            for (int i = 0; i < nodes.length; ++i) {
+                String node = nodes[i];
+                String container = NODE_TO_CONTAINER.get(node);
+                if (container == null) {
+                    throw new IllegalArgumentException(node);
+                }
+                containers[i] = container;
             }
-            return container;
+            return containers;
         }
     }
 
     public class RedeployLifecycle implements Lifecycle {
         @Override
         public void start(String... nodes) {
-            for (String node: nodes) {
-                ClusterAbstractTestCase.this.deployer.deploy(this.getDeployment(node));
-            }
+            ClusterAbstractTestCase.this.deploy(this.getDeployments(nodes));
         }
 
         @Override
         public void stop(String... nodes) {
-            for (String node: nodes) {
-                ClusterAbstractTestCase.this.deployer.undeploy(this.getDeployment(node));
-            }
+            ClusterAbstractTestCase.this.undeploy(this.getDeployments(nodes));
         }
 
-        private String getDeployment(String node) {
-            String deployment = NODE_TO_DEPLOYMENT.get(node);
-            if (deployment == null) {
-                throw new IllegalArgumentException(node);
+        private String[] getDeployments(String... nodes) {
+            String[] deployments = new String[nodes.length];
+            for (int i = 0; i < nodes.length; ++i) {
+                String node = nodes[i];
+                String deployment = NODE_TO_DEPLOYMENT.get(node);
+                if (deployment == null) {
+                    throw new IllegalArgumentException(node);
+                }
+                deployments[i] = deployment;
             }
-            return deployment;
+            return deployments;
         }
     }
 }
