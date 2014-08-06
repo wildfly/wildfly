@@ -21,20 +21,20 @@
  */
 package org.wildfly.clustering.web.undertow.sso;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.sso.SSO;
-import org.wildfly.clustering.web.sso.Sessions;
-
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionManager;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.web.sso.SSO;
+import org.wildfly.clustering.web.sso.Sessions;
 
 /**
  * Adapts an {@link SSO} to a {@link SingleSignOn}.

@@ -40,6 +40,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;

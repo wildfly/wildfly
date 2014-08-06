@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;

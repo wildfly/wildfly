@@ -1751,6 +1751,15 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ee-infinispan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ee-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
         </dependency>
         <dependency>

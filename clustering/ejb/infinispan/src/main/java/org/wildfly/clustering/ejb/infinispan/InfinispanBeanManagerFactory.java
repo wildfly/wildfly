@@ -42,6 +42,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;

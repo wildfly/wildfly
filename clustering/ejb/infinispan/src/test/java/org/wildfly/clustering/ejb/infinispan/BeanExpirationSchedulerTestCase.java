@@ -30,8 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.wildfly.clustering.ejb.Batch;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
 

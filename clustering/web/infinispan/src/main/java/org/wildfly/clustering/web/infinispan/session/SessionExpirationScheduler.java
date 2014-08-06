@@ -34,8 +34,9 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
@@ -48,11 +49,11 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
 public class SessionExpirationScheduler implements Scheduler {
 
     final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
-    final Batcher batcher;
+    final Batcher<TransactionBatch> batcher;
     final Remover<String> remover;
     private final ScheduledExecutorService executor;
 
-    public SessionExpirationScheduler(Batcher batcher, Remover<String> remover) {
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover) {
         this(batcher, remover, createScheduledExecutor(createThreadFactory()));
     }
 
@@ -67,7 +68,7 @@ public class SessionExpirationScheduler implements Scheduler {
         return executor;
     }
 
-    public SessionExpirationScheduler(Batcher batcher, Remover<String> remover, ScheduledExecutorService executor) {
+    public SessionExpirationScheduler(Batcher<TransactionBatch> batcher, Remover<String> remover, ScheduledExecutorService executor) {
         this.batcher = batcher;
         this.remover = remover;
         this.executor = executor;

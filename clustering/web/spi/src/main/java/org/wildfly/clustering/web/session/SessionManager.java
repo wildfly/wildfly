@@ -24,10 +24,11 @@ package org.wildfly.clustering.web.session;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 
-public interface SessionManager<L> extends IdentifierFactory<String> {
+public interface SessionManager<L, B extends Batch> extends IdentifierFactory<String> {
 
     /**
      * Indicates whether or not the session with the specified identifier is known to this session manager.
@@ -72,7 +73,7 @@ public interface SessionManager<L> extends IdentifierFactory<String> {
      * Exposes the batching mechanism used by this session manager.
      * @return a batcher.
      */
-    Batcher getBatcher();
+    Batcher<B> getBatcher();
 
     /**
      * Returns the identifiers of those sessions that are active on this node.

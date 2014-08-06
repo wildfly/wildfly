@@ -22,7 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**

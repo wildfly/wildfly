@@ -30,8 +30,8 @@ import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ejb.Batch;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 

@@ -22,7 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 
 /**
@@ -40,7 +40,7 @@ public class SessionEvictionCommand implements Command<Void, SessionEvictionCont
 
     @Override
     public Void execute(SessionEvictionContext context) throws Exception {
-        Batch batch = context.getBatcher().startBatch();
+        TransactionBatch batch = context.getBatcher().startBatch();
         boolean success = false;
         try {
             InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);

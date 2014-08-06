@@ -19,20 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.clustering.ejb.infinispan;
-
-import javax.transaction.Transaction;
-
-import org.wildfly.clustering.ejb.Batch;
+package org.wildfly.clustering.ee;
 
 /**
+ * Handles batch context switching.
  * @author Paul Ferraro
  */
-public interface TransactionBatch extends Batch {
+public interface BatchContext extends AutoCloseable {
     /**
-     * Returns the transaction associated with this batch
-     * @return a transaction
+     * Closes this batch context.
      */
-    Transaction getTransaction();
+    @Override
+    void close();
 }

@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -46,9 +46,9 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
     private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
-    private final SessionManager<LocalSessionContext> manager;
+    private final SessionManager<LocalSessionContext, Batch> manager;
 
-    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext> manager) {
+    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext, Batch> manager) {
         this.deploymentName = deploymentName;
         this.manager = manager;
     }
@@ -59,7 +59,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public SessionManager<LocalSessionContext> getSessionManager() {
+    public SessionManager<LocalSessionContext, Batch> getSessionManager() {
         return this.manager;
     }
 

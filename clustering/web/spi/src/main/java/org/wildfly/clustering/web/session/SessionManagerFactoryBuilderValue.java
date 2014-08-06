@@ -24,31 +24,32 @@ package org.wildfly.clustering.web.session;
 import java.util.ServiceLoader;
 
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.ee.Batch;
 
 /**
  * Uses a service loader to load the web session clustering service provider.
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryBuilderValue implements Value<SessionManagerFactoryBuilder> {
-    private final SessionManagerFactoryBuilder builder;
+public class SessionManagerFactoryBuilderValue implements Value<SessionManagerFactoryBuilder<Batch>> {
+    private final SessionManagerFactoryBuilder<Batch> builder;
 
     public SessionManagerFactoryBuilderValue() {
         this(load());
     }
 
-    public SessionManagerFactoryBuilderValue(SessionManagerFactoryBuilder builder) {
+    public SessionManagerFactoryBuilderValue(SessionManagerFactoryBuilder<Batch> builder) {
         this.builder = builder;
     }
 
-    private static SessionManagerFactoryBuilder load() {
-        for (SessionManagerFactoryBuilder builder: ServiceLoader.load(SessionManagerFactoryBuilder.class, SessionManagerFactoryBuilder.class.getClassLoader())) {
+    private static SessionManagerFactoryBuilder<Batch> load() {
+        for (SessionManagerFactoryBuilder<Batch> builder: ServiceLoader.load(SessionManagerFactoryBuilder.class, SessionManagerFactoryBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
     @Override
-    public SessionManagerFactoryBuilder getValue() {
+    public SessionManagerFactoryBuilder<Batch> getValue() {
         return this.builder;
     }
 }

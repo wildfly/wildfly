@@ -29,7 +29,8 @@ import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * Schedules a bean for eviction.
