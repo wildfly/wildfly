@@ -39,6 +39,7 @@ import java.net.URL;
  */
 @WebServlet(urlPatterns = CdiServlet.SERVLET_PATH)
 public class CdiServlet extends HttpServlet {
+    private static final long serialVersionUID = 5167789049451718160L;
 
     public static final String SERVLET_NAME = "cdi";
     static final String SERVLET_PATH = "/" + SERVLET_NAME;
@@ -52,7 +53,7 @@ public class CdiServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID_HEADER, session.getId());
-        resp.setIntHeader(COUNT, incrementor.increment());
+        resp.setIntHeader(COUNT, this.incrementor.increment());
         resp.getWriter().write("Success");
     }
 
