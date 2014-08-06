@@ -62,7 +62,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -188,12 +187,16 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             case VERSION_1_1_0:
             case VERSION_1_2_0:
             case VERSION_1_3_0: {
-                AttributeTransformationDescriptionBuilder attributeBuilder = rootResourceBuilder.getAttributeBuilder();
-                for (SimpleAttributeDefinition attribute : ATTRIBUTES) {
-                    attributeBuilder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, attribute.getDefaultValue()), attribute)
-                            .addRejectCheck(RejectAttributeChecker.DEFINED, attribute);
-                }
-                attributeBuilder.end();
+                rootResourceBuilder.getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ADD_LOGGING_API_DEPENDENCIES.getDefaultValue()), ADD_LOGGING_API_DEPENDENCIES)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ADD_LOGGING_API_DEPENDENCIES)
+                        .end();
+            }
+            case VERSION_1_4_0: {
+                rootResourceBuilder.getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, USE_DEPLOYMENT_LOGGING_CONFIG.getDefaultValue()), USE_DEPLOYMENT_LOGGING_CONFIG)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, USE_DEPLOYMENT_LOGGING_CONFIG)
+                        .end();
             }
         }
     }
