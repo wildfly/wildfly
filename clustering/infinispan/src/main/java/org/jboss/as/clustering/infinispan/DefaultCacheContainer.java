@@ -34,6 +34,8 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 
 /**
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
@@ -41,6 +43,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  */
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
 
+    private final BatcherFactory batcherFactory;
     private final String defaultCacheName;
 
     public DefaultCacheContainer(GlobalConfiguration global, String defaultCacheName) {
@@ -52,8 +55,13 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     }
 
     public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCacheName) {
+        this(container, defaultCacheName, new InfinispanBatcherFactory());
+    }
+
+    public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCacheName, BatcherFactory batcherFactory) {
         super(container);
         this.defaultCacheName = defaultCacheName;
+        this.batcherFactory = batcherFactory;
     }
 
     @Override
@@ -101,7 +109,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
         Cache<K, V> cache = this.cm.<K, V>getCache(this.getCacheName(cacheName), createIfAbsent);
-        return (cache != null) ? new DelegatingCache<>(cache) : null;
+        return (cache != null) ? new DelegatingCache<>(this, this.batcherFactory, cache) : null;
     }
 
     /**
@@ -181,38 +189,54 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.cm.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
     }
 
-    private class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
-        private final boolean batchingEnabled;
+    private static class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
+        private static final ThreadLocal<Batch> CURRENT_BATCH = new ThreadLocal<>();
+        private final EmbeddedCacheManager manager;
+        private final Batcher<? extends Batch> batcher;
 
-        DelegatingCache(AdvancedCache<K, V> cache) {
+        DelegatingCache(final EmbeddedCacheManager manager, final BatcherFactory batcherFactory, AdvancedCache<K, V> cache) {
             super(cache, new AdvancedCacheWrapper<K, V>() {
                     @Override
                     public AdvancedCache<K, V> wrap(AdvancedCache<K, V> cache) {
-                        return new DelegatingCache<>(cache);
+                        return new DelegatingCache<>(manager, batcherFactory, cache);
                     }
                 }
             );
-            this.batchingEnabled = cache.getCacheConfiguration().invocationBatching().enabled();
+            this.manager = manager;
+            this.batcher = batcherFactory.createBatcher(cache);
         }
 
-        DelegatingCache(Cache<K, V> cache) {
-            this(cache.getAdvancedCache());
+        DelegatingCache(EmbeddedCacheManager manager, BatcherFactory batcherFactory, Cache<K, V> cache) {
+            this(manager, batcherFactory, cache.getAdvancedCache());
         }
 
         @Override
         public EmbeddedCacheManager getCacheManager() {
-            return DefaultCacheContainer.this;
+            return this.manager;
         }
 
         @Override
         public boolean startBatch() {
-            return this.batchingEnabled ? this.cache.startBatch() : false;
+            if (this.batcher == null) return false;
+            Batch batch = CURRENT_BATCH.get();
+            if (batch != null) return false;
+            CURRENT_BATCH.set(this.batcher.createBatch());
+            return true;
         }
 
         @Override
         public void endBatch(boolean successful) {
-            if (this.batchingEnabled) {
-                this.cache.endBatch(successful);
+            Batch batch = CURRENT_BATCH.get();
+            if (batch != null) {
+                try {
+                    if (successful) {
+                        batch.close();
+                    } else {
+                        batch.discard();
+                    }
+                } finally {
+                    CURRENT_BATCH.remove();
+                }
             }
         }
 

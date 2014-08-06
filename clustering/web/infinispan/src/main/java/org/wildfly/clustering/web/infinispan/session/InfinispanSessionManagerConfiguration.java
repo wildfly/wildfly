@@ -24,8 +24,9 @@ package org.wildfly.clustering.web.infinispan.session;
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.SessionContext;
 
@@ -37,7 +38,7 @@ public interface InfinispanSessionManagerConfiguration {
     SessionContext getSessionContext();
     Cache<String, ?> getCache();
     IdentifierFactory<String> getIdentifierFactory();
-    Batcher getBatcher();
+    Batcher<TransactionBatch> getBatcher();
     CommandDispatcherFactory getCommandDispatcherFactory();
     NodeFactory<Address> getNodeFactory();
     int getMaxActiveSessions();

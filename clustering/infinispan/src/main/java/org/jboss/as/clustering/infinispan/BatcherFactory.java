@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.invoker;
+package org.jboss.as.clustering.infinispan;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
-/**
- * Invoker that starts and ends a batch, if none exists.
- * @author Paul Ferraro
- */
-public class BatchCacheInvoker implements CacheInvoker {
+public interface BatcherFactory {
 
-    private final CacheInvoker invoker;
-
-    public BatchCacheInvoker(CacheInvoker invoker) {
-        this.invoker = invoker;
-    }
-
-    public BatchCacheInvoker() {
-        this(new SimpleCacheInvoker());
-    }
-
-    @Override
-    public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation, Flag... flags) {
-        boolean started = cache.startBatch();
-        boolean success = false;
-        try {
-            R result = this.invoker.invoke(cache, operation, flags);
-            success = true;
-            return result;
-        } finally {
-            if (started) {
-                cache.endBatch(success);
-            }
-        }
-    }
+    Batcher<TransactionBatch> createBatcher(Cache<?, ?> cache);
 }

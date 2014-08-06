@@ -43,6 +43,7 @@ public class DistributableSessionManagerFactoryService extends AbstractService<S
         ;
     }
 
+    @SuppressWarnings("rawtypes")
     private final InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> factory = new InjectedValue<>();
 
     @Override

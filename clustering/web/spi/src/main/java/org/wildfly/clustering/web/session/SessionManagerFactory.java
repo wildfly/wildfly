@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.session;
 
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 
@@ -28,12 +29,12 @@ import org.wildfly.clustering.web.LocalContextFactory;
  * A factory for creating a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory {
+public interface SessionManagerFactory<B extends Batch> {
     /**
      * Create as session manager using the specified context and identifier factory.
      * @param context a session context
      * @param idFactory a session identifier factory
      * @return a new session manager
      */
-    <C> SessionManager<C> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
+    <C> SessionManager<C, B> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
 }

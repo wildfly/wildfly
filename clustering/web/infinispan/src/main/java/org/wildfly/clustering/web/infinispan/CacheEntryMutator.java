@@ -50,7 +50,7 @@ public class CacheEntryMutator<K, V> implements Mutator {
         this.id = id;
         this.value = value;
         this.flags = EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags);
-        this.mutated = cache.getCacheConfiguration().invocationBatching().enabled() ? new AtomicBoolean(false) : null;
+        this.mutated = cache.getCacheConfiguration().transaction().transactionMode().isTransactional() ? new AtomicBoolean(false) : null;
     }
 
     @Override

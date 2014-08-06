@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;

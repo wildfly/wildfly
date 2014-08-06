@@ -31,16 +31,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
 public class SessionExpirationSchedulerTestCase {
     @Test
     public void test() throws InterruptedException {
-        Batcher batcher = mock(Batcher.class);
-        Batch batch = mock(Batch.class);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
+        TransactionBatch batch = mock(TransactionBatch.class);
         Remover<String> remover = mock(Remover.class);
         ImmutableSession immortalSession = mock(ImmutableSession.class);
         ImmutableSession expiringSession = mock(ImmutableSession.class);
@@ -52,7 +52,7 @@ public class SessionExpirationSchedulerTestCase {
         String expiringSessionId = "expiring";
         String canceledSessionId = "canceled";
 
-        when(batcher.startBatch()).thenReturn(batch);
+        when(batcher.createBatch()).thenReturn(batch);
 
         when(immortalSession.isValid()).thenReturn(true);
         when(expiringSession.isValid()).thenReturn(true);

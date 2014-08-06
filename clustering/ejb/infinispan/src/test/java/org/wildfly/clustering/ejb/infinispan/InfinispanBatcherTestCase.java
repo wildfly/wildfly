@@ -29,8 +29,10 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.junit.Test;
-import org.wildfly.clustering.ejb.BatchContext;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * @author Paul Ferraro
@@ -47,7 +49,7 @@ public class InfinispanBatcherTestCase {
 
         when(this.tm.getTransaction()).thenReturn(null, tx);
 
-        TransactionBatch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.createBatch();
 
         verify(this.tm).begin();
 
@@ -64,7 +66,7 @@ public class InfinispanBatcherTestCase {
 
         when(this.tm.getTransaction()).thenReturn(null, tx);
 
-        TransactionBatch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.createBatch();
 
         verify(this.tm).begin();
 
@@ -81,7 +83,7 @@ public class InfinispanBatcherTestCase {
 
         when(this.tm.getTransaction()).thenReturn(tx);
 
-        TransactionBatch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.createBatch();
 
         verify(this.tm, never()).begin();
 
@@ -102,7 +104,7 @@ public class InfinispanBatcherTestCase {
 
         when(this.tm.getTransaction()).thenReturn(tx);
 
-        TransactionBatch batch = this.batcher.startBatch();
+        TransactionBatch batch = this.batcher.createBatch();
 
         assertSame(tx, batch.getTransaction());
 
@@ -110,7 +112,7 @@ public class InfinispanBatcherTestCase {
 
         when(this.tm.suspend()).thenReturn(existing);
 
-        BatchContext context = this.batcher.resume(batch);
+        BatchContext context = this.batcher.resumeBatch(batch);
 
         verify(this.tm).resume(same(tx));
 

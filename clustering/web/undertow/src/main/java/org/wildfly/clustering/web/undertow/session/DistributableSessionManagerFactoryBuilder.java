@@ -32,6 +32,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderValue;
@@ -49,13 +50,13 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
         strategies.put(ReplicationGranularity.ATTRIBUTE, SessionManagerConfiguration.SessionAttributePersistenceStrategy.FINE);
     }
 
-    private final SessionManagerFactoryBuilder builder;
+    private final SessionManagerFactoryBuilder<Batch> builder;
 
     public DistributableSessionManagerFactoryBuilder() {
         this(new SessionManagerFactoryBuilderValue().getValue());
     }
 
-    public DistributableSessionManagerFactoryBuilder(SessionManagerFactoryBuilder builder) {
+    public DistributableSessionManagerFactoryBuilder(SessionManagerFactoryBuilder<Batch> builder) {
         this.builder = builder;
     }
 

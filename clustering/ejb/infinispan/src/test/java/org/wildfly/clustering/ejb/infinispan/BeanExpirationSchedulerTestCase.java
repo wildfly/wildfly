@@ -30,15 +30,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
-import org.wildfly.clustering.ejb.Batch;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
 
 public class BeanExpirationSchedulerTestCase {
     @Test
     public void testImmortal() throws InterruptedException {
-        Batcher batcher = mock(Batcher.class);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
@@ -56,21 +56,21 @@ public class BeanExpirationSchedulerTestCase {
             Thread.sleep(1000);
         }
 
-        verify(batcher, never()).startBatch();
+        verify(batcher, never()).createBatch();
         verify(remover, never()).remove(beanId, listener);
     }
 
     @Test
     public void testExpire() throws InterruptedException {
-        Batcher batcher = mock(Batcher.class);
-        Batch batch = mock(Batch.class);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
+        TransactionBatch batch = mock(TransactionBatch.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "expiring";
 
         when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
-        when(batcher.startBatch()).thenReturn(batch);
+        when(batcher.createBatch()).thenReturn(batch);
 
         when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MILLISECONDS));
         when(config.getRemoveListener()).thenReturn(listener);
@@ -87,7 +87,7 @@ public class BeanExpirationSchedulerTestCase {
 
     @Test
     public void testCancel() throws InterruptedException {
-        Batcher batcher = mock(Batcher.class);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
         BeanRemover<String, Object> remover = mock(BeanRemover.class);
         ExpirationConfiguration<Object> config = mock(ExpirationConfiguration.class);
         RemoveListener<Object> listener = mock(RemoveListener.class);
@@ -108,6 +108,6 @@ public class BeanExpirationSchedulerTestCase {
         }
 
         verify(remover, never()).remove(beanId, listener);
-        verify(batcher, never()).startBatch();
+        verify(batcher, never()).createBatch();
     }
 }

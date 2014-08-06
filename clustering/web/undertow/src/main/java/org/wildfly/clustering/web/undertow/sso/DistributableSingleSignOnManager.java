@@ -25,7 +25,7 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
@@ -36,11 +36,11 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
  */
 public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
-    private final SSOManager<AuthenticatedSession, String, Void> manager;
+    private final SSOManager<AuthenticatedSession, String, Void, Batch> manager;
     private final SessionManagerRegistry registry;
     private volatile boolean started = false;
 
-    public DistributableSingleSignOnManager(SSOManager<AuthenticatedSession, String, Void> manager, SessionManagerRegistry registry) {
+    public DistributableSingleSignOnManager(SSOManager<AuthenticatedSession, String, Void, Batch> manager, SessionManagerRegistry registry) {
         this.manager = manager;
         this.registry = registry;
     }
@@ -65,7 +65,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
     @Override
     public SingleSignOn createSingleSignOn(Account account, String mechanism) {
         String id = this.manager.createIdentifier();
-        Batch batch = this.manager.getBatcher().startBatch();
+        Batch batch = this.manager.getBatcher().createBatch();
         AuthenticatedSession session = new AuthenticatedSession(account, mechanism);
         SSO<AuthenticatedSession, String, Void> sso = this.manager.createSSO(id, session);
         return new DistributableSingleSignOn(sso, this.registry, batch);
@@ -73,7 +73,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     @Override
     public SingleSignOn findSingleSignOn(String id) {
-        Batch batch = this.manager.getBatcher().startBatch();
+        Batch batch = this.manager.getBatcher().createBatch();
         SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
         if (sso == null) {
             batch.discard();
@@ -84,7 +84,7 @@ public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     @Override
     public void removeSingleSignOn(String id) {
-        Batch batch = this.manager.getBatcher().startBatch();
+        Batch batch = this.manager.getBatcher().createBatch();
         SSO<AuthenticatedSession, String, Void> sso = this.manager.findSSO(id);
         if (sso != null) {
             sso.invalidate();

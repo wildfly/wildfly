@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,43 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan;
+
+package org.jboss.as.clustering.infinispan;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
- * A Batcher based on Infinispan's batch capability.
  * @author Paul Ferraro
  */
-public class InfinispanBatcher implements Batcher {
-
-    final Cache<?, ?> cache;
-
-    public InfinispanBatcher(Cache<?, ?> cache) {
-        this.cache = cache;
-    }
+public class InfinispanBatcherFactory implements BatcherFactory {
 
     @Override
-    public Batch startBatch() {
-        final boolean started = this.cache.startBatch();
-        return new Batch() {
-            @Override
-            public void close() {
-                this.end(true);
-            }
-
-            @Override
-            public void discard() {
-                this.end(false);
-            }
-
-            private void end(boolean success) {
-                if (started) {
-                    InfinispanBatcher.this.cache.endBatch(success);
-                }
-            }
-        };
+    public Batcher<TransactionBatch> createBatcher(Cache<?, ?> cache) {
+        return cache.getCacheConfiguration().transaction().transactionMode().isTransactional() ? new InfinispanBatcher(cache) : null;
     }
 }

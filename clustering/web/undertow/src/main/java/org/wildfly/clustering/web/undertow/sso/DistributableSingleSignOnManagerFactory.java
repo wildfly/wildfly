@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.sso;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -39,10 +40,10 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
  */
 public class DistributableSingleSignOnManagerFactory implements SingleSignOnManagerFactory, LocalContextFactory<Void> {
 
-    private final SSOManagerFactory<AuthenticatedSession, String> factory;
+    private final SSOManagerFactory<AuthenticatedSession, String, Batch> factory;
     private final SessionManagerRegistry registry;
 
-    public DistributableSingleSignOnManagerFactory(SSOManagerFactory<AuthenticatedSession, String> factory, SessionManagerRegistry registry) {
+    public DistributableSingleSignOnManagerFactory(SSOManagerFactory<AuthenticatedSession, String, Batch> factory, SessionManagerRegistry registry) {
         this.factory = factory;
         this.registry = registry;
     }
@@ -50,7 +51,7 @@ public class DistributableSingleSignOnManagerFactory implements SingleSignOnMana
     @Override
     public SingleSignOnManager createSingleSignOnManager(Host host) {
         IdentifierFactory<String> identifierFactory = new IdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
-        SSOManager<AuthenticatedSession, String, Void> manager = this.factory.createSSOManager(identifierFactory, this);
+        SSOManager<AuthenticatedSession, String, Void, Batch> manager = this.factory.createSSOManager(identifierFactory, this);
         return new DistributableSingleSignOnManager(manager, this.registry);
     }
 

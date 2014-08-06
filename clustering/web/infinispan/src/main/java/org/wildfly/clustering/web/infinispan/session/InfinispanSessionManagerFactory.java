@@ -42,13 +42,14 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.spi.CacheServiceNames;
 import org.wildfly.clustering.spi.ChannelServiceNames;
-import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionCacheEntry;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionFactory;
@@ -66,9 +67,9 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  * @author Paul Ferraro
  */
 @SuppressWarnings("rawtypes")
-public class InfinispanSessionManagerFactory extends AbstractService<SessionManagerFactory> implements SessionManagerFactory {
+public class InfinispanSessionManagerFactory extends AbstractService<SessionManagerFactory<TransactionBatch>> implements SessionManagerFactory<TransactionBatch> {
 
-    public static ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName, SessionManagerConfiguration config) {
+    public static ServiceBuilder<SessionManagerFactory<TransactionBatch>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName, SessionManagerConfiguration config) {
         InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(config);
         return target.addService(name, factory)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, factory.cache)
@@ -95,8 +96,8 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     }
 
     @Override
-    public <L> SessionManager<L> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
-        final Batcher batcher = new InfinispanBatcher(this.cache.getValue());
+    public <L> SessionManager<L, TransactionBatch> createSessionManager(final SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
+        final Batcher<TransactionBatch> batcher = new InfinispanBatcher(this.cache.getValue());
         final IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, this.cache.getValue(), this.affinityFactory.getValue());
         final Cache<String, ?> cache = this.cache.getValue();
         final CommandDispatcherFactory dispatcherFactory = this.dispatcherFactory.getValue();
@@ -119,7 +120,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
             }
 
             @Override
-            public Batcher getBatcher() {
+            public Batcher<TransactionBatch> getBatcher() {
                 return batcher;
             }
 

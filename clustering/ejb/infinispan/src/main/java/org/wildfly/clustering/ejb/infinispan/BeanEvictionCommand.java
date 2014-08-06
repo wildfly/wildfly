@@ -22,7 +22,7 @@
 package org.wildfly.clustering.ejb.infinispan;
 
 import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
@@ -40,7 +40,7 @@ public class BeanEvictionCommand<I> implements Command<Void, BeanEvictionContext
 
     @Override
     public Void execute(BeanEvictionContext<I> context) throws Exception {
-        Batch batch = context.getBatcher().startBatch();
+        Batch batch = context.getBatcher().createBatch();
         boolean success = false;
         try {
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);

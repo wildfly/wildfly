@@ -67,6 +67,10 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ee-infinispan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-jgroups</artifactId>
         </dependency>
         <dependency>
@@ -88,10 +92,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-transactions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>

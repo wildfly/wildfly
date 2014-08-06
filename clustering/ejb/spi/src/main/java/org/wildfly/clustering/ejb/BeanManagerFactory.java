@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb;
 
+import org.wildfly.clustering.ee.Batch;
+
 /**
  * Creates a {@link BeanManager}.
  *

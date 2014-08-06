@@ -19,20 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ee.infinispan;
 
 import javax.transaction.Transaction;
 
-import org.wildfly.clustering.ejb.Batch;
-
 /**
+ * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
  * @author Paul Ferraro
  */
-public interface TransactionBatch extends Batch {
-    /**
-     * Returns the transaction associated with this batch
-     * @return a transaction
-     */
-    Transaction getTransaction();
+public abstract class AbstractTransactionBatch implements TransactionBatch {
+    private final Transaction tx;
+
+    protected AbstractTransactionBatch(Transaction tx) {
+        this.tx = tx;
+    }
+
+    @Override
+    public Transaction getTransaction() {
+        return this.tx;
+    }
 }

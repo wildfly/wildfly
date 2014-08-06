@@ -33,9 +33,10 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Locator;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
@@ -52,7 +53,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 public class CacheServiceProviderRegistrationFactory implements ServiceProviderRegistrationFactory, ServiceRegistry, Group.Listener, AutoCloseable {
 
     final ConcurrentMap<Object, Listener> listeners = new ConcurrentHashMap<>();
-    final CacheInvoker invoker;
+    final Batcher<? extends Batch> batcher;
     final Cache<Object, Set<Node>> cache;
 
     private final Group group;
@@ -61,7 +62,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
     public CacheServiceProviderRegistrationFactory(CacheServiceProviderRegistrationFactoryConfiguration config) {
         this.group = config.getGroup();
         this.cache = config.getCache();
-        this.invoker = config.getCacheInvoker();
+        this.batcher = config.getBatcher();
         this.dispatcher = config.getCommandDispatcherFactory().<ServiceRegistry>createCommandDispatcher(config.getId(), this);
         this.cache.addListener(this);
         this.group.addListener(this);
@@ -85,40 +86,31 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
             throw new IllegalArgumentException(service.toString());
         }
         final Node node = this.group.getLocalNode();
-        Operation<Set<Node>> operation = new Operation<Set<Node>>() {
-            @Override
-            public Set<Node> invoke(Cache<Object, Set<Node>> cache) {
-                Set<Node> nodes = new HashSet<>(Collections.singleton(node));
-                Set<Node> existing = cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
-                if (existing != null) {
-                    if (existing.add(node)) {
-                        cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
-                    }
+        Set<Node> nodes = new HashSet<>(Collections.singleton(node));
+        try (Batch batch = this.batcher.createBatch()) {
+            Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
+            if (existing != null) {
+                if (existing.add(node)) {
+                    this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
                 }
-                return (existing != null) ? existing : nodes;
             }
-        };
-        this.invoker.invoke(this.cache, operation);
+        }
         return new AbstractServiceProviderRegistration(service, this) {
             @Override
             public void close() {
                 if (CacheServiceProviderRegistrationFactory.this.listeners.remove(service) != null) {
                     final Node node = CacheServiceProviderRegistrationFactory.this.getGroup().getLocalNode();
-                    Operation<Void> operation = new Operation<Void>() {
-                        @Override
-                        public Void invoke(Cache<Object, Set<Node>> cache) {
-                            Set<Node> nodes = cache.get(service);
-                            if ((nodes != null) && nodes.remove(node)) {
-                                if (nodes.isEmpty()) {
-                                    cache.remove(service);
-                                } else {
-                                    cache.replace(service, nodes);
-                                }
+                    try (Batch batch = CacheServiceProviderRegistrationFactory.this.batcher.createBatch()) {
+                        Set<Node> nodes = CacheServiceProviderRegistrationFactory.this.cache.get(service);
+                        if ((nodes != null) && nodes.remove(node)) {
+                            Cache<Object, Set<Node>> cache = CacheServiceProviderRegistrationFactory.this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+                            if (nodes.isEmpty()) {
+                                cache.remove(service);
+                            } else {
+                                cache.replace(service, nodes);
                             }
-                            return null;
                         }
-                    };
-                    CacheServiceProviderRegistrationFactory.this.invoker.invoke(CacheServiceProviderRegistrationFactory.this.cache, operation, Flag.IGNORE_RETURN_VALUES);
+                    }
                 }
             }
         };
@@ -126,7 +118,7 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
 
     @Override
     public Set<Node> getProviders(final Object service) {
-        Set<Node> nodes = this.invoker.invoke(this.cache, new Locator.FindOperation<Object, Set<Node>>(service));
+        Set<Node> nodes = this.cache.get(service);
         return (nodes != null) ? Collections.unmodifiableSet(nodes) : Collections.<Node>emptySet();
     }
 
@@ -142,38 +134,33 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
             deadNodes.removeAll(members);
             final Set<Node> newNodes = new HashSet<>(members);
             newNodes.removeAll(previousMembers);
-            Operation<Void> operation = new Operation<Void>() {
-                @Override
-                public Void invoke(Cache<Object, Set<Node>> cache) {
-                    if (!deadNodes.isEmpty()) {
-                        for (Object service: cache.keySet()) {
-                            Set<Node> nodes = cache.get(service);
-                            if (nodes != null) {
-                                if (nodes.removeAll(deadNodes)) {
-                                    cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, nodes);
-                                }
+            try (Batch batch = this.batcher.createBatch()) {
+                if (!deadNodes.isEmpty()) {
+                    for (Object service: this.cache.keySet()) {
+                        Set<Node> nodes = this.cache.get(service);
+                        if (nodes != null) {
+                            if (nodes.removeAll(deadNodes)) {
+                                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, nodes);
                             }
                         }
                     }
-                    if (merged) {
-                        for (Node node: newNodes) {
-                            // Re-assert services for new members following merge since these may have been lost following split
-                            List<Object> services = CacheServiceProviderRegistrationFactory.this.getServices(node);
-                            for (Object service: services) {
-                                Set<Node> nodes = new HashSet<>(Collections.singleton(node));
-                                Set<Node> existing = cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
-                                if (existing != null) {
-                                    if (existing.add(node)) {
-                                        cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return null;
                 }
-            };
-            this.invoker.invoke(this.cache, operation);
+                if (merged) {
+                    for (Node node: newNodes) {
+                        // Re-assert services for new members following merge since these may have been lost following split
+                        List<Object> services = CacheServiceProviderRegistrationFactory.this.getServices(node);
+                        for (Object service: services) {
+                            Set<Node> nodes = new HashSet<>(Collections.singleton(node));
+                            Set<Node> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(service, nodes);
+                            if (existing != null) {
+                                if (existing.add(node)) {
+                                    this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, existing);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

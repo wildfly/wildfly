@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.infinispan.Cache;
@@ -42,6 +41,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
@@ -60,13 +61,13 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final RegistryEntryProvider<K, V> provider;
     private final Cache<Node, Map.Entry<K, V>> cache;
-    private final CacheInvoker invoker;
+    private final Batcher<? extends Batch> batcher;
     private final Group group;
     private final NodeFactory<Address> factory;
 
     public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
         this.cache = config.getCache();
-        this.invoker = config.getCacheInvoker();
+        this.batcher = config.getBatcher();
         this.group = config.getGroup();
         this.factory = config.getNodeFactory();
         this.provider = provider;
@@ -79,14 +80,9 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         this.cache.removeListener(this);
         this.listeners.clear();
         final Node node = this.getGroup().getLocalNode();
-        Operation<Void> operation = new Operation<Void>() {
-            @Override
-            public Void invoke(Cache<Node, Entry<K, V>> cache) {
-                cache.remove(node);
-                return null;
-            }
-        };
-        this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
+        try (Batch batch = this.batcher.createBatch()) {
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(node);
+        }
     }
 
     @Override
@@ -127,14 +123,9 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         if (key == null) return null;
         final Map.Entry<K, V> entry = new AbstractMap.SimpleImmutableEntry<>(key, this.provider.getValue());
         final Node node = this.getGroup().getLocalNode();
-        Operation<Void> operation = new Operation<Void>() {
-            @Override
-            public Void invoke(Cache<Node, Entry<K, V>> cache) {
-                cache.put(node, entry);
-                return null;
-            }
-        };
-        this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
+        try (Batch batch = this.batcher.createBatch()) {
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(node, entry);
+        }
         return entry;
     }
 
@@ -152,20 +143,16 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         for (Address address: addresses) {
             nodes.add(this.factory.createNode(address));
         }
-        Operation<Map<K, V>> operation = new Operation<Map<K, V>>() {
-            @Override
-            public Map<K, V> invoke(Cache<Node, Entry<K, V>> cache) {
-                Map<K, V> removed = new HashMap<>();
-                for (Node node: nodes) {
-                    Map.Entry<K, V> old = cache.remove(node);
-                    if (old != null) {
-                        removed.put(old.getKey(), old.getValue());
-                    }
+        Cache<Node, Map.Entry<K, V>> cache = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+        Map<K, V> removed = new HashMap<>();
+        try (Batch batch = this.batcher.createBatch()) {
+            for (Node node: nodes) {
+                Map.Entry<K, V> old = cache.remove(node);
+                if (old != null) {
+                    removed.put(old.getKey(), old.getValue());
                 }
-                return removed;
             }
-        };
-        Map<K, V> removed = this.invoker.invoke(this.cache, operation, Flag.FORCE_SYNCHRONOUS);
+        }
         if (!removed.isEmpty()) {
             for (Listener<K, V> listener: this.listeners) {
                 listener.removedEntries(removed);

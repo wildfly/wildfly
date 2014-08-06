@@ -22,7 +22,8 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * Encapsulates the context for session eviction.
@@ -30,7 +31,7 @@ import org.wildfly.clustering.web.Batcher;
  */
 public interface SessionEvictionContext {
 
-    Batcher getBatcher();
+    Batcher<TransactionBatch> getBatcher();
 
     Evictor<String> getEvictor();
 }

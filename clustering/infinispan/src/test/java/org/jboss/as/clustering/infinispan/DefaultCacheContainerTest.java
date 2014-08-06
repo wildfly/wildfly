@@ -22,8 +22,16 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,15 +48,16 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.junit.After;
 import org.junit.Test;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * @author Paul Ferraro
  */
-public class DefaultEmbeddedCacheManagerTest {
+public class DefaultCacheContainerTest {
+    private final BatcherFactory batcherFactory = mock(BatcherFactory.class);
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final CacheContainer subject = new DefaultCacheContainer(this.manager, "default");
-    private final Configuration batchingDisabledConfiguration = new ConfigurationBuilder().invocationBatching().disable().build();
-    private final Configuration batchingEnabledConfiguration = new ConfigurationBuilder().invocationBatching().enable().build();
+    private final CacheContainer subject = new DefaultCacheContainer(this.manager, "default", this.batcherFactory);
 
     @After
     public void cleanup() {
@@ -64,7 +73,6 @@ public class DefaultEmbeddedCacheManagerTest {
     public void getDefaultCache() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
 
-        when(cache.getCacheConfiguration()).thenReturn(this.batchingDisabledConfiguration);
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(cache);
         when(cache.getAdvancedCache()).thenReturn(cache);
         
@@ -79,14 +87,16 @@ public class DefaultEmbeddedCacheManagerTest {
     public void getCache() {
         AdvancedCache<Object, Object> defaultCache = mock(AdvancedCache.class);
         AdvancedCache<Object, Object> otherCache = mock(AdvancedCache.class);
-        
-        when(defaultCache.getCacheConfiguration()).thenReturn(this.batchingDisabledConfiguration);
-        when(otherCache.getCacheConfiguration()).thenReturn(this.batchingEnabledConfiguration);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
+        TransactionBatch batch = mock(TransactionBatch.class);
+
         when(this.manager.<Object, Object>getCache("default", true)).thenReturn(defaultCache);
         when(this.manager.<Object, Object>getCache("other", true)).thenReturn(otherCache);
         when(defaultCache.getAdvancedCache()).thenReturn(defaultCache);
         when(otherCache.getAdvancedCache()).thenReturn(otherCache);
-        
+        when(this.batcherFactory.createBatcher(defaultCache)).thenReturn(null);
+        when(this.batcherFactory.createBatcher(otherCache)).thenReturn(batcher);
+
         Cache<Object, Object> result = this.subject.getCache("default");
         
         assertNotSame(defaultCache, result);
@@ -104,6 +114,8 @@ public class DefaultEmbeddedCacheManagerTest {
 
         verify(defaultCache, never()).endBatch(false);
 
+        when(this.batcherFactory.createBatcher(otherCache)).thenReturn(batcher);
+
         result = this.subject.getCache("other");
 
         assertNotSame(otherCache, result);
@@ -111,15 +123,44 @@ public class DefaultEmbeddedCacheManagerTest {
         assertSame(this.subject, result.getCacheManager());
 
         // Validate batching logic
-        when(otherCache.startBatch()).thenReturn(true);
+        when(batcher.createBatch()).thenReturn(batch);
 
         started = result.startBatch();
 
         assertTrue(started);
 
+        started = result.startBatch();
+
+        assertFalse(started);
+
+        // Verify commit
         result.endBatch(true);
 
-        verify(otherCache).endBatch(true);
+        verify(batch).close();
+        reset(batch);
+
+        // Verify re-commit is a no-op
+        result.endBatch(true);
+
+        verify(batch, never()).close();
+        verify(batch, never()).discard();
+
+        // Verify rollback
+        started = result.startBatch();
+
+        assertTrue(started);
+
+        result.endBatch(false);
+
+        verify(batch).discard();
+
+        reset(batch);
+
+        // Verify re-rollback is a no-op
+        result.endBatch(true);
+
+        verify(batch, never()).close();
+        verify(batch, never()).discard();
 
         result = this.subject.getCache(CacheContainer.DEFAULT_CACHE_ALIAS);
 

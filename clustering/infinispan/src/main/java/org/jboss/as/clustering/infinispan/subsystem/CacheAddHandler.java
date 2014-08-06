@@ -408,7 +408,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
                     .lockingMode(lockingMode)
                     .useSynchronization(useSynchronization)
                     .recovery().enabled(recoveryEnabled)
-                    .invocationBatching().enable(transactional)
+                    .invocationBatching().disable()
             ;
             if (transactional) {
                 if (batching) {

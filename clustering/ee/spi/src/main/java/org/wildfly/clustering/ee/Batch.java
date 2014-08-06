@@ -19,23 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb;
+package org.wildfly.clustering.ee;
 
 /**
- * Exposes a mechanism to start a batch.
+ * Exposes a mechanism to close or discard a batch.
  * @author Paul Ferraro
  */
-public interface Batcher<B extends Batch> {
+public interface Batch extends AutoCloseable {
     /**
-     * Starts a batch.
-     * @return a batch.
+     * End this batch.
      */
-    B startBatch();
+    @Override
+    void close();
 
     /**
-     * Resumes a batch.
-     * @param batch an existing batch
-     * @return the context of the resumed batch
+     * Discards this batch.
      */
-    BatchContext resume(B batch);
+    void discard();
 }

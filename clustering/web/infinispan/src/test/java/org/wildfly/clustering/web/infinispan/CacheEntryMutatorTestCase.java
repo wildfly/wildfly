@@ -28,6 +28,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
+import org.infinispan.transaction.TransactionMode;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.SimpleCacheInvoker;
 import org.junit.Test;
@@ -39,11 +40,11 @@ import org.junit.Test;
 public class CacheEntryMutatorTestCase {
 
     @Test
-    public void mutateWithBatching() {
+    public void mutateTransactional() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Object id = new Object();
         Object value = new Object();
-        Configuration config = new ConfigurationBuilder().invocationBatching().enable().build();
+        Configuration config = new ConfigurationBuilder().transaction().transactionMode(TransactionMode.TRANSACTIONAL).build();
 
         when(cache.getCacheConfiguration()).thenReturn(config);
 
@@ -66,11 +67,11 @@ public class CacheEntryMutatorTestCase {
     }
 
     @Test
-    public void mutateWithOutBatching() {
+    public void mutateNonTransactional() {
         AdvancedCache<Object, Object> cache = mock(AdvancedCache.class);
         Object id = new Object();
         Object value = new Object();
-        Configuration config = new ConfigurationBuilder().invocationBatching().disable().build();
+        Configuration config = new ConfigurationBuilder().transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL).build();
 
         when(cache.getCacheConfiguration()).thenReturn(config);
 

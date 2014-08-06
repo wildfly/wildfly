@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
 
@@ -47,7 +48,7 @@ public class DistributableSingleSignOnManagerFactoryService extends AbstractServ
         ;
     }
 
-    private final InjectedValue<SSOManagerFactory<AuthenticatedSession, String>> manager = new InjectedValue<>();
+    private final InjectedValue<SSOManagerFactory<AuthenticatedSession, String, Batch>> manager = new InjectedValue<>();
     private final InjectedValue<SessionManagerRegistry> registry = new InjectedValue<>();
 
     private DistributableSingleSignOnManagerFactoryService() {

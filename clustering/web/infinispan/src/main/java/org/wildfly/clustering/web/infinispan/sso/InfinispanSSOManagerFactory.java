@@ -34,10 +34,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseAuthenticationEntry;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSSOEntry;
@@ -46,9 +47,9 @@ import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKey;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManagerFactory<A, D>> implements SSOManagerFactory<A, D> {
+public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManagerFactory<A, D, TransactionBatch>> implements SSOManagerFactory<A, D, TransactionBatch> {
 
-    public static <A, D> ServiceBuilder<SSOManagerFactory<A, D>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+    public static <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         InfinispanSSOManagerFactory<A, D> service = new InfinispanSSOManagerFactory<>();
         return target.addService(name, service)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
@@ -66,17 +67,17 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
     }
 
     @Override
-    public SSOManagerFactory<A, D> getValue() {
+    public SSOManagerFactory<A, D, TransactionBatch> getValue() {
         return this;
     }
 
     @Override
-    public <L> SSOManager<A, D, L> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
+    public <L> SSOManager<A, D, L, TransactionBatch> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
         Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.cache.getValue();
         Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.cache.getValue();
         SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, this.invoker, localContextFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.affinityFactory.getValue());
-        Batcher batcher = new InfinispanBatcher(authenticationCache);
+        Batcher<TransactionBatch> batcher = new InfinispanBatcher(authenticationCache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);
     }
 }

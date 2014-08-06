@@ -24,8 +24,6 @@ package org.wildfly.clustering.server.provider;
 import java.util.Set;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
@@ -36,6 +34,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
@@ -58,7 +59,6 @@ public class CacheServiceProviderRegistrationFactoryService implements Service<S
     }
 
     private final Object id;
-    private final CacheInvoker invoker = new BatchCacheInvoker();
 
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
     private final InjectedValue<Group> group = new InjectedValue<>();
@@ -92,8 +92,8 @@ public class CacheServiceProviderRegistrationFactoryService implements Service<S
     }
 
     @Override
-    public CacheInvoker getCacheInvoker() {
-        return this.invoker;
+    public Batcher<? extends Batch> getBatcher() {
+        return new InfinispanBatcher(this.cache.getValue());
     }
 
     @Override

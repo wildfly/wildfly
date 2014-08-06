@@ -21,8 +21,13 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
@@ -30,12 +35,12 @@ import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 public class SessionEvictionSchedulerTestCase {
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void test() throws Exception {
         String name = "cache";
@@ -45,8 +50,8 @@ public class SessionEvictionSchedulerTestCase {
         ImmutableSession activeSession = mock(ImmutableSession.class);
         CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
         CommandDispatcher<SessionEvictionContext> dispatcher = mock(CommandDispatcher.class);
-        Batcher batcher = mock(Batcher.class);
-        Batch batch = mock(Batch.class);
+        Batcher<TransactionBatch> batcher = mock(Batcher.class);
+        TransactionBatch batch = mock(TransactionBatch.class);
         Evictor<String> evictor = mock(Evictor.class);
         ArgumentCaptor<Command> capturedCommand = ArgumentCaptor.forClass(Command.class);
         ArgumentCaptor<SessionEvictionContext> capturedContext = ArgumentCaptor.forClass(SessionEvictionContext.class);
@@ -69,7 +74,7 @@ public class SessionEvictionSchedulerTestCase {
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
             
-            when(batcher.startBatch()).thenReturn(batch);
+            when(batcher.createBatch()).thenReturn(batch);
             
             capturedCommand.getValue().execute(context);
             
