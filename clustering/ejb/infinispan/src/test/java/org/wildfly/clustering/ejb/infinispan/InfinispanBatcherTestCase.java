@@ -29,8 +29,10 @@ import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.junit.Test;
-import org.wildfly.clustering.ejb.BatchContext;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.InfinispanBatcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * @author Paul Ferraro

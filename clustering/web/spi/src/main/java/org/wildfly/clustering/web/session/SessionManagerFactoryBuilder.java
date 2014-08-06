@@ -24,11 +24,12 @@ package org.wildfly.clustering.web.session;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ee.Batch;
 
 /**
  * Interface for building a session manager factory.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryBuilder {
-    ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration metaData);
+public interface SessionManagerFactoryBuilder<B extends Batch> {
+    ServiceBuilder<SessionManagerFactory<B>> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration metaData);
 }

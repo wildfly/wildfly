@@ -34,6 +34,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
@@ -42,11 +43,11 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
  * Service building strategy the Infinispan session manager factory.
  * @author Paul Ferraro
  */
-public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFactoryBuilder {
+public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFactoryBuilder<TransactionBatch> {
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration config) {
+    public ServiceBuilder<SessionManagerFactory<TransactionBatch>> buildDeploymentDependency(ServiceTarget target, ServiceName name, SessionManagerConfiguration config) {
         ServiceName templateCacheServiceName = getCacheServiceName(config.getCacheName());
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();

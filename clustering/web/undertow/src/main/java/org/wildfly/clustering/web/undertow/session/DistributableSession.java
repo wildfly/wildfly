@@ -21,6 +21,13 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.idm.Account;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionListener.SessionDestroyedReason;
+import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
+
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -29,16 +36,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
-import io.undertow.security.idm.Account;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.session.SessionConfig;
-import io.undertow.server.session.SessionListener.SessionDestroyedReason;
-import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 /**
  * Adapts a distributable {@link Session} to an Undertow {@link io.undertow.server.session.Session}.
@@ -70,8 +71,10 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        this.getSession().close();
-        this.batch.close();
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            this.getSession().close();
+            this.batch.close();
+        }
     }
 
     @Override
@@ -85,7 +88,9 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
             Account account = (Account) super.getAttribute(name);
             return (account != null) ? new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH) : this.getSession().getLocalContext().getAuthenticatedSession();
         }
-        return super.getAttribute(name);
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            return super.getAttribute(name);
+        }
     }
 
     @Override
@@ -109,13 +114,15 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
         if (!(value instanceof Serializable)) {
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
-        Object old = this.getSession().getAttributes().setAttribute(name, value);
-        if (old == null) {
-            this.manager.getSessionListeners().attributeAdded(this, name, value);
-        } else if (old != value) {
-            this.manager.getSessionListeners().attributeUpdated(this, name, value, old);
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            Object old = this.getSession().getAttributes().setAttribute(name, value);
+            if (old == null) {
+                this.manager.getSessionListeners().attributeAdded(this, name, value);
+            } else if (old != value) {
+                this.manager.getSessionListeners().attributeUpdated(this, name, value, old);
+            }
+            return old;
         }
-        return old;
     }
 
     @Override
@@ -130,11 +137,13 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
             context.setAuthenticatedSession(null);
             return old;
         }
-        Object old = this.getSession().getAttributes().removeAttribute(name);
-        if (old != null) {
-            this.manager.getSessionListeners().attributeRemoved(this, name, old);
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            Object old = this.getSession().getAttributes().removeAttribute(name);
+            if (old != null) {
+                this.manager.getSessionListeners().attributeRemoved(this, name, old);
+            }
+            return old;
         }
-        return old;
     }
 
     @Override
@@ -142,29 +151,33 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
         Map.Entry<Session<LocalSessionContext>, SessionConfig> entry = this.entry;
         Session<LocalSessionContext> session = entry.getKey();
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
-        session.invalidate();
-        if (exchange != null) {
-            String id = session.getId();
-            entry.getValue().clearSession(exchange, id);
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            session.invalidate();
+            if (exchange != null) {
+                String id = session.getId();
+                entry.getValue().clearSession(exchange, id);
+            }
+            this.batch.close();
         }
-        this.batch.close();
     }
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
         Session<LocalSessionContext> oldSession = this.getSession();
-        SessionManager<LocalSessionContext> manager = this.manager.getSessionManager();
+        SessionManager<LocalSessionContext, Batch> manager = this.manager.getSessionManager();
         String id = manager.createIdentifier();
-        Session<LocalSessionContext> newSession = manager.createSession(id);
-        for (String name: oldSession.getAttributes().getAttributeNames()) {
-            newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
+        try (BatchContext context = this.manager.getSessionManager().getBatcher().resume(this.batch)) {
+            Session<LocalSessionContext> newSession = manager.createSession(id);
+            for (String name: oldSession.getAttributes().getAttributeNames()) {
+                newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
+            }
+            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
+            newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
+            newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
+            config.setSessionId(exchange, id);
+            this.entry = new SimpleImmutableEntry<>(newSession, config);
+            oldSession.invalidate();
+            return id;
         }
-        newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
-        newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
-        newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
-        config.setSessionId(exchange, id);
-        this.entry = new SimpleImmutableEntry<>(newSession, config);
-        oldSession.invalidate();
-        return id;
     }
 }

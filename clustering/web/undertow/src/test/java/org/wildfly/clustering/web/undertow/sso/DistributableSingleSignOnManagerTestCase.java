@@ -34,8 +34,8 @@ import io.undertow.security.impl.SingleSignOnManager;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
@@ -45,7 +45,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
  */
 public class DistributableSingleSignOnManagerTestCase {
 
-    private final SSOManager<AuthenticatedSession, String, Void> manager = mock(SSOManager.class);
+    private final SSOManager<AuthenticatedSession, String, Void, Batch> manager = mock(SSOManager.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
 
     private final SingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
@@ -53,7 +53,7 @@ public class DistributableSingleSignOnManagerTestCase {
     @Test
     public void createSingleSignOn() {
         String id = "sso";
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Account account = mock(Account.class);
         String mechanism = HttpServletRequest.BASIC_AUTH;
@@ -80,7 +80,7 @@ public class DistributableSingleSignOnManagerTestCase {
     @Test
     public void findSingleSignOn() {
         String id = "sso";
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
 
         when(this.manager.getBatcher()).thenReturn(batcher);
@@ -108,7 +108,7 @@ public class DistributableSingleSignOnManagerTestCase {
     @Test
     public void removeSingleSignOn() {
         String id = "sso";
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
 
         when(this.manager.getBatcher()).thenReturn(batcher);

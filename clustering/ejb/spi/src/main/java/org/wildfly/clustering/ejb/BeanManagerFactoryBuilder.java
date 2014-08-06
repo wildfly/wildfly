@@ -24,6 +24,7 @@ package org.wildfly.clustering.ejb;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ee.Batch;
 
 public interface BeanManagerFactoryBuilder<G, I, B extends Batch> {
     /**

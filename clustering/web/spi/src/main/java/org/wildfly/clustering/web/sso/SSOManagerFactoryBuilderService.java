@@ -24,31 +24,32 @@ package org.wildfly.clustering.web.sso;
 import java.util.ServiceLoader;
 
 import org.jboss.msc.service.AbstractService;
+import org.wildfly.clustering.ee.Batch;
 
 /**
  * Uses a service loader to load a distributable {@link SSOManagerFactoryBuilder} implementation.
  * @author Paul Ferraro
  */
-public class SSOManagerFactoryBuilderService extends AbstractService<SSOManagerFactoryBuilder> {
-    private final SSOManagerFactoryBuilder builder;
+public class SSOManagerFactoryBuilderService extends AbstractService<SSOManagerFactoryBuilder<Batch>> {
+    private final SSOManagerFactoryBuilder<Batch> builder;
 
     public SSOManagerFactoryBuilderService() {
         this(load());
     }
 
-    public SSOManagerFactoryBuilderService(SSOManagerFactoryBuilder builder) {
+    public SSOManagerFactoryBuilderService(SSOManagerFactoryBuilder<Batch> builder) {
         this.builder = builder;
     }
 
-    private static SSOManagerFactoryBuilder load() {
-        for (SSOManagerFactoryBuilder builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
+    private static SSOManagerFactoryBuilder<Batch> load() {
+        for (SSOManagerFactoryBuilder<Batch> builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
     @Override
-    public SSOManagerFactoryBuilder getValue() {
+    public SSOManagerFactoryBuilder<Batch> getValue() {
         return this.builder;
     }
 }

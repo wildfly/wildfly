@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ee.infinispan;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -32,8 +32,8 @@ import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.wildfly.clustering.ejb.BatchContext;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
 
 /**
  * A {@link Batcher} implementation based on Infinispan's {@link org.infinispan.batch.BatchContainer}, except that its transaction reference
@@ -54,6 +54,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         this.tm = tm;
     }
 
+    @SuppressWarnings("resource")
     @Override
     public TransactionBatch startBatch() {
         try {
@@ -101,16 +102,23 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         }
     }
 
-    private static class ExistingTransactionBatch implements TransactionBatch {
+    private abstract static class AbstractTransactionBatch implements TransactionBatch {
         private final Transaction tx;
 
-        ExistingTransactionBatch(Transaction tx) {
+        AbstractTransactionBatch(Transaction tx) {
             this.tx = tx;
         }
 
         @Override
         public Transaction getTransaction() {
             return this.tx;
+        }
+    }
+
+    private static class ExistingTransactionBatch extends AbstractTransactionBatch {
+
+        ExistingTransactionBatch(Transaction tx) {
+            super(tx);
         }
 
         @Override
@@ -122,7 +130,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         }
     }
 
-    private static class NewTransactionBatch extends ExistingTransactionBatch {
+    private static class NewTransactionBatch extends AbstractTransactionBatch {
         private final TransactionManager tm;
 
         NewTransactionBatch(TransactionManager tm) throws SystemException {

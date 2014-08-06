@@ -35,7 +35,7 @@ import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 

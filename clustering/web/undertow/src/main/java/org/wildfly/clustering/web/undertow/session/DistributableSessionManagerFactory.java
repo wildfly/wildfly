@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -36,9 +37,9 @@ import io.undertow.servlet.api.Deployment;
  */
 public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
-    private final SessionManagerFactory factory;
+    private final SessionManagerFactory<Batch> factory;
 
-    public DistributableSessionManagerFactory(SessionManagerFactory factory) {
+    public DistributableSessionManagerFactory(SessionManagerFactory<Batch> factory) {
         this.factory = factory;
     }
 
@@ -46,7 +47,7 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
     public io.undertow.server.session.SessionManager createSessionManager(Deployment deployment) {
         SessionContext context = new UndertowSessionContext(deployment);
         IdentifierFactory<String> factory = new IdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
-        SessionManager<LocalSessionContext> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
+        SessionManager<LocalSessionContext, Batch> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
         return new DistributableSessionManager(deployment.getDeploymentInfo().getDeploymentName(), manager);
     }
 }

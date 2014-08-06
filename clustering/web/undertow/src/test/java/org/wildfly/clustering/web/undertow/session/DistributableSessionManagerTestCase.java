@@ -40,15 +40,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 public class DistributableSessionManagerTestCase {
     private final String deploymentName = "mydeployment.war";
-    private final SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
+    private final SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
 
     private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager);
@@ -87,7 +87,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void createSessionNoSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
@@ -120,7 +120,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void createSessionSpecifiedSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
@@ -150,7 +150,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void getSession() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
@@ -190,7 +190,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void getSessionNotExists() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         String sessionId = "session";
@@ -249,7 +249,7 @@ public class DistributableSessionManagerTestCase {
     public void getSessionByIdentifier() {
         ImmutableSession session = mock(ImmutableSession.class);
         String id = "session";
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         
         when(this.manager.getBatcher()).thenReturn(batcher);
@@ -268,7 +268,7 @@ public class DistributableSessionManagerTestCase {
     @Test
     public void getSessionByIdentifierNotExists() {
         String id = "session";
-        Batcher batcher = mock(Batcher.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         
         when(this.manager.getBatcher()).thenReturn(batcher);
