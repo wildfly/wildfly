@@ -25,7 +25,6 @@ package org.jboss.as.server.services.security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.RunningMode;
 
 /**
  * Write attribute handler for attributes that update the core security vault resource.
@@ -39,7 +38,8 @@ public class VaultWriteAttributeHandler extends ReloadRequiredWriteAttributeHand
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
+        // vault is used regardless of running mode, so that's not a factor
+        return !context.isBooting();
     }
 
 }

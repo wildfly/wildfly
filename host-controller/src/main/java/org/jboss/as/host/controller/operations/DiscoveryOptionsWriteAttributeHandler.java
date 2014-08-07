@@ -32,7 +32,6 @@ import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionsResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -84,6 +83,8 @@ public class DiscoveryOptionsWriteAttributeHandler extends ReloadRequiredWriteAt
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
+        // HCs may connect to the in either RunningMode.NORMAL or ADMIN_ONLY,
+        // so the running mode doesn't figure in whether reload is required
+        return !context.isBooting();
     }
 }

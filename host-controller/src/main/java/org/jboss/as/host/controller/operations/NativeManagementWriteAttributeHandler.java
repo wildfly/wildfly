@@ -25,7 +25,6 @@ package org.jboss.as.host.controller.operations;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 
 /**
@@ -43,7 +42,8 @@ public class NativeManagementWriteAttributeHandler extends ReloadRequiredWriteAt
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
-        return context.getRunningMode() == RunningMode.NORMAL && !context.isBooting();
+        // running mode doesn't matter, as native management is enabled even in ADMIN_ONLY
+        return !context.isBooting();
 
     }
 
