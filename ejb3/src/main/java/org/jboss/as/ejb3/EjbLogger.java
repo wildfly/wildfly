@@ -37,6 +37,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.SessionID;
@@ -405,8 +406,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 14143, value = "A previous execution of timer %s is still in progress, skipping this overlapping scheduled execution at: %s")
-    void skipOverlappingInvokeTimeout(Timer timer, Date scheduledTime);
+    @Message(id = 14143, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s as timer state is %s")
+    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime, TimerState state);
 
     // NOTE: messages 14144 to 14149 were moved to message bundle, do not reuse the ids
 
