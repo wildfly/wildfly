@@ -70,13 +70,13 @@ public class WebDeploymentServletDefinition extends SimpleResourceDefinition {
         registration.registerMetric(MAX_TIME, new AbstractMetricsHandler() {
             @Override
             void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getMinTime());
+                response.set(wrapper.getMaxTime());
             }
         });
         registration.registerMetric(MIN_TIME, new AbstractMetricsHandler() {
             @Override
             void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getLoadTime());
+                response.set(wrapper.getMinTime());
             }
         });
         registration.registerMetric(PROCESSING_TIME, new AbstractMetricsHandler() {
