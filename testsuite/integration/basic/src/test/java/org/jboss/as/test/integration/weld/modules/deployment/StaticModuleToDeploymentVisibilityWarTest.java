@@ -21,16 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.getModulePath;
-
-import java.io.File;
-
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.weld.modules.ModuleUtils;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -40,6 +34,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.inject.Inject;
 
 /**
  * Verifies that a bean in the top-level deployment unit is visible from a static CDI-enabled module.
@@ -51,22 +47,22 @@ import org.junit.runner.RunWith;
 public class StaticModuleToDeploymentVisibilityWarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-war";
+    private static TestModule testModule;
 
     public static void doSetup() throws Exception {
-        tearDown();
-        ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
+        testModule = ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        testModule.remove();
     }
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class)
+                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
