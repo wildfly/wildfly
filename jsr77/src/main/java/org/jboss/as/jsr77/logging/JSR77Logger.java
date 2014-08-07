@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -105,8 +106,8 @@ public interface JSR77Logger extends BasicLogger {
     @Message(id = 5, value = "No mbean found called %s")
     InstanceNotFoundException noMBeanCalled(ObjectName name);
 
-    @Message(id = 6, value = "Should not get called")
-    IllegalStateException shouldNotGetCalled();
+    //@Message(id = 6, value = "Should not get called")
+    //IllegalStateException shouldNotGetCalled();
 
     @Message(id = 7, value = "Could not find %s")
     InstanceNotFoundException couldNotFindJ2eeType(String j2eeType);
