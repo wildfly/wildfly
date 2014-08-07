@@ -26,9 +26,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +38,11 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
+import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -920,5 +926,57 @@ public class Util {
             StreamUtils.safeClose(is);
         }
         return bytes;
+    }
+
+    public static ModelNode toOperationRequest(CommandContext ctx, ParsedCommandLine parsedLine)
+            throws CommandFormatException {
+        if(parsedLine.getFormat() != OperationFormat.INSTANCE) {
+            throw new OperationFormatException("The line does not follow the operation request format");
+        }
+        ModelNode request = new ModelNode();
+        ModelNode addressNode = request.get(Util.ADDRESS);
+        if(parsedLine.getAddress().isEmpty()) {
+            addressNode.setEmptyList();
+        } else {
+            Iterator<Node> iterator = parsedLine.getAddress().iterator();
+            while (iterator.hasNext()) {
+                OperationRequestAddress.Node node = iterator.next();
+                if (node.getName() != null) {
+                    addressNode.add(node.getType(), node.getName());
+                } else if (iterator.hasNext()) {
+                    throw new OperationFormatException(
+                            "The node name is not specified for type '"
+                                    + node.getType() + "'");
+                }
+            }
+        }
+
+        final String operationName = parsedLine.getOperationName();
+        if(operationName == null || operationName.isEmpty()) {
+            throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
+        }
+        request.get(Util.OPERATION).set(operationName);
+
+        for(String propName : parsedLine.getPropertyNames()) {
+            final String value = parsedLine.getPropertyValue(propName);
+            if(propName == null || propName.trim().isEmpty())
+                throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
+            if(value == null || value.trim().isEmpty())
+                throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
+            final ModelNode toSet = ArgumentValueConverter.DEFAULT.fromString(ctx, value);
+            request.get(propName).set(toSet);
+        }
+
+        if(parsedLine.getLastHeaderName() != null) {
+            throw new OperationFormatException("Header '" + parsedLine.getLastHeaderName() + "' is not complete.");
+        }
+        final Collection<ParsedOperationRequestHeader> headers = parsedLine.getHeaders();
+        if(headers != null && !headers.isEmpty()) {
+            final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
+            for(ParsedOperationRequestHeader header : headers) {
+                header.addTo(ctx, headersNode);
+            }
+        }
+        return request;
     }
 }

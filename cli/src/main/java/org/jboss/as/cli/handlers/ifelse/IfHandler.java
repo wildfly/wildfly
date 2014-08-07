@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
-import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
@@ -114,6 +114,11 @@ public class IfHandler extends CommandHandlerWithHelp {
             line.addRequiredPreceding(of);
     }
 
+    @Override
+    public boolean isAvailable(CommandContext ctx) {
+        return IfElseControlFlow.get(ctx) == null && !ctx.getBatchManager().isBatchActive();
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
@@ -141,19 +146,8 @@ public class IfHandler extends CommandHandlerWithHelp {
             throw new CommandFormatException("Failed to locate 'of' in '" + argsStr + "'");
         }
 
-        final String line = argsStr.substring(i + 2);
-        try {
-            IfElseBlock.create(ctx).setCondition(conditionStr, ctx.buildRequest(line));
-        } catch(CommandLineException e) {
-            IfElseBlock.remove(ctx);
-            throw e;
-        }
-
-        if(!batchManager.activateNewBatch()) {
-            IfElseBlock.remove(ctx);
-            // that's more like illegal state
-            throw new CommandFormatException("Failed to activate batch mode for if.");
-        }
+        final String requestStr = argsStr.substring(i + 2);
+        ctx.registerRedirection(new IfElseControlFlow(ctx, conditionStr, requestStr));
     }
 
     /**

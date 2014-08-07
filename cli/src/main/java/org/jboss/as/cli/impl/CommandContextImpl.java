@@ -61,6 +61,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
+import org.jboss.aesh.console.settings.Settings;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
@@ -73,6 +74,7 @@ import org.jboss.as.cli.CommandHandlerProvider;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.CommandLineRedirection;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.SSLConfig;
@@ -116,8 +118,8 @@ import org.jboss.as.cli.handlers.batch.BatchRunHandler;
 import org.jboss.as.cli.handlers.ifelse.ElseHandler;
 import org.jboss.as.cli.handlers.ifelse.EndIfHandler;
 import org.jboss.as.cli.handlers.ifelse.IfHandler;
-import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.JDBCDriverInfoHandler;
+import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
 import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
 import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
@@ -143,7 +145,6 @@ import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.aesh.console.settings.Settings;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;
@@ -228,6 +229,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     private boolean silent;
 
     private CliShutdownHook.Handler shutdownHook;
+
+    /** command line handling redirection */
+    private CommandLineRedirectionRegistration redirection;
 
     /**
      * Version mode - only used when --version is called from the command line.
@@ -575,7 +579,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         resetArgs(line);
         try {
-            if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
+            if(redirection != null) {
+                redirection.target.handle(this);
+            } else if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
                 final ModelNode request = parsedCmd.toOperationRequest(this);
 
                 if (isBatchMode()) {
@@ -880,6 +886,15 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             throw new IllegalArgumentException("dir is null");
         }
         this.currentDir = dir;
+    }
+
+    @Override
+    public void registerRedirection(CommandLineRedirection redirection) throws CommandLineException {
+        if(this.redirection != null) {
+            throw new CommandLineException("Another redirection is currently active.");
+        }
+        this.redirection = new CommandLineRedirectionRegistration(redirection);
+        redirection.set(this.redirection);
     }
 
     /**
@@ -1535,6 +1550,83 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         public X509Certificate[] getAcceptedIssuers() {
             return getDelegate().getAcceptedIssuers();
         }
+    }
 
+    class CommandLineRedirectionRegistration implements CommandLineRedirection.Registration {
+
+        CommandLineRedirection target;
+
+        CommandLineRedirectionRegistration(CommandLineRedirection redirection) {
+            if(redirection == null) {
+                throw new IllegalArgumentException("Redirection is null");
+            }
+            this.target = redirection;
+        }
+
+        @Override
+        public void unregister() throws CommandLineException {
+            ensureActive();
+            CommandContextImpl.this.redirection = null;
+        }
+
+        @Override
+        public boolean isActive() {
+            return CommandContextImpl.this.redirection == this;
+        }
+
+        @Override
+        public void handle(ParsedCommandLine parsedLine) throws CommandLineException {
+
+            ensureActive();
+
+            final String line = parsedLine.getOriginalLine();
+            if (parsedLine.getFormat() == OperationFormat.INSTANCE) {
+                final ModelNode request = Util.toOperationRequest(CommandContextImpl.this, parsedLine);
+                if (isBatchMode()) {
+                    StringBuilder op = new StringBuilder();
+                    op.append(getNodePathFormatter().format(parsedCmd.getAddress()));
+                    op.append(line.substring(line.indexOf(':')));
+                    DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
+                    Batch batch = getBatchManager().getActiveBatch();
+                    batch.add(batchedCmd);
+                } else {
+                    set("OP_REQ", request);
+                    try {
+                        operationHandler.handle(CommandContextImpl.this);
+                    } finally {
+                        set("OP_REQ", null);
+                    }
+                }
+            } else {
+                final String cmdName = parsedCmd.getOperationName();
+                CommandHandler handler = cmdRegistry.getCommandHandler(cmdName.toLowerCase());
+                if (handler != null) {
+                    if (isBatchMode() && handler.isBatchMode(CommandContextImpl.this)) {
+                        if (!(handler instanceof OperationCommand)) {
+                            throw new CommandLineException("The command is not allowed in a batch.");
+                        } else {
+                            try {
+                                ModelNode request = ((OperationCommand) handler).buildRequest(CommandContextImpl.this);
+                                BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
+                                Batch batch = getBatchManager().getActiveBatch();
+                                batch.add(batchedCmd);
+                            } catch (CommandFormatException e) {
+                                throw new CommandFormatException("Failed to add to batch '" + line + "'", e);
+                            }
+                        }
+                    } else {
+                        handler.handle(CommandContextImpl.this);
+                    }
+                } else {
+                    throw new CommandLineException("Unexpected command '" + line + "'. Type 'help --commands' for the list of supported commands.");
+                }
+            }
+        }
+
+        private void ensureActive() throws CommandLineException {
+            if(!isActive()) {
+                throw new CommandLineException("The redirection is not registered any more.");
+            }
+        }
     }
 }

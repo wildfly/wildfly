@@ -25,22 +25,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.cli.ArgumentValueConverter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.operation.OperationFormatException;
-import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
-import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.OperationRequestAddress;
-import org.jboss.as.cli.operation.OperationRequestAddress.Node;
+import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.operation.ParsedOperationRequestHeader;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
@@ -563,49 +560,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     }
 
     public ModelNode toOperationRequest(CommandContext ctx) throws CommandFormatException {
-        ModelNode request = new ModelNode();
-        ModelNode addressNode = request.get(Util.ADDRESS);
-        if(address.isEmpty()) {
-            addressNode.setEmptyList();
-        } else {
-            Iterator<Node> iterator = address.iterator();
-            while (iterator.hasNext()) {
-                OperationRequestAddress.Node node = iterator.next();
-                if (node.getName() != null) {
-                    addressNode.add(node.getType(), node.getName());
-                } else if (iterator.hasNext()) {
-                    throw new OperationFormatException(
-                            "The node name is not specified for type '"
-                                    + node.getType() + "'");
-                }
-            }
-        }
-
-        if(operationName == null || operationName.isEmpty()) {
-            throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
-        }
-        request.get(Util.OPERATION).set(operationName);
-
-        for(String propName : props.keySet()) {
-            final String value = props.get(propName);
-            if(propName == null || propName.trim().isEmpty())
-                throw new OperationFormatException("The argument name is not specified: '" + propName + "'");
-            if(value == null || value.trim().isEmpty())
-                throw new OperationFormatException("The argument value is not specified for " + propName + ": '" + value + "'");
-            final ModelNode toSet = ArgumentValueConverter.DEFAULT.fromString(ctx, value);
-            request.get(propName).set(toSet);
-        }
-
-        if(this.lastHeaderName != null) {
-            throw new OperationFormatException("Header '" + this.lastHeaderName + "' is not complete.");
-        }
-        if(headers != null) {
-            final ModelNode headersNode = request.get(Util.OPERATION_HEADERS);
-            for(ParsedOperationRequestHeader header : headers.values()) {
-                header.addTo(ctx, headersNode);
-            }
-        }
-        return request;
+        return Util.toOperationRequest(ctx, this);
     }
 
     @Override

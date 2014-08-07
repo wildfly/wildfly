@@ -21,16 +21,9 @@
  */
 package org.jboss.as.cli.handlers.trycatch;
 
-import java.io.IOException;
-
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.Util;
-import org.jboss.as.cli.batch.Batch;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -44,12 +37,8 @@ public class EndTryHandler extends CommandHandlerWithHelp {
 
     @Override
     public boolean isAvailable(CommandContext ctx) {
-        try {
-            final TryBlock tryBlock = TryBlock.get(ctx);
-            return tryBlock != null && !tryBlock.isInTry();
-        } catch (CommandLineException e) {
-            return false;
-        }
+        final TryCatchFinallyControlFlow flow = TryCatchFinallyControlFlow.get(ctx);
+        return flow != null && !flow.isInTry();
     }
 
     /* (non-Javadoc)
@@ -58,70 +47,13 @@ public class EndTryHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        final TryBlock tryBlock = TryBlock.remove(ctx);
-
-        final BatchManager batchManager = ctx.getBatchManager();
-        if(!batchManager.isBatchActive()) {
-            if(tryBlock.isInCatch()) {
-                throw new CommandLineException("catch block did not activate batch mode.");
-            } else {
-                throw new CommandLineException("finally block did not activate batch mode.");
-            }
+        final TryCatchFinallyControlFlow flow = TryCatchFinallyControlFlow.get(ctx);
+        if(flow == null) {
+            throw new CommandLineException("end-if may appear only at the end of try-catch-finally control flow");
         }
-
-        final Batch batch = batchManager.getActiveBatch();
-        batchManager.discardActiveBatch();
-
-        final ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            throw new CommandLineException("The connection to the controller has not been established.");
+        if(flow.isInTry()) {
+            throw new CommandLineException("end-if may appear only after catch or finally");
         }
-
-        final ModelNode tryRequest = tryBlock.getTryRequest();
-        if(tryRequest == null) {
-            throw new CommandLineException("The try request is not available.");
-        }
-
-        ModelNode response;
-        try {
-            response = client.execute(tryRequest);
-        } catch (IOException e) {
-            throw new CommandLineException("try request failed", e);
-        }
-
-        CommandLineException catchError = null;
-        if(!Util.isSuccess(response)) {
-            ctx.printLine("try block failed: " + Util.getFailureDescription(response));
-            ModelNode catchRequest = tryBlock.getCatchRequest();
-            if(catchRequest == null && tryBlock.isInCatch() && batch.size() > 0) {
-                catchRequest = batch.toRequest();
-            }
-            if(catchRequest != null) {
-                try {
-                    response = client.execute(catchRequest);
-                } catch (IOException e) {
-                    throw new CommandLineException("catch request failed", e);
-                }
-                if(!Util.isSuccess(response)) {
-                    catchError = new CommandLineException("catch request failed: " + Util.getFailureDescription(response));
-                }
-            }
-        }
-
-        if(tryBlock.isInFinally() && batch.size() > 0) {
-            final ModelNode finallyRequest = batch.toRequest();
-            try {
-                response = client.execute(finallyRequest);
-            } catch (IOException e) {
-                throw new CommandLineException("finally request failed", e);
-            }
-            if(!Util.isSuccess(response)) {
-                throw new CommandLineException("finally request failed: " + Util.getFailureDescription(response));
-            }
-        }
-
-        if(catchError != null) {
-            throw catchError;
-        }
+        flow.run(ctx);
     }
 }

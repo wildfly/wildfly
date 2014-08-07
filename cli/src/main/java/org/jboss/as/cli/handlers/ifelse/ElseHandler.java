@@ -23,10 +23,7 @@ package org.jboss.as.cli.handlers.ifelse;
 
 
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.batch.Batch;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 
@@ -42,12 +39,8 @@ public class ElseHandler extends CommandHandlerWithHelp {
 
     @Override
     public boolean isAvailable(CommandContext ctx) {
-        try {
-            final IfElseBlock ifBlock = IfElseBlock.get(ctx);
-            return ifBlock != null && ifBlock.isInIf();
-        } catch (CommandLineException e) {
-            return false;
-        }
+        final IfElseControlFlow ifElse = IfElseControlFlow.get(ctx);
+        return ifElse != null && ifElse.isInIf();
     }
 
     /* (non-Javadoc)
@@ -55,27 +48,14 @@ public class ElseHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
-
-        final IfElseBlock ifBlock = IfElseBlock.get(ctx);
-
-        final BatchManager batchManager = ctx.getBatchManager();
-        if(!batchManager.isBatchActive()) {
-            throw new CommandLineException("if block did not activate batch mode.");
+        final IfElseControlFlow ifElse = IfElseControlFlow.get(ctx);
+        if(ifElse == null) {
+            throw new CommandLineException("else is not available outside the if-else control flow");
         }
-
-        final Batch ifBatch = batchManager.getActiveBatch();
-        if(ifBatch.size() == 0) {
-            throw new CommandLineException("if block is empty.");
-        }
-
-        ifBlock.setIfRequest(ifBatch.toRequest());
-        ifBlock.setInElse();
-
-        batchManager.discardActiveBatch();
-        if(!batchManager.activateNewBatch()) {
-            IfElseBlock.remove(ctx);
-            // that's more like illegal state
-            throw new CommandFormatException("Failed to activate batch mode for else.");
+        if(ifElse.isInIf()) {
+            ifElse.moveToElse();
+        } else {
+            throw new CommandLineException("only one else block is supported after the if");
         }
     }
 }

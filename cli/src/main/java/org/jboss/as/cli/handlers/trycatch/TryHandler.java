@@ -39,7 +39,7 @@ public class TryHandler extends CommandHandlerWithHelp {
 
     @Override
     public boolean isAvailable(CommandContext ctx) {
-        if(ctx.isBatchMode()) {
+        if(TryCatchFinallyControlFlow.get(ctx) != null || ctx.getBatchManager().isBatchActive()) {
             return false;
         }
         return super.isAvailable(ctx);
@@ -55,11 +55,6 @@ public class TryHandler extends CommandHandlerWithHelp {
         if(batchManager.isBatchActive()) {
             throw new CommandFormatException("try is not allowed while in batch mode.");
         }
-
-        if(!batchManager.activateNewBatch()) {
-            // that's more like illegal state
-            throw new CommandFormatException("Failed to activate batch mode for try.");
-        }
-        TryBlock.create(ctx);
+        ctx.registerRedirection(new TryCatchFinallyControlFlow(ctx));
     }
 }

@@ -23,8 +23,6 @@ package org.jboss.as.cli.handlers.trycatch;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.batch.Batch;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 
 /**
@@ -39,12 +37,8 @@ public class CatchHandler extends CommandHandlerWithHelp {
 
     @Override
     public boolean isAvailable(CommandContext ctx) {
-        try {
-            final TryBlock tryBlock = TryBlock.get(ctx);
-            return tryBlock != null && tryBlock.isInTry();
-        } catch (CommandLineException e) {
-            return false;
-        }
+        final TryCatchFinallyControlFlow flow = TryCatchFinallyControlFlow.get(ctx);
+        return flow != null && flow.isInTry();
     }
 
     /* (non-Javadoc)
@@ -52,21 +46,14 @@ public class CatchHandler extends CommandHandlerWithHelp {
      */
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
-
-        final TryBlock tryBlock = TryBlock.get(ctx);
-
-        final BatchManager batchManager = ctx.getBatchManager();
-        if(!batchManager.isBatchActive()) {
-            throw new CommandLineException("try block did not activate batch mode.");
+        final TryCatchFinallyControlFlow flow = TryCatchFinallyControlFlow.get(ctx);
+        if(flow == null) {
+            throw new CommandLineException("catch is available only in try-catch-finally control flow");
         }
-
-        final Batch tryBatch = batchManager.getActiveBatch();
-        if(tryBatch.size() == 0) {
-            throw new CommandLineException("try block is empty.");
+        if(flow.isInTry()) {
+            flow.moveToCatch();
+        } else {
+            throw new CommandLineException("catch may appear only once after try and before finally");
         }
-        tryBlock.setTryRequest(tryBatch.toRequest());
-        tryBlock.setInCatch();
-        batchManager.discardActiveBatch();
-        batchManager.activateNewBatch();
     }
 }

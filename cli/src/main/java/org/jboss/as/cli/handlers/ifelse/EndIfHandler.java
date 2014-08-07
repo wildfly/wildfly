@@ -21,16 +21,9 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
-import java.io.IOException;
-
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.Util;
-import org.jboss.as.cli.batch.Batch;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -44,12 +37,7 @@ public class EndIfHandler extends CommandHandlerWithHelp {
 
     @Override
     public boolean isAvailable(CommandContext ctx) {
-        try {
-            final IfElseBlock ifBlock = IfElseBlock.get(ctx);
-            return ifBlock != null;
-        } catch (CommandLineException e) {
-            return false;
-        }
+        return IfElseControlFlow.get(ctx) != null;
     }
 
     /* (non-Javadoc)
@@ -58,75 +46,10 @@ public class EndIfHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        final IfElseBlock ifBlock = IfElseBlock.remove(ctx);
-
-        final BatchManager batchManager = ctx.getBatchManager();
-        if(!batchManager.isBatchActive()) {
-            if(ifBlock.isInIf()) {
-                throw new CommandLineException("if block did not activate batch mode.");
-            } else {
-                throw new CommandLineException("else block did not activate batch mode.");
-            }
+        final IfElseControlFlow ifElse = IfElseControlFlow.get(ctx);
+        if(ifElse == null) {
+            throw new CommandLineException("end-if is not available outside if-else control flow");
         }
-
-        final Batch batch = batchManager.getActiveBatch();
-        batchManager.discardActiveBatch();
-
-        final ModelControllerClient client = ctx.getModelControllerClient();
-        if(client == null) {
-            throw new CommandLineException("The connection to the controller has not been established.");
-        }
-
-        final ModelNode conditionRequest = ifBlock.getConditionRequest();
-        if(conditionRequest == null) {
-            throw new CommandLineException("The condition request is not available.");
-        }
-
-        final Operation expression = ifBlock.getConditionExpression();
-        if(expression == null) {
-            throw new CommandLineException("The if expression is not available.");
-        }
-
-        ModelNode targetValue;
-        try {
-            targetValue = client.execute(conditionRequest);
-        } catch (IOException e) {
-            throw new CommandLineException("condition request failed", e);
-        }
-
-        final Object value = expression.resolveValue(ctx, targetValue);
-        if(value == null) {
-            throw new CommandLineException("if expression resolved to a null");
-        }
-
-        if(Boolean.TRUE.equals(value)) {
-            ModelNode ifRequest = ifBlock.getIfRequest();
-            if(ifRequest == null) {
-                if(batch.size() == 0) {
-                    throw new CommandLineException("if request is missing.");
-                }
-                ifRequest = batch.toRequest();
-            }
-            try {
-                final ModelNode response = client.execute(ifRequest);
-                if(!Util.isSuccess(response)) {
-                    new CommandLineException("if request failed: " + Util.getFailureDescription(response));
-                }
-            } catch (IOException e) {
-                throw new CommandLineException("if request failed", e);
-            }
-        } else if(ifBlock.isInElse()) {
-            if(batch.size() == 0) {
-                throw new CommandLineException("else block is empty.");
-            }
-            try {
-                final ModelNode response = client.execute(batch.toRequest());
-                if(!Util.isSuccess(response)) {
-                    throw new CommandLineException("else request failed: " + Util.getFailureDescription(response));
-                }
-            } catch (IOException e) {
-                throw new CommandLineException("else request failed", e);
-            }
-        }
+        ifElse.run(ctx);
     }
 }
