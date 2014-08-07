@@ -104,7 +104,7 @@
         <version.groovy-all>2.3.4</version.groovy-all>
         <version.httpunit>1.7</version.httpunit>
         <version.io.netty>4.0.15.Final</version.io.netty>
-        <version.io.undertow>1.1.0.Beta5</version.io.undertow>
+        <version.io.undertow>1.1.0.Beta6</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Final</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.2</version.javax.enterprise>
@@ -256,7 +256,7 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
-        <version.org.wildfly.core>1.0.0.Alpha3</version.org.wildfly.core>
+        <version.org.wildfly.core>1.0.0.Alpha4</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
