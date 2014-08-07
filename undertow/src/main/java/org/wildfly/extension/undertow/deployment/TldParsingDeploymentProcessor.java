@@ -228,7 +228,7 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(),
-                    e.getLocation().getColumnNumber()));
+                    e.getLocation().getColumnNumber()), e);
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld), e);
         } finally {
