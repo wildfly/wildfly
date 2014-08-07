@@ -86,6 +86,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -462,8 +463,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 43, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s")
-    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime);
+    @Message(id = 43, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s. Timer was in state %s.")
+    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime, TimerState state);
 
     /**
      * Returns a {@link IllegalStateException} indicating that {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
