@@ -300,7 +300,7 @@ public interface ConnectionFactoryAttributes {
         ConnectionFactoryAttribute[] ATTRIBUTES = {
                 create(DISCOVERY_GROUP_NAME, null, false),
                 create(CONNECTOR, null, false),
-                create(ENTRIES, null, false),
+                create(ENTRIES, "entries", true),
                 create(CommonAttributes.HA, "HA", true),
                 create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
                 create(CONNECTION_TTL, "connectionTTL", true),
