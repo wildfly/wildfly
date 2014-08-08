@@ -1038,10 +1038,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         //we also register them under the new namespaces
-        for(String k : new HashSet<>(ret.keySet())) {
-            if(k.startsWith(OLD_URI_PREFIX)) {
-                String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
-                ret.put(newUri, ret.get(k));
+        for (String k : new HashSet<>(ret.keySet())) {
+            if (k != null) {
+                if (k.startsWith(OLD_URI_PREFIX)) {
+                    String newUri = k.replace(OLD_URI_PREFIX, NEW_URI_PREFIX);
+                    ret.put(newUri, ret.get(k));
+                }
             }
         }
 
