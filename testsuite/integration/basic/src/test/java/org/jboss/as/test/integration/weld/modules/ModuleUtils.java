@@ -21,8 +21,15 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
+import org.jboss.as.test.module.util.TestModule;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.xnio.IoUtils;
+
+import javax.enterprise.inject.spi.Extension;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,80 +39,38 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.inject.spi.Extension;
-
-import org.jboss.jandex.Index;
-import org.jboss.jandex.IndexWriter;
-import org.jboss.jandex.Indexer;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.xnio.IoUtils;
-
 public class ModuleUtils {
 
-    public static void createSimpleTestModule(String moduleName, Class<?>... classes) throws IOException {
-        createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), classes);
+    public static TestModule createSimpleTestModule(String moduleName, Class<?>... classes) throws IOException {
+        return createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), classes);
     }
 
-    public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
+    public static TestModule createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
         URL url = classes[0].getResource(moduleXml);
+
         if (url == null) {
             throw new IllegalStateException("Could not find module.xml: " + moduleXml);
         }
-        createTestModule(moduleName, url.openStream(), classes);
+
+        return createTestModule(moduleName, url.openStream(), classes);
     }
 
-    private static void createTestModule(String moduleName, InputStream moduleXml, Class<?>... classes) throws IOException {
-        File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
-        if (testModuleRoot.exists()) {
-            throw new IllegalArgumentException(testModuleRoot + " already exists");
-        }
-        File file = new File(testModuleRoot, "main");
-        if (!file.mkdirs()) {
-            throw new IllegalArgumentException("Could not create " + file);
-        }
+    private static TestModule createTestModule(String moduleName, InputStream moduleXml, Class<?>... classes) throws IOException {
+        File tempFile = File.createTempFile("test_module_tmp", ".tmp");
 
-        copyFile(new File(file, "module.xml"), moduleXml);
+        copyFile(tempFile, moduleXml);
 
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, moduleName + ".jar");
-        jar.addClasses(classes);
-        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        addExtensionsIfAvailable(jar, classes);
+        TestModule testModule = new TestModule("test." + moduleName, tempFile);
+        JavaArchive moduleJar = testModule
+            .addResource(moduleName + ".jar")
+            .addClasses(classes)
+            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
-        Indexer indexer = new Indexer();
-        for (Class<?> clazz : classes) {
-            InputStream resource = null;
-            try {
-                resource = clazz.getResourceAsStream(clazz.getSimpleName() + ".class");
-                indexer.index(resource);
-            } finally {
-                if (resource != null) {
-                    try {
-                        resource.close();
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
+        addExtensionsIfAvailable(moduleJar, classes);
 
-        Index index = indexer.complete();
-        ByteArrayOutputStream data = new ByteArrayOutputStream();
-        IndexWriter writer = new IndexWriter(data);
-        writer.write(index);
-        jar.addAsManifestResource(new ByteArrayAsset(data.toByteArray()), "jandex.idx");
-        FileOutputStream jarFile = new FileOutputStream(new File(file, moduleName + ".jar"));
-        try {
-            jar.as(ZipExporter.class).exportTo(jarFile);
-        } finally {
-            jarFile.flush();
-            jarFile.close();
-        }
+        testModule.create();
 
+        return testModule;
     }
 
     private static void copyFile(File target, InputStream src) throws IOException {
@@ -118,38 +83,6 @@ public class ModuleUtils {
             }
         } finally {
             IoUtils.safeClose(out);
-        }
-    }
-
-    public static File getModulePath() {
-        String modulePath = System.getProperty("module.path", null);
-        if (modulePath == null) {
-            String jbossHome = System.getProperty("jboss.home", null);
-            if (jbossHome == null) {
-                throw new IllegalStateException("Neither -Dmodule.path nor -Djboss.home were set");
-            }
-            modulePath = jbossHome + File.separatorChar + "modules";
-        } else {
-            modulePath = modulePath.split(File.pathSeparator)[0];
-        }
-        File moduleDir = new File(modulePath);
-        if (!moduleDir.exists()) {
-            throw new IllegalStateException("Determined module path does not exist");
-        }
-        if (!moduleDir.isDirectory()) {
-            throw new IllegalStateException("Determined module path is not a dir");
-        }
-        return moduleDir;
-    }
-
-    public static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
-                }
-            }
-            file.delete();
         }
     }
 
