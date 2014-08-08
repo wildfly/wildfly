@@ -160,6 +160,7 @@
                     <max-retry-interval>3000</max-retry-interval>
                     <initial-connect-attempts>-1</initial-connect-attempts>
                     <reconnect-attempts>3</reconnect-attempts>
+                    <reconnect-attempts-on-same-node>10</reconnect-attempts-on-same-node>
                     <failover-on-server-shutdown>true</failover-on-server-shutdown>
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <confirmation-window-size>350</confirmation-window-size>
