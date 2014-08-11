@@ -299,6 +299,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             if (transportExecutor != null) {
                 addExecutorDependency(configBuilder, transportExecutor, transportConfig.getExecutorInjector());
             }
+            configBuilder.addDependency(ChannelService.getServiceName(containerName), Channel.class, transportConfig.getChannelInjector());
             configBuilder.addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
         }
 
@@ -427,6 +428,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     static class Transport implements EmbeddedCacheManagerConfigurationService.TransportConfiguration {
         private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
+        private final InjectedValue<Channel> channel = new InjectedValue<>();
         private final InjectedValue<Executor> executor = new InjectedValue<>();
 
         private Long lockTimeout;
@@ -446,6 +448,15 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         Injector<Executor> getExecutorInjector() {
             return this.executor;
+        }
+
+        Injector<Channel> getChannelInjector() {
+            return this.channel;
+        }
+
+        @Override
+        public Channel getChannel() {
+            return this.channel.getValue();
         }
 
         @Override

@@ -42,7 +42,6 @@ import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.as.clustering.jgroups.RelayConfiguration;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -52,6 +51,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jgroups.Channel;
 
 /**
  * @author Paul Ferraro
@@ -65,6 +65,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     interface TransportConfiguration {
         String getClusterName();
         Long getLockTimeout();
+        Channel getChannel();
         ChannelFactory getChannelFactory();
         Executor getExecutor();
     }
@@ -141,7 +142,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         TransportConfigurationBuilder transportBuilder = builder.transport();
 
         if (transport != null) {
-            transportBuilder.transport(new ChannelTransport(context.getController().getServiceContainer(), ChannelService.getServiceName(this.name)));
+            transportBuilder.transport(new ChannelTransport(transport.getChannel()));
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
                 transportBuilder.distributedSyncTimeout(timeout.longValue());

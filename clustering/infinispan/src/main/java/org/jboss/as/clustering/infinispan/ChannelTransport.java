@@ -23,37 +23,23 @@
 package org.jboss.as.clustering.infinispan;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.StartException;
 import org.jgroups.Channel;
 
 /**
+ * Custom {@link JGroupsTransport} that uses a provided channel.
  * @author Paul Ferraro
  */
 public class ChannelTransport extends JGroupsTransport {
 
-    private final ServiceRegistry registry;
-    private final ServiceName channelName;
-
-    public ChannelTransport(ServiceRegistry registry, ServiceName channelName) {
-        this.registry = registry;
-        this.channelName = channelName;
+    public ChannelTransport(Channel channel) {
+        super(channel);
     }
 
     @Override
     protected synchronized void initChannel() {
-        ServiceController<Channel> service = ServiceContainerHelper.getService(this.registry, this.channelName);
-        try {
-            this.channel = ServiceContainerHelper.getValue(service);
-            this.channel.setDiscardOwnMessages(false);
-            this.connectChannel = true;
-            this.disconnectChannel = true;
-            this.closeChannel = false;
-        } catch (StartException e) {
-            throw new IllegalStateException(e);
-        }
+        this.channel.setDiscardOwnMessages(false);
+        this.connectChannel = true;
+        this.disconnectChannel = true;
+        this.closeChannel = false;
     }
 }
