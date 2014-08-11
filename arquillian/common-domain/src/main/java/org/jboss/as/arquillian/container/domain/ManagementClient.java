@@ -398,7 +398,7 @@ public class ManagementClient {
     private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
         return readResource(address, includeRuntime, null);
     }
-    
+
     private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
