@@ -394,7 +394,7 @@ public class ManagementClient {
     private ModelNode readResource(ModelNode address) throws Exception {
         return readResource(address, true);
     }
-    
+
     private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
         return readResource(address, includeRuntime, null);
     }
@@ -403,7 +403,7 @@ public class ManagementClient {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         if(recursiveDepth == null) {
-        	operation.get(RECURSIVE).set(true);
+            operation.get(RECURSIVE).set(true);
         }
         else {
             // Due to WFLY-3705 this is false
