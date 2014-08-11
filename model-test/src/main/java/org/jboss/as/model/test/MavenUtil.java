@@ -209,7 +209,7 @@ class MavenUtil {
         List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
         if (remoteReposFromSysProp == null || remoteReposFromSysProp.trim().length() == 0 || remoteReposFromSysProp.startsWith("${")) {
             if (useEapRepository) {
-                remoteRepositories.add(new RemoteRepository.Builder("jboss-product-repository", "default", "http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6-rhel-6-build/latest/maven/").build());
+                remoteRepositories.add(new RemoteRepository.Builder("jboss-product-repository", "default", "http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6.4-rhel-6-build/latest/maven/").build());
             } else {
                 remoteRepositories.add(new RemoteRepository.Builder("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/").build());
             }

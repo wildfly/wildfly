@@ -160,7 +160,7 @@ under the License.
       <id>eap-productization-maven-repository</id> 
       <mirrorOf>*</mirrorOf> 
       <name>EAP 6 Productization Maven Repository</name> 
-      <url>http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6-rhel-6-build/latest/maven/</url> 
+      <url>http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6.4-rhel-6-build/latest/maven/</url> 
     </mirror>
   </mirrors>
   
