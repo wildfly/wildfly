@@ -31,6 +31,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIB
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SERVER;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SERVER_CONFIG;
@@ -78,6 +79,8 @@ public class ManagementClient {
 
     private static final String POSTFIX_WEB = ".war";
     private static final String POSTFIX_EAR = ".ear";
+
+    private static final int ROOT_RECURSIVE_DEPTH = 3;
 
     private final String mgmtAddress;
     private final int mgmtPort;
@@ -288,7 +291,7 @@ public class ManagementClient {
     }
 
     private void readRootNode() throws Exception {
-        rootNode = readResource(new ModelNode());
+        rootNode = readResource(new ModelNode(), true, ROOT_RECURSIVE_DEPTH);
     }
 
     private String getSocketBindingGroup(String serverGroup) {
@@ -391,13 +394,24 @@ public class ManagementClient {
     private ModelNode readResource(ModelNode address) throws Exception {
         return readResource(address, true);
     }
-
+    
     private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
+        return readResource(address, includeRuntime, null);
+    }
+    
+    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(RECURSIVE).set("true");
+        if(recursiveDepth == null) {
+        	operation.get(RECURSIVE).set(true);
+        }
+        else {
+        	// Due to WFLY-3705 this is false
+            operation.get(RECURSIVE).set(false);
+            operation.get(RECURSIVE_DEPTH).set(recursiveDepth);
+        }
         operation.get(INCLUDE_RUNTIME).set(includeRuntime);
-        operation.get(PROXIES).set("true");
+        operation.get(PROXIES).set(true);
         operation.get(OP_ADDR).set(address);
 
         return executeForResult(operation);
