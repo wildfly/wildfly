@@ -406,7 +406,7 @@ public class ManagementClient {
         	operation.get(RECURSIVE).set(true);
         }
         else {
-        	// Due to WFLY-3705 this is false
+            // Due to WFLY-3705 this is false
             operation.get(RECURSIVE).set(false);
             operation.get(RECURSIVE_DEPTH).set(recursiveDepth);
         }
