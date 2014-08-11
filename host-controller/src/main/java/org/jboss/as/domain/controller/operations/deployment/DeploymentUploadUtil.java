@@ -45,6 +45,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.CompositeOperationAwareTransformer;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -93,7 +94,11 @@ class DeploymentUploadUtil {
 
     private static byte[] storeDeploymentContent(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
         InputStream in = getContents(context, operation);
-        return contentRepository.addContent(in);
+        try {
+            return contentRepository.addContent(in);
+        } finally {
+            StreamUtils.safeClose(in);
+        }
     }
 
     private static InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
