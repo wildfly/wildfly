@@ -242,7 +242,12 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                             final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                             // Add a step to read the child resource
                             rrOp.get(ModelDescriptionConstants.RECURSIVE).set(operation.get(ModelDescriptionConstants.RECURSIVE));
-                            rrOp.get(ModelDescriptionConstants.RECURSIVE_DEPTH).set(newDepth);
+                            if(operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).isDefined()) {
+                                rrOp.get(ModelDescriptionConstants.RECURSIVE_DEPTH).set(newDepth);
+                            }
+                            else {
+                                rrOp.get(ModelDescriptionConstants.RECURSIVE_DEPTH).set(ModelType.UNDEFINED);
+                            }
                             rrOp.get(ModelDescriptionConstants.PROXIES).set(proxies);
                             rrOp.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(queryRuntime);
                             rrOp.get(ModelDescriptionConstants.INCLUDE_ALIASES).set(aliases);
