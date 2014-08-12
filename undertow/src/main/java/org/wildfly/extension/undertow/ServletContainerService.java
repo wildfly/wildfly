@@ -26,6 +26,7 @@ import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
+import org.jboss.as.server.requestcontroller.GlobalRequestController;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -46,6 +47,7 @@ public class ServletContainerService implements Service<ServletContainerService>
     private volatile ServletContainer servletContainer;
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
+    private final InjectedValue<GlobalRequestController> globalRequestControllerInjectedValue = new InjectedValue<>();
     private final String defaultEncoding;
     private final boolean useListenerEncoding;
     private final boolean ignoreFlush;
@@ -107,6 +109,14 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     InjectedValue<SessionPersistenceManager> getSessionPersistenceManagerInjectedValue() {
         return sessionPersistenceManagerInjectedValue;
+    }
+
+    InjectedValue<GlobalRequestController> getGlobalRequestControllerInjectedValue() {
+        return globalRequestControllerInjectedValue;
+    }
+
+    public GlobalRequestController getGlobalRequestController() {
+        return globalRequestControllerInjectedValue.getOptionalValue();
     }
 
     public SessionPersistenceManager getSessionPersistenceManager() {

@@ -222,6 +222,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
+                .setTopLevelDeploymentName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName())
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)

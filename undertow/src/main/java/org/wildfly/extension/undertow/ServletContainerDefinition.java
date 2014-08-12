@@ -89,7 +89,6 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
-
     protected static final AttributeDefinition EAGER_FILTER_INIT =
             new SimpleAttributeDefinitionBuilder("eager-filter-initialization", ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -97,15 +96,13 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
-
     protected static final AttributeDefinition DEFAULT_SESSION_TIMEOUT =
             new SimpleAttributeDefinitionBuilder("default-session-timeout", ModelType.INT, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .setMeasurementUnit(MeasurementUnit.MINUTES)
-                    .setDefaultValue(new ModelNode(30)) //30 minutes
-                    .build();
-
+                    .setDefaultValue(new ModelNode(30))
+                    .build(); //30 minutes
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(

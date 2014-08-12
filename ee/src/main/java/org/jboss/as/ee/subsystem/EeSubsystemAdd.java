@@ -23,13 +23,13 @@
 package org.jboss.as.ee.subsystem;
 
 import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ee.component.EEComponentSuspendDeploymentUnitProcessor;
 import org.jboss.as.ee.component.ReflectiveClassIntrospector;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
@@ -199,6 +199,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_INSTANCE_NAME, new InstanceNameBindingProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APP_NAMING_CONTEXT, new ApplicationContextProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_CONCURRENT_CONTEXT, new EEConcurrentContextProcessor());
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND, new EEComponentSuspendDeploymentUnitProcessor());
 
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVE_MESSAGE_DESTINATIONS, new MessageDestinationResolutionProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_COMPONENT_AGGREGATION, new ComponentAggregationProcessor());

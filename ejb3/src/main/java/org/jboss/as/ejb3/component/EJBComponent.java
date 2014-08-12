@@ -49,7 +49,6 @@ import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
-import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -101,7 +100,6 @@ public abstract class EJBComponent extends BasicComponent {
     private final EJBRemoteTransactionsRepository ejbRemoteTransactionsRepository;
 
     private final InvocationMetrics invocationMetrics = new InvocationMetrics();
-    private final ShutDownInterceptorFactory shutDownInterceptorFactory;
     private final TransactionManager transactionManager;
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
@@ -157,7 +155,6 @@ public abstract class EJBComponent extends BasicComponent {
 
         this.ejbRemoteTransactionsRepository = ejbComponentCreateService.getEJBRemoteTransactionsRepository();
         this.timeoutInterceptors = Collections.unmodifiableMap(ejbComponentCreateService.getTimeoutInterceptors());
-        this.shutDownInterceptorFactory = ejbComponentCreateService.getShutDownInterceptorFactory();
         this.transactionManager = ejbComponentCreateService.getTransactionManager();
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
@@ -202,18 +199,6 @@ public abstract class EJBComponent extends BasicComponent {
             return CurrentServiceContainer.getServiceContainer();
         }
         return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
-    }
-
-    @Override
-    public void start() {
-        getShutDownInterceptorFactory().start();
-        super.start();
-    }
-
-    @Override
-    public void stop() {
-        getShutDownInterceptorFactory().shutdown();
-        super.stop();
     }
 
     public ApplicationExceptionDetails getApplicationException(Class<?> exceptionClass, Method invokedMethod) {
@@ -534,9 +519,5 @@ public abstract class EJBComponent extends BasicComponent {
 
     public InvocationMetrics getInvocationMetrics() {
         return invocationMetrics;
-    }
-
-    protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
-        return shutDownInterceptorFactory;
     }
 }

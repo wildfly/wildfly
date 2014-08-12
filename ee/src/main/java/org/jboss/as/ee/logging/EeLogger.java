@@ -37,6 +37,7 @@ import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.component.interceptors.ComponentSuspendedException;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -1078,4 +1079,7 @@ public interface EeLogger extends BasicLogger {
      */
     @Message(id = 109, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
     DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
+
+    @Message(id = 110, value = "Invocation cannot proceed as component has been suspended.")
+    ComponentSuspendedException componentSuspended();
 }
