@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 
 /**
  * Provides implementation of the {@code NotificationSupport}.
@@ -47,9 +48,9 @@ class NotificationSupports {
 
     static class BlockingNotificationSupport implements NotificationSupport {
 
-        private final NotificationRegistryImpl registry;
+        private final NotificationHandlerRegistration registry;
 
-        public BlockingNotificationSupport(NotificationRegistryImpl registry) {
+        public BlockingNotificationSupport(NotificationHandlerRegistration registry) {
             this.registry = registry;
         }
 
@@ -59,14 +60,14 @@ class NotificationSupports {
         }
 
         @Override
-        public NotificationRegistry getNotificationRegistry() {
+        public NotificationHandlerRegistration getNotificationRegistry() {
             return registry;
         }
     }
 
     static class NonBlockingNotificationSupport implements  NotificationSupport {
 
-        private final NotificationRegistryImpl registry;
+        private final NotificationHandlerRegistration registry;
         private final ExecutorService executor;
 
         /**
@@ -82,7 +83,7 @@ class NotificationSupports {
          */
         private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-        public NonBlockingNotificationSupport(NotificationRegistryImpl registry, ExecutorService executor) {
+        public NonBlockingNotificationSupport(NotificationHandlerRegistration registry, ExecutorService executor) {
             this.registry = registry;
             this.executor = executor;
         }
@@ -111,13 +112,13 @@ class NotificationSupports {
         }
 
         @Override
-        public NotificationRegistry getNotificationRegistry() {
+        public NotificationHandlerRegistration getNotificationRegistry() {
             return registry;
         }
     }
 
 
-    private static void fireNotifications(NotificationRegistryImpl registry, final Notification... notifications) {
+    private static void fireNotifications(NotificationHandlerRegistration registry, final Notification... notifications) {
         for (Notification notification : notifications) {
             try {
                 // each notification may have a different subset of handlers depending on their filters

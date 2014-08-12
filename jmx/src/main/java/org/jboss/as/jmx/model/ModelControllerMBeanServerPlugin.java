@@ -56,8 +56,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.notification.NotificationFilter;
 import org.jboss.as.controller.notification.NotificationHandler;
-import org.jboss.as.controller.notification.NotificationRegistry;
 import org.jboss.as.controller.operations.global.GlobalNotifications;
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.as.jmx.BaseMBeanServerPlugin;
 import org.jboss.dmr.ModelNode;
 
@@ -71,7 +71,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     private final ConfiguredDomains configuredDomains;
     private final ModelControllerMBeanHelper legacyHelper;
     private final ModelControllerMBeanHelper exprHelper;
-    private final NotificationRegistry notificationRegistry;
+    private final NotificationHandlerRegistration notificationRegistry;
     private final AtomicLong notificationSequenceNumber = new AtomicLong(0);
 
     public ModelControllerMBeanServerPlugin(final ConfiguredDomains configuredDomains, ModelController controller, final MBeanServerDelegate delegate,
@@ -94,7 +94,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         if (delegate != null) {
             for (String domain : configuredDomains.getDomains()) {
                 ResourceRegistrationNotificationHandler handler = new ResourceRegistrationNotificationHandler(delegate, domain);
-                notificationRegistry.registerNotificationHandler(NotificationRegistry.ANY_ADDRESS, handler, handler);
+                notificationRegistry.registerNotificationHandler(NotificationHandlerRegistration.ANY_ADDRESS, handler, handler);
             }
         }
     }
