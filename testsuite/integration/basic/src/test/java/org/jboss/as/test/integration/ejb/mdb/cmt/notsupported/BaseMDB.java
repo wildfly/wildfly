@@ -26,12 +26,15 @@ import static org.jboss.as.test.integration.ejb.mdb.cmt.notsupported.ContainerMa
 
 import javax.annotation.Resource;
 import javax.ejb.MessageDrivenContext;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import org.jboss.logging.Logger;
 
@@ -42,7 +45,7 @@ public abstract class BaseMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(BaseMDB.class);
 
-    @Resource(lookup="java:comp/DefaultJMSConnectionFactory")
+    @Resource(lookup="java:/ConnectionFactory")
     private ConnectionFactory cf;
 
     @Resource
@@ -61,19 +64,21 @@ public abstract class BaseMDB implements MessageListener {
         } catch (IllegalStateException e) {
             setRollbackOnlyThrowsIllegalStateException = true;
         }
-
+        Connection con = null;
+        Session session = null;
         try {
             final Destination replyTo = message.getJMSReplyTo();
             if (replyTo != null) {
                 logger.info("Replying to " + replyTo);
-                try (
-                        JMSContext context = cf.createContext()
-                ) {
-                    context.createProducer()
-                            .setJMSCorrelationID(message.getJMSMessageID())
-                            .setProperty(EXCEPTION_PROP_NAME, setRollbackOnlyThrowsIllegalStateException)
-                            .send(replyTo, "");
-                }
+
+                con = cf.createConnection();
+
+                session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                MessageProducer producer = session.createProducer(replyTo);
+                TextMessage msg = session.createTextMessage("");
+                msg.setJMSCorrelationID(message.getJMSMessageID());
+                msg.setBooleanProperty(EXCEPTION_PROP_NAME, setRollbackOnlyThrowsIllegalStateException);
+                producer.send(replyTo, msg);
             }
         } catch (JMSException e) {
             throw new RuntimeException(e);

@@ -33,7 +33,7 @@
             <message-destination-type>javax.jms.Queue</message-destination-type>
             <activation-config>
                 <activation-config-property>
-                    <activation-config-property-name>destinationLookup</activation-config-property-name>
+                    <activation-config-property-name>destination</activation-config-property-name>
                     <activation-config-property-value>java:jboss/queue/cmt-not-supported-dd</activation-config-property-value>
                 </activation-config-property>
                 <activation-config-property>

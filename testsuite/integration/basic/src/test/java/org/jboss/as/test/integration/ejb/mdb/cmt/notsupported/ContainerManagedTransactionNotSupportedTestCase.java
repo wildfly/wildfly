@@ -30,12 +30,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.UUID;
 
 import javax.annotation.Resource;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSContext;
 import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -123,25 +125,36 @@ public class ContainerManagedTransactionNotSupportedTestCase {
     }
 
     private void doSetRollbackOnlyInContainerManagedTransactionNotSupportedMDBThrowsIllegalStateException(Destination destination) throws Exception {
-        try (
-                JMSContext context = cf.createContext()
-        ) {
-            TemporaryQueue replyTo = context.createTemporaryQueue();
+        Connection con = null;
+        Session session = null;
+        String text = UUID.randomUUID().toString();
+        try {
 
-            String text = UUID.randomUUID().toString();
+            con = cf.createConnection();
 
-            TextMessage message = context.createTextMessage(text);
-            message.setJMSReplyTo(replyTo);
+            session = con.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer producer = session.createProducer(destination);
 
-            context.createProducer()
-                    .send(destination, message);
+            Queue replyQueue = session.createTemporaryQueue();
+            MessageConsumer consumer = session.createConsumer(replyQueue);
 
-            Message reply = context.createConsumer(replyTo)
+            con.start();
+
+            TextMessage msg = session.createTextMessage();
+            msg.setJMSReplyTo(replyQueue);
+            msg.setText(text);
+            producer.send(msg);
+
+            Message reply = consumer
                     .receive(adjust(2000));
             assertNotNull(reply);
-            assertEquals(message.getJMSMessageID(), reply.getJMSCorrelationID());
+            assertEquals(msg.getJMSMessageID(), reply.getJMSCorrelationID());
             assertTrue("messageDrivenContext.setRollbackOnly() did not throw the expected IllegalStateException",
                     reply.getBooleanProperty(EXCEPTION_PROP_NAME));
+        } finally {
+            if(session != null) {
+                session.close();
+            }
         }
     }
 }

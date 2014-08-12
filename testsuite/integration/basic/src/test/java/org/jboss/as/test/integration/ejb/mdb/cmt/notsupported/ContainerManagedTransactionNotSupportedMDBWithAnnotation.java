@@ -37,7 +37,7 @@ import javax.jms.Message;
  */
 @TransactionManagement(CONTAINER)
 @MessageDriven(activationConfig = {
-        @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = QUEUE_JNDI_NAME_FOR_ANNOTATION)
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = QUEUE_JNDI_NAME_FOR_ANNOTATION)
 })
 public class ContainerManagedTransactionNotSupportedMDBWithAnnotation extends BaseMDB {
 
