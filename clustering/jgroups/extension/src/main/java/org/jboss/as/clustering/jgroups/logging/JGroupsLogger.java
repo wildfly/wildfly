@@ -82,7 +82,6 @@ public interface JGroupsLogger extends BasicLogger {
      * A message indicating a file could not be parsed.
      *
      * @param url the path to the file.
-     *
      * @return the message.
      */
     @Message(id = 7, value = "Failed to parse %s")
@@ -92,7 +91,6 @@ public interface JGroupsLogger extends BasicLogger {
      * A message indicating a resource could not be located.
      *
      * @param resource the resource that could not be located.
-     *
      * @return the message.
      */
     @Message(id = 8, value = "Failed to locate %s")
@@ -133,5 +131,8 @@ public interface JGroupsLogger extends BasicLogger {
 
     @Message(id = 20, value = "Unable to load protocol class %s")
     String unableToLoadProtocol(String protocolName);
+
+    @Message(id = 21, value = "Attributes referencing threads subsystem can only be used to support older slaves in the domain.")
+    String threadsAttributesUsedInRuntime();
 
 }

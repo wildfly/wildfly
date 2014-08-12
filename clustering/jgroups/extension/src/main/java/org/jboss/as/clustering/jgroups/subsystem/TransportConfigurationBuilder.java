@@ -22,16 +22,10 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.threads.JBossExecutors;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
@@ -42,10 +36,6 @@ import org.wildfly.clustering.service.ValueDependency;
 public class TransportConfigurationBuilder extends AbstractProtocolConfigurationBuilder<TransportConfiguration> implements TransportConfiguration {
 
     private ValueDependency<SocketBinding> diagnosticsSocketBinding;
-    private ValueDependency<ThreadFactory> threadFactory;
-    private ValueDependency<ExecutorService> defaultExecutor = null;
-    private ValueDependency<ExecutorService> oobExecutor = null;
-    private ValueDependency<ScheduledExecutorService> timerExecutor = null;
     private boolean shared = TransportResourceDefinition.SHARED.getDefaultValue().asBoolean();
     private Topology topology = null;
 
@@ -58,18 +48,6 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
         ServiceBuilder<TransportConfiguration> builder = super.build(target);
         if (this.diagnosticsSocketBinding != null) {
             this.diagnosticsSocketBinding.register(builder);
-        }
-        if (this.threadFactory != null) {
-            this.threadFactory.register(builder);
-        }
-        if (this.defaultExecutor != null) {
-            this.defaultExecutor.register(builder);
-        }
-        if (this.oobExecutor != null) {
-            this.oobExecutor.register(builder);
-        }
-        if (this.timerExecutor != null) {
-            this.timerExecutor.register(builder);
         }
         return builder;
     }
@@ -100,34 +78,6 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
     public TransportConfigurationBuilder setDiagnosticsSocket(String socketBindingName) {
         if (socketBindingName != null) {
             this.diagnosticsSocketBinding = new InjectedValueDependency<>(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class);
-        }
-        return this;
-    }
-
-    public TransportConfigurationBuilder setDefaultExecutor(String executorName) {
-        if (executorName != null) {
-            this.defaultExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ExecutorService.class);
-        }
-        return this;
-    }
-
-    public TransportConfigurationBuilder setOOBExecutor(String executorName) {
-        if (executorName != null) {
-            this.oobExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ExecutorService.class);
-        }
-        return this;
-    }
-
-    public TransportConfigurationBuilder setTimerExecutor(String executorName) {
-        if (executorName != null) {
-            this.timerExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ScheduledExecutorService.class);
-        }
-        return this;
-    }
-
-    public TransportConfigurationBuilder setThreadFactory(String threadFactoryName) {
-        if (threadFactoryName != null) {
-            this.threadFactory = new InjectedValueDependency<>(ThreadsServices.threadFactoryName(threadFactoryName), ThreadFactory.class);
         }
         return this;
     }
@@ -167,29 +117,6 @@ public class TransportConfigurationBuilder extends AbstractProtocolConfiguration
     @Override
     public SocketBinding getDiagnosticsSocketBinding() {
         return (this.diagnosticsSocketBinding != null) ? this.diagnosticsSocketBinding.getValue() : null;
-    }
-
-    @Override
-    public ExecutorService getDefaultExecutor() {
-        ExecutorService executor = (this.defaultExecutor != null) ? this.defaultExecutor.getValue() : null;
-        return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
-    }
-
-    @Override
-    public ExecutorService getOOBExecutor() {
-        ExecutorService executor = (this.defaultExecutor != null) ? this.oobExecutor.getValue() : null;
-        return (executor != null) ? JBossExecutors.protectedExecutorService(executor) : null;
-    }
-
-    @Override
-    public ScheduledExecutorService getTimerExecutor() {
-        ScheduledExecutorService executor = (this.timerExecutor != null) ? this.timerExecutor.getValue() : null;
-        return (executor != null) ? JBossExecutors.protectedScheduledExecutorService(executor) : null;
-    }
-
-    @Override
-    public ThreadFactory getThreadFactory() {
-        return (this.threadFactory != null) ? this.threadFactory.getValue() : null;
     }
 
     @Override

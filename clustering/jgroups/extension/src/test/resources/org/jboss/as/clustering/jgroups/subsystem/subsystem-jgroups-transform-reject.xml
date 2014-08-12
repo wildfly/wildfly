@@ -17,6 +17,26 @@
                        rack="rack1"
                        site="site1">
                 <property name="enable_bundling">true</property>
+                <default-thread-pool min-threads="11"
+                                     queue-length="12"
+                                     max-threads="13"
+                                     keep-alive-time="14"
+                                     keep-alive-time-unit="SECONDS"/>
+                <oob-thread-pool min-threads="31"
+                                 queue-length="32"
+                                 max-threads="33"
+                                 keep-alive-time="34"
+                                 keep-alive-time-unit="HOURS"/>
+                <internal-thread-pool min-threads="21"
+                                      queue-length="22"
+                                      max-threads="23"
+                                      keep-alive-time="24"
+                                      keep-alive-time-unit="DAYS"/>
+                <timer-thread-pool min-threads="41"
+                                   queue-length="42"
+                                   max-threads="43"
+                                   keep-alive-time="44"
+                                   keep-alive-time-unit="NANOSECONDS"/>
             </transport>
             <protocol type="MPING" module="org.jgroups"/>
             <protocol type="MERGE2"/>

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -70,13 +72,19 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 .setShared(TransportResourceDefinition.SHARED.resolveModelAttribute(context, transport).asBoolean())
                 .setTopology(site, rack, machine)
                 .setSocketBinding(ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport)))
-                .setDiagnosticsSocket(ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)))
-                .setThreadFactory(ModelNodes.asString(TransportResourceDefinition.THREAD_FACTORY.resolveModelAttribute(context, transport)))
-                .setDefaultExecutor(ModelNodes.asString(TransportResourceDefinition.DEFAULT_EXECUTOR.resolveModelAttribute(context, transport)))
-                .setOOBExecutor(ModelNodes.asString(TransportResourceDefinition.OOB_EXECUTOR.resolveModelAttribute(context, transport)))
-                .setTimerExecutor(ModelNodes.asString(TransportResourceDefinition.TIMER_EXECUTOR.resolveModelAttribute(context, transport)));
+                .setDiagnosticsSocket(ModelNodes.asString(TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.resolveModelAttribute(context, transport)));
 
-        addProtocolProperties(context, transport, transportBuilder).build(target).install();
+        addProtocolProperties(context, transport, transportBuilder);
+
+        // Setup threading as jgroups properties
+        if (transport.hasDefined(ThreadPoolResourceDefinition.WILDCARD_PATH.getKey())) {
+            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.DEFAULT, "thread_pool", context, transport, transportBuilder);
+            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.INTERNAL, "internal_thread_pool", context, transport, transportBuilder);
+            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.OOB, "oob_thread_pool", context, transport, transportBuilder);
+            addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition.TIMER, "timer", context, transport, transportBuilder);
+        }
+
+        transportBuilder.build(target).install();
 
         if (model.hasDefined(RelayResourceDefinition.PATH.getKey())) {
             ModelNode relay = model.get(RelayResourceDefinition.PATH.getKeyValuePair());
@@ -139,6 +147,35 @@ public class StackAddHandler extends AbstractAddStepHandler {
         if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property : protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 builder.addProperty(property.getName(), PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
+            }
+        }
+        return builder;
+    }
+
+    static <C extends ProtocolConfiguration, B extends AbstractProtocolConfigurationBuilder<C>> B addThreadPoolConfigurationAsProperties(ThreadPoolResourceDefinition pool, String propertyPrefix, OperationContext context, ModelNode transport, B builder) throws OperationFailedException {
+        if (transport.get(pool.getPathElement().getKey()).hasDefined(pool.getPathElement().getValue())) {
+            ModelNode threadModel = transport.get(pool.getPathElement().getKeyValuePair());
+
+            if (pool.getMinThreads().resolveModelAttribute(context, threadModel).isDefined()) {
+                builder.addProperty(propertyPrefix + ".min_threads", pool.getMinThreads().resolveModelAttribute(context, threadModel).asString());
+            }
+            if (pool.getMaxThreads().resolveModelAttribute(context, threadModel).isDefined()) {
+                builder.addProperty(propertyPrefix + ".max_threads", pool.getMaxThreads().resolveModelAttribute(context, threadModel).asString());
+            }
+            if (pool.getQueueLength().resolveModelAttribute(context, threadModel).isDefined()) {
+                int queueSize = pool.getQueueLength().resolveModelAttribute(context, threadModel).asInt();
+                if (queueSize == 0) {
+                    builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.FALSE.toString());
+                } else {
+                    builder.addProperty(propertyPrefix + ".queue_enabled", Boolean.TRUE.toString());
+                    builder.addProperty(propertyPrefix + ".queue_max_size", String.valueOf(queueSize));
+                }
+            }
+            if (pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).isDefined()) {
+                long keepAliveTime = pool.getKeepAliveTime().resolveModelAttribute(context, threadModel).asLong();
+                TimeUnit unit = Enum.valueOf(TimeUnit.class, pool.getKeepAliveTimeUnit().resolveModelAttribute(context, threadModel).asString());
+                long keepAliveTimeInSeconds = unit.toMillis(keepAliveTime);
+                builder.addProperty(propertyPrefix + ".keep_alive_time", String.valueOf(keepAliveTimeInSeconds));
             }
         }
         return builder;
