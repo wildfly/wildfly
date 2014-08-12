@@ -38,7 +38,7 @@
                 <instance name="full-ha"/>
                 <instance name="full-ha-6.0.x"/>
                 <instance name="full-ha-6.1.x"/>
-                <instance name="full-ha-6.3.x"/>
+                <instance name="full-ha-6.2.x"/>
             </ignored-resources>
        </remote>       
     </domain-controller>
@@ -68,6 +68,6 @@
    	</jvms>
 
     <servers>
-        <server name="server-one" group="6.2.0-server-group"/>
+        <server name="server-one" group="6.3.0-server-group"/>
     </servers>
 </host>

@@ -46,7 +46,8 @@ public @interface Version {
         EAP_6_0_1(EAP, "6.0.1"),
         EAP_6_1_0(EAP, "6.1.0"),
         EAP_6_1_1(EAP, "6.1.1"),
-        EAP_6_2_0(EAP, "6.2.0");
+        EAP_6_2_0(EAP, "6.2.0"),
+        EAP_6_3_0(EAP, "6.3.0");
 
         final String basename;
         final String version;

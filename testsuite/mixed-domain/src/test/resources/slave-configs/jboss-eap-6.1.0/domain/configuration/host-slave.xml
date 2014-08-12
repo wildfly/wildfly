@@ -38,6 +38,7 @@
                 <instance name="full-ha"/>
                 <instance name="full-ha-6.0.x"/>
                 <instance name="full-ha-6.2.x"/>
+                <instance name="full-ha-6.3.x"/>
             </ignored-resources>
        </remote>       
     </domain-controller>
