@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.4.0.Final-redhat-SNAPSHOT</version>
+        <version>7.5.0.Final-redhat-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>

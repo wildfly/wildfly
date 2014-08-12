@@ -29,13 +29,13 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-security-parent</artifactId>
-        <version>7.4.0.Final-redhat-SNAPSHOT</version>
+        <version>7.5.0.Final-redhat-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-security-api</artifactId>
-    <version>7.4.0.Final-redhat-SNAPSHOT</version>
+    <version>7.5.0.Final-redhat-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JBoss AS: Security Subsystem API</name>
