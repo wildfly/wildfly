@@ -53,7 +53,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.notification.NotificationRegistry;
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
@@ -599,7 +599,7 @@ public class RemoteProxyControllerProtocolTestCase {
         }
 
         @Override
-        public NotificationRegistry getNotificationRegistry() {
+        public NotificationHandlerRegistration getNotificationRegistry() {
             return null;
         }
     }

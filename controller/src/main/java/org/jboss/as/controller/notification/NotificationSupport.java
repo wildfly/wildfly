@@ -24,6 +24,8 @@ package org.jboss.as.controller.notification;
 
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
+
 /**
  * The NotificationSupport can be used to emit notifications.
  *
@@ -34,7 +36,7 @@ public interface NotificationSupport {
     /**
      * Get the notification registry to register/unregister notification handlers
      */
-    NotificationRegistry getNotificationRegistry();
+    NotificationHandlerRegistration getNotificationRegistry();
 
     /**
      * Emit {@link Notification}(s).
@@ -54,7 +56,7 @@ public interface NotificationSupport {
          * @param executorService can be {@code null}.
          */
         public static NotificationSupport create(ExecutorService executorService) {
-            NotificationRegistryImpl registry = new NotificationRegistryImpl();
+            NotificationHandlerRegistration registry = NotificationHandlerRegistration.Factory.create();
             if (executorService == null) {
                 return new NotificationSupports.BlockingNotificationSupport(registry);
             } else {
