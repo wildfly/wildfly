@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Edited by XMLSpy® -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:do="urn:jboss:domain:1.6"
+                xmlns:do="urn:jboss:domain:1.7"
                 xmlns:ds="urn:jboss:domain:datasources:1.2"
-                xmlns="urn:jboss:domain:1.6"
+                xmlns="urn:jboss:domain:1.7"
         >
     <xsl:output indent="yes"/>
 

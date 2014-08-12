@@ -22,7 +22,7 @@
   ~  */
   -->
 
-<host xmlns="urn:jboss:domain:1.6"
+<host xmlns="urn:jboss:domain:1.7"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:2.1 jboss-as-config_1_6.xsd">
 
