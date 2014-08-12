@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class NotificationSupportImplTestCase {
 
         CountdownListBackedNotificationHandler handler = new CountdownListBackedNotificationHandler(latch);
 
-        notificationSupport.getNotificationRegistry().registerNotificationHandler(NotificationRegistry.ANY_ADDRESS, handler, ALL);
+        notificationSupport.getNotificationRegistry().registerNotificationHandler(NotificationHandlerRegistration.ANY_ADDRESS, handler, ALL);
 
         List<Notification> notifications1 = new ArrayList<Notification>();
         notifications1.add(new Notification("foo", pathAddress("resource", "foo"), "foo"));

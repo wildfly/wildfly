@@ -27,7 +27,7 @@ import java.util.concurrent.Executor;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.notification.NotificationRegistry;
+import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -68,11 +68,11 @@ public interface ModelController {
     ModelControllerClient createClient(Executor executor);
 
     /**
-     * Returns the {@code NotificationRegistry} that registers notification handlers for this model controller.
+     * Returns the {@code NotificationHandlerRegistration} that registers notification handlers for this model controller.
      *
-     * @return the notification registry
+     * @return the notification handler registration
      */
-    NotificationRegistry getNotificationRegistry();
+     NotificationHandlerRegistration getNotificationRegistry();
 
     /**
      * A callback interface for the operation's completion status.  Implemented in order to control whether a complete

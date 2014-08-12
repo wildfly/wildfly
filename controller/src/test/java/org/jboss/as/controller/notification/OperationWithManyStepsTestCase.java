@@ -25,7 +25,7 @@ package org.jboss.as.controller.notification;
 import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.notification.NotificationFilter.ALL;
-import static org.jboss.as.controller.notification.NotificationRegistry.ANY_ADDRESS;
+import static org.jboss.as.controller.registry.NotificationHandlerRegistration.ANY_ADDRESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
