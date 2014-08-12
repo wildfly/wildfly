@@ -2140,57 +2140,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>javadocDist</id>
-            <properties>
-                <javadoc.branding>WildFly public API - ${project.version}</javadoc.branding>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>${version.javadoc.plugin}</version>
-                        <executions>
-                            <execution>
-                                <id>javadocs-dist</id>
-                                <goals>
-                                    <goal>aggregate-jar</goal>
-                                </goals>
-                                <phase>validate</phase>
-                                <configuration>
-                                    <debug>true</debug>
-                                    <verbose>true</verbose>
-                                    <maxmemory>2400m</maxmemory>
-                                    <!-- To prevent problems with author names written in non-UTF-8:
-                                    -->
-                                    <encoding>ISO-8859-1</encoding>
-
-                                    <windowtitle>${javadoc.branding} public API</windowtitle>
-                                    <doctitle>${javadoc.branding} public API</doctitle>
-                                    <header>${javadoc.branding}</header>
-                                    <footer>${javadoc.branding}</footer>
-
-                                    <includeDependencySources>true</includeDependencySources>
-                                    <dependencySourceIncludes>
-                                        <!-- Filled by a script during creation of Javadoc. -->
-                                    </dependencySourceIncludes>
-
-                                    <dependencySourceExcludes>
-                                        <!-- Filled by a script during creation of Javadoc. -->
-                                    </dependencySourceExcludes>
-
-                                    <groups>
-                                        <!-- Filled by a script during creation of Javadoc. -->
-                                    </groups>
-
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>
