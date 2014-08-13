@@ -67,7 +67,6 @@ import org.jboss.as.ejb3.timerservice.spi.ScheduleTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -90,11 +89,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * inactive timer states
      */
     private static final Set<TimerState> ineligibleTimerStates;
-
-    /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(TimerServiceImpl.class);
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("ejb3", "timerService");
 
@@ -159,19 +153,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     /**
      * Creates a {@link TimerServiceImpl}
      *
-     * @param autoTimers
-     * @param serviceName
-     * @throws IllegalArgumentException If either of the passed param is null
-     * @deprecated Use {@link #TimerServiceImpl(java.util.Map, org.jboss.msc.service.ServiceName, org.jboss.as.ejb3.component.TimerServiceRegistry)} instead
-     */
-    @Deprecated
-    public TimerServiceImpl(final Map<Method, List<AutoTimer>> autoTimers, final ServiceName serviceName) {
-        this(autoTimers, serviceName, null);
-    }
-
-    /**
-     * Creates a {@link TimerServiceImpl}
-     *
      * @param autoTimers The auto timers associated with this timer service
      * @param serviceName The service name of this timer service
      * @param registry The {@link TimerServiceRegistry} which has the knowledge of other timer services belonging to the EJB module to which this
@@ -186,7 +167,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        ROOT_LOGGER.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();
         this.tsr = component.getTransactionSynchronizationRegistry();
@@ -847,8 +828,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * Creates and schedules a {@link org.jboss.as.ejb3.timerservice.task.TimerTask} for the next timeout of the passed <code>timer</code>
      */
     protected void scheduleTimeout(TimerImpl timer, boolean newTimer) {
-        synchronized (scheduledTimerFutures) {
-            if (!newTimer && !scheduledTimerFutures.containsKey(timer.getId())) {
+        synchronized (this.scheduledTimerFutures) {
+            if (!newTimer && !this.scheduledTimerFutures.containsKey(timer.getId())) {
                 //this timer has been cancelled by another thread. We just return
                 return;
             }
@@ -874,14 +855,19 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
-                this.scheduledTimerFutures.put(timer.getId(), task);
+                Task<?> oldTask = (Task<?>) this.scheduledTimerFutures.put(timer.getId(), task);
+                if (oldTask != null) {
+                    oldTask.cancel();
+                }
             } else {
                 ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milliseconds from now");
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
-                this.scheduledTimerFutures.put(timer.getId(), task);
-
+                Task<?> oldTask = (Task<?>) this.scheduledTimerFutures.put(timer.getId(), task);
+                if (oldTask != null) {
+                    oldTask.cancel();
+                }
             }
         }
     }
@@ -1051,14 +1037,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
-    private void startNewTx() {
-        try {
-            this.transactionManager.begin();
-        } catch (Throwable t) {
-            throw EjbLogger.ROOT_LOGGER.failToStartTransaction(t);
-        }
-    }
-
     private void assertTimerServiceState() {
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
         if (isLifecycleCallbackInvocation() && !this.isSingletonBeanInvocation()) {
@@ -1153,6 +1131,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         break;
                     case ACTIVE:
                         this.timer.scheduleTimeout(true);
+                        break;
+                    default:
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
