@@ -111,7 +111,6 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
     @Override
     public void start() {
-        getShutDownInterceptorFactory().start();
         super.start();
         if(this.pool!=null){
             this.pool.start();
@@ -121,7 +120,6 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
     @Override
     public void stop() {
-        getShutDownInterceptorFactory().shutdown();
         if(this.pool!=null){
             this.pool.stop();
         }

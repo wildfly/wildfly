@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.requestcontroller.GlobalRequestController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -82,6 +83,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
         final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
+
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
 
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
@@ -101,6 +103,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         if(persistentSessions) {
             builder.addDependency(AbstractPersistentSessionManager.SERVICE_NAME, SessionPersistenceManager.class, container.getSessionPersistenceManagerInjectedValue());
         }
+        builder.addDependency(GlobalRequestController.SERVICE_NAME, GlobalRequestController.class, container.getGlobalRequestControllerInjectedValue());
+
 
         newControllers.add(builder
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

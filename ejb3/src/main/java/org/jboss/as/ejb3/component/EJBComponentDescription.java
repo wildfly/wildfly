@@ -68,7 +68,6 @@ import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
-import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.component.invocationmetrics.ExecutionTimeInterceptor;
 import org.jboss.as.ejb3.component.invocationmetrics.WaitTimeInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
@@ -209,11 +208,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private final ApplicableMethodInformation<Integer> transactionTimeouts;
 
     /**
-     * The shutdown interceptor factory
-     */
-    private final ShutDownInterceptorFactory shutDownInterceptorFactory = new ShutDownInterceptorFactory();
-
-    /**
      * The default container interceptors
      */
     private List<InterceptorDescription> defaultContainerInterceptors = new ArrayList<InterceptorDescription>();
@@ -310,7 +304,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if (!ejbSetupActions.isEmpty()) {
                         configuration.addTimeoutViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                     }
-                    configuration.addTimeoutViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
                     final ClassLoader classLoader = configuration.getModuleClassLoader();
                     configuration.addTimeoutViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
@@ -421,7 +414,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     viewConfiguration.addViewInterceptor(AdditionalSetupInterceptor.factory(ejbSetupActions), InterceptorOrder.View.EE_SETUP);
                 }
                 viewConfiguration.addViewInterceptor(WaitTimeInterceptor.FACTORY, InterceptorOrder.View.EJB_WAIT_TIME_INTERCEPTOR);
-                viewConfiguration.addViewInterceptor(shutDownInterceptorFactory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
             }
         });
         this.addCurrentInvocationContextFactory(view);
@@ -749,7 +741,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Returns true if this component description has any security metadata configured at the EJB level.
      * Else returns false. Note that this method does *not* consider method level security metadata.
      *
-     * @param ejbComponentDescription The EJB component description
      * @return
      */
     public boolean hasBeanLevelSecurityMetadata() {
@@ -940,10 +931,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public ApplicableMethodInformation<EJBMethodSecurityAttribute> getAnnotationMethodPermissions() {
         return annotationMethodPermissions;
-    }
-
-    public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
-        return shutDownInterceptorFactory;
     }
 
     public void setDefaultContainerInterceptors(final List<InterceptorDescription> defaultInterceptors) {
