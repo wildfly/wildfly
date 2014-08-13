@@ -511,6 +511,7 @@ public class GlobalOperationHandlers {
             break;
         default:
             RECURSIVE_DEPTH.resolveModelAttribute(context, nextOp).set(recursiveDepthValue - 1);
+            break;
         }
     }
 
