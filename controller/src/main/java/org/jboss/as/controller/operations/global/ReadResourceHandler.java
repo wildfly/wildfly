@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -99,22 +100,6 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
 
     public static final OperationStepHandler INSTANCE = new ReadResourceHandler();
 
-    private final ParametersValidator validator = new ParametersValidator() {
-
-        @Override
-        public void validate(ModelNode operation) throws OperationFailedException {
-            super.validate(operation);
-            if (operation.hasDefined(ModelDescriptionConstants.ATTRIBUTES_ONLY)) {
-                if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE)) {
-                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE);
-                }
-                if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE_DEPTH)) {
-                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE_DEPTH);
-                }
-            }
-        }
-    };
-
     private final OperationStepHandler overrideHandler;
 
     public ReadResourceHandler() {
@@ -123,13 +108,6 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
 
     ReadResourceHandler(final FilteredData filteredData, OperationStepHandler overrideHandler) {
         super(filteredData);
-        //todo use AD for validation
-        validator.registerValidator(ModelDescriptionConstants.RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(ModelDescriptionConstants.RECURSIVE_DEPTH, new ModelTypeValidator(ModelType.INT, true));
-        validator.registerValidator(ModelDescriptionConstants.INCLUDE_RUNTIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(ModelDescriptionConstants.PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(ModelDescriptionConstants.INCLUDE_DEFAULTS, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(ModelDescriptionConstants.ATTRIBUTES_ONLY, new ModelTypeValidator(ModelType.BOOLEAN, true));
         this.overrideHandler = overrideHandler;
     }
 
@@ -166,14 +144,14 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
 
     void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
+        for (AttributeDefinition def : DEFINITION.getParameters()) {
+            def.validateOperation(operation);
+        }
 
         final String opName = operation.require(OP).asString();
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-
-        final int recursiveDepth = operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).asInt(0);
-        final boolean recursive = operation.get(ModelDescriptionConstants.RECURSIVE).asBoolean(false) &&
-                (!operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).isDefined() || recursiveDepth > 0);
+        // WFLY-3705
+        final boolean recursive = GlobalOperationHandlers.getRecursive(context, operation);
         final boolean queryRuntime = operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).asBoolean(false);
         final boolean proxies = operation.get(ModelDescriptionConstants.PROXIES).asBoolean(false);
         final boolean aliases = operation.get(ModelDescriptionConstants.INCLUDE_ALIASES).asBoolean(false);
@@ -239,12 +217,8 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                         }
                         if (getChild) {
                             nonExistentChildTypes.remove(childType);
-                            final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
-                            // Add a step to read the child resource
-                            rrOp.get(ModelDescriptionConstants.RECURSIVE).set(operation.get(ModelDescriptionConstants.RECURSIVE));
-                            if(operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).isDefined()) {
-                                rrOp.get(ModelDescriptionConstants.RECURSIVE_DEPTH).set(newDepth);
-                            }
+                            // WFLY-3705
+                            GlobalOperationHandlers.setNextRecursive(context, operation, rrOp);
                             rrOp.get(ModelDescriptionConstants.PROXIES).set(proxies);
                             rrOp.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(queryRuntime);
                             rrOp.get(ModelDescriptionConstants.INCLUDE_ALIASES).set(aliases);

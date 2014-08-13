@@ -176,8 +176,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         final String opName = operation.require(OP).asString();
         PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final int recursiveDepth = RECURSIVE_DEPTH.resolveModelAttribute(context, operation).asInt();
-        final boolean recursive = recursiveDepth > 0 || RECURSIVE.resolveModelAttribute(context, operation).asBoolean();
+        // WFLY-3705
+        final boolean recursive = GlobalOperationHandlers.getRecursive(context, operation);
         final boolean proxies = PROXIES.resolveModelAttribute(context, operation).asBoolean();
         final boolean ops = OPERATIONS.resolveModelAttribute(context, operation).asBoolean();
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean();
@@ -266,7 +266,6 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 }
 
                 if (readChild) {
-                    final int newDepth = recursiveDepth > 0 ? recursiveDepth - 1 : 0;
                     final ModelNode rrOp = operation.clone();
                     final PathAddress address;
                     try {
@@ -275,7 +274,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         continue;
                     }
                     rrOp.get(OP_ADDR).set(address.toModelNode());
-                    rrOp.get(RECURSIVE_DEPTH.getName()).set(newDepth);
+                    // WFLY-3705
+                    GlobalOperationHandlers.setNextRecursive(context, operation, rrOp);
                     final ModelNode rrRsp = new ModelNode();
                     childResources.put(element, rrRsp);
 

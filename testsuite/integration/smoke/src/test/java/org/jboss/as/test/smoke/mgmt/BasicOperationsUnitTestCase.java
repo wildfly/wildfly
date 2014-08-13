@@ -104,7 +104,8 @@ public class BasicOperationsUnitTestCase {
     }
 
     @Test
-    public void testReadResourceRecursiveDepth() throws IOException {
+    public void testReadResourceRecursiveDepthRecursiveUndefined() throws IOException {
+        // WFLY-3705
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(OP_ADDR).setEmptyList();
@@ -116,6 +117,80 @@ public class BasicOperationsUnitTestCase {
 
         final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
         Assert.assertTrue(web.hasDefined("worker"));
+        final ModelNode worker = result.get(RESULT, SUBSYSTEM, "io", "worker");
+        Assert.assertFalse(worker.hasDefined("default"));
+    }
+
+    @Test
+    public void testReadResourceRecursiveDepthRecursiveTrue() throws IOException {
+        // WFLY-3705
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(true);
+        operation.get(RECURSIVE_DEPTH).set(1);
+
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
+        Assert.assertTrue(web.hasDefined("worker"));
+        final ModelNode worker = result.get(RESULT, SUBSYSTEM, "io", "worker");
+        Assert.assertFalse(worker.hasDefined("default"));
+    }
+
+    @Test
+    public void testReadResourceRecursiveDepthGt1RecursiveTrue() throws IOException {
+        // WFLY-3705
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(true);
+        operation.get(RECURSIVE_DEPTH).set(2);
+
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
+        Assert.assertTrue(web.hasDefined("worker"));
+        final ModelNode worker = result.get(RESULT, SUBSYSTEM, "io", "worker");
+        Assert.assertTrue(worker.hasDefined("default"));
+    }
+
+    @Test
+    public void testReadResourceRecursiveDepthRecursiveFalse() throws IOException {
+        // WFLY-3705
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(false);
+        operation.get(RECURSIVE_DEPTH).set(1);
+
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
+        Assert.assertFalse(web.hasDefined("worker"));
+    }
+
+    @Test
+    public void testReadResourceNoRecursiveDepthRecursiveTrue() throws IOException {
+        // WFLY-3705
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(true);
+        operation.get(RECURSIVE_DEPTH).set(0);
+
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        final ModelNode web = result.get(RESULT, SUBSYSTEM, "io");
+        Assert.assertFalse(web.hasDefined("worker"));
     }
 
     @Test
