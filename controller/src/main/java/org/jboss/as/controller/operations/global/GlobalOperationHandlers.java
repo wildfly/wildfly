@@ -495,22 +495,22 @@ public class GlobalOperationHandlers {
     {
         // -1 means UNDEFINED
         final int recursiveDepthValue = RECURSIVE_DEPTH.resolveModelAttribute(context, op).asInt(-1);
-        // WFLY-3705: We are recursing in the next round IFF:
+        // WFLY-3705: We are recursing in the next step IFF:
         //  Recursive is explicitly specified as TRUE and recursiveDepth is UNDEFINED; or
         //  Recursive is either TRUE or UNDEFINED and (recursiveDepth - 1) is >0
 
         // Recursive value carries through unchanged
-        RECURSIVE.resolveModelAttribute(context, nextOp).set(RECURSIVE.resolveModelAttribute(context, op));
+        nextOp.get(RECURSIVE.getName()).set(op.get(RECURSIVE.getName()));
         switch(recursiveDepthValue) {
         case -1:
             // Undefined stays undefined
-            RECURSIVE_DEPTH.resolveModelAttribute(context, nextOp).set(RECURSIVE_DEPTH.resolveModelAttribute(context, op));
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(op.get(RECURSIVE_DEPTH.getName()));
             break;
         case 0:
-            RECURSIVE_DEPTH.resolveModelAttribute(context, nextOp).set(recursiveDepthValue);
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(recursiveDepthValue);
             break;
         default:
-            RECURSIVE_DEPTH.resolveModelAttribute(context, nextOp).set(recursiveDepthValue - 1);
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(recursiveDepthValue - 1);
             break;
         }
     }

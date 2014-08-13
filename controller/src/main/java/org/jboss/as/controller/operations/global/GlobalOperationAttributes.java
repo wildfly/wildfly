@@ -42,6 +42,7 @@ class GlobalOperationAttributes {
 
     // WFLY-3705
     static final SimpleAttributeDefinition RECURSIVE_DEPTH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECURSIVE_DEPTH, ModelType.INT)
+    .setAllowNull(true)
     .setValidator(new IntRangeValidator(0, true))
     .build();
 
