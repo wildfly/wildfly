@@ -28,6 +28,9 @@
  
     <dependencies>
       <module name="sun.jdk"/>
+      <module name="org.jboss.as.jdkorb"/>
+      <module name="org.jboss.jts"/>
+      <module name="org.jboss.jts.integration"/>
       <module name="javax.transaction.api"/>
       <module name="org.jboss.iiop-client"/>
     </dependencies>
