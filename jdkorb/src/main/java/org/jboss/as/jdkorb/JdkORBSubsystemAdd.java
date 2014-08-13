@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -37,7 +37,7 @@ import org.jboss.as.jdkorb.deployment.JdkORBMarkerProcessor;
 import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jdkorb.rmi.DelegatingStubFactoryFactory;
-import org.jboss.as.jdkorb.security.DomainSocketFactory;
+import org.jboss.as.jdkorb.security.JdkORBSocketFactory;
 import org.jboss.as.jdkorb.service.CorbaNamingService;
 import org.jboss.as.jdkorb.service.CorbaORBService;
 import org.jboss.as.jdkorb.service.CorbaPOAService;
@@ -311,8 +311,8 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
                 throw JdkORBMessages.MESSAGES.noSecurityDomainSpecified();
 
             // add the domain socket factories.
-            DomainSocketFactory.setSecurityDomain(securityDomain);
-            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, DomainSocketFactory.class.getName());
+            JdkORBSocketFactory.setSecurityDomain(securityDomain);
+            props.setProperty(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY, JdkORBSocketFactory.class.getName());
         }
     }
 

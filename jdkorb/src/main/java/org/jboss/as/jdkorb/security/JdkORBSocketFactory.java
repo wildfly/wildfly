@@ -174,5 +174,3 @@ public class JdkORBSocketFactory implements ORBSocketFactory {
         this.sslContext = Util.forDomain(this.jsseSecurityDomain);
     }
 }
-
-// End of file.

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <p>
+ * This class contains mapping from JdkORB subsystem constants to orb specific properties.
+ * </p>
+ *
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
+ */
+
 import com.sun.corba.se.impl.orbutil.ORBConstants;
 
 public interface PropertiesMap {
@@ -33,7 +41,7 @@ public interface PropertiesMap {
     Map<String, String> JDKORB_PROPS_MAP = Collections.unmodifiableMap(new HashMap<String, String>() {
         {
             put(JdkORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID, ORBConstants.ORB_SERVER_ID_PROPERTY);
-            put(JdkORBSubsystemConstants.ORB_GIOP_VERSION,ORBConstants.GIOP_VERSION);
+            put(JdkORBSubsystemConstants.ORB_GIOP_VERSION, ORBConstants.GIOP_VERSION);
             put(JdkORBSubsystemConstants.TCP_HIGH_WATER_MARK, ORBConstants.HIGH_WATER_MARK_PROPERTY);
             put(JdkORBSubsystemConstants.TCP_NUMBER_TO_RECLAIM, ORBConstants.NUMBER_TO_RECLAIM_PROPERTY);
 
