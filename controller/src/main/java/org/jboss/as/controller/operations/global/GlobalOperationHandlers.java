@@ -501,8 +501,7 @@ public class GlobalOperationHandlers {
 
         // Recursive value carries through unchanged
         RECURSIVE.resolveModelAttribute(context, nextOp).set(RECURSIVE.resolveModelAttribute(context, op));
-        switch(recursiveDepthValue)
-        {
+        switch(recursiveDepthValue) {
         case -1:
             // Undefined stays undefined
             RECURSIVE_DEPTH.resolveModelAttribute(context, nextOp).set(RECURSIVE_DEPTH.resolveModelAttribute(context, op));
