@@ -85,6 +85,15 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-jms-client:2.3.5.Final-redhat-2",
                 "org.hornetq:hornetq-ra:2.3.5.Final-redhat-2"});
 
+        map.put(ModelTestControllerVersion.EAP_6_2_0, new String[] {
+                "org.hornetq:hornetq-server:2.3.12.Final-redhat-1",
+                "org.hornetq:hornetq-jms-server:2.3.12.Final-redhat-1",
+                "org.hornetq:hornetq-core-client:2.3.12.Final-redhat-1",
+                "org.hornetq:hornetq-jms-client:2.3.12.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.3.12.Final-redhat-1",
+
+        });
+
         HORNETQ_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 

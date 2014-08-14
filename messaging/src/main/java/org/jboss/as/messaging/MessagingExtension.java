@@ -56,14 +56,14 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
- *   <dt>WildFly 9</dt>
+ *   <dt><strong>Current</strong> - WildFly 9</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:3.0
  *       <li>Management model: 3.0.0
  *     </ul>
  *   </dd>
- *   <dt>WildFly 8.0.1</dt>
+ *   <dt>WildFly 8.1.0</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:2.0
@@ -77,7 +77,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  *       <li>Management model: 2.0.0
  *     </ul>
  *   </dd>
- *   <dt>AS 7.3</dt>
+ *   <dt>AS 7.3.0</dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:1.4
@@ -125,7 +125,6 @@ public class MessagingExtension implements Extension {
 
     public static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    public static final ModelVersion VERSION_1_4_0 = ModelVersion.create(1, 4, 0);
     public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
     public static final ModelVersion VERSION_1_2_1 = ModelVersion.create(1, 2, 1);
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);

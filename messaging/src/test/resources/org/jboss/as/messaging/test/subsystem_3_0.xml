@@ -13,8 +13,8 @@
             <wild-card-routing-enabled>false</wild-card-routing-enabled>
             <management-address>my.management.address</management-address>
             <management-notification-address>my.management.notif.address</management-notification-address>
-            <cluster-user>${messaging.cluster.user.name}</cluster-user>
-            <cluster-password>${messaging.cluster.user.password}</cluster-password>
+            <cluster-user>${messaging.cluster.user.name:myuser}</cluster-user>
+            <cluster-password>${messaging.cluster.user.password:mypassword}</cluster-password>
             <jmx-management-enabled>false</jmx-management-enabled>
             <jmx-domain>my.jmx.domain</jmx-domain>
             <statistics-enabled>true</statistics-enabled>
@@ -408,6 +408,12 @@
            </jms-connection-factories>
 
            <jms-destinations>
+              <jms-queue name="ExpiryQueue">
+                 <entry name="java:/jms/queue/ExpiryQueue"/>
+              </jms-queue>
+              <jms-queue name="DLQ">
+                 <entry name="java:/jms/queue/DLQ"/>
+              </jms-queue>
               <jms-queue name="testQueue">
                  <entry name="queue/test"/>
                  <selector string="color='red'"/>
