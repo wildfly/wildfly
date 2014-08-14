@@ -759,8 +759,10 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user", "user",
-            new ModelNode().set(HornetQDefaultConfiguration.getDefaultClusterUser()), ModelType.STRING, true, true, null);
+    SimpleAttributeDefinition USER = create("user", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultClusterUser()))
+            .build();
 
     SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultWildcardRoutingEnabled()))
