@@ -57,4 +57,12 @@ public interface InfinispanWebLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 4, value = "Failed to expire session %s")
     void failedToExpireSession(@Cause Throwable cause, String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "Failed to cancel expiration/passivation of session %s on primary owner.")
+    void failedToCancelSession(@Cause Throwable cause, String sessionId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "Failed to schedule expiration/passivation of session %s on primary owner.")
+    void failedToScheduleSession(@Cause Throwable cause, String sessionId);
 }

@@ -52,6 +52,7 @@ public class InfinispanBeanGroupEntryExternalizer<I, T> extends AbstractSimpleEx
 
     @Override
     public InfinispanBeanGroupEntry<I, T> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        @SuppressWarnings("unchecked")
         MarshalledValue<Map<I, T>, MarshallingContext> value = (MarshalledValue<Map<I, T>, MarshallingContext>) input.readObject();
         return new InfinispanBeanGroupEntry<>(value);
     }

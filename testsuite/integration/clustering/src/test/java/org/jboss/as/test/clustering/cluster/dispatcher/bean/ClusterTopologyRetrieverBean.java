@@ -3,7 +3,6 @@ package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import javax.ejb.EJB;
 import javax.ejb.Remote;
@@ -46,7 +45,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
             }
 
             return new ClusterTopology(nodes, local, remote);
-        } catch (ExecutionException e) {
+        } catch (Exception e) {
             throw new IllegalStateException(e.getCause());
         }
     }

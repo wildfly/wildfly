@@ -30,6 +30,7 @@ import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
@@ -76,8 +77,12 @@ public class SessionEvictionScheduler implements Scheduler, SessionEvictionConte
             // Trigger eviction of oldest session if necessary
             if (this.evictionQueue.size() > this.maxSize) {
                 Iterator<String> sessions = this.evictionQueue.iterator();
-                this.dispatcher.submitOnCluster(new SessionEvictionCommand(sessions.next()));
-                sessions.remove();
+                try {
+                    this.dispatcher.submitOnCluster(new SessionEvictionCommand(sessions.next()));
+                    sessions.remove();
+                } catch (Exception e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, session.getId());
+                }
             }
         }
     }

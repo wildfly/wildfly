@@ -59,6 +59,14 @@ public interface InfinispanEjbLogger extends BasicLogger {
     @Message(id = 4, value = "Failed to deserialize %s")
     IllegalStateException deserializationFailure(@Cause Throwable cause, Object key);
 
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "Failed to cancel expiration/passivation of bean %s on primary owner.")
+    void failedToCancelBean(@Cause Throwable cause, Object beanId);
+
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "Failed to schedule expiration/passivation of bean %s on primary owner.")
+    void failedToScheduleBean(@Cause Throwable cause, Object beanId);
+
     @Message(id = 8, value = "Stateful session bean %s refers to an invalid bean group %s")
     IllegalStateException invalidBeanGroup(Object beanId, Object groupId);
 }

@@ -96,6 +96,7 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
                 Object clientId = unmarshaller.readObject();
+                @SuppressWarnings("unchecked")
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
                 AtomicReference<Object> context = this.contexts.get(clientId);
                 if (context == null) return new NoSuchService();

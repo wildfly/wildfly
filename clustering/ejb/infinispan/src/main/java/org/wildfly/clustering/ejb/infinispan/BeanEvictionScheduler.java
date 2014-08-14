@@ -30,6 +30,7 @@ import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Schedules a bean for eviction.
@@ -92,8 +93,13 @@ public class BeanEvictionScheduler<I> implements Scheduler<I>, BeanEvictionConte
             // Trigger eviction of oldest bean if necessary
             if (this.evictionQueue.size() > this.config.getConfiguration().getMaxSize()) {
                 Iterator<I> beans = this.evictionQueue.iterator();
-                this.dispatcher.submitOnCluster(new BeanEvictionCommand<>(beans.next()));
-                beans.remove();
+                I bean = beans.next();
+                try {
+                    this.dispatcher.submitOnCluster(new BeanEvictionCommand<>(bean));
+                    beans.remove();
+                } catch (Exception e) {
+                    InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(e, bean);
+                }
             }
         }
     }

@@ -52,6 +52,7 @@ public class InfinispanBeanEntryExternalizer<G> extends AbstractSimpleExternaliz
 
     @Override
     public InfinispanBeanEntry<G> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        @SuppressWarnings("unchecked")
         G groupId = (G) input.readObject();
         InfinispanBeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
         long time = input.readLong();
