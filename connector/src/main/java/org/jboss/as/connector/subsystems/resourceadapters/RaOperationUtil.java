@@ -83,6 +83,7 @@ import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.deployment.Attachments;
@@ -141,8 +142,7 @@ public class RaOperationUtil {
             }
 
         }
-        final List<ModelNode> address = operation.get(ModelDescriptionConstants.ADDRESS).asList();
-        final String id = address.get(address.size()-1).get(0).asString();
+        final String id = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         final ModifiableResourceAdapter ra = new ModifiableResourceAdapter(archiveOrModule, transactionSupport, connectionDefinitions,
                 adminObjects, configProperties, beanValidationGroups, bootstrapContext);
         ra.setId(id);
