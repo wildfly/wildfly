@@ -254,13 +254,14 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         Property property = field.getAnnotation(Property.class);
 
         // mutually exclusive: managed attribute and Property?
-        assert !((managed !=null) && (property != null)) : "attribute " + field.getName() + "is both property and managed attribute";
+        assert !((managed != null) && (property != null)) : "attribute " + field.getName() + " is both property and managed attribute";
 
         if (managed != null) {
             // handle non-primitive managed attribute
             Object value = field.get(protocol);
-            if (value != null)
-                value.toString();
+            if (value != null) {
+                return value.toString();
+            }
         }
 
         if (property != null) {
