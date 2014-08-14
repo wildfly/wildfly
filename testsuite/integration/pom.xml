@@ -109,6 +109,15 @@
             </modules>
         </profile>
 
+        <!-- Keep -Dts.clust compatibility -->
+        <profile>
+            <id>ts.integ.group.clustering.compatibility</id>
+            <activation><property><name>ts.clust</name></property></activation>
+            <modules>
+                <module>clustering</module>
+            </modules>
+        </profile>
+
         <!-- -Dts.iiop -->
         <profile>
             <id>ts.integ.group.iiop</id>

@@ -473,6 +473,12 @@
             <activation><property><name>ts.clustering</name></property></activation>
             <modules><module>integration</module></modules>
         </profile>
+        <!-- Keep -Dts.clust compatibility -->
+        <profile>
+            <id>integ-clustering.module.profile.compability</id>
+            <activation><property><name>ts.clust</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
         <profile>
             <id>integ-iiop.module.profile</id>
             <activation><property><name>ts.iiop</name></property></activation>
