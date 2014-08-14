@@ -43,7 +43,7 @@ import java.net.URL;
 import java.util.Locale;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
@@ -347,7 +347,7 @@ public class HTTPSWebConnectorTestCase {
             try {
                 makeCall(securedUrl, httpClientUntrusted, 401);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLPeerUnverifiedException e) {
+            } catch (SSLHandshakeException e) {
                 // OK
             }
 
@@ -356,7 +356,7 @@ public class HTTPSWebConnectorTestCase {
             try {
                 makeCall(printPrincipalUrl, httpClientUntrusted, 401);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLPeerUnverifiedException e) {
+            } catch (SSLHandshakeException e) {
                 // OK
             }
         } finally {

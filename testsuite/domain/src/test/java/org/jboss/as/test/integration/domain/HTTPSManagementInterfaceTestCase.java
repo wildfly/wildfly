@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
 
-import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.ClientProtocolException;
@@ -250,7 +250,7 @@ public class HTTPSManagementInterfaceTestCase {
         try {
             String responseBody = makeCallWithHttpClient(mgmtURL, httpClientUntrusted, 401);
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
-        } catch (SSLPeerUnverifiedException e) {
+        } catch (SSLHandshakeException e) {
             // OK
         }
 
@@ -285,7 +285,7 @@ public class HTTPSManagementInterfaceTestCase {
             int expectedStatus = addSecureInterface ? 403 : 302;
             String responseBody = makeCallWithHttpClient(mgmtURL, httpClient, expectedStatus);
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
-        } catch (SSLPeerUnverifiedException e) {
+        } catch (SSLHandshakeException e) {
             // OK
         }
     }
