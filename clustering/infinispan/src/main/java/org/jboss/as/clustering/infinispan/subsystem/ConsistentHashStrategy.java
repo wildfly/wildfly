@@ -57,9 +57,10 @@ public enum ConsistentHashStrategy {
         if (mode.isClustered()) {
             if (mode.isDistributed()) {
                 builder.consistentHashFactory(this.createConsistentHashFactory(topologyAware));
+            } else {
+                // Used for REPL and INVALIDATION
+                builder.consistentHashFactory(new ReplicatedConsistentHashFactory());
             }
-            // Used for REPL and INVALIDATION
-            builder.consistentHashFactory(new ReplicatedConsistentHashFactory());
         }
     }
 }
