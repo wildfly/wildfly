@@ -228,6 +228,19 @@ public class TransformersLogger {
     }
 
     /**
+     * Log a free-form warning
+     * @param message the warning message. Cannot be {@code null}
+     */
+    public void logWarning(final String message) {
+        messageQueue.add(new LogEntry() {
+            @Override
+            public String getMessage() {
+                return message;
+            }
+        });
+    }
+
+    /**
      * flushes log queue, this actually writes combined log message into system log
      */
     void flushLogQueue() {

@@ -602,10 +602,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14270, value = "<container-transaction> elements that use the wildcard EJB name * can only use a method name of *")
     DeploymentUnitProcessingException wildcardContainerTransactionElementsMustHaveWildcardMethodName();
 
-
     @Message(id = 14271, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
     DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
 
+    @LogMessage(level = ERROR)
     @Message(id = 14272, value = "Cannot create table for timer persistence")
     void couldNotCreateTable(@Cause SQLException e);
 

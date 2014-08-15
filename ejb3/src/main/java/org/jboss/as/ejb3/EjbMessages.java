@@ -2440,11 +2440,6 @@ public interface EjbMessages {
     @Message(id = 14584, value = "The timer '%s' is already active.")
     IllegalStateException timerIsActive(String timerId);
 
-    // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
-    // using and take more (lower) numbers from the available range for this module. If the range for the module is
-    // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
-
-
     // *Exception messages* greater >= 14225 start here.
     @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
     DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
@@ -2494,6 +2489,11 @@ public interface EjbMessages {
     @Message(id = 14240, value = "This EJB does not have any timeout methods")
     String ejbHasNoTimerMethods();
 
-    // Don't add exception messages greater than 14240!!! If you need more go to
-    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+    @Message(id = 14591, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
+    String untransformableTimerService(PathAddress address);
+
+    // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
+    // using and take more (lower) numbers from the available range for this module. If the range for the module is
+    // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+
 }

@@ -71,15 +71,16 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
+    @Test
     public void testTransformerAS712() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-        testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_2_FINAL, null);
+        //testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_2_FINAL, null);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-        testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_3_FINAL, null);
+        //testTransformer_1_1_0_reverse(ModelTestControllerVersion.V7_1_3_FINAL, null);
     }
 
     /**
