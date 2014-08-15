@@ -482,7 +482,8 @@ public class GlobalOperationHandlers {
     static boolean getRecursive(OperationContext context, ModelNode op) throws OperationFailedException
     {
         // -1 means UNDEFINED
-        final int recursiveValue = RECURSIVE.resolveModelAttribute(context, op).asInt(-1);
+        ModelNode recursiveNode = RECURSIVE.resolveModelAttribute(context, op);
+        final int recursiveValue = recursiveNode.isDefined() ? (recursiveNode.asBoolean() ? 1 : 0) : -1;
         final int recursiveDepthValue = RECURSIVE_DEPTH.resolveModelAttribute(context, op).asInt(-1);
         // WFLY-3705: We are recursing in this round IFF:
         //  Recursive is explicitly specified as TRUE and recursiveDepth is UNDEFINED

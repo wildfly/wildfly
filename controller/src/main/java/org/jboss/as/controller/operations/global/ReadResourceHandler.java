@@ -66,6 +66,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -97,6 +98,25 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
             .build();
 
     public static final OperationStepHandler INSTANCE = new ReadResourceHandler();
+
+    private final ParametersValidator validator = new ParametersValidator() {
+
+        @Override
+        public void validate(ModelNode operation) throws OperationFailedException {
+            super.validate(operation);
+            for (AttributeDefinition def : DEFINITION.getParameters()) {
+                def.validateOperation(operation);
+            }
+            if (operation.hasDefined(ModelDescriptionConstants.ATTRIBUTES_ONLY)) {
+                if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE)) {
+                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE);
+                }
+                if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE_DEPTH)) {
+                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE_DEPTH);
+                }
+            }
+        }
+    };
 
     private final OperationStepHandler overrideHandler;
 
@@ -142,9 +162,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
 
     void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        for (AttributeDefinition def : DEFINITION.getParameters()) {
-            def.validateOperation(operation);
-        }
+        validator.validate(operation);
 
         final String opName = operation.require(OP).asString();
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
