@@ -254,9 +254,10 @@
         <version.org.eclipse.aether>1.0.0.v20140518</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
+        <version.org.wildfly.build-tools>1.0.0.Alpha1</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
-        <version.org.wildfly.core>1.0.0.Alpha4</version.org.wildfly.core>
+        <version.org.wildfly.core>1.0.0.Alpha5-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.0.Alpha1</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.13</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.5.jboss-2</version.sun.jaxb>
@@ -300,16 +301,17 @@
         <module>appclient</module>
         <module>batch</module>
         <module>bean-validation</module>
-        <module>build</module>
+		<module>build</module>
         <module>client/ejb</module>
         <module>client/jms</module>
         <module>client/shade</module>
         <module>clustering</module>
         <module>connector</module>
-        <module>dist</module>
+		<module>dist</module>
         <module>ee</module>
         <module>ejb3</module>
         <module>embedded</module>
+        <module>feature-pack</module>
         <module>jacorb</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -334,11 +336,12 @@
         <module>web-build</module>
         <module>web-common</module>
         <module>web-dist</module>
+        <module>web-feature-pack</module>
         <module>webservices</module>
         <module>weld</module>
         <module>xts</module>
         <module>rts</module>
-        <module>testsuite/shared</module>
+		<module>testsuite/shared</module>
         <module>testsuite</module>
     </modules>
 
@@ -810,6 +813,16 @@
                     <artifactId>wildfly-build-plugin</artifactId>
                     <version>${version.org.wildfly.core}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.wildfly.build</groupId>
+                    <artifactId>wildfly-feature-pack-build-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.build</groupId>
+                    <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -824,6 +837,29 @@
     <dependencyManagement>
         <dependencies>
 
+			<!-- Core Modules -->
+			
+			<!-- TODO order order orderrrrrr --> 	
+			<dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-build-plugin</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-feature-pack</artifactId>
+                <type>pom</type>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+			<dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-feature-pack</artifactId>
+                <type>zip</type>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+            
             <!-- Modules in this project -->
 
             <dependency>
@@ -836,6 +872,13 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-batch</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-build</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -852,36 +895,25 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-build</artifactId>
+                <artifactId>wildfly-feature-pack</artifactId>
                 <type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-build</artifactId>
+                <artifactId>wildfly-feature-pack</artifactId>
                 <type>zip</type>
                 <version>${project.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-core-build</artifactId>
-                <type>zip</type>
-                <version>${version.org.wildfly.core}</version>
-            </dependency>
-
+            
             <dependency>
                 <groupId>org.wildfly.checkstyle</groupId>
                 <artifactId>wildfly-checkstyle-config</artifactId>
                 <version>${version.org.wildfly.checkstyle-config}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-build-plugin</artifactId>
-                <version>${version.org.wildfly.core}</version>
-            </dependency>
+           
 
             <dependency>
                 <groupId>org.wildfly.core</groupId>
@@ -1398,20 +1430,6 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-web-build</artifactId>
-                <type>pom</type>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-web-build</artifactId>
-                <type>zip</type>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-web-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1423,6 +1441,20 @@
                 <type>pom</type>
             </dependency>
 
+			<dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-web-feature-pack</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-web-feature-pack</artifactId>
+                <type>zip</type>
+                <version>${project.version}</version>
+            </dependency>
+            
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-webservices-server-integration</artifactId>

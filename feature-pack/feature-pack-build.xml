@@ -20,17 +20,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<build xmlns="urn:wildfly:build:1.0" extract-schema="false" copy-module-artifacts="false">
-    <servers>
-        <server>
-            <artifact name="org.wildfly:wildfly-web-build" />
-        </server>
-        <server>
-            <path name="${server.dir}"/>
-        </server>
-    </servers>
+<build xmlns="urn:wildfly:feature-pack-build:1.0">
+    <dependencies>
+    	<artifact name="org.wildfly:wildfly-web-feature-pack" />        
+    </dependencies>
     <config>
-
         <!-- Core configs -->
         <standalone
                 template="configuration/standalone/template.xml"
@@ -105,10 +99,9 @@
                 subsystems="configuration/domain/subsystems.xml"
                 output-file="domain/configuration/domain.xml"/>
     </config>
-    <artifacts>
+    <copy-artifacts>
         <copy-artifact artifact="org.jboss.resteasy:resteasy-spring" to-location="modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring-jar/"/>
         <copy-artifact artifact="org.jboss.seam.integration:jboss-seam-int-jbossas" to-location="modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
-
         <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
         <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
         <copy-artifact artifact="org.wildfly.core:wildfly-version" to-location="modules/system/layers/base/org/jboss/as/version/main/jboss-as-version-${project.version}.jar"/>
@@ -116,7 +109,7 @@
             <filter pattern="lib/*" include="true" />
             <filter pattern="*" include="false"/>
         </copy-artifact>
-    </artifacts>
+    </copy-artifacts>
     <mkdirs>
         <dir name="domain/data/content"/>
         <dir name="standalone/lib/ext"/>
