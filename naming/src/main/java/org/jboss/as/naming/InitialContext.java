@@ -85,14 +85,15 @@ public class InitialContext extends InitialLdapContext {
         }
     }
 
-    public InitialContext(Hashtable environment) throws NamingException {
+    public InitialContext(Hashtable<?,?> environment) throws NamingException {
         super(environment, null);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected void init(Hashtable environment) throws NamingException {
+    protected void init(Hashtable<?,?> environment) throws NamingException {
         // the jdk initial context already worked out the env, no need to do it again
-        myProps = environment;
+        myProps = (Hashtable<Object, Object>) environment;
         if (myProps != null && myProps.get(Context.INITIAL_CONTEXT_FACTORY) != null) {
             // user has specified initial context factory; try to get it
             getDefaultInitCtx();
@@ -169,7 +170,7 @@ public class InitialContext extends InitialLdapContext {
 
     static class DefaultInitialContext extends NamingContext {
 
-        public DefaultInitialContext(Hashtable environment) {
+        public DefaultInitialContext(Hashtable<Object,Object> environment) {
             super(environment);
         }
 

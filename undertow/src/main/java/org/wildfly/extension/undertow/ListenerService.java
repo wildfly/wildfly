@@ -22,14 +22,15 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.OpenListener;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.OpenListener;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
@@ -61,6 +62,7 @@ public abstract class ListenerService<T> implements Service<T> {
     protected final InjectedValue<XnioWorker> worker = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
+    @SuppressWarnings("rawtypes")
     protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
     protected final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
@@ -89,6 +91,7 @@ public abstract class ListenerService<T> implements Service<T> {
         return redirectSocket;
     }
 
+    @SuppressWarnings("rawtypes")
     public InjectedValue<Pool> getBufferPool() {
         return bufferPool;
     }

@@ -37,11 +37,12 @@ import javax.naming.NamingException;
  */
 public class WrapperInitialContext implements Context {
 
-    private final Hashtable environment;
+    private final Hashtable<Object,Object> environment;
 
-    public WrapperInitialContext(final Hashtable environment) {
+    @SuppressWarnings("unchecked")
+    public WrapperInitialContext(final Hashtable<Object,Object> environment) {
         if (environment != null) {
-            this.environment = (Hashtable) environment.clone();
+            this.environment = (Hashtable<Object,Object>) environment.clone();
         } else {
             this.environment = null;
         }
@@ -59,7 +60,8 @@ public class WrapperInitialContext implements Context {
             if (index != -1) {
                 final String server = name.substring(0, index);
                 final String lookup = name.substring(index + 1);
-                final Hashtable environment = (Hashtable) this.environment.clone();
+                @SuppressWarnings("unchecked")
+                final Hashtable<Object,Object> environment = (Hashtable<Object,Object>) this.environment.clone();
                 environment.put(Context.PROVIDER_URL, server);
                 return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(lookup);
             } else {

@@ -35,7 +35,7 @@ import org.jboss.invocation.proxy.MethodIdentifier;
  */
 class DefaultInterceptorConfigurator extends AbstractComponentConfigurator implements ComponentConfigurator {
 
-    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 
     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
@@ -87,7 +87,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         } else {
             final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
             //use the default constructor if no instanceFactory has been set
-            final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
+            final Constructor<?> constructor = componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
                 throw EeLogger.ROOT_LOGGER.defaultConstructorNotFound(configuration.getComponentClass());
             }

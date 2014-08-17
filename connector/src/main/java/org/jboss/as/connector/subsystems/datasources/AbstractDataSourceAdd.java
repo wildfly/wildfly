@@ -26,7 +26,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
@@ -123,7 +122,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
         boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
-        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -134,13 +132,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
 
 
-        ValueInjectionService driverDemanderService = new ValueInjectionService<Driver>();
+        ValueInjectionService<Driver> driverDemanderService = new ValueInjectionService<Driver>();
 
         final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
                 final ServiceBuilder<?> driverDemanderBuilder = serviceTarget
                         .addService(driverDemanderServiceName, driverDemanderService)
-                        .addDependency(driverServiceName, Driver.class,
-                                driverDemanderService.getInjector());
+                        .addDependency(driverServiceName, Driver.class, driverDemanderService.getInjector());
         driverDemanderBuilder.addListener(verificationHandler);
         driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 

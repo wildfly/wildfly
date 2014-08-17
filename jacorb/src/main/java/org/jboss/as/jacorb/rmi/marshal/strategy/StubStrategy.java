@@ -38,7 +38,6 @@ import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-
 import org.jboss.as.jacorb.rmi.marshal.CDRStream;
 import org.jboss.as.jacorb.rmi.marshal.CDRStreamReader;
 import org.jboss.as.jacorb.rmi.marshal.CDRStreamWriter;
@@ -64,12 +63,12 @@ public class StubStrategy {
     /**
      * List of exception classes.
      */
-    private List exceptionList;
+    private List<Class<?>> exceptionList;
 
     /**
      * Maps exception repository ids into ExceptionReader instances.
      */
-    private Map exceptionMap;
+    private Map<String, ExceptionReader> exceptionMap;
 
     /**
      * A <code>CDRStreamReader</code> that unmarshals the return value of the
@@ -82,7 +81,7 @@ public class StubStrategy {
      * remote interface, this field contains the remote interface's
      * <code>Class</code>. Otherwise it contains null.
      */
-    private Class retvalRemoteInterface;
+    private Class<?> retvalRemoteInterface;
 
     /**
      * Returns an <code>StubStrategy</code> for a method, given descriptions
@@ -153,12 +152,12 @@ public class StubStrategy {
         }
 
         // Initialize exception list and exception map
-        exceptionList = new ArrayList();
-        exceptionMap = new HashMap();
+        exceptionList = new ArrayList<Class<?>>();
+        exceptionMap = new HashMap<String, ExceptionReader>();
         len = excepIds.length;
         for (int i = 0; i < len; i++) {
             try {
-                Class clz = cl.loadClass(excepTypes[i]);
+                Class<?> clz = cl.loadClass(excepTypes[i]);
                 exceptionList.add(clz);
                 ExceptionReader exceptionReader =
                         new ExceptionReader(clz, excepIds[i]);
@@ -249,9 +248,9 @@ public class StubStrategy {
      *         method, false otherwise.
      */
     public boolean isDeclaredException(Throwable t) {
-        Iterator iterator = exceptionList.iterator();
+        Iterator<Class<?>> iterator = exceptionList.iterator();
         while (iterator.hasNext()) {
-            if (((Class) iterator.next()).isInstance(t)) {
+            if (((Class<?>) iterator.next()).isInstance(t)) {
                 return true;
             }
         }
@@ -283,7 +282,7 @@ public class StubStrategy {
         /**
          * The exception class.
          */
-        private Class clz;
+        private Class<?> clz;
 
         /**
          * The CORBA repository id of the exception class.
@@ -302,7 +301,7 @@ public class StubStrategy {
          * Constructs an <code>ExceptionReader</code> for a given exception
          * class.
          */
-        ExceptionReader(Class clz, String reposId) {
+        ExceptionReader(Class<?> clz, String reposId) {
             this.clz = clz;
             if (IDLEntity.class.isAssignableFrom(clz)
                     && UserException.class.isAssignableFrom(clz)) {
@@ -310,17 +309,14 @@ public class StubStrategy {
                 // This ExceptionReader corresponds to an IDL-defined exception
                 String helperClassName = clz.getName() + "Helper";
                 try {
-                    Class helperClass =
-                            clz.getClassLoader().loadClass(helperClassName);
-                    Class[] paramTypes =
-                            {org.omg.CORBA.portable.InputStream.class};
+                    Class<?> helperClass = clz.getClassLoader().loadClass(helperClassName);
+                    Class<?>[] paramTypes = {org.omg.CORBA.portable.InputStream.class};
                     readMethod = helperClass.getMethod("read", paramTypes);
 
                     // Ignore the reposId parameter and use the id
                     // returned by the IDL-generated helper class
-                    java.lang.reflect.Method idMethod =
-                            helperClass.getMethod("id", null);
-                    this.reposId = (String) idMethod.invoke(null, null);
+                    java.lang.reflect.Method idMethod = helperClass.getMethod("id", (Class[])null);
+                    this.reposId = (String) idMethod.invoke(null, (Object[])null);
                 } catch (ClassNotFoundException e) {
                     throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {

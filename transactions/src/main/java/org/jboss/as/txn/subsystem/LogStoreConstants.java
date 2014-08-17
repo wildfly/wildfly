@@ -64,7 +64,9 @@ class LogStoreConstants {
     static final String LOG_STORE_TYPE_ATTRIBUTE = "type";
 
     static final Map<String, String> MODEL_TO_JMX_TXN_NAMES =
-            Collections.unmodifiableMap(new HashMap<String, String>() {{
+            Collections.unmodifiableMap(new HashMap<String, String>() {
+                private static final long serialVersionUID = 1L;
+            {
                 put(JMX_ON_ATTRIBUTE, null);
                 put("id", "Id");
                 put("age-in-seconds", "AgeInSeconds");
@@ -72,7 +74,9 @@ class LogStoreConstants {
             }});
 
     static final Map<String, String> MODEL_TO_JMX_PARTICIPANT_NAMES =
-            Collections.unmodifiableMap(new HashMap<String, String>() {{
+            Collections.unmodifiableMap(new HashMap<String, String>() {
+                private static final long serialVersionUID = 1L;
+            {
                 put(JMX_ON_ATTRIBUTE, null);
                 put("type", "Type");
                 put("status", "Status");
@@ -118,7 +122,7 @@ class LogStoreConstants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode())
             .setMeasurementUnit(MeasurementUnit.NONE)
-            .setValidator(new EnumValidator(ParticipantStatus.class, true, false))
+            .setValidator(new EnumValidator<ParticipantStatus>(ParticipantStatus.class, true, false))
             .build();
 
     static SimpleAttributeDefinition PARTICIPANT_JNDI_NAME = (new SimpleAttributeDefinitionBuilder(JNDI_ATTRIBUTE, ModelType.STRING))
