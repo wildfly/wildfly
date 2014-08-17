@@ -172,8 +172,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
 
         final int recursiveDepth = operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).asInt(0);
-        final boolean recursive = operation.get(ModelDescriptionConstants.RECURSIVE).asBoolean(false) &&
-                (!operation.get(ModelDescriptionConstants.RECURSIVE_DEPTH).isDefined() || recursiveDepth > 0);
+        final boolean recursive = recursiveDepth > 0 || operation.get(ModelDescriptionConstants.RECURSIVE).asBoolean(false);
         final boolean queryRuntime = operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).asBoolean(false);
         final boolean proxies = operation.get(ModelDescriptionConstants.PROXIES).asBoolean(false);
         final boolean aliases = operation.get(ModelDescriptionConstants.INCLUDE_ALIASES).asBoolean(false);
