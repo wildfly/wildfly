@@ -22,14 +22,14 @@
 
 package org.wildfly.extension.undertow;
 
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.OpenListener;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.OpenListener;
 
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
