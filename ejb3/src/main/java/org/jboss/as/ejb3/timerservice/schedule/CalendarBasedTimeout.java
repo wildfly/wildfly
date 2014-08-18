@@ -604,7 +604,7 @@ public class CalendarBasedTimeout {
                 // values
                 nextCal.set(Calendar.SECOND, this.second.getFirst());
                 nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-                nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+                nextCal.add(Calendar.HOUR_OF_DAY, this.hour.getFirst() - nextCal.get(Calendar.HOUR_OF_DAY));
             } else {
                 nextCal = this.advanceTillMonthHasDate(nextCal, nextDayOfMonth);
             }
@@ -614,7 +614,7 @@ public class CalendarBasedTimeout {
             // also we need to reset the time
             nextCal.set(Calendar.SECOND, this.second.getFirst());
             nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+            nextCal.add(Calendar.HOUR_OF_DAY, this.hour.getFirst() - nextCal.get(Calendar.HOUR_OF_DAY));
             nextCal = this.computeNextMonth(nextCal);
             if (nextCal == null) {
                 return null;
