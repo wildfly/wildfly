@@ -1,5 +1,5 @@
-$MAVEN_VERSION="3.2.2";
-$MAVEN_URL="http://www.eu.apache.org/dist/maven/maven-3/3.2.2/binaries/apache-maven-3.2.2-bin.zip";
+$MAVEN_VERSION="3.2.3";
+$MAVEN_URL="http://www.apache.org/dist/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.zip";
 
 
 function Expand-ZIPFile($file, $destination){
