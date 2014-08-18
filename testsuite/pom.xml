@@ -96,6 +96,7 @@
         <node0>127.0.0.1</node0>
         <node1>127.0.0.1</node1>
         <mcast>230.0.0.4</mcast> <!-- Default multicast address. -->
+        <mcast.ttl>0</mcast.ttl> <!-- Multicast TTL. -->
 
         <!-- additional IP address defaults for xsite clustering tests -->
         <node2>127.0.0.1</node2>
