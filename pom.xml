@@ -249,7 +249,7 @@
         <version.org.picketlink>2.6.0.Final</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.scannotation>1.0.3</version.org.scannotation>
-        <version.org.slf4j>1.7.2.jbossorg-1</version.org.slf4j>
+        <version.org.slf4j>1.7.7.jbossorg-1</version.org.slf4j>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.aether>1.0.0.v20140518</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
@@ -1090,6 +1090,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-request-controller</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-dist</artifactId>
                 <version>${project.version}</version>
@@ -1234,6 +1240,12 @@
             <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-logging</artifactId>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-launcher</artifactId>
                 <version>${version.org.wildfly.core}</version>
             </dependency>
 

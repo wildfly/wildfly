@@ -57,7 +57,6 @@ import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -126,6 +125,7 @@ import org.jboss.security.config.ApplicationPolicy;
 import org.jboss.security.config.AuthorizationInfo;
 import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -183,6 +183,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static final String DEFAULT_SERVLET_NAME = "default";
     public static final String OLD_URI_PREFIX = "http://java.sun.com";
     public static final String NEW_URI_PREFIX = "http://xmlns.jcp.org";
+    public static final String UNDERTOW = "undertow";
 
     private DeploymentInfo deploymentInfo;
 
@@ -217,9 +218,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
+    private final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
+    private final String topLevelDeploymentName;
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, String topLevelDeploymentName) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -242,6 +245,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.explodedDeployment = explodedDeployment;
         this.servletExtensions = servletExtensions;
         this.sharedSessionManagerConfig = sharedSessionManagerConfig;
+        this.topLevelDeploymentName = topLevelDeploymentName;
     }
 
     @Override
@@ -254,7 +258,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
             handleJASPIMechanism(deploymentInfo);
-            handleJACCAuthorization(deploymentInfo);
+            handleJACCAuthorization
+                    (deploymentInfo);
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
 
             if(mergedMetaData.isUseJBossAuthorization()) {
@@ -368,10 +373,16 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     deploymentInfo.addThreadSetupAction(threadSetupAction);
                 }
             }
-            deploymentInfo.setServerName("WildFly "+ Version.AS_VERSION);
-            if (undertowService.getValue().statisticsEnabled()){
+            deploymentInfo.setServerName("WildFly " + Version.AS_VERSION);
+            if (undertowService.getValue().statisticsEnabled()) {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
+
+            ControlPoint controlPoint = controlPointInjectedValue.getOptionalValue();
+            if (controlPoint != null) {
+                deploymentInfo.addInitialHandlerChainWrapper(GlobalRequestControllerHandler.wrapper(controlPoint));
+            }
+
             this.deploymentInfo = deploymentInfo;
         } finally {
             Thread.currentThread().setContextClassLoader(oldTccl);
@@ -436,8 +447,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
     }
 
-    private void handleAdditionalAuthenticationMechanisms(final DeploymentInfo deploymentInfo){
-        for (Map.Entry<String,AuthenticationMechanism> am: host.getValue().getAdditionalAuthenticationMechanisms().entrySet()){
+    private void handleAdditionalAuthenticationMechanisms(final DeploymentInfo deploymentInfo) {
+        for (Map.Entry<String, AuthenticationMechanism> am : host.getValue().getAdditionalAuthenticationMechanisms().entrySet()) {
             deploymentInfo.addFirstAuthenticationMechanism(am.getKey(), am.getValue());
         }
     }
@@ -583,8 +594,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
             }
 
-            if(servletExtensions != null) {
-                for(ServletExtension extension : servletExtensions) {
+            if (servletExtensions != null) {
+                for (ServletExtension extension : servletExtensions) {
                     d.addServletExtension(extension);
                 }
             }
@@ -891,9 +902,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 });
             }
 
-            if (mergedMetaData.getDefaultEncoding()!=null){
+            if (mergedMetaData.getDefaultEncoding() != null) {
                 d.setDefaultEncoding(mergedMetaData.getDefaultEncoding());
-            }else if (servletContainer.getDefaultEncoding()!=null){
+            } else if (servletContainer.getDefaultEncoding() != null) {
                 d.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
 
@@ -1243,6 +1254,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return pathManagerInjector;
     }
 
+    public InjectedValue<ControlPoint> getControlPointInjectedValue() {
+        return controlPointInjectedValue;
+    }
+
     public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
         return componentRegistryInjectedValue;
     }
@@ -1294,6 +1309,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     public static class Builder {
+        private String topLevelDeploymentName;
         private JBossWebMetaData mergedMetaData;
         private String deploymentName;
         private TldsMetaData tldsMetaData;
@@ -1431,8 +1447,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setTopLevelDeploymentName(String topLevelDeploymentName) {
+            this.topLevelDeploymentName = topLevelDeploymentName;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, topLevelDeploymentName);
         }
     }
 

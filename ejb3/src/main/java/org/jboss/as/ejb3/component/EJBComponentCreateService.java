@@ -41,7 +41,6 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -88,8 +87,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final String moduleName;
     private final String distinctName;
     private final String policyContextID;
-
-    private final ShutDownInterceptorFactory shutDownInterceptorFactory;
 
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepository = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<TransactionManager> transactionManagerInjectedValue = new InjectedValue<>();
@@ -185,7 +182,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
         this.earApplicationName = componentConfiguration.getComponentDescription().getModuleDescription().getEarApplicationName();
         this.moduleName = componentConfiguration.getModuleName();
         this.distinctName = componentConfiguration.getComponentDescription().getModuleDescription().getDistinctName();
-        this.shutDownInterceptorFactory = ejbComponentDescription.getShutDownInterceptorFactory();
     }
 
     @Override
@@ -305,10 +301,6 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     public Injector<EJBRemoteTransactionsRepository> getEJBRemoteTransactionsRepositoryInjector() {
         return this.ejbRemoteTransactionsRepository;
-    }
-
-    public ShutDownInterceptorFactory getShutDownInterceptorFactory() {
-        return shutDownInterceptorFactory;
     }
 
     EJBRemoteTransactionsRepository getEJBRemoteTransactionsRepository() {

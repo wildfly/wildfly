@@ -48,6 +48,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.clustering.web.api" optional="true"/>
         <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
+        <module name="org.wildfly.extension.request-controller" />
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>

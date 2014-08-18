@@ -24,6 +24,7 @@
         <subsystem>pojo.xml</subsystem>
         <subsystem>remoting.xml</subsystem>
         <subsystem>resource-adapters.xml</subsystem>
+        <subsystem>request-controller.xml</subsystem>
         <subsystem>sar.xml</subsystem>
         <subsystem include-if-set="security.manager">security-manager.xml</subsystem>
         <subsystem>security.xml</subsystem>

@@ -306,8 +306,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public void start() {
-        getShutDownInterceptorFactory().start();
-
         super.start();
 
         this.cache = this.cacheFactory.getValue().createCache(this, this, this);
@@ -339,8 +337,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public void stop() {
-        getShutDownInterceptorFactory().shutdown();
-
         super.stop();
 
         this.cache.stop();
