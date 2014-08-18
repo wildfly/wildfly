@@ -406,7 +406,7 @@ public class ManagementClient {
             operation.get(RECURSIVE).set(true);
         }
         else {
-            // To make it compatible with WFLY-3705 and pre-WFLY-3705 behavior 
+            // To make it compatible with WFLY-3705 and pre-WFLY-3705 behavior
             // "recursive" is not set
             operation.get(RECURSIVE_DEPTH).set(recursiveDepth);
         }
