@@ -75,6 +75,7 @@ public final class Attachments {
      */
     public static final AttachmentKey<Boolean> ANNOTATION_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
 
+
     private Attachments() {
     }
 }

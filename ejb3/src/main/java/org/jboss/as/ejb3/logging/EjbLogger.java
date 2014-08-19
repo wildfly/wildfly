@@ -2997,4 +2997,7 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 458, value = "Failure in caller transaction.")
     void failureInCallerTransaction(@Cause Throwable cause);
+
+    @Message(id = 459, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
+    DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
 }
