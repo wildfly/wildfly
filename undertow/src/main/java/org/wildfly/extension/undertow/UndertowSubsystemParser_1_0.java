@@ -33,12 +33,13 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
+import org.wildfly.extension.undertow.filters.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
@@ -164,7 +165,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                 )
                                 )
                 )
-                .addChild(
+                .addChild(//todo add NOOP element parser
                         builder(ErrorPageDefinition.INSTANCE)
                                 .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
                                 .setNoAddOperation(true)
@@ -172,6 +173,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
                                                 .addAttribute(FileHandler.DIRECTORY_LISTING, new AttributeParser.DiscardOldDefaultValueParser("true"))
@@ -198,6 +200,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.FILTERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
@@ -213,6 +216,14 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         )
 
                 )
+                //here to make sure we always add filters & handlers path to mgmt model
+                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
+                    @Override
+                    public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
+                    }
+                })
                 .build();
     }
 

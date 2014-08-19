@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -83,35 +84,35 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                 ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
                                         .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
                         ).addChild(
-                                builder(HttpsListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
-                                        .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES,HttpsListenerResourceDefinition.ENABLED_PROTOCOLS)
-                                        .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
-                                                ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES,ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
-                                                ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
-                                                ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
-                                        .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
-                        ).addChild(
-                                builder(HostDefinition.INSTANCE)
-                                        .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
-                                        .addChild(
-                                                builder(LocationDefinition.INSTANCE)
-                                                        .addAttributes(LocationDefinition.HANDLER)
-                                                        .addChild(
-                                                                builder(FilterRefDefinition.INSTANCE)
-                                                                        .addAttributes(FilterRefDefinition.PREDICATE)
-                                                        )
-                                        ).addChild(
+                                        builder(HttpsListenerResourceDefinition.INSTANCE)
+                                                .addAttributes(AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED)
+                                                .addAttributes(HttpsListenerResourceDefinition.SECURITY_REALM, HttpsListenerResourceDefinition.VERIFY_CLIENT, HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES, HttpsListenerResourceDefinition.ENABLED_PROTOCOLS)
+                                                .addAttributes(ListenerResourceDefinition.MAX_HEADER_SIZE, ListenerResourceDefinition.MAX_ENTITY_SIZE,
+                                                        ListenerResourceDefinition.BUFFER_PIPELINED_DATA, ListenerResourceDefinition.MAX_PARAMETERS, ListenerResourceDefinition.MAX_HEADERS, ListenerResourceDefinition.MAX_COOKIES, ListenerResourceDefinition.ALLOW_ENCODED_SLASH, ListenerResourceDefinition.DECODE_URL,
+                                                        ListenerResourceDefinition.URL_CHARSET, ListenerResourceDefinition.ALWAYS_SET_KEEP_ALIVE, ListenerResourceDefinition.MAX_BUFFERED_REQUEST_SIZE, ListenerResourceDefinition.RECORD_REQUEST_START_TIME,
+                                                        ListenerResourceDefinition.ALLOW_EQUALS_IN_COOKIE_VALUE)
+                                                .addAttributes(ListenerResourceDefinition.BACKLOG, ListenerResourceDefinition.RECEIVE_BUFFER, ListenerResourceDefinition.SEND_BUFFER, ListenerResourceDefinition.KEEP_ALIVE)
+                                ).addChild(
+                                        builder(HostDefinition.INSTANCE)
+                                                .addAttributes(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE)
+                                                .addChild(
+                                                        builder(LocationDefinition.INSTANCE)
+                                                                .addAttributes(LocationDefinition.HANDLER)
+                                                                .addChild(
+                                                                        builder(FilterRefDefinition.INSTANCE)
+                                                                                .addAttributes(FilterRefDefinition.PREDICATE)
+                                                                )
+                                                ).addChild(
                                                 builder(AccessLogDefinition.INSTANCE)
-                                                    .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.SUFFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
                                         ).addChild(
                                                 builder(FilterRefDefinition.INSTANCE)
-                                                    .addAttributes(FilterRefDefinition.PREDICATE)
+                                                        .addAttributes(FilterRefDefinition.PREDICATE)
                                         ).addChild(
                                                 builder(SingleSignOnDefinition.INSTANCE)
-                                                    .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
+                                                        .addAttributes(SingleSignOnDefinition.DOMAIN, SingleSignOnDefinition.PATH, SingleSignOnDefinition.HTTP_ONLY, SingleSignOnDefinition.SECURE, SingleSignOnDefinition.COOKIE_NAME)
                                         )
-                        )
+                                )
                 )
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
@@ -165,7 +166,7 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                 )
                                 )
                 )
-                .addChild(
+                .addChild( //todo add NOOP element parser
                         builder(ErrorPageDefinition.INSTANCE)
                                 .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
                                 .setNoAddOperation(true)
@@ -173,6 +174,7 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
                                                 .addAttributes(
@@ -189,8 +191,8 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
-                                                        .setXmlElementName(Constants.HOST)
-                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID)
+                                                                .setXmlElementName(Constants.HOST)
+                                                                .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID)
                                                 )
                                 )
 
@@ -199,6 +201,7 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.FILTERS)
+                                .setNoAddOperation(true)
                                 .addChild(
                                         builder(BasicAuthHandler.INSTANCE)
                                                 .addAttributes(BasicAuthHandler.SECURITY_DOMAIN)
@@ -207,13 +210,21 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                                         builder(ConnectionLimitHandler.INSTANCE)
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
                                 ).addChild(
-                                        builder(ResponseHeaderFilter.INSTANCE)
-                                                .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
-                                ).addChild(
-                                        builder(GzipFilter.INSTANCE)
-                                )
+                                builder(ResponseHeaderFilter.INSTANCE)
+                                        .addAttributes(ResponseHeaderFilter.NAME, ResponseHeaderFilter.VALUE)
+                        ).addChild(
+                                builder(GzipFilter.INSTANCE)
+                        )
 
                 )
+                 //here to make sure we always add filters & handlers path to mgmt model
+                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
+                    @Override
+                    public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_FILTERS)));
+                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_HANDLERS)));
+                    }
+                })
                 .build();
     }
 
