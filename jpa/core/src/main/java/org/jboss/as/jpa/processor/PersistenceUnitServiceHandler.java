@@ -55,6 +55,7 @@ import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
+import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.service.JPAService;
@@ -116,6 +117,9 @@ public class PersistenceUnitServiceHandler {
         handleWarDeployment(phaseContext, startEarly);
         handleEarDeployment(phaseContext, startEarly);
         handleJarDeployment(phaseContext, startEarly);
+        if( startEarly) {
+            nextPhaseDependsOnPersistenceUnit(phaseContext);
+        }
     }
 
     public static void undeploy(DeploymentUnit context) {
@@ -326,10 +330,6 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
             // add the PU service as a dependency to all EE components in this scope
             addPUServiceDependencyToComponents(components, puServiceName);
-
-            if (startEarly) {   // require that the pu service start before the next deployment phase starts
-                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
-            }
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
@@ -663,6 +663,37 @@ public class PersistenceUnitServiceHandler {
         }
 
         return result;
+    }
+
+    /**
+     * The sub-deployment phases run in parallel, ensure that no deployment/sub-deployment moves past
+     * Phase.FIRST_MODULE_USE, until the applications persistence unit services are started.
+     *
+     * Note that some application persistence units will not be created until the Phase.INSTALL, in which case
+     * NEXT_PHASE_DEPS is not needed.
+     */
+    private static void nextPhaseDependsOnPersistenceUnit(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit topDeploymentUnit = DeploymentUtils.getTopDeploymentUnit(phaseContext.getDeploymentUnit());
+        final PersistenceUnitsInApplication persistenceUnitsInApplication = topDeploymentUnit.getAttachment(PersistenceUnitsInApplication.PERSISTENCE_UNITS_IN_APPLICATION);
+        for(final PersistenceUnitMetadataHolder holder: persistenceUnitsInApplication.getPersistenceUnitHolders()) {
+            for (final PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
+                String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
+
+                if (deployPU) {
+
+                    final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                    final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(phaseContext.getDeploymentUnit());
+
+                    final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, phaseContext.getDeploymentUnit());
+                    // only add the next phase dependency, if the persistence unit service is starting early.
+                    if( Configuration.needClassFileTransformer(pu)) {
+                        // wait until the persistence unit service is started before starting the next deployment phase
+                        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, puServiceName);
+                    }
+                }
+            }
+        }
     }
 
 
