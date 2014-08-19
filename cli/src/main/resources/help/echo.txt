@@ -1,0 +1,11 @@
+SYNOPSIS
+
+   echo string_of_text
+
+DESCRIPTION
+
+   Prints the text appearing as arguments.
+
+ARGUMENTS
+
+   string_of_text    a string of text

@@ -92,6 +92,7 @@ import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
 import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
 import org.jboss.as.cli.handlers.EchoDMRHandler;
+import org.jboss.as.cli.handlers.EchoVariableHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -387,6 +388,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ReloadHandler(this), "reload");
         cmdRegistry.registerHandler(new ShutdownHandler(this), "shutdown");
         cmdRegistry.registerHandler(new VersionHandler(), "version");
+
+        cmdRegistry.registerHandler(new EchoVariableHandler(), "echo");
 
         // deployment
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
