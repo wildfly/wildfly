@@ -27,6 +27,7 @@ import static org.jboss.as.threads.CommonAttributes.TIME;
 import static org.jboss.as.threads.CommonAttributes.UNIT;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -192,7 +193,7 @@ class ThreadPoolManagementUtils {
             }
             long time = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.resolveModelAttribute(context, keepaliveTime).asLong();
             String unit = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.resolveModelAttribute(context, keepaliveTime).asString();
-            params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, unit.toUpperCase()), time);
+            params.keepAliveTime = new TimeSpec(Enum.valueOf(TimeUnit.class, unit.toUpperCase(Locale.ENGLISH)), time);
         }
 
         return params;

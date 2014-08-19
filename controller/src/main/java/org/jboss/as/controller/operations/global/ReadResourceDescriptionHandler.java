@@ -425,7 +425,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     if (nodeDescription.hasDefined(ATTRIBUTES)) {
                         for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
                             ModelNode attributeResult = new ModelNode();
-                            Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
+                            Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase(Locale.ENGLISH));
                             addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
                             if (attributeResult.isDefined()) {
                                 attributes.get(attrProp.getName()).set(attributeResult);

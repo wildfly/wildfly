@@ -28,6 +28,7 @@ import java.security.Permission;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,7 +86,7 @@ public class StandardRoleMapper implements RoleMapper {
                 rolesToCheck = new HashMap<String, AuthorizerConfiguration.RoleMapping>(authorizerConfiguration.getRoleMappings());
                 Set<String> realmRoles = caller.getAssociatedRoles();
                 for (String current : realmRoles) {
-                    String roleName = current.toUpperCase();
+                    String roleName = current.toUpperCase(Locale.ENGLISH);
                     if (rolesToCheck.containsKey(roleName)) {
                         AuthorizerConfiguration.RoleMapping roleMapping = rolesToCheck.remove(roleName);
                         AuthorizerConfiguration.MappingPrincipal exclusion = roleMapping.isExcluded(caller);

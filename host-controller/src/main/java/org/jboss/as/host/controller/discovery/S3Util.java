@@ -1723,7 +1723,7 @@ public class S3Util {
         public static String generateQueryStringAuthentication(String awsAccessKey, String awsSecretAccessKey,
                                                                String method, String bucket, String key,
                                                                Map pathArgs, Map headers, long expirationDate) {
-            method = method.toUpperCase(); // Method should always be uppercase
+            method = method.toUpperCase(Locale.ENGLISH); // Method should always be uppercase
             String canonicalString =
                 makeCanonicalString(method, bucket, key, pathArgs, headers, "" + expirationDate);
             String encodedCanonical = encode(awsSecretAccessKey, canonicalString, true);

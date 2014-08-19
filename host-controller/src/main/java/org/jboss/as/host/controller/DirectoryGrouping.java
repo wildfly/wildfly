@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.ExpressionResolver;
@@ -56,7 +57,7 @@ public enum DirectoryGrouping {
 
     public static DirectoryGrouping forName(String localName) {
         final DirectoryGrouping directoryGrouping = localName != null ? MAP.get(localName.toLowerCase()) : null;
-        return directoryGrouping == null ? DirectoryGrouping.valueOf(localName.toUpperCase()) : directoryGrouping;
+        return directoryGrouping == null ? DirectoryGrouping.valueOf(localName.toUpperCase(Locale.ENGLISH)) : directoryGrouping;
     }
 
     private final String localName;
