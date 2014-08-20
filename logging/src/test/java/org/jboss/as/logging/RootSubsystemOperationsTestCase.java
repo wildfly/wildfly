@@ -41,6 +41,7 @@ import org.junit.Test;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase {
+    private final String msg = "Test message ";
 
     @Before
     public void clearLogDir() {
@@ -69,6 +70,179 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
         final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
         testWrite(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES, true);
         testUndefine(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES);
+    }
+
+    @Test
+    public void testListLogFiles() throws Exception {
+        final KernelServices kernelServices = boot();
+
+        // Subsystem address
+        final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
+        final ModelNode op = SubsystemOperations.createOperation("list-log-files", address);
+        ModelNode result = executeOperation(kernelServices, op);
+        List<ModelNode> logFiles = SubsystemOperations.readResult(result).asList();
+
+        // Should only be one file
+        // TODO (jrp) can be tested when LOGMGR-83 is committed and the logmanager is updated
+        // assertEquals("Found: " + logFiles, 2, logFiles.size());
+
+        // Should contain simple.log and simple-profile.log
+        boolean found = false;
+        boolean foundProfile = false;
+        for (ModelNode fileInfo : logFiles) {
+            final String fileName = fileInfo.get("file-name").asString();
+            if ("simple.log".equals(fileName)) {
+                found = true;
+            }
+            if ("profile-simple.log".equals(fileName)) {
+                foundProfile = true;
+            }
+            if ("ignore.log".equals(fileName)) {
+                fail("Found ignore.log, but the file should not be listed.");
+            }
+            if ("profile-ignore.log".equals(fileName)) {
+                fail("Found profile-ignore.log, but the file should not be listed.");
+            }
+        }
+        assertTrue("simple.log file was not found", found);
+        assertTrue("profile-simple.log file was not found", foundProfile);
+
+        // Change the permissions on the file so read is not allowed
+        final File file = new File(LoggingTestEnvironment.get().getLogDir(), "simple.log");
+        // The file should exist
+        assertTrue("File does not exist", file.exists());
+
+        // Only test if successfully set
+        if (file.setReadable(false)) {
+            result = executeOperation(kernelServices, op);
+            logFiles = SubsystemOperations.readResult(result).asList();
+            // The simple.log should not be in the list
+            assertEquals("Read permission was found to be true on the file.", 1, logFiles.size());
+            // Reset the file permissions
+            assertTrue("Could not reset file permissions", file.setReadable(true));
+        }
+    }
+
+    @Test
+    public void testReadLogFile() throws Exception {
+        final KernelServices kernelServices = boot();
+
+        // Log 50 records
+        final Logger logger = getLogger();
+        for (int i = 0; i < 50; i++) {
+            logger.info(msg + i);
+        }
+
+        // Subsystem address
+        final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
+        final ModelNode op = SubsystemOperations.createOperation("read-log-file", address);
+        op.get("name").set("simple.log");
+        ModelNode result = executeOperation(kernelServices, op);
+        List<String> logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(10, logLines.size());
+        checkLogLines(logLines, 40);
+
+        // Read from top
+        op.get("tail").set(false);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(10, logLines.size());
+        checkLogLines(logLines, 0);
+
+        // Read more lines from top
+        op.get("lines").set(20);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(20, logLines.size());
+        checkLogLines(logLines, 0);
+
+        // Read from bottom
+        op.get("tail").set(true);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(20, logLines.size());
+        checkLogLines(logLines, 30);
+
+        // Skip lines from bottom
+        op.get("tail").set(true);
+        op.get("skip").set(5);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(20, logLines.size());
+        checkLogLines(logLines, 25);
+
+        // Skip lines from top
+        op.get("tail").set(false);
+        op.get("skip").set(5);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(20, logLines.size());
+        checkLogLines(logLines, 5);
+
+        // Read all lines
+        op.get("tail").set(false);
+        op.get("lines").set(-1);
+        op.remove("skip");
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(50, logLines.size());
+        checkLogLines(logLines, 0);
+
+        // Read all lines, but 5 lines
+        op.get("tail").set(false);
+        op.get("lines").set(-1);
+        op.get("skip").set(5);
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(45, logLines.size());
+        checkLogLines(logLines, 5);
+
+        // Change the permissions on the file so read is not allowed
+        final File file = new File(LoggingTestEnvironment.get().getLogDir(), op.get("name").asString());
+        // The file should exist
+        assertTrue("File does not exist", file.exists());
+
+        // Only test if successfully set
+        if (file.setReadable(false)) {
+            result = kernelServices.executeOperation(op);
+            assertFalse("Should have failed due to denial of read permissions on the file.", SubsystemOperations.isSuccessfulOutcome(result));
+            // Reset the file permissions
+            assertTrue("Could not reset file permissions", file.setReadable(true));
+        }
+
+        // Should be able to read profile-simple.log, but it should be empty
+        op.get("name").set("profile-simple.log");
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(0, logLines.size());
+
+        // Should not be able to read ignore.log even though the file exists
+        op.get("name").set("ignore.log");
+        result = kernelServices.executeOperation(op);
+        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
+
+        // Should not be able to read ignore.log even though the file exists
+        op.get("name").set("profile-ignore.log");
+        result = kernelServices.executeOperation(op);
+        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
+
+        // Test an invalid file
+        op.get("name").set("invalid");
+        result = kernelServices.executeOperation(op);
+        assertFalse("Should have failed due to invalid file.", SubsystemOperations.isSuccessfulOutcome(result));
+    }
+
+    private void checkLogLines(final List<String> logLines, final int start) {
+        int index = start;
+        for (String line : logLines) {
+            final String lineMsg = msg + index;
+            assertTrue(String.format("Expected line containing '%s', found '%s", lineMsg, line), line.contains(msg + index));
+            index++;
+        }
+    }
+
+    private Logger getLogger() {
+        return LogContext.getSystemLogContext().getLogger("org.jboss.as.logging.test");
     }
 
     static void deleteRecursively(final File dir) {

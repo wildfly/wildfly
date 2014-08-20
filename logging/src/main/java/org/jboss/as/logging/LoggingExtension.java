@@ -126,20 +126,23 @@ public class LoggingExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingRootResource.INSTANCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
 
+        final LoggingRootResource rootResource;
         final ResolvePathHandler resolvePathHandler;
         // Register for servers only even if in ADMIN_ONLY mode
         if (context.getProcessType().isServer()) {
+            rootResource = new LoggingRootResource(context.getPathManager());
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setParentAttribute(CommonAttributes.FILE)
                     .build();
         } else {
+            rootResource = new LoggingRootResource(null);
             resolvePathHandler = null;
         }
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResource);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
-        registerSubModels(registration, resolvePathHandler, true, subsystem, LoggingRootResource.INSTANCE, context.isRegisterTransformers());
+        registerSubModels(registration, resolvePathHandler, true, subsystem, rootResource, context.isRegisterTransformers());
         // Register logging profile sub-models
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SUBSYSTEM_NAME, CommonAttributes.LOGGING_PROFILE);
         final List<AccessConstraintDefinition> accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
