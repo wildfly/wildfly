@@ -50,6 +50,7 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
                 <module>iiop</module>
@@ -68,6 +69,7 @@
             <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
                 <module>clustering</module>
@@ -87,6 +89,7 @@
             <id>ts.integ.group.smoke</id>
             <activation><property><name>!ts.noSmoke</name></property></activation>
             <modules>
+                <module>web</module>
                 <module>smoke</module>
             </modules>
         </profile>

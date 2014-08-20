@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,12 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.web.servlet.enc.empty;
-
-import java.net.URL;
+package org.jboss.as.test.integration.ee.concurrent;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -34,53 +31,30 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.net.URL;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
 
 /**
+ * @author Eduardo Martins
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class EmptyCompEnvTestCase {
+public class DefaultContextServiceServletTestCase {
 
     @ArquillianResource
-    @OperateOnDeployment("empty")
-    private URL empty;
+    private URL url;
 
-
-    @ArquillianResource
-    @OperateOnDeployment("single")
-    private URL single;
-
-    @Deployment(name = "empty")
-    public static WebArchive empty() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "empty.war");
-        war.addClasses(HttpRequest.class, EmptyServlet.class);
+    @Deployment
+    public static WebArchive deployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
+        war.addClasses(HttpRequest.class, DefaultContextServiceTestServlet.class, TestServletRunnable.class);
         return war;
     }
 
-    @Deployment(name = "single")
-    public static WebArchive single() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
-        war.addClasses(HttpRequest.class, SingleServlet.class);
-        return war;
-    }
-
-    private String performCall(URL url,String urlPattern) throws Exception {
-        return HttpRequest.get(url.toExternalForm() + urlPattern, 1000, SECONDS);
-    }
-
     @Test
-    @OperateOnDeployment("empty")
-    public void testEmptyList() throws Exception {
-        String result = performCall(empty, "simple");
-        assertEquals("ok", result);
+    public void testServlet() throws Exception {
+        HttpRequest.get(url.toExternalForm() + "simple", 10, SECONDS);
     }
 
-    @Test
-    @OperateOnDeployment("single")
-    public void testSingleList() throws Exception {
-        String result = performCall(single, "simple");
-        assertEquals("ok", result);
-    }
 }

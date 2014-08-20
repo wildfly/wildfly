@@ -19,48 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.web.servlet.enc.empty;
+package org.jboss.as.test.integration.web.security;
 
 import java.io.IOException;
+import java.io.Writer;
 
-import javax.annotation.Resource;
-import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HttpConstraint;
+import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.UserTransaction;
-
-import org.junit.Assert;
-
 
 /**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * A simple servlet that just writes back a string
+ *
+ * @author Anil Saldhana
  */
-@WebServlet(name="SimpleServlet", urlPatterns={"/simple"})
-public class SingleServlet extends HttpServlet {
+@WebServlet(name = "SecuredServlet", urlPatterns = { "/secured/" }, loadOnStartup = 1)
+@ServletSecurity(@HttpConstraint(rolesAllowed = { "gooduser" }))
+public class SecuredServlet extends HttpServlet {
 
-    @Resource(name = "userTransaction")
-    private UserTransaction userTransaction;
+    private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
-            final InitialContext ic = new InitialContext();
-            ic.lookup("java:comp/env");
-            final NamingEnumeration<NameClassPair> list = ic.list("java:comp/env");
-            Assert.assertTrue(list.hasMore());
-            Assert.assertEquals("userTransaction", list.next().getName());
-            Assert.assertFalse(list.hasMore());
-            resp.getWriter().write("ok");
-            resp.getWriter().close();
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
-
+        Writer writer = resp.getWriter();
+        writer.write("GOOD");
     }
 }
