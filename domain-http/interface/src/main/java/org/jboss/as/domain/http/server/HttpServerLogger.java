@@ -91,6 +91,10 @@ public interface HttpServerLogger extends BasicLogger {
     @Message(id = 15105, value = "Management interface is using different addresses for HTTP (%s) and HTTPS (%s). Redirection of HTTPS requests from HTTP socket to HTTPS socket will not be supported.")
     void httpsRedirectNotSupported(InetAddress bindAddress, InetAddress secureBindAddress);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 15106, value = "Failed to send request.")
+    void responseFailed(@Cause Throwable cause);
+
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HTTPServerMessages also contains messages in this
      * range commencing at 15120.

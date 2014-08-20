@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
@@ -56,9 +57,9 @@ class DomainApiUploadHandler implements HttpHandler {
     private static final Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
 
     private final File tempFileLocation;
-    private final ModelControllerClient modelController;
+    private final ModelController modelController;
 
-    public DomainApiUploadHandler(final ModelControllerClient modelController) {
+    public DomainApiUploadHandler(final ModelController modelController) {
         this.tempFileLocation = new File(SecurityActions.getProperty("java.io.tmpdir"));
         this.modelController = modelController;
     }
@@ -74,7 +75,7 @@ class DomainApiUploadHandler implements HttpHandler {
             boolean encode = processRequest(exchange, operation, builder, tempFiles);
             // Execute the operation
             operation.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
-            final ModelNode response = modelController.execute(builder.build());
+            final ModelNode response = modelController.execute(operation, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, builder.build());
             // write the response
             writeResponse(exchange, false, false, response, OK, encode);
 

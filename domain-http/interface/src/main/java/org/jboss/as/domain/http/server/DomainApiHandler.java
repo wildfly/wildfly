@@ -23,9 +23,15 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.Constants.ACCEPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
@@ -63,12 +69,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
-import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
@@ -121,10 +129,10 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     private final Authenticator authenticator;
     private final ControlledProcessStateService controlledProcessStateService;
-    private ModelControllerClient modelController;
+    private ModelController modelController;
 
 
-    DomainApiHandler(final ModelControllerClient modelController, final Authenticator authenticator,
+    DomainApiHandler(final ModelController modelController, final Authenticator authenticator,
                      final ControlledProcessStateService controlledProcessStateService) {
         this.modelController = modelController;
         this.authenticator = authenticator;
@@ -211,7 +219,7 @@ class DomainApiHandler implements ManagementHttpHandler {
 
             OperationBuilder operation = new OperationBuilder(dmr);
             operation.addInputStream(result.stream);
-            response = modelController.execute(operation.build());
+            response = modelController.execute(dmr, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, operation.build());
             drain(http.getRequestBody());
         } catch (Throwable t) {
             // TODO Consider draining input stream
@@ -234,7 +242,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         final URI request = http.getRequestURI();
         final String requestMethod = http.getRequestMethod();
 
-        boolean isGet = GET.equals(requestMethod);
+        final boolean isGet = GET.equals(requestMethod);
         if (!isGet && !POST.equals(requestMethod)) {
             ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
             http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
@@ -242,12 +250,12 @@ class DomainApiHandler implements ManagementHttpHandler {
             return;
         }
 
-        ModelNode dmr;
+        final ModelNode dmr;
         ModelNode response;
         int status = OK;
 
         Headers requestHeaders = http.getRequestHeaders();
-        boolean encode = APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(ACCEPT))
+        final boolean encode = APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(ACCEPT))
                 || APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(CONTENT_TYPE));
 
         try {
@@ -257,10 +265,40 @@ class DomainApiHandler implements ManagementHttpHandler {
             sendError(http,isGet,iae);
             return;
         }
+        final ResponseCallback callback = new ResponseCallback() {
+            @Override
+            void doSendResponse(final ModelNode response) {
+                final int status;
+                if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
+                    status = getErrorResponseCode(response.asString());
+                } else {
+                    status = 200;
+                }
+                final boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
+                try {
+                    writeResponse(http, isGet, pretty, response, status, encode);
+                } catch (IOException e) {
+                    ROOT_LOGGER.responseFailed(e);
+                }
+            }
+        };
+
+        final boolean sendPreparedResponse = sendPreparedResponse(dmr);
+        final ModelController.OperationTransactionControl control = sendPreparedResponse ? new ModelController.OperationTransactionControl() {
+                @Override
+                public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
+                        transaction.commit();
+                        // Fix prepared result
+                                result.get(OUTCOME).set(SUCCESS);
+                        result.get(RESULT);
+                        callback.sendResponse(result);
+                    }
+            } : ModelController.OperationTransactionControl.COMMIT;
+
 
         try {
             dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
-            response = modelController.execute(new OperationBuilder(dmr).build());
+            response = modelController.execute(dmr, OperationMessageHandler.DISCARD, control, OperationAttachments.EMPTY);
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
             sendError(http,isGet,t);
@@ -272,7 +310,9 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-        writeResponse(http, isGet, pretty, response, status, encode);
+        if (!sendPreparedResponse) {
+            writeResponse(http, isGet, pretty, response, status, encode);
+        }
     }
 
     private void sendError(final HttpExchange http, boolean isGet, Throwable t) throws IOException {
@@ -500,6 +540,52 @@ class DomainApiHandler implements ManagementHttpHandler {
             result = FORBIDDEN;
         }
         return result;
+    }
+
+
+    /**
+     * Determine whether the prepared response should be sent, before the operation completed. This is needed in order
+     * that operations like :reload() can be executed without causing communication failures.
+     *
+     * @param operation the operation to be executed
+     * @return {@code true} if the prepared result should be sent, {@code false} otherwise
+     */
+    private boolean sendPreparedResponse(final ModelNode operation) {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String op = operation.get(OP).asString();
+        final int size = address.size();
+        if (size == 0) {
+            if (op.equals("reload")) {
+                return true;
+            } else if (op.equals(COMPOSITE)) {
+                // TODO
+                return false;
+            } else {
+                return false;
+            }
+        } else if (size == 1) {
+            if (address.getLastElement().getKey().equals(HOST)) {
+                return op.equals("reload");
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Callback to prevent the response will be sent multiple times.
+     */
+    private abstract static class ResponseCallback {
+        private volatile boolean complete;
+
+        void sendResponse(final ModelNode response) {
+            if (complete) {
+                return;
+            }
+            complete = true;
+            doSendResponse(response);
+        }
+
+        abstract void doSendResponse(ModelNode response);
     }
 
 }

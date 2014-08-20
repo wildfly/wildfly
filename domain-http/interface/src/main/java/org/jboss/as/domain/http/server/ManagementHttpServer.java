@@ -37,7 +37,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.security.AnonymousAuthenticator;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
@@ -108,7 +108,7 @@ public class ManagementHttpServer {
     }
 
     public static ManagementHttpServer create(InetSocketAddress bindAddress, InetSocketAddress secureBindAddress, int backlog,
-            ModelControllerClient modelControllerClient, Executor executor, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
+            ModelController modelController, Executor executor, SecurityRealm securityRealm, ControlledProcessStateService controlledProcessStateService,
             ConsoleMode consoleMode, String consoleSkin)
             throws IOException {
         Map<String, String> configuration = Collections.emptyMap();
@@ -201,7 +201,7 @@ public class ManagementHttpServer {
             HttpServerLogger.ROOT_LOGGER.consoleModuleNotFound(consoleSkin == null ? "main" : consoleSkin);
         }
         managementHttpServer.addHandler(new RootHandler(consoleHandler));
-        managementHttpServer.addHandler(new DomainApiHandler(modelControllerClient, auth, controlledProcessStateService));
+        managementHttpServer.addHandler(new DomainApiHandler(modelController, auth, controlledProcessStateService));
         if (consoleHandler != null) {
             managementHttpServer.addHandler(consoleHandler);
         }

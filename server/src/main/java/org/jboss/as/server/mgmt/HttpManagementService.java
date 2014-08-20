@@ -158,7 +158,6 @@ public class HttpManagementService implements Service<HttpManagement> {
         final ModelController modelController = modelControllerValue.getValue();
         final ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceValue.getValue();
         final ExecutorService executorService = executorServiceValue.getValue();
-        final ModelControllerClient modelControllerClient = modelController.createClient(executorService);
         socketBindingManager = injectedSocketBindingManager.getOptionalValue();
 
         final SecurityRealm securityRealm = securityRealmValue.getOptionalValue();
@@ -191,7 +190,7 @@ public class HttpManagementService implements Service<HttpManagement> {
         }
 
         try {
-            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelControllerClient,
+            serverManagement = ManagementHttpServer.create(bindAddress, secureBindAddress, 50, modelController,
                     executorService, securityRealm, controlledProcessStateService, consoleMode, consoleSkin);
             serverManagement.start();
 
