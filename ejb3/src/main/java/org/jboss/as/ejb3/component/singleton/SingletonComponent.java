@@ -128,7 +128,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public void start() {
-        getShutDownInterceptorFactory().start();
         super.start();
         if (this.initOnStartup) {
             // Do not call createInstance() because we can't ever assume that the singleton instance
@@ -140,7 +139,6 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
 
     @Override
     public void stop() {
-        getShutDownInterceptorFactory().shutdown();
         this.destroySingletonInstance();
         super.stop();
     }

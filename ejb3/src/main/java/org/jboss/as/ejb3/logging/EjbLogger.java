@@ -3000,4 +3000,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 459, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
     DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
+
+    @Message(id = 460, value = "The request was rejected as the container is suspended")
+    IllegalStateException containerSuspended();
 }

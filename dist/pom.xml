@@ -41,33 +41,39 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-build</artifactId>
+            <artifactId>wildfly-feature-pack</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-build</artifactId>
+            <artifactId>wildfly-feature-pack</artifactId>
             <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
 
     <build>
-        <finalName>wildfly-${project.version}</finalName>
+        <finalName>${server.output.dir.prefix}-${project.version}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-build-plugin</artifactId>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-server</id>
+                        <id>server-provisioning</id>
                         <goals>
                             <goal>build</goal>
                         </goals>
-                        <phase>package</phase>
+                        <phase>compile</phase>
                         <configuration>
-                            <config-file>server-build.xml</config-file>
+                            <config-file>server-provisioning.xml</config-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -103,8 +109,8 @@
                                     <recompressZippedFiles>true</recompressZippedFiles>
                                     <finalName>${server.output.dir.prefix}-${project.version}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
-                                    <outputDirectory>target/</outputDirectory>
-                                    <workDirectory>target/assembly/work</workDirectory>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <workDirectory>${project.build.directory}/assembly/work</workDirectory>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
@@ -120,8 +126,8 @@
                                     </descriptors>
                                     <finalName>${server.output.dir.prefix}-${project.version}</finalName>
                                     <appendAssemblyId>true</appendAssemblyId>
-                                    <outputDirectory>target/</outputDirectory>
-                                    <workDirectory>target/assembly-src/work</workDirectory>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <workDirectory>${project.build.directory}/assembly-src/work</workDirectory>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>

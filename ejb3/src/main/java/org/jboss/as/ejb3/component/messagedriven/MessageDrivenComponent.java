@@ -179,7 +179,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             throw EjbLogger.ROOT_LOGGER.endpointUnAvailable(this.getComponentName());
         }
 
-        getShutDownInterceptorFactory().start();
         super.start();
 
         if (deliveryActive) {
@@ -197,7 +196,6 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         deactivate();
         deliveryActive = false;
 
-        getShutDownInterceptorFactory().shutdown();
         if (this.pool != null) {
             this.pool.stop();
         }

@@ -65,6 +65,9 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.ControlPointService;
+import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -107,6 +110,13 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        //install the control point for the top level deployment no matter what
+        if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)) {
+            if(deploymentUnit.getParent() == null) {
+                ControlPointService.install(phaseContext.getServiceTarget(), deploymentUnit.getName(), UndertowExtension.SUBSYSTEM_NAME);
+            }
+        }
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (warMetaData == null) {
             return;
@@ -222,6 +232,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                 .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
+                .setTopLevelDeploymentName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName())
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
@@ -255,6 +266,15 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependencies(additionalDependencies);
 
+        if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)){
+            String topLevelName;
+            if(deploymentUnit.getParent() == null) {
+                topLevelName = deploymentUnit.getName();
+            } else {
+                topLevelName = deploymentUnit.getParent().getName();
+            }
+            infoBuilder.addDependency(ControlPointService.serviceName(topLevelName, UndertowExtension.SUBSYSTEM_NAME), ControlPoint.class, undertowDeploymentInfoService.getControlPointInjectedValue());
+        }
         final Set<String> seenExecutors = new HashSet<String>();
         if (metaData.getExecutorName() != null) {
             final InjectedValue<Executor> executor = new InjectedValue<Executor>();

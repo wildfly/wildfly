@@ -38,9 +38,20 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-build</artifactId>
+            <artifactId>wildfly-feature-pack</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-web-feature-pack</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack</artifactId>
             <type>pom</type>
         </dependency>
 
