@@ -29,7 +29,7 @@ set CLASSPATH=
 set M2_HOME=
 set MAVEN_HOME=
 set MAVEN_OPTS=%MAVEN_OPTS% -Xmx768M
-powershell "& "tools\download-maven.ps1"
+powershell -noprofile -executionpolicy bypass -file "tools\download-maven.ps1"
 
 REM ******************************************************
 REM - "for" loops have been unrolled for compatibility
