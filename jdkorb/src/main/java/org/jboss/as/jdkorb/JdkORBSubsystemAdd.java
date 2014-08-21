@@ -197,7 +197,8 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
                 .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 
         // create the CORBA naming service.
-        final CorbaNamingService namingService = new CorbaNamingService();
+        final String rootContext = props.getProperty(JdkORBSubsystemConstants.NAMING_ROOT_CONTEXT);
+        final CorbaNamingService namingService = new CorbaNamingService(rootContext);
         newControllers.add(context
                 .getServiceTarget()
                 .addService(CorbaNamingService.SERVICE_NAME, namingService)
