@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.management.MBeanServer;
@@ -78,7 +79,6 @@ class HornetQService implements Service<HornetQServer> {
     /** */
     private static final String HOST = "host";
     private static final String PORT = "port";
-    private static final String LOGGING_FACTORY = "org.jboss.as.messaging.HornetQLoggerFactory";
 
     /**
      * The name of the SocketBinding reference to use for HOST/PORT
@@ -96,9 +96,9 @@ class HornetQService implements Service<HornetQServer> {
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final PathConfig pathConfig;
-    // mapping between the {broacast|discovery}-groups and the *names* of the JGroups channel they use
+    // mapping between the {broadcast|discovery}-groups and the *names* of the JGroups channel they use
     private final Map<String, String> jgroupsChannels = new HashMap<String, String>();
-    // mapping between the {broacast|discovery}-groups and the JGroups channel factory for the *stack* they use
+    // mapping between the {broadcast|discovery}-groups and the JGroups channel factory for the *stack* they use
     private Map<String, ChannelFactory> jgroupFactories = new HashMap<String, ChannelFactory>();
 
     // broadcast-group and discovery-groups configured with JGroups must share the same channel
@@ -143,9 +143,13 @@ class HornetQService implements Service<HornetQServer> {
         JournalType jtype = configuration.getJournalType();
         if (jtype == JournalType.ASYNCIO) {
             boolean supportsAIO = AIOSequentialFileFactory.isSupported();
-
             if (supportsAIO == false) {
-                ROOT_LOGGER.aioWarning();
+                String osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
+                if (osName.contains("nux")){
+                    ROOT_LOGGER.aioWarningLinux();
+                } else {
+                    ROOT_LOGGER.aioWarning();
+                }
                 configuration.setJournalType(JournalType.NIO);
             }
         }

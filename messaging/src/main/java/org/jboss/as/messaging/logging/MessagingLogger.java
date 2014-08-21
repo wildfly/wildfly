@@ -69,7 +69,7 @@ public interface MessagingLogger extends BasicLogger {
      * Logs a warning message indicating AIO was not found.
      */
     @LogMessage(level = WARN)
-    @Message(id = 1, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal")
+    @Message(id = 1, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO.")
     void aioWarning();
 
     /**
@@ -785,4 +785,11 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 74, value = "Invalid parameter key: %s, the allowed keys are %s.")
     OperationFailedException invalidParameterName(String parameterName, Set<String> allowedKeys);
+
+    /**
+     * Logs a warning message indicating AIO was not found, ask to install LibAIO to enable the AIO on Linux systems.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 75, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. Your platform is Linux, install LibAIO to enable the AIO journal.")
+    void aioWarningLinux();
 }
