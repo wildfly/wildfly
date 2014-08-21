@@ -40,18 +40,22 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.wildfly.iiop.openjdk.IIOPExtension;
 
 /**
  * @author Tomaz Cerar
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
 public class JacORBSubsystemResource extends SimpleResourceDefinition {
+
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
 
     private JacORBSubsystemResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
-                .getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE, null,
-                null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
+        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
+                JacORBExtension.getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE,
+                new ReloadRequiredRemoveStepHandler(IIOPExtension.IIOP_CAPABILITY),
+                null, null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
     }
 
     @Override
@@ -105,7 +109,33 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
                     && newValue.asString().equals(JacORBSubsystemConstants.ON)) {
                 newValue.set(JacORBSubsystemConstants.IDENTITY);
             }
+            if (attributeName.equals(JacORBSubsystemDefinitions.ORB_INIT_TX.getName())) {
+                Boolean needJTS = isJtsNeeded(context, model.getModel());
+                if (needJTS != null) {
+                    if (needJTS) {
+                        context.registerAdditionalCapabilityRequirement(IIOPExtension.JTS_CAPABILITY,
+                                IIOPExtension.IIOP_CAPABILITY.getName(),
+                                JacORBSubsystemDefinitions.ORB_INIT_TX.getName());
+                    } else {
+                        context.deregisterCapabilityRequirement(IIOPExtension.JTS_CAPABILITY, IIOPExtension.IIOP_CAPABILITY.getName());
+                    }
+                }
+            }
             super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+        }
+
+        private Boolean isJtsNeeded(OperationContext context, ModelNode model) {
+            try {
+                String s = JacORBSubsystemDefinitions.ORB_INIT_TX.resolveModelAttribute(context, model).asString();
+                return s.equalsIgnoreCase("on");
+            } catch (OperationFailedException ofe) {
+                if (model.get(JacORBSubsystemDefinitions.ORB_INIT_TX.getName()).getType() == ModelType.EXPRESSION) {
+                    // Must be a vault expression or something we can't resolve in Stage.MODEL.
+                    // So we can only do nothing and hope for the best when they reload
+                    return null;
+                }
+                throw new IllegalStateException(ofe);
+            }
         }
     }
 }

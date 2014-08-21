@@ -49,11 +49,20 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.registry.CapabilityContext;
+import org.jboss.as.controller.capability.registry.RegistrationPoint;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistration;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -80,8 +89,15 @@ import org.junit.Test;
  */
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities("org.wildfly.extension.iiop");
+
     public TransactionSubsystemTestCase() {
         super(TransactionExtension.SUBSYSTEM_NAME, new TransactionExtension());
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return ADDITIONAL_INITIALIZATION;
     }
 
     @Override
@@ -233,7 +249,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource("full-expressions-transform.xml");
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(subsystemXml);
 
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
@@ -242,7 +258,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .addOperationValidationResolve(ADD, subsystemAddress)
                 .addOperationValidationFixer(ADD, subsystemAddress, RemoveProcessUUIDOperationFixer.INSTANCE)
-                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+                .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
                 .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
@@ -352,10 +368,10 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(ADDITIONAL_INITIALIZATION, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
