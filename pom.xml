@@ -254,7 +254,7 @@
         <version.org.eclipse.aether>1.0.0.v20140518</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
-        <version.org.wildfly.build-tools>1.0.0.Alpha1</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.0.0.Alpha2</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.0.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
         <version.org.wildfly.core>1.0.0.Alpha5</version.org.wildfly.core>
