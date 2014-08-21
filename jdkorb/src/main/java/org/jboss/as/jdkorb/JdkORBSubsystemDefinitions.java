@@ -130,7 +130,7 @@ class JdkORBSubsystemDefinitions {
     // naming attribute definitions.
     public static final SimpleAttributeDefinition NAMING_ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
             JdkORBSubsystemConstants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("JBoss/Naming/root"))
+            .setDefaultValue(new ModelNode().set(JdkORBSubsystemConstants.JDKORB_NAME_SERVICE_INIT_REF))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();

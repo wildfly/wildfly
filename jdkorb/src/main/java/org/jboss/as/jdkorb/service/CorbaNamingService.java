@@ -23,7 +23,6 @@
 package org.jboss.as.jdkorb.service;
 
 import org.jboss.as.jdkorb.JdkORBMessages;
-import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
 import org.jboss.as.jdkorb.logging.JdkORBLogger;
 import org.jboss.as.jdkorb.naming.CorbaNamingContext;
 import org.jboss.msc.inject.Injector;
@@ -56,7 +55,13 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
 
+    private final String rootContext;
+
     private volatile NamingContextExt namingService;
+
+    public CorbaNamingService(final String rootContext) {
+        this.rootContext = rootContext;
+    }
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -81,9 +86,8 @@ public class CorbaNamingService implements Service<NamingContextExt> {
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
 
             //exporting the name service initial reference
-            ((com.sun.corba.se.impl.orb.ORBImpl) orb).
-            register_initial_reference(
-            JdkORBSubsystemConstants.JDKORB_NAME_SERVICE_INIT_REF, namingPOA.servant_to_reference(ns));
+            ((com.sun.corba.se.impl.orb.ORBImpl) orb).register_initial_reference(rootContext,
+                    namingPOA.servant_to_reference(ns));
 
         } catch (Exception e) {
             throw JdkORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
