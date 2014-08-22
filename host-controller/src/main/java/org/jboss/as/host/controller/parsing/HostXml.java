@@ -106,8 +106,6 @@ import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-
-
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code host.xml}
  *
@@ -636,7 +634,7 @@ public class HostXml extends CommonXml {
         list.add(addOp);
     }
 
-    private void parseHttpManagementInterfaceAttributes2_0(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
+    private void parseHttpManagementInterfaceAttributes_1_5(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -660,7 +658,7 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseNativeManagementInterfaceAttributes2_0(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
+    private void parseNativeManagementInterfaceAttributes_1_5(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -680,7 +678,7 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseManagementInterface1_5(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list)  throws XMLStreamException {
+    private void parseManagementInterface_1_5(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list)  throws XMLStreamException {
 
         final ModelNode operationAddress = address.clone();
         operationAddress.add(MANAGEMENT_INTERFACE, http ? HTTP_INTERFACE : NATIVE_INTERFACE);
@@ -688,9 +686,9 @@ public class HostXml extends CommonXml {
 
         // Handle attributes
         if (http) {
-            parseHttpManagementInterfaceAttributes2_0(reader, addOp);
+            parseHttpManagementInterfaceAttributes_1_5(reader, addOp);
         } else {
-            parseNativeManagementInterfaceAttributes2_0(reader, addOp);
+            parseNativeManagementInterfaceAttributes_1_5(reader, addOp);
         }
 
         // Handle elements
@@ -711,7 +709,7 @@ public class HostXml extends CommonXml {
                                 break;
                             // DOMAIN_1_6 will fall in here as well
                             default:
-                                parseHttpManagementSocket1_6(reader, addOp);
+                                parseHttpManagementSocket_1_6(reader, addOp);
                         }
                     } else {
                         parseNativeManagementSocket(reader, addOp);
@@ -724,6 +722,7 @@ public class HostXml extends CommonXml {
 
         list.add(addOp);
     }
+
     private void parseNativeManagementSocket(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
         // Handle attributes
         boolean hasInterface = false;
@@ -796,7 +795,7 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseHttpManagementSocket1_6(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
+    private void parseHttpManagementSocket_1_6(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
         // Handle attributes
         boolean hasInterface = false;
 
@@ -893,7 +892,7 @@ public class HostXml extends CommonXml {
                             break;
                         }
                         default: {
-                            parseLocalDomainController2_0(reader, address, expectedNs, list);
+                            parseLocalDomainController_1_5(reader, address, expectedNs, list);
                             break;
                         }
                     }
@@ -920,11 +919,11 @@ public class HostXml extends CommonXml {
                             break;
                         }
                         case DOMAIN_1_5: {
-                            parseRemoteDomainController1_5(reader, address, expectedNs, list, false);
+                            parseRemoteDomainController_1_5(reader, address, expectedNs, list, false);
                             break;
                         }
                         default: {
-                            parseRemoteDomainController1_5(reader, address, expectedNs, list, true);
+                            parseRemoteDomainController_1_5(reader, address, expectedNs, list, true);
                             break;
                         }
                     }
@@ -949,7 +948,7 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseLocalDomainController2_0(final XMLExtendedStreamReader reader, final ModelNode address,
+    private void parseLocalDomainController_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
             Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
@@ -1006,7 +1005,7 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseRemoteDomainController1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+    private void parseRemoteDomainController_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
                                                 Namespace expectedNs, final List<ModelNode> list,
                                                 boolean allowDiscoveryOptions) throws XMLStreamException {
         boolean requireDiscoveryOptions = false;
@@ -1180,6 +1179,14 @@ public class HostXml extends CommonXml {
         list.add(update);
     }
 
+    /**
+     * The only difference between version 1.5 and 1.6 of the schema were to make is possible to define discovery options, this
+     * resulted in the host and port attributes becoming optional -this method also indicates if discovery options are required
+     * where the host and port were not supplied.
+     *
+     * @param allowDiscoveryOptions i.e. are host and port potentially optional?
+     * @return true if discovery options are required, i.e. no host and port set and the admin policy requires a config.
+     */
     private boolean parseRemoteDomainControllerAttributes_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
                                                               final List<ModelNode> list, boolean allowDiscoveryOptions) throws XMLStreamException {
 
@@ -1764,7 +1771,6 @@ public class HostXml extends CommonXml {
         } else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
-
             RemoteDomainControllerAddHandler.HOST.marshallAsAttribute(remote, writer);
             RemoteDomainControllerAddHandler.PORT.marshallAsAttribute(remote, writer);
             RemoteDomainControllerAddHandler.SECURITY_REALM.marshallAsAttribute(remote, writer);
@@ -1918,7 +1924,7 @@ public class HostXml extends CommonXml {
                                 parseManagementInterface1_1(reader, address, false, expectedNs, list);
                                 break;
                             default:
-                                parseManagementInterface1_5(reader, address, false, expectedNs, list);
+                                parseManagementInterface_1_5(reader, address, false, expectedNs, list);
                         }
                         break;
                     }
@@ -1934,7 +1940,7 @@ public class HostXml extends CommonXml {
                                 parseManagementInterface1_1(reader, address, true, expectedNs, list);
                                 break;
                             default:
-                                parseManagementInterface1_5(reader, address, true, expectedNs, list);
+                                parseManagementInterface_1_5(reader, address, true, expectedNs, list);
                         }
                         break;
                     }

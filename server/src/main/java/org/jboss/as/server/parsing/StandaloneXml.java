@@ -447,7 +447,7 @@ public class StandaloneXml extends CommonXml {
 
         if (element == Element.VAULT) {
             switch (namespace) {
-                //Less that 1.4 does not end up here
+                // Less than 1.4 does not end up here
                 case DOMAIN_1_4:
                 case DOMAIN_1_5: {
                     parseVault_1_1(reader, address, namespace, list);

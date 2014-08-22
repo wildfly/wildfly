@@ -332,7 +332,6 @@ public class ManagementXml {
         }
     }
 
-
     private void parseManagement_1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
@@ -792,7 +791,7 @@ public class ManagementXml {
                     switch (expectedNs) {
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
-                            parseAuthorization_1_3(reader, expectedNs, add, list);
+                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                             break;
                         default:
                             parseAuthorization_1_5(reader, expectedNs, add, list);
@@ -1859,8 +1858,7 @@ public class ManagementXml {
     }
 
     private static void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
-        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -2166,7 +2164,7 @@ public class ManagementXml {
     private static void parseGroupSearch_1_5(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode ldapAddress, final List<ModelNode> list) throws XMLStreamException {
         // Add operation to be defined by parsing a child element, however the attribute FORCE is common here.
-        ModelNode childAdd = new ModelNode();
+        final ModelNode childAdd = new ModelNode();
         childAdd.get(OP).set(ADD);
 
         final int count = reader.getAttributeCount();

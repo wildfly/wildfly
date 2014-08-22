@@ -40,22 +40,22 @@ public enum Namespace {
     // predefined standard
     XML_SCHEMA_INSTANCE("http://www.w3.org/2001/XMLSchema-instance"),
 
-    // domain versions, oldest to newest
-    DOMAIN_1_0("urn:jboss:domain:1.0"),
+    // domain versions, in numerical order
+    DOMAIN_1_0(1, "urn:jboss:domain:1.0"),
 
-    DOMAIN_1_1("urn:jboss:domain:1.1"),
+    DOMAIN_1_1(1, "urn:jboss:domain:1.1"),
 
-    DOMAIN_1_2("urn:jboss:domain:1.2"),
+    DOMAIN_1_2(1, "urn:jboss:domain:1.2"),
 
-    DOMAIN_1_3("urn:jboss:domain:1.3"),
+    DOMAIN_1_3(1, "urn:jboss:domain:1.3"),
 
-    DOMAIN_1_4("urn:jboss:domain:1.4"),
+    DOMAIN_1_4(1, "urn:jboss:domain:1.4"),
 
-    DOMAIN_1_5("urn:jboss:domain:1.5"),
+    DOMAIN_1_5(1, "urn:jboss:domain:1.5"),
 
-    DOMAIN_1_6("urn:jboss:domain:1.6"),
+    DOMAIN_1_6(1, "urn:jboss:domain:1.6"),
 
-    DOMAIN_1_7("urn:jboss:domain:1.7");
+    DOMAIN_1_7(1, "urn:jboss:domain:1.7");
 
     /**
      * The current namespace version.
@@ -64,10 +64,25 @@ public enum Namespace {
 
     public static final Namespace[] ALL_NAMESPACES = domainValues();
 
+    private final int majorVersion;
     private final String name;
 
     Namespace(final String name) {
+        this(-1, name);
+    }
+
+    Namespace(final int majorVersion, final String name) {
+        this.majorVersion = majorVersion;
         this.name = name;
+    }
+
+    /**
+     * Get the major version represented by this namespace.
+     *
+     * @return The major version.
+     */
+    public int getMajorVersion() {
+        return majorVersion;
     }
 
     /**
