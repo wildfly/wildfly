@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.management.util;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,11 +176,10 @@ public class CLIWrapper {
      * @return array of CLI output lines
      */
     public CLIOpResult readAllAsOpResult() throws IOException {
-        final String response = readOutput();
-        if(response == null) {
+        if(consoleOut.size() <= 0) {
             return new CLIOpResult();
         }
-        final ModelNode node = ModelNode.fromString(response);
+        final ModelNode node = ModelNode.fromStream(new ByteArrayInputStream(consoleOut.toByteArray()));
         return new CLIOpResult(node);
     }
 

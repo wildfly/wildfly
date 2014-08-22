@@ -47,6 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.rbac.StandardRole;
@@ -195,11 +196,6 @@ public class RuntimeApplicationTypeReconfigurationTestCase extends AbstractCoreM
 
     protected static void assertDenied(ModelNode operationResult) {
         assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("Permission denied"));
-    }
-
-    protected static void assertNoAccess(ModelNode operationResult) {
-        assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("not found"));
+        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains(ControllerMessages.MESSAGES.permissionDenied()));
     }
 }

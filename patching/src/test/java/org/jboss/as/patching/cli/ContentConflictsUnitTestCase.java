@@ -43,6 +43,7 @@ import java.io.File;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -277,7 +278,7 @@ public class ContentConflictsUnitTestCase extends AbstractTaskTestCase {
 
     protected void assertConflicts(CommandLineException e, String... conflicts) {
         final StringBuilder buf = new StringBuilder();
-        buf.append("Conflicts detected: ");
+        buf.append(PatchMessages.MESSAGES.detectedConflicts() + ": ");
         int i = 0;
         while(i < conflicts.length) {
             buf.append(conflicts[i++].replace('\\', '/')); // fix paths on windows

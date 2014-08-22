@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.mgmt.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
@@ -53,7 +54,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -65,6 +65,7 @@ import java.util.Set;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
@@ -292,7 +293,7 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         assertEquals(expectedOutcome, result.get(RESULT, VALID).asBoolean());
         assertEquals(!expectedOutcome, result.get(RESULT).hasDefined(PROBLEM));
         if (!expectedOutcome) {
-            assertTrue(result.get(RESULT, PROBLEM).asString().contains("not found"));
+            assertEquals(result.get(RESULT, PROBLEM).asString(), ControllerMessages.MESSAGES.managementResourceNotFoundMessage(PathAddress.pathAddress(address)));
         }
     }
 
@@ -306,7 +307,7 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
             assertEquals(SUCCESS, result.get(OUTCOME).asString());
         } else {
             assertEquals(FAILED, result.get(OUTCOME).asString());
-            assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains("not found"));
+            assertEquals(result.get(FAILURE_DESCRIPTION).asString(), ControllerMessages.MESSAGES.managementResourceNotFoundMessage(PathAddress.pathAddress(validatedOperation.get(ADDRESS))));
         }
     }
 

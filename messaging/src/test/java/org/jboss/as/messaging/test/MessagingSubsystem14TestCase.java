@@ -82,6 +82,8 @@ import org.jboss.as.messaging.GroupingHandlerDefinition;
 import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
+import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.QueueDefinition;
 import org.jboss.as.messaging.TransportParamDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
@@ -90,6 +92,7 @@ import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.model.test.ClassCollectionFilter;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
@@ -413,6 +416,10 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
         HornetQDependencies.addDependencies(controllerVersion,
                 builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                         .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                        .excludeFromParent(ClassCollectionFilter.createFilter(MessagingLogger.class.getName(),
+                                MessagingMessages.class.getName(), "org.jboss.msc.service.ServiceLogger",
+                                "org.jboss.as.controller.ControllerLogger", "org.jboss.as.controller.client.ControllerClientLogger",
+                                "org.jboss.as.controller.ControllerMessages"))
                         .configureReverseControllerCheck(null, fixer));
         return builder;
     }

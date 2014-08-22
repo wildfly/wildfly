@@ -21,7 +21,6 @@
  */
 package org.jboss.as.core.model.test.access;
 
-import org.jboss.as.controller.ControllerMessages;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
@@ -50,6 +49,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
@@ -251,7 +251,7 @@ public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModel
 
     protected static void assertDenied(ModelNode operationResult) {
         assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("Permission denied"));
+        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains(ControllerMessages.MESSAGES.permissionDenied()));
     }
 
     protected static void assertNoAccess(ModelNode operationResult) {
