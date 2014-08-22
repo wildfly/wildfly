@@ -26,8 +26,6 @@ import java.util.Map;
 import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
@@ -60,7 +58,6 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-    private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
 
     private InfinispanSSOManagerFactory() {
         // Hide
@@ -75,7 +72,7 @@ public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManage
     public <L> SSOManager<A, D, L, TransactionBatch> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
         Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.cache.getValue();
         Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.cache.getValue();
-        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, this.invoker, localContextFactory);
+        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, localContextFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.affinityFactory.getValue());
         Batcher<TransactionBatch> batcher = new InfinispanBatcher(authenticationCache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);

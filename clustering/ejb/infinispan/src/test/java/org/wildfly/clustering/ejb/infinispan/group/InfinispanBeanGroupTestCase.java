@@ -27,12 +27,12 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;

@@ -29,9 +29,9 @@ import static org.mockito.Mockito.when;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionMetaData;

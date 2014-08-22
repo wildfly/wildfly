@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.jboss.as.clustering.infinispan.invoker.Locator;
+import org.wildfly.clustering.ee.infinispan.Evictor;
+import org.wildfly.clustering.ee.infinispan.Locator;
 import org.wildfly.clustering.ejb.Bean;
 
 /**

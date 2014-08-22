@@ -27,8 +27,6 @@ import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
@@ -80,7 +78,6 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     }
 
     private final SessionManagerConfiguration config;
-    private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
     private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
@@ -152,13 +149,13 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
                 Cache<String, FineSessionCacheEntry<L>> sessionCache = this.cache.getValue();
                 Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache = this.cache.getValue();
                 SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
-                return new FineSessionFactory<>(sessionCache, attributeCache, this.invoker, context, marshaller, localContextFactory);
+                return new FineSessionFactory<>(sessionCache, attributeCache, context, marshaller, localContextFactory);
             }
             case COARSE: {
                 Cache<String, CoarseSessionCacheEntry<L>> sessionCache = this.cache.getValue();
                 Cache<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>> attributesCache = this.cache.getValue();
                 SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller = new MarshalledValueSessionAttributeMarshaller<>(factory, marshallingContext);
-                return new CoarseSessionFactory<>(sessionCache, attributesCache, this.invoker, context, marshaller, localContextFactory);
+                return new CoarseSessionFactory<>(sessionCache, attributesCache, context, marshaller, localContextFactory);
             }
             default: {
                 // Impossible

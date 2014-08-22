@@ -26,11 +26,11 @@ import static org.mockito.Mockito.*;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;

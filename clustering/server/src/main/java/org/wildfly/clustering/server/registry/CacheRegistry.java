@@ -40,7 +40,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
@@ -188,8 +187,5 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
                 listener.removedEntries(entries);
             }
         }
-    }
-
-    abstract class Operation<R> implements CacheInvoker.Operation<Node, Map.Entry<K, V>, R> {
     }
 }

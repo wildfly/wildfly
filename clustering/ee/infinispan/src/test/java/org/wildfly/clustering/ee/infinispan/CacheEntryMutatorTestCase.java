@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.ee.infinispan;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -29,8 +29,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.context.Flag;
 import org.infinispan.transaction.TransactionMode;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.jboss.as.clustering.infinispan.invoker.SimpleCacheInvoker;
 import org.junit.Test;
 
 /**
@@ -48,7 +46,7 @@ public class CacheEntryMutatorTestCase {
 
         when(cache.getCacheConfiguration()).thenReturn(config);
 
-        Mutator mutator = new CacheEntryMutator<>(cache, new SimpleCacheInvoker(), id, value);
+        Mutator mutator = new CacheEntryMutator<>(cache, id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
         when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);
@@ -75,7 +73,7 @@ public class CacheEntryMutatorTestCase {
 
         when(cache.getCacheConfiguration()).thenReturn(config);
 
-        Mutator mutator = new CacheEntryMutator<>(cache, new SimpleCacheInvoker(), id, value);
+        Mutator mutator = new CacheEntryMutator<>(cache, id, value);
         
         when(cache.getAdvancedCache()).thenReturn(cache);
         when(cache.withFlags(Flag.IGNORE_RETURN_VALUES)).thenReturn(cache);

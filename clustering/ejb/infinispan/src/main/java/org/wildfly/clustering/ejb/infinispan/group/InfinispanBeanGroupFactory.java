@@ -26,10 +26,9 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
@@ -47,13 +46,11 @@ import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, I, T> {
 
     private final Cache<G, BeanGroupEntry<I, T>> cache;
-    private final CacheInvoker invoker;
     private final MarshalledValueFactory<MarshallingContext> factory;
     private final MarshallingContext context;
 
-    public InfinispanBeanGroupFactory(Cache<G, BeanGroupEntry<I, T>> cache, CacheInvoker invoker, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
+    public InfinispanBeanGroupFactory(Cache<G, BeanGroupEntry<I, T>> cache, MarshalledValueFactory<MarshallingContext> factory, MarshallingContext context) {
         this.cache = cache;
-        this.invoker = invoker;
         this.factory = factory;
         this.context = context;
     }
@@ -62,13 +59,13 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
     public BeanGroupEntry<I, T> createValue(G id) {
         Map<I, T> beans = new HashMap<>();
         BeanGroupEntry<I, T> entry = new InfinispanBeanGroupEntry<>(this.factory.createMarshalledValue(beans));
-        BeanGroupEntry<I, T> existing = this.invoker.invoke(this.cache, new CreateOperation<>(id, entry), Flag.FORCE_SYNCHRONOUS);
+        BeanGroupEntry<I, T> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
         return (existing != null) ? existing : entry;
     }
 
     @Override
     public BeanGroupEntry<I, T> findValue(G id) {
-        return this.invoker.invoke(this.cache, new FindOperation<G, BeanGroupEntry<I, T>>(id));
+        return this.cache.get(id);
     }
 
     @Override
@@ -82,23 +79,21 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public void remove(G id) {
-        this.invoker.invoke(this.cache, new RemoveOperation<G, BeanGroupEntry<I, T>>(id), Flag.IGNORE_RETURN_VALUES);
+        this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
     }
 
     @Override
     public BeanGroup<G, I, T> createGroup(final G id, final BeanGroupEntry<I, T> entry) {
-        Mutator mutator = new BeanGroupMutator<>(this.invoker, this.cache, id, entry);
+        Mutator mutator = new BeanGroupMutator<>(this.cache, id, entry);
         return new InfinispanBeanGroup<>(id, entry, this.context, mutator, this);
     }
 
     private static class BeanGroupMutator<G, I, T> implements Mutator {
-        private final CacheInvoker invoker;
         private final Cache<G, BeanGroupEntry<I, T>> cache;
         private final G id;
         private final BeanGroupEntry<I, T> entry;
 
-        BeanGroupMutator(CacheInvoker invoker, Cache<G, BeanGroupEntry<I, T>> cache, G id, BeanGroupEntry<I, T> entry) {
-            this.invoker = invoker;
+        BeanGroupMutator(Cache<G, BeanGroupEntry<I, T>> cache, G id, BeanGroupEntry<I, T> entry) {
             this.cache = cache;
             this.id = id;
             this.entry = entry;
@@ -106,7 +101,7 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
         @Override
         public void mutate() {
-            this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.entry), Flag.IGNORE_RETURN_VALUES);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.id, this.entry);
         }
     }
 }

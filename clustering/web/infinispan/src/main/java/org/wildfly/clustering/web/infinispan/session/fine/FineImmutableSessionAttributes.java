@@ -24,8 +24,6 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import java.util.Set;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Locator;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -37,14 +35,12 @@ public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttrib
     private final String id;
     private final Set<String> attributes;
     private final Cache<SessionAttributeCacheKey, V> cache;
-    private final CacheInvoker invoker;
     private final SessionAttributeMarshaller<Object, V> marshaller;
 
-    public FineImmutableSessionAttributes(String id, Set<String> attributes, Cache<SessionAttributeCacheKey, V> attributeCache, CacheInvoker invoker, SessionAttributeMarshaller<Object, V> marshaller) {
+    public FineImmutableSessionAttributes(String id, Set<String> attributes, Cache<SessionAttributeCacheKey, V> attributeCache, SessionAttributeMarshaller<Object, V> marshaller) {
         this.id = id;
         this.attributes = attributes;
         this.cache = attributeCache;
-        this.invoker = invoker;
         this.marshaller = marshaller;
     }
 
@@ -60,7 +56,7 @@ public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttrib
     }
 
     protected V getAttributeValue(SessionAttributeCacheKey key) {
-        return this.invoker.invoke(this.cache, new Locator.FindOperation<SessionAttributeCacheKey, V>(key));
+        return this.cache.get(key);
     }
 
     protected SessionAttributeCacheKey createKey(String attribute) {

@@ -28,8 +28,6 @@ import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
@@ -88,7 +86,6 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
     }
 
     private final BeanContext context;
-    private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
     private final InjectedValue<VersionedMarshallingConfiguration> config = new InjectedValue<>();
@@ -110,7 +107,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(context);
         Cache<G, BeanGroupEntry<I, T>> groupCache = this.cache.getValue();
         org.infinispan.configuration.cache.Configuration config = groupCache.getCacheConfiguration();
-        BeanGroupFactory<G, I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, this.invoker, factory, context);
+        BeanGroupFactory<G, I, T> groupFactory = new InfinispanBeanGroupFactory<>(groupCache, factory, context);
         Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration = new SimpleConfiguration<>(groupCache, groupFactory, groupIdentifierFactory);
         Cache<BeanKey<I>, BeanEntry<G>> beanCache = this.cache.getValue();
         final String beanName = this.context.getBeanName();
@@ -120,7 +117,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
         final boolean evictionAllowed = config.persistence().usingStores();
         final boolean passivationEnabled = evictionAllowed && config.persistence().passivation();
         final boolean persistent = config.clustering().cacheMode().isClustered() || (evictionAllowed && !passivationEnabled);
-        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, this.invoker, this.context.getTimeout(), persistent ? passivationListener : null);
+        BeanFactory<G, I, T> beanFactory = new InfinispanBeanFactory<>(beanName, groupFactory, beanCache, this.context.getTimeout(), persistent ? passivationListener : null);
         Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory, beanIdentifierFactory);
         final NodeFactory<Address> nodeFactory = this.nodeFactory.getValue();
         final Registry<String, ?> registry = this.registry.getValue();

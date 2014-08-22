@@ -22,12 +22,10 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Creator;
-import org.jboss.as.clustering.infinispan.invoker.Locator;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.jboss.as.clustering.infinispan.invoker.Remover.RemoveOperation;
+import org.infinispan.transaction.LockingMode;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.RemoveListener;
@@ -53,15 +51,13 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     private final String beanName;
     private final BeanGroupFactory<G, I, T> groupFactory;
     private final Cache<BeanKey<I>, BeanEntry<G>> cache;
-    private final CacheInvoker invoker;
     private final Time timeout;
     private final PassivationListener<T> listener;
 
-    public InfinispanBeanFactory(String beanName, BeanGroupFactory<G, I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<G>> beanCache, CacheInvoker invoker, Time timeout, PassivationListener<T> listener) {
+    public InfinispanBeanFactory(String beanName, BeanGroupFactory<G, I, T> groupFactory, Cache<BeanKey<I>, BeanEntry<G>> beanCache, Time timeout, PassivationListener<T> listener) {
         this.beanName = beanName;
         this.groupFactory = groupFactory;
         this.cache = beanCache;
-        this.invoker = invoker;
         this.timeout = timeout;
         this.listener = listener;
     }
@@ -79,25 +75,28 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
              throw InfinispanEjbLogger.ROOT_LOGGER.invalidBeanGroup(id, groupId);
         }
         BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, groupEntry);
-        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new BeanMutator<>(this.invoker, this.cache, this.createKey(id), entry);
+        Mutator mutator = (entry.getLastAccessedTime() == null) ? Mutator.PASSIVE : new BeanMutator<>(this.cache, this.createKey(id), entry);
         return new InfinispanBean<>(id, entry, group, mutator, this, this.timeout, this.listener);
     }
 
     @Override
     public BeanEntry<G> findValue(I id) {
-        return this.invoker.invoke(this.cache, new LockingFindOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)));
+        TransactionConfiguration transaction = this.cache.getCacheConfiguration().transaction();
+        boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
+        Cache<BeanKey<I>, BeanEntry<G>> cache = pessimistic ? this.cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.cache;
+        return cache.get(this.createKey(id));
     }
 
     @Override
     public BeanEntry<G> createValue(I id, G groupId) {
         BeanEntry<G> entry = new InfinispanBeanEntry<>(groupId);
-        BeanEntry<G> existing = this.invoker.invoke(this.cache, new Creator.CreateOperation<>(this.createKey(id), entry), Flag.FORCE_SYNCHRONOUS);
+        BeanEntry<G> existing = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(this.createKey(id), entry);
         return (existing != null) ? existing : entry;
     }
 
     @Override
     public void remove(I id, RemoveListener<T> listener) {
-        BeanEntry<G> entry = this.invoker.invoke(this.cache, new RemoveOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)), Flag.FORCE_SYNCHRONOUS);
+        BeanEntry<G> entry = this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(this.createKey(id));
         if (entry != null) {
             G groupId = entry.getGroupId();
             try (BeanGroup<G, I, T> group = this.groupFactory.createGroup(groupId, this.groupFactory.findValue(groupId))) {
@@ -112,7 +111,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     @Override
     public void evict(I id) {
         BeanKey<I> key = this.createKey(id);
-        BeanEntry<G> entry = this.invoker.invoke(this.cache, new Locator.FindOperation<BeanKey<I>, BeanEntry<G>>(key));
+        BeanEntry<G> entry = this.cache.get(key);
         if (entry != null) {
             try {
                 // This will trigger the @CacheEntryEvicted event in InfinispanBeanManager
@@ -126,13 +125,11 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
     }
 
     private static class BeanMutator<G, I> implements Mutator {
-        private final CacheInvoker invoker;
         private final Cache<BeanKey<I>, BeanEntry<G>> cache;
         private final BeanKey<I> key;
         private final BeanEntry<G> entry;
 
-        BeanMutator(CacheInvoker invoker, Cache<BeanKey<I>, BeanEntry<G>> cache, BeanKey<I> key, BeanEntry<G> entry) {
-            this.invoker = invoker;
+        BeanMutator(Cache<BeanKey<I>, BeanEntry<G>> cache, BeanKey<I> key, BeanEntry<G> entry) {
             this.cache = cache;
             this.key = key;
             this.entry = entry;
@@ -140,7 +137,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
 
         @Override
         public void mutate() {
-            this.invoker.invoke(this.cache, new MutateOperation<>(this.key, this.entry), Flag.IGNORE_RETURN_VALUES);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.key, this.entry);
         }
     }
 }

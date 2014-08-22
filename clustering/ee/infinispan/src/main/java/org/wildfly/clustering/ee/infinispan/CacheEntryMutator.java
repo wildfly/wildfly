@@ -20,16 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.ee.infinispan;
 
-import java.util.EnumSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
 
 /**
  * Mutates a given cache entry.
@@ -38,18 +34,14 @@ import org.jboss.as.clustering.infinispan.invoker.Mutator;
 public class CacheEntryMutator<K, V> implements Mutator {
 
     private final Cache<K, V> cache;
-    private final CacheInvoker invoker;
     private final K id;
     private final V value;
-    private final Set<Flag> flags;
     private final AtomicBoolean mutated;
 
-    public CacheEntryMutator(Cache<K, V> cache, CacheInvoker invoker, K id, V value, Flag... flags) {
+    public CacheEntryMutator(Cache<K, V> cache, K id, V value) {
         this.cache = cache;
-        this.invoker = invoker;
         this.id = id;
         this.value = value;
-        this.flags = EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags);
         this.mutated = cache.getCacheConfiguration().transaction().transactionMode().isTransactional() ? new AtomicBoolean(false) : null;
     }
 
@@ -57,7 +49,7 @@ public class CacheEntryMutator<K, V> implements Mutator {
     public void mutate() {
         // We only ever have to perform a replace once within a batch
         if ((this.mutated == null) || this.mutated.compareAndSet(false, true)) {
-            this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.value), this.flags.toArray(new Flag[this.flags.size()]));
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(this.id, this.value);
         }
     }
 }

@@ -19,10 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.invoker;
-
-import org.infinispan.Cache;
-import org.infinispan.context.Flag;
+package org.wildfly.clustering.ee.infinispan;
 
 /**
  * Evicts a cache entry.
@@ -34,21 +31,4 @@ public interface Evictor<K> {
      * @param id the item identifier
      */
     void evict(K id);
-
-    /**
-     * Reusable eviction operation.
-     */
-    class EvictOperation<K, V> implements CacheInvoker.Operation<K, V, Void> {
-        private final K key;
-
-        public EvictOperation(K key) {
-            this.key = key;
-        }
-
-        @Override
-        public Void invoke(Cache<K, V> cache) {
-            cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(this.key);
-            return null;
-        }
-    }
 }

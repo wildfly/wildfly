@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.invoker;
-
-import org.infinispan.Cache;
-import org.infinispan.context.Flag;
+package org.wildfly.clustering.ee.infinispan;
 
 /**
- * Trivial cache invoker.
+ * Removes an entry from the cache
  * @author Paul Ferraro
  */
-public class SimpleCacheInvoker implements CacheInvoker {
-    @Override
-    public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation, Flag... flags) {
-        return operation.invoke(cache.getAdvancedCache().withFlags(flags));
-    }
+public interface Remover<K> {
+    /**
+     * Removes the specified entry from the cache.
+     * @param id the cache entry identifier.
+     */
+    void remove(K id);
 }

@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.Evictor;
 import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**

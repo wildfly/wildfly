@@ -19,46 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.invoker;
-
-import org.infinispan.Cache;
+package org.wildfly.clustering.ee.infinispan;
 
 /**
- * Indicates that the value represented by this object has changed and needs to be replicated.
+ * Locates a value from the cache.
  * @author Paul Ferraro
  */
-public interface Mutator {
-    /**
-     * Ensure that this object replicates.
-     */
-    void mutate();
+public interface Locator<K, V> {
 
     /**
-     * Reusable mutation operation.
+     * Locates the value in the cache with the specified identifier.
+     * @param id the cache entry identifier
+     * @return the value of the cache entry, or null if not found.
      */
-    class MutateOperation<K, V> implements CacheInvoker.Operation<K, V, V> {
-        private final K key;
-        private final V value;
-
-        public MutateOperation(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        @Override
-        public V invoke(Cache<K, V> cache) {
-            return cache.replace(this.key, this.value);
-        }
-    }
-
-    /**
-     * Trivial {@link Mutator} implementation that does nothing.
-     * New cache entries, in particular, don't require mutation.
-     */
-    Mutator PASSIVE = new Mutator() {
-        @Override
-        public void mutate() {
-            // Do nothing
-        }
-    };
+    V findValue(K id);
 }

@@ -19,34 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.invoker;
-
-import org.infinispan.Cache;
+package org.wildfly.clustering.ee.infinispan;
 
 /**
- * Removes an entry from the cache
+ * Indicates that the value represented by this object has changed and needs to be replicated.
  * @author Paul Ferraro
  */
-public interface Remover<K> {
+public interface Mutator {
     /**
-     * Removes the specified entry from the cache.
-     * @param id the cache entry identifier.
+     * Ensure that this object replicates.
      */
-    void remove(K id);
+    void mutate();
 
     /**
-     * Reusable remove operation.
+     * Trivial {@link Mutator} implementation that does nothing.
+     * New cache entries, in particular, don't require mutation.
      */
-    class RemoveOperation<K, V> implements CacheInvoker.Operation<K, V, V> {
-        private final K key;
-
-        public RemoveOperation(K key) {
-            this.key = key;
-        }
-
+    Mutator PASSIVE = new Mutator() {
         @Override
-        public V invoke(Cache<K, V> cache) {
-            return cache.remove(this.key);
+        public void mutate() {
+            // Do nothing
         }
-    }
+    };
 }

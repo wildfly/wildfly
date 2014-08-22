@@ -32,7 +32,6 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
@@ -179,8 +178,5 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
         } catch (Exception e) {
             return Collections.emptyList();
         }
-    }
-
-    interface Operation<R> extends CacheInvoker.Operation<Object, Set<Node>, R> {
     }
 }
