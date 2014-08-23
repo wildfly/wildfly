@@ -919,11 +919,11 @@ public class HostXml extends CommonXml {
                             break;
                         }
                         case DOMAIN_1_5: {
-                            parseRemoteDomainController_1_5(reader, address, expectedNs, list, false);
+                            parseRemoteDomainController_1_5(reader, address, expectedNs, list);
                             break;
                         }
                         default: {
-                            parseRemoteDomainController_1_5(reader, address, expectedNs, list, true);
+                            parseRemoteDomainController_1_6(reader, address, expectedNs, list);
                             break;
                         }
                     }
@@ -1006,23 +1006,30 @@ public class HostXml extends CommonXml {
     }
 
     private void parseRemoteDomainController_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
-                                                Namespace expectedNs, final List<ModelNode> list,
-                                                boolean allowDiscoveryOptions) throws XMLStreamException {
-        boolean requireDiscoveryOptions = false;
-        boolean hasDiscoveryOptions = false;
-        switch (expectedNs) {
-            case DOMAIN_1_1:
-            case DOMAIN_1_2:
-                parseRemoteDomainControllerAttributes_1_0(reader, address, list);
-                break;
-            case DOMAIN_1_3:
-            case DOMAIN_1_4:
-                parseRemoteDomainControllerAttributes_1_3(reader, address, list);
-                break;
-            default:
-                requireDiscoveryOptions = parseRemoteDomainControllerAttributes_1_5(reader, address, list, allowDiscoveryOptions);
-                break;
+                                                Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        parseRemoteDomainControllerAttributes_1_5(reader, address, list, false);
+
+        Set<String> types = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case IGNORED_RESOURCE: {
+                    parseIgnoredResource(reader, address, expectedNs, list, types);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
         }
+    }
+
+    private void parseRemoteDomainController_1_6(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        boolean hasDiscoveryOptions = false;
+        boolean requireDiscoveryOptions = parseRemoteDomainControllerAttributes_1_5(reader, address, list, true);
+
         Set<String> types = new HashSet<String>();
         Set<String> staticDiscoveryOptionNames = new HashSet<String>();
         Set<String> discoveryOptionNames = new HashSet<String>();
@@ -1035,9 +1042,6 @@ public class HostXml extends CommonXml {
                     break;
                 }
                 case DISCOVERY_OPTIONS: { // Different from parseRemoteDomainController1_1
-                    if (!allowDiscoveryOptions) {
-                        throw unexpectedElement(reader);
-                    }
                     if (hasDiscoveryOptions) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
@@ -1052,10 +1056,9 @@ public class HostXml extends CommonXml {
 
         if (requireDiscoveryOptions && !hasDiscoveryOptions) {
             throw MESSAGES.discoveryOptionsMustBeDeclared(CommandLineConstants.ADMIN_ONLY,
-                    Attribute.ADMIN_ONLY_POLICY.getLocalName(),
-                    AdminOnlyDomainConfigPolicy.FETCH_FROM_MASTER.toString(),
-                    Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
-                    Attribute.PORT.getLocalName(), reader.getLocation());
+                    Attribute.ADMIN_ONLY_POLICY.getLocalName(), AdminOnlyDomainConfigPolicy.FETCH_FROM_MASTER.toString(),
+                    Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(), Attribute.PORT.getLocalName(),
+                    reader.getLocation());
         }
     }
 
