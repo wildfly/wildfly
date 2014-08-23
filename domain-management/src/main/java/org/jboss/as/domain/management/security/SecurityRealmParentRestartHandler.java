@@ -24,6 +24,9 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -63,7 +66,8 @@ abstract class SecurityRealmParentRestartHandler extends RestartParentResourceHa
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                                          ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        SecurityRealmAddHandler.INSTANCE.installServices(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
+        List<ServiceController<?>> controllers = new LinkedList<ServiceController<?>>();
+        SecurityRealmAddHandler.INSTANCE.installServices(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, controllers);
     }
 
     @Override
