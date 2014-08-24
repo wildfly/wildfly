@@ -132,6 +132,7 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         } else {
             handlesReferralsForSet = Collections.emptySet();
         }
+
         return connectionManagerService.setConfiguration(initialContextFactory, url, searchDn, searchCredential, referralHandling, handlesReferralsForSet);
     }
 

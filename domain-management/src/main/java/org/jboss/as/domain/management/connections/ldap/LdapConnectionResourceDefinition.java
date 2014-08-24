@@ -62,19 +62,30 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
     private static final String DEFAULT_INITIAL_CONTEXT = "com.sun.jndi.ldap.LdapCtxFactory";
 
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.URL, ModelType.STRING, false)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).build();
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .build();
 
     public static final SimpleAttributeDefinition SEARCH_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_DN, ModelType.STRING, true)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .build();
 
     public static final SimpleAttributeDefinition SEARCH_CREDENTIAL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SEARCH_CREDENTIAL, ModelType.STRING, true)
-            .setAllowExpression(true).setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true)).build();
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true))
+            .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, ModelType.STRING, true)
-            .setAllowExpression(false).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
+            .setAllowExpression(false)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .build();
 
     public static final SimpleAttributeDefinition INITIAL_CONTEXT_FACTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY, ModelType.STRING, true)
-            .setAllowExpression(true).setDefaultValue(new ModelNode(DEFAULT_INITIAL_CONTEXT)).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true)).build();
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(DEFAULT_INITIAL_CONTEXT))
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .build();
 
     public static final SimpleAttributeDefinition REFERRALS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REFERRALS, ModelType.STRING, true)
             .setAllowExpression(true)

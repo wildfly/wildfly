@@ -891,16 +891,16 @@ public interface DomainManagementMessages {
 //    @Message(id = 21002, value = "The KeyStore can not be found at %s")
 //    StartException keyStoreNotFound(String path);
 
-    // 21003 is reserved for future backport of WFLY-1523 whereby this id was introduced in WF 8. In WF 9 it appears as id=87
-//    /**
-//     * Error message if more than one cache is defined.
-//     *
-//     * @param realmName the name of the security realm
-//     *
-//     * @return an {@link OperationFailedException} for the error.
-//     */
-//    @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
-//    OperationFailedException multipleCacheConfigurationsDefined(String realmName);
+    // In WF 9 this appears as id=87
+    /**
+     * Error message if more than one cache is defined.
+     *
+     * @param realmName the name of the security realm
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
+    OperationFailedException multipleCacheConfigurationsDefined(String realmName);
 
     // 21004 is reserved for future backport of WFLY-1848 whereby this id was introduced in WF 8. In WF 9 it appears as id=88
 //    /**

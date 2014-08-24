@@ -49,6 +49,7 @@ public enum Element {
     AUTHENTICATION("authentication"),
     AUTHORIZATION("authorization"),
 
+    CACHE("cache"),
     CLIENT_CERT_STORE("client-certificate-store"),
     CLIENT_MAPPING("client-mapping"),
     CONSTRAINTS("constraints"),

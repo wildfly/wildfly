@@ -25,7 +25,9 @@ package org.jboss.as.domain.management.security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition.LdapAuthorizationChildAddHandler;
+import org.jboss.as.domain.management.security.LdapCacheResourceDefinition.CacheFor;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for user searches where the
@@ -43,6 +45,12 @@ public class UserIsDnResourceDefintion extends BaseLdapUserSearchResource {
         super(UserSearchType.USERNAME_IS_DN,
               ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
               new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createByAccessTime(CacheFor.AuthzUser));
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createBySearchTime(CacheFor.AuthzUser));
     }
 
     @Override
