@@ -115,14 +115,6 @@ interface ModClusterLogger extends BasicLogger {
     String classAttributeRequired(String attributeName);
 
     /**
-     * A message indicating the context and host are needed.
-     *
-     * @return the message.
-     */
-    @Message(id = 9, value = "need context and host")
-    String needContextAndHost();
-
-    /**
      * A message indicating a type attribute is needed for the attribute represented by the {@code attributeName}
      * parameter.
      *
@@ -157,5 +149,13 @@ interface ModClusterLogger extends BasicLogger {
 
    @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
    String sessionDrainingStrategyMustBeUndefinedOrDefault();
+
+    /**
+     * A message indicating the host of the reverse proxy server could not be resolved.
+     *
+     * @return the message.
+     */
+    @Message(id = 16, value = "No IP address could be resolved for the specified host of the proxy.")
+    String couldNotResolveProxyIpAddress();
 
 }

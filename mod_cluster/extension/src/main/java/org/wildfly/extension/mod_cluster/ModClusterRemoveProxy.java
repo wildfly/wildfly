@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,22 +32,34 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.HOST;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.PORT;
+
+/**
+ * {@link OperationStepHandler} that handles removing a reverse proxy.
+ *
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
+ */
 public class ModClusterRemoveProxy implements OperationStepHandler {
 
     static final ModClusterRemoveProxy INSTANCE = new ModClusterRemoveProxy();
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_PROXY, descriptionResolver)
-                .addParameter(ModClusterSubsystemResourceDefinition.HOST)
-                .addParameter(ModClusterSubsystemResourceDefinition.PORT)
+                .addParameter(HOST)
+                .addParameter(PORT)
                 .setRuntimeOnly()
                 .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
                 .build();
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
@@ -58,14 +68,23 @@ public class ModClusterRemoveProxy implements OperationStepHandler {
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
                     ROOT_LOGGER.debugf("remove-proxy: %s", operation);
 
-                    final Proxy proxy = new Proxy(operation);
-                    service.removeProxy(proxy.host, proxy.port);
+                    final String host = HOST.resolveModelAttribute(context, operation).asString();
+                    final int port = PORT.resolveModelAttribute(context, operation).asInt();
+
+                    // Keeping this test here to maintain same behavior as previous versions.
+                    try {
+                        InetAddress.getByName(host);
+                    } catch (UnknownHostException e) {
+                        throw new OperationFailedException(ModClusterLogger.ROOT_LOGGER.couldNotResolveProxyIpAddress(), e);
+                    }
+
+                    service.removeProxy(host, port);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             // TODO What if mod_cluster was never aware of this proxy?
-                            service.addProxy(proxy.host, proxy.port);
+                            service.addProxy(host, port);
                         }
                     });
                 }

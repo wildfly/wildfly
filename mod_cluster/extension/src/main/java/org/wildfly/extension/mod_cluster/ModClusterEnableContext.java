@@ -33,22 +33,29 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.CONTEXT;
+import static org.wildfly.extension.mod_cluster.ModClusterSubsystemResourceDefinition.VIRTUAL_HOST;
 
+/**
+ * {@link OperationStepHandler} that handles enabling of the web context.
+ *
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
+ */
 public class ModClusterEnableContext implements OperationStepHandler {
 
     static final ModClusterEnableContext INSTANCE = new ModClusterEnableContext();
 
     static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
         return new SimpleOperationDefinitionBuilder(CommonAttributes.ENABLE_CONTEXT, descriptionResolver)
-                .addParameter(ModClusterSubsystemResourceDefinition.VIRTUAL_HOST)
-                .addParameter(ModClusterSubsystemResourceDefinition.CONTEXT)
+                .addParameter(VIRTUAL_HOST)
+                .addParameter(CONTEXT)
                 .setRuntimeOnly()
                 .build();
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer() && context.getServiceRegistry(false).getService(ContainerEventHandlerService.SERVICE_NAME) != null) {
             context.addStep(new OperationStepHandler() {
                 @Override
@@ -57,16 +64,19 @@ public class ModClusterEnableContext implements OperationStepHandler {
                     final ModClusterServiceMBean service = (ModClusterServiceMBean) controller.getValue();
                     ROOT_LOGGER.debugf("enable-context: %s", operation);
 
-                    final ContextHost contexthost = new ContextHost(operation);
+                    final String webHost = VIRTUAL_HOST.resolveModelAttribute(context, operation).asString();
+                    final String webContext = CONTEXT.resolveModelAttribute(context, operation).asString();
+
                     try {
-                        service.enableContext(contexthost.webhost, contexthost.webcontext);
-                    } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(contexthost.webhost, contexthost.webcontext)));
+                        service.enableContext(webHost, webContext);
+                    } catch (IllegalArgumentException e) {
+                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(webHost, webContext)));
                     }
+
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
-                            service.disableContext(contexthost.webhost, contexthost.webcontext);
+                            service.disableContext(webHost, webContext);
                         }
                     });
                 }

@@ -31,6 +31,7 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -48,16 +49,20 @@ public class ModClusterSubsystemResourceDefinition extends SimpleResourceDefinit
 
     public static final SimpleAttributeDefinition PORT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PORT, ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new IntRangeValidator(1, Short.MAX_VALUE - Short.MIN_VALUE, false, false))
             .setStorageRuntime()
             .build();
+
     public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.HOST, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .build();
+
     public static final SimpleAttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VIRTUAL_HOST, ModelType.STRING, false)
             .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .build();
+
     public static final SimpleAttributeDefinition CONTEXT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONTEXT, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
