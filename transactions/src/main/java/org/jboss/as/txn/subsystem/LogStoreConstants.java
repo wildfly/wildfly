@@ -62,6 +62,8 @@ class LogStoreConstants {
     static final String JMX_ON_ATTRIBUTE = "jmx-name";
     static final String JNDI_ATTRIBUTE = "jndi-name";
     static final String LOG_STORE_TYPE_ATTRIBUTE = "type";
+    static final String EXPOSE_ALL_LOGS_ATTRIBUTE = "expose-all-logs";
+
 
     static final Map<String, String> MODEL_TO_JMX_TXN_NAMES =
             Collections.unmodifiableMap(new HashMap<String, String>() {{
@@ -89,6 +91,14 @@ class LogStoreConstants {
             .setAllowNull(true)
             .setDefaultValue(new ModelNode("default"))
             .setMeasurementUnit(MeasurementUnit.NONE)
+            .build();
+
+    static final SimpleAttributeDefinition EXPOSE_ALL_LOGS = new SimpleAttributeDefinitionBuilder(EXPOSE_ALL_LOGS_ATTRIBUTE, ModelType.BOOLEAN)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setStorageRuntime()
             .build();
 
     static SimpleAttributeDefinition JMX_NAME = (new SimpleAttributeDefinitionBuilder(JMX_ON_ATTRIBUTE, ModelType.STRING))
