@@ -53,7 +53,6 @@ import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Listener;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
-import org.jboss.as.test.integration.management.cli.GlobalOpsTestCase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
@@ -86,7 +85,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(GlobalOpsTestCase.class);
+        ja.addClass(ListenerTestCase.class);
         return ja;
     }
 
