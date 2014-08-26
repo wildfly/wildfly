@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -51,7 +52,7 @@ import org.jgroups.stack.Protocol;
  * <p/>
  * When a request comes in, it has a protocol name and attribute name
  * - use the protocol name to load the protocol class
- * - use the attribute name and the protocol class to get the attribute field
+ * - use the attribute name and the protocol class to get the attribute field/method
  * - based on the attribute field's type, call
  * field.getInt(protocolObject)
  * field.getFloat(protocolObject)
@@ -59,8 +60,19 @@ import org.jgroups.stack.Protocol;
  * to get the value of the attribute
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
+ * @author Radoslav Husar
  */
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
+
+    private final boolean isField;
+
+    /**
+     * @param isField whether the registered attribute is corresponding to a field,
+     *                otherwise a method is invoked
+     */
+    public ProtocolMetricsHandler(boolean isField) {
+        this.isField = isField;
+    }
 
     public enum FieldTypes {
         BOOLEAN("boolean"),
@@ -127,23 +139,29 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         if (loaded) {
             Field field = null;
-            boolean fieldFound = false;
+            Method method = null;
+            boolean found = false;
             // check the attribute is valid
             try {
-                field = getField(protocolClass, attrName);
-                fieldFound = true;
-            } catch (NoSuchFieldException e) {
+                if (isField) {
+                    field = getField(protocolClass, attrName);
+                } else {
+                    method = getMethod(protocolClass, attrName);
+                }
+                found = true;
+            } catch (NoSuchFieldException | NoSuchMethodException e) {
                 context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(attrName));
             }
 
             // we now have a valid protocol instance and a valid field, get the value
-            if (fieldFound && started) {
+            if (found && started) {
                 Channel channel = (Channel) controller.getValue();
 
                 // we need to strip off any package name before trying to find the protocol
                 int index = protocolName.lastIndexOf('.');
-                if (index > 0)
-                    protocolName = protocolName.substring(index+1);
+                if (index > 0) {
+                    protocolName = protocolName.substring(index + 1);
+                }
                 Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
 
                 if (protocol == null) {
@@ -151,32 +169,31 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 }
 
                 // get the type of the attribute and call the appropriate set method
-                FieldTypes type = null;
-                if (ChannelInstanceResourceDefinition.isEquivalentModelTypeAvailable(field.getType())) {
-                    type = FieldTypes.getStat(field.getType().toString());
+                FieldTypes type;
+                Class forType = isField ? field.getType() : method.getReturnType();
+                if (ChannelInstanceResourceDefinition.isEquivalentModelTypeAvailable(forType)) {
+                    type = FieldTypes.getStat(forType.toString());
                 } else {
                     type = FieldTypes.NON_PRIMITIVE;
                 }
 
                 try {
-                    result = getProtocolFieldValue(protocol, field, type);
-                }
-                catch (PrivilegedActionException pae) {
+                    result = isField ? getProtocolFieldValue(protocol, field, type) : getProtocolMethodValue(protocol, method, type);
+                } catch (PrivilegedActionException pae) {
                     context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(attrName));
-                }
-                catch (InstantiationException ie){
+                } catch (InstantiationException ie) {
                     context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.instantiationExceptionOnConverterForAttribute(attrName));
-               }
+                }
 
-            context.getResult().set(result);
+                context.getResult().set(result);
+            }
         }
+        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
-    context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-}
 
-    /*
+    /**
      * Access to fields in the protocol instance may require security privileges
-     * as we may need to adjust the access of private and protected fields using setAccessible.
+     * as we may need to adjust the access of private and protected fields using using {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}.
      */
     private static ModelNode getProtocolFieldValue(final Protocol p, final Field f, final FieldTypes t)
             throws PrivilegedActionException, InstantiationException {
@@ -190,11 +207,11 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
             System.out.println("field type = " + t.toString());
         */
 
-        ModelNode fieldValue = AccessController.doPrivileged(new PrivilegedExceptionAction<ModelNode>() {
+        return AccessController.doPrivileged(new PrivilegedExceptionAction<ModelNode>() {
             @Override
             public ModelNode run() throws Exception {
                 ModelNode result = new ModelNode();
-                String value = null;
+                String value;
 
                 if (!f.isAccessible())
                     f.setAccessible(true);
@@ -241,10 +258,70 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 return result;
             }
         });
-        return fieldValue;
     }
 
-    /*
+
+    /**
+     * Access to methods in the protocol instance may require security privileges
+     * as we may need to adjust the access of private and protected methods using {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}.
+     *
+     * @return ModelNode result of the invocation
+     */
+    private static ModelNode getProtocolMethodValue(final Protocol p, final Method m, final FieldTypes t) throws PrivilegedActionException, InstantiationException {
+
+        return AccessController.doPrivileged(new PrivilegedExceptionAction<ModelNode>() {
+            @Override
+            public ModelNode run() throws Exception {
+                ModelNode result = new ModelNode();
+                String value;
+
+                if (!m.isAccessible()) {
+                    m.setAccessible(true);
+                }
+
+                Object invocationResult = m.invoke(p);
+
+                switch (t) {
+                    case BOOLEAN:
+                        result.set((boolean) invocationResult);
+                        break;
+                    case BYTE:
+                        result.set((byte) invocationResult);
+                        break;
+                    case CHAR:
+                        result.set((char) invocationResult);
+                        break;
+                    case SHORT:
+                        result.set((short) invocationResult);
+                        break;
+                    case INT:
+                        result.set((int) invocationResult);
+                        break;
+                    case LONG:
+                        result.set((long) invocationResult);
+                        break;
+                    case FLOAT:
+                        result.set((double) invocationResult);
+                        break;
+                    case DOUBLE:
+                        result.set((double) invocationResult);
+                        break;
+                    case STRING:
+                        value = (String) invocationResult;
+                        if (value != null) {
+                            result.set(value);
+                        }
+                        break;
+                    case NON_PRIMITIVE:
+                        result.set(invocationResult.toString());
+                        break;
+                }
+                return result;
+            }
+        });
+    }
+
+    /**
      * Gets a String value for a JGroups non-primitive field, using a JGroups converter of necessary.
      * Note that the value of a non-primitive field may be null, in which case we return the value.
      */
@@ -254,13 +331,14 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         Property property = field.getAnnotation(Property.class);
 
         // mutually exclusive: managed attribute and Property?
-        assert !((managed !=null) && (property != null)) : "attribute " + field.getName() + "is both property and managed attribute";
+        assert !((managed != null) && (property != null)) : "Attribute " + field.getName() + " is both property and managed attribute";
 
         if (managed != null) {
             // handle non-primitive managed attribute
             Object value = field.get(protocol);
-            if (value != null)
-                value.toString();
+            if (value != null) {
+                return value.toString();
+            }
         }
 
         if (property != null) {
@@ -285,6 +363,19 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 throw e;
             } else {
                 return getField(superClass, fieldName);
+            }
+        }
+    }
+
+    private static Method getMethod(Class<?> clazz, String methodName) throws NoSuchMethodException {
+        try {
+            return clazz.getDeclaredMethod(methodName);
+        } catch (NoSuchMethodException e) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass == null) {
+                throw e;
+            } else {
+                return getMethod(superClass, methodName);
             }
         }
     }

@@ -122,10 +122,10 @@ public interface JGroupsLogger extends BasicLogger {
     @Message(id = 16, value = "Unable to load protocol class %s")
     OperationFailedException unableToLoadProtocolClass(String protocolName);
 
-    @Message(id = 17, value = "Privileged access exception on attribute %s")
+    @Message(id = 17, value = "Privileged access exception on attribute/method %s")
     String privilegedAccessExceptionForAttribute(String attrName);
 
-    @Message(id = 18, value = "Instantiation exception on converter for attribute %s")
+    @Message(id = 18, value = "Instantiation exception on converter for attribute/method %s")
     String instantiationExceptionOnConverterForAttribute(String attrName);
 
     @Message(id = 19, value = "Protocol %s not found in current stack")

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource.JGROUPS_PROTOCOL_PKG;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +67,7 @@ import org.jgroups.stack.Protocol;
  * - creates attribute definitions and description resolver dynamically
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
+ * @author Radoslav Husar
  */
 public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition {
 
@@ -85,7 +87,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         // register any metrics and the read-only handler
         if (this.runtimeRegistration) {
             ChannelMetricsHandler handler = new ChannelMetricsHandler();
-            for (ChannelMetric metric: ChannelMetric.values()) {
+            for (ChannelMetric metric : ChannelMetric.values()) {
                 registration.registerMetric(metric.getDefinition(), handler);
             }
         }
@@ -148,7 +150,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         }
 
         // create the relay resource definition if element is defined
-        ResourceDefinition relayDefinition = null ;
+        ResourceDefinition relayDefinition = null;
         if (stack.hasDefined(ModelKeys.RELAY)) {
             relayDefinition = getProtocolMetricResourceDefinition(context, channelName, "relay.RELAY2");
         }
@@ -200,8 +202,8 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         // create the attributes
         Field[] fields = getProtocolFields(protocolClass);
 
-        List<AttributeDefinition> attributes = new ArrayList<AttributeDefinition>();
-        Map<String, String> attributeDescriptionMap = new HashMap<String,String>();
+        Map<String, AttributeDefinition> attributesByField = new HashMap<>();
+        Map<String, String> attributeDescriptionMap = new HashMap<String, String>();
         // add the description of the resource
         attributeDescriptionMap.put(protocolName, "The " + protocolName + " protocol");
 
@@ -210,20 +212,30 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
 
             // add any managed attributes
             ManagedAttribute managed = field.getAnnotation(ManagedAttribute.class);
-            if (managed != null && equivalentTypeAvailable) {
-                addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), getEquivalentModelType(field.getType()), managed.description());
+            if (managed != null) {
+                // Add an attribute definition using an equivalent ModelType if available, otherwise as String type
+                addAttributeDefinition(attributesByField, attributeDescriptionMap, protocolName, field.getName(), equivalentTypeAvailable ? getEquivalentModelType(field.getType()) : ModelType.STRING, managed.description());
+
+                // Only add each field no more than once (@ManagedAttribute & @Property are not being used simultaneously)
+                continue;
             }
 
             // add any properties
             Property property = field.getAnnotation(Property.class);
             if (property != null) {
-                if (equivalentTypeAvailable) {
-                    // add an attribute definition using an equivalent ModelType
-                    addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), getEquivalentModelType(field.getType()), property.description());
-                } else {
-                    // add an attribute definition using a String type
-                    addAttributeDefinition(attributes, attributeDescriptionMap, protocolName, field.getName(), ModelType.STRING, property.description());
-                }
+                // Add an attribute definition using an equivalent ModelType if available, otherwise as String type
+                addAttributeDefinition(attributesByField, attributeDescriptionMap, protocolName, field.getName(), equivalentTypeAvailable ? getEquivalentModelType(field.getType()) : ModelType.STRING, property.description());
+            }
+        }
+
+        // Check for @ManagedAttribute annotated methods as well
+        Map<String, AttributeDefinition> attributesByMethod = new HashMap<>();
+        for (Method method : getProtocolMethods(protocolClass)) {
+            ManagedAttribute managed = method.getAnnotation(ManagedAttribute.class);
+            // In case the attribute name is equal to the method and both are exposed, only expose the attribute.
+            if (managed != null && !attributesByField.containsKey(method.getName())) {
+                boolean equivalentTypeAvailable = isEquivalentModelTypeAvailable(method.getReturnType());
+                addAttributeDefinition(attributesByMethod, attributeDescriptionMap, protocolName, method.getName(), equivalentTypeAvailable ? getEquivalentModelType(method.getReturnType()) : ModelType.STRING, managed.description());
             }
         }
 
@@ -233,8 +245,11 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
                 new StandardResourceDescriptionResolver(protocolName, "org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResourceDefinition$ProtocolResources", ChannelInstanceResourceDefinition.class.getClassLoader()));
 
         // register the resource's attributes
-        for (AttributeDefinition def : attributes) {
-            protocolBuilder.addMetric(def, new ProtocolMetricsHandler());
+        for (AttributeDefinition def : attributesByField.values()) {
+            protocolBuilder.addMetric(def, new ProtocolMetricsHandler(true));
+        }
+        for (AttributeDefinition def : attributesByMethod.values()) {
+            protocolBuilder.addMetric(def, new ProtocolMetricsHandler(false));
         }
 
         // add the attribute descriptions to the map
@@ -244,15 +259,14 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         return protocolBuilder.build();
     }
 
-    private static void addAttributeDefinition(List<AttributeDefinition> attributes, Map<String, String> map, String protocolName, String name, ModelType type, String description) {
-
+    private static void addAttributeDefinition(Map<String, AttributeDefinition> attributes, Map<String, String> map, String protocolName, String name, ModelType type, String description) {
         // create and add attribute
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type, true);
         builder.setStorageRuntime();
-        attributes.add(builder.build());
+        attributes.put(name, builder.build());
 
         // add description to map
-        map.put(protocolName+"."+name, description);
+        map.put(protocolName + "." + name, description);
     }
 
     public static boolean isEquivalentModelTypeAvailable(Class<?> type) {
@@ -268,9 +282,8 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         return available;
     }
 
-    /*
-     * Returns the equivalent ModelType for a Java type if it exists;
-     * Otherwise returns ModelType.UNDEFINED
+    /**
+     * @return the equivalent ModelType for a Java type if it exists; otherwise ModelType.UNDEFINED
      */
     private static ModelType getEquivalentModelType(Class<?> typeClass) {
         ProtocolMetricsHandler.FieldTypes type = ProtocolMetricsHandler.FieldTypes.getStat(typeClass.toString());
@@ -305,8 +318,24 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         if (clazz.getSuperclass() != null) {
             fields.addAll(Arrays.asList(getProtocolFields(clazz.getSuperclass())));
         }
-        return fields.toArray(new Field[]{});
+        return fields.toArray(new Field[fields.size()]);
     }
+
+    private static Method[] getProtocolMethods(Class<?> clazz) {
+        List<Method> methods = new ArrayList<>();
+        for (Method m : clazz.getDeclaredMethods()) {
+            // Only add methods with no parameters
+            if (m.getParameterTypes().length == 0) {
+                methods.add(m);
+            }
+        }
+        // stop recursing when we reach Protocol
+        if (clazz.getSuperclass() != null) {
+            methods.addAll(Arrays.asList(getProtocolMethods(clazz.getSuperclass())));
+        }
+        return methods.toArray(new Method[methods.size()]);
+    }
+
 
     /*
      * A ResourceBundle which holds all protocol attribute descriptions, prefixed by
@@ -322,25 +351,25 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
      */
     public static class ProtocolResources extends ResourceBundle {
 
-       private static Map<String,String> resources = new HashMap<String,String>() ;
+        private static Map<String, String> resources = new HashMap<String, String>();
 
-       public static void addProtocolMapEntries(Map<String,String> map) {
-           resources.putAll(map);
-       }
+        public static void addProtocolMapEntries(Map<String, String> map) {
+            resources.putAll(map);
+        }
 
-       @Override
-       public Object handleGetObject(String key) {
-           return resources.get(key);
-       }
+        @Override
+        public Object handleGetObject(String key) {
+            return resources.get(key);
+        }
 
-       @Override
-       public Enumeration<String> getKeys() {
-           return Collections.enumeration(keySet());
-       }
+        @Override
+        public Enumeration<String> getKeys() {
+            return Collections.enumeration(keySet());
+        }
 
-       @Override
-       protected Set<String> handleKeySet() {
-           return resources.keySet();
-       }
+        @Override
+        protected Set<String> handleKeySet() {
+            return resources.keySet();
+        }
     }
 }
