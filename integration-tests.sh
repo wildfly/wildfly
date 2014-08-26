@@ -22,6 +22,8 @@ MAVEN_HOME=""
 MAVEN_OPTS="$MAVEN_OPTS -Xmx512M"
 export MAVEN_OPTS
 
+./tools/download-maven.sh
+
 # The default search path for Maven.
 MAVEN_SEARCH_PATH="\
     tools
