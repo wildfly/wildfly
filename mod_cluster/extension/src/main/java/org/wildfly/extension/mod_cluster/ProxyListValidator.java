@@ -22,8 +22,6 @@
 
 package org.wildfly.extension.mod_cluster;
 
-
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -34,28 +32,29 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jean-Frederic Clere
  */
-
 public class ProxyListValidator implements ParameterValidator {
 
     @Override
     public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
         if (value.isDefined()) {
             String str = value.asString();
-            String [] results = str.split(",");
-            for (int j=0; j<results.length; j++) {
-                int i = results[j].lastIndexOf(":");
+            String[] results = str.split(",");
+            for (String result : results) {
+                int i = result.lastIndexOf(":");
                 int port = 0;
                 String host = null;
-                if (i>0) {
-                    host = results[j].substring(0,i);
-                    port = Integer.valueOf(results[j].substring(i+1));
+                if (i > 0) {
+                    host = result.substring(0, i);
+                    port = Integer.valueOf(result.substring(i + 1));
                 }
                 try {
                     InetAddress.getByName(host);
                 } catch (UnknownHostException e) {
                     host = null;
                 }
-                if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.needHostAndPort())); }
+                if (host == null || port == 0) {
+                    throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.needHostAndPort()));
+                }
             }
         }
 

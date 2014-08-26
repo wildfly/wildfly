@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
@@ -30,6 +31,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -37,24 +39,21 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} implementation for the core mod-cluster configuration resource.
- * <p/>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
@@ -82,12 +81,29 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    // TODO: Convert into xs:list of outbound socket binding names
+    static final AttributeDefinition PROXY = new SimpleAttributeDefinitionBuilder(CommonAttributes.PROXY, ModelType.STRING, true)
+            // We don't allow expressions for model references!
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
+            .build();
+
+    static final SimpleListAttributeDefinition PROXIES = SimpleListAttributeDefinition.Builder.of(CommonAttributes.PROXIES, PROXY)
+            // We don't allow expressions for model references!
+            .setAllowExpression(false)
+            .setAllowNull(true)
+            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
+            .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
+            .setRestartAllServices()
+            .build();
+
     static final SimpleAttributeDefinition PROXY_LIST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_LIST, ModelType.STRING, true)
             .setAllowExpression(true)
             .setRestartAllServices()
             .setValidator(new ProxyListValidator())
             .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
+            .setDeprecated(ModClusterModel.VERSION_2_0_0.getVersion())
+            .addAlternatives(PROXIES.getName())
             .build();
 
     static final SimpleAttributeDefinition PROXY_URL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_URL, ModelType.STRING, true)
@@ -118,7 +134,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    // TODO: Convert into an xs:list of host:context
+    // TODO: WFLY-3583 Convert into an xs:list of host:context
     static final SimpleAttributeDefinition EXCLUDED_CONTEXTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.EXCLUDED_CONTEXTS, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("ROOT,invoker,jbossws,juddi,console"))
@@ -237,21 +253,21 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition LOAD_BALANCING_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.LOAD_BALANCING_GROUP, ModelType.STRING, true)
             .setAllowExpression(true)
             .setRestartAllServices()
-            .addAlternatives("domain")
+            .addAlternatives(CommonAttributes.DOMAIN)
             .build();
 
     static final SimpleAttributeDefinition SIMPLE_LOAD_PROVIDER = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR, ModelType.INT, true)
             .setRestartAllServices()
             .setXmlName(CommonAttributes.FACTOR)
-                    //.setDefaultValue(new ModelNode(1))
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(0, true, true))
             .build();
 
-    // order here controls the order of writing into xml, should follow xsd schema
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    // Order here controls the order of writing into XML, should follow XSD schema and default configuration order
+    static final AttributeDefinition[] ATTRIBUTES = {
             ADVERTISE_SOCKET,
             PROXY_LIST,
+            PROXIES,
             PROXY_URL,
             BALANCER,
             ADVERTISE,
@@ -278,14 +294,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     };
 
 
-    public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
+    public static final Map<String, AttributeDefinition> ATTRIBUTES_BY_NAME;
 
     static {
-        Map<String, SimpleAttributeDefinition> attrs = new HashMap<String, SimpleAttributeDefinition>();
+        Map<String, AttributeDefinition> attributes = new HashMap<>();
         for (AttributeDefinition attr : ATTRIBUTES) {
-            attrs.put(attr.getName(), (SimpleAttributeDefinition) attr);
+            attributes.put(attr.getName(), attr);
         }
-        ATTRIBUTES_BY_NAME = Collections.unmodifiableMap(attrs);
+        ATTRIBUTES_BY_NAME = Collections.unmodifiableMap(attributes);
     }
 
     public static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
@@ -296,6 +312,9 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                     // Discard if using default value, reject if set to other than previously hard-coded default of 10 seconds
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(STATUS_INTERVAL.getDefaultValue()), STATUS_INTERVAL)
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(STATUS_INTERVAL.getDefaultValue()), STATUS_INTERVAL)
+                    // Reject if using proxies, discard if undefined
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, PROXIES)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, PROXIES)
                     .end();
         }
 
@@ -326,7 +345,11 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            if (attr.equals(PROXY_LIST) || attr.equals(PROXIES)) {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new ProxyConfigurationWriteAttributeHandler(attr));
+            } else {
+                resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            }
         }
         resourceRegistration.registerReadWriteAttribute(SIMPLE_LOAD_PROVIDER, null, new ReloadRequiredWriteAttributeHandler(SIMPLE_LOAD_PROVIDER));
     }
@@ -336,9 +359,6 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
-
-        // Metric for the  dynamic-load-provider
-        EnumSet<OperationEntry.Flag> runtimeOnlyFlags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
 
         final OperationDefinition addMetricDef = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_METRIC, rootResolver)
                 .setParameters(LoadMetricDefinition.ATTRIBUTES)

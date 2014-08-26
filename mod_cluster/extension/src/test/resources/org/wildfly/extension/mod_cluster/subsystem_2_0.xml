@@ -34,7 +34,6 @@
                         max-attempts="${modcluster.max-attempts:10}"
                         node-timeout="${modcluster.node-timeout:123}"
                         ping="${modcluster.ping:10}"
-                        proxy-list="${modcluster.proxy-list:example.com:6666,example.com:6667}"
                         proxy-url="${modcluster.proxy-url:/}"
                         smax="${modcluster.smax:2}"
                         socket-timeout="${modcluster.socket-timeout:20}"

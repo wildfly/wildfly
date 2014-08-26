@@ -39,7 +39,6 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.MAX_ATTEMPTS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.NODE_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_LIST;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_URL;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
@@ -78,6 +77,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.dmr.ModelNode;
@@ -135,11 +135,28 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, socketBindingManager)
                 .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE);
+
+        // Add advertise socket binding dependency
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getSocketBindingInjector());
         }
+
+        // Add proxies socket binding dependencies
+        List<ModelNode> modelNodes = modelConfig.get(CommonAttributes.PROXIES).isDefined() ? modelConfig.get(CommonAttributes.PROXIES).asList() : null;
+
+        if (modelNodes != null) {
+            for (ModelNode node : modelNodes) {
+                String ref = node.asString();
+                builder.addDependency(
+                        OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(ref),
+                        OutboundSocketBinding.class, service.getOutboundSocketBindingInjector(ref)
+                );
+            }
+        }
+
+        // Install the main service
         newControllers.add(builder.install());
 
         // Install services for web container integration
@@ -219,7 +236,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }
         if (model.hasDefined(CommonAttributes.PROXY_LIST)) {
-            config.setProxyList(PROXY_LIST.resolveModelAttribute(context, model).asString());
+            throw new OperationFailedException(ROOT_LOGGER.proxyListNotAllowedInCurrentModel());
         }
         if (model.hasDefined(CommonAttributes.ADVERTISE_SECURITY_KEY)) {
             config.setAdvertiseSecurityKey(ADVERTISE_SECURITY_KEY.resolveModelAttribute(context, model).asString());

@@ -33,6 +33,8 @@ interface CommonAttributes {
     String NODES_CONF = "nodes-conf";
     String ADVERTISE_SOCKET = "advertise-socket";
     String SSL = "ssl";
+    String PROXY = "proxy";
+    String PROXIES = "proxies";
     String PROXY_LIST = "proxy-list";
     String PROXY_URL = "proxy-url";
     String ADVERTISE = "advertise";
@@ -58,6 +60,7 @@ interface CommonAttributes {
     String NODE_TIMEOUT = "node-timeout";
     String BALANCER = "balancer";
     String LOAD_BALANCING_GROUP = "load-balancing-group";
+    String DOMAIN = "domain";
 
     String LOAD_METRIC = "load-metric";
     String FACTOR = "factor";
@@ -79,7 +82,6 @@ interface CommonAttributes {
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CIPHER_SUITE = "cipher-suite";
     String PROTOCOL = "protocol";
-    String VERIFY_CLIENT = "verify-client";
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
     String CONFIGURATION = "configuration";
@@ -89,7 +91,6 @@ interface CommonAttributes {
     String VIRTUAL_HOST = "virtualhost";
     String CONTEXT = "context";
     String WAIT_TIME = "waittime";
-
 
     String LIST_PROXIES = "list-proxies";
     String READ_PROXIES_INFO = "read-proxies-info";

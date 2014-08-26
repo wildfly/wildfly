@@ -23,16 +23,23 @@ package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
 
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -56,6 +63,7 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
 
     private final Value<SocketBindingManager> bindingManager;
     private final InjectedValue<SocketBinding> binding = new InjectedValue<>();
+    private final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<>();
 
     private volatile ModClusterService eventHandler;
 
@@ -75,6 +83,18 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
         ROOT_LOGGER.debugf("Starting mod_cluster extension");
 
         boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
+
+        // TODO: Use the new API for this with mod_cluster 1.3.1 upgrade
+        // Resolve and configure proxies
+        if (outboundSocketBindings.size() > 0) {
+            List<InetSocketAddress> proxies = new LinkedList<>();
+            for (OutboundSocketBinding binding : outboundSocketBindings.values()) {
+                // Don't do resolving here, let mod_cluster deal with it
+                InetSocketAddress proxyAddress = new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+                proxies.add(proxyAddress);
+            }
+            config.setProxies(proxies);
+        }
 
         // Set some defaults...
         if (config.getProxies().isEmpty()) {
@@ -119,4 +139,9 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
     Injector<SocketBinding> getSocketBindingInjector() {
         return this.binding;
     }
+
+    Injector<OutboundSocketBinding> getOutboundSocketBindingInjector(String name) {
+        return new MapInjector<>(outboundSocketBindings, name);
+    }
+
 }

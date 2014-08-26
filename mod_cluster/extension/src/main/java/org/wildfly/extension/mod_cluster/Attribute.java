@@ -36,6 +36,7 @@ enum Attribute {
     NODES_CONF(CommonAttributes.NODES_CONF),
     ADVERTISE_SOCKET(CommonAttributes.ADVERTISE_SOCKET),
     SSL(CommonAttributes.SSL),
+    PROXIES(CommonAttributes.PROXIES),
     PROXY_LIST(CommonAttributes.PROXY_LIST),
     PROXY_URL(CommonAttributes.PROXY_URL),
     ADVERTISE(CommonAttributes.ADVERTISE),
@@ -63,8 +64,7 @@ enum Attribute {
     TTL(CommonAttributes.TTL),
     NODE_TIMEOUT(CommonAttributes.NODE_TIMEOUT),
     BALANCER(CommonAttributes.BALANCER),
-    @Deprecated
-    DOMAIN("domain"),
+    DOMAIN(CommonAttributes.DOMAIN),
     LOAD_BALANCING_GROUP(CommonAttributes.LOAD_BALANCING_GROUP),
 
     FACTOR(CommonAttributes.FACTOR),

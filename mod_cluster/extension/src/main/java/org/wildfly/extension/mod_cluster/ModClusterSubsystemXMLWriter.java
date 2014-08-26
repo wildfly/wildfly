@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
@@ -39,9 +40,7 @@ import static org.wildfly.extension.mod_cluster.CommonAttributes.SIMPLE_LOAD_PRO
 import static org.wildfly.extension.mod_cluster.CommonAttributes.VALUE;
 
 public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
@@ -58,10 +57,11 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
     static void writeModClusterConfig(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
         writer.writeStartElement(Element.MOD_CLUSTER_CONFIG.getLocalName());
-        // write Attributes
-        writePropConf(writer, config);
 
-        // write the elements.
+        // write attributes
+        writeConfiguration(writer, config);
+
+        // write elements
         if (config.hasDefined(SIMPLE_LOAD_PROVIDER_FACTOR)) {
             writeSimpleLoadProvider(writer, config);
         }
@@ -74,10 +74,13 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    /* prop-confType */
-    static void writePropConf(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
-        for (SimpleAttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
-            def.marshallAsAttribute(config, true, writer);
+    static void writeConfiguration(XMLExtendedStreamWriter writer, ModelNode config) throws XMLStreamException {
+        for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+            if (def instanceof SimpleAttributeDefinition) {
+                ((SimpleAttributeDefinition) def).marshallAsAttribute(config, true, writer);
+            } else {
+                def.marshallAsElement(config, true, writer);
+            }
         }
     }
 

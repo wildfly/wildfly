@@ -21,6 +21,7 @@
  */
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -41,7 +42,6 @@ public class ModClusterSubsystemXMLReader_1_2 extends ModClusterSubsystemXMLRead
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ADVERTISE_SOCKET:
-                case PROXY_LIST:
                 case PROXY_URL:
                 case ADVERTISE:
                 case ADVERTISE_SECURITY_KEY:
@@ -64,7 +64,11 @@ public class ModClusterSubsystemXMLReader_1_2 extends ModClusterSubsystemXMLRead
                 case LOAD_BALANCING_GROUP:
                 case CONNECTOR:
                 case SESSION_DRAINING_STRATEGY:
-                    ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName()).parseAndSetParameter(value, conf, reader);
+                    ((SimpleAttributeDefinition) ModClusterConfigResourceDefinition.ATTRIBUTES_BY_NAME.get(attribute.getLocalName())).parseAndSetParameter(value, conf, reader);
+                    break;
+                case PROXY_LIST:
+                    // Keep deprecated PROXY_LIST to be able to support EAP 6.x slaves
+                    ModClusterConfigResourceDefinition.PROXY_LIST.parseAndSetParameter(value, conf, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
