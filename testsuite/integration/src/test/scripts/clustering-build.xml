@@ -27,6 +27,7 @@
         <ts.config-as.change-cache-mode name="wildfly-${cacheMode}-${stack}-0"
                                         cacheMode="${cacheMode}"
                 />
+        <ts.config-as.configure-multicast-ttl name="wildfly-${cacheMode}-${stack}-0" mcast.ttl="${mcast.ttl}"/>
 
         <echo message="  =========  Building config clustering-${cacheMode}-${stack}-1  =========  "/>
         <copy todir="target/wildfly-${cacheMode}-${stack}-1" overwrite="true">
@@ -43,6 +44,7 @@
         <ts.config-as.change-cache-mode name="wildfly-${cacheMode}-${stack}-1"
                                         cacheMode="${cacheMode}"
                 />
+        <ts.config-as.configure-multicast-ttl name="wildfly-${cacheMode}-${stack}-1" mcast.ttl="${mcast.ttl}"/>
 
     </target>
 
@@ -88,6 +90,7 @@
                                         mcast="${mcast}"
                 />
         <ts.config-as.add-port-offset name="wildfly-udp-jdbc-store"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-udp-jdbc-store" mcast.ttl="${mcast.ttl}"/>
 
     </target>
 
@@ -129,6 +132,7 @@
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-xsite-LON-0" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-LON-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site LON, node 1, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-1"/>
@@ -149,6 +153,7 @@
                                        cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-xsite-LON-1" container="web"
                                        cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-LON-1" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site NYC, node 2, mcast 1 -->
         <echo message="Building config clustering-xsite-NYC-0"/>
@@ -164,6 +169,7 @@
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.add-xsite-remote-site name="wildfly-xsite-NYC-0" stack="udp"
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-NYC-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 -->
         <echo message="Building config clustering-xsite-SFO-0"/>
@@ -179,6 +185,7 @@
                                       remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <ts.config-as.add-xsite-remote-site name="wildfly-xsite-SFO-0" stack="udp"
                                       remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0" mcast.ttl="${mcast.ttl}"/>
 
         <!-- site SFO, node 3, mcast 2 + backupFor -->
         <echo message="Building config clustering-xsite-SFO-0-backupFor"/>
@@ -200,6 +207,7 @@
                                        cache-type="distributed-cache" cache.base="dist" cache.name="LON"/>
         <ts.config-as.add-xsite-backup-for name="wildfly-xsite-SFO-0-backupFor" container="web"
                                        cache-type="distributed-cache" cache="LON" remote-site="LON" remote-cache="dist"/>
+        <ts.config-as.configure-multicast-ttl name="wildfly-xsite-SFO-0-backupFor" mcast.ttl="${mcast.ttl}"/>
 
     </target>
 

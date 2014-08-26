@@ -47,11 +47,13 @@
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <echo>In Maven: node1: ${node1}</echo>
                                         <echo>In Maven: mcast: ${mcast}</echo>
+                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
                                         <!-- Build the TCP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}"/>
                                             <property name="mcast" value="${mcast}"/>
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="binary-keyed" />
                                             <property name="cacheType" value="replicated" />
                                             <property name="mode" value="${cacheMode}" />
@@ -151,11 +153,13 @@
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <echo>In Maven: node1: ${node1}</echo>
                                         <echo>In Maven: mcast: ${mcast}</echo>
+                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
                                         <!-- Build the additional TCP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/>
                                             <property name="node1" value="${node1}"/>
                                             <property name="mcast" value="${mcast}"/>
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <target name="build-clustering-extended"/>
                                         </ant>
                                     </target>
@@ -326,9 +330,11 @@
                                 <configuration>
                                     <target>
                                         <echo>In Maven: node0: ${node0}</echo>
+                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
                                         <!-- Build the UDP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="string-keyed" />
                                             <property name="cacheType" value="local" />
                                             <property name="mode" value="${cacheMode}" />                                            
@@ -411,6 +417,7 @@
                                             <property name="mcast-nyc" value="${mcast1}"/>
                                             <property name="mcast-sfo" value="${mcast2}"/>
                                             <property name="mcast-mping" value="${mcast3}"/>
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <target name="build-clustering-xsite"/>
                                         </ant>
                                     </target>
@@ -491,11 +498,13 @@
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <echo>In Maven: node1: ${node1}</echo>
                                         <echo>In Maven: mcast: ${mcast}</echo>
+                                        <echo>In Maven: mcast.ttl: ${mcast.ttl}</echo>
                                         <!-- Build the TCP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}" />
                                             <property name="mcast" value="${mcast}" />
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
                                             <property name="cacheLoader" value="${cacheLoader}" />
                                             <property name="cacheType" value="${cacheType}" />
                                             <property name="mode" value="${mode}" />
