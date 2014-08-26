@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<server xmlns="urn:jboss:domain:3.0">
+<server xmlns="urn:jboss:domain:1.7">
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">
@@ -12,11 +12,9 @@
                 <authorization map-groups-to-roles="false">
                     <ldap connection="LocalLdap">
                         <username-to-dn>
-                            <cache eviction-time="300" cache-failures="true" max-cache-size="25" />
                             <username-filter base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org" recursive="false" attribute="uid" user-dn-attribute="dn" />
                         </username-to-dn>
                         <group-search group-name="SIMPLE" iterative="true" group-dn-attribute="dn" group-name-attribute="uid">
-                            <cache eviction-time="300" cache-failures="false" max-cache-size="25" />
                             <group-to-principal base-dn="ou=groups,dc=group-to-principal,dc=wildfly,dc=org" recursive="true" search-by="DISTINGUISHED_NAME" prefer-original-connection="false">
                                 <membership-filter principal-attribute="uniqueMember" />
                             </group-to-principal>
