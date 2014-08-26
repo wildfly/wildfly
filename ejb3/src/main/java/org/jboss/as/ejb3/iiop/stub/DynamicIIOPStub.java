@@ -24,8 +24,9 @@ package org.jboss.as.ejb3.iiop.stub;
 import static java.security.AccessController.doPrivileged;
 
 import java.security.PrivilegedAction;
+
 import javax.rmi.CORBA.Util;
-import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
+
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.jdkorb.rmi.marshal.strategy.StubStrategy;
 import org.jboss.ejb.iiop.HandleImplIIOP;
@@ -95,7 +96,17 @@ public abstract class DynamicIIOPStub
                 handle = new HomeHandleImplIIOP(this);
             }
             return handle;
-        } else if (!_is_local()) {
+        } else {
+            //FIXME
+            // all invocations are now made using remote invocation
+            // local invocations between two different applications cause
+            // ClassCastException between Stub and Interface
+            // (two different modules are loading the classes)
+            // problem was unnoticeable with JacORB because it uses
+            // remote invocations to all stubs to which interceptors are
+            // registered and a result all that JacORB always used
+            // remote invocations
+
             // remote call path
 
             // To check whether this is a local stub or not we must call
@@ -142,33 +153,6 @@ public abstract class DynamicIIOPStub
                 throw Util.mapSystemException(ex);
             } finally {
                 _releaseReply(in);
-            }
-        } else {
-            // local call path
-            org.omg.CORBA.portable.ServantObject so =
-                    _servant_preinvoke(operationName, Object.class);
-            if (so == null)
-                return invoke(operationName, stubStrategy, params);
-            try {
-                //params = Util.copyObjects(params, _orb());
-                Object retval =
-                        ((LocalIIOPInvoker) so.servant).invoke(operationName,
-                                params,
-                                null, /* tx */
-                                null, /* identity */
-                                null  /* credential */);
-                return stubStrategy.convertLocalRetval(retval);
-                //retval = stubStrategy.convertLocalRetval(retval);
-                //return Util.copyObject(retval, _orb());
-            } catch (Throwable e) {
-                //Throwable ex = (Throwable)Util.copyObject(e, _orb());
-                Throwable ex = e;
-                if (stubStrategy.isDeclaredException(ex))
-                    throw ex;
-                else
-                    throw Util.wrapException(ex);
-            } finally {
-                _servant_postinvoke(so);
             }
         }
     }
