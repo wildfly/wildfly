@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
@@ -106,8 +107,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     }
 
     /**
-     * Method is {@code final}, and throws unsupported operation exception to prevent subclasses inadvertently
-     * overridding it.
+     * Method is {@code final}, and throws unsupported operation exception to prevent subclasses inadvertently overriding it.
      *
      * {@inheritDoc}
      */
@@ -121,7 +121,11 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
-        boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
+        final boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
+        // The STATISTICS_ENABLED.resolveModelAttribute(context, model) call should remain as it serves to validate that any
+        // expression in the model can be resolved to a correct value.
+        @SuppressWarnings("unused")
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
