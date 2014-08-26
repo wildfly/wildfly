@@ -28,6 +28,7 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 
 /**
  * @author Jaikiran Pai
@@ -93,7 +95,7 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
     private final InjectedValue<UserTransaction> userTransactionInjectedValue = new InjectedValue<>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<ServerSecurityManager> serverSecurityManagerInjectedValue = new InjectedValue<>();
-
+    private final InjectedValue<ControlPoint> controlPoint = new InjectedValue<>();
 
     /**
      * Construct a new instance.
@@ -338,6 +340,14 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
 
     Injector<ServerSecurityManager> getServerSecurityManagerInjector() {
         return this.serverSecurityManagerInjectedValue;
+    }
+
+    public ControlPoint getControlPoint() {
+        return this.controlPoint.getOptionalValue();
+    }
+
+    public Injector<ControlPoint> getControlPointInjector() {
+        return this.controlPoint;
     }
 
     public String getPolicyContextID() {

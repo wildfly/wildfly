@@ -23,10 +23,10 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
 
@@ -35,17 +35,16 @@ import org.wildfly.extension.requestcontroller.RunResult;
  *
  * @author Stuart Douglas
  */
-public class EjbRemoteSuspendInterceptor implements Interceptor {
-
-    private final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
+public class EjbRemoteSuspendInterceptor extends AbstractEJBInterceptor {
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         InvocationType invocation = context.getPrivateData(InvocationType.class);
-        if(invocation != InvocationType.REMOTE) {
+        if (invocation != InvocationType.REMOTE) {
             return context.proceed();
         }
-        ControlPoint entryPoint = controlPointInjectedValue.getValue();
+        EJBComponent component = getComponent(context, EJBComponent.class);
+        ControlPoint entryPoint = component.getControlPoint();
         RunResult result = entryPoint.beginRequest();
         if (result == RunResult.REJECTED) {
             throw EjbLogger.ROOT_LOGGER.containerSuspended();
@@ -55,9 +54,5 @@ public class EjbRemoteSuspendInterceptor implements Interceptor {
         } finally {
             entryPoint.requestComplete();
         }
-    }
-
-    public InjectedValue<ControlPoint> getControlPointInjectedValue() {
-        return controlPointInjectedValue;
     }
 }

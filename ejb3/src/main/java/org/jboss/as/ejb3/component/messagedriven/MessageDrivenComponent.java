@@ -191,7 +191,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     @Override
-    public void stop() {
+    public void done() {
 
         deactivate();
         deliveryActive = false;
@@ -200,7 +200,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             this.pool.stop();
         }
 
-        super.stop();
+        super.done();
     }
 
     private void activate() {
