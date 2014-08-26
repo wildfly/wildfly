@@ -730,4 +730,109 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = 84, value = "'%s' parameter type or length is incorrect")
     IllegalArgumentException incorrectKeystoreParameters(final String keystoreName);
 
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Remove secured attribute from the Vault")
+    String cmdLineRemoveSecuredAttribute();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Secured attribute %s has been successfuly removed from vault")
+    String messageAttributeRemovedSuccessfuly(String displayFormattedAttribute);
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Secured attribute %s was not removed from vault, check whether it exist")
+    String messageAttributeNotRemoved(String displayFormattedAttribute);
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Please enter a Digit::  0: Store a secured attribute  1: Check whether a secured attribute exists  2: Remove secured attribute  3: Exit")
+    String interactionCommandOptions();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Task: Store a secured attribute")
+    String taskStoreSecuredAttribute();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Please enter secured attribute value (such as password)")
+    String interactivePromptSecureAttributeValue();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Please enter secured attribute value again")
+    String interactivePromptSecureAttributeValueAgain();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Enter Vault Block:")
+    String interactivePromptVaultBlock();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Enter Attribute Name:")
+    String interactivePromptAttributeName();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Task: Verify whether a secured attribute exists")
+    String taskVerifySecuredAttributeExists();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "No value has been stored for %s")
+    String interactiveMessageNoValueStored(String displayFormattedAttribute);
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "A value exists for %s")
+    String interactiveMessageValueStored(String displayFormattedAttribute);
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Task: Remove secured attribute")
+    String taskRemoveSecuredAttribute();
+
+
 }

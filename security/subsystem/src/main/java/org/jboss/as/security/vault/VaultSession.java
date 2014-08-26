@@ -253,6 +253,19 @@ public final class VaultSession {
     }
 
     /**
+     * This method removes secured attribute stored in {@link SecurityVault}.
+     * After successful remove operation returns true. Otherwise false.
+     *
+     * @param vaultBlock security vault block
+     * @param attributeName Attribute name stored in security vault
+     * @return true is operation is successful, otherwise false
+     * @throws Exception
+     */
+    public boolean removeSecuredAttribute(String vaultBlock, String attributeName) throws Exception {
+        return vault.remove(vaultBlock, attributeName, null);
+    }
+
+    /**
      * Display info about stored secured attribute.
      *
      * @param vaultBlock
@@ -312,4 +325,16 @@ public final class VaultSession {
     public String getKeystoreMaskedPassword() {
         return keystoreMaskedPassword;
     }
+
+    /**
+     * Display format for couple of vault block and attribute name.
+     *
+     * @param vaultBlock
+     * @param attributeName
+     * @return formatted {@link String}
+     */
+    static String blockAttributeDisplayFormat(String vaultBlock, String attributeName) {
+        return "[" + vaultBlock + "::" + attributeName + "]";
+    }
+
 }
