@@ -131,14 +131,10 @@ public class MessagingTransformers {
      */
     private static void buildTransformers1_3_0(ResourceTransformationDescriptionBuilder builder) {
         ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE);
         renameAttribute(hornetqServer, CommonAttributes.STATISTICS_ENABLED, CommonAttributes.MESSAGE_COUNTER_ENABLED);
 
         hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
         hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
-
-        ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(groupingHandler, GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD);
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
@@ -152,6 +148,8 @@ public class MessagingTransformers {
 
     private static void buildTransformers1_2_1(ResourceTransformationDescriptionBuilder builder) {
         ResourceTransformationDescriptionBuilder hornetqServer = builder.addChildResource(pathElement(HORNETQ_SERVER));
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         bridge.getAttributeBuilder().setDiscard(new DiscardAttributeChecker() {
             @Override
@@ -174,6 +172,9 @@ public class MessagingTransformers {
                 return true;
             }
         }, FAILOVER_ON_SERVER_SHUTDOWN);
+
+        ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(groupingHandler, GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD);
     }
 
     private static void buildTransformers1_2_0(ResourceTransformationDescriptionBuilder builder) {

@@ -44,6 +44,9 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-jms-server:2.4.1.Final",
                 "org.hornetq:hornetq-ra:2.4.1.Final"});
 
+        // 8.1.0.Final has the same HornetQ versiopn than 8.0.0.Final
+        map.put(ModelTestControllerVersion.WILDFLY_8_1_0_FINAL, map.get(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL));
+
         map.put(ModelTestControllerVersion.V7_1_2_FINAL, new String[] {
                 "org.hornetq:hornetq-core:2.2.16.Final",
                 "org.hornetq:hornetq-jms:2.2.16.Final",
@@ -91,7 +94,14 @@ public class MessagingDependencies {
                 "org.hornetq:hornetq-core-client:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-jms-client:2.3.12.Final-redhat-1",
                 "org.hornetq:hornetq-ra:2.3.12.Final-redhat-1",
+        });
 
+        map.put(ModelTestControllerVersion.EAP_6_3_0, new String[]{
+                "org.hornetq:hornetq-server:2.3.20.Final-redhat-1",
+                "org.hornetq:hornetq-jms-server:2.3.20.Final-redhat-1",
+                "org.hornetq:hornetq-core-client:2.3.20.Final-redhat-1",
+                "org.hornetq:hornetq-jms-client:2.3.20.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.3.20.Final-redhat-1",
         });
 
         HORNETQ_DEPENDENCIES = Collections.unmodifiableMap(map);
@@ -105,6 +115,7 @@ public class MessagingDependencies {
         final String groupAndArtifactID;
         switch (version) {
             case WILDFLY_8_0_0_FINAL:
+            case WILDFLY_8_1_0_FINAL:
                 groupAndArtifactID = "org.wildfly:wildfly-messaging";
                 break;
             default:

@@ -36,6 +36,7 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_2_0_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_2_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 import static org.jboss.as.messaging.test.MessagingDependencies.getHornetQDependencies;
 import static org.jboss.as.messaging.test.MessagingDependencies.getMessagingGAV;
@@ -49,10 +50,12 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_1;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_1_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_1_1;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_2_0;
+import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_3_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_2_FINAL;
 import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_3_FINAL;
 import static org.jboss.as.model.test.ModelTestControllerVersion.V7_2_0_FINAL;
 import static org.jboss.as.model.test.ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
+import static org.jboss.as.model.test.ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -98,7 +101,6 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -122,6 +124,16 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     ////////////////////////////////////////
 
     @Test
+    public void testTransformersWildFly_8_1_0() throws Exception {
+        testTransformers(WILDFLY_8_1_0_FINAL, VERSION_2_1_0, PATH_FIXER);
+    }
+
+    @Test
+    public void testRejectExpressionsWildFLY_8_1_0() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(WILDFLY_8_1_0_FINAL, VERSION_2_1_0, PATH_FIXER, "empty_subsystem_3_0.xml");
+        doTestRejectExpressions_2_0_0_or_2_1_0(builder, VERSION_2_1_0);
+    }
+    @Test
     public void testTransformersWildFly_8_0_0() throws Exception {
         testTransformers(WILDFLY_8_0_0_FINAL, VERSION_2_0_0, PATH_FIXER);
     }
@@ -129,7 +141,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRejectExpressionsWildFLY_8_0_0() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(WILDFLY_8_0_0_FINAL, VERSION_2_0_0, PATH_FIXER, "empty_subsystem_3_0.xml");
-        doTestRejectExpressions_2_0_0(builder);
+        doTestRejectExpressions_2_0_0_or_2_1_0(builder, VERSION_2_0_0);
     }
 
     @Test
@@ -174,13 +186,23 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
     // put most recent version at the top //
     ////////////////////////////////////////
 
-    @Ignore("failing due to the absence of the legacy controller")
+    @Test
+    public void testTransformersEAP_6_3_0() throws Exception {
+        testTransformers(EAP_6_3_0, VERSION_1_3_0, PATH_FIXER);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP_6_3_0() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(EAP_6_3_0, VERSION_1_3_0, PATH_FIXER, "empty_subsystem_3_0.xml");
+
+        doTestRejectExpressions_1_3_0(builder);
+    }
+
     @Test
     public void testTransformersEAP_6_2_0() throws Exception {
         testTransformers(EAP_6_2_0, VERSION_1_3_0, PATH_FIXER);
     }
 
-    @Ignore("failing due to the absence of the legacy controller")
     @Test
     public void testRejectExpressionsEAP_6_2_0() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(EAP_6_2_0, VERSION_1_3_0, PATH_FIXER, "empty_subsystem_3_0.xml");
@@ -509,17 +531,14 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
         assertTrue(legacyServices.isSuccessfulBoot());
     }
 
-
     /**
-     * Tests rejection of expressions in 2.0.0 model.
-     *
-     * @throws Exception
+     * Tests rejection of expressions in either 2.0.0 or 2.1.0 model.
      */
-    private void doTestRejectExpressions_2_0_0(KernelServicesBuilder builder) throws Exception {
+    private void doTestRejectExpressions_2_0_0_or_2_1_0(KernelServicesBuilder builder, ModelVersion version) throws Exception {
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(VERSION_2_0_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
@@ -530,7 +549,7 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
         modelNodes.remove(0);
         checkFailedTransformedBootOperations(
                 mainServices,
-                VERSION_2_0_0,
+                version,
                 modelNodes,
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
