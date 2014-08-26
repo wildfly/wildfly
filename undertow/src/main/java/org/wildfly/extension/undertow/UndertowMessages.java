@@ -62,10 +62,10 @@ public interface UndertowMessages {
     XMLStreamException unknownHandler(String name, @Param Location location);
 
     @Message(id = 17302, value = "Failed to parse XML descriptor %s at [%s,%s]")
-    String failToParseXMLDescriptor(VirtualFile xmlFile, int line, int column);
+    String failToParseXMLDescriptor(String xmlFile, int line, int column);
 
     @Message(id = 17303, value = "Failed to parse XML descriptor %s")
-    String failToParseXMLDescriptor(VirtualFile xmlFile);
+    String failToParseXMLDescriptor(String xmlFile);
 
     @Message(id = 17304, value = "@WebServlet is only allowed at class level %s")
     String invalidWebServletAnnotation(AnnotationTarget target);

@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.getModulePath;
+import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
+import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
 
 import java.io.File;
 
@@ -30,7 +30,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.weld.modules.ModuleUtils;
+import org.jboss.as.test.shared.ModuleUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;

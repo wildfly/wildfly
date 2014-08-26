@@ -79,9 +79,9 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                     deploymentUnit.putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, jBossWebMetaData.getDistinctName());
                 }
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml.toString(), e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml), e);
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml.toString()), e);
             } finally {
                 try {
                     if (is != null) {

@@ -40,6 +40,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
+import org.wildfly.extension.undertow.deployment.ExternalTldParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.SharedSessionManagerDeploymentProcessor;
@@ -136,6 +137,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_WEBSOCKETS, new UndertowJSRWebSocketDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS, new UndertowHandlersDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS + 1, new ExternalTldParsingDeploymentProcessor()); //todo: fix priority
 
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SHARED_SESSION_MANAGER, new SharedSessionManagerDeploymentProcessor());
