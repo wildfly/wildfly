@@ -83,14 +83,11 @@ REM ************* Execute Batch file only once ***********
 REM ******************************************************
 
 :ExecuteBatch
-echo Calling %1 %2 %3 %4 %5 %6 %7 %8
 set GOAL=%2
 if "%GOAL%"=="" set GOAL=install
 
-REM run smoke tests by default
-set SMOKE_TESTS=-Dintegration.module -Dsmoke.integration.tests
-
-call %1 %GOAL% %SMOKE_TESTS% %3 %4 %5 %6 %7 %8
+echo Calling %1 %GOAL% %3 %4 %5 %6 %7 %8
+call %1 %GOAL% %3 %4 %5 %6 %7 %8
 
 :end
 
