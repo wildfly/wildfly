@@ -1,0 +1,12 @@
+
+<taglib version="2.0" xmlns="http://java.sun.com/xml/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+        <tlib-version>2.0</tlib-version>
+        <jsp-version>2.0</jsp-version>
+        <short-name>external</short-name>
+        <uri>http://external.taglib</uri>
+        <tag>
+            <name>test</name>
+            <tag-class>org.jboss.as.test.integration.web.jsp.taglib.external.ExternalTag</tag-class>
+            <body-content>empty</body-content>
+        </tag>
+    </taglib>

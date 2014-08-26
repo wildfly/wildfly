@@ -21,9 +21,9 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.createTestModule;
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.getModulePath;
+import static org.jboss.as.test.shared.ModuleUtils.createTestModule;
+import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
+import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
 
 import java.io.File;
 import java.util.HashSet;

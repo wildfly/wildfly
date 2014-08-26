@@ -227,10 +227,10 @@ public class TldParsingDeploymentProcessor implements DeploymentUnitProcessor {
             XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
             return TldMetaDataParser.parse(xmlReader);
         } catch (XMLStreamException e) {
-            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld, e.getLocation().getLineNumber(),
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld.toString(), e.getLocation().getLineNumber(),
                     e.getLocation().getColumnNumber()), e);
         } catch (IOException e) {
-            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld), e);
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(tld.toString()), e);
         } finally {
             try {
                 if (is != null) {
