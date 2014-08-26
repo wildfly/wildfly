@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.Cache;
@@ -39,6 +40,8 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.concurrent.Invoker;
+import org.jboss.as.clustering.concurrent.RetryingInvoker;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.distribution.ConsistentHashLocality;
 import org.jboss.as.clustering.infinispan.distribution.Locality;
@@ -46,6 +49,7 @@ import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
+import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batcher;
@@ -86,8 +90,10 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     private final PassivationConfiguration<T> passivation;
     private final AtomicInteger passiveCount = new AtomicInteger();
     private final Batcher<TransactionBatch> batcher;
+    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
+
+    volatile CommandDispatcher<Scheduler<I>> dispatcher;
     private volatile Scheduler<I> scheduler;
-    private volatile CommandDispatcher<Scheduler<I>> dispatcher;
 
     public InfinispanBeanManager(InfinispanBeanManagerConfiguration<T> configuration, final Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration, final Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration) {
         this.beanName = configuration.getBeanName();
@@ -208,17 +214,35 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new NodeAffinity(this.registry.getEntry(this.locatePrimaryOwner(id)).getKey()) : Affinity.NONE;
     }
 
-    void cancel(Bean<G, I, T> bean) {
-        // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new CancelSchedulerCommand<>(bean.getId()), this.locatePrimaryOwner(bean.getId()));
+    private void cancel(final Bean<G, I, T> bean) {
+        try {
+            this.executeOnPrimaryOwner(bean, new CancelSchedulerCommand<>(bean.getId()));
+        } catch (Exception e) {
+            InfinispanEjbLogger.ROOT_LOGGER.failedToCancelBean(e, bean.getId());
+        }
     }
 
-    void schedule(Bean<G, I, T> bean) {
-        // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new ScheduleSchedulerCommand<>(bean.getId()), this.locatePrimaryOwner(bean.getId()));
+    void schedule(final Bean<G, I, T> bean) {
+        try {
+            this.executeOnPrimaryOwner(bean, new ScheduleSchedulerCommand<>(bean.getId()));
+        } catch (Exception e) {
+            InfinispanEjbLogger.ROOT_LOGGER.failedToScheduleBean(e, bean.getId());
+        }
     }
 
-    private Node locatePrimaryOwner(I id) {
+    private void executeOnPrimaryOwner(final Bean<G, I, T> bean, final Command<Void, Scheduler<I>> command) throws Exception {
+        Callable<Void> task = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // This should only go remote following a failover
+                Node node = InfinispanBeanManager.this.locatePrimaryOwner(bean.getId());
+                return InfinispanBeanManager.this.dispatcher.executeOnNode(command, node).get();
+            }
+        };
+        this.invoker.invoke(task);
+    }
+
+    Node locatePrimaryOwner(I id) {
         DistributionManager dist = this.beanCache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(id) : null;
         return (address != null) ? this.nodeFactory.createNode(address) : this.registry.getGroup().getLocalNode();

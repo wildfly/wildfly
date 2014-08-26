@@ -35,22 +35,22 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
     }
 
     @Override
-    public <R> CommandResponse<R> executeOnNode(Command<R, Node> command, Node node) {
+    public <R> CommandResponse<R> executeOnNode(Command<R, Node> command, Node node) throws Exception {
         return this.dispatcher.executeOnNode(command, node);
     }
 
     @Override
-    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, Node> command, Node... excludedNodes) {
+    public <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, Node> command, Node... excludedNodes) throws Exception  {
         return this.dispatcher.executeOnCluster(command, excludedNodes);
     }
 
     @Override
-    public <R> Future<R> submitOnNode(Command<R, Node> command, Node node) {
+    public <R> Future<R> submitOnNode(Command<R, Node> command, Node node) throws Exception  {
         return this.dispatcher.submitOnNode(command, node);
     }
 
     @Override
-    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, Node> command, Node... excludedNodes) {
+    public <R> Map<Node, Future<R>> submitOnCluster(Command<R, Node> command, Node... excludedNodes) throws Exception  {
         return this.dispatcher.submitOnCluster(command, excludedNodes);
     }
 

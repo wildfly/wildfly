@@ -142,4 +142,22 @@ public class InfinispanBeanGroup<G, I, T> implements BeanGroup<G, I, T> {
             }
         }
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof BeanGroup)) return false;
+        @SuppressWarnings("unchecked")
+        BeanGroup<G, I, T> group = (BeanGroup<G, I, T>) object;
+        return this.id.equals(group.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.id.toString();
+    }
 }

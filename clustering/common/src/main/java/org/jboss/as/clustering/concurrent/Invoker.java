@@ -19,40 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
+package org.jboss.as.clustering.concurrent;
 
-import java.util.concurrent.ExecutionException;
-
-import org.wildfly.clustering.dispatcher.CommandResponse;
+import java.util.concurrent.Callable;
 
 /**
- * Simple {@link CommandResponse} implementation
+ * Defines a strategy for invoking a given task.
  * @author Paul Ferraro
- * @param <T> a response type
  */
-public class SimpleCommandResponse<T> implements CommandResponse<T> {
-    private final T value;
-    private final ExecutionException exception;
-
-    public SimpleCommandResponse(T value) {
-        this.value = value;
-        this.exception = null;
-    }
-
-    public SimpleCommandResponse(Throwable exception) {
-        this(new ExecutionException(exception));
-    }
-
-    public SimpleCommandResponse(ExecutionException exception) {
-        this.value = null;
-        this.exception = exception;
-    }
-
-    @Override
-    public T get() throws ExecutionException {
-        if (this.exception != null) {
-            throw this.exception;
-        }
-        return this.value;
-    }
+public interface Invoker {
+    /**
+     * Invokes the specified task
+     * @param task a task to be called
+     * @return the result of the task
+     * @throws Exception if task invocation fails
+     */
+    <R> R invoke(Callable<R> task) throws Exception;
 }

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpSession;
@@ -49,9 +50,12 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEven
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.DataRehashedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.concurrent.Invoker;
+import org.jboss.as.clustering.concurrent.RetryingInvoker;
 import org.jboss.as.clustering.infinispan.distribution.ConsistentHashLocality;
 import org.jboss.as.clustering.infinispan.distribution.Locality;
 import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
+import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Node;
@@ -84,8 +88,10 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     private final int maxActiveSessions;
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final boolean persistent;
+    private final Invoker invoker = new RetryingInvoker(0, 10, 100);
+
+    volatile CommandDispatcher<Scheduler> dispatcher;
     private volatile Scheduler scheduler;
-    private volatile CommandDispatcher<Scheduler> dispatcher;
 
     public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
@@ -158,16 +164,34 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     }
 
     private void cancel(ImmutableSession session) {
-        // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new CancelSchedulerCommand(session.getId()), this.locatePrimaryOwner(session));
+        try {
+            this.executeOnPrimaryOwner(session, new CancelSchedulerCommand(session.getId()));
+        } catch (Exception e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToCancelSession(e, session.getId());
+        }
     }
 
     void schedule(ImmutableSession session) {
-        // This should only go remote following a failover
-        this.dispatcher.executeOnNode(new ScheduleSchedulerCommand(session), this.locatePrimaryOwner(session));
+        try {
+            this.executeOnPrimaryOwner(session, new ScheduleSchedulerCommand(session));
+        } catch (Exception e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToScheduleSession(e, session.getId());
+        }
     }
 
-    private Node locatePrimaryOwner(ImmutableSession session) {
+    private void executeOnPrimaryOwner(final ImmutableSession session, final Command<Void, Scheduler> command) throws Exception {
+        Callable<Void> task = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // This should only go remote following a failover
+                Node node = InfinispanSessionManager.this.locatePrimaryOwner(session);
+                return InfinispanSessionManager.this.dispatcher.executeOnNode(command, node).get();
+            }
+        };
+        this.invoker.invoke(task);
+    }
+
+    Node locatePrimaryOwner(ImmutableSession session) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         Address address = (dist != null) ? dist.getPrimaryLocation(session.getId()) : null;
         return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();

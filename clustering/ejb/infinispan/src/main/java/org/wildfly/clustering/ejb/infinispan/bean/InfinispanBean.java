@@ -117,4 +117,22 @@ public class InfinispanBean<G, I, T> implements Bean<G, I, T> {
             this.group.close();
         }
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Bean)) return false;
+        @SuppressWarnings("unchecked")
+        Bean<G, I, T> bean = (Bean<G, I, T>) object;
+        return this.id.equals(bean.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.id.toString();
+    }
 }

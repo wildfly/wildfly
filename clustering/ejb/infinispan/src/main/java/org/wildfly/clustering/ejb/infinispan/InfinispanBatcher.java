@@ -54,6 +54,7 @@ public class InfinispanBatcher implements Batcher<TransactionBatch> {
         this.tm = tm;
     }
 
+    @SuppressWarnings("resource")
     @Override
     public TransactionBatch startBatch() {
         try {
