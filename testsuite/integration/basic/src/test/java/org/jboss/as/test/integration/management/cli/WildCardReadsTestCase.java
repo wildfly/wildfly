@@ -38,7 +38,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests related to read ops for wildcard addresses.
+ * Tests related to read ops for wildcard addresses, specifically WFLY-2527.
+ * <p>
+ * Really this test belongs in wildfly-core, but the particularly requirements around the management resource registration
+ * being read are not trivially reproduced, so the test remains in main wildfly where there happens to be an applicable
+ * resource.
+ * </p>
+ *
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
@@ -46,6 +52,17 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class WildCardReadsTestCase extends AbstractCliTestBase {
 
+    /*
+     * This address meets a particular set of requirements needed to validate the WFLY-2527 fix:
+     * 1) the distributed-cache=dist resource does not actually exist. Therefore eviction=XXX child resources also do not
+     *    TBH I'm not certain this aspect is all that critical, but don't blindly remove it.
+     * 2) There is no ManagementResourceRegistration for eviction=*
+     * 3) There are MRR's for eviction=XXX, eviction=YYY, etc
+     * 4) The descriptions for each of those eviction=XXX, eviction=YYY, etc are identical
+     *
+     * TODO add some assertions that validate that 1-4 still hold true, in order to ensure the test continues
+     * to validate the expected behavior
+     */
     private static final String OP_PATTERN = "/subsystem=infinispan/cache-container=web/distributed-cache=dist/eviction=%s:%s";
     private static final String READ_OP_DESC_OP = ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION + "(name=%s)";
     private static final String READ_RES_DESC_OP = ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION + "(access-control=combined-descriptions,operations=true,recursive=true)";
