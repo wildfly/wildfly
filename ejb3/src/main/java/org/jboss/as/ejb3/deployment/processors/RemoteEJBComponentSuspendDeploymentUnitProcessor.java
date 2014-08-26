@@ -29,8 +29,8 @@ import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker
  */
 public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
-    public static final String ENTRY_POINT_NAME = "remote-ejb";
-    static final Set<MethodIntf> INTERFACES = EnumSet.of(MethodIntf.REMOTE, MethodIntf.HOME);
+    public static final String ENTRY_POINT_NAME = "ejb.";
+    static final Set<MethodIntf> INTERFACES = EnumSet.of(MethodIntf.REMOTE, MethodIntf.HOME, MethodIntf.MESSAGE_ENDPOINT);
 
     @Override
     public void deploy(DeploymentPhaseContext context) {
@@ -41,13 +41,14 @@ public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements Deploym
             return;
         }
         if (deploymentUnit.getParent() == null) {
-            ControlPointService.install(context.getServiceTarget(), deploymentUnit.getName(), ENTRY_POINT_NAME);
             topLevelName = deploymentUnit.getName();
         } else {
             topLevelName = deploymentUnit.getParent().getName();
         }
         for (ComponentDescription component : deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION).getComponentDescriptions()) {
             if (component instanceof EJBComponentDescription) {
+                final String entryPoint = ENTRY_POINT_NAME + deploymentUnit.getName() + "." + component.getComponentName();
+                ControlPointService.install(context.getServiceTarget(), topLevelName, entryPoint);
                 component.getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) {
@@ -67,7 +68,7 @@ public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements Deploym
                             configuration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
                                 @Override
                                 public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) {
-                                    serviceBuilder.addDependency(ControlPointService.serviceName(topLevelName, ENTRY_POINT_NAME), ControlPoint.class, service.getControlPointInjector());
+                                    serviceBuilder.addDependency(ControlPointService.serviceName(topLevelName, entryPoint), ControlPoint.class, service.getControlPointInjector());
                                 }
                             });
                         }
