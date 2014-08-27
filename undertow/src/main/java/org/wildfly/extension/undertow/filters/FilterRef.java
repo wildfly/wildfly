@@ -34,10 +34,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class FilterRef extends AbstractService<FilterRef> {
     private final Predicate predicate;
+    private final int priority;
     private final InjectedValue<FilterService> filter = new InjectedValue<>();
 
-    public FilterRef(Predicate predicate) {
+    public FilterRef(Predicate predicate, int priority) {
         this.predicate = predicate;
+        this.priority = priority;
     }
 
     InjectedValue<FilterService> getFilter() {
@@ -46,6 +48,10 @@ public class FilterRef extends AbstractService<FilterRef> {
 
     public HttpHandler createHttpHandler(HttpHandler next) {
         return filter.getValue().createHttpHandler(predicate, next);
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     @Override

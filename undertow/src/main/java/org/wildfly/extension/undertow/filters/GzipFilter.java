@@ -45,11 +45,6 @@ public class GzipFilter extends Filter {
     }
 
     @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return null;
-    }
-
-    @Override
     public HttpHandler createHttpHandler(final Predicate predicate, ModelNode model, HttpHandler next) {
         EncodingHandler encodingHandler = new EncodingHandler(new ContentEncodingRepository()
                 .addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate!=null?predicate : Predicates.truePredicate()));

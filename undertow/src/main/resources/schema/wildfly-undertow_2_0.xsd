@@ -44,7 +44,6 @@
             <xs:element name="buffer-cache" type="buffer-cacheType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="error-pages" type="errorPagesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="filters" type="filterType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -82,6 +81,7 @@
                 <xs:attribute name="worker" type="xs:string" default="default"/>
                 <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
                 <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+                <xs:attribute name="resolve-peer-address" type="xs:boolean" default="false"/>
                 <xs:attribute name="max-post-size" type="xs:long" default="0"/>
                 <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
                 <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
@@ -251,12 +251,8 @@
             <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="errorPagesType">
-        <xs:sequence>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="filter" type="customFilterType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -280,6 +276,22 @@
         <xs:attribute name="code" use="required" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
     </xs:complexType>
+
+    <xs:complexType name="paramType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="value" use="required" type="xs:string"/>
+    </xs:complexType>
+
+
+
+    <xs:complexType name="customFilterType">
+        <xs:sequence>
+            <xs:element name="param" type="paramType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="class-name" use="required" type="xs:string"/>
+        <xs:attribute name="module" use="required" type="xs:string"/>
+    </xs:complexType>
     <xs:complexType name="file-handlerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
@@ -301,6 +313,9 @@
 
     <xs:complexType name="reverse-proxy-hostType">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="outbound-socket-binding" use="required" type="xs:string"/>
+        <xs:attribute name="scheme" use="optional" type="xs:string" default="http"/>
+        <xs:attribute name="path" use="optional" type="xs:string" default=""/>
         <xs:attribute name="instance-id" use="optional" type="xs:string"/>
     </xs:complexType>
 
@@ -320,6 +335,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="priority" use="optional" type="xs:string" />
     </xs:complexType>
 
     <xs:complexType name="singleSignOnType">

@@ -301,4 +301,7 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 69, value = "Ignoring shared-session-config in jboss-all.xml in deployment %s. This entry is only valid in top level deployments.")
     void sharedSessionConfigNotInRootDeployment(String deployment);
+
+    @Message(id = 70, value = "Could not load handler %s from %s module")
+    RuntimeException couldNotLoadHandlerFromModule(String className,String moduleName, @Cause Exception e);
 }

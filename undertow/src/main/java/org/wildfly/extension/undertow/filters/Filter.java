@@ -64,9 +64,20 @@ abstract class Filter extends AbstractHandlerDefinition {
     }
 
     public HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, HttpHandler next) {
-        Class<? extends HttpHandler> handlerClass = getHandlerClass();
         List<AttributeDefinition> attributes = new ArrayList<>(getAttributes());
-        int numOfParams = attributes.size() + 1;
+        HttpHandler handler = createHandler(getHandlerClass(), model, attributes, next);
+        if (predicate != null) {
+            return Handlers.predicate(predicate, handler, next);
+        } else {
+            return handler;
+        }
+    }
+
+    protected static HttpHandler createHandler(Class<? extends HttpHandler> handlerClass, final ModelNode model, List<AttributeDefinition> attributes, HttpHandler next) {
+        int numOfParams = attributes.size();
+        if (next != null) {
+            numOfParams++;
+        }
         try {
             for (Constructor<?> c : handlerClass.getDeclaredConstructors()) {
                 if (c.getParameterTypes().length == numOfParams) {
@@ -88,12 +99,7 @@ abstract class Filter extends AbstractHandlerDefinition {
                             params[i] = next;
                         }
                     }
-                    HttpHandler handler = (HttpHandler) c.newInstance(params);
-                    if (predicate!=null){
-                        return Handlers.predicate(predicate, handler, next);
-                    }else{
-                        return handler;
-                    }
+                    return (HttpHandler) c.newInstance(params);
                 }
             }
 
