@@ -51,6 +51,7 @@ import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraint
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -301,6 +302,7 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, ProcessType.EMBEDDED_SERVER);
+        GlobalNotifications.registerGlobalNotifications(registration, ProcessType.EMBEDDED_SERVER);
 
         registration.registerSubModel(new TestResourceDefinition(UNCONSTRAINED_RESOURCE));
         registration.registerSubModel(new TestResourceDefinition(SENSITIVE_CONSTRAINED_RESOURCE,

@@ -60,6 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -736,6 +737,7 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("read-wildcards", new ModelControllerImplUnitTestCase.WildcardReadHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
             SimpleResourceDefinition childResource = new SimpleResourceDefinition(
                     PathElement.pathElement("child"),
                     new NonResolvingResourceDescriptionResolver()

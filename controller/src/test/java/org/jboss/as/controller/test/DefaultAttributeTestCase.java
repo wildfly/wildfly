@@ -27,11 +27,13 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.ReadAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -67,6 +69,7 @@ public class DefaultAttributeTestCase extends AbstractControllerTestBase {
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
+        GlobalNotifications.registerGlobalNotifications(registration, ProcessType.EMBEDDED_SERVER);
         registration.registerOperationHandler(ReadAttributeHandler.DEFINITION, ReadAttributeHandler.INSTANCE, true);
         registration.registerSubModel(new TestResource());
     }

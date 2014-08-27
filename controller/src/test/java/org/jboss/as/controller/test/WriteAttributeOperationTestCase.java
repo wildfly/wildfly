@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -147,6 +148,7 @@ public class WriteAttributeOperationTestCase extends AbstractControllerTestBase 
         System.setProperty("bigdec-value", "10.0");
 
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+        GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
         rootRegistration.registerOperationHandler(SETUP_OP_DEF, new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

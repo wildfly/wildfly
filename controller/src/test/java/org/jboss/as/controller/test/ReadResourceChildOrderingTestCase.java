@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -72,6 +73,8 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
+
         registration.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

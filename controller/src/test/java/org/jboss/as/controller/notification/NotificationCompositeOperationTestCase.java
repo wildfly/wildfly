@@ -23,6 +23,7 @@
 package org.jboss.as.controller.notification;
 
 import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.notification.NotificationFilter.ALL;
@@ -31,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -81,6 +83,8 @@ public class NotificationCompositeOperationTestCase extends AbstractControllerTe
                     }
                 }
         );
+
+        registration.registerNotification(NotificationDefinition.Builder.create(MY_NOTIFICATION_TYPE, new NonResolvingResourceDescriptionResolver()).build());
     }
 
     @Test

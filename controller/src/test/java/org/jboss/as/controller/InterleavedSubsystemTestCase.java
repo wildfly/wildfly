@@ -44,6 +44,7 @@ import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResol
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -136,6 +137,7 @@ public class InterleavedSubsystemTestCase {
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
 
             /*ManagementResourceRegistration extensions = rootRegistration.registerSubModel(PathElement.pathElement(EXTENSION), ModelControllerImplUnitTestCase.DESC_PROVIDER);
             extensions.registerOperationHandler("add", new FakeExtensionAddHandler(rootRegistration), ModelControllerImplUnitTestCase.DESC_PROVIDER);*/

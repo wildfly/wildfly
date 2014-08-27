@@ -33,7 +33,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -89,8 +91,11 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration root) {
-            GlobalOperationHandlers.registerGlobalOperations(root, processType);
-            root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
+        GlobalOperationHandlers.registerGlobalOperations(root, processType);
+        GlobalNotifications.registerGlobalNotifications(root, processType);
+
+
+        root.registerOperationHandler("describe", new DescribeHandler(), NULL, true);
 
             root.registerOperationHandler("setup", new OperationStepHandler() {
                 @Override
