@@ -72,6 +72,7 @@ public class InjectionTargets {
             return beanManager.getInjectionTargetFactory(type).createNonProducibleInjectionTarget();
         }
         WeldInjectionTargetBuilder<T> builder = beanManager.createInjectionTargetBuilder(type);
+        builder.setBean(bean);
         builder.setResourceInjectionEnabled(false); // because these are all EE components where resource injection is not handled by Weld
         if (interceptionSupport) {
             return builder.build();
