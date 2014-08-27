@@ -36,6 +36,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
+
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
@@ -57,6 +58,7 @@ import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.invocation.InterceptorContext;
@@ -66,12 +68,13 @@ import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public abstract class EJBComponent extends BasicComponent {
+public abstract class EJBComponent extends BasicComponent implements ServerActivityCallback {
     private static final Logger log = Logger.getLogger(EJBComponent.class);
 
     private static final ApplicationExceptionDetails APPLICATION_EXCEPTION = new ApplicationExceptionDetails("java.lang.Exception", true, false);
@@ -104,6 +107,7 @@ public abstract class EJBComponent extends BasicComponent {
     private final TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private final UserTransaction userTransaction;
     private final ServerSecurityManager serverSecurityManager;
+    private final ControlPoint controlPoint;
 
     private final PrivilegedAction<Principal> getCaller = new PrivilegedAction<Principal>() {
         @Override
@@ -159,6 +163,7 @@ public abstract class EJBComponent extends BasicComponent {
         this.transactionSynchronizationRegistry = ejbComponentCreateService.getTransactionSynchronizationRegistry();
         this.userTransaction = ejbComponentCreateService.getUserTransaction();
         this.serverSecurityManager = ejbComponentCreateService.getServerSecurityManager();
+        this.controlPoint = ejbComponentCreateService.getControlPoint();
     }
 
     protected <T> T createViewInstanceProxy(final Class<T> viewInterface, final Map<Object, Object> contextData) {
@@ -519,5 +524,31 @@ public abstract class EJBComponent extends BasicComponent {
 
     public InvocationMetrics getInvocationMetrics() {
         return invocationMetrics;
+    }
+
+    public ControlPoint getControlPoint() {
+        return this.controlPoint;
+    }
+
+    @Override
+    public synchronized void start() {
+        super.start();
+        if (this.controlPoint != null) {
+            this.controlPoint.resume();
+        }
+    }
+
+    @Override
+    public final void stop() {
+        if (this.controlPoint != null) {
+            this.controlPoint.pause(this);
+        } else {
+            this.done();
+        }
+    }
+
+    @Override
+    public void done() {
+        super.stop();
     }
 }

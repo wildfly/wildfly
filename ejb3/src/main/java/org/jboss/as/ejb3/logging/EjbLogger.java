@@ -2875,8 +2875,8 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 420, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
 
-    @Message(id = 421, value = "Invocation cannot proceed as component is shutting down")
-    EJBComponentUnavailableException componentIsShuttingDown();
+    @Message(id = 421, value = "The request was rejected as the container is suspended")
+    EJBComponentUnavailableException containerSuspended();
 
     @Message(id = 422, value = "Could not open message outputstream for writing to Channel")
     IOException failedToOpenMessageOutputStream(@Cause Throwable e);
@@ -3000,7 +3000,4 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 459, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
     DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
-
-    @Message(id = 460, value = "The request was rejected as the container is suspended")
-    IllegalStateException containerSuspended();
 }

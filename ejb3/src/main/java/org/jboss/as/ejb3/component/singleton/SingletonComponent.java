@@ -138,9 +138,9 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
     }
 
     @Override
-    public void stop() {
+    public void done() {
         this.destroySingletonInstance();
-        super.stop();
+        super.done();
     }
 
     @Override

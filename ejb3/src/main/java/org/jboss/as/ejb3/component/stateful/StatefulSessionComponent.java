@@ -336,9 +336,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    public void stop() {
-        super.stop();
-
+    public void done() {
         this.cache.stop();
 
         cache = null;
@@ -348,6 +346,8 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         prePassivateInterceptor = null;
         postActivateInterceptor = null;
         ejb2XRemoveMethodInterceptor = null;
+
+        super.done();
     }
 
     @Override
