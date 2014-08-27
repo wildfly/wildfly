@@ -39,6 +39,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_ACCESS_TIME;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH_TIME;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
@@ -261,6 +264,31 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         CallbackHandlerService.ServiceUtil.addDependency(realmBuilder, injector, jaasServiceName, false);
     }
 
+    private <R, K> LdapCacheService<R, K> createCacheService(OperationContext context, LdapSearcher<R, K> searcher,
+            ModelNode cache) throws OperationFailedException {
+        if (cache != null && cache.isDefined()) {
+            ModelNode cacheDefinition = null;
+            boolean byAccessTime = false;
+            if (cache.hasDefined(BY_ACCESS_TIME)) {
+                cacheDefinition = cache.require(BY_ACCESS_TIME);
+                byAccessTime = true;
+            } else if (cache.hasDefined(BY_SEARCH_TIME)) {
+                cacheDefinition = cache.require(BY_SEARCH_TIME);
+            }
+            if (cacheDefinition != null) {
+                int evictionTime = LdapCacheResourceDefinition.EVICTION_TIME.resolveModelAttribute(context, cacheDefinition).asInt();
+                boolean cacheFailures = LdapCacheResourceDefinition.CACHE_FAILURES.resolveModelAttribute(context, cacheDefinition)
+                        .asBoolean();
+                int maxSize = LdapCacheResourceDefinition.MAX_CACHE_SIZE.resolveModelAttribute(context, cacheDefinition).asInt();
+
+                return byAccessTime ? LdapCacheService.createByAccessCacheService(searcher, evictionTime, cacheFailures,
+                        maxSize) : LdapCacheService.createBySearchCacheService(searcher, evictionTime, cacheFailures, maxSize);
+            }
+        }
+
+        return LdapCacheService.createNoCacheService(searcher);
+    }
+
     private void addLdapService(OperationContext context, ModelNode ldap, String realmName, ServiceTarget serviceTarget,
             List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector, boolean shareConnection) throws OperationFailedException {
         ServiceName ldapServiceName = UserLdapCallbackHandler.ServiceUtil.createServiceName(realmName);
@@ -273,6 +301,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final boolean recursive = LdapAuthenticationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean allowEmptyPasswords = LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.resolveModelAttribute(context, ldap).asBoolean();
         final String userDn = LdapAuthenticationResourceDefinition.USER_DN.resolveModelAttribute(context, ldap).asString();
+        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(allowEmptyPasswords, shareConnection);
 
         final LdapSearcher<LdapEntry, String> userSearcher;
         if (usernameAttribute != null) {
@@ -280,12 +309,16 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         } else {
             userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDn, advancedFilter);
         }
-        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(allowEmptyPasswords, shareConnection, userSearcher);
+        final LdapCacheService<LdapEntry, String> cacheService = createCacheService(context, userSearcher, ldap.get(CACHE));
 
+        ServiceName userSearcherCacheName = LdapSearcherCache.ServiceUtil.createServiceName(true, true, realmName);
+        ServiceController<LdapSearcherCache<LdapEntry, String>> cacheServiceController = serviceTarget.addService(userSearcherCacheName, cacheService).setInitialMode(ON_DEMAND).install();
+        newControllers.add(cacheServiceController);
 
         ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
         String connectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
         LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, ldapCallbackHandler.getConnectionManagerInjector(), connectionManager, false);
+        LdapSearcherCache.ServiceUtil.addDependency(ldapBuilder, LdapSearcherCache.class, ldapCallbackHandler.getLdapUserSearcherInjector(), true, true, realmName);
 
         final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
                 .install();
@@ -419,16 +452,19 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         LdapSearcher<LdapEntry, String> userSearcher = null;
         boolean forceUserDnSearch = false;
+        ModelNode userCache = null;
 
         if (ldap.hasDefined(USERNAME_TO_DN)) {
             ModelNode usernameToDn = ldap.require(USERNAME_TO_DN);
             if (usernameToDn.hasDefined(USERNAME_IS_DN)) {
                 ModelNode usernameIsDn = usernameToDn.require(USERNAME_IS_DN);
+                userCache = usernameIsDn.get(CACHE);
                 forceUserDnSearch = UserIsDnResourceDefintion.FORCE.resolveModelAttribute(context, usernameIsDn).asBoolean();
 
                 userSearcher = LdapUserSearcherFactory.createForUsernameIsDn();
             } else if (usernameToDn.hasDefined(USERNAME_FILTER)) {
                 ModelNode usernameFilter = usernameToDn.require(USERNAME_FILTER);
+                userCache = usernameFilter.get(CACHE);
                 forceUserDnSearch = UserSearchResourceDefintion.FORCE.resolveModelAttribute(context, usernameFilter).asBoolean();
                 String baseDn = UserSearchResourceDefintion.BASE_DN.resolveModelAttribute(context, usernameFilter).asString();
                 boolean recursive =  UserSearchResourceDefintion.RECURSIVE.resolveModelAttribute(context, usernameFilter).asBoolean();
@@ -438,6 +474,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute);
             } else if (usernameToDn.hasDefined(ADVANCED_FILTER)) {
                 ModelNode advancedFilter = usernameToDn.require(ADVANCED_FILTER);
+                userCache = advancedFilter.get(CACHE);
                 forceUserDnSearch = AdvancedUserSearchResourceDefintion.FORCE.resolveModelAttribute(context, advancedFilter).asBoolean();
                 String baseDn = AdvancedUserSearchResourceDefintion.BASE_DN.resolveModelAttribute(context, advancedFilter).asString();
                 boolean recursive =  AdvancedUserSearchResourceDefintion.RECURSIVE.resolveModelAttribute(context, advancedFilter).asBoolean();
@@ -448,13 +485,23 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             }
         }
 
+        if (userSearcher != null) {
+            LdapCacheService<LdapEntry, String> userSearcherCache = createCacheService(context, userSearcher, userCache);
+
+            ServiceName userSearcherCacheName = LdapSearcherCache.ServiceUtil.createServiceName(false, true, realmName);
+            ServiceController<LdapSearcherCache<LdapEntry, String>> userSearcherController = serviceTarget
+                    .addService(userSearcherCacheName, userSearcherCache).setInitialMode(ON_DEMAND).install();
+            controllers.add(userSearcherController);
+        }
 
         ModelNode groupSearch = ldap.require(GROUP_SEARCH);
         LdapSearcher<LdapEntry[], LdapEntry> groupSearcher;
         boolean iterative = false;
         GroupName groupName = GroupName.DISTINGUISHED_NAME;
+        ModelNode groupCache = null;
         if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL)) {
             ModelNode groupToPrincipal = groupSearch.require(GROUP_TO_PRINCIPAL);
+            groupCache = groupToPrincipal.get(CACHE);
             String baseDn = GroupToPrincipalResourceDefinition.BASE_DN.resolveModelAttribute(context, groupToPrincipal).asString();
             String groupDnAttribute = GroupToPrincipalResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
             groupName = GroupName.valueOf(GroupToPrincipalResourceDefinition.GROUP_NAME.resolveModelAttribute(context, groupToPrincipal).asString());
@@ -468,6 +515,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy, preferOriginalConnection);
         } else {
             ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
+            groupCache = principalToGroup.get(CACHE);
             String groupAttribute = PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             boolean preferOriginalConnection = PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, principalToGroup).asBoolean();
             // TODO - Why was this never used?
@@ -479,12 +527,23 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute, preferOriginalConnection);
         }
 
+        LdapCacheService<LdapEntry[], LdapEntry> groupCacheService = createCacheService(context, groupSearcher, groupCache);
+
+        ServiceName groupCacheServiceName = LdapSearcherCache.ServiceUtil.createServiceName(false, false, realmName);
+        ServiceController<LdapSearcherCache<LdapEntry[], LdapEntry>> groupSearcherCacheController = serviceTarget
+                .addService(groupCacheServiceName, groupCacheService).setInitialMode(ON_DEMAND).install();
+        controllers.add(groupSearcherCacheController);
+
         String connectionName = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
 
-        LdapSubjectSupplementalService service = new LdapSubjectSupplementalService(realmName, shareConnection, forceUserDnSearch, iterative, groupName, userSearcher, groupSearcher);
+        LdapSubjectSupplementalService service = new LdapSubjectSupplementalService(realmName, shareConnection, forceUserDnSearch, iterative, groupName);
         ServiceBuilder<SubjectSupplementalService> ldapBuilder = serviceTarget.addService(ldapName, service)
                 .setInitialMode(ON_DEMAND);
         LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, service.getConnectionManagerInjector(), connectionName, false);
+        if (userSearcher != null) {
+            LdapSearcherCache.ServiceUtil.addDependency(ldapBuilder, LdapSearcherCache.class, service.getLdapUserSearcherInjector(), false, true, realmName);
+        }
+        LdapSearcherCache.ServiceUtil.addDependency(ldapBuilder, LdapSearcherCache.class, service.getLdapGroupSearcherInjector(), false, false, realmName);
 
         controllers.add(ldapBuilder.install());
 

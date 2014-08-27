@@ -56,9 +56,11 @@ import org.jboss.msc.value.InjectedValue;
 public class LdapSubjectSupplementalService implements Service<SubjectSupplementalService>, SubjectSupplementalService {
 
     private final InjectedValue<LdapConnectionManager> connectionManager = new InjectedValue<LdapConnectionManager>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>> groupSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>>();
 
-    private final LdapSearcher<LdapEntry, String> userSearcher;
-    private final LdapSearcher<LdapEntry[], LdapEntry> groupSearcher;
+    private LdapSearcherCache<LdapEntry, String> userSearcher;
+    private LdapSearcherCache<LdapEntry[], LdapEntry> groupSearcher;
 
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
@@ -68,15 +70,12 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     private final boolean iterative;
     private final GroupName groupName;
 
-    public LdapSubjectSupplementalService(final String realmName, final boolean shareConnection, final boolean forceUserDnSearch, final boolean iterative, final GroupName groupName, LdapSearcher<LdapEntry, String> userSearcher, LdapSearcher<LdapEntry[], LdapEntry> groupSearcher) {
+    public LdapSubjectSupplementalService(final String realmName, final boolean shareConnection, final boolean forceUserDnSearch, final boolean iterative, final GroupName groupName) {
         this.realmName = realmName;
         this.shareConnection = shareConnection;
         this.forceUserDnSearch = forceUserDnSearch;
         this.iterative = iterative;
         this.groupName = groupName;
-
-        this.userSearcher = userSearcher;
-        this.groupSearcher = groupSearcher;
     }
 
     /*
@@ -88,6 +87,9 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     }
 
     public void start(StartContext context) throws StartException {
+        userSearcher = userSearcherInjector.getOptionalValue();
+        groupSearcher = groupSearcherInjector.getValue();
+
         if (SECURITY_LOGGER.isTraceEnabled()) {
             SECURITY_LOGGER.tracef("LdapSubjectSupplementalService realmName=%s", realmName);
             SECURITY_LOGGER.tracef("LdapSubjectSupplementalService shareConnection=%b", shareConnection);
@@ -98,6 +100,8 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     }
 
     public void stop(StopContext context) {
+        groupSearcher = null;
+        userSearcher = null;
     }
 
     /*
@@ -105,6 +109,14 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
      */
     public Injector<LdapConnectionManager> getConnectionManagerInjector() {
         return connectionManager;
+    }
+
+    public Injector<LdapSearcherCache<LdapEntry, String>> getLdapUserSearcherInjector() {
+        return userSearcherInjector;
+    }
+
+    public Injector<LdapSearcherCache<LdapEntry[], LdapEntry>> getLdapGroupSearcherInjector() {
+        return groupSearcherInjector;
     }
 
     /*
@@ -169,7 +181,7 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 SECURITY_LOGGER.tracef("Loaded from sharedState '%s'", entry);
             }
             if (entry == null || user.getName().equals(entry.getSimpleName())==false) {
-                entry = userSearcher.search(connectionHandler, user.getName());
+                entry = userSearcher.search(connectionHandler, user.getName()).getResult();
                 SECURITY_LOGGER.tracef("Performed userSearch '%s'", entry);
             }
 
@@ -203,7 +215,7 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 return new LdapEntry[0];
             }
 
-            return groupSearcher.search(connectionHandler, entry);
+            return groupSearcher.search(connectionHandler, entry).getResult();
         }
 
     }
