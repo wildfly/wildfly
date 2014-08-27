@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -85,6 +86,10 @@ public class MDBWithVaultedPropertiesTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+
+            File vaultFile = new File(VAULT_LOCATION);
+            vaultFile.delete();
+            vaultFile.mkdirs();
 
             // create new vault
             vaultHandler = new VaultHandler(VAULT_LOCATION);

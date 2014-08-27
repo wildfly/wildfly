@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.ejb.EJB;
@@ -68,6 +69,9 @@ public class JMSResourceDefinitionsTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            File vaultFile = new File(VAULT_LOCATION);
+            vaultFile.delete();
+            vaultFile.mkdirs();
 
             // create new vault
             vaultHandler = new VaultHandler(VAULT_LOCATION);
