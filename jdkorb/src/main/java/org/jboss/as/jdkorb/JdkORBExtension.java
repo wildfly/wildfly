@@ -54,7 +54,7 @@ public class JdkORBExtension implements Extension {
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(JdkORBExtension.SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
-            prefix.append(kp);
+            prefix.append(".").append(kp);
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME,
                 JdkORBExtension.class.getClassLoader(), true, false);

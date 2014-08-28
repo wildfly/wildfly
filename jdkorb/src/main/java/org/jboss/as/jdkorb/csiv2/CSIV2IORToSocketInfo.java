@@ -25,9 +25,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.jdkorb.JdkORBSubsystemConstants;
+import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
 import org.omg.CSIIOP.CompoundSecMech;
 import org.omg.CSIIOP.CompoundSecMechList;
 import org.omg.CSIIOP.CompoundSecMechListHelper;
+import org.omg.CSIIOP.Confidentiality;
+import org.omg.CSIIOP.DetectMisordering;
+import org.omg.CSIIOP.DetectReplay;
+import org.omg.CSIIOP.EstablishTrustInClient;
+import org.omg.CSIIOP.EstablishTrustInTarget;
+import org.omg.CSIIOP.Integrity;
 import org.omg.CSIIOP.TAG_TLS_SEC_TRANS;
 import org.omg.CSIIOP.TLS_SEC_TRANS;
 import org.omg.CSIIOP.TLS_SEC_TRANSHelper;
@@ -57,6 +64,13 @@ import com.sun.corba.se.spi.transport.SocketInfo;
  */
 
 public class CSIV2IORToSocketInfo implements IORToSocketInfo {
+
+    private static boolean clientRequiresSsl;
+
+    public static void setClientTransportConfigMetaData(ClientTransportConfigMetaData clientTransportConfigMetaData) {
+        clientRequiresSsl=clientTransportConfigMetaData!=null?clientTransportConfigMetaData.getRequiresSsl():false;
+    }
+
     public List getSocketInfo(IOR ior) {
 
         List result = new ArrayList();
@@ -65,18 +79,22 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress();
         String hostname = primary.getHost().toLowerCase();
         int primaryPort = primary.getPort();
+
         // NOTE: we could check for 0 (i.e., CSIv2) but, for a
         // non-CSIv2-configured client ORB talking to a CSIv2 configured
         // server ORB you might end up with an empty contact info list
         // which would then report a failure which would not be as
         // instructive as leaving a ContactInfo with a 0 port in the list.
-
         SocketInfo socketInfo;
 
-        TransportAddress sslAddress = extractSSLTransportAddress(ior);
+        TransportAddress sslAddress = selectSSLTransportAddress(ior);
         if (sslAddress != null) {
             socketInfo = createSSLSocketInfo(hostname, sslAddress.port);
         } else {
+            //FIXME not all corba object export ssl port
+//            if (clientRequiresSsl) {
+//                throw new RuntimeException("Client requires SSL but target does not support it");
+//            }
             socketInfo = createSocketInfo(hostname, primaryPort);
         }
         result.add(socketInfo);
@@ -86,18 +104,27 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         return result;
     }
 
-    private TransportAddress extractSSLTransportAddress(IOR ior) {
+    private TransportAddress selectSSLTransportAddress(IOR ior) {
         CompoundSecMechList compoundSecMechList = readCompoundSecMechList(ior);
-        if (compoundSecMechList == null || compoundSecMechList.mechanism_list.length == 0) {
-            return null;
+        if (compoundSecMechList != null) {
+            for (CompoundSecMech mech : compoundSecMechList.mechanism_list) {
+                TLS_SEC_TRANS sslMech = extractTlsSecTrans(ior, mech);
+                if (sslMech == null) {
+                    continue;
+                }
+                boolean targetSupportsSsl = checkSSL(sslMech.target_supports);
+                boolean targetRequiresSsl = checkSSL(sslMech.target_requires);
+                if (targetSupportsSsl && (targetRequiresSsl || clientRequiresSsl)) {
+                    return extractAddress(sslMech);
+                }
+            }
         }
-        // TODO security mechanism selection
-        CompoundSecMech mech = compoundSecMechList.mechanism_list[0];
-        TLS_SEC_TRANS sslMech = extractTlsSecTrans(ior, mech);
-        if(sslMech==null){
-            return null;
-        }
-        return extractAddress(sslMech);
+        return null;
+    }
+
+    private boolean checkSSL(int options) {
+        return (options & (Integrity.value | Confidentiality.value | DetectReplay.value | DetectMisordering.value
+                | EstablishTrustInTarget.value | EstablishTrustInClient.value)) != 0;
     }
 
     private CompoundSecMechList readCompoundSecMechList(IOR ior) {
@@ -142,7 +169,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         }
     }
 
-    private SocketInfo createSocketInfo(final String hostname,final int port) {
+    private SocketInfo createSocketInfo(final String hostname, final int port) {
         return new SocketInfo() {
             public String getType() {
                 return SocketInfo.IIOP_CLEAR_TEXT;
@@ -158,7 +185,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         };
     }
 
-    private SocketInfo createSSLSocketInfo(final String hostname,final int port) {
+    private SocketInfo createSSLSocketInfo(final String hostname, final int port) {
         return new SocketInfo() {
             public String getType() {
                 return JdkORBSubsystemConstants.SSL_SOCKET_TYPE;

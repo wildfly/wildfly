@@ -82,32 +82,21 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).add(SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME);
+        nodes.add(subsystem);
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
             case JdkORB_1_0: {
-                this.readElement(readerNS, reader, subsystem);
+                this.readElement_1_0(readerNS, reader, nodes);
                 break;
             }
             default: {
                 throw unexpectedElement(reader);
             }
         }
-
-        nodes.add(subsystem);
     }
 
-    /**
-     * <p>
-     * Parses the JdkORB subsystem configuration according to the XSD version 1.1 or higher.
-     * </p>
-     *
-     * @param namespace the expected {@code Namespace} of the parsed elements.
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node the {@code ModelNode} that will hold the parsed subsystem configuration.
-     * @throws javax.xml.stream.XMLStreamException if an error occurs while parsing the XML.
-     */
-    private void readElement(Namespace namespace, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
+    private void readElement_1_0(Namespace namespace, XMLExtendedStreamReader reader, List<ModelNode> nodes) throws XMLStreamException {
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             // check the element namespace.
@@ -118,9 +107,10 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             if (!encountered.add(element)) {
                 throw duplicateNamedElement(reader, element.getLocalName());
             }
+            ModelNode node = nodes.get(0); // main subsystem node.
             switch (element) {
                 case ORB: {
-                    this.parseORBConfig(namespace, reader, node);
+                    this.parseORBConfig(namespace, reader, nodes.get(0));
                     break;
                 }
                 case NAMING: {
@@ -133,6 +123,14 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 }
                 case PROPERTIES: {
                     this.parsePropertiesConfig(namespace, reader, node);
+                    break;
+                }
+                case IOR_SETTINGS: {
+                    IORSettingsParser.INSTANCE.readElement(reader, nodes);
+                    break;
+                }
+                case CLIENT_TRANSPORT: {
+                    ClientTransportParser.INSTANCE.readElement(reader, nodes);
                     break;
                 }
                 default: {
@@ -399,11 +397,20 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         // write the security configuration section if there are any security properties to be written.
         this.writeSecurityConfig(writer, node);
 
+        if (node.hasDefined(JdkORBSubsystemConstants.IOR_SETTINGS))
+            IORSettingsParser.INSTANCE.writeContent(writer, node.get(JdkORBSubsystemConstants.IOR_SETTINGS,
+                    JdkORBSubsystemConstants.DEFAULT));
+
+        if (node.hasDefined(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG))
+            ClientTransportParser.INSTANCE.writeContent(writer, node.get(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG,
+                    JdkORBSubsystemConstants.DEFAULT));
+
         // write all defined generic properties.
         String properties = JdkORBSubsystemConstants.PROPERTIES;
         if (node.hasDefined(properties)) {
             this.writeGenericProperties(writer, node.get(properties));
         }
+
         writer.writeEndElement(); // End of subsystem element
     }
 
@@ -623,8 +630,9 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         ORB(JdkORBSubsystemConstants.ORB), ORB_TCP(JdkORBSubsystemConstants.ORB_TCP), ORB_INITIALIZERS(
                 JdkORBSubsystemConstants.ORB_INIT),
 
-        // elements used to configure the naming service, ORB interoperability and ORB security.
-        NAMING(JdkORBSubsystemConstants.NAMING), SECURITY(JdkORBSubsystemConstants.SECURITY),
+        // elements used to configure the naming service, ORB interoperability, ORB security and transport.
+        NAMING(JdkORBSubsystemConstants.NAMING), SECURITY(JdkORBSubsystemConstants.SECURITY), IOR_SETTINGS(
+                JdkORBSubsystemConstants.IOR_SETTINGS), CLIENT_TRANSPORT(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG),
 
         // elements used to configure generic properties.
         PROPERTIES(JdkORBSubsystemConstants.PROPERTIES), PROPERTY(JdkORBSubsystemConstants.PROPERTY);

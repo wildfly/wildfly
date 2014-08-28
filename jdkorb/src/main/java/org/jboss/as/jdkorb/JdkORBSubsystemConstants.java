@@ -89,6 +89,8 @@ public final class JdkORBSubsystemConstants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
+    public static final String CLIENT_TRANSPORT_CONFIG = "client-transport";
+    public static final String CLIENT_TRANSPORT_REQUIRES_SSL = "requires-ssl";
 
     // constants for common org.omg properties.
     public static final String ORB_ADDRESS = "OAIAddr";

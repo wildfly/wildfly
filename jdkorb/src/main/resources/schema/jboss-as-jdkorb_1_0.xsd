@@ -49,8 +49,9 @@
             <xs:element name="orb" minOccurs="0" maxOccurs="1" type="orbConfigType"/>
             <xs:element name="naming" minOccurs="0" maxOccurs="1" type="namingConfigType"/>
             <xs:element name="security" minOccurs="0" maxOccurs="1" type="securityConfigType"/>
-            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
             <xs:element name="ior-settings" minOccurs="0" maxOccurs="1" type="iorSettingsType"/>
+            <xs:element name="client-transport" minOccurs="0" maxOccurs="1" type="clientTransportConfigType"/>
+            <xs:element name="properties" minOccurs="0" maxOccurs="1" type="genericPropertiesType"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -268,6 +269,35 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="caller-propagation" type="xs:string" use="optional"/>
+    </xs:complexType>
+ 
+    <xs:complexType name="clientTransportConfigType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The clientTransportConfigType specifies the attributes used to setup the client transport settings.
+
+                * integrity: indicates whether the transport must require integrity protection or not. Valid values are
+                             "none", "supported" and "required".
+                * confidentiality: indicates whether the transport must require confidentiality protection or not. Valid
+                             values are "none", "supported" and "required".
+                * trust-in-target: indicates if the transport must require trust in target to be established. Valid values
+                             are "none" and "supported".
+                * trust-in-client: indicates if the transport must require trust in client to be established. Valid values
+                             are "none", "supported" and "required".
+                * detect-replay: indicates whether the transport must require replay detection or not. Valid values are
+                             "none", "supported" and "required".
+                * detect-misordering: indicates whether the transport must require misordering detection or not. Valid
+                             values are "none", "supported" and "required".
+             ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="integrity" type="xs:string" use="optional"/>
+        <xs:attribute name="confidentiality" type="xs:string" use="optional"/>
+        <xs:attribute name="trust-in-target" type="xs:string" use="optional"/>
+        <xs:attribute name="trust-in-client" type="xs:string" use="optional"/>
+        <xs:attribute name="detect-replay" type="xs:string" use="optional"/>
+        <xs:attribute name="detect-misordering" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:simpleType name="onOffType">
