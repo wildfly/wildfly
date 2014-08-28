@@ -90,10 +90,7 @@
 						<executions>
 							<execution>
 								<id>check-style</id>
-                                <!-- Disabled until classpath issue is sorted
-								<phase>test-compile</phase>
-								-->
-                                <phase>none</phase>
+                                <phase>test-compile</phase>
 								<goals>
 									<goal>checkstyle</goal>
 								</goals>
