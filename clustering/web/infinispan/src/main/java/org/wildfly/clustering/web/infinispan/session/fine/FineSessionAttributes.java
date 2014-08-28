@@ -25,10 +25,7 @@ import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
-import org.jboss.as.clustering.infinispan.invoker.Remover;
-import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
@@ -40,20 +37,18 @@ import org.wildfly.clustering.web.session.SessionAttributes;
 public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> implements SessionAttributes {
     private final Set<String> attributes;
     private final Cache<SessionAttributeCacheKey, V> cache;
-    private final CacheInvoker invoker;
     private final SessionAttributeMarshaller<Object, V> marshaller;
 
-    public FineSessionAttributes(String id, Set<String> attributes, Cache<SessionAttributeCacheKey, V> attributeCache, CacheInvoker invoker, SessionAttributeMarshaller<Object, V> marshaller) {
-        super(id, attributes, attributeCache, invoker, marshaller);
+    public FineSessionAttributes(String id, Set<String> attributes, Cache<SessionAttributeCacheKey, V> attributeCache, SessionAttributeMarshaller<Object, V> marshaller) {
+        super(id, attributes, attributeCache, marshaller);
         this.attributes = attributes;
         this.cache = attributeCache;
-        this.invoker = invoker;
         this.marshaller = marshaller;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        return this.attributes.remove(name) ? this.marshaller.read(this.invoker.invoke(this.cache, new Remover.RemoveOperation<SessionAttributeCacheKey, V>(this.createKey(name)), Flag.FORCE_SYNCHRONOUS)) : null;
+        return this.attributes.remove(name) ? this.marshaller.read(this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(this.createKey(name))) : null;
     }
 
     @Override
@@ -61,15 +56,9 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (attribute == null) {
             return this.removeAttribute(name);
         }
-        final SessionAttributeCacheKey key = this.createKey(name);
-        final V value = this.marshaller.write(attribute);
-        Operation<SessionAttributeCacheKey, V, V> operation = new Operation<SessionAttributeCacheKey, V, V>() {
-            @Override
-            public V invoke(Cache<SessionAttributeCacheKey, V> cache) {
-                return cache.put(key, value);
-            }
-        };
-        return this.marshaller.read(this.invoker.invoke(this.cache, operation, this.attributes.add(name) ? Flag.IGNORE_RETURN_VALUES : Flag.FORCE_SYNCHRONOUS));
+        SessionAttributeCacheKey key = this.createKey(name);
+        V value = this.marshaller.write(attribute);
+        return this.marshaller.read(this.cache.getAdvancedCache().withFlags(this.attributes.add(name) ? Flag.IGNORE_RETURN_VALUES : Flag.FORCE_SYNCHRONOUS).put(key, value));
     }
 
     @Override
@@ -80,7 +69,7 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         Object attribute = this.marshaller.read(value);
         // If the object is mutable, we need to indicate that the attribute should be replicated
         if (MutableDetector.isMutable(attribute)) {
-            new CacheEntryMutator<>(this.cache, this.invoker, key, value).mutate();
+            new CacheEntryMutator<>(this.cache, key, value).mutate();
         }
         return attribute;
     }

@@ -28,8 +28,8 @@ import org.jboss.as.ejb3.cache.Contextual;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.ejb.client.Affinity;
-import org.wildfly.clustering.ejb.Batch;
-import org.wildfly.clustering.ejb.BatchContext;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.RemoveListener;
@@ -78,7 +78,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
         boolean newGroup = false;
         boolean success = false;
         UUID group = CURRENT_GROUP.get();
-        Batch batch = this.manager.getBatcher().startBatch();
+        Batch batch = this.manager.getBatcher().createBatch();
         try {
             if (group == null) {
                 newGroup = true;
@@ -110,7 +110,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public V get(K id) {
-        Batch batch = this.manager.getBatcher().startBatch();
+        Batch batch = this.manager.getBatcher().createBatch();
         try {
             Bean<UUID, K, V> bean = this.manager.findBean(id);
             if (bean == null) {
@@ -128,7 +128,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void release(V value) {
-        try (BatchContext context = this.manager.getBatcher().resume(value.getCacheContext())) {
+        try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
             try (Batch batch = value.getCacheContext()) {
                 Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
                 if (bean != null) {
@@ -150,7 +150,7 @@ public class DistributableCache<K, V extends Identifiable<K> & Contextual<Batch>
 
     @Override
     public void discard(V value) {
-        try (BatchContext context = this.manager.getBatcher().resume(value.getCacheContext())) {
+        try (BatchContext context = this.manager.getBatcher().resumeBatch(value.getCacheContext())) {
             try (Batch batch = value.getCacheContext()) {
                 Bean<UUID, K, V> bean = this.manager.findBean(value.getId());
                 if (bean != null) {

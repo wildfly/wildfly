@@ -22,14 +22,14 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
+import org.infinispan.transaction.LockingMode;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.wildfly.clustering.ee.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.ee.infinispan.Mutator;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
@@ -54,15 +54,13 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
 
     private final Cache<String, FineSessionCacheEntry<L>> sessionCache;
     private final Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache;
-    private final CacheInvoker invoker;
     private final SessionContext context;
     private final SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller;
     private final LocalContextFactory<L> localContextFactory;
 
-    public FineSessionFactory(Cache<String, FineSessionCacheEntry<L>> sessionCache, Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache, CacheInvoker invoker, SessionContext context, SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller, LocalContextFactory<L> localContextFactory) {
+    public FineSessionFactory(Cache<String, FineSessionCacheEntry<L>> sessionCache, Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> attributeCache, SessionContext context, SessionAttributeMarshaller<Object, MarshalledValue<Object, MarshallingContext>> marshaller, LocalContextFactory<L> localContextFactory) {
         this.sessionCache = sessionCache;
         this.attributeCache = attributeCache;
-        this.invoker = invoker;
         this.context = context;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
@@ -71,42 +69,39 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     @Override
     public Session<L> createSession(String id, FineSessionCacheEntry<L> entry) {
         SessionMetaData metaData = entry.getMetaData();
-        Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, this.invoker, id, entry);
-        SessionAttributes attributes = new FineSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.invoker, this.marshaller);
+        Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, id, entry);
+        SessionAttributes attributes = new FineSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.marshaller);
         return new InfinispanSession<>(id, entry.getMetaData(), attributes, entry.getLocalContext(), this.localContextFactory, this.context, mutator, this);
     }
 
     @Override
     public ImmutableSession createImmutableSession(String id, FineSessionCacheEntry<L> entry) {
-        ImmutableSessionAttributes attributes = new FineImmutableSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.invoker, this.marshaller);
+        ImmutableSessionAttributes attributes = new FineImmutableSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.marshaller);
         return new InfinispanImmutableSession(id, entry.getMetaData(), attributes, this.context);
     }
 
     @Override
     public FineSessionCacheEntry<L> findValue(String id) {
-        return this.invoker.invoke(this.sessionCache, new LockingFindOperation<String, FineSessionCacheEntry<L>>(id));
+        TransactionConfiguration transaction = this.sessionCache.getCacheConfiguration().transaction();
+        boolean pessimistic = transaction.transactionMode().isTransactional() && (transaction.lockingMode() == LockingMode.PESSIMISTIC);
+        Cache<String, FineSessionCacheEntry<L>> cache = pessimistic ? this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK) : this.sessionCache;
+        return cache.get(id);
     }
 
     @Override
     public FineSessionCacheEntry<L> createValue(String id) {
         FineSessionCacheEntry<L> entry = new FineSessionCacheEntry<>(new SimpleSessionMetaData());
-        FineSessionCacheEntry<L> existing = this.invoker.invoke(this.sessionCache, new CreateOperation<>(id, entry), Flag.FORCE_SYNCHRONOUS);
+        FineSessionCacheEntry<L> existing = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).putIfAbsent(id, entry);
         return (existing != null) ? existing : entry;
     }
 
     @Override
     public void remove(final String id) {
-        final FineSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new RemoveOperation<String, FineSessionCacheEntry<L>>(id), Flag.FORCE_SYNCHRONOUS);
-        Operation<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>, Void> attributeOperation = new Operation<SessionAttributeCacheKey, MarshalledValue<Object,MarshallingContext>, Void>() {
-            @Override
-            public Void invoke(Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> cache) {
-                for (String attribute: entry.getAttributes()) {
-                    cache.remove(new SessionAttributeCacheKey(id, attribute));
-                }
-                return null;
-            }
-        };
-        this.invoker.invoke(this.attributeCache, attributeOperation, Flag.IGNORE_RETURN_VALUES);
+        FineSessionCacheEntry<L> entry = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(id);
+        Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> cache = this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
+        for (String attribute : entry.getAttributes()) {
+            cache.remove(new SessionAttributeCacheKey(id, attribute));
+        }
     }
 
     @Override

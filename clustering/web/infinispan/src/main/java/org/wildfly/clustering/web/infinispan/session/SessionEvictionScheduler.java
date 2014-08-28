@@ -26,10 +26,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.jboss.as.clustering.infinispan.distribution.Locality;
-import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.Evictor;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
@@ -41,12 +42,12 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 public class SessionEvictionScheduler implements Scheduler, SessionEvictionContext {
 
     private final Set<String> evictionQueue = new LinkedHashSet<>();
-    private final Batcher batcher;
+    private final Batcher<TransactionBatch> batcher;
     private final Evictor<String> evictor;
     private final CommandDispatcher<SessionEvictionContext> dispatcher;
     private final int maxSize;
 
-    public SessionEvictionScheduler(String name, Batcher batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
+    public SessionEvictionScheduler(String name, Batcher<TransactionBatch> batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.dispatcher = dispatcherFactory.<SessionEvictionContext>createCommandDispatcher(name, this);
@@ -54,7 +55,7 @@ public class SessionEvictionScheduler implements Scheduler, SessionEvictionConte
     }
 
     @Override
-    public Batcher getBatcher() {
+    public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
     }
 

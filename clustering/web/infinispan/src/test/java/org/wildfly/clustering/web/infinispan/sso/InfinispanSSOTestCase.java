@@ -26,8 +26,8 @@ import static org.mockito.Mockito.*;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
+import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
 import org.wildfly.clustering.web.sso.SSO;

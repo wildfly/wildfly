@@ -21,9 +21,9 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.jboss.as.clustering.infinispan.invoker.Creator;
-import org.jboss.as.clustering.infinispan.invoker.Locator;
-import org.jboss.as.clustering.infinispan.invoker.Remover;
+import org.wildfly.clustering.ee.infinispan.Creator;
+import org.wildfly.clustering.ee.infinispan.Locator;
+import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.sso.SSO;
 
 /**

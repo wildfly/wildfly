@@ -34,15 +34,16 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
 
-public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuilder {
+public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuilder<TransactionBatch> {
 
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
-    public <A, D> ServiceBuilder<SSOManagerFactory<A, D>> build(ServiceTarget target, ServiceName name, String host) {
+    public <A, D> ServiceBuilder<SSOManagerFactory<A, D, TransactionBatch>> build(ServiceTarget target, ServiceName name, String host) {
         String containerName = DEFAULT_CACHE_CONTAINER;
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         String templateCacheName = CacheContainer.DEFAULT_CACHE_ALIAS;

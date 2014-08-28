@@ -1251,38 +1251,38 @@
         </dependency>
 
         <dependency>
-        <groupId>org.apache.cxf.xjcplugins</groupId>
-        <artifactId>cxf-xjc-ts</artifactId>
-    </dependency>
+            <groupId>org.apache.cxf.xjcplugins</groupId>
+            <artifactId>cxf-xjc-ts</artifactId>
+        </dependency>
 
-    <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>opensaml</artifactId>
-    </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml</artifactId>
+        </dependency>
 
-    <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>openws</artifactId>
-        <exclusions>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>openws</artifactId>
+            <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-    </dependency>
+        </dependency>
 
-    <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>xmltooling</artifactId>
-        <exclusions>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>xmltooling</artifactId>
+            <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-    </dependency>
+        </dependency>
 
-    <dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
@@ -1799,9 +1799,17 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ee-infinispan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ee-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
@@ -1855,7 +1863,6 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-api</artifactId>
         </dependency>
-        
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-infinispan</artifactId>
@@ -1866,7 +1873,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-spi</artifactId>
@@ -1877,7 +1883,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-undertow</artifactId>

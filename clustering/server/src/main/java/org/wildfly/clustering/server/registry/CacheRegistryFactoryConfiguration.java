@@ -25,7 +25,8 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
@@ -35,7 +36,7 @@ import org.wildfly.clustering.group.NodeFactory;
  * @author Paul Ferraro
  */
 public interface CacheRegistryFactoryConfiguration<K, V> {
-    CacheInvoker getCacheInvoker();
+    Batcher<? extends Batch> getBatcher();
     Group getGroup();
     Cache<Node, Map.Entry<K, V>> getCache();
     NodeFactory<Address> getNodeFactory();

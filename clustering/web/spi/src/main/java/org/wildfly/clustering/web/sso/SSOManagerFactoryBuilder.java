@@ -24,7 +24,8 @@ package org.wildfly.clustering.web.sso;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ee.Batch;
 
-public interface SSOManagerFactoryBuilder {
-    <A, D> ServiceBuilder<SSOManagerFactory<A, D>> build(ServiceTarget target, ServiceName name, String host);
+public interface SSOManagerFactoryBuilder<B extends Batch> {
+    <A, D> ServiceBuilder<SSOManagerFactory<A, D, B>> build(ServiceTarget target, ServiceName name, String host);
 }

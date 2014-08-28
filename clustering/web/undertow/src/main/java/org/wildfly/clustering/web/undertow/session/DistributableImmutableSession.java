@@ -21,9 +21,18 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 
@@ -31,14 +40,31 @@ import io.undertow.server.session.SessionManager;
  * Undertow adapter for an {@link ImmutableSession}.
  * @author Paul Ferraro
  */
-public class DistributableImmutableSession extends AbstractDistributableSession<ImmutableSession> {
+public class DistributableImmutableSession implements Session {
 
     private final SessionManager manager;
-    private final ImmutableSession session;
+    private final String id;
+    private final Map<String, Object> attributes = new HashMap<>();
+    private final long creationTime;
+    private final long lastAccessedTime;
+    private final int maxInactiveInterval;
 
     public DistributableImmutableSession(SessionManager manager, ImmutableSession session) {
         this.manager = manager;
-        this.session = session;
+        this.id = session.getId();
+        ImmutableSessionAttributes attributes = session.getAttributes();
+        for (String name: attributes.getAttributeNames()) {
+            this.attributes.put(name, attributes.getAttribute(name));
+        }
+        ImmutableSessionMetaData metaData = session.getMetaData();
+        this.creationTime = metaData.getCreationTime().getTime();
+        this.lastAccessedTime = metaData.getLastAccessedTime().getTime();
+        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval(TimeUnit.SECONDS);
+    }
+
+    @Override
+    public String getId() {
+        return this.id;
     }
 
     @Override
@@ -47,18 +73,38 @@ public class DistributableImmutableSession extends AbstractDistributableSession<
     }
 
     @Override
-    protected ImmutableSession getSession() {
-        return this.session;
-    }
-
-    @Override
     public void requestDone(HttpServerExchange serverExchange) {
         throw new UnsupportedOperationException();
     }
 
     @Override
+    public long getCreationTime() {
+        return this.creationTime;
+    }
+
+    @Override
+    public long getLastAccessedTime() {
+        return this.lastAccessedTime;
+    }
+
+    @Override
+    public int getMaxInactiveInterval() {
+        return this.maxInactiveInterval;
+    }
+
+    @Override
     public void setMaxInactiveInterval(int interval) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return this.attributes.get(name);
+    }
+
+    @Override
+    public Set<String> getAttributeNames() {
+        return Collections.unmodifiableSet(this.attributes.keySet());
     }
 
     @Override

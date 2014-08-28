@@ -21,18 +21,19 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
-public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implements SSOManager<A, D, L> {
+public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implements SSOManager<A, D, L, TransactionBatch> {
 
     private final SSOFactory<V, A, D, L> factory;
-    private final Batcher batcher;
+    private final Batcher<TransactionBatch> batcher;
     private final IdentifierFactory<String> identifierFactory;
 
-    public InfinispanSSOManager(SSOFactory<V, A, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher batcher) {
+    public InfinispanSSOManager(SSOFactory<V, A, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher<TransactionBatch> batcher) {
         this.factory = factory;
         this.batcher = batcher;
         this.identifierFactory = identifierFactory;
@@ -52,7 +53,7 @@ public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implement
     }
 
     @Override
-    public Batcher getBatcher() {
+    public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
     }
 

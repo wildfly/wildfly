@@ -36,9 +36,9 @@ import static org.mockito.Mockito.when;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
+import org.wildfly.clustering.ee.infinispan.Mutator;
+import org.wildfly.clustering.ee.infinispan.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;

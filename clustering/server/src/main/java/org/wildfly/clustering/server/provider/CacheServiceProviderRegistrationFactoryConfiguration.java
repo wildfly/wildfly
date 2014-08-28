@@ -24,8 +24,9 @@ package org.wildfly.clustering.server.provider;
 import java.util.Set;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 
@@ -38,5 +39,5 @@ public interface CacheServiceProviderRegistrationFactoryConfiguration {
     Group getGroup();
     Cache<Object, Set<Node>> getCache();
     CommandDispatcherFactory getCommandDispatcherFactory();
-    CacheInvoker getCacheInvoker();
+    Batcher<? extends Batch> getBatcher();
 }

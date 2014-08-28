@@ -21,8 +21,9 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.wildfly.clustering.ejb.Batcher;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.Evictor;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 
 /**
  * Encapsulates the context for session eviction.

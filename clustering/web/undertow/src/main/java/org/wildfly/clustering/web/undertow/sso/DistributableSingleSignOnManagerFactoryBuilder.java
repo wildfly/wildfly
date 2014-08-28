@@ -28,6 +28,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.sso.SSOManagerFactoryBuilder;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
 
@@ -38,20 +39,20 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
  */
 public class DistributableSingleSignOnManagerFactoryBuilder implements org.wildfly.extension.undertow.security.sso.DistributableSingleSignOnManagerFactoryBuilder {
 
-    private static SSOManagerFactoryBuilder load() {
-        for (SSOManagerFactoryBuilder builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
+    private static SSOManagerFactoryBuilder<Batch> load() {
+        for (SSOManagerFactoryBuilder<Batch> builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
-    private final SSOManagerFactoryBuilder builder;
+    private final SSOManagerFactoryBuilder<Batch> builder;
 
     public DistributableSingleSignOnManagerFactoryBuilder() {
         this(load());
     }
 
-    private DistributableSingleSignOnManagerFactoryBuilder(SSOManagerFactoryBuilder builder) {
+    private DistributableSingleSignOnManagerFactoryBuilder(SSOManagerFactoryBuilder<Batch> builder) {
         this.builder = builder;
     }
 

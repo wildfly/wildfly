@@ -66,7 +66,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
         war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
-        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");    
+        war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),"jboss-deployment-structure.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset("other", "org.jboss.security.negotiation.NegotiationAuthenticator"), "jboss-web.xml");
         return war;

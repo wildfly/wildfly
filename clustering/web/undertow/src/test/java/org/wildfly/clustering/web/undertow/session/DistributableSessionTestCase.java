@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +42,9 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -69,88 +72,160 @@ public class DistributableSessionTestCase {
     
     @Test
     public void requestDone() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
 
         when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
 
         this.adapter.requestDone(exchange);
         
         verify(this.session).close();
         verify(this.batch).close();
+        verify(context).close();
     }
     
     @Test
     public void getCreationTime() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
         Date date = new Date();
         
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(date);
         
         long result = this.adapter.getCreationTime();
         
         assertEquals(date.getTime(), result);
+
+        verify(context).close();
     }
     
     @Test
     public void getLastAccessedTime() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
         Date date = new Date();
         
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getLastAccessedTime()).thenReturn(date);
         
         long result = this.adapter.getLastAccessedTime();
         
         assertEquals(date.getTime(), result);
+
+        verify(context).close();
     }
     
     @Test
     public void getMaxInactiveInterval() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
         long expected = 3600L;
         
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getMaxInactiveInterval(TimeUnit.SECONDS)).thenReturn(expected);
         
         long result = this.adapter.getMaxInactiveInterval();
         
         assertEquals(expected, result);
+
+        verify(context).close();
     }
     
     @Test
     public void setMaxInactiveInterval() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionMetaData metaData = mock(SessionMetaData.class);
         int interval = 3600;
         
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getMetaData()).thenReturn(metaData);
         
         this.adapter.setMaxInactiveInterval(interval);
         
         verify(metaData).setMaxInactiveInterval(interval, TimeUnit.SECONDS);
+
+        verify(context).close();
+    }
+    
+    @Test
+    public void getAttributeNames() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
+        SessionAttributes attributes = mock(SessionAttributes.class);
+        Set<String> expected = Collections.singleton("name");
+
+        when(this.session.getAttributes()).thenReturn(attributes);
+        when(attributes.getAttributeNames()).thenReturn(expected);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
+        
+        Object result = this.adapter.getAttributeNames();
+        
+        assertSame(expected, result);
+
+        verify(context).close();
     }
     
     @Test
     public void getAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         String name = "name";
         Object expected = new Object();
 
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.getAttribute(name)).thenReturn(expected);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.getAttribute(name);
         
         assertSame(expected, result);
+
+        verify(context).close();
     }
     
     @Test
     public void getAuthenticatedSessionAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
         SessionAttributes attributes = mock(SessionAttributes.class);
         Account account = mock(Account.class);
         
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.getAttribute(name)).thenReturn(account);
         
@@ -158,21 +233,30 @@ public class DistributableSessionTestCase {
         
         assertSame(account, result.getAccount());
         assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
-        
-        LocalSessionContext context = mock(LocalSessionContext.class);
+
+        verify(context).close();
+
+        reset(context);
+
+        LocalSessionContext localContext = mock(LocalSessionContext.class);
         AuthenticatedSession expected = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
         
         when(attributes.getAttribute(name)).thenReturn(null);
-        when(this.session.getLocalContext()).thenReturn(context);
-        when(context.getAuthenticatedSession()).thenReturn(expected);
+        when(this.session.getLocalContext()).thenReturn(localContext);
+        when(localContext.getAuthenticatedSession()).thenReturn(expected);
         
         result = (AuthenticatedSession) this.adapter.getAttribute(name);
         
         assertSame(expected, result);
+
+        verify(context).close();
     }
     
     @Test
     public void setAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -185,6 +269,9 @@ public class DistributableSessionTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.setAttribute(name, value);
         
@@ -193,10 +280,14 @@ public class DistributableSessionTestCase {
         verify(listener, never()).attributeAdded(this.adapter, name, value);
         verify(listener).attributeUpdated(this.adapter, name, value, expected);
         verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
+        verify(context).close();
     }
     
     @Test
     public void setNewAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -208,6 +299,9 @@ public class DistributableSessionTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.setAttribute(name, value);
         
@@ -216,10 +310,14 @@ public class DistributableSessionTestCase {
         verify(listener).attributeAdded(this.adapter, name, value);
         verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
         verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
+        verify(context).close();
     }
     
     @Test
     public void setNullAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -231,6 +329,9 @@ public class DistributableSessionTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.removeAttribute(name)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.setAttribute(name, value);
         
@@ -239,10 +340,14 @@ public class DistributableSessionTestCase {
         verify(listener, never()).attributeAdded(this.adapter, name, value);
         verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
         verify(listener).attributeRemoved(this.adapter, name, expected);
+        verify(context).close();
     }
     
     @Test
     public void setSameAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -251,6 +356,9 @@ public class DistributableSessionTestCase {
         Integer value = Integer.valueOf(1);
         Object expected = value;
 
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
@@ -262,16 +370,23 @@ public class DistributableSessionTestCase {
         verify(listener, never()).attributeAdded(this.adapter, name, value);
         verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
         verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
+        verify(context).close();
     }
 
     @Test
     public void setAuthenticatedSessionAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
         SessionAttributes attributes = mock(SessionAttributes.class);
         Account account = mock(Account.class);
         AuthenticatedSession session = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
         Account oldAccount = mock(Account.class);
 
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.setAttribute(name, account)).thenReturn(oldAccount);
         
@@ -280,29 +395,39 @@ public class DistributableSessionTestCase {
         assertSame(oldAccount, result.getAccount());
         assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
         
+        verify(context).close();
+        
+        reset(context);
+        
         when(attributes.setAttribute(name, account)).thenReturn(null);
         
         result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
         
         assertNull(result);
         
+        verify(context).close();
+        
+        reset(context);
+        
         session = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
         AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
         
-        LocalSessionContext context = mock(LocalSessionContext.class);
+        LocalSessionContext localContext = mock(LocalSessionContext.class);
 
-        when(this.session.getLocalContext()).thenReturn(context);
-        when(context.getAuthenticatedSession()).thenReturn(oldSession);
+        when(this.session.getLocalContext()).thenReturn(localContext);
+        when(localContext.getAuthenticatedSession()).thenReturn(oldSession);
         
         result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
 
-        verify(context).setAuthenticatedSession(same(session));
-
-        assertSame(oldSession, result);
+        verify(localContext).setAuthenticatedSession(same(session));
+        verify(context).close();
     }
 
     @Test
     public void removeAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -313,16 +438,23 @@ public class DistributableSessionTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.removeAttribute(name)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.removeAttribute(name);
         
         assertSame(expected, result);
         
         verify(listener).attributeRemoved(this.adapter, name, expected);
+        verify(context).close();
     }
     
     @Test
     public void removeNonExistingAttribute() {
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionAttributes attributes = mock(SessionAttributes.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -332,18 +464,24 @@ public class DistributableSessionTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.removeAttribute(name)).thenReturn(null);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         Object result = this.adapter.removeAttribute(name);
         
         assertNull(result);
         
         verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
+        verify(context).close();
     }
     
     @Test
     public void invalidate() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
@@ -352,6 +490,9 @@ public class DistributableSessionTestCase {
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         when(this.session.getId()).thenReturn(sessionId);
         when(this.manager.getSessionManager()).thenReturn(manager);
+        when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         
         this.adapter.invalidate(exchange);
         
@@ -359,6 +500,7 @@ public class DistributableSessionTestCase {
         verify(this.config).clearSession(exchange, sessionId);
         verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
         verify(this.batch).close();
+        verify(context).close();
     }
     
     @Test
@@ -370,7 +512,9 @@ public class DistributableSessionTestCase {
     public void changeSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
+        SessionManager<LocalSessionContext, Batch> manager = mock(SessionManager.class);
+        Batcher<Batch> batcher = mock(Batcher.class);
+        BatchContext context = mock(BatchContext.class);
         Session<LocalSessionContext> session = mock(Session.class);
         SessionAttributes oldAttributes = mock(SessionAttributes.class);
         SessionAttributes newAttributes = mock(SessionAttributes.class);
@@ -387,6 +531,8 @@ public class DistributableSessionTestCase {
         ArgumentCaptor<TimeUnit> capturedUnit = ArgumentCaptor.forClass(TimeUnit.class);
         
         when(this.manager.getSessionManager()).thenReturn(manager);
+        when(manager.getBatcher()).thenReturn(batcher);
+        when(batcher.resumeBatch(this.batch)).thenReturn(context);
         when(manager.createIdentifier()).thenReturn(sessionId);
         when(manager.createSession(sessionId)).thenReturn(session);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
@@ -411,5 +557,6 @@ public class DistributableSessionTestCase {
         verify(newMetaData).setMaxInactiveInterval(interval, capturedUnit.getValue());
         verify(config).setSessionId(exchange, sessionId);
         verify(newContext).setAuthenticatedSession(same(authenticatedSession));
+        verify(context).close();
     }
 }

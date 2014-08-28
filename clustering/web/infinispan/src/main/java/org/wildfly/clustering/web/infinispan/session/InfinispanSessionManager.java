@@ -58,9 +58,11 @@ import org.jboss.as.clustering.infinispan.distribution.SimpleLocality;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.ee.infinispan.TransactionBatch;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
@@ -77,9 +79,9 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(primaryOnly = true)
-public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFilter {
+public class InfinispanSessionManager<V, L> implements SessionManager<L, TransactionBatch>, KeyFilter {
     private final SessionContext context;
-    private final Batcher batcher;
+    private final Batcher<TransactionBatch> batcher;
     private final Cache<String, ?> cache;
     private final SessionFactory<V, L> factory;
     private final IdentifierFactory<String> identifierFactory;
@@ -203,7 +205,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     }
 
     @Override
-    public Batcher getBatcher() {
+    public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
     }
 
@@ -349,18 +351,16 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
                 // If we are the new primary owner of this session
                 // then schedule expiration of this session locally
                 if (!oldLocality.isLocal(sessionId) && newLocality.isLocal(sessionId)) {
-                    // We need to lookup the session to obtain its meta data
-                    boolean started = cache.startBatch();
+                    Batch batch = this.batcher.createBatch();
                     try {
+                        // We need to lookup the session to obtain its meta data
                         V value = this.factory.findValue(sessionId);
                         if (value != null) {
                             ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
                             this.scheduler.schedule(session);
                         }
                     } finally {
-                        if (started) {
-                            cache.endBatch(false);
-                        }
+                        batch.discard();
                     }
                 }
             }

@@ -960,10 +960,20 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                <artifactId>wildfly-clustering-ee-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-ee-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-ejb-spi</artifactId>
@@ -974,12 +984,6 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-infinispan</artifactId>
                 <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-clustering-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -992,12 +996,6 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-server</artifactId>
                 <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-clustering-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1017,19 +1015,11 @@
                 <artifactId>wildfly-clustering-web-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-clustering-spi</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-spi</artifactId>

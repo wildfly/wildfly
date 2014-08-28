@@ -21,7 +21,8 @@
  */
 package org.wildfly.clustering.web.sso;
 
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
@@ -31,7 +32,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
  * @param the deployment identifier type
  * @param the local context type
  */
-public interface SSOManager<A, D, L> extends IdentifierFactory<String> {
+public interface SSOManager<A, D, L, B extends Batch> extends IdentifierFactory<String> {
     /**
      * Creates a new single sign on entry.
      * @param ssoId a unique SSO identifier
@@ -50,5 +51,5 @@ public interface SSOManager<A, D, L> extends IdentifierFactory<String> {
      * A mechanism for starting/stopping a batch.
      * @return a batching mechanism.
      */
-    Batcher getBatcher();
+    Batcher<B> getBatcher();
 }

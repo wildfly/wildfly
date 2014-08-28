@@ -45,6 +45,7 @@
         <module name="org.jacorb"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.wildfly.clustering.spi"/>
         <module name="org.wildfly.extension.request-controller" />
