@@ -1,13 +1,20 @@
 <subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
     <orb giop-version="1.2" socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
         <tcp high-water-mark="500" number-to-reclaim="30" />
-        <!--  set security=client -->
-        <initializers security="client" transactions="spec"/>
+        <!-- set security=client -->
+        <initializers security="client" transactions="spec" />
     </orb>
-    <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
-    <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth"
-        client-requires="None" server-supports="MutualAuth" server-requires="None"/>
-<!--     <properties> -->
-<!--         <property name="some_property" value="some_value"/> -->
-<!--     </properties> -->
+    <naming root-context="JBoss/Naming/root" export-corbaloc="on" />
+    <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth" client-requires="None"
+        server-supports="MutualAuth" server-requires="None" />
+    <ior-settings>
+        <transport-config integrity="required" confidentiality="required" detect-replay="supported" detect-misordering="supported"
+                          trust-in-client="none" trust-in-target="none"/>
+        <as-context auth-method="username_password" realm="test_realm" required="true"/>
+        <sas-context caller-propagation="supported"/>
+    </ior-settings>
+    <client-transport requires-ssl="true"/>
+    <properties>
+        <property name="some_property" value="some_value" />
+    </properties>
 </subsystem>

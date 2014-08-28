@@ -31,7 +31,11 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jdkorb.csiv2.CSIV2IORToSocketInfo;
 import org.jboss.as.jdkorb.deployment.JdkORBDependencyProcessor;
 import org.jboss.as.jdkorb.deployment.JdkORBMarkerProcessor;
 import org.jboss.as.jdkorb.logging.JdkORBLogger;
@@ -49,6 +53,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -108,9 +113,25 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // This needs to run after all child resources so that they can detect a fresh state
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                ModelNode node = Resource.Tools.readModel(resource);
+                launchServices(context, node, verificationHandler, newControllers);
+                // Rollback handled by the parent step
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            }
+        }, OperationContext.Stage.RUNTIME);
+    }
+
+    protected void launchServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
 
         JdkORBLogger.ROOT_LOGGER.activatingSubsystem();
@@ -218,6 +239,11 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
                 new IORSecConfigMetaDataService(securityConfigMetaData))
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
+
+        ClientTransportConfigMetaData clientTransportConfigMetaData = null;
+        clientTransportConfigMetaData = this.createClientTransportConfigMetaData(context,
+                model.get(ClientTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientTransportConfigMetaData);
     }
 
     /**
@@ -338,5 +364,12 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
             securityConfigMetaData.setSasContext(sasContextMetaData);
 
         return securityConfigMetaData;
+    }
+
+    private ClientTransportConfigMetaData createClientTransportConfigMetaData(final OperationContext context, final ModelNode node)
+            throws OperationFailedException {
+        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
+                context, node);
+        return clientTransportConfigMetaData;
     }
 }

@@ -89,7 +89,6 @@ public class CorbaORBService implements Service<ORB> {
     public void start(StartContext context) throws StartException {
         JdkORBLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
 
-
         try {
             // set the ORBClass and ORBSingleton class as system properties.
             properties.setProperty(JdkORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());

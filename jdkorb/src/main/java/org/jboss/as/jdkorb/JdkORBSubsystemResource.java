@@ -60,6 +60,13 @@ public class JdkORBSubsystemResource extends SimpleResourceDefinition {
         }
     }
 
+    @Override
+    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(IORSettingsDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ClientTransportConfigDefinition.INSTANCE);
+    }
+
     private static class JdkorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
         public JdkorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
             super(definitions);
