@@ -33,6 +33,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 
 /**
@@ -136,4 +137,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.DEBUG)
     @Message(value = "Unable to load annotation %s", id = Message.NONE)
     void unableToLoadAnnotation(String annotationClassName);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Using deployment classloader to load proxy classes for module %s. Package-private access will not work. To fix this the module should declare dependencies on %s", id = 16018)
+    void loadingProxiesUsingDeploymentClassLoader(ModuleIdentifier moduleIdentifier, String dependencies);
 }
