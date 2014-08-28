@@ -33,6 +33,8 @@
         <module name="javax.servlet.jstl.api"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.apache.xalan" services="import"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
     </dependencies>
 
     <resources>
