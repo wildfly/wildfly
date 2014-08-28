@@ -83,9 +83,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
 
                         webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit)));
                     } catch (XMLStreamException e) {
-                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
+                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment.toString(), e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
                     } catch (IOException e) {
-                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment), e);
+                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment.toString()), e);
                     } finally {
                         try {
                             if (is != null) {

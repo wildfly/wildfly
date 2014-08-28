@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.weld.modules;
+package org.jboss.as.test.shared;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -52,6 +52,10 @@ public class ModuleUtils {
         createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), classes);
     }
 
+    public static void createSimpleTestModule(String moduleName, JavaArchive jar) throws IOException {
+        createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), jar);
+    }
+
     public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
         URL url = classes[0].getResource(moduleXml);
         if (url == null) {
@@ -61,16 +65,6 @@ public class ModuleUtils {
     }
 
     private static void createTestModule(String moduleName, InputStream moduleXml, Class<?>... classes) throws IOException {
-        File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
-        if (testModuleRoot.exists()) {
-            throw new IllegalArgumentException(testModuleRoot + " already exists");
-        }
-        File file = new File(testModuleRoot, "main");
-        if (!file.mkdirs()) {
-            throw new IllegalArgumentException("Could not create " + file);
-        }
-
-        copyFile(new File(file, "module.xml"), moduleXml);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, moduleName + ".jar");
         jar.addClasses(classes);
@@ -89,6 +83,23 @@ public class ModuleUtils {
         IndexWriter writer = new IndexWriter(data);
         writer.write(index);
         jar.addAsManifestResource(new ByteArrayAsset(data.toByteArray()), "jandex.idx");
+        createTestModule(moduleName, moduleXml, jar);
+
+    }
+
+
+    private static void createTestModule(String moduleName, InputStream moduleXml, JavaArchive jar) throws IOException {
+        File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
+        if (testModuleRoot.exists()) {
+            throw new IllegalArgumentException(testModuleRoot + " already exists");
+        }
+        File file = new File(testModuleRoot, "main");
+        if (!file.mkdirs()) {
+            throw new IllegalArgumentException("Could not create " + file);
+        }
+
+        copyFile(new File(file, "module.xml"), moduleXml);
+
         FileOutputStream jarFile = new FileOutputStream(new File(file, moduleName + ".jar"));
         try {
             jar.as(ZipExporter.class).exportTo(jarFile);
@@ -153,6 +164,8 @@ public class ModuleUtils {
                 "<dependencies>" +
                 "<module name=\"javax.enterprise.api\"/>" +
                 "<module name=\"javax.inject.api\"/>" +
+                "<module name=\"javax.servlet.api\"/>" +
+                "<module name=\"javax.servlet.jsp.api\"/>" +
                 "</dependencies>" +
                 "</module>");
     }

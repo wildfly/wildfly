@@ -117,9 +117,9 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 warMetaData.setWebMetaData(webMetaData);
 
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
+                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString(), e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml), e);
+                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webXml.toString()), e);
             } finally {
                 try {
                     if (is != null) {

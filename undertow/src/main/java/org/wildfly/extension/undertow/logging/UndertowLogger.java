@@ -172,10 +172,10 @@ public interface UndertowLogger extends BasicLogger {
     // XMLStreamException unknownHandler(String name, @Param Location location);
 
     @Message(id = 27, value = "Failed to parse XML descriptor %s at [%s,%s]")
-    String failToParseXMLDescriptor(VirtualFile xmlFile, int line, int column);
+    String failToParseXMLDescriptor(String xmlFile, int line, int column);
 
     @Message(id = 28, value = "Failed to parse XML descriptor %s")
-    String failToParseXMLDescriptor(VirtualFile xmlFile);
+    String failToParseXMLDescriptor(String xmlFile);
 
     @Message(id = 29, value = "@WebServlet is only allowed at class level %s")
     String invalidWebServletAnnotation(AnnotationTarget target);
