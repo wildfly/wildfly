@@ -80,7 +80,7 @@ public class BasicComponentCreateService implements Service<Component> {
     }
 
     protected boolean requiresInterceptors(final Method method, final ComponentConfiguration componentConfiguration) {
-        return Modifier.isPublic(method.getModifiers()) && componentConfiguration.getComponentDescription().isIntercepted();
+        return Modifier.isPublic(method.getModifiers()) && !Modifier.isFinal(method.getModifiers()) && componentConfiguration.getComponentDescription().isIntercepted();
     }
 
     /**
