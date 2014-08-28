@@ -294,17 +294,16 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     @Override
     public void registryRemoved(Registry<String, List<ClientMapping>> registry) {
-        // Removal of the registry (service) on one node of a cluster doesn't mean the entire
-        // cluster has been removed.
-        // TODO: We need a different/better hook for entire cluster removal event
-        // Maybe if the cluster node count reaches 0 then send a cluster removal message?
-//        try {
-//            logger.debug("Received cluster removal notification for cluster " + registry.getName());
-//            this.sendClusterRemovedMessage(registry);
-//        } catch (IOException ioe) {
-//            logger.warn("Could not send a cluster removal message for cluster: " + registry.getName()
-//                    + " to the client on channel " + channel, ioe);
-//        }
+        // When the cluster node count reaches 0 then send a cluster removal message to clean up the ClusterContext on the client
+        try {
+            EjbLogger.ROOT_LOGGER.debug("Received cluster removal notification for cluster " + registry.getGroup());
+            // when the membership of the cluster being left is 1, we are the last node
+            if (registry.getEntries().keySet().size() == 1) {
+                this.sendClusterRemovedMessage(registry);
+            }
+        } catch (IOException ioe) {
+            EjbLogger.ROOT_LOGGER.warn("Could not send a cluster removal message for cluster: " + registry.getGroup() + " to the client on channel " + channelAssociation.getChannel(), ioe);
+        }
     }
 
     /**
