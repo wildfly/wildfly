@@ -22,6 +22,8 @@ MAVEN_HOME=""
 MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
 export MAVEN_OPTS
 
+./tools/download-maven.sh
+
 #  Default search path for maven.
 MAVEN_SEARCH_PATH="\
     tools
@@ -154,12 +156,8 @@ main() {
     #  to be in the same directory as build.xml.
     cd $DIRNAME
 
-
-    . testsuite/groupDefs.sh
-
-    #  Add smoke integration test directives before calling maven.
+    #  Add default settings before calling maven.
     MVN_SETTINGS_XML_ARGS="-s tools/maven/conf/settings.xml"
-    TESTS=$SMOKE_TESTS
     MVN_GOAL="";
     ADDIT_PARAMS="";
     #  For each parameter, check for testsuite directives.
@@ -179,8 +177,6 @@ main() {
     done
     #  Default goal if none specified.
     if [ -z "$MVN_GOAL" ]; then MVN_GOAL="install"; fi
-
-    MVN_GOAL="$MVN_GOAL $TESTS"
 
     #  Export some stuff for maven.
     export MVN MAVEN_HOME MVN_OPTS MVN_GOAL
