@@ -197,6 +197,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
             try {
                 for (ClassInfo c : applicationClasses) {
                     if (Modifier.isAbstract(c.flags())) continue;
+                    @SuppressWarnings("unchecked")
                     Class<? extends Application> scanned = (Class<? extends Application>) classLoader.loadClass(c.name().toString());
                     resteasyDeploymentData.getScannedApplicationClasses().add(scanned);
                 }

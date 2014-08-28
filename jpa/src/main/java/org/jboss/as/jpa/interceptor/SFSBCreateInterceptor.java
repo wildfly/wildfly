@@ -56,8 +56,8 @@ public class SFSBCreateInterceptor implements Interceptor {
             entityManagers = new HashMap<String, ExtendedEntityManager>();
             componentInstance.setInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY, new ImmediateManagedReference(entityManagers));
         } else {
-            ManagedReference ref = (ManagedReference) componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY);
-            entityManagers = (Map<String, ExtendedEntityManager>)ref.getInstance();
+            ManagedReference entityManagerRef = (ManagedReference) componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY);
+            entityManagers = (Map<String, ExtendedEntityManager>)entityManagerRef.getInstance();
         }
         final List<ExtendedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
         for (ExtendedEntityManager e : ems) {

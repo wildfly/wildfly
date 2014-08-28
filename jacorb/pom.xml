@@ -49,9 +49,6 @@
                 <compilerArguments>
                    <endorseddirs>${project.build.directory}/endorsed</endorseddirs>
                 </compilerArguments>
-                <compilerArgument>
-                   -AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files
-                </compilerArgument>
              </configuration>
           </plugin>
           <plugin>

@@ -107,8 +107,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     }
 
     /**
-     * Method is {@code final}, and throws unsupported operation exception to prevent subclasses inadvertently
-     * overridding it.
+     * Method is {@code final}, and throws unsupported operation exception to prevent subclasses inadvertently overriding it.
      *
      * {@inheritDoc}
      */
@@ -122,7 +121,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
-        boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
+        final boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
+        // The STATISTICS_ENABLED.resolveModelAttribute(context, model) call should remain as it serves to validate that any
+        // expression in the model can be resolved to a correct value.
+        @SuppressWarnings("unused")
         final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
@@ -134,13 +136,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
 
 
-        ValueInjectionService driverDemanderService = new ValueInjectionService<Driver>();
+        ValueInjectionService<Driver> driverDemanderService = new ValueInjectionService<Driver>();
 
         final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
                 final ServiceBuilder<?> driverDemanderBuilder = serviceTarget
                         .addService(driverDemanderServiceName, driverDemanderService)
-                        .addDependency(driverServiceName, Driver.class,
-                                driverDemanderService.getInjector());
+                        .addDependency(driverServiceName, Driver.class, driverDemanderService.getInjector());
         driverDemanderBuilder.addListener(verificationHandler);
         driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 

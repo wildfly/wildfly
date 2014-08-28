@@ -74,7 +74,7 @@ public class ContextNames {
     public static final ServiceName APPLICATION_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("app");
 
     /**
-     * Parent ServiceName for java:module namespacef
+     * Parent ServiceName for java:module namespace
      */
     public static final ServiceName MODULE_CONTEXT_SERVICE_NAME = JAVA_CONTEXT_SERVICE_NAME.append("module");
 

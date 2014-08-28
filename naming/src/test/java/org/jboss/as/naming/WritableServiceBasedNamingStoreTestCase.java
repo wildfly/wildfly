@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
@@ -58,7 +59,6 @@ public class WritableServiceBasedNamingStoreTestCase {
     private static final ServiceName OWNER_FOO = ServiceName.of("Foo");
     private static final ServiceName OWNER_BAR = ServiceName.of("Bar");
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setup() throws Exception {
         container = ServiceContainer.Factory.create();
@@ -94,8 +94,8 @@ public class WritableServiceBasedNamingStoreTestCase {
         final CountDownLatch latch1 = new CountDownLatch(1);
         container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(new AbstractServiceListener() {
-                    public void transition(ServiceController controller, ServiceController.Transition transition) {
+                .addListener(new AbstractServiceListener<Object>() {
+                    public void transition(ServiceController<?> controller, ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
                                 latch1.countDown();

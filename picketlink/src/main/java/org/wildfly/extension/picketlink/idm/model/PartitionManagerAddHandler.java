@@ -52,6 +52,7 @@ import org.picketlink.idm.config.IdentityStoreConfigurationBuilder;
 import org.picketlink.idm.config.LDAPMappingConfigurationBuilder;
 import org.picketlink.idm.config.LDAPStoreConfigurationBuilder;
 import org.picketlink.idm.config.NamedIdentityConfigurationBuilder;
+import org.picketlink.idm.credential.handler.CredentialHandler;
 import org.picketlink.idm.model.AttributedType;
 import org.picketlink.idm.model.Relationship;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
@@ -62,6 +63,7 @@ import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 import javax.transaction.TransactionManager;
+
 import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.util.List;
@@ -145,7 +147,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         Property prop = modelNode.asProperty();
         String storeType = prop.getName();
         ModelNode identityStore = prop.getValue().asProperty().getValue();
-        IdentityStoreConfigurationBuilder storeConfig = null;
+        IdentityStoreConfigurationBuilder<?, ?> storeConfig = null;
 
         if (storeType.equals(JPA_STORE.getName())) {
             storeConfig = configureJPAIdentityStore(context, serviceBuilder, verificationHandler, newControllers, partitionManagerService, identityStore, configurationName, namedIdentityConfigurationBuilder);
@@ -268,7 +270,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         return storeConfig;
     }
 
-    private IdentityStoreConfigurationBuilder configureFileIdentityStore(OperationContext context, ServiceBuilder<PartitionManager> serviceBuilder, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, PartitionManagerService partitionManagerService, ModelNode resource, String configurationName, final NamedIdentityConfigurationBuilder builder) throws OperationFailedException {
+    private IdentityStoreConfigurationBuilder<?, ?> configureFileIdentityStore(OperationContext context, ServiceBuilder<PartitionManager> serviceBuilder, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, PartitionManagerService partitionManagerService, ModelNode resource, String configurationName, final NamedIdentityConfigurationBuilder builder) throws OperationFailedException {
         FileStoreConfigurationBuilder fileStoreBuilder = builder.stores().file();
         String workingDir = FileStoreResourceDefinition.WORKING_DIR.resolveModelAttribute(context, resource).asString();
         String relativeTo = FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, resource).asString();
@@ -363,7 +365,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
     }
 
     @SuppressWarnings("unchecked")
-    private void configureSupportedTypes(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder storeConfig) throws OperationFailedException {
+    private void configureSupportedTypes(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder<?, ?> storeConfig) throws OperationFailedException {
         if (identityStore.hasDefined(SUPPORTED_TYPES.getName())) {
             ModelNode featuresSetNode = identityStore.get(SUPPORTED_TYPES.getName()).asProperty().getValue();
             ModelNode supportsAllNode = SupportedTypesResourceDefinition.SUPPORTS_ALL
@@ -402,7 +404,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    private void configureCredentialHandlers(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder storeConfig) throws OperationFailedException {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void configureCredentialHandlers(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder<?, ?> storeConfig) throws OperationFailedException {
         if (identityStore.hasDefined(IDENTITY_STORE_CREDENTIAL_HANDLER.getName())) {
             for (Property credentialHandler : identityStore.get(IDENTITY_STORE_CREDENTIAL_HANDLER.getName()).asPropertyList()) {
                 ModelNode classNameNode = CredentialHandlerResourceDefinition.CLASS_NAME
@@ -421,7 +424,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
-                storeConfig.addCredentialHandler(loadClass(moduleNode, typeName));
+                Class<? extends AttributedType> attributedTypeClass = loadClass(moduleNode, typeName);
+                storeConfig.addCredentialHandler((Class<? extends CredentialHandler>) attributedTypeClass);
             }
         }
     }

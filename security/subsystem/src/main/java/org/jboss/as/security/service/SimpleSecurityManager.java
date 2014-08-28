@@ -23,9 +23,6 @@ package org.jboss.as.security.service;
 
 import static java.security.AccessController.doPrivileged;
 
-import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
-
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.CodeSource;
@@ -39,6 +36,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
@@ -49,7 +49,6 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
-import org.jboss.security.AuthorizationManager;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
@@ -64,9 +63,7 @@ import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.authorization.resources.EJBResource;
-import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Identity;
-import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
@@ -451,20 +448,6 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             @Override
             public SubjectInfo run() {
                 return context.getSubjectInfo();
-            }
-        });
-    }
-
-
-    private RoleGroup getSubjectRoles(final AuthorizationManager am, final SecurityContextCallbackHandler scb, final Subject authenticatedSubject) {
-
-        if (System.getSecurityManager() == null) {
-            return am.getSubjectRoles(authenticatedSubject, scb);
-        }
-        return AccessController.doPrivileged(new PrivilegedAction<RoleGroup>() {
-            @Override
-            public RoleGroup run() {
-                return am.getSubjectRoles(authenticatedSubject, scb);
             }
         });
     }
