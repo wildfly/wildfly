@@ -38,6 +38,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.Locale;
 
@@ -338,21 +339,23 @@ public class HTTPSWebConnectorTestCase {
             try {
                 makeCallWithHttpClient(unsecuredUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLHandshakeException e) {
+            } catch (SSLHandshakeException |SSLPeerUnverifiedException | SocketException e) {
+                //depending on the OS and the version of HTTP client in use any one of these exceptions may be thrown
+                //in particular the SocketException gets thrown on Windows
                 // OK
             }
 
             try {
                 makeCallWithHttpClient(printPrincipalUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLHandshakeException e) {
+            } catch (SSLHandshakeException |SSLPeerUnverifiedException | SocketException e) {
                 // OK
             }
 
             try {
                 makeCallWithHttpClient(securedUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
                 fail("Untrusted client should not be authenticated.");
-            } catch (SSLHandshakeException e) {
+            } catch (SSLHandshakeException |SSLPeerUnverifiedException | SocketException e) {
                 // OK
             }
 

@@ -39,6 +39,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -194,7 +195,9 @@ public class HTTPSManagementInterfaceTestCase {
         try {
             String responseBody = makeCallWithHttpClient(mgmtURL, httpClientUntrusted, 401);
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
-        } catch (SSLHandshakeException e) {
+        } catch (SSLHandshakeException | SSLPeerUnverifiedException | SocketException e) {
+            //depending on the OS and the version of HTTP client in use any one of these exceptions may be thrown
+            //in particular the SocketException gets thrown on Windows
             // OK
         }
 
