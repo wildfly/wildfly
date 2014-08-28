@@ -294,7 +294,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, webappServiceName);
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, realmServiceName);
 
-            final JBossWebRealmService realmService = new JBossWebRealmService(deploymentUnit);
+            final JBossWebRealmService realmService = new JBossWebRealmService(deploymentUnit, metaData);
             ServiceBuilder<Realm> realmBuilder = serviceTarget.addService(realmServiceName, realmService);
             realmBuilder
                     .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,

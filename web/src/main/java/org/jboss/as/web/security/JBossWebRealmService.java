@@ -29,6 +29,7 @@ import javax.security.jacc.PolicyContext;
 import org.apache.catalina.Realm;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -50,8 +51,11 @@ public class JBossWebRealmService implements Service<Realm> {
 
     private final DeploymentUnit deploymentUnit;
 
-    public JBossWebRealmService(DeploymentUnit deploymentUnit) {
+    private final JBossWebMetaData metaData;
+
+    public JBossWebRealmService(DeploymentUnit deploymentUnit, JBossWebMetaData metaData) {
         this.deploymentUnit = deploymentUnit;
+        this.metaData = metaData;
     }
 
     /** {@inheritDoc} */
@@ -63,6 +67,9 @@ public class JBossWebRealmService implements Service<Realm> {
         jbossWebRealm.setAuthorizationManager(sdc.getAuthorizationManager());
         jbossWebRealm.setMappingManager(sdc.getMappingManager());
         jbossWebRealm.setAuditManager(sdc.getAuditManager());
+        if (metaData.isJaccAllStoreRole()) {
+            jbossWebRealm.setAllRolesMode("authOnly");
+        }
         jbossWebRealm.setDeploymentUnit(deploymentUnit);
         this.realm = jbossWebRealm;
     }
