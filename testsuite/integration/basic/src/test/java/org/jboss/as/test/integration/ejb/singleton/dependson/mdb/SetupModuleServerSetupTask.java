@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.singleton.dependson.mdb;
 
+import java.io.File;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.weld.modules.ModuleUtils;
-import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.ModuleUtils;
 
 /**
  * @author baranowb
@@ -33,15 +33,14 @@ import org.jboss.as.test.module.util.TestModule;
  */
 public class SetupModuleServerSetupTask implements ServerSetupTask{
 
-    private TestModule testModule; 
     @Override
     public void setup(ManagementClient arg0, String arg1) throws Exception {
-        this.testModule = ModuleUtils.createSimpleTestModule(Constants.TEST_MODULE_NAME, CallCounterInterface.class);
+        ModuleUtils.createSimpleTestModule(Constants.TEST_MODULE_NAME, CallCounterInterface.class);
     }
 
     @Override
     public void tearDown(ManagementClient arg0, String arg1) throws Exception {
-        this.testModule.remove();
+        //test is prefix from ModuleUtils.
+        ModuleUtils.deleteRecursively(new File(ModuleUtils.getModulePath(), "test"));
     }
-
 }

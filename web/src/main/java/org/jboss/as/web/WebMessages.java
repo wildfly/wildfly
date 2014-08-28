@@ -97,10 +97,10 @@ public interface WebMessages {
     String startWelcomeContextFailed();
 
     @Message(id = 18014, value = "Failed to parse XML descriptor %s at [%s,%s]")
-    String failToParseXMLDescriptor(VirtualFile xmlFile, int line, int column);
+    String failToParseXMLDescriptor(Object xmlFile, int line, int column);
 
     @Message(id = 18015, value = "Failed to parse XML descriptor %s")
-    String failToParseXMLDescriptor(VirtualFile xmlFile);
+    String failToParseXMLDescriptor(Object xmlFile);
 
     @Message(id = 18016, value = "@WebServlet is only allowed at class level %s")
     String invalidWebServletAnnotation(AnnotationTarget target);
