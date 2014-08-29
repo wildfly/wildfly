@@ -159,14 +159,16 @@ class IfElseControlFlow implements CommandLineRedirection {
             } finally {
                 batchManager.discardActiveBatch();
             }
-            final ModelNode request = batch.toRequest();
-            try {
-                final ModelNode response = ctx.getModelControllerClient().execute(request);
-                if(!Util.isSuccess(response)) {
-                    throw new CommandLineException(blockName + " request failed: " + Util.getFailureDescription(response));
+            if(!batch.getCommands().isEmpty()) {
+                final ModelNode request = batch.toRequest();
+                try {
+                    final ModelNode response = ctx.getModelControllerClient().execute(request);
+                    if(!Util.isSuccess(response)) {
+                        throw new CommandLineException(blockName + " request failed: " + Util.getFailureDescription(response));
+                    }
+                } catch (IOException e) {
+                    throw new CommandLineException(blockName + " request failed", e);
                 }
-            } catch (IOException e) {
-                throw new CommandLineException(blockName + " request failed", e);
             }
         }
     }

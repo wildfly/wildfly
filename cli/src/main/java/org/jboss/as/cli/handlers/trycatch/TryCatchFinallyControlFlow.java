@@ -214,11 +214,13 @@ class TryCatchFinallyControlFlow implements CommandLineRedirection {
             } finally {
                 batchManager.discardActiveBatch();
             }
-            final ModelNode request = batch.toRequest();
-            try {
-                return ctx.getModelControllerClient().execute(request);
-            } catch (IOException e) {
-                throw new CommandLineException(blockName + " request failed", e);
+            if(!batch.getCommands().isEmpty()) {
+                final ModelNode request = batch.toRequest();
+                try {
+                    return ctx.getModelControllerClient().execute(request);
+                } catch (IOException e) {
+                    throw new CommandLineException(blockName + " request failed", e);
+                }
             }
         }
         return null;
