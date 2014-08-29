@@ -34,6 +34,7 @@ import javax.management.ObjectName;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 
 /**
@@ -115,6 +116,44 @@ class ObjectNameAddressUtil {
                 Map<String, String> childProps = new HashMap<String, String>(properties);
                 childProps.remove(entry.getKey());
                 PathAddress foundAddr = searchPathAddress(address.append(childElement), child, childProps);
+                if (foundAddr != null) {
+                    return foundAddr;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Straight conversion from an ObjectName to a PathAddress.
+     *
+     * There may not necessary be a Resource at this path address (if that correspond to a pattern) but it must
+     * match a model in the registry.
+     */
+    static PathAddress toPathAddress(String domain, ImmutableManagementResourceRegistration registry, ObjectName name) {
+        if (!name.getDomain().equals(domain)) {
+            return PathAddress.EMPTY_ADDRESS;
+        }
+        if (name.equals(ModelControllerMBeanHelper.createRootObjectName(domain))) {
+            return PathAddress.EMPTY_ADDRESS;
+        }
+        final Hashtable<String, String> properties = name.getKeyPropertyList();
+        return searchPathAddress(PathAddress.EMPTY_ADDRESS, registry, properties);
+    }
+
+    private static PathAddress searchPathAddress(PathAddress address, ImmutableManagementResourceRegistration registry, Map<String, String> properties) {
+        if (properties.size() == 0) {
+            return address;
+        }
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            PathAddress childAddress = PathAddress.pathAddress(
+                    replaceEscapedCharactersInKey(entry.getKey()),
+                    replaceEscapedCharactersInValue(entry.getValue()));
+            ImmutableManagementResourceRegistration subModel = registry.getSubModel(address);
+            if (subModel != null) {
+                Map<String, String> childProps = new HashMap<String, String>(properties);
+                childProps.remove(entry.getKey());
+                PathAddress foundAddr = searchPathAddress(address.append(childAddress), subModel, childProps);
                 if (foundAddr != null) {
                     return foundAddr;
                 }

@@ -395,5 +395,17 @@ public interface JmxMessages {
 
     @Message(id = 11363, value = "Not authorized to invoke operation: '%s'")
     JMRuntimeException notAuthorizedToExecuteOperation(String operationName);
+
+    @Message(id = 11364, value = "Add notification listener using ObjectName %s is not supported")
+    UnsupportedOperationException addNotificationListerWithObjectNameNotSupported(ObjectName listener);
+
+    @Message(id = 11365, value = "Remove notification listener using ObjectName %s is not supported")
+    UnsupportedOperationException removeNotificationListerWithObjectNameNotSupported(ObjectName listener);
+
+    @Message(id = 11366, value = "Add notification listener using ObjectName %s is not supported")
+    UnsupportedOperationException addNotificationListenerNotAllowed(ObjectName name);
+
+    @Message(id = 11367, value = "Remove notification listener using ObjectName %s is not supported")
+    UnsupportedOperationException removeNotificationListenerNotAllowed(ObjectName name);
 }
 

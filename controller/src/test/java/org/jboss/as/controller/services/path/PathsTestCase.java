@@ -45,6 +45,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -808,6 +809,7 @@ public class PathsTestCase extends AbstractControllerTestBase {
             }
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);

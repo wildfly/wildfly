@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -70,6 +71,8 @@ public class ManagementControllerTestBase extends AbstractControllerTestBase {
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
+
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);

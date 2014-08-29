@@ -55,9 +55,22 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
 
     private final InjectedValue<Endpoint> endpoint = new InjectedValue<Endpoint>();
 
+    private final String resolvedDomain;
+    private final String expressionsDomain;
+
+    /**
+     * @param resolvedDomain JMX domain name for the 'resolved' model controller (can be {@code null} if the model controller is not exposed)
+     * @param expressionsDomain JMX domain name for the 'expression' model controller (can be {@code null} if the model controller is not exposed)
+     */
+    private RemotingConnectorService(String resolvedDomain, String expressionsDomain) {
+        this.resolvedDomain = resolvedDomain;
+        this.expressionsDomain = expressionsDomain;
+    }
+
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        server = new RemotingConnectorServer(mBeanServer.getValue(), endpoint.getValue(), new ServerInterceptorFactory());
+        MBeanServer forwarder = new BlockingNotificationMBeanServer(mBeanServer.getValue(), resolvedDomain, expressionsDomain);
+        server = new RemotingConnectorServer(forwarder, endpoint.getValue(), new ServerInterceptorFactory());
         try {
             server.start();
         } catch (IOException e) {
@@ -79,9 +92,8 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
         return server;
     }
 
-    public static ServiceController<?> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler, final boolean useManagementEndpoint) {
-
-        final RemotingConnectorService service = new RemotingConnectorService();
+    public static ServiceController<?> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler, final boolean useManagementEndpoint, final String resolvedDomain, final String expressionsDomain) {
+        final RemotingConnectorService service = new RemotingConnectorService(resolvedDomain, expressionsDomain);
         final ServiceBuilder<RemotingConnectorServer> builder = target.addService(SERVICE_NAME, service);
         builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.mBeanServer);
         if(useManagementEndpoint) {
@@ -94,5 +106,4 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
         }
         return builder.install();
     }
-
 }

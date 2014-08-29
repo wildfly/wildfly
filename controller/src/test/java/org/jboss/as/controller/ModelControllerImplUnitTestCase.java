@@ -28,6 +28,7 @@ package org.jboss.as.controller;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -628,6 +629,9 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("read-wildcards", new ModelControllerImplUnitTestCase.WildcardReadHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
+
             SimpleResourceDefinition childResource = new SimpleResourceDefinition(
                     PathElement.pathElement("child"),
                     new NonResolvingResourceDescriptionResolver()
