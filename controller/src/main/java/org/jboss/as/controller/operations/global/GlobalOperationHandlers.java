@@ -25,6 +25,8 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE_DEPTH;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -475,6 +477,43 @@ public class GlobalOperationHandlers {
             return null;
         }
         return new Locale(unparsed.substring(0, 2), unparsed.substring(3, 5), unparsed.substring(6));
+    }
+
+    static boolean getRecursive(OperationContext context, ModelNode op) throws OperationFailedException
+    {
+        // -1 means UNDEFINED
+        ModelNode recursiveNode = RECURSIVE.resolveModelAttribute(context, op);
+        final int recursiveValue = recursiveNode.isDefined() ? (recursiveNode.asBoolean() ? 1 : 0) : -1;
+        final int recursiveDepthValue = RECURSIVE_DEPTH.resolveModelAttribute(context, op).asInt(-1);
+        // WFLY-3705: We are recursing in this round IFF:
+        //  Recursive is explicitly specified as TRUE and recursiveDepth is UNDEFINED
+        //  Recursive is either TRUE or UNDEFINED and recursiveDepth is >0
+        return recursiveValue > 0 && recursiveDepthValue == -1 || //
+                recursiveValue != 0 && recursiveDepthValue > 0;
+    }
+
+    static void setNextRecursive(OperationContext context, ModelNode op, ModelNode nextOp) throws OperationFailedException
+    {
+        // -1 means UNDEFINED
+        final int recursiveDepthValue = RECURSIVE_DEPTH.resolveModelAttribute(context, op).asInt(-1);
+        // WFLY-3705: We are recursing in the next step IFF:
+        //  Recursive is explicitly specified as TRUE and recursiveDepth is UNDEFINED; or
+        //  Recursive is either TRUE or UNDEFINED and (recursiveDepth - 1) is >0
+
+        // Recursive value carries through unchanged
+        nextOp.get(RECURSIVE.getName()).set(op.get(RECURSIVE.getName()));
+        switch(recursiveDepthValue) {
+        case -1:
+            // Undefined stays undefined
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(op.get(RECURSIVE_DEPTH.getName()));
+            break;
+        case 0:
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(recursiveDepthValue);
+            break;
+        default:
+            nextOp.get(RECURSIVE_DEPTH.getName()).set(recursiveDepthValue - 1);
+            break;
+        }
     }
 
     private static String normalizeLocale(String toNormalize) {

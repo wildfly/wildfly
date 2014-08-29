@@ -24,6 +24,7 @@ package org.jboss.as.controller.operations.global;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -34,14 +35,15 @@ import org.jboss.dmr.ModelType;
  */
 class GlobalOperationAttributes {
 
+    // WFLY-3705
     static final SimpleAttributeDefinition RECURSIVE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECURSIVE, ModelType.BOOLEAN)
     .setAllowNull(true)
-    .setDefaultValue(new ModelNode(false))
     .build();
 
+    // WFLY-3705
     static final SimpleAttributeDefinition RECURSIVE_DEPTH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECURSIVE_DEPTH, ModelType.INT)
     .setAllowNull(true)
-    .setDefaultValue(new ModelNode(0))
+    .setValidator(new IntRangeValidator(0, true))
     .build();
 
     static final SimpleAttributeDefinition PROXIES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROXIES, ModelType.BOOLEAN)
