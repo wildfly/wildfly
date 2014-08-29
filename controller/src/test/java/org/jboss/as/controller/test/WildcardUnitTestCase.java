@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -111,6 +112,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
                 }
             }, NULL);
 
+            GlobalNotifications.registerGlobalNotifications(root, processType);
 
 
             final ManagementResourceRegistration hosts = root.registerSubModel(host, NULL);

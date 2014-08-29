@@ -38,6 +38,7 @@ import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -77,6 +78,8 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
 
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
         rootRegistration.registerOperationHandler(ValidateAddressOperationHandler.DEFINITION, ValidateAddressOperationHandler.INSTANCE);
+
+        GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
 
         // Platform mbeans
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(rootRegistration);
