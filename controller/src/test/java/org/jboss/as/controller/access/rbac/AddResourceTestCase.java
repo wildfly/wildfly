@@ -45,6 +45,7 @@ import org.jboss.as.controller.access.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -291,6 +292,8 @@ public class AddResourceTestCase extends AbstractControllerTestBase {
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         this.rootResource = rootResource;
         this.rootRegistration = registration;
+
+        GlobalNotifications.registerGlobalNotifications(registration, ProcessType.EMBEDDED_SERVER);
     }
 
     private static class TestResourceDefinition extends SimpleResourceDefinition {
@@ -312,6 +315,7 @@ public class AddResourceTestCase extends AbstractControllerTestBase {
             super.registerOperations(resourceRegistration);
             GlobalOperationHandlers.registerGlobalOperations(resourceRegistration, ProcessType.EMBEDDED_SERVER);
         }
+
     }
 
     private static class ChildResourceDefinition extends TestResourceDefinition implements ConstrainedResourceDefinition {

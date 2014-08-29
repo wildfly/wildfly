@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.ReadAttributeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -68,6 +69,7 @@ public class DefaultAttributeTestCase extends AbstractControllerTestBase {
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         registration.registerOperationHandler(ReadAttributeHandler.DEFINITION, ReadAttributeHandler.INSTANCE, true);
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
         registration.registerSubModel(new TestResource());
     }
 

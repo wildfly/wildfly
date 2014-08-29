@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -67,6 +68,7 @@ public class OperationWithNotificationTestCase extends AbstractControllerTestBas
                     }
                 }
         );
+        registration.registerNotification(NotificationDefinition.Builder.create(MY_NOTIFICATION_TYPE, new NonResolvingResourceDescriptionResolver()).build());
     }
 
     @Test

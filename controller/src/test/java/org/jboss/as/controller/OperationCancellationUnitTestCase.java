@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -160,6 +161,8 @@ public class OperationCancellationUnitTestCase {
             rootRegistration.registerOperationHandler("block-verify", new BlockingServiceHandler(), DESC_PROVIDER, false);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
 
             rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
         }
