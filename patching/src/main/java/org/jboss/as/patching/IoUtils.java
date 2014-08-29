@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.util.zip.ZipFile;
 
 /**
@@ -42,8 +41,6 @@ public class IoUtils {
     public static byte[] NO_CONTENT = new byte[0];
 
     private static final int DEFAULT_BUFFER_SIZE = 65536;
-
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
 
     /**
      * Copy input stream to output stream and close them both

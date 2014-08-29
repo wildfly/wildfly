@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -57,6 +58,7 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.protocol.StreamUtils;
@@ -106,7 +108,7 @@ public class TestUtils {
     public static void dump(File f, String content) throws IOException {
         final OutputStream os = new FileOutputStream(f);
         try {
-            os.write(content.getBytes(IoUtils.UTF_8));
+            os.write(content.getBytes(Charset.forName("UTF-8")));
             os.close();
         } finally {
             IoUtils.safeClose(os);
