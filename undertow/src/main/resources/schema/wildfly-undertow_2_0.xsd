@@ -259,6 +259,7 @@
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="mod-cluster" type="modClusterType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="filter" type="customFilterType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
@@ -427,5 +428,17 @@
 
     <xs:complexType name="gzipType">
         <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="modClusterType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="management-socket-binding" type="xs:string" use="required"/>
+        <xs:attribute name="advertise-socket-binding" type="xs:string" use="required"/>
+        <xs:attribute name="security-key" type="xs:string" use="optional"/>
+        <xs:attribute name="advertise-protocol" type="xs:string" use="optional"/>
+        <xs:attribute name="advertise-path" type="xs:string" use="optional"/>
+        <xs:attribute name="advertise-frequency" type="xs:int" use="optional"/>
+        <xs:attribute name="health-check-interval" type="xs:int" use="optional"/>
+        <xs:attribute name="broken-node-timeout" type="xs:int" use="optional"/>
     </xs:complexType>
 </xs:schema>

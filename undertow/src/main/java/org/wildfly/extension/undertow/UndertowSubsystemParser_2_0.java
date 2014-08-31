@@ -46,6 +46,7 @@ import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.filters.GzipFilter;
+import org.wildfly.extension.undertow.filters.ModClusterDefinition;
 import org.wildfly.extension.undertow.filters.ResponseHeaderFilter;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -228,6 +229,16 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                         ).addChild(
                                 builder(ErrorPageDefinition.INSTANCE)
                                         .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                        ).addChild(
+                                builder(ModClusterDefinition.INSTANCE)
+                                .addAttributes(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING,
+                                        ModClusterDefinition.ADVERTISE_SOCKET_BINDING,
+                                        ModClusterDefinition.SECURITY_KEY,
+                                        ModClusterDefinition.ADVERTISE_PROTOCOL,
+                                        ModClusterDefinition.ADVERTISE_PATH,
+                                        ModClusterDefinition.ADVERTISE_FREQUENCY,
+                                        ModClusterDefinition.HEALTH_CHECK_INTERVAL,
+                                        ModClusterDefinition.BROKEN_NODE_TIMEOUT)
                         ).addChild(
                                 builder(CustomFilterDefinition.INSTANCE)
                                         .addAttributes(CustomFilterDefinition.CLASS_NAME, CustomFilterDefinition.MODULE, CustomFilterDefinition.PARAMETERS)

@@ -39,7 +39,6 @@ public interface Handler {
 
     Class<? extends HttpHandler> getHandlerClass();
 
-    //TODO move to HandlerWrapper
     HttpHandler createHttpHandler(final Predicate predicate, final ModelNode model, final HttpHandler next);
 
 }

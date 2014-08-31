@@ -46,7 +46,8 @@ public class FilterDefinitions extends PersistentResourceDefinition {
             ResponseHeaderFilter.INSTANCE,
             GzipFilter.INSTANCE,
             ErrorPageDefinition.INSTANCE,
-            CustomFilterDefinition.INSTANCE
+            CustomFilterDefinition.INSTANCE,
+            ModClusterDefinition.INSTANCE
     ));
 
     private FilterDefinitions() {
