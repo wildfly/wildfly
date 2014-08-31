@@ -79,7 +79,7 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
 
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         try {
-            Iterator<Resource> resources = module.globResources("**.tld");
+            Iterator<Resource> resources = module.globResources("META-INF/**.tld");
             while (resources.hasNext()) {
                 final Resource resource = resources.next();
                 //horrible hack
