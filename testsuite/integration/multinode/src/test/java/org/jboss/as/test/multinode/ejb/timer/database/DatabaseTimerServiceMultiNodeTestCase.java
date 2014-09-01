@@ -189,37 +189,46 @@ public class DatabaseTimerServiceMultiNodeTestCase {
     public void testEjbTimeoutOnOtherNode() throws Exception {
 
         Context clientContext = getRemoteContext(clientClient);
-        RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
-        Set<String> names = new HashSet<>();
-        long time = System.currentTimeMillis() + TIMER_DELAY;
-        for(int i = 0; i < TIMER_COUNT; ++i) {
-            String name = "timer" + i;
-            clientBean.scheduleTimer(time, name);
-            names.add(name);
-        }
+        try {
+            RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
+            Set<String> names = new HashSet<>();
+            long time = System.currentTimeMillis() + TIMER_DELAY;
+            for (int i = 0; i < TIMER_COUNT; ++i) {
+                String name = "timer" + i;
+                clientBean.scheduleTimer(time, name);
+                names.add(name);
+            }
 
-        Collector serverBean = (Collector) getRemoteContext(serverClient).lookup(ARCHIVE_NAME + "/" + CollectionSingleton.class.getSimpleName() + "!" + Collector.class.getName());
-        List<TimerData> res = serverBean.collect(TIMER_COUNT);
-        Assert.assertEquals("Expected " + TIMER_COUNT + " was " + res.size() + " " + res,TIMER_COUNT, res.size());
-        boolean server = false;
-        boolean client = false;
-        final Set<String> newNames = new HashSet<>(names);
-        for(TimerData r : res) {
-            if(!newNames.remove(r.getInfo())) {
-                if(!names.contains(r.getInfo())) {
-                    throw new RuntimeException("Timer " + r.getInfo() + " not run " + res);
-                } else {
-                    throw new RuntimeException("Timer " + r.getInfo() + " run twice " + res);
+            final Context remoteContext = getRemoteContext(serverClient);
+            try {
+                Collector serverBean = (Collector) remoteContext.lookup(ARCHIVE_NAME + "/" + CollectionSingleton.class.getSimpleName() + "!" + Collector.class.getName());
+                List<TimerData> res = serverBean.collect(TIMER_COUNT);
+                Assert.assertEquals("Expected " + TIMER_COUNT + " was " + res.size() + " " + res, TIMER_COUNT, res.size());
+                boolean server = false;
+                boolean client = false;
+                final Set<String> newNames = new HashSet<>(names);
+                for (TimerData r : res) {
+                    if (!newNames.remove(r.getInfo())) {
+                        if (!names.contains(r.getInfo())) {
+                            throw new RuntimeException("Timer " + r.getInfo() + " not run " + res);
+                        } else {
+                            throw new RuntimeException("Timer " + r.getInfo() + " run twice " + res);
+                        }
+                    }
+                    if (r.getNode().equals("client")) {
+                        client = true;
+                    } else if (r.getNode().equals("server")) {
+                        server = true;
+                    }
                 }
+                Assert.assertTrue(client);
+                Assert.assertTrue(server);
+            } finally {
+                remoteContext.close();
             }
-            if(r.getNode().equals("client")) {
-                client = true;
-            } else if(r.getNode().equals("server")) {
-                server = true;
-            }
+        } finally {
+            clientContext.close();
         }
-        Assert.assertTrue(client);
-        Assert.assertTrue(server);
     }
 
 
