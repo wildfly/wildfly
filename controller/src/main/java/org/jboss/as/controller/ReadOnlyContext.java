@@ -31,6 +31,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -320,6 +321,11 @@ class ReadOnlyContext extends AbstractOperationContext {
     @Override
     public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
         return primaryContext.authorizeResource(attributes, isDefaultResource);
+    }
+
+    @Override
+    public void emit(Notification notification) {
+        throw readOnlyContext();
     }
 
     Resource getModel() {
