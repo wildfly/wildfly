@@ -64,18 +64,19 @@ public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements Deploym
                                 view.addViewInterceptor(factory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);
                             }
                         }
-                        if (interceptor != null) {
-                            configuration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
-                                @Override
-                                public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) {
-                                    serviceBuilder.addDependency(ControlPointService.serviceName(topLevelName, entryPoint), ControlPoint.class, service.getControlPointInjector());
-                                }
-                            });
-                        }
+
+                        configuration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
+                            @Override
+                            public void configureDependency(ServiceBuilder<?> serviceBuilder, EJBComponentCreateService service) {
+                                serviceBuilder.addDependency(ControlPointService.serviceName(topLevelName, entryPoint), ControlPoint.class, service.getControlPointInjector());
+                            }
+                        });
 
                     }
                 });
+
             }
+
         }
 
     }

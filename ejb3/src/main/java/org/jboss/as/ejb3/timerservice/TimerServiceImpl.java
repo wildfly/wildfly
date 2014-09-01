@@ -74,6 +74,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.xnio.IoUtils;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
@@ -867,7 +868,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                 delay = 0;
             }
             long intervalDuration = timer.getInterval();
-            final Task task = new Task(timerTask);
+            final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
             if (intervalDuration > 0) {
                 ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
                         + " milliseconds from now with repeated interval=" + intervalDuration);
@@ -1192,19 +1193,39 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         }
     }
 
-    private class Task<T extends TimerImpl> extends java.util.TimerTask {
+    private class Task extends java.util.TimerTask {
 
-        private final TimerTask<T> delegate;
+        private final TimerTask<?> delegate;
+        private final ControlPoint controlPoint;
+        /**
+         * This is true if a task is queued up to be run by the request controller,
+         * used to stop timer tasks banking up when the container is suspended.
+         */
+        private volatile boolean queued = false;
 
-        public Task(final TimerTask<T> delegate) {
+        public Task(final TimerTask<?> delegate, ControlPoint controlPoint) {
             this.delegate = delegate;
+            this.controlPoint = controlPoint;
         }
 
         @Override
         public void run() {
             final ExecutorService executor = executorServiceInjectedValue.getOptionalValue();
             if (executor != null) {
-                executor.submit(delegate);
+                if(controlPoint == null) {
+                    executor.submit(delegate);
+                } else if(!queued) {
+                    queued = true;
+                    controlPoint.queueTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            queued = false;
+                            delegate.run();
+                        }
+                    }, executor, -1, null, false);
+                } else {
+                    EjbLogger.EJB3_INVOCATION_LOGGER.debug("Skipping timer invocation as existing request is already queued.");
+                }
             }
         }
 

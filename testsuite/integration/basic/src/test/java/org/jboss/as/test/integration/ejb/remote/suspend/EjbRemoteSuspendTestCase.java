@@ -52,8 +52,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class EjbRemoteSuspendTestCase {
 
-    private static final Logger logger = Logger.getLogger(EjbRemoteSuspendTestCase.class);
-
     private static final String APP_NAME = "";
     private static final String DISTINCT_NAME = "";
     private static final String MODULE_NAME = "ejb-suspend-test-case";
