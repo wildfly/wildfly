@@ -72,6 +72,7 @@ import org.jboss.jca.deployers.common.AbstractResourceAdapterDeployer;
 import org.jboss.jca.deployers.common.BeanValidation;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.jca.deployers.common.DeployException;
+import org.jboss.logging.BasicLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -512,7 +513,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         protected PrintWriter getLogPrintWriter() {
-            return new PrintWriter(System.out, true);
+            return new JBossLogPrintWriter(deploymentName, (BasicLogger)this.log);
         }
 
         @Override
