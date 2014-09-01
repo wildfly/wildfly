@@ -27,11 +27,12 @@ package org.jboss.as.mail.extension;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
-import org.jboss.as.network.NetworkUtils;
 
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.metadata.javaee.spec.MailSessionMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
@@ -101,7 +102,6 @@ class SessionProviderFactory {
             }
             properties.setProperty("mail.debug", String.valueOf(sessionConfig.isDebug()));
             MailLogger.ROOT_LOGGER.tracef("props: %s", properties);
-
         }
 
         private void configureCustomServers(final Properties props, final CustomServerConfig... serverConfigs) throws StartException {
@@ -126,7 +126,12 @@ class SessionProviderFactory {
             Map<String, String> customProps = server.getProperties();
             if (server.getOutgoingSocketBinding() != null) {
                 InetSocketAddress socketAddress = getServerSocketAddress(server);
-                props.setProperty(getHostKey(protocol), NetworkUtils.canonize(socketAddress.getAddress().getHostName()));
+                if (socketAddress.getAddress() == null) {
+                    MailLogger.ROOT_LOGGER.hostUnknown(socketAddress.getHostName());
+                    props.setProperty(getHostKey(protocol), NetworkUtils.canonize(socketAddress.getHostName()));
+                } else {
+                    props.setProperty(getHostKey(protocol), NetworkUtils.canonize(socketAddress.getAddress().getHostName()));
+                }
                 props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
             } else {
                 String host = customProps.get("host");
@@ -245,6 +250,4 @@ class SessionProviderFactory {
             });
         }
     }
-
-
 }

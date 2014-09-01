@@ -24,12 +24,10 @@ package org.jboss.as.mail.extension;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
-
-import java.net.UnknownHostException;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -87,20 +85,11 @@ interface MailLogger extends BasicLogger {
     StartException outboundSocketBindingNotAvailable(String outgoingSocketBindingRef);
 
     /**
-     * Creates an exception indicating that the destination address of the outgoing socket binding, that the
-     * mail service depends on, could not be resolved
+     * Logs an error message indicating that the configured host name could not be resolved.
      *
-     * @param outgoingSocketBindingRef the name of the socket binding configuration.
-     * @return a {@link RuntimeException} for the error.
+     * @param hostName the name of the host which coud not be resolved.
      */
-    @Message(id = 5, value = "Unknown host for outbound socket binding configuration '%s'.")
-    RuntimeException unknownOutboundSocketBindingDestination(@Cause UnknownHostException cause, String outgoingSocketBindingRef);
-
-    /**
-     * Creates exception indicating that host was not configured properly
-     *
-     * @return a {@link RuntimeException} for the error.
-     */
-    @Message(id = 6, value = "Host not configured")
-    RuntimeException serverHostNotSet();
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "Host name [%s] could not be resolved!")
+    void hostUnknown(String hostName);
 }
