@@ -49,7 +49,6 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
-
 import javax.ejb.TimerHandle;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
@@ -3000,4 +2999,25 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 459, value = "Module %s containing bean %s is not deployed in ear but it specifies resource adapter name '%s' in a relative format.")
     DeploymentUnitProcessingException relativeResourceAdapterNameInStandaloneModule(String module, String bean, String adapterName);
+
+    /**
+     * Logs a waring message that the current datasource configuration does not ensure consistency in a clustered environment.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 460, value = "The transaction isolation need to be equal or stricter than READ_COMMITTED to ensure that the timer run once-and-only-once")
+    void wrongTransactionIsolationConfiguredForTimer();
+
+    /**
+     * Transaction rollback after problems not successful
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 461, value = "Update timer failed and it was not possible to rollback the transaction!")
+    void timerUpdateFailedAndRollbackNotPossible(@Cause Throwable rbe);
+
+    /**
+     * Logs a warning message indicating that the database dialect can not detected automatically
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 462, value = "Unable to detect database dialect from connection metadata or JDBC driver name. Please configure this manually using the 'datasource' property in your configuration.  Known database dialect strings are %s")
+    void jdbcDatabaseDialectDetectionFailed(String validDialects);
 }
