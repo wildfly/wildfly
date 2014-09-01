@@ -70,14 +70,22 @@ class HostControllerConnection extends FutureManagementChannel {
 
     private static final String SERVER_CHANNEL_TYPE = ManagementRemotingServices.SERVER_CHANNEL;
     private static final Charset UTF_8 = Charset.forName("UTF-8");
+    private static final long reconnectionDelay;
+
+    static {
+        // Since there is the remoting connection timeout we might not need a delay between reconnection attempts at all
+        reconnectionDelay = Long.parseLong(SecurityActions.getSystemProperty("jboss.as.domain.host.reconnection.delay", "1500"));
+    }
 
     private final String userName;
     private final String serverProcessName;
     private final ProtocolConnectionManager connectionManager;
     private final ManagementChannelHandler channelHandler;
+    private final ExecutorService executorService;
     private final int initialOperationID;
 
-    private ProtocolConnectionConfiguration configuration;
+    private volatile ProtocolConnectionConfiguration configuration;
+    private volatile ReconnectRunner reconnectRunner;
 
     HostControllerConnection(final String serverProcessName, final String userName, final int initialOperationID,
                              final ProtocolConnectionConfiguration configuration, final ExecutorService executorService) {
@@ -85,6 +93,7 @@ class HostControllerConnection extends FutureManagementChannel {
         this.serverProcessName = serverProcessName;
         this.configuration = configuration;
         this.initialOperationID = initialOperationID;
+        this.executorService = executorService;
         this.channelHandler = new ManagementChannelHandler(this, executorService);
         this.connectionManager = ProtocolConnectionManager.create(configuration, this, new ReconnectTask());
     }
@@ -128,14 +137,41 @@ class HostControllerConnection extends FutureManagementChannel {
     }
 
     /**
+     * This continuously tries to reconnect in a separate thread and will only stop if the connection was established
+     * successfully or the server gets shutdown. If there is currently a reconnect task active the connection paramaters
+     * and callback will get updated.
+     *
+     * @param reconnectUri    the updated connection uri
+     * @param authKey         the updated authentication key
+     * @param callback        the current callback
+     */
+    synchronized void asyncReconnect(final URI reconnectUri, byte[] authKey, final ReconnectCallback callback) {
+        if (getState() != State.OPEN) {
+            return;
+        }
+        // Update the configuration with the new credentials
+        final ProtocolConnectionConfiguration config = ProtocolConnectionConfiguration.copy(configuration);
+        config.setCallbackHandler(createClientCallbackHandler(userName, authKey));
+        config.setUri(reconnectUri);
+        this.configuration = config;
+
+        final ReconnectRunner reconnectTask = this.reconnectRunner;
+        if (reconnectTask == null) {
+            final ReconnectRunner task = new ReconnectRunner();
+            task.callback = callback;
+            task.future = executorService.submit(task);
+        } else {
+            reconnectTask.callback = callback;
+        }
+    }
+
+    /**
      * Reconnect to the HC.
      *
-     * @param reconnectUri the reconnection uri
-     * @param authKey the auth key
      * @return whether the server is still in sync
      * @throws IOException
      */
-    synchronized boolean reConnect(final URI reconnectUri, byte[] authKey) throws IOException {
+    synchronized boolean doReConnect() throws IOException {
         // In case we are still connected, test the connection and see if we can reuse it
         if(connectionManager.isConnected()) {
             try {
@@ -158,12 +194,6 @@ class HostControllerConnection extends FutureManagementChannel {
             }
         }
 
-        // Tweak the configuration with the new credentials
-        final ProtocolConnectionConfiguration config = ProtocolConnectionConfiguration.copy(configuration);
-        config.setCallbackHandler(createClientCallbackHandler(userName, authKey));
-        config.setUri(reconnectUri);
-        this.configuration = config;
-
         boolean ok = false;
         final Connection connection = connectionManager.connect();
         try {
@@ -172,6 +202,7 @@ class HostControllerConnection extends FutureManagementChannel {
             try {
                 boolean inSync = result.getResult().get();
                 ok = true;
+                reconnectRunner = null;
                 return inSync;
             } catch (ExecutionException e) {
                 throw new IOException(e);
@@ -213,6 +244,11 @@ class HostControllerConnection extends FutureManagementChannel {
     public void close() throws IOException {
         try {
             super.close();
+            final ReconnectRunner reconnectTask = this.reconnectRunner;
+            if (reconnectTask != null) {
+                this.reconnectRunner = null;
+                reconnectTask.cancel();
+            }
         } finally {
             connectionManager.shutdown();
         }
@@ -375,4 +411,43 @@ class HostControllerConnection extends FutureManagementChannel {
         }
     }
 
+    interface ReconnectCallback {
+        /**
+         * Callback on reconnection.
+         *
+         * @param inSync    whether the server is still in sync with the host-controller
+         */
+        void reconnected(final boolean inSync);
+    }
+
+    class ReconnectRunner implements Runnable {
+        private volatile Future<?> future;
+        private volatile ReconnectCallback callback;
+
+        @Override
+        public synchronized void run() {
+            final boolean outcome;
+            try {
+                outcome = doReConnect();
+                callback.reconnected(outcome);
+                reconnectRunner = null;
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(reconnectionDelay);
+                } catch (InterruptedException i) {
+                    Thread.currentThread().interrupt();
+                }
+                if (getState() == State.OPEN) {
+                    ServerLogger.AS_ROOT_LOGGER.failedToConnectToHostController();
+                    future = executorService.submit(this);
+                }
+            }
+        }
+
+        public void cancel() {
+            if (future != null) {
+                future.cancel(true);
+            }
+        }
+    }
 }

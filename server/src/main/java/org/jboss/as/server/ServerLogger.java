@@ -413,4 +413,8 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 15974, value = "Stopped subdeployment (runtime-name: %s) in %dms")
     void stoppedSubDeployment(String deploymentUnitName, int elapsedTime);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15975, value = "Failed to connect to host-controller, retrying.")
+    void failedToConnectToHostController();
 }

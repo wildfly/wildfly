@@ -95,13 +95,17 @@ public class HostControllerClient implements Closeable {
         final URI uri = new URI("remote://" + host + ":" + port);
         // In case the server is out of sync after the reconnect, set reload required
         final boolean mgmtEndpointChanged = this.managementSubsystemEndpoint != mgmtSubsystemEndpoint;
-        if(! connection.reConnect(uri, authKey) || mgmtEndpointChanged) {
-            // It would be nicer if we'd have direct access to the ControlledProcessState
-            final ModelNode operation = new ModelNode();
-            operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME); // TODO only require reload
-            operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
-            controller.execute(operation, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
-        }
+        connection.asyncReconnect(uri, authKey, new HostControllerConnection.ReconnectCallback() {
+            @Override
+            public void reconnected(boolean inSync) {
+                if (!inSync || mgmtEndpointChanged) {
+                    final ModelNode operation = new ModelNode();
+                    operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME); // TODO only require reload
+                    operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+                    controller.execute(operation, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
+                }
+            }
+        });
     }
     /**
      * Get the remote file repository.
