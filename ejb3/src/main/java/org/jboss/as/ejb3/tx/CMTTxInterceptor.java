@@ -265,8 +265,11 @@ public class CMTTxInterceptor implements Interceptor {
         throw new RuntimeException("UNREACHABLE");
     }
 
-    protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component) throws Exception {
+    protected Object invokeInOurTx(InterceptorContext invocation, TransactionManager tm, final EJBComponent component, final int timeout) throws Exception {
         for (int i = 0; i < MAX_RETRIES; i++) {
+            if (timeout != -1) {
+                tm.setTransactionTimeout(timeout);
+            }
             tm.begin();
             Transaction tx = tm.getTransaction();
             try {
@@ -328,51 +331,37 @@ public class CMTTxInterceptor implements Interceptor {
 
     protected Object required(final InterceptorContext invocation, final EJBComponent component, final int timeout) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
-        final int oldTimeout = getCurrentTransactionTimeout(component);
+        final Transaction tx = tm.getTransaction();
 
-        try {
+        if (tx == null) {
+            return invokeInOurTx(invocation, tm, component, timeout);
+        } else {
             if (timeout != -1) {
+                final int oldTimeout = getCurrentTransactionTimeout(component);
                 tm.setTransactionTimeout(timeout);
-            }
-
-            final Transaction tx = tm.getTransaction();
-
-            if (tx == null) {
-                return invokeInOurTx(invocation, tm, component);
+                try {
+                    return invokeInCallerTx(invocation, tx, component);
+                } finally {
+                    tm.setTransactionTimeout(oldTimeout);
+                }
             } else {
                 return invokeInCallerTx(invocation, tx, component);
-            }
-        } finally {
-            if (tm != null) {
-                tm.setTransactionTimeout(oldTimeout);
             }
         }
     }
 
     protected Object requiresNew(InterceptorContext invocation, final EJBComponent component, final int timeout) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
-        int oldTimeout = getCurrentTransactionTimeout(component);
-
-        try {
-            if (timeout != -1 && tm != null) {
-                tm.setTransactionTimeout(timeout);
+        final Transaction tx = tm.getTransaction();
+        if (tx != null) {
+            tm.suspend();
+            try {
+                return invokeInOurTx(invocation, tm, component, timeout);
+            } finally {
+                tm.resume(tx);
             }
-
-            Transaction tx = tm.getTransaction();
-            if (tx != null) {
-                tm.suspend();
-                try {
-                    return invokeInOurTx(invocation, tm, component);
-                } finally {
-                    tm.resume(tx);
-                }
-            } else {
-                return invokeInOurTx(invocation, tm, component);
-            }
-        } finally {
-            if (tm != null) {
-                tm.setTransactionTimeout(oldTimeout);
-            }
+        } else {
+            return invokeInOurTx(invocation, tm, component, timeout);
         }
     }
 
