@@ -39,6 +39,7 @@ import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.IoFuture;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
@@ -87,6 +88,11 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        } finally {
+            if(clientContext == null) {
+                //close it if we failed
+                IoUtils.safeClose(connection, endpoint);
+            }
         }
     }
 
