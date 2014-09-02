@@ -47,11 +47,13 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -75,6 +77,8 @@ public class CmpStoreManagerProcessor implements DeploymentUnitProcessor {
         serviceTarget.addService(entityMapServiceName, entityMap)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, entityMap.getTransactionManagerInjector())
                 .install();
+
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
 
         //  Hate to use barriers across the board, but since the queries can add dependencies that are difficult to detect
@@ -109,7 +113,7 @@ public class CmpStoreManagerProcessor implements DeploymentUnitProcessor {
                         final JDBCStoreManager storeManager = new JDBCStoreManager(context.getDeploymentUnit(), entityMetaData, catalog);
 
                         // Phase 1: Init the store
-                        final JdbcStoreManagerInitService initService = new JdbcStoreManagerInitService(storeManager);
+                        final JdbcStoreManagerInitService initService = new JdbcStoreManagerInitService(storeManager, module.getClassLoader());
                         final ServiceBuilder<?> initBuilder = context.getServiceTarget().addService(initName, initService);
                         initBuilder.addDependency(KeyGeneratorFactoryRegistry.SERVICE_NAME, KeyGeneratorFactoryRegistry.class, storeManager.getKeyGeneratorFactoryInjector());
                         addDataSourceDependency(initBuilder, storeManager, entityMetaData.getDataSourceName());

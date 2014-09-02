@@ -34,21 +34,34 @@ import org.jboss.msc.service.StopContext;
 public class JdbcStoreManagerInitService implements Service<JDBCStoreManager> {
 
     private final JDBCStoreManager storeManager;
+    private final ClassLoader classLoader;
 
-    public JdbcStoreManagerInitService(final JDBCStoreManager storeManager) {
+    public JdbcStoreManagerInitService(final JDBCStoreManager storeManager, ClassLoader classLoader) {
         this.storeManager = storeManager;
+        this.classLoader = classLoader;
     }
 
     public synchronized void start(final StartContext context) throws StartException {
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(classLoader);
             storeManager.initStoreManager();
         } catch (Exception e) {
             throw CmpMessages.MESSAGES.failedToStartJdbcStore(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
     }
 
     public synchronized void stop(final StopContext context) {
-        storeManager.destroy();
+
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(classLoader);
+            storeManager.destroy();
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
     }
 
     public synchronized JDBCStoreManager getValue() throws IllegalStateException, IllegalArgumentException {
