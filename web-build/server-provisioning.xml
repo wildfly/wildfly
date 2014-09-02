@@ -21,6 +21,6 @@
   -->
 <server-provisioning xmlns="urn:wildfly:server-provisioning:1.0">
     <feature-packs>
-        <artifact name="org.wildfly:wildfly-web-feature-pack" />
+        <artifact groupId="org.wildfly" artifactId="wildfly-web-feature-pack" version="${project.version}"/>
     </feature-packs>
 </server-provisioning>
