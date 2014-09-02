@@ -1,9 +1,13 @@
 package org.jboss.as.weld.deployment;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
 
@@ -21,6 +25,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.literal.AnyLiteral;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
@@ -68,7 +73,21 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
             return target;
         }
         final BeanManagerImpl beanManager = BeanManagerProxy.unwrap(this.beanManager.getValue());
-        InjectionTarget<?> newTarget = InjectionTargets.createInjectionTarget(clazz, null, beanManager, true);
+        Bean<?> bean = null;
+        Set<Bean<?>> beans = new HashSet<>(beanManager.getBeans(clazz, AnyLiteral.INSTANCE));
+        Iterator<Bean<?>> it = beans.iterator();
+        //we may have resolved some sub-classes
+        //go through and remove them from the bean set
+        while (it.hasNext()) {
+            Bean<?> b = it.next();
+            if(b.getBeanClass() != clazz) {
+                it.remove();
+            }
+        }
+        if(beans.size() == 1) {
+            bean = beans.iterator().next();
+        }
+        InjectionTarget<?> newTarget = InjectionTargets.createInjectionTarget(clazz, bean, beanManager, true);
         target = injectionTargets.putIfAbsent(clazz, newTarget);
         if (target == null) {
             return newTarget;
