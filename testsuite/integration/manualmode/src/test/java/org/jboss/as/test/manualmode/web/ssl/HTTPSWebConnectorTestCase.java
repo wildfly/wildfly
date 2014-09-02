@@ -43,7 +43,6 @@ import java.net.URL;
 import java.util.Locale;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
@@ -349,6 +348,8 @@ public class HTTPSWebConnectorTestCase {
                 fail("Untrusted client should not be authenticated.");
             } catch (SSLHandshakeException e) {
                 // OK
+            } catch (java.net.SocketException se) {
+                // OK - on windows usually fails with this one
             }
 
             String principal = makeCall(printPrincipalUrl, httpClient, HttpServletResponse.SC_OK);
@@ -358,6 +359,8 @@ public class HTTPSWebConnectorTestCase {
                 fail("Untrusted client should not be authenticated.");
             } catch (SSLHandshakeException e) {
                 // OK
+            } catch (java.net.SocketException se) {
+                // OK - on windows usually fails with this one
             }
         } finally {
             httpClient.getConnectionManager().shutdown();

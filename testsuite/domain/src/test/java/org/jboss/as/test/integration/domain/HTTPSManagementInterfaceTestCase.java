@@ -252,6 +252,8 @@ public class HTTPSManagementInterfaceTestCase {
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
         } catch (SSLHandshakeException e) {
             // OK
+        } catch (java.net.SocketException se) {
+            // OK - on windows usually fails with this one
         }
 
         String responseBody = makeCallWithHttpClient(mgmtURL, httpClient, 200);
@@ -287,6 +289,8 @@ public class HTTPSManagementInterfaceTestCase {
             assertThat("Management index page was reached", responseBody, not(containsString("management-major-version")));
         } catch (SSLHandshakeException e) {
             // OK
+        } catch (java.net.SocketException se) {
+            // OK - on windows usually fails with this one
         }
     }
 
