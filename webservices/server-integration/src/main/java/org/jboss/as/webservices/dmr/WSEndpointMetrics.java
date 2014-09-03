@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.webservices.logging.WSLogger;
+import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -127,9 +128,10 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
         ServiceName endpointServiceName = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
         ServiceController<Endpoint> service = (ServiceController<Endpoint>) currentServiceContainer().getService(endpointServiceName);
+        ServerConfigService serverConfigService = (ServerConfigService)currentServiceContainer().getService(WSServices.CONFIG_SERVICE).getService();
         Endpoint endpoint= service.getValue();
         final ModelNode result = new ModelNode();
-        if (endpoint != null && endpoint.getEndpointMetrics() != null) {
+        if (endpoint != null && serverConfigService.getValue().isStatisticsEnabled()) {
             final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
             if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getMinProcessingTime()));
@@ -149,7 +151,6 @@ final class WSEndpointMetrics implements OperationStepHandler {
         } else {
             result.set(getFallbackMessage());
         }
-
         return result;
     }
 

@@ -30,6 +30,7 @@
 
     <resources>
         <artifact name="${org.jboss.ws.cxf:jbossws-cxf-client}"/>
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-jaspi}"/>
     </resources>
 
     <dependencies>
@@ -73,5 +74,6 @@
           </imports>
         </module>
         <module name="javax.wsdl4j.api" />
+        <module name="org.bouncycastle" />
     </dependencies>
 </module>

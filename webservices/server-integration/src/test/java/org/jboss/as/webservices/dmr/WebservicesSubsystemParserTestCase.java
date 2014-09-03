@@ -62,7 +62,7 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("ws-subsystem12.xml"); //for default test
+        return readResource("ws-subsystem20.xml"); //for default test
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
@@ -217,7 +217,7 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
     public void testTransformersEAP610() throws Exception {
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
     }
-
+    
     @Test
     public void testTransformersEAP611() throws Exception {
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);

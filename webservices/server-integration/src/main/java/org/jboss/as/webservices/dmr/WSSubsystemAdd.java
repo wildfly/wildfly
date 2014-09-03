@@ -26,6 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_URI_SCHEME;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PATH_REWRITE_RULE;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -65,11 +67,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        Attributes.STATISTICS_ENABLED.validateAndSet(operation, model);
         for (AttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
     }
-
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         WSLogger.ROOT_LOGGER.activatingWebservicesExtension();
@@ -106,12 +108,19 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         if (!appclient) {
             config.setModifySOAPAddress(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(context, configuration).asBoolean());
+            config.setStatisticsEnabled(Attributes.STATISTICS_ENABLED.resolveModelAttribute(context, configuration).asBoolean());
         }
         if (configuration.hasDefined(WSDL_PORT)) {
             config.setWebServicePort(Attributes.WSDL_PORT.resolveModelAttribute(context, configuration).asInt());
         }
         if (configuration.hasDefined(WSDL_SECURE_PORT)) {
             config.setWebServiceSecurePort(Attributes.WSDL_SECURE_PORT.resolveModelAttribute(context, configuration).asInt());
+        }
+        if (configuration.hasDefined(WSDL_URI_SCHEME)) {
+            config.setWebServiceUriScheme(Attributes.WSDL_URI_SCHEME.resolveModelAttribute(context, configuration).asString());
+        }
+        if (configuration.hasDefined(WSDL_PATH_REWRITE_RULE)) {
+            config.setWebServicePathRewriteRule(Attributes.WSDL_PATH_REWRITE_RULE.resolveModelAttribute(context, configuration).asString());
         }
         return config;
     }

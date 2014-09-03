@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -50,12 +50,12 @@ abstract class AbstractMetaDataBuilderEJB {
      */
     final EJBArchiveMetaData create(final Deployment dep) {
         WSLogger.ROOT_LOGGER.tracef("Building JBoss agnostic meta data for EJB webservice deployment: %s", dep.getSimpleName());
-        final EJBArchiveMetaData ejbArchiveMD = new EJBArchiveMetaData();
+        final EJBArchiveMetaData.Builder ejbArchiveMDBuilder = new EJBArchiveMetaData.Builder();
 
-        this.buildEnterpriseBeansMetaData(dep, ejbArchiveMD);
-        this.buildWebservicesMetaData(dep, ejbArchiveMD);
+        this.buildEnterpriseBeansMetaData(dep, ejbArchiveMDBuilder);
+        this.buildWebservicesMetaData(dep, ejbArchiveMDBuilder);
 
-        return ejbArchiveMD;
+        return ejbArchiveMDBuilder.build();
     }
 
     /**
@@ -66,7 +66,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @param ejbMetaData
      *            universal EJB meta data model
      */
-    protected abstract void buildEnterpriseBeansMetaData(Deployment dep, EJBArchiveMetaData ejbMetaData);
+    protected abstract void buildEnterpriseBeansMetaData(Deployment dep, EJBArchiveMetaData.Builder ejbMetaDataBuilder);
 
     /**
      * Builds webservices meta data. This methods sets:
@@ -80,7 +80,7 @@ abstract class AbstractMetaDataBuilderEJB {
      * @param dep webservice deployment
      * @param ejbArchiveMD universal EJB meta data model
      */
-    private void buildWebservicesMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD)
+    private void buildWebservicesMetaData(final Deployment dep, final EJBArchiveMetaData.Builder ejbArchiveMDBuilder)
     {
        final JBossWebservicesMetaData webservicesMD = WSHelper.getOptionalAttachment(dep, JBossWebservicesMetaData.class);
 
@@ -88,23 +88,23 @@ abstract class AbstractMetaDataBuilderEJB {
 
        // set context root
        final String contextRoot = webservicesMD.getContextRoot();
-       ejbArchiveMD.setWebServiceContextRoot(contextRoot);
+       ejbArchiveMDBuilder.setWebServiceContextRoot(contextRoot);
         WSLogger.ROOT_LOGGER.tracef("Setting context root: %s", contextRoot);
 
        // set config name
        final String configName = webservicesMD.getConfigName();
-       ejbArchiveMD.setConfigName(configName);
+       ejbArchiveMDBuilder.setConfigName(configName);
         WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
 
        // set config file
        final String configFile = webservicesMD.getConfigFile();
-       ejbArchiveMD.setConfigFile(configFile);
+       ejbArchiveMDBuilder.setConfigFile(configFile);
         WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
 
        // set wsdl location resolver
        final JBossWebserviceDescriptionMetaData[] wsDescriptionsMD = webservicesMD.getWebserviceDescriptions();
        final PublishLocationAdapter resolver = new PublishLocationAdapterImpl(wsDescriptionsMD);
-       ejbArchiveMD.setPublishLocationAdapter(resolver);
+       ejbArchiveMDBuilder.setPublishLocationAdapter(resolver);
     }
 
     protected JBossPortComponentMetaData getPortComponent(final String ejbName, final JBossWebservicesMetaData jbossWebservicesMD) {
@@ -124,37 +124,29 @@ abstract class AbstractMetaDataBuilderEJB {
      *            jboss agnostic EJBs meta data
      */
     protected void buildEnterpriseBeanMetaData(final List<EJBMetaData> wsEjbsMD, final EJBEndpoint ejbEndpoint, final JBossWebservicesMetaData jbossWebservicesMD) {
-        final EJBMetaData wsEjbMD = new SLSBMetaData();
+        final SLSBMetaData.Builder wsEjbMDBuilder = new SLSBMetaData.Builder();
 
         // set EJB name and class
-        wsEjbMD.setEjbName(ejbEndpoint.getName());
-        wsEjbMD.setEjbClass(ejbEndpoint.getClassName());
+        wsEjbMDBuilder.setEjbName(ejbEndpoint.getName());
+        wsEjbMDBuilder.setEjbClass(ejbEndpoint.getClassName());
 
         final JBossPortComponentMetaData portComponentMD = getPortComponent(ejbEndpoint.getName(), jbossWebservicesMD);
         if (portComponentMD != null) {
             // set port component meta data
-            wsEjbMD.setPortComponentName(portComponentMD.getPortComponentName());
-            wsEjbMD.setPortComponentURI(portComponentMD.getPortComponentURI());
+            wsEjbMDBuilder.setPortComponentName(portComponentMD.getPortComponentName());
+            wsEjbMDBuilder.setPortComponentURI(portComponentMD.getPortComponentURI());
         }
         // set security meta data
-        buildSecurityMetaData(wsEjbMD, ejbEndpoint, portComponentMD);
-
-        wsEjbsMD.add(wsEjbMD);
-    }
-
-    private static void buildSecurityMetaData(final EJBMetaData wsEjbMD, final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
-        final EJBSecurityMetaData smd = new EJBSecurityMetaData();
         // auth method
         final String authMethod = getAuthMethod(ejbEndpoint, portComponentMD);
-        smd.setAuthMethod(authMethod);
         // transport guarantee
         final String transportGuarantee = getTransportGuarantee(ejbEndpoint, portComponentMD);
-        smd.setTransportGuarantee(transportGuarantee);
         // secure wsdl access
         final boolean secureWsdlAccess = isSecureWsdlAccess(ejbEndpoint, portComponentMD);
-        smd.setSecureWSDLAccess(secureWsdlAccess);
         // propagate
-        wsEjbMD.setSecurityMetaData(smd);
+        wsEjbMDBuilder.setSecurityMetaData(new EJBSecurityMetaData(authMethod, transportGuarantee, secureWsdlAccess));
+
+        wsEjbsMD.add(wsEjbMDBuilder.build());
     }
 
     private static String getAuthMethod(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {

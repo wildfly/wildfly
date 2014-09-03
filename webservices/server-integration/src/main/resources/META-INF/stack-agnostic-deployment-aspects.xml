@@ -48,10 +48,6 @@
     <property name="last" class="boolean">true</property>
   </deploymentAspect>
 
-  <deploymentAspect class="org.jboss.ws.common.deployment.EndpointMetricsDeploymentAspect">
-    <property name="provides" class="java.lang.String">EndpointMetrics</property>
-  </deploymentAspect>
-
   <deploymentAspect class="org.jboss.ws.common.deployment.EndpointNameDeploymentAspect">
     <property name="requires" class="java.lang.String">URLPattern</property>
     <property name="provides" class="java.lang.String">EndpointName</property>

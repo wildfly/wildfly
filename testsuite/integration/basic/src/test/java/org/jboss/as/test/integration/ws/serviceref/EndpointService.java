@@ -27,6 +27,7 @@ import java.net.URL;
 import javax.xml.namespace.QName;
 import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
+import javax.xml.ws.WebServiceFeature;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -37,6 +38,10 @@ public class EndpointService extends javax.xml.ws.Service {
 
     public EndpointService(URL wsdlLocation, QName serviceName) {
         super(wsdlLocation, serviceName);
+    }
+
+    public EndpointService(URL wsdlLocation, QName serviceName, WebServiceFeature... features) {
+        super(wsdlLocation, serviceName, features);
     }
 
     @WebEndpoint(name = "EJB3BeanPort")

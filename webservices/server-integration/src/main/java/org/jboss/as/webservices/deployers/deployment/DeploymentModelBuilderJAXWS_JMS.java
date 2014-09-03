@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,7 +23,6 @@ package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
-import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,7 +39,7 @@ import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuilder {
 
     DeploymentModelBuilderJAXWS_JMS() {
-        super(JAXWS, JAXWS_JSE);
+        super(JAXWS_JSE);
     }
 
     @Override
