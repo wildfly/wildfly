@@ -25,8 +25,8 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterInterface;
-import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
+import org.jboss.as.test.shared.TempTestModule;
 
 /**
  * @author baranowb
@@ -34,16 +34,20 @@ import org.jboss.as.test.shared.ModuleUtils;
  */
 public class SetupModuleServerSetupTask implements ServerSetupTask{
 
-    private TestModule testModule;
-
+    private volatile TempTestModule testModule;
     @Override
     public void setup(ManagementClient arg0, String arg1) throws Exception {
-        this.testModule = ModuleUtils.createSimpleTestModule(SessionConstants.TEST_MODULE_NAME, CallCounterInterface.class,Trigger.class);
+        testModule = ModuleUtils.createTestModuleWithEEDependencies(SessionConstants.TEST_MODULE_NAME);
+        testModule.addResource("module.jar").addClasses(CallCounterInterface.class, Trigger.class);
+        testModule.create();
+
     }
+
 
     @Override
     public void tearDown(ManagementClient arg0, String arg1) throws Exception {
-        this.testModule.remove();
+        if (testModule != null) {
+            testModule.remove();
+        }
     }
-
 }

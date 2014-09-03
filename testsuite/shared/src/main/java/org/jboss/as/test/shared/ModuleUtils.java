@@ -21,106 +21,37 @@
  */
 package org.jboss.as.test.shared;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Array;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.enterprise.inject.spi.Extension;
 
-import org.jboss.as.test.module.util.TestModule;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.xnio.IoUtils;
+
 
 public class ModuleUtils {
 
-    public static TestModule createSimpleTestModule(String moduleName, Class<?>... classes) throws IOException {
-        return createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), classes);
-    }
-
-    public static TestModule createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
-        URL url = classes[0].getResource(moduleXml);
-
-        if (url == null) {
-            throw new IllegalStateException("Could not find module.xml: " + moduleXml);
-        }
-
-        return createTestModule(moduleName, url.openStream(), classes);
-    }
-
-    private static TestModule createTestModule(String moduleName, InputStream moduleXml, Class<?>... classes) throws IOException {
-        File tempFile = File.createTempFile("test_module_tmp", ".tmp");
-
-        copyFile(tempFile, moduleXml);
-
-        TestModule testModule = new TestModule("test." + moduleName, tempFile);
-        JavaArchive moduleJar = testModule
-            .addResource(moduleName + ".jar")
-            .addClasses(classes)
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-
-        addExtensionsIfAvailable(moduleJar, classes);
-
-
-        testModule.create();
-
+    private static final String[] EE_DEPENDENCIES = new String[] {"javax.enterprise.api", "javax.inject.api", "javax.servlet.api", "javax.servlet.jsp.api"};
+    public static TempTestModule createTestModuleWithEEDependencies(String moduleName) {
+        TempTestModule testModule = new TempTestModule("test." + moduleName, EE_DEPENDENCIES);
         return testModule;
     }
 
-    private static void copyFile(File target, InputStream src) throws IOException {
-        final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-        try {
-            int i = src.read();
-            while (i != -1) {
-                out.write(i);
-                i = src.read();
+    public static final TempTestModule.ClassCallback ENTERPRISE_INJECT = new TempTestModule.ClassCallback() {
+        @Override
+        public void classesAdded(JavaArchive jar, List<Class<?>> classes) {
+            List<Class<Extension>> extensions = new ArrayList<Class<Extension>>(1);
+            for (Class<?> clazz : classes) {
+                if (Extension.class.isAssignableFrom(clazz)) {
+                    extensions.add((Class<Extension>) clazz);
+                }
             }
-        } finally {
-            IoUtils.safeClose(out);
-        }
-    }
 
-    private static Asset createSimpleModuleDescriptor(String moduleName) {
-        return new StringAsset(
-                "<module xmlns=\"urn:jboss:module:1.1\" name=\"test." + moduleName + "\">" +
-                "<resources>" +
-                "<resource-root path=\"" + moduleName + ".jar\"/>" +
-                "</resources>" +
-                "<dependencies>" +
-                "<module name=\"javax.enterprise.api\"/>" +
-                "<module name=\"javax.inject.api\"/>" +
-                "<module name=\"javax.servlet.api\"/>" +
-                "<module name=\"javax.servlet.jsp.api\"/>" +
-                "</dependencies>" +
-                "</module>");
-    }
-
-    /**
-     * Adds extensions to the specified archive if any available.
-     *
-     * @param jar to add extensions to
-     * @param classes to be evaluated
-     */
-    @SuppressWarnings("unchecked")
-    private static void addExtensionsIfAvailable(JavaArchive jar, final Class<?>... classes) {
-        List<Class<Extension>> extensions = new ArrayList<>(1);
-        for (Class<?> clazz : classes) {
-            if (Extension.class.isAssignableFrom(clazz)) {
-                extensions.add((Class<Extension>) clazz);
+            if (!extensions.isEmpty()) {
+                Class<Extension>[] a = (Class<Extension>[]) Array.newInstance(Extension.class.getClass(), 0);
+                jar.addAsServiceProvider(Extension.class, extensions.toArray(a));
             }
         }
-
-        if (!extensions.isEmpty()) {
-            Class<Extension>[] a = (Class<Extension>[]) Array.newInstance(Extension.class.getClass(), 0);
-            jar.addAsServiceProvider(Extension.class, extensions.toArray(a));
-        }
-    }
+    };
 }

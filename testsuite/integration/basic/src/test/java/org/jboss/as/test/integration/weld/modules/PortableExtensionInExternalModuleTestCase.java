@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
-import static org.jboss.as.test.shared.ModuleUtils.createTestModule;
+import java.io.File;
+import java.net.URL;
 
 import javax.ejb.EJB;
 import javax.enterprise.inject.spi.BeanManager;
@@ -29,10 +30,12 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.ModuleUtils;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -65,7 +68,7 @@ public class PortableExtensionInExternalModuleTestCase {
     private static final String MANIFEST = "MANIFEST.MF";
 
     private static final String MODULE_NAME = "portable-extension";
-    private static TestModule testModule;
+    private static TempTestModule testModule;
 
     @Inject
     private PortableExtension extension;
@@ -77,8 +80,15 @@ public class PortableExtensionInExternalModuleTestCase {
     private PortableExtensionLookup ejbInjectionTarget;
 
     public static void doSetup() throws Exception {
-        testModule = createTestModule(MODULE_NAME, MODULE_NAME + "-module.xml", PortableExtension.class, PortableExtensionLookup.class,
-                PortableExtensionModuleLookup.class);
+        URL url = PortableExtension.class.getResource(MODULE_NAME + "-module.xml");
+        File moduleXmlFile = new File(url.toURI());
+        testModule = new TempTestModule("test." + MODULE_NAME, moduleXmlFile);
+        testModule.addResource("portable-extension.jar")
+            .addClasses(PortableExtension.class, PortableExtensionLookup.class, PortableExtensionModuleLookup.class)
+            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        testModule.addClassCallback(ModuleUtils.ENTERPRISE_INJECT);
+        testModule.create();
+
     }
 
     @AfterClass
@@ -102,7 +112,7 @@ public class PortableExtensionInExternalModuleTestCase {
 
         WebArchive webSubdeployment = ShrinkWrap.create(WebArchive.class, "web-subdeployment.war")
                 .addClass(PortableExtensionInExternalModuleTestCase.class)
-                .addClass(TestModule.class)
+                .addClass(TempTestModule.class)
                 .addAsWebInfResource(newBeans11Descriptor("annotated"), "beans.xml");
 
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(library).addAsModule(ejbSubdeployment)

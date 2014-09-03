@@ -25,8 +25,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -47,10 +47,15 @@ import org.junit.runner.RunWith;
 public class StaticModuleToDeploymentVisibilityWarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-war";
-    private static TestModule testModule;
+    private static TempTestModule testModule;
 
     public static void doSetup() throws Exception {
-        testModule = ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
+        testModule = ModuleUtils.createTestModuleWithEEDependencies(MODULE_NAME);
+        testModule.addResource("test-module.jar")
+            .addClasses(ModuleBean.class, Foo.class)
+            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        testModule.create();
+
     }
 
     @AfterClass
@@ -62,7 +67,7 @@ public class StaticModuleToDeploymentVisibilityWarTest {
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class)
+                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TempTestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
