@@ -54,7 +54,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-import org.jgroups.JChannel;
 
 /**
  * Handler for adding a discovery group.
@@ -160,10 +159,10 @@ public class DiscoveryGroupAdd extends AbstractAddStepHandler {
     }
 
 
-    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final JChannel channel, final String channelName) throws Exception {
+    static DiscoveryGroupConfiguration createDiscoveryGroupConfiguration(final String name, final DiscoveryGroupConfiguration config, final String channelName, final String jgroupsConfig) throws Exception {
         final long refreshTimeout = config.getRefreshTimeout();
         final long initialWaitTimeout = config.getDiscoveryInitialWaitTimeout();
-        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(channel, channelName);
+        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration(jgroupsConfig, channelName);
 
         return new DiscoveryGroupConfiguration(name, refreshTimeout, initialWaitTimeout, endpointFactoryConfiguration );
     }
