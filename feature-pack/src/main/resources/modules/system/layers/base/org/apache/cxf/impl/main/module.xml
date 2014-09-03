@@ -46,7 +46,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-ws-mex}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-policy}"/>
         <artifact name="${org.apache.cxf:cxf-rt-ws-rm}"/>
-        <artifact name="${org.apache.cxf:cxf-rt-ws-security}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-security?jandex}"/>
         <artifact name="${org.apache.cxf:cxf-tools-common}"/>
         <artifact name="${org.apache.cxf:cxf-tools-java2ws}"/>
         <artifact name="${org.apache.cxf:cxf-tools-validator}"/>
