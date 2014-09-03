@@ -38,7 +38,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +48,7 @@ import org.junit.runner.RunWith;
  * jboss-cli configuration file. It tries to invoke CLI client with vaulted
  * passwords for truststore in its configuration, which results in resolving
  * vault expression.
- * 
+ *
  * @author Filip Bogyai
  */
 @RunWith(Arquillian.class)
@@ -56,7 +56,7 @@ import org.junit.runner.RunWith;
 public class CustomVaultInCLITestCase {
 
     private static Logger LOGGER = Logger.getLogger(CustomVaultInCLITestCase.class);
-    
+
     private static final File WORK_DIR = new File("cli-custom-vault-workdir");
 
     public static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
@@ -75,7 +75,7 @@ public class CustomVaultInCLITestCase {
     private static String MODULE_NAME = "test.custom.vault.in.cli";
     private static String JAR_NAME = "custom-dummy-vault-module.jar";
     private static final String CONTAINER = "default-jbossas";
-    private static TestModule customVaultModule;
+    private static TempTestModule customVaultModule;
 
     @ArquillianResource
     private static ContainerController containerController;
@@ -103,7 +103,7 @@ public class CustomVaultInCLITestCase {
     @InSequence(1)
     public void testRightVaultPassword() throws Exception {
 
-        String cliOutput = CustomCLIExecutor.execute(RIGHT_VAULT_PASSWORD_FILE, 
+        String cliOutput = CustomCLIExecutor.execute(RIGHT_VAULT_PASSWORD_FILE,
                 READ_ATTRIBUTE_OPERATION + " server-state");
 
         assertThat("Password should be right", cliOutput, containsString("Password is: " + RIGHT_PASSWORD));
@@ -119,7 +119,7 @@ public class CustomVaultInCLITestCase {
     @InSequence(2)
     public void testWrongVaultPassword() throws Exception {
 
-        String cliOutput = CustomCLIExecutor.execute(WRONG_VAULT_PASSWORD_FILE, 
+        String cliOutput = CustomCLIExecutor.execute(WRONG_VAULT_PASSWORD_FILE,
                 READ_ATTRIBUTE_OPERATION + " server-state");
 
         assertThat("Password should be wrong", cliOutput, containsString("Password is: " + WRONG_PASSWORD));
@@ -135,7 +135,7 @@ public class CustomVaultInCLITestCase {
     @InSequence(3)
     public void testNonExistingVaultPassword() throws Exception {
 
-        String cliOutput = CustomCLIExecutor.execute(NON_EXISTING_VAULT_PASSWORD_FILE, 
+        String cliOutput = CustomCLIExecutor.execute(NON_EXISTING_VAULT_PASSWORD_FILE,
                 READ_ATTRIBUTE_OPERATION + " server-state");
 
         assertThat("Password should not exists", cliOutput, containsString("NullPointerException"));
@@ -155,34 +155,34 @@ public class CustomVaultInCLITestCase {
 
     private void createCustomVaultModule() throws IOException {
 
-        String moduleXML = "<module xmlns=\"urn:jboss:module:1.1\" name=\""+ MODULE_NAME +"\">" + 
-                               "<resources> <resource-root path=\""+ JAR_NAME +"\"/>  </resources>" + 
+        String moduleXML = "<module xmlns=\"urn:jboss:module:1.1\" name=\""+ MODULE_NAME +"\">" +
+                               "<resources> <resource-root path=\""+ JAR_NAME +"\"/>  </resources>" +
                                "<dependencies> <module name=\"org.picketbox\"/> </dependencies> "+
                            "</module>";
 
         FileUtils.write(MODULE_FILE, moduleXML);
 
-        customVaultModule = new TestModule(MODULE_NAME, MODULE_FILE);
+        customVaultModule = new TempTestModule(MODULE_NAME, MODULE_FILE);
         customVaultModule.addResource(JAR_NAME).addClass(CustomDummyVault.class);
         customVaultModule.create(true);
-        
+
     }
-    
+
     private void createCustomVaultConfiguration() throws IOException{
-        
+
         String rightBlock = "rightVaultBlock";
         String wrongBlock = "wrongVaultBlock";
-        
+
         String vaultConfig = "<vault code=\""+ CustomDummyVault.class.getName() + "\" module=\"" + MODULE_NAME+ "\">" +
                 "<vault-option name=\""+ rightBlock +"\" value=\"" + RIGHT_PASSWORD + "\"/>" +
-                "<vault-option name=\""+ wrongBlock +"\" value=\"" + WRONG_PASSWORD + "\"/>" +       
+                "<vault-option name=\""+ wrongBlock +"\" value=\"" + WRONG_PASSWORD + "\"/>" +
             "</vault>";
 
         //passwords are defined above and are retrieved depending only on vault block
         String vaultPasswordString = "VAULT::" + rightBlock + "::good::1";
         String wrongVaultPasswordString = "VAULT::" + wrongBlock + "::wrong::1";
         String nonExistingVaultPasswordString = "VAULT::nonExistingBlock::non::1";
-        
+
         // create jboss-cli configuration file with vaulted passwords and change xsd to 3.0
         String rightVaultPassConfig = Utils.propertiesReplacer(JBOSS_CLI_FILE, CLIENT_KEYSTORE_FILE, CLIENT_TRUSTSTORE_FILE,
                 vaultPasswordString, vaultConfig).replaceAll("urn:jboss:cli:2.0", "urn:jboss:cli:3.0");
@@ -190,11 +190,11 @@ public class CustomVaultInCLITestCase {
                 wrongVaultPasswordString, vaultConfig).replaceAll("urn:jboss:cli:2.0", "urn:jboss:cli:3.0");
         String nonVaultPassConfig = Utils.propertiesReplacer(JBOSS_CLI_FILE, CLIENT_KEYSTORE_FILE, CLIENT_TRUSTSTORE_FILE,
                 nonExistingVaultPasswordString, vaultConfig).replaceAll("urn:jboss:cli:2.0", "urn:jboss:cli:3.0");
-        
+
         FileUtils.write(RIGHT_VAULT_PASSWORD_FILE, rightVaultPassConfig);
         FileUtils.write(WRONG_VAULT_PASSWORD_FILE, wrongVaultPassConfig);
         FileUtils.write(NON_EXISTING_VAULT_PASSWORD_FILE, nonVaultPassConfig);
-        
+
     }
 
 }

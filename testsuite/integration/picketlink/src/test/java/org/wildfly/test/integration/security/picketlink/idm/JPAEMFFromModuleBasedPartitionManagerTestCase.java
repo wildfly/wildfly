@@ -22,13 +22,23 @@
 
 package org.wildfly.test.integration.security.picketlink.idm;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE_UNIT_NAME;
+
+import java.io.File;
+import java.io.IOException;
+
+import javax.annotation.Resource;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -51,16 +61,6 @@ import org.wildfly.test.integration.security.picketlink.idm.entities.Relationshi
 import org.wildfly.test.integration.security.picketlink.idm.entities.RoleTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 
-import javax.annotation.Resource;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE_ENTITY_MODULE_UNIT_NAME;
-
 /**
  * @author Pedro Igor
  */
@@ -78,7 +78,7 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsManifestResource(new StringAsset("Dependencies: org.picketlink.idm.api meta-inf,org.jboss.dmr meta-inf,org.jboss.as.controller\n"), "MANIFEST.MF")
             .addClass(JPAEMFFromModuleBasedPartitionManagerTestCase.class)
-            .addClass(TestModule.class)
+            .addClass(TempTestModule.class)
             .addClass(AbstractBasicIdentityManagementTestCase.class)
             .addClass(AbstractIdentityManagementServerSetupTask.class);
     }
@@ -93,18 +93,18 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        private TestModule module;
+        private TempTestModule module;
 
         public IdentityManagementServerSetupTask() {
             super("jpa.emf.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 
-        private TestModule createModule() throws IOException {
+        private TempTestModule createModule() throws IOException {
             File moduleXml = new File(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                 .getResource(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                     .getSimpleName() + "-module.xml").getFile());
 
-            TestModule module = new TestModule("test.picketlink-emf-module-test", moduleXml);
+            TempTestModule module = new TempTestModule("test.picketlink-emf-module-test", moduleXml);
 
             module.addResource("picketlink-emf-module-test.jar")
                 .addClass(AbstractCredentialTypeEntity.class)
