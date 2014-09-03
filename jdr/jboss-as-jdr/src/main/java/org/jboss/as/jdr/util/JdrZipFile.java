@@ -121,7 +121,7 @@ public class JdrZipFile {
      * @throws Exception
      */
     public void add(VirtualFile file, InputStream is) throws Exception {
-        String name = "JBOSS_HOME" + file.getPathName().substring(this.jbossHome.length());
+        String name = "JBOSS_HOME" + file.getPhysicalFile().getAbsolutePath().substring(this.jbossHome.length());
         this.add(is, name);
     }
 
