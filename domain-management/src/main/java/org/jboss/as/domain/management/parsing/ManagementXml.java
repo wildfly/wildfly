@@ -2106,11 +2106,27 @@ public class ManagementXml {
             }
             switch (element) {
                 case USERNAME_TO_DN: {
-                    parseUsernameToDn_1_5(reader, expectedNs, addr, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_5:
+                        case DOMAIN_1_6:
+                            parseUsernameToDn_1_5(reader, expectedNs, addr, list);
+                            break;
+                        default:
+                            parseUsernameToDn_1_7(reader, expectedNs, addr, list);
+                            break;
+                    }
                     break;
                 }
                 case GROUP_SEARCH: {
-                    parseGroupSearch_1_5(reader, expectedNs, addr, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_5:
+                        case DOMAIN_1_6:
+                            parseGroupSearch_1_5(reader, expectedNs, addr, list);
+                            break;
+                        default:
+                            parseGroupSearch_1_7(reader, expectedNs, addr, list);
+                            break;
+                    }
                     break;
                 }
                 default: {
