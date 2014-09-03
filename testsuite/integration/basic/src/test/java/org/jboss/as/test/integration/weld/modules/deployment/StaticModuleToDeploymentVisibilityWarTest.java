@@ -21,16 +21,12 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
-
-import java.io.File;
-
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.ModuleUtils;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -51,22 +47,27 @@ import org.junit.runner.RunWith;
 public class StaticModuleToDeploymentVisibilityWarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-war";
+    private static TempTestModule testModule;
 
     public static void doSetup() throws Exception {
-        tearDown();
-        ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
+        testModule = ModuleUtils.createTestModuleWithEEDependencies(MODULE_NAME);
+        testModule.addResource("test-module.jar")
+            .addClasses(ModuleBean.class, Foo.class)
+            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        testModule.create();
+
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        testModule.remove();
     }
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class)
+                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TempTestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
