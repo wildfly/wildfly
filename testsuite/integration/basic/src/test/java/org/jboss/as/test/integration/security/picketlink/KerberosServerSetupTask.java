@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -67,14 +68,12 @@ import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import org.jboss.as.test.integration.security.loginmodules.*;
 import org.jboss.logging.Logger;
 
 /**
- * A server setup task which configures and starts two LDAP servers with Kerberos
- * capabilities.
+ * A server setup task which configures and starts two LDAP servers with Kerberos capabilities.
  * <p>
- * Based on {@link LdapExtLDAPServerSetupTask}
+ * Based on {@link org.jboss.as.test.integration.security.loginmodules.LdapExtLDAPServerSetupTask}
  */
 public class KerberosServerSetupTask implements ServerSetupTask {
 
@@ -251,7 +250,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         
         Map<String,String> properties = new HashMap<String, String>();
         properties.put("krbHostAndPort", hostname + ":" + port);
-        properties.put("krbHost", hostname);
+        properties.put("krbHost", Utils.stripSquareBrackets(hostname));
         
         String content = StrSubstitutor.replace(IOUtils.toString(SAML2BasicAuthenticationTestCase.class.getResourceAsStream(KRB5_CONF_RESOURCE_FILENAME), "UTF-8"), properties);
         
