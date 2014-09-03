@@ -21,6 +21,18 @@
  */
 package org.jboss.as.test.module.util;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
@@ -29,17 +41,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.xnio.IoUtils;
-
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * <p>Utility class with some convenience methods to create and remove modules.</p>
@@ -50,13 +51,16 @@ public class TestModule {
 
     private final String moduleName;
     private final File moduleXml;
+    private final String[] dependencies;
+    private final List<ClassCallback> classCallbacks = new ArrayList<TestModule.ClassCallback>();
     private final List<JavaArchive> resources = new ArrayList<JavaArchive>();
+
 
     /**
      * <p>Creates a new module with the given name and module definition.</p>
      *
      * @param moduleName The name of the module.
-     * @param moduleXml The module definition file..
+     * @param moduleXml The module definition file.
      */
     public TestModule(String moduleName, File moduleXml) {
         if (!moduleXml.exists()) {
@@ -65,6 +69,19 @@ public class TestModule {
 
         this.moduleName = moduleName;
         this.moduleXml = moduleXml;
+        this.dependencies = null;
+    }
+
+    /**
+     * <p>Creates a new module with the given name and module dependencies. The module.xml will be generated</p>
+     *
+     * @param moduleName The name of the module.
+     * @param moduleXml The module definition file.
+     */
+    public TestModule(String moduleName, String...dependencies) {
+        this.moduleName = moduleName;
+        this.moduleXml = null;
+        this.dependencies = dependencies;
     }
 
     /**
@@ -74,6 +91,18 @@ public class TestModule {
      */
     public void create() throws IOException {
         create(true);
+    }
+
+
+    /**
+     * Add a callback to handle classes being added
+     *
+     * @param callback the call back to add
+     * @return this
+     */
+    public TestModule addClassCallback(ClassCallback callback) {
+        classCallbacks.add(callback);
+        return this;
     }
 
     /**
@@ -101,23 +130,39 @@ public class TestModule {
         }
 
         try {
-            copyFile(new File(mainDirectory, "module.xml"), new FileInputStream(this.moduleXml));
+            if (moduleXml != null) {
+                copyFile(new File(mainDirectory, "module.xml"), new FileInputStream(this.moduleXml));
+            } else {
+                generateModuleXml(mainDirectory);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not create module definition.", e);
         }
 
         for (JavaArchive resourceRoot : this.resources) {
+
             FileOutputStream jarFile = null;
 
             try {
                 Indexer indexer = new Indexer();
 
+                List<Class<?>> classes = new ArrayList<Class<?>>();
                 for (Node content : resourceRoot.getContent().values()) {
-                    if (content.getPath().get().endsWith(".class")) {
+                    final String path = content.getPath().get();
+                    if (path.endsWith(".class")) {
                         indexer.index(content.getAsset().openStream());
+                        if (classCallbacks.size() > 0) {
+                            //TODO load class
+                            String usePath = path.startsWith("/") ? path.substring(1, path.length() - 6) : path.substring(0, path.length() - 6);
+                            usePath = usePath.replaceAll("/", ".");
+                            Class<?> clazz = Class.forName(usePath);
+                            classes.add(clazz);
+                        }
                     }
                 }
-
+                for (ClassCallback callback : classCallbacks) {
+                    callback.classesAdded(resourceRoot, classes);
+                }
                 Index index = indexer.complete();
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
                 IndexWriter writer = new IndexWriter(data);
@@ -159,9 +204,11 @@ public class TestModule {
      */
     public JavaArchive addResource(String fileName) {
         JavaArchive resource = ShrinkWrap.create(JavaArchive.class, fileName);
-
-        this.resources.add(resource);
-
+        if (resources.size() == 0) {
+            //Add the test module to the first jar in the module to avoid having to do that from the tests
+            resource.addClass(TestModule.class);
+        }
+        resources.add(resource);
         return resource;
     }
 
@@ -222,11 +269,35 @@ public class TestModule {
                 i = src.read();
             }
         } finally {
-            IoUtils.safeClose(out);
+            out.close();
         }
     }
 
     public String getName() {
         return moduleName;
+    }
+
+    private void generateModuleXml(File mainDirectory) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(mainDirectory, "module.xml")));
+        try {
+            writer.write("<module xmlns=\"urn:jboss:module:1.1\" name=\"" + moduleName + "\">");
+            writer.write("<resources>");
+            for (JavaArchive jar : resources) {
+                writer.write("<resource-root path=\"" + jar.getName() + "\"/>");
+            }
+            writer.write("</resources>");
+            writer.write("<dependencies>");
+            for (String dependency : dependencies) {
+                writer.write("<module name=\"" + dependency + "\"/>");
+            }
+            writer.write("</dependencies>");
+            writer.write("</module>");
+        } finally {
+            writer.close();
+        }
+    }
+
+    public interface ClassCallback {
+        void classesAdded(JavaArchive jar, final List<Class<?>> classes);
     }
 }
