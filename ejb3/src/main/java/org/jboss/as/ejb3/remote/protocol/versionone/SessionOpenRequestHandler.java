@@ -142,7 +142,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
             final SessionID sessionID;
             try {
                 try {
-                    sessionID = statefulSessionComponent.createSession();
+                    sessionID = statefulSessionComponent.createSessionRemote();
                 } catch (Throwable t) {
                     EjbLogger.ROOT_LOGGER.exceptionGeneratingSessionId(t, statefulSessionComponent.getComponentName(), invocationId, channelAssociation.getChannel());
                     SessionOpenRequestHandler.this.writeException(channelAssociation, SessionOpenRequestHandler.this.marshallerFactory, invocationId, t, null);

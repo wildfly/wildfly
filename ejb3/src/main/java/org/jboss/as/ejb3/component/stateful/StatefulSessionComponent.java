@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.ejb.EJBException;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
@@ -57,6 +58,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.RunResult;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
@@ -235,6 +238,32 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return this.cache.create().getId();
     }
 
+    /**
+     * creates a session using the global request controller.
+     *
+     * This should only be used by callers that service remote requests (i.e. places that represent a remote entry point into the container)
+     * @return The session id
+     */
+    public SessionID createSessionRemote() {
+        ControlPoint controlPoint = getControlPoint();
+        if(controlPoint == null) {
+            return createSession();
+        } else {
+            try {
+                RunResult result = controlPoint.beginRequest();
+                if(result == RunResult.REJECTED) {
+                    throw EjbLogger.ROOT_LOGGER.containerSuspended();
+                }
+                try {
+                    return createSession();
+                } finally {
+                    controlPoint.requestComplete();
+                }
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
+    }
     public Cache<SessionID, StatefulSessionComponentInstance> getCache() {
         return this.cache;
     }
