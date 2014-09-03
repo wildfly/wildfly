@@ -56,6 +56,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.ControlPointService;
+import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
 import org.wildfly.extension.requestcontroller.RunResult;
 
 /**
@@ -158,7 +159,11 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // If it a remote or (remote) home view then bind the java:jboss/exported jndi names for the view
             if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
                 final String remoteJNDIName = remoteExportedJNDIBaseName + "!" + viewClassName;
-                registerRemoteExportedBinding(sessionBean, viewDescription, remoteJNDIName, deploymentUnit.getParent() != null ? deploymentUnit.getParent().getName() : deploymentUnit.getName());
+                if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)) {
+                    registerControlPointBinding(sessionBean, viewDescription, remoteJNDIName, deploymentUnit);
+                } else {
+                    registerBinding(sessionBean, viewDescription, remoteJNDIName);
+                }
                 logBinding(jndiBindingsLogMessage, remoteJNDIName);
             }
         }
@@ -212,7 +217,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             }
         });
     }
-    private void registerRemoteExportedBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName, final String topLevelDeploymentName) {
+    private void registerControlPointBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName, final DeploymentUnit deploymentUnit) {
         final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
         final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
         final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
@@ -224,7 +229,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
                     @Override
                     public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(ControlPointService.serviceName(topLevelDeploymentName, RemoteEJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME), ControlPoint.class, controlPointInjectedValue);
+                        serviceBuilder.addDependency(ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), RemoteEJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName()), ControlPoint.class, controlPointInjectedValue);
                     }
                 });
             }
