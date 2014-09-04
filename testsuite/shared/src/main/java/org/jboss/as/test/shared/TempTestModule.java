@@ -36,6 +36,7 @@ import java.util.List;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
@@ -52,6 +53,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  * @author Pedro Igor
  */
 public class TempTestModule {
+
+    private static final Logger log  = Logger.getLogger(TempTestModule.class);
 
     private final String moduleName;
     private final File moduleXml;
@@ -225,7 +228,8 @@ public class TempTestModule {
             }
 
             if (!file.delete()) {
-                throw new RuntimeException("Could not delete [" + file.getPath() + ".");
+                //this will often not work on windows
+                log.error("Could not delete [" + file.getPath() + ".");
             }
         } else {
             throw new IllegalStateException("Module [" + this.moduleName + "] does not exists.");
