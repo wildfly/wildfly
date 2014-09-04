@@ -21,77 +21,73 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:do="urn:jboss:domain:1.7"
-                xmlns="urn:jboss:domain:1.7"
-        >
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
     <xsl:output indent="yes"/>
 
+    <xsl:variable name="jboss" select="'urn:jboss:domain:'"/>
     <xsl:variable name="datasources" select="'urn:jboss:domain:datasources:'"/>
 
-    <xsl:template match="/do:server/do:management">
+    <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
-            <outbound-connections>
-                <ldap name="ldap" url="ldap://localhost:10389"/>
-            </outbound-connections>
+
+            <xsl:element name="outbound-connections" namespace="{namespace-uri()}">
+                <xsl:element name="ldap" namespace="{namespace-uri()}">
+                    <xsl:attribute name="name">ldap</xsl:attribute>
+                    <xsl:attribute name="url">ldap://localhost:10389</xsl:attribute>
+                </xsl:element>
+            </xsl:element>
+
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="/do:server/do:management/do:security-realms/do:security-realm[@name='ManagementRealm']">
+    <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]
+                          /*[local-name()='security-realms']
+                          /*[local-name()='security-realm' and @name='ManagementRealm']">
         <xsl:copy>
             <xsl:apply-templates select="@*"/>
-            <authentication>
-                <local default-user="UserMappedToGroupSuperUser"/> <!-- local user must authorize against LDAP -->
-                <ldap connection="ldap" base-dn="ou=Users,dc=wildfly,dc=org" user-dn="dn">
-                    <username-filter attribute="uid"/>
-                </ldap>
-            </authentication>
-            <authorization map-groups-to-roles="false">
-                <ldap connection="ldap">
-                    <username-to-dn force="false"> <!-- needed for local user -->
-                        <username-filter base-dn="ou=Users,dc=wildfly,dc=org" user-dn-attribute="dn" attribute="uid" />
-                    </username-to-dn>
-                    <group-search group-name="SIMPLE" group-dn-attribute="dn" group-name-attribute="cn">
-                        <group-to-principal base-dn="ou=Groups,dc=wildfly,dc=org" search-by="DISTINGUISHED_NAME">
-                            <membership-filter principal-attribute="member"/>
-                        </group-to-principal>
-                    </group-search>
-                </ldap>
-            </authorization>
-        </xsl:copy>
-    </xsl:template>
 
-    <xsl:template match="/do:domain/do:management">
-        <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
-            <outbound-connections>
-                <ldap name="ldap" url="ldap://localhost:10389"/>
-            </outbound-connections>
-        </xsl:copy>
-    </xsl:template>
+            <xsl:element name="authentication" namespace="{namespace-uri()}">
+                <xsl:element name="local" namespace="{namespace-uri()}">
+                    <xsl:attribute name="default-user">UserMappedToGroupSuperUser</xsl:attribute>
+                </xsl:element>
+                <xsl:element name="ldap" namespace="{namespace-uri()}">
+                    <xsl:attribute name="connection">ldap</xsl:attribute>
+                    <xsl:attribute name="base-dn">ou=Users,dc=wildfly,dc=org</xsl:attribute>
+                    <xsl:attribute name="user-dn">dn</xsl:attribute>
+                    <xsl:element name="username-filter" namespace="{namespace-uri()}">
+                        <xsl:attribute name="attribute">uid</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="authorization" namespace="{namespace-uri()}">
+                <xsl:attribute name="map-groups-to-roles">false</xsl:attribute>
+                <xsl:element name="ldap" namespace="{namespace-uri()}">
+                    <xsl:attribute name="connection">ldap</xsl:attribute>
+                    <xsl:element name="username-to-dn" namespace="{namespace-uri()}">
+                        <xsl:attribute name="force">false</xsl:attribute>
+                        <xsl:element name="username-filter" namespace="{namespace-uri()}">
+                            <xsl:attribute name="base-dn">ou=Users,dc=wildfly,dc=org</xsl:attribute>
+                            <xsl:attribute name="user-dn-attribute">dn</xsl:attribute>
+                            <xsl:attribute name="attribute">uid</xsl:attribute>
+                        </xsl:element>
+                    </xsl:element>
+                    <xsl:element name="group-search" namespace="{namespace-uri()}">
+                        <xsl:attribute name="group-name">SIMPLE</xsl:attribute>
+                        <xsl:attribute name="group-dn-attribute">dn</xsl:attribute>
+                        <xsl:attribute name="group-name-attribute">cn</xsl:attribute>
+                        <xsl:element name="group-to-principal" namespace="{namespace-uri()}">
+                            <xsl:attribute name="base-dn">ou=Groups,dc=wildfly,dc=org</xsl:attribute>
+                            <xsl:attribute name="search-by">DISTINGUISHED_NAME</xsl:attribute>
+                            <xsl:element name="membership-filter" namespace="{namespace-uri()}">
+                                <xsl:attribute name="principal-attribute">member</xsl:attribute>
+                            </xsl:element>
+                        </xsl:element>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
 
-    <xsl:template match="/do:domain/do:management/do:security-realms/do:security-realm[@name='ManagementRealm']">
-        <xsl:copy>
-            <xsl:apply-templates select="@*"/>
-            <authentication>
-                <local default-user="UserMappedToGroupSuperUser"/> <!-- local user must authorize against LDAP -->
-                <ldap connection="ldap" base-dn="ou=Users,dc=wildfly,dc=org" user-dn="dn">
-                    <username-filter attribute="uid"/>
-                </ldap>
-            </authentication>
-            <authorization map-groups-to-roles="false">
-                <ldap connection="ldap">
-                    <username-to-dn force="false"> <!-- needed for local user -->
-                        <username-filter base-dn="ou=Users,dc=wildfly,dc=org" user-dn-attribute="dn" attribute="uid" />
-                    </username-to-dn>
-                    <group-search group-name="SIMPLE" group-dn-attribute="dn" group-name-attribute="cn">
-                        <group-to-principal base-dn="ou=Groups,dc=wildfly,dc=org" search-by="DISTINGUISHED_NAME">
-                            <membership-filter principal-attribute="member"/>
-                        </group-to-principal>
-                    </group-search>
-                </ldap>
-            </authorization>
         </xsl:copy>
     </xsl:template>
 

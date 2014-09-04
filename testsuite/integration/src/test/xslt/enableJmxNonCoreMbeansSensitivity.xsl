@@ -21,9 +21,8 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns="urn:jboss:domain:1.7"
-        >
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
     <xsl:output indent="yes"/>
 
     <xsl:variable name="jmx" select="'urn:jboss:domain:jmx:'"/>

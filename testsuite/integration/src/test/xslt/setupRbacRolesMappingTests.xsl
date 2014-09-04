@@ -21,109 +21,99 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:do="urn:jboss:domain:1.7"
-                xmlns="urn:jboss:domain:1.7"
-        >
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
     <xsl:output indent="yes"/>
 
-    <xsl:template match="/do:server/do:management/do:access-control/do:role-mapping" priority="100">
-        <xsl:copy>
-            <role name="Monitor">
-                <include>
-                    <group name="Monitor"/>
-                </include>
-                <exclude>
-                    <user name="UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupDeployerAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor"/>
-                    <group name="ExcludingGroup"/>
-                </exclude>
-            </role>
-            <role name="Operator">
-                <include>
-                    <group name="Operator"/>
-                </include>
-            </role>
-            <role name="Maintainer">
-                <include>
-                    <group name="Maintainer"/>
-                </include>
-            </role>
-            <role name="Deployer">
-                <include>
-                    <group name="Deployer"/>
-                </include>
-            </role>
-            <role name="Administrator">
-                <include>
-                    <group name="Administrator"/>
-                </include>
-            </role>
-            <role name="Auditor">
-                <include>
-                    <group name="Auditor"/>
-                </include>
-            </role>
-            <role name="SuperUser">
-                <include>
-                    <user name="$local"/>
-                    <group name="SuperUser"/>
-                </include>
-            </role>
-        </xsl:copy>
-    </xsl:template>
+    <xsl:variable name="jboss" select="'urn:jboss:domain:'"/>
 
-    <xsl:template match="/do:domain/do:management/do:access-control/do:role-mapping" priority="100">
+    <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]
+                          /*[local-name()='access-control']
+                          /*[local-name()='role-mapping']" priority="100">
         <xsl:copy>
-            <role name="Monitor">
-                <include>
-                    <group name="Monitor"/>
-                </include>
-                <exclude>
-                    <user name="UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupDeployerAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor"/>
-                    <user name="UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor"/>
-                    <group name="ExcludingGroup"/>
-                </exclude>
-            </role>
-            <role name="Operator">
-                <include>
-                    <group name="Operator"/>
-                </include>
-            </role>
-            <role name="Maintainer">
-                <include>
-                    <group name="Maintainer"/>
-                </include>
-            </role>
-            <role name="Deployer">
-                <include>
-                    <group name="Deployer"/>
-                </include>
-            </role>
-            <role name="Administrator">
-                <include>
-                    <group name="Administrator"/>
-                </include>
-            </role>
-            <role name="Auditor">
-                <include>
-                    <group name="Auditor"/>
-                </include>
-            </role>
-            <role name="SuperUser">
-                <include>
-                    <user name="$local"/>
-                    <group name="SuperUser"/>
-                </include>
-            </role>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Monitor</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Monitor</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+                <xsl:element name="exclude" namespace="{namespace-uri()}">
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupDeployerAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">ExcludingGroup</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Operator</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Operator</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Maintainer</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Maintainer</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Deployer</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Deployer</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Administrator</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Administrator</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">Auditor</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">Auditor</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+            <xsl:element name="role" namespace="{namespace-uri()}">
+                <xsl:attribute name="name">SuperUser</xsl:attribute>
+                <xsl:element name="include" namespace="{namespace-uri()}">
+                    <xsl:element name="user" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">$local</xsl:attribute>
+                    </xsl:element>
+                    <xsl:element name="group" namespace="{namespace-uri()}">
+                        <xsl:attribute name="name">SuperUser</xsl:attribute>
+                    </xsl:element>
+                </xsl:element>
+            </xsl:element>
+
         </xsl:copy>
     </xsl:template>
 
