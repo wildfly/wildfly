@@ -31,8 +31,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -100,6 +103,17 @@ public class DeploymentOverlayDeploymentUnitProcessor implements DeploymentUnitP
                             copyFile(override.getContentHash().getPhysicalFile(), mountPoint.getPhysicalFile());
 
                         } else {
+                            VirtualFile parent = mountPoint.getParent();
+                            List<VirtualFile> createParents = new ArrayList<>();
+                            while (!parent.exists()) {
+                                createParents.add(parent);
+                                parent = parent.getParent();
+                            }
+                            Collections.reverse(createParents);
+                            for(VirtualFile file : createParents) {
+                                Closeable closable = VFS.mountTemp(file, TempFileProviderService.provider());
+                                deploymentUnit.addToAttachmentList(MOUNTED_FILES, closable);
+                            }
                             Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), mountPoint);
                             MountedDeploymentOverlay mounted = new MountedDeploymentOverlay(handle, override.getContentHash().getPhysicalFile(),  mountPoint, TempFileProviderService.provider());
                             deploymentUnit.addToAttachmentList(MOUNTED_FILES, mounted);
