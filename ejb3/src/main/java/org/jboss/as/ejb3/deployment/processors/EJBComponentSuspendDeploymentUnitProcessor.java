@@ -27,7 +27,7 @@ import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker
 /**
  * @author Stuart Douglas
  */
-public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements DeploymentUnitProcessor {
+public class EJBComponentSuspendDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     public static final String ENTRY_POINT_NAME = "ejb.";
     static final Set<MethodIntf> INTERFACES = EnumSet.of(MethodIntf.REMOTE, MethodIntf.HOME, MethodIntf.MESSAGE_ENDPOINT);
@@ -52,13 +52,13 @@ public class RemoteEJBComponentSuspendDeploymentUnitProcessor implements Deploym
                 component.getConfigurators().add(new ComponentConfigurator() {
                     @Override
                     public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) {
-                        EjbRemoteSuspendInterceptor interceptor = null;
+                        EjbSuspendInterceptor interceptor = null;
                         ImmediateInterceptorFactory factory = null;
                         for (ViewConfiguration view: configuration.getViews()) {
                             EJBViewConfiguration ejbView = (EJBViewConfiguration) view;
                             if (INTERFACES.contains(ejbView.getMethodIntf())) {
                                 if (factory == null) {
-                                    interceptor = new EjbRemoteSuspendInterceptor();
+                                    interceptor = new EjbSuspendInterceptor();
                                     factory = new ImmediateInterceptorFactory(interceptor);
                                 }
                                 view.addViewInterceptor(factory, InterceptorOrder.View.SHUTDOWN_INTERCEPTOR);

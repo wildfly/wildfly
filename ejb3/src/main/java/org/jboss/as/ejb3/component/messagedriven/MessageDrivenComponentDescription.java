@@ -59,6 +59,7 @@ import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -137,6 +138,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             @Override
             public void configureDependency(final ServiceBuilder<?> serviceBuilder, final MessageDrivenComponentCreateService mdbComponentCreateService) throws DeploymentUnitProcessingException {
                 serviceBuilder.addDependency(EJBUtilities.SERVICE_NAME, EJBUtilities.class, mdbComponentCreateService.getEJBUtilitiesInjector());
+                serviceBuilder.addDependency(SuspendController.SERVICE_NAME, SuspendController.class, mdbComponentCreateService.getSuspendControllerInjectedValue());
             }
         });
 

@@ -29,11 +29,14 @@ import javax.jms.Queue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -68,6 +71,9 @@ public class MDBTestCase {
 
     @Resource (mappedName = "java:jboss/mdbtest/annoReplyQueue")
     private Queue annoReplyQueue;
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     static class JmsQueueSetup implements ServerSetupTask {
 
@@ -129,5 +135,43 @@ public class MDBTestCase {
         this.jmsUtil.sendTextMessage("Say Nihao to " + AnnoBasedMDB.class.getName(), this.annoQueue, this.annoReplyQueue);
         final Message reply = this.jmsUtil.receiveMessage(annoReplyQueue, 5000);
         Assert.assertNotNull("Reply message was null on reply queue: " + this.annoReplyQueue, reply);
+    }
+
+
+    /**
+     * Test a deployment descriptor based MDB
+     * @throws Exception
+     */
+    @Test
+    public void testSuspendResumeWithMDB() throws Exception {
+        boolean resumed = false;
+        ModelNode op = new ModelNode();
+        try {
+
+            //suspend the server
+            op.get(ModelDescriptionConstants.OP).set("suspend");
+            managementClient.getControllerClient().execute(op);
+
+
+            this.jmsUtil.sendTextMessage("Say hello to " + DDBasedMDB.class.getName(), this.queue, this.replyQueue);
+            Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
+            Assert.assertNull("Reply message was not null on reply queue: " + this.replyQueue, reply);
+
+            resumed = true;
+            op = new ModelNode();
+            op.get(ModelDescriptionConstants.OP).set("resume");
+            managementClient.getControllerClient().execute(op);
+
+
+            reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
+            Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+
+        } finally {
+            if(!resumed) {
+                op = new ModelNode();
+                op.get(ModelDescriptionConstants.OP).set("resume");
+                managementClient.getControllerClient().execute(op);
+            }
+        }
     }
 }

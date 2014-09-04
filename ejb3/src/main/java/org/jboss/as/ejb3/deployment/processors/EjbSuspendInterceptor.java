@@ -35,12 +35,12 @@ import org.wildfly.extension.requestcontroller.RunResult;
  *
  * @author Stuart Douglas
  */
-public class EjbRemoteSuspendInterceptor extends AbstractEJBInterceptor {
+public class EjbSuspendInterceptor extends AbstractEJBInterceptor {
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         InvocationType invocation = context.getPrivateData(InvocationType.class);
-        if (invocation != InvocationType.REMOTE) {
+        if (invocation != InvocationType.REMOTE && invocation != InvocationType.MESSAGE_DELIVERY) {
             return context.proceed();
         }
         EJBComponent component = getComponent(context, EJBComponent.class);

@@ -36,6 +36,7 @@ import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
@@ -55,6 +56,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
     private final InjectedValue<PoolConfig> poolConfig = new InjectedValue<PoolConfig>();
     private final InjectedValue<DefaultResourceAdapterService> defaultResourceAdapterServiceInjectedValue = new InjectedValue<DefaultResourceAdapterService>();
     private final InjectedValue<EJBUtilities> ejbUtilitiesInjectedValue = new InjectedValue<EJBUtilities>();
+    private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
     private final ClassLoader moduleClassLoader;
 
     /**
@@ -158,6 +160,10 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     public ClassLoader getModuleClassLoader() {
         return moduleClassLoader;
+    }
+
+    public InjectedValue<SuspendController> getSuspendControllerInjectedValue() {
+        return suspendControllerInjectedValue;
     }
 
     private String stripDotRarSuffix(final String raName) {

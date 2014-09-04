@@ -41,6 +41,9 @@ import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.wildfly.security.manager.action.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.jca.core.spi.rar.Endpoint;
@@ -61,6 +64,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final Pool<MessageDrivenComponentInstance> pool;
     private final String poolName;
 
+    private final SuspendController suspendController;
     private final ActivationSpec activationSpec;
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
@@ -69,6 +73,41 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private ResourceAdapter resourceAdapter;
     private Endpoint endpoint;
     private String activationName;
+
+    /**
+     * Server activity that stops delivery before suspend starts.
+     *
+     * Note that there is a very small (but unavoidable) race here. It is possible
+     * that a message will have started delivery when preSuspend is called, but has
+     * not make it to the {@link org.jboss.as.ejb3.deployment.processors.EjbSuspendInterceptor},
+     * if this happens the message will be rejected with an exception.
+     *
+     */
+    private final ServerActivity serverActivity = new ServerActivity() {
+        @Override
+        public void preSuspend(ServerActivityCallback listener) {
+            if(deliveryActive) {
+                deactivate();
+            }
+            listener.done();
+        }
+
+        @Deprecated
+        public void suspened(ServerActivityCallback listener) {
+            suspended(listener);
+        }
+
+        public void suspended(ServerActivityCallback listener) {
+            listener.done();
+        }
+
+        @Override
+        public void resume() {
+            if(deliveryActive) {
+                activate();
+            }
+        }
+    };
 
     /**
      * Construct a new instance.
@@ -101,7 +140,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             this.poolName = poolConfig.getPoolName();
         }
         this.classLoader = ejbComponentCreateService.getModuleClassLoader();
-
+        this.suspendController = ejbComponentCreateService.getSuspendControllerInjectedValue().getValue();
         this.activationSpec = activationSpec;
         this.messageListenerInterface = messageListenerInterface;
         final ClassLoader componentClassLoader = doPrivileged(new GetClassLoaderAction(ejbComponentCreateService.getComponentClass()));
@@ -188,18 +227,20 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         if (this.pool != null) {
             this.pool.start();
         }
+        suspendController.registerActivity(serverActivity);
+
     }
 
     @Override
     public void done() {
 
         deactivate();
-        deliveryActive = false;
 
         if (this.pool != null) {
             this.pool.stop();
         }
 
+        suspendController.unRegisterActivity(serverActivity);
         super.done();
     }
 
