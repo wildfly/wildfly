@@ -1,11 +1,11 @@
 package org.jboss.as.test.integration.ejb.remote.suspend;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 
 /**
  * @author Stuart Douglas
  */
-@Stateless
+@Stateful
 public class EchoBean implements Echo {
     @Override
     public String echo(String val) {

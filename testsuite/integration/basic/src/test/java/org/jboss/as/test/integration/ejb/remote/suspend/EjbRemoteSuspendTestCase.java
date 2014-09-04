@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -78,7 +79,7 @@ public class EjbRemoteSuspendTestCase {
 
     @Test
     public void testSuspendedCallRejected() throws Exception {
-        final Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName());
+        final Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
         final String message = "Silence!";
         String echo = localEcho.echo(message);
         Assert.assertEquals(message, echo);
@@ -90,9 +91,30 @@ public class EjbRemoteSuspendTestCase {
 
         try {
             echo = localEcho.echo(message);
-            Assert.assertEquals(message, echo);
             Assert.fail("call should have been rejected");
         } catch (IllegalStateException expected) {
+
+        } finally {
+            op = new ModelNode();
+            op.get(ModelDescriptionConstants.OP).set("resume");
+            managementClient.getControllerClient().execute(op);
+
+        }
+    }
+
+
+
+    @Test
+    public void testStatefulEjbCreationRejected() throws Exception {
+
+        ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set("suspend");
+        managementClient.getControllerClient().execute(op);
+
+        try {
+            Echo localEcho = (Echo) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME + "/" + DISTINCT_NAME + "/" + EchoBean.class.getSimpleName() + "!" + Echo.class.getName() + "?stateful");
+            Assert.fail("call should have been rejected");
+        } catch (NamingException expected) {
 
         } finally {
             op = new ModelNode();

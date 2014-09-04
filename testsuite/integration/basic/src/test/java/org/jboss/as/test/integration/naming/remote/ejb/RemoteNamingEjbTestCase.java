@@ -22,26 +22,31 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
-
+import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -88,15 +93,15 @@ public class RemoteNamingEjbTestCase {
         try {
             Thread.currentThread().setContextClassLoader(Remote.class.getClassLoader());
 
-            Remote remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+            Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
-            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
+            remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
-            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+            remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
@@ -108,11 +113,11 @@ public class RemoteNamingEjbTestCase {
             NamingEnumeration<NameClassPair> e = ctx.list("test");
             while (e.hasMore()) {
                 NameClassPair binding = e.next();
-                if(!expected.remove(binding.getName())) {
+                if (!expected.remove(binding.getName())) {
                     Assert.fail("unknown binding " + binding.getName());
                 }
             }
-            if(!expected.isEmpty()) {
+            if (!expected.isEmpty()) {
                 Assert.fail("bindings not found " + expected);
             }
 
@@ -136,7 +141,7 @@ public class RemoteNamingEjbTestCase {
             }
 
             // test binding
-            binder  = (BinderRemote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
+            binder = (BinderRemote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             assertNotNull(binder);
 
             binder.bind();
@@ -189,6 +194,48 @@ public class RemoteNamingEjbTestCase {
                 // expected
             }
             ctx.close();
+        }
+    }
+
+    @Test
+    public void testRemoteNamingGracefulShutdown() throws Exception {
+
+        ModelNode op = new ModelNode();
+        op.get(ModelDescriptionConstants.OP).set("suspend");
+        managementClient.getControllerClient().execute(op);
+
+        Thread.currentThread().setContextClassLoader(Remote.class.getClassLoader());
+
+        final InitialContext ctx = getRemoteContext();
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+
+
+            try {
+
+                Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+                Assert.fail();
+            } catch (NamingException expected) {
+            }
+
+            try {
+                Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
+                Assert.fail();
+            } catch (NamingException expected) {
+            }
+
+            try {
+                Remote remote = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+                Assert.fail();
+            } catch (NamingException expected) {
+            }
+        } finally {
+            op = new ModelNode();
+            op.get(ModelDescriptionConstants.OP).set("resume");
+            managementClient.getControllerClient().execute(op);
+
+            ctx.close();
+            Thread.currentThread().setContextClassLoader(current);
         }
     }
 }

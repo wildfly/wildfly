@@ -26,10 +26,13 @@ import java.util.Collection;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
@@ -38,14 +41,23 @@ import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.remote.RemoteViewInjectionSource;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.logging.Logger;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
+import org.wildfly.extension.requestcontroller.ControlPoint;
+import org.wildfly.extension.requestcontroller.ControlPointService;
+import org.wildfly.extension.requestcontroller.RequestControllerActivationMarker;
+import org.wildfly.extension.requestcontroller.RunResult;
 
 /**
  * Sets up JNDI bindings for each of the views exposed by a {@link SessionBeanComponentDescription session bean}
@@ -147,7 +159,11 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
             // If it a remote or (remote) home view then bind the java:jboss/exported jndi names for the view
             if(ejbViewDescription.getMethodIntf() == MethodIntf.REMOTE || ejbViewDescription.getMethodIntf() == MethodIntf.HOME) {
                 final String remoteJNDIName = remoteExportedJNDIBaseName + "!" + viewClassName;
-                registerRemoteBinding(sessionBean, viewDescription, remoteJNDIName);
+                if(RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit)) {
+                    registerControlPointBinding(sessionBean, viewDescription, remoteJNDIName, deploymentUnit);
+                } else {
+                    registerBinding(sessionBean, viewDescription, remoteJNDIName);
+                }
                 logBinding(jndiBindingsLogMessage, remoteJNDIName);
             }
         }
@@ -200,6 +216,56 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
             }
         });
+    }
+    private void registerControlPointBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName, final DeploymentUnit deploymentUnit) {
+        final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
+        final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+        final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
+        final RemoteViewInjectionSource delegate = new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful(), viewClassLoader);
+
+        componentDescription.getConfigurators().add(new ComponentConfigurator() {
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                viewClassLoader.setValue(Values.immediateValue(configuration.getModuleClassLoader()));
+                configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
+                    @Override
+                    public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
+                        serviceBuilder.addDependency(ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), RemoteEJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName()), ControlPoint.class, controlPointInjectedValue);
+                    }
+                });
+            }
+        });
+        //we need to wrap the injection source to allow graceful shutdown to function, although this is not ideal
+        //as it will also reject local lookups as well, although in general local code should never be looking up the
+        //exported bindings
+        //the other option would be to reject it at the remote naming service level, however then we loose the per-deployment granularity
+        final InjectionSource is = new InjectionSource() {
+
+            @Override
+            public void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+                final InjectedValue<ManagedReferenceFactory> delegateInjection = new InjectedValue<>();
+                delegate.getResourceValue(resolutionContext, serviceBuilder, phaseContext, delegateInjection);
+                injector.inject(new ManagedReferenceFactory() {
+                    @Override
+                    public ManagedReference getReference() {
+                        ControlPoint cp = controlPointInjectedValue.getValue();
+                        try {
+                            RunResult res = cp.beginRequest();
+                            if(res != RunResult.RUN) {
+                                throw EjbLogger.ROOT_LOGGER.containerSuspended();
+                            }
+                            try {
+                                return delegateInjection.getValue().getReference();
+                            } finally {
+                                cp.requestComplete();
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        };
+        moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, is));
     }
 
     private void logBinding(final StringBuilder jndiBindingsLogMessage, final String jndiName) {
