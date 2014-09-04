@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:do="urn:jboss:domain:3.0"
-                xmlns="urn:jboss:domain:3.0"
-        >
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
     <xsl:output indent="yes"/>
+
+    <xsl:variable name="jboss" select="'urn:jboss:domain:'"/>
 
     <!-- User params. -->
     <xsl:param name="rbac" select="'rbac'"/>
@@ -13,18 +13,9 @@
     <xsl:param name="rbac-user-props" select="'rbac-users.properties'"/>
     <xsl:param name="rbac-groups-props" select="'rbac-groups.properties'"/>
 
-    <!-- Change the standalone access-control provider to rbac -->
-    <xsl:template match="/do:server/do:management/do:access-control" priority="100">
-        <xsl:copy>
-            <xsl:attribute name="provider">
-                <xsl:value-of select="$rbac"/>
-            </xsl:attribute>
-            <xsl:apply-templates select="node()"/>
-        </xsl:copy>
-    </xsl:template>
-
-    <!-- Change the domain access-control provider to rbac -->
-    <xsl:template match="/do:domain/do:management/do:access-control" priority="100">
+    <!-- Changes both domain and standalone access-control provider to rbac -->
+    <xsl:template match="//*[local-name()='management' and starts-with(namespace-uri(), $jboss)]
+                          /*[local-name()='access-control']" priority="100">
         <xsl:copy>
             <xsl:attribute name="provider">
                 <xsl:value-of select="$rbac"/>
