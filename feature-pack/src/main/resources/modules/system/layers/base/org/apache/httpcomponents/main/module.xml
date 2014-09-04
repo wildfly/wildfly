@@ -30,6 +30,8 @@
     <resources>
         <artifact name="${org.apache.httpcomponents:httpclient}"/>
         <artifact name="${org.apache.httpcomponents:httpcore}"/>
+        <artifact name="${org.apache.httpcomponents:httpcore-nio}"/>
+        <artifact name="${org.apache.httpcomponents:httpasyncclient}"/>
         <artifact name="${org.apache.httpcomponents:httpmime}"/>
     </resources>
 
