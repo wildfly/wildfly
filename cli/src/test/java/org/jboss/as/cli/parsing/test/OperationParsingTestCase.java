@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.completion.mock.MockCommandContext;
 import org.jboss.as.cli.operation.CommandLineParser;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -36,6 +37,8 @@ import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
@@ -297,6 +300,44 @@ public class OperationParsingTestCase {
         assertEquals("filter-spec", handler.getPropertyValue("name"));
         assertTrue(args.contains("value"));
         assertEquals("\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\"", handler.getPropertyValue("value"));
+    }
+
+    @Test
+    public void testDMREqualsAsParamEquals() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+
+        parse(":add(keystore=>{password=1234test,url=/Users/xxx/clientcert.jks})", handler);
+
+        assertFalse(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        assertEquals("add", handler.getOperationName());
+
+        Set<String> args = handler.getPropertyNames();
+        assertEquals(1, args.size());
+        assertTrue(args.contains("keystore"));
+        assertEquals(">{password=1234test,url=/Users/xxx/clientcert.jks}", handler.getPropertyValue("keystore"));
+        final ModelNode request = handler.toOperationRequest(new MockCommandContext());
+        final ModelNode keystoreDmr = request.get("keystore");
+        assertTrue(keystoreDmr.isDefined());
+        assertEquals(ModelType.OBJECT, keystoreDmr.getType());
+        final Set<String> props = keystoreDmr.keys();
+        assertEquals(2, props.size());
+
+        // this name is not alphanumeric but it's still a value of the CLI operation parameter
+        // and the CLI at the moment does not attempt to validate values
+        assertTrue(props.contains(">{password"));
+        assertTrue(props.contains("url"));
+        assertEquals("1234test", keystoreDmr.get(">{password").asString());
+        assertEquals("/Users/xxx/clientcert.jks}", keystoreDmr.get("url").asString());
     }
 
     protected void parse(String opReq, DefaultCallbackHandler handler) throws CommandFormatException {

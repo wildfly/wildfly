@@ -246,7 +246,7 @@ public class ArgumentValueParsingTestCase {
 
     @Test
     public void testListOfObjects() throws Exception {
-        final ModelNode value = parse("[{a=b},{c=[d=e,f={g=h}}]");
+        final ModelNode value = parse("[{a=b},{c=[d=e,f={g=h}]}]");
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
         final List<ModelNode> list = value.asList();
@@ -299,6 +299,50 @@ public class ArgumentValueParsingTestCase {
         final ModelNode gh = prop.getValue();
         assertEquals(1, gh.keys().size());
         assertEquals("h", gh.get("g").asString());
+    }
+
+    @Test
+    public void testOpeningCurlyBracesInValue() throws Exception {
+
+        ModelNode value = parse(">{b\\=c}");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(">{b=c}", value.asString());
+
+        value = parse(">\\{b\\=c}");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(">{b=c}", value.asString());
+    }
+
+    @Test
+    public void testOpeningBracketInValue() throws Exception {
+        ModelNode value = parse("a[bc");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("a[bc", value.asString());
+
+        value = parse("a\\[bc");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("a[bc", value.asString());
+
+        value = parse("a \\[ b c");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("a [ b c", value.asString());
+    }
+
+    @Test
+    public void testDeactivatedEqualsSign() throws Exception {
+        final ModelNode value = parse("a=b{c[d=e]}]}");
+        assertNotNull(value);
+        assertEquals(ModelType.OBJECT, value.getType());
+        assertEquals(1, value.keys().size());
+        final ModelNode a = value.get("a");
+        assertTrue(a.isDefined());
+        assertEquals(ModelType.STRING, a.getType());
+        assertEquals("b{c[d=e]}]}", a.asString());
     }
 
     @Test

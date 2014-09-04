@@ -49,7 +49,8 @@ public class NameValueSeparatorState extends DefaultParsingState {
                 } catch(IndexOutOfBoundsException e) {
                     // ok
                 }
-                ctx.leaveState();
+                ctx.leaveState(); // current state
+                ctx.leaveState(); // argument value state
             }});
     }
 }

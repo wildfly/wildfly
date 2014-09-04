@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 
@@ -97,6 +98,10 @@ public class StateParser {
         ParsingState initialState;
         boolean strict;
         CommandFormatException error;
+        CommandContext cmdCtx;
+
+        private final Deque<Character> lookFor = new ArrayDeque<Character>();
+        private char deactivated;
 
         void parse() throws CommandFormatException {
             while (location < input.length()) {
@@ -235,6 +240,48 @@ public class StateParser {
             if(error == null) {
                 error = e;
             }
+        }
+
+        @Override
+        public void lookFor(char ch) {
+            lookFor.push(ch);
+        }
+
+        @Override
+        public boolean meetIfLookedFor(char ch) {
+            if(lookFor.isEmpty() || lookFor.peek() != ch) {
+                return false;
+            }
+            lookFor.pop();
+            return true;
+        }
+
+        @Override
+        public boolean isLookingFor(char c) {
+            return !lookFor.isEmpty() && lookFor.peek() == c;
+        }
+
+        @Override
+        public void deactivateControl(char c) {
+            if(deactivated != '\u0000') {
+                // just not to use java.util.Set when only '=' is expected
+                // to be deactivated at the moment...
+                throw new IllegalStateException(
+                        "Current implementation supports only one deactivated character at a time.");
+            }
+            deactivated = c;
+        }
+
+        @Override
+        public void activateControl(char c) {
+            if(deactivated == c) {
+                deactivated = '\u0000';
+            }
+        }
+
+        @Override
+        public boolean isDeactivated(char c) {
+            return deactivated == c;
         }
     }
 }

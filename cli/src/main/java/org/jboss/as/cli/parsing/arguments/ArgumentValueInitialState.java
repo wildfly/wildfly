@@ -34,8 +34,10 @@ public class ArgumentValueInitialState extends DefaultParsingState {
 
     public ArgumentValueInitialState() {
         super("ARG_VALUE_INIT");
-        setDefaultHandler(new EnterStateCharacterHandler(new ArgumentValueState()));
-        enterState('[', new ListState(new ArgumentValueState()));
-        enterState('{', new ArgumentValueState());
+        final ArgumentValueState valueState = new ArgumentValueState();
+        final CompositeState complexValueState = new CompositeState(valueState);
+        setDefaultHandler(new EnterStateCharacterHandler(complexValueState));
+        enterState('[', complexValueState);
+        enterState('{', complexValueState);
     }
 }

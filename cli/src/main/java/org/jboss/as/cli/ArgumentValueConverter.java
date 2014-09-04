@@ -28,7 +28,7 @@ import org.jboss.as.cli.parsing.StateParser;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueState;
-import org.jboss.as.cli.parsing.arguments.ListState;
+import org.jboss.as.cli.parsing.arguments.CompositeState;
 import org.jboss.as.cli.parsing.arguments.NonObjectArgumentValueState;
 import org.jboss.dmr.ModelNode;
 
@@ -99,7 +99,7 @@ public interface ArgumentValueConverter {
     ArgumentValueConverter LIST = new DMRWithFallbackConverter() {
         final DefaultParsingState initialState = new DefaultParsingState("IL"){
             {
-                setDefaultHandler(new EnterStateCharacterHandler(new ListState(new ArgumentValueState())));
+                setDefaultHandler(new EnterStateCharacterHandler(new CompositeState(true, new ArgumentValueState())));
             }
         };
         @Override
@@ -113,7 +113,7 @@ public interface ArgumentValueConverter {
     ArgumentValueConverter PROPERTIES = new DMRWithFallbackConverter() {
         final DefaultParsingState initialState = new DefaultParsingState("IPL"){
             {
-                setDefaultHandler(new EnterStateCharacterHandler(new ListState(new ArgumentValueState())));
+                setDefaultHandler(new EnterStateCharacterHandler(new CompositeState(true, new ArgumentValueState())));
             }
         };
         @Override

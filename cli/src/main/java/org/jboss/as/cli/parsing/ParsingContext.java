@@ -154,4 +154,65 @@ public interface ParsingContext {
      * @throws CommandFormatException
      */
     void replaceProperty(boolean exceptionIfNotResolved) throws CommandFormatException;
+
+    /**
+     * Indicates that the passed in the argument character is expected
+     * further the line. This is useful for special characters like
+     * brackets, braces, etc.
+     * This method can be called multiple times during parsing. Each
+     * invocation will push the current look-for character into the
+     * look-for character stack.
+     * Once the look-for character has been met, the met(char ch)
+     * method must be called to pop the met character from the stack.
+     *
+     * @param ch  the character to look for
+     */
+    void lookFor(char c);
+
+    /**
+     * This is a convenient safe method which checks whether the passed in
+     * character is the current look-for one. If it is then the parser
+     * will consider that it's been met and will pop from the look-for stack
+     * and will return true to indicate that.
+     * If it's not then the method will simply return false.
+     *
+     * @param c  the character that should be checked and met
+     * @return  if the character was in fact the current look-for one, false otherwise
+     */
+    boolean meetIfLookedFor(char c);
+
+    /**
+     * Checks whether the character is the one the parser is looking for.
+     *
+     * @param c  the character to check
+     * @return  true if it's the current look-for character, false otherwise
+     */
+    boolean isLookingFor(char c);
+
+    /**
+     * Indicates that a control character temporarily shouldn't be treated
+     * as a control but a usual content one.
+     *
+     * @param c  control character to deactivate
+     */
+    void deactivateControl(char c);
+
+    /**
+     * Activates a control character.
+     * It has effect if the character has previously been deactivated.
+     * Invoking this method for an active control character has no effect.
+     *
+     * @param c  control character to activate
+     */
+    void activateControl(char c);
+
+    /**
+     * Checks whether deactivateControl(c) was called for the character
+     * and the character is still not active.
+     *
+     * @param c  the character to check
+     * @return  true if the character was deactivated and still is,
+     * otherwise - false
+     */
+    boolean isDeactivated(char c);
 }

@@ -31,38 +31,71 @@ import org.jboss.as.cli.parsing.ParsingContext;
  *
  * @author Alexey Loubyansky
  */
-public class ListState extends DefaultParsingState {
+public class CompositeState extends DefaultParsingState {
 
-    public static final String ID = "LIST";
+    public static final String LIST = "LIST";
+    public static final String OBJECT = "OBJECT";
 
-    public ListState(final ArgumentValueState value) {
-        super(ID);
+    public static final String ID = OBJECT;
+
+    public CompositeState(final ArgumentValueState value) {
+        this(false, value);
+    }
+
+    public CompositeState(boolean list, final ArgumentValueState value) {
+        super(list ? LIST : OBJECT);
+
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() != '[') {
+                final char c = ctx.getCharacter();
+                if(c == '{') {
+                    ctx.lookFor('}');
+                } else if(c == '[') {
+                    ctx.lookFor(']');
+                } else {
                     ctx.enterState(value);
                 }
+                ctx.activateControl('=');
             }});
         setDefaultHandler(new LineBreakHandler(false, false){
             @Override
             protected void doHandle(ParsingContext ctx) throws CommandFormatException {
-                ctx.enterState(value);
+                final char c = ctx.getCharacter();
+                if((c == ']' || c == '}') && ctx.meetIfLookedFor(c)) {
+                    ctx.leaveState();
+                } else {
+                    ctx.enterState(value);
+                }
             }
         });
         setIgnoreWhitespaces(true);
         enterState(',', ListItemSeparatorState.INSTANCE);
-        leaveState(']');
+        enterState('[', this);
+        enterState('{', this);
         setReturnHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(ctx.isEndOfContent()) {
                     return;
                 }
-                if(ctx.getCharacter() == ',' || ctx.getCharacter() == '}') {
+                final char c = ctx.getCharacter();
+                if(c == '=' || c == '>' /*alternative equals =>*/) {
+                    ctx.deactivateControl('=');
                     return;
                 }
-                getHandler(ctx.getCharacter()).handle(ctx);
+                ctx.activateControl('=');
+                if(c == ',') {
+                    return;
+                }
+                if(c == ']' || c == '}') {
+                    if(ctx.meetIfLookedFor(c)) {
+                        ctx.leaveState();
+                        ctx.advanceLocation(1);
+                    }
+                    return;
+                }
+                getHandler(c).handle(ctx);
             }});
     }
 }

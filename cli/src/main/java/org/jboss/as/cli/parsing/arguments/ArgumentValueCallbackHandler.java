@@ -55,26 +55,28 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         if(ArgumentValueState.ID.equals(stateId)) {
             if(currentState != null) {
-                if (stack == null) {
-                    stack = new ArrayDeque<ValueState>();
+                if(currentState.isOnSeparator() && !currentState.isComposite()) {
+                    currentState.enteredValue();
                 }
-                stack.push(currentState);
-                if(ctx.getCharacter() == '{') {
-                    currentState = new DefaultValueState(false, true);
-                } else {
-                    currentState = new DefaultValueState(currentState.isList());
-                }
-            } else if(ctx.getCharacter() == '{') {
-                currentState = new DefaultValueState(false, true);
+                pushCurrentState();
+                currentState = new DefaultValueState();
             } else {
-                currentState = new DefaultValueState(false);
+                currentState = new DefaultValueState();
             }
-        } else if(ListState.ID.equals(stateId)) {
+        } else if(CompositeState.OBJECT.equals(stateId)) {
             if(currentState != null) {
-                if(stack == null) {
-                    stack = new ArrayDeque<ValueState>();
-                }
-                stack.push(currentState);
+                currentState.enteredValue();
+                pushCurrentState();
+            }
+            if (ctx.getCharacter() == '[') {
+                currentState = new ListValueState();
+            } else {
+                currentState = new ObjectValueState();
+            }
+        } else if(CompositeState.LIST.equals(stateId)) {
+            if(currentState != null) {
+                currentState.enteredValue();
+                pushCurrentState();
             }
             currentState = new ListValueState();
         } else if(ListItemSeparatorState.ID.equals(stateId)) {
@@ -88,6 +90,13 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
     }
 
+    void pushCurrentState() {
+        if (stack == null) {
+            stack = new ArrayDeque<ValueState>();
+        }
+        stack.push(currentState);
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.parsing.ParsingStateCallbackHandler#leavingState(org.jboss.as.cli.parsing.ParsingContext)
      */
@@ -96,11 +105,19 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         final String stateId = ctx.getState().getId();
         //System.out.println("left " + stateId + " '" + ctx.getCharacter() + "'");
 
-        if(ArgumentValueState.ID.equals(stateId) || ListState.ID.equals(stateId)) {
-            currentState.complete();
-            if(stack != null && stack.peek() != null) {
-                stack.peek().addChild(currentState);
-                currentState = stack.pop();
+        if(ArgumentValueState.ID.equals(stateId) ||
+                CompositeState.OBJECT.equals(stateId) || CompositeState.LIST.equals(stateId)) {
+            if (!currentState.isOnSeparator()) {
+                if (stack != null && stack.peek() != null) {
+                    stack.peek().addChild(currentState);
+                    currentState = stack.pop();
+                    if (!currentState.isComposite()) {
+                        if (stack.peek() != null) {
+                            stack.peek().addChild(currentState);
+                            currentState = stack.pop();
+                        }
+                    }
+                }
             }
         } else if(QuotesState.ID.equals(stateId)) {
             flag ^= QUOTES;
@@ -119,7 +136,14 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
     }
 
     public ModelNode getResult() {
-        return currentState.getValue();
+        final ModelNode result;
+        if(currentState.getName() != null) {
+            result = new ModelNode();
+            result.get(currentState.getName()).set(currentState.getValue());
+        } else {
+            result = currentState.getValue();
+        }
+        return result;
     }
 
     interface ValueState {
@@ -132,34 +156,36 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         void itemSeparator() throws CommandFormatException;
 
-        void complete() throws CommandFormatException;
-
         void character(char ch);
 
         ModelNode getValue();
 
-        boolean isList();
+        boolean isComposite();
+
+        boolean isOnSeparator();
+
+        void enteredValue();
     }
 
     class DefaultValueState implements ValueState {
-
-        private ModelNode wrapper;
-        private boolean list;
 
         protected String name;
         protected StringBuilder buf;
         protected int trimToSize = -1;
         protected boolean dontQuote;
 
-        public DefaultValueState(boolean list) {
-            this(list, false);
+        protected boolean onSeparator;
+
+        protected ModelNode child;
+
+        @Override
+        public boolean isOnSeparator() {
+            return onSeparator;
         }
 
-        public DefaultValueState(boolean list, boolean initWrapper) {
-            this.list = list;
-            if(initWrapper) {
-                wrapper = new ModelNode();
-            }
+        @Override
+        public void enteredValue() {
+            onSeparator = false;
         }
 
         @Override
@@ -178,9 +204,13 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                 name = getTrimmedString();
                 buf.setLength(0);
             }
+            onSeparator = true;
         }
         @Override
         public void character(char ch) {
+            if(name != null) {
+                throw new IllegalStateException("the name is already complete");
+            }
             if(buf == null) {
                 buf = new StringBuilder();
             }
@@ -212,62 +242,21 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
         @Override
         public void itemSeparator() {
-            if(buf.length() == 0) {
-                return;
-            }
-            if(wrapper == null) {
-                wrapper = new ModelNode();
-            }
-            if(name == null) {
-                wrapper.add(getStringValue());
-            } else {
-                addChild(wrapper, name, getStringValue());
-                name = null;
-            }
-            buf.setLength(0);
         }
-        @Override
-        public void complete() throws CommandFormatException{
-            if(wrapper != null) {
-                if(name == null) {
-                    if(buf != null && buf.length() > 0) {
-                        if(list || wrapper.getType().equals(ModelType.LIST)) {
-                            wrapper.add(getStringValue());
-                        } else {
-                            wrapper.set(getStringValue());
-                        }
-                    }
-                } else {
-                    addChild(wrapper, name, getStringValue());
-                    name = null;
-                }
-            }
-        }
+
         @Override
         public void addChild(ValueState child) {
-
-            if(wrapper != null) {
-                if(buf != null && buf.length() > 0) {
-                    wrapper.add(getStringValue());
-                } else {
-                    final ModelNode childNode;
-                    if(child.getName() != null) {
-                        childNode = new ModelNode();
-                        childNode.get(child.getName()).set(child.getValue());
-                    } else {
-                        childNode = child.getValue();
-                    }
-                    addChild(wrapper, name, childNode);
-                    name = null;
-                }
-            } else {
-                final String childName = child.getName() != null ? child.getName() : name;
-                addChild(getValue(), childName, child.getValue());
+            if(this.child != null) {
+                throw new IllegalStateException("child is already initialized");
             }
+            this.child = child.getValue();
         }
         @Override
         public ModelNode getValue() {
-            return wrapper != null ? wrapper : getStringValue();
+            if(child != null) {
+                return child;
+            }
+            return getStringValue();
         }
         private ModelNode getStringValue() {
             final ModelNode value = new ModelNode();
@@ -276,24 +265,9 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
             }
             return value;
         }
-        protected void addChild(ModelNode parent, String name, ModelNode child) {
-            if(list) {
-                if(name != null) {
-                    parent.add(name, child);
-                } else {
-                    parent.add(child);
-                }
-            } else {
-                if(name != null) {
-                    parent.get(name).set(child);
-                } else {
-                    parent.set(child);
-                }
-            }
-        }
 
         @Override
-        public boolean isList() {
+        public boolean isComposite() {
             return false;
         }
 
@@ -309,13 +283,33 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
     class ListValueState implements ValueState {
 
         private ModelNode list;
+        private boolean onSeparator;
+
+        @Override
+        public boolean isOnSeparator() {
+            return onSeparator;
+        }
+
+        @Override
+        public void enteredValue() {
+            onSeparator = false;
+        }
 
         @Override
         public void addChild(ValueState child) {
-            if(list != null) {
-                list.add(child.getValue());
+            final ModelNode ch;
+            if(child.getName() != null) {
+                ch = new ModelNode();
+                //ch.get(child.getName()).set(child.getValue()); // object
+                ch.set(child.getName(), child.getValue()); // property
             } else {
-                list = child.getValue();
+                ch = child.getValue();
+            }
+
+            if(list != null) {
+                list.add(ch);
+            } else {
+                list = ch;
                 if(list.getType() != ModelType.LIST) {
                     ModelNode list = new ModelNode();
                     list.add(this.list);
@@ -336,11 +330,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         @Override
         public void itemSeparator() throws CommandFormatException {
-            //throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void complete() throws CommandFormatException {
+            onSeparator = true;
         }
 
         @Override
@@ -359,7 +349,85 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
 
         @Override
-        public boolean isList() {
+        public boolean isComposite() {
+            return true;
+        }
+    }
+
+    class ObjectValueState implements ValueState {
+
+        private ModelNode obj;
+        private boolean onSeparator;
+        private boolean primitiveList;
+
+        @Override
+        public boolean isOnSeparator() {
+            return onSeparator;
+        }
+
+        @Override
+        public void enteredValue() {
+            onSeparator = false;
+        }
+
+        @Override
+        public void addChild(ValueState child) {
+            if(child.getName() == null) {
+                // the child should be the value
+                if(obj != null) {
+                    if(obj.getType() == ModelType.LIST) {
+                        obj.add(child.getValue());
+                    } else {
+                        final ModelNode tmp = obj;
+                        obj = new ModelNode();
+                        obj.add(tmp);
+                        obj.add(child.getValue());
+                        primitiveList = true;
+                    }
+                    return;
+                }
+                obj = child.getValue();
+                return;
+            } else if(primitiveList) {
+                throw new IllegalStateException("Can't add a property " + child.getName() + "=" + child.getValue()
+                        + " to a list of values " + obj.asString());
+            }
+            if(obj == null) {
+                obj = new ModelNode();
+            }
+            obj.get(child.getName()).set(child.getValue());
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        public void nameSeparator(ParsingContext ctx) throws CommandFormatException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void itemSeparator() throws CommandFormatException {
+            onSeparator = true;
+        }
+
+        @Override
+        public void character(char ch) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ModelNode getValue() {
+            if(obj == null) {
+                return new ModelNode();
+            }
+            return obj;
+        }
+
+        @Override
+        public boolean isComposite() {
             return true;
         }
     }
