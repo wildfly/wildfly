@@ -28,11 +28,12 @@ import java.net.URL;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Date: 05.11.2011
@@ -123,4 +124,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(value = "URL scanner does not understand the URL protocol %s, CDI beans will not be scanned.", id = 16016)
     void doNotUnderstandProtocol(URL url);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Using deployment classloader to load proxy classes for module %s. Package-private access will not work. To fix this the module should declare dependencies on %s", id = 16017)
+    void loadingProxiesUsingDeploymentClassLoader(ModuleIdentifier moduleIdentifier, String dependencies);
 }

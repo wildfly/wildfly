@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.util;
 
+import static org.jboss.weld.util.reflection.Reflections.cast;
+
 /**
  *
  * @author Stuart Douglas
@@ -38,6 +40,18 @@ public class Reflections {
             throw new RuntimeException(e);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean isAccessible(String className, ClassLoader classLoader) {
+        return loadClass(className, classLoader) != null;
+    }
+
+    public static <T> Class<T> loadClass(String className, ClassLoader classLoader) {
+        try {
+            return cast(classLoader.loadClass(className));
+        } catch (Exception e) {
+            return null;
         }
     }
 

@@ -21,27 +21,49 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.weld.exceptions.WeldException;
-import org.jboss.weld.logging.messages.BeanMessage;
-import org.jboss.weld.serialization.spi.ProxyServices;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javassist.util.proxy.ProxyObject;
+
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.util.Reflections;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.weld.exceptions.WeldException;
+import org.jboss.weld.interceptor.proxy.LifecycleMixin;
+import org.jboss.weld.logging.messages.BeanMessage;
+import org.jboss.weld.serialization.spi.ProxyServices;
 
 /**
  * {@link ProxyServices} implementation that delegates to the module class loader if the bean class loader cannot be determined
  *
  * @author Stuart Douglas
+ * @author Jozef Hartinger
  *
  */
 public class ProxyServicesImpl implements ProxyServices {
 
+    private static String[] REQUIRED_WELD_DEPENDENCIES = new String[] {
+        "org.jboss.weld.core",
+        "org.javassist"
+    };
+
+    // these are used to check whether a classloader is capable of loading Weld proxies
+    private static String[] WELD_CLASSES = new String[] {
+        LifecycleMixin.class.getName(),
+        ProxyObject.class.getName()
+    };
+
     private final Module module;
+    private final ConcurrentMap<ModuleIdentifier, Boolean> processedStaticModules = new ConcurrentHashMap<ModuleIdentifier, Boolean>();
 
     public ProxyServicesImpl(Module module) {
         this.module = module;
@@ -75,18 +97,47 @@ public class ProxyServicesImpl implements ProxyServices {
                 //we can use it to load the proxy
                 return proxiedBeanType.getClassLoader();
             } else {
-                //otherwise we use the deployments CL
-                //rather than using a server modules CL
-                return module.getClassLoader();
+                // this class comes from a static module
+                // first, check if we can use its classloader to load proxy classes
+                final Module  definingModule = loader.getModule();
+                Boolean hasWeldDependencies = processedStaticModules.get(definingModule.getIdentifier());
+                boolean logWarning = false; // only log for the first class in the module
+
+                if (hasWeldDependencies == null) {
+                    hasWeldDependencies = canLoadWeldProxies(definingModule); // may be run multiple times but that does not matter
+                    logWarning = processedStaticModules.putIfAbsent(definingModule.getIdentifier(), hasWeldDependencies) == null;
+                }
+                if (hasWeldDependencies) {
+                    // this module declares weld dependencies - we can use module's classloader to load the proxy class
+                    // pros: package-private members will work fine
+                    // cons: proxy classes will remain loaded by the module's classloader after undeployment (nothing else leaks)
+                    return proxiedBeanType.getClassLoader();
+                } else {
+                    // no weld dependencies - we use deployment's classloader to load the proxy class
+                    // pros: proxy classes unloaded with undeployment
+                    // cons: package-private methods and constructors will yield IllegalAccessException
+                    if (logWarning) {
+                        WeldLogger.ROOT_LOGGER.loadingProxiesUsingDeploymentClassLoader(definingModule.getIdentifier(), Arrays.toString(REQUIRED_WELD_DEPENDENCIES));
+                    }
+                    return this.module.getClassLoader();
+                }
             }
         } else {
             return proxiedBeanType.getClassLoader();
         }
     }
 
-    public void cleanup() {
-        // This implementation requires no cleanup
+    private static boolean canLoadWeldProxies(Module module) {
+        for (String weldClass : WELD_CLASSES) {
+            if (!Reflections.isAccessible(weldClass, module.getClassLoader())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    public void cleanup() {
+        processedStaticModules.clear();
     }
 
     public Class<?> loadBeanClass(final String className) {
