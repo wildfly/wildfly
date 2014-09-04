@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.operations;
 
-import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.INTERFACE;
+import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.addValidatingHandler;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.ServerMessages;
+
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -51,24 +51,8 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         // Add a Stage.MODEL handler to validate that when this step and all other steps that may be part of
-        // a containing composite operation are done, the model doesn't violate the requirement that "interface"
-        // is an alternative to "socket-binding"
-        context.addStep(new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-                if (model.hasDefined(INTERFACE.getName())
-                        && (model.hasDefined(HttpManagementResourceDefinition.SOCKET_BINDING.getName())
-                        || model.hasDefined(HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName())
-                )) {
-                    throw ServerMessages.MESSAGES.illegalCombinationOfHttpManagementInterfaceConfigurations(
-                            INTERFACE.getName(),
-                            HttpManagementResourceDefinition.SOCKET_BINDING.getName(),
-                            HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName());
-                }
-                context.stepCompleted();
-            }
-        }, OperationContext.Stage.MODEL);
+        // a containing composite operation are done, the model doesn't violate the constraints.
+        addValidatingHandler(context, operation);
 
         super.execute(context, operation);
     }

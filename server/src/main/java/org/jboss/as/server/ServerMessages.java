@@ -680,4 +680,8 @@ public interface ServerMessages {
 
     @Message(id = 18787, value = "When specifying a 'module' you also need to specify the 'code'")
     OperationFailedException vaultModuleWithNoCode();
+
+    @Message( id = 18788, value = "For a secure port to be enabled for the HTTP management interface a security realm to supply the SSLContext must be specified.")
+    OperationFailedException noSecurityRealmForSsl();
+
 }

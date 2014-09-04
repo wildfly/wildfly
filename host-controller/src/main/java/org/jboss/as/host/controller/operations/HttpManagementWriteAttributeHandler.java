@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller.operations;
 
+import static org.jboss.as.host.controller.resources.HttpManagementResourceDefinition.addValidatingHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,6 +47,13 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
         super(HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS);
         this.hostControllerInfo = hostControllerInfo;
         this.environment = environment;
+    }
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+            ModelNode oldValue, Resource model) throws OperationFailedException {
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+        addValidatingHandler(context, operation);
     }
 
     @Override

@@ -80,7 +80,7 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
     }
 
     /**
-     * Creates an operations that targets the valiadating handler.
+     * Creates an operations that targets the validating handler.
      *
      * @param operationToValidate the operation that this handler will validate
      * @return  the validation operation

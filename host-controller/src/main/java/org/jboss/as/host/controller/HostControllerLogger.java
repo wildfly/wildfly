@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import java.net.URI;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;

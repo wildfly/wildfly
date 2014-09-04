@@ -738,6 +738,7 @@ public interface HostControllerMessages {
     @Message(id=16540, value="There is no resource called %s")
     OperationFailedException noResourceFor(PathAddress address);
 
-
+    @Message( id = 16541, value = "For a secure port to be enabled for the HTTP management interface a security realm to supply the SSLContext must be specified.")
+    OperationFailedException noSecurityRealmForSsl();
     // END WITH 16575
 }

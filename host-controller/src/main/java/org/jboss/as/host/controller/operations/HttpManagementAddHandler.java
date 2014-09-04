@@ -22,7 +22,9 @@
 
 package org.jboss.as.host.controller.operations;
 
+
 import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
+import static org.jboss.as.host.controller.resources.HttpManagementResourceDefinition.addValidatingHandler;
 
 import java.security.AccessController;
 import java.util.List;
@@ -38,6 +40,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -72,11 +75,12 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
         for (AttributeDefinition attr : HttpManagementResourceDefinition.ATTRIBUTE_DEFINITIONS) {
             attr.validateAndSet(operation, model);
         }
+        addValidatingHandler(context, operation);
     }
 
     @Override

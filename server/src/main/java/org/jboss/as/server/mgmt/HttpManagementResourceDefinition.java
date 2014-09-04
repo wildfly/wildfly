@@ -24,11 +24,18 @@ package org.jboss.as.server.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.server.ServerMessages.MESSAGES;
 
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -38,6 +45,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -58,6 +66,8 @@ import org.jboss.dmr.ModelType;
 public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
 
     private static final PathElement RESOURCE_PATH = PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE);
+
+    private static final OperationStepHandler VALIDATING_HANDLER = new HttpManagementValidatingHandler();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, ModelType.STRING, true)
                 .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
@@ -131,4 +141,36 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
+
+    public static void addValidatingHandler(OperationContext operationContext, ModelNode fromOperation) {
+        ModelNode operation = Util.createOperation("validate-http-interface", PathAddress.pathAddress(fromOperation.require(OP_ADDR)));
+
+        operationContext.addStep(operation, VALIDATING_HANDLER, Stage.MODEL);
+    }
+
+    private static class HttpManagementValidatingHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            if (model.hasDefined(INTERFACE.getName())
+                    && (model.hasDefined(SOCKET_BINDING.getName())
+                    || model.hasDefined(SECURE_SOCKET_BINDING.getName())
+            )) {
+                throw MESSAGES.illegalCombinationOfHttpManagementInterfaceConfigurations(
+                        INTERFACE.getName(),
+                        SOCKET_BINDING.getName(),
+                        SECURE_SOCKET_BINDING.getName());
+            }
+
+            if (model.hasDefined(SECURITY_REALM.getName()) == false
+                    && (model.hasDefined(SECURE_SOCKET_BINDING.getName()) || model.hasDefined(HTTPS_PORT.getName()))) {
+                throw MESSAGES.noSecurityRealmForSsl();
+            }
+
+            context.stepCompleted();
+        }
+
+    }
+
 }
