@@ -901,6 +901,8 @@
             <xs:annotation>
                 <xs:documentation>
                     Name of a socket-binding configuration declared in the server's socket-binding-group to use for a HTTPS socket.
+                    
+                    Note: When specified the interface must also be configured to reference a security realm with a configured KeyStore.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
