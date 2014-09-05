@@ -417,7 +417,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         boolean failed = false;
         String response = null;
         try {
-            response = HttpRequest.get(url.toString(), 10, TimeUnit.SECONDS);
+            response = HttpRequest.get(url.toString(), 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             failed = true;
             if (!shouldFail) throw new Exception("Http request failed.", e);
