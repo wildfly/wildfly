@@ -130,7 +130,7 @@ public class JACCTranslateServletDDTestCase {
      * Test canonical form of HTTP Method list.
      */
     @Test
-    @Ignore("JBPAPP-9405 JACC 1.1 implementation must use exception list instead of missing method list for HTTP methods in the unchecked permissions")
+    @Ignore("bz-900668")
     public void testHTTPMethodSubtraction(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
         assertTrue("HTTP Method exception list must be used instead of method subtraction from 'big 7'.",
@@ -141,7 +141,7 @@ public class JACCTranslateServletDDTestCase {
      * Test handling of HTTP Method Exception list.
      */
     @Test
-    @Ignore("JBPAPP-9400 - JACC permissions with HTTP method exception list are not correctly implemented")
+    @Ignore("bz-900668")
     public void testHTTPMethodExceptionList(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
         assertFalse("Can't find permissions with a HTTP Method exception list",
@@ -159,7 +159,6 @@ public class JACCTranslateServletDDTestCase {
      * Test usage of qualified patterns.
      */
     @Test
-    @Ignore("JBPAPP-9402 JACC permissions added to the unchecked policy must be constructed using qualified pattern as their name")
     public void testQualifiedPatterns(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
         assertTrue("Default pattern '/' must be qualified.", node.selectNodes("*/Permission[@name='/']").isEmpty());

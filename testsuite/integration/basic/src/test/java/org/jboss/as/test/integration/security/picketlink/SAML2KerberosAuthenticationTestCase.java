@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.integration.security.picketlink;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,9 +61,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-
-import static org.hamcrest.CoreMatchers.*;
-
 import org.hamcrest.Matcher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -80,10 +84,6 @@ import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
-import static org.junit.Assert.assertThat;
-
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -236,7 +236,6 @@ public class SAML2KerberosAuthenticationTestCase {
      * 
      * @throws Exception
      */
-    @Ignore("Dismiss ignore after fixing this: https://bugzilla.redhat.com/show_bug.cgi?id=1071288") 
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukeRoles(@ArquillianResource URL webAppURL, @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
@@ -260,7 +259,6 @@ public class SAML2KerberosAuthenticationTestCase {
      *
      * @throws Exception
      */
-    @Ignore("Dismiss ignore after fixing this: https://bugzilla.redhat.com/show_bug.cgi?id=1071288") 
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukePrincipal(@ArquillianResource URL webAppURL, @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
@@ -444,7 +442,7 @@ public class SAML2KerberosAuthenticationTestCase {
                 HttpGet initialIdpHttpGet = new HttpGet(this.idpUri);     // GET /idp-test-DEP1
                 initialIdpHttpGet.setParams(doRedirect);
                 HttpResponse response = httpClient.execute(initialIdpHttpGet);
-                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting successfull kerberos authentication", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 consumeResponse(response);
 
 
@@ -459,35 +457,21 @@ public class SAML2KerberosAuthenticationTestCase {
                 HttpGet idpHttpGet = new HttpGet(initialHttpGetRedirect);   // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....
                 idpHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGet);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from SP with SAML request", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect);   // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf....., Authorization: Negotiate
                 idpHttpGetRedirectForAuth.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGetRedirectForAuth);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from IdP with SAML response", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirectAuth = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet spHttpGet = new HttpGet(idpHttpGetRedirectAuth);   // GET /test-DEP1/?SAMLResponse=...
                 spHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(spHttpGet);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
-                String spHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
-                consumeResponse(response);
-
-                HttpGet spHttpGetWithSession = new HttpGet(spHttpGetRedirect);   // GET /test-DEP1/;jsessionid=....
-                spHttpGetWithSession.setParams(doNotRedirect);
-                response = httpClient.execute(spHttpGetWithSession);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
-                String spHttpGetWithSessionRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
-                consumeResponse(response);
-
-                HttpGet authenticatedHttpGet = new HttpGet(this.uri);
-                authenticatedHttpGet.setParams(doRedirect);
-                response = httpClient.execute(authenticatedHttpGet);
-                assertThat("Unexpected status code after authentication.", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting succesfull authentication to the SP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 return EntityUtils.toString(response.getEntity());
             } finally {
                 // When HttpClient instance is no longer needed,
