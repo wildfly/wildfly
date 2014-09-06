@@ -198,6 +198,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         this.transactionManager = null;
         IoUtils.safeClose(listenerHandle);
         listenerHandle = null;
+        timerInjectedValue.getValue().purge(); //WFLY-3823
     }
 
     @Override
