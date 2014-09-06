@@ -127,7 +127,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
 
             // Check whether we want to run the timer
             if(!timerService.shouldRun(timer)) {
-                ROOT_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node", timer.getTimedObjectId());
+                ROOT_LOGGER.debugf("Skipping execution of timer for %s as it is being run on another node or the execution is suppressed by configuration", timer.getTimedObjectId());
                 timer.setNextTimeout(calculateNextTimeout(timer));
                 scheduleTimeoutIfRequired(timer);
                 return;
