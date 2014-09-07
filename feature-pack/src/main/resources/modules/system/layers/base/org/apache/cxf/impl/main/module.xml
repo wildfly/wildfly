@@ -40,6 +40,7 @@
         <artifact name="${org.apache.cxf:cxf-rt-management}"/>
         <artifact name="${org.apache.cxf:cxf-rt-security?jandex}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-transports-http-hc}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-jms}"/>
         <artifact name="${org.apache.cxf:cxf-rt-transports-local}"/>
         <artifact name="${org.apache.cxf:cxf-rt-wsdl}"/>
@@ -77,6 +78,7 @@
         <module name="javax.xml.stream.api" />
         <module name="javax.xml.ws.api" />
         <module name="org.apache.commons.lang" />
+        <module name="org.apache.httpcomponents"/>
         <module name="org.apache.neethi" />
         <module name="org.apache.velocity" />
         <module name="org.apache.xml-resolver" />

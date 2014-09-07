@@ -120,6 +120,7 @@
         <version.org.apache.cxf.xjcplugins>2.7.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpclient>4.3.2</version.org.apache.httpcomponents.httpclient>
+        <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.httpcomponents.httpcore>4.3.2</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
@@ -2397,6 +2398,58 @@
 
             <dependency>
                 <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http-hc</artifactId>
+                <version>${version.org.apache.cxf}</version>
+                <exclusions>
+                    <exclusion>
+                         <groupId>org.apache.cxf</groupId>
+                         <artifactId>cxf-rt-transports-http-jetty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-aop</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-asm</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-beans</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-context</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-expression</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-tx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-jms</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.springframework</groupId>
+                         <artifactId>spring-web</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId> org.slf4j</groupId>
+                         <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-jms</artifactId>
                 <version>${version.org.apache.cxf}</version>
                 <exclusions>
@@ -3319,6 +3372,34 @@
                     <exclusion>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore-nio</artifactId>
+                <version>${version.org.apache.httpcomponents.httpcore}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+	        <groupId>org.apache.httpcomponents</groupId>
+	        <artifactId>httpasyncclient</artifactId>
+	        <version>${version.org.apache.httpcomponents.httpasyncclient}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+	                <groupId>commons-io</groupId>
+	                <artifactId>commons-io</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -5651,10 +5732,6 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http-hc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-transports-jms</artifactId>
                     </exclusion>
                     <exclusion>
@@ -5872,10 +5949,6 @@
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-transports-http</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-rt-transports-http-hc</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
