@@ -416,58 +416,36 @@ public class SAML2KerberosAuthenticationTestCase {
                 HttpGet initialIdpHttpGet = new HttpGet(this.idpUri); // GET /idp-test-DEP1
                 initialIdpHttpGet.setParams(doRedirect);
                 HttpResponse response = httpClient.execute(initialIdpHttpGet);
-                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting successfull kerberos authentication", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 consumeResponse(response);
+
 
                 // 2. Do the work, manually do the redirect
                 HttpGet initialHttpGet = new HttpGet(this.uri); // GET /test-DEP1/printRoles?role=TheDuke2&role=...
                 initialHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(initialHttpGet);
-                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect to IdP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String initialHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet idpHttpGet = new HttpGet(initialHttpGetRedirect); // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....
                 idpHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGet);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from SP with SAML request", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
-                HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect); // GET
-                                                                                     // /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf.....,
-                                                                                     // Authorization: Negotiate
+                HttpGet idpHttpGetRedirectForAuth = new HttpGet(idpHttpGetRedirect);   // GET /idp-test-DEP1/?SAMLRequest=jZLfT4MwEMf....., Authorization: Negotiate
                 idpHttpGetRedirectForAuth.setParams(doNotRedirect);
                 response = httpClient.execute(idpHttpGetRedirectForAuth);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+                assertThat("Unexpected status code when expecting redirect from IdP with SAML response", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
                 String idpHttpGetRedirectAuth = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
                 consumeResponse(response);
 
                 HttpGet spHttpGet = new HttpGet(idpHttpGetRedirectAuth); // GET /test-DEP1/?SAMLResponse=...
                 spHttpGet.setParams(doNotRedirect);
                 response = httpClient.execute(spHttpGet);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
-                String spHttpGetRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
-                consumeResponse(response);
-
-                HttpGet spHttpGetWithSession = new HttpGet(spHttpGetRedirect); // GET /test-DEP1/;jsessionid=....
-                spHttpGetWithSession.setParams(doNotRedirect);
-                response = httpClient.execute(spHttpGetWithSession);
-                assertThat("Unexpected status code when expecting redirect from IdP", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
-                String spHttpGetWithSessionRedirect = response.getFirstHeader(HttpHeaders.LOCATION).getValue();
-                consumeResponse(response);
-
-                HttpGet authenticatedHttpGet = new HttpGet(this.uri);
-                authenticatedHttpGet.setParams(doRedirect);
-                response = httpClient.execute(authenticatedHttpGet);
-                assertThat("Unexpected status code after authentication.", response.getStatusLine().getStatusCode(),
-                        equalTo(HttpStatus.SC_OK));
+                assertThat("Unexpected status code when expecting succesfull authentication to the SP", response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
                 return EntityUtils.toString(response.getEntity());
             } finally {
                 // When HttpClient instance is no longer needed,
