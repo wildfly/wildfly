@@ -32,7 +32,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -130,8 +129,6 @@ public class ComplexAttributes {
         public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
             if (name.equals(parameterName)) {
                 ModelNode parameters = value.clone();
-                if (!(parameters.getType() == ModelType.OBJECT && !parameters.asList().isEmpty()))
-                    throw SecurityLogger.ROOT_LOGGER.incorrectKeystoreParameters(name);
                 if (isConfigured(parameters)) {
                     for (SimpleAttributeDefinition attribute : KEY_STORE_FIELDS) {
                         attribute.getValidator().validateParameter(attribute.getName(), parameters.get(attribute.getName()));
