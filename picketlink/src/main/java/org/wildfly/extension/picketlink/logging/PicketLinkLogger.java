@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.picketlink.logging;
 
-import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -33,6 +32,8 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.picketlink.common.exceptions.ProcessingException;
 import org.picketlink.identity.federation.core.audit.PicketLinkAuditEventType;
 import org.picketlink.idm.config.SecurityConfigurationException;
+
+import javax.xml.stream.XMLStreamException;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -45,6 +46,7 @@ public interface PicketLinkLogger extends BasicLogger {
 
     PicketLinkLogger ROOT_LOGGER = Logger.getMessageLogger(PicketLinkLogger.class, "org.wildfly.extension.picketlink");
 
+    // General Messages 1-49
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating PicketLink %s Subsystem")
     void activatingSubsystem(String name);
@@ -65,8 +67,6 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 5, value = "Error while configuring the metrics collector. Metrics will not be collected.")
     void federationErrorCollectingMetric(@Cause Throwable t);
 
-
-    // General Messages
     @Message(id = 6, value = "No writer provided for element %s. Check if a writer is registered in PicketLinkSubsystemWriter.")
     IllegalStateException noModelElementWriterProvided(String modelElement);
 
@@ -85,35 +85,38 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 11, value = "Failed to get metrics %s.")
     OperationFailedException failedToGetMetrics(String reason);
 
-    // IDM Messages
-    @Message(id = 12, value = "Entities module not found [%s].")
+    // IDM Messages 50-99
+    @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
 
-    @Message(id = 13, value = "Could not configure JPA store.")
+    @Message(id = 51, value = "Could not configure JPA store.")
     SecurityConfigurationException idmJpaStartFailed(@Cause Throwable e);
 
-    @Message(id = 14, value = "Could not lookup EntityManagerFactory [%s].")
+    @Message(id = 52, value = "Could not lookup EntityManagerFactory [%s].")
     SecurityConfigurationException idmJpaEMFLookupFailed(String entityManagerFactoryJndiName);
 
-    @Message(id = 15, value = "You must provide at least one identity configuration.")
+    @Message(id = 53, value = "Could not create transactional EntityManager.")
+    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);
+
+    @Message(id = 54, value = "You must provide at least one identity configuration.")
     OperationFailedException idmNoIdentityConfigurationProvided();
 
-    @Message(id = 16, value = "You must provide at least one identity store for identity configuration [%s].")
+    @Message(id = 55, value = "You must provide at least one identity store for identity configuration [%s].")
     OperationFailedException idmNoIdentityStoreProvided(String identityConfiguration);
 
-    // Federation Messages
-    @Message(id = 17, value = "No Identity Provider configuration found for federation [%s]. ")
+    // Federation Messages - 100-150
+    @Message(id = 100, value = "No Identity Provider configuration found for federation [%s]. ")
     IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);
 
-    @Message(id = 18, value = "No type provided for the handler. You must specify a class-name or code.")
+    @Message(id = 101, value = "No type provided for the handler. You must specify a class-name or code.")
     OperationFailedException federationHandlerTypeNotProvided();
 
-    @Message(id = 19, value = "Could not parse default STS configuration.")
+    @Message(id = 102, value = "Could not parse default STS configuration.")
     RuntimeException federationCouldNotParseSTSConfig(@Cause Throwable t);
 
-    @Message(id = 20, value = "Required attribute [%s] for [%s].")
+    @Message(id = 103, value = "Required attribute [%s] for [%s].")
     OperationFailedException federationRequiredAttribute(String attributeName, String configuration);
 
-    @Message(id = 21, value = "Could not configure SAML Metadata to deployment [%s].")
+    @Message(id = 104, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
 }

@@ -61,11 +61,9 @@ import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguratio
 import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
-import javax.transaction.TransactionManager;
-
 import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
+import javax.transaction.TransactionManager;
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -424,8 +422,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
-                Class<? extends AttributedType> attributedTypeClass = loadClass(moduleNode, typeName);
-                storeConfig.addCredentialHandler((Class<? extends CredentialHandler>) attributedTypeClass);
+                storeConfig.addCredentialHandler(this.<CredentialHandler>loadClass(moduleNode, typeName));
             }
         }
     }
