@@ -32,9 +32,10 @@ import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -70,7 +71,7 @@ public class SingletonServiceTestCase {
     @Test
     public void testSingletonService(@ArquillianResource(MyServiceServlet.class) URL baseURL) throws IOException, URISyntaxException {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         // URLs look like "http://IP:PORT/singleton/service"
         URI defaultURI = MyServiceServlet.createURI(baseURL, MyService.DEFAULT_SERVICE_NAME);
