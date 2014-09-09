@@ -34,7 +34,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -106,7 +106,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, PassivationIncapableIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, PassivationIncapableIncrementorBean.class.getSimpleName());
@@ -138,7 +138,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(0, queryCount(client, uri1));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -186,7 +186,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     private void failover(Class<?> beanClass, URL baseURL1, URL baseURL2) throws Exception {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, beanClass.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, beanClass.getSimpleName());
@@ -224,7 +224,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -236,7 +236,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, SimpleIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, SimpleIncrementorBean.class.getSimpleName());
@@ -274,7 +274,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(15, queryCount(client, uri2));
             assertEquals(16, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -287,7 +287,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI uri1 = StatefulServlet.createURI(baseURL1, MODULE_NAME, NestedIncrementorBean.class.getSimpleName());
         URI uri2 = StatefulServlet.createURI(baseURL2, MODULE_NAME, NestedIncrementorBean.class.getSimpleName());
@@ -325,7 +325,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20151515, queryCount(client, uri2));
             assertEquals(20161616, queryCount(client, uri2));
         } finally {
-            client.getConnectionManager().shutdown();
+            HttpClientUtils.closeQuietly(client);
         }
     }
 

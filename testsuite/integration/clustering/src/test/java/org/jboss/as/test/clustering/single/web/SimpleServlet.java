@@ -51,6 +51,10 @@ public class SimpleServlet extends HttpServlet {
         return baseURL.toURI().resolve(SERVLET_NAME);
     }
 
+    public static URI createURI(URL baseURL, int requestDuration) throws URISyntaxException {
+        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append('?').append(REQUEST_DURATION_PARAM).append('=').append(requestDuration).toString());
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(true);
