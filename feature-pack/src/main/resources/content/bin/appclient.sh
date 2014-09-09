@@ -109,18 +109,17 @@ if $cygwin; then
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
-CLASSPATH="$CLASSPATH:$JBOSS_HOME/jboss-modules.jar"
-
+CLASSPATH="$CLASSPATH:\""$JBOSS_HOME"\"/jboss-modules.jar"
 # Execute the JVM in the foreground
 eval \"$JAVA\" $JAVA_OPTS \
  -cp "$CLASSPATH" \
- \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/appclient/log/appclient.log\" \
- \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
+ \"-Dorg.jboss.boot.log.file="$JBOSS_HOME"/appclient/log/appclient.log\" \
+ \"-Dlogging.configuration=file:"$JBOSS_HOME"/appclient/configuration/logging.properties\" \
  org.jboss.modules.Main \
- -mp \"${JBOSS_MODULEPATH}\" \
+ -mp \""${JBOSS_MODULEPATH}"\" \
  org.jboss.as.appclient \
- -Djboss.home.dir=\"$JBOSS_HOME\" \
- -Djboss.server.base.dir=\"$JBOSS_HOME/appclient\" \
+ -Djboss.home.dir=\""$JBOSS_HOME"\" \
+ -Djboss.server.base.dir=\""$JBOSS_HOME"/appclient\" \
  '"$@"'
 JBOSS_STATUS=$?
 exit $JBOSS_STATUS
