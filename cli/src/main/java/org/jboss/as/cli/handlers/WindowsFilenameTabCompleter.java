@@ -49,7 +49,7 @@ public class WindowsFilenameTabCompleter extends FilenameTabCompleter {
        boolean dontCloseQuote = false;
        if(buffer.length() >= 2 && buffer.charAt(0) == '"') {
            int lastQuote = buffer.lastIndexOf('"');
-           if(lastQuote >= 0) {
+           if(lastQuote > 0) {
                StringBuilder buf = new StringBuilder();
                buf.append(buffer.substring(1, lastQuote));
                if(lastQuote != buffer.length() - 1) {
