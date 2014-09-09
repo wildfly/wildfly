@@ -24,14 +24,16 @@ package org.jboss.as.test.integration.ejb.management.deployments;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -40,6 +42,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,13 +52,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.MODULE_NAME;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.componentAddress;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.execute;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.executeOperation;
 import static org.jboss.as.test.integration.ejb.management.deployments.EjbJarRuntimeResourceTestBase.getEJBJar;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -136,6 +139,44 @@ public class EjbInvocationStatisticsTestCase {
     @Test
     public void testSLSB() throws Exception {
         validateBean(EJBComponentType.STATELESS, ManagedStatelessBean.class);
+    }
+
+    @Test
+    @InSequence(1) // this needs to run after testSingleton because testSingleton doesn't expect any previously made invocations
+    public void testSingletonWaitTime() throws Exception {
+        validateWaitTimeStatistic(EJBComponentType.SINGLETON, ManagedSingletonBean.class);
+    }
+
+    /*
+      Invoke the singleton bean multiple times at once. The wait-time statistic should show a number greater than zero, because
+      the singleton uses a write lock.
+    */
+    private void validateWaitTimeStatistic(final EJBComponentType type, final Class<?> beanClass) throws Exception {
+        final String name = beanClass.getSimpleName();
+        final BusinessInterface bean = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
+        final Runnable invocationRunnable = new Runnable() {
+            @Override
+            public void run() {
+                bean.doIt();
+            }
+        };
+
+        // perform 4 invocations at once
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
+        for(int i=0; i<4; i++) {
+            threadPool.submit(invocationRunnable);
+        }
+        threadPool.shutdown();
+        threadPool.awaitTermination(TimeoutUtil.adjust(25), TimeUnit.SECONDS);
+
+        // check the wait-time statistic
+        final ModelNode address = componentAddress(EjbJarRuntimeResourcesTestCase.BASE_ADDRESS, type, name).toModelNode();
+        address.protect();
+        {
+            final ModelNode result = executeOperation(managementClient,
+                    ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
+            assertTrue(result.get("wait-time").asLong() > 0L);
+        }
     }
 
     private void validateBean(final EJBComponentType type, final Class<?> beanClass) throws Exception {
