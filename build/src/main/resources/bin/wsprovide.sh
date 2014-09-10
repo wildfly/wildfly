@@ -68,7 +68,7 @@ fi
 
 # Execute the command
 eval \"$JAVA\" $JAVA_OPTS \
-    -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-    -mp \"$JBOSS_HOME/modules\" \
+    -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
+    -mp \""$JBOSS_HOME"/modules\" \
     org.jboss.ws.tools.wsprovide \
     '"$@"'

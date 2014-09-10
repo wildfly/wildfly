@@ -72,8 +72,8 @@ fi
 
 # Execute the command
 eval \"$JAVA\" $JAVA_OPTS \
-    -classpath \"$JBOSS_CLASSPATH\" \
+    -classpath \""$JBOSS_CLASSPATH"\" \
     org.jboss.modules.Main \
-    -mp \"$JBOSS_HOME/modules\" \
+    -mp \""$JBOSS_HOME"/modules\" \
     org.jboss.ws.tools.wsconsume \
     '"$@"'
