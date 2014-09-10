@@ -2750,5 +2750,14 @@ public interface ControllerMessages {
     @Message(id = 13484, value="A uri with bad syntax '%s' was passed for validation.")
     OperationFailedException badUriSyntax(String uri);
 
+    @Message(id = 13485, value = "The resource was added at the address %s.")
+    String resourceWasAdded(PathAddress address);
+
+    @Message(id = 13486, value = "The resource was removed at the address %s.")
+    String resourceWasRemoved(PathAddress address);
+
+    @Message(id = 13487, value = "The attribute %s value has been changed from %s to %s.")
+    String attributeValueWritten(String attributeName, ModelNode currentValue, ModelNode newVal);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

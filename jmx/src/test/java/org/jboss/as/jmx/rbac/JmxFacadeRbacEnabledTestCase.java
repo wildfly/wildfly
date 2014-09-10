@@ -72,6 +72,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -763,6 +764,8 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
         registration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
+
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);

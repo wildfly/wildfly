@@ -322,6 +322,11 @@ public abstract class ModelTestModelControllerService extends AbstractController
         }
 
         @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerNotifications(resourceRegistration);
+        }
+
+        @Override
         public PathElement getPathElement() {
             return delegate.getPathElement();
         }

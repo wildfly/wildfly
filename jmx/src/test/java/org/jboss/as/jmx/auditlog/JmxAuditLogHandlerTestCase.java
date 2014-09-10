@@ -54,6 +54,7 @@ import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -740,6 +741,8 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
+
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);

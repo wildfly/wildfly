@@ -34,6 +34,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -88,7 +89,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         //Hack to be able to access the registry for the jmx facade
 
         rootRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
-
+        GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
         extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
         controllerInitializer.setTestModelControllerService(this);
         controllerInitializer.initializeModel(rootResource, rootRegistration);

@@ -56,6 +56,7 @@ import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -343,6 +344,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerReadOnlyAttribute(HOST, null);
             resourceRegistration.registerReadOnlyAttribute(SERVER_GROUP, null);
         }
+    }
+
+    @Override
+    public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+        GlobalNotifications.registerGlobalNotifications(resourceRegistration, ProcessType.STANDALONE_SERVER);
     }
 
     @Override

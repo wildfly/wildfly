@@ -22,17 +22,21 @@
 
 package org.jboss.as.jmx;
 
+import static org.jboss.as.jmx.CommonAttributes.USE_MANAGEMENT_ENDPOINT;
+import static org.jboss.as.jmx.JMXSubsystemAdd.getDomainName;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.jmx.CommonAttributes.USE_MANAGEMENT_ENDPOINT;
 
 /**
  * @author Stuart Douglas
@@ -60,13 +64,20 @@ class RemotingConnectorAdd extends AbstractAddStepHandler {
              useManagementEndpoint = RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.resolveModelAttribute(context, model).asBoolean();
         }
 
-        launchServices(context, verificationHandler, newControllers, useManagementEndpoint);
+        // Read the model for the JMW subsystem to find the domain name for the resolved/expressions models (if they are exposed).
+        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        PathAddress parentAddress = address.subAddress(0, address.size() - 1);
+        ModelNode jmxSubsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress, true));
+        String resolvedDomain = getDomainName(context, jmxSubsystemModel, CommonAttributes.RESOLVED);
+        String expressionsDomain = getDomainName(context, jmxSubsystemModel, CommonAttributes.EXPRESSION);
+
+        launchServices(context, verificationHandler, newControllers, useManagementEndpoint, resolvedDomain, expressionsDomain);
     }
 
-    void launchServices(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, boolean useManagementEndpoint) {
+    void launchServices(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers, boolean useManagementEndpoint, String resolvedDomain, String expressionsDomain) {
 
         final ServiceTarget target = context.getServiceTarget();
-        ServiceController<?> controller = RemotingConnectorService.addService(target, verificationHandler, useManagementEndpoint);
+        ServiceController<?> controller = RemotingConnectorService.addService(target, verificationHandler, useManagementEndpoint, resolvedDomain, expressionsDomain);
         if (newControllers != null) {
             newControllers.add(controller);
         }

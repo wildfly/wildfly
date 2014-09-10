@@ -105,6 +105,21 @@ public abstract class AbstractControllerTestBase {
         return operation;
     }
 
+    protected ModelNode createOperation(String operationName, PathAddress address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.size() > 0) {
+            for (PathElement element : address) {
+                operation.get(OP_ADDR).add(element.getKey());
+                operation.get(OP_ADDR).add(element.getValue());
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
         return executeCheckNoFailure(operation).get(RESULT);
     }
@@ -112,7 +127,6 @@ public abstract class AbstractControllerTestBase {
     public void executeForFailure(ModelNode operation) throws OperationFailedException {
         try {
             executeForResult(operation);
-            Assert.fail("Should have given error");
         } catch (OperationFailedException expected) {
             // ignore
         }

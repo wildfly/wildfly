@@ -227,6 +227,12 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
 
     /** {@inheritDoc} */
     @Override
+    public String getNotificationDescription(String notificationType, Locale locale, ResourceBundle bundle) {
+        return bundle.getString(getBundleKey(notificationType));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
         final String bundleKey = useUnprefixedChildTypes ? childType : getBundleKey(childType);
         return bundle.getString(bundleKey);

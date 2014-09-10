@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -485,6 +486,14 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 13409, value = "[%d] consecutive management operation audit logging failures have occurred in handler '%s'; disabling this handler for audit logging")
     void disablingLogHandlerDueToFailures(int failureCount, String name);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13410, value = "Failed to emit notification %s")
+    void failedToEmitNotification(Notification notification, @Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 13411, value = "Notification of type %s is not described for the resource at the address %s")
+    void notificationIsNotDescribed(String type, PathAddress source);
 
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 

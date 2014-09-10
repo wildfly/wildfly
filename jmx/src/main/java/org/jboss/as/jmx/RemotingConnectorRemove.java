@@ -22,10 +22,13 @@
 
 package org.jboss.as.jmx;
 
+import java.util.ArrayList;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Stuart Douglas
@@ -42,7 +45,6 @@ class RemotingConnectorRemove extends AbstractRemoveStepHandler {
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        boolean useManagementEndpoint = RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.resolveModelAttribute(context, model).asBoolean();
-        RemotingConnectorAdd.INSTANCE.launchServices(context, null, null, useManagementEndpoint);
+        RemotingConnectorAdd.INSTANCE.performRuntime(context, operation, model, null, new ArrayList<ServiceController<?>>());
     }
 }

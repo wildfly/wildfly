@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -73,17 +74,18 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler("setup", new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    createModel(context, model);
-                    context.stepCompleted();
-                }
-            }, new DescriptionProvider() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                createModel(context, model);
+                context.stepCompleted();
+            }
+        }, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 return new ModelNode();
             }
         }, false, OperationEntry.EntryType.PRIVATE);
+        GlobalNotifications.registerGlobalNotifications(registration, processType);
         ManagementResourceRegistration reg = registration.registerSubModel(PathElement.pathElement("test"), new DescriptionProvider() {
 
             @Override
