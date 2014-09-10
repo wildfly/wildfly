@@ -27,6 +27,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
@@ -52,6 +53,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -162,6 +165,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         dataSourceService.getDriverRegistryInjector())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
+                .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
+                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME))
                 .addDependency(NamingService.SERVICE_NAME);
         if (jta) {
             dataSourceServiceBuilder.addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, dataSourceService.getTransactionIntegrationInjector())

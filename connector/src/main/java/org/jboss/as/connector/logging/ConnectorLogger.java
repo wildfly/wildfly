@@ -834,6 +834,10 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 88, value = "Attributes %s rejected. Must be true")
     String rejectAttributesMustBeTrue(Set<String> key);
 
+    @LogMessage(level = WARN)
+    @Message(id = 89, value = "Exception during unregistering deployment")
+    void exceptionDuringUnregistering(@Cause org.jboss.jca.core.spi.rar.NotFoundException nfe);
+
 }
 
 

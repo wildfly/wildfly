@@ -24,6 +24,7 @@ package org.jboss.as.connector.services.workmanager;
 
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.jca.core.api.workmanager.WorkManager;
+import org.jboss.jca.core.security.picketbox.PicketBoxSecurityIntegration;
 import org.jboss.jca.core.tx.jbossts.XATerminatorImpl;
 import org.jboss.jca.core.workmanager.WorkManagerCoordinator;
 import org.jboss.msc.inject.Injector;
@@ -98,6 +99,7 @@ public final class WorkManagerService implements Service<WorkManager> {
         if (value.isShutdown())
             value.cancelShutdown();
 
+        this.value.setSecurityIntegration(new PicketBoxSecurityIntegration());
         ROOT_LOGGER.debugf("Started JCA WorkManager: ", value.getName());
     }
 
