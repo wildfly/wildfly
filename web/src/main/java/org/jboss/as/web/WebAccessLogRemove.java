@@ -22,10 +22,9 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,5 +38,8 @@ class WebAccessLogRemove extends AbstractRemoveStepHandler{
         //
     }
 
-
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        context.reloadRequired();
+    }
 }

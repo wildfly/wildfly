@@ -22,10 +22,15 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.web.WebAccessLogDefinition.ACCESS_LOG_ATTRIBUTES;
 
@@ -54,5 +59,11 @@ class WebAccessLogAdd extends AbstractAddStepHandler {
         for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        context.reloadRequired();
     }
 }

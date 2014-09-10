@@ -22,17 +22,15 @@
 
 package org.jboss.as.web;
 
-import java.util.Locale;
+import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.web.WebReWriteDefinition.FLAGS;
-import static org.jboss.as.web.WebReWriteDefinition.PATTERN;
-import static org.jboss.as.web.WebReWriteDefinition.SUBSTITUTION;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * {@code OperationHandler} responsible for defining the accesslog entry.
@@ -51,5 +49,11 @@ class WebReWriteAdd extends AbstractAddStepHandler {
         for (AttributeDefinition ad : WebReWriteDefinition.ATTRIBUTES) {
             ad.validateAndSet(operation, model);
         }
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        context.reloadRequired();
     }
 }
