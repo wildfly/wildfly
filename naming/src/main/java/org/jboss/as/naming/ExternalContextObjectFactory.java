@@ -9,8 +9,12 @@ import java.security.PrivilegedAction;
 import java.util.Hashtable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.NameClassPair;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.ObjectFactory;
 
@@ -31,6 +35,12 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     public static final String CACHE_CONTEXT = "cache-context";
     public static final String INITIAL_CONTEXT_CLASS = "initial-context-class";
     public static final String INITIAL_CONTEXT_MODULE = "initial-context-module";
+
+    /**
+     * If this property is set to {@code true} in the {@code Context} environment, objects will be looked up
+     * by calling its {@link javax.naming.Context#lookup(String)} instead of {@link javax.naming.Context#lookup(javax.naming.Name)}.
+     */
+    private static final String LOOKUP_BY_STRING = "org.jboss.as.naming.lookup.by.string";
 
 
     private volatile Context cachedObject;
@@ -56,11 +66,13 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     private Context createContext(final Hashtable<?, ?> environment, boolean useProxy) throws NamingException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleLoadException {
         String initialContextClassName = (String) environment.get(INITIAL_CONTEXT_CLASS);
         String initialContextModule = (String) environment.get(INITIAL_CONTEXT_MODULE);
+        final boolean useStringLokup = useStringLookup(environment);
+
         final Hashtable<?, ?> newEnvironment = new Hashtable<>(environment);
         newEnvironment.remove(CACHE_CONTEXT);
         newEnvironment.remove(INITIAL_CONTEXT_CLASS);
         newEnvironment.remove(INITIAL_CONTEXT_MODULE);
-
+        newEnvironment.remove(LOOKUP_BY_STRING);
 
         ClassLoader loader;
         if (! WildFlySecurityManager.isChecking()) {
@@ -74,11 +86,11 @@ public class ExternalContextObjectFactory implements ObjectFactory {
             });
         }
         Class initialContextClass = null;
-        final Context context;
+        final Context loadedContext;
         if (initialContextModule == null) {
             initialContextClass = Class.forName(initialContextClassName);
             Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
-            context = (Context) ctor.newInstance(newEnvironment);
+            loadedContext = (Context) ctor.newInstance(newEnvironment);
         } else {
             Module module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(initialContextModule));
             loader = module.getClassLoader();
@@ -87,10 +99,17 @@ public class ExternalContextObjectFactory implements ObjectFactory {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
                 initialContextClass = Class.forName(initialContextClassName, true, loader);
                 Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
-                context = (Context) ctor.newInstance(newEnvironment);
+                loadedContext = (Context) ctor.newInstance(newEnvironment);
             } finally {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(currentClassLoader);
             }
+        }
+
+        final Context context;
+        if (useStringLokup) {
+            context = new LookupByStringContext(loadedContext);
+        } else {
+            context = loadedContext;
         }
 
         if (!useProxy) {
@@ -128,6 +147,176 @@ public class ExternalContextObjectFactory implements ObjectFactory {
                 }
             }
             return value;
+        }
+    }
+
+    /**
+     * @return {@code true} if the environment contains a {@code LOOKUP_BY_STRING} property with a value corresponding to a {@code true} boolean, or {@code false} in any other case.
+     * @param environment
+     */
+    private static boolean useStringLookup(Hashtable<?, ?> environment) {
+        Object val = environment.get(LOOKUP_BY_STRING);
+        if (val instanceof String) {
+            return Boolean.valueOf((String) val);
+        }
+        return false;
+    }
+
+    /**
+     * A wrapper around a {@code Context} that delegates {@link javax.naming.Name}-based lookup to
+     * their corresponding {@code String}-based method.
+     */
+    private static class LookupByStringContext implements Context {
+        private final Context context;
+
+        public LookupByStringContext(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public Object lookup(Name name) throws NamingException {
+            return context.lookup(name.toString());
+        }
+
+        @Override
+        public Object lookup(String name) throws NamingException {
+            return context.lookup(name);
+        }
+
+        @Override
+        public void bind(Name name, Object obj) throws NamingException {
+            context.bind(name, obj);
+
+        }
+
+        @Override
+        public void bind(String name, Object obj) throws NamingException {
+            context.bind(name, obj);
+        }
+
+        @Override
+        public void rebind(Name name, Object obj) throws NamingException {
+            context.rebind(name, obj);
+        }
+
+        @Override
+        public void rebind(String name, Object obj) throws NamingException {
+            context.rebind(name, obj);
+        }
+
+        @Override
+        public void unbind(Name name) throws NamingException {
+            context.unbind(name);
+        }
+
+        @Override
+        public void unbind(String name) throws NamingException {
+            context.unbind(name);
+        }
+
+        @Override
+        public void rename(Name oldName, Name newName) throws NamingException {
+            context.rename(oldName, newName);
+        }
+
+        @Override
+        public void rename(String oldName, String newName) throws NamingException {
+            context.rename(oldName, newName);
+        }
+
+        @Override
+        public NamingEnumeration<NameClassPair> list(Name name) throws NamingException {
+            return context.list(name);
+        }
+
+        @Override
+        public NamingEnumeration<NameClassPair> list(String name) throws NamingException {
+            return context.list(name);
+        }
+
+        @Override
+        public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
+            return context.listBindings(name);
+        }
+
+        @Override
+        public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
+            return context.listBindings(name);
+        }
+
+        @Override
+        public void destroySubcontext(Name name) throws NamingException {
+            context.destroySubcontext(name);
+        }
+
+        @Override
+        public void destroySubcontext(String name) throws NamingException {
+            context.destroySubcontext(name);
+        }
+
+        @Override
+        public Context createSubcontext(Name name) throws NamingException {
+            return context.createSubcontext(name);
+        }
+
+        @Override
+        public Context createSubcontext(String name) throws NamingException {
+            return context.createSubcontext(name);
+        }
+
+        @Override
+        public Object lookupLink(Name name) throws NamingException {
+            return context.lookupLink(name.toString());
+        }
+
+        @Override
+        public Object lookupLink(String name) throws NamingException {
+            return context.lookupLink(name);
+        }
+
+        @Override
+        public NameParser getNameParser(Name name) throws NamingException {
+            return context.getNameParser(name.toString());
+        }
+
+        @Override
+        public NameParser getNameParser(String name) throws NamingException {
+            return context.getNameParser(name);
+        }
+
+        @Override
+        public Name composeName(Name name, Name prefix) throws NamingException {
+            return context.composeName(name, prefix);
+        }
+
+        @Override
+        public String composeName(String name, String prefix) throws NamingException {
+            return context.composeName(name, prefix);
+        }
+
+        @Override
+        public Object addToEnvironment(String propName, Object propVal) throws NamingException {
+            return context.addToEnvironment(propName, propVal);
+        }
+
+        @Override
+        public Object removeFromEnvironment(String propName) throws NamingException {
+            return context.removeFromEnvironment(propName);
+        }
+
+        @Override
+        public Hashtable<?, ?> getEnvironment() throws NamingException {
+            return context.getEnvironment();
+        }
+
+        @Override
+        public void close() throws NamingException {
+            context.close();
+        }
+
+        @Override
+        public String getNameInNamespace() throws NamingException {
+            return context.getNameInNamespace();
         }
     }
 }
