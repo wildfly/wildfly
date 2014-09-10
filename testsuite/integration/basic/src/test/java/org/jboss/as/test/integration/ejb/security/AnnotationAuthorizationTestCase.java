@@ -134,6 +134,48 @@ public class AnnotationAuthorizationTestCase {
                 fail("Expected EJBAccessException not thrown");
             } catch (EJBAccessException ignored) {
             }
+
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testRolesAllowedOverridenInBaseClass_Admin() throws Exception {
+        LoginContext lc = Util.getCLMLoginContext("admin", "admin");
+        lc.login();
+
+        try {
+
+            try {
+                rolesAllowedOverridenBean.aMethod("aMethod");
+                fail("Expected EJBAccessException not thrown");
+            } catch (EJBAccessException ignored) {
+            }
+
+            String response = rolesAllowedOverridenBean.bMethod("bMethod");
+            assertEquals("bMethod", response);
+
+        } finally {
+            lc.logout();
+        }
+    }
+
+    @Test
+    public void testRolesAllowedOverridenInBaseClass_HR() throws Exception {
+        LoginContext lc = Util.getCLMLoginContext("hr", "hr");
+        lc.login();
+        try {
+
+            String response = rolesAllowedOverridenBean.aMethod("aMethod");
+            assertEquals("aMethod", response);
+
+            try {
+                rolesAllowedOverridenBean.bMethod("bMethod");
+                fail("Expected EJBAccessException not thrown");
+            } catch (EJBAccessException ignored) {
+            }
+
         } finally {
             lc.logout();
         }
