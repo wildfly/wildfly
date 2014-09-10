@@ -272,7 +272,7 @@ if [ "x$JBOSS_MODULEPATH" = "x" ]; then
 fi
 
 # Set up the module arguments
-MODULE_OPTS="-mp \"$JBOSS_MODULEPATH\""
+MODULE_OPTS=""
 if [ "$SECMGR" == "true" ]; then
     MODULE_OPTS="$MODULE_OPTS -secmgr";
 fi
@@ -295,27 +295,29 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+        \"-Dorg.jboss.boot.log.file="$JBOSS_LOG_DIR"/server.log\" \
+        \"-Dlogging.configuration=file:"$JBOSS_CONFIG_DIR"/logging.properties\" \
+        -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
          $MODULE_OPTS \
+        -mp \""${JBOSS_MODULEPATH}"\" \
          -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
-         -Djboss.server.base.dir=\"$JBOSS_BASE_DIR\" \
+        -Djboss.home.dir=\""$JBOSS_HOME"\" \
+        -Djboss.server.base.dir=\""$JBOSS_BASE_DIR"\" \
          "$SERVER_OPTS"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
-         \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
+        \"-Dorg.jboss.boot.log.file="$JBOSS_LOG_DIR"/server.log\" \
+        \"-Dlogging.configuration=file:"$JBOSS_CONFIG_DIR"/logging.properties\" \
+        -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
          $MODULE_OPTS \
+         -mp \""${JBOSS_MODULEPATH}"\" \
          -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
-         -Djboss.server.base.dir=\"$JBOSS_BASE_DIR\" \
+        -Djboss.home.dir=\""$JBOSS_HOME"\" \
+        -Djboss.server.base.dir=\""$JBOSS_BASE_DIR"\" \
          "$SERVER_OPTS" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process

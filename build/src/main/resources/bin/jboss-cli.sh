@@ -1,5 +1,17 @@
 #!/bin/sh
 
+CLI_OPTS=""
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+      *)
+          CLI_OPTS="$CLI_OPTS \"$1\""
+          ;;
+    esac
+    shift
+done
+
+
 DIRNAME=`dirname "$0"`
 
 # OS specific support (must be 'true' or 'false').
@@ -61,6 +73,7 @@ fi
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
+    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 if $darwin ; then
@@ -71,7 +84,14 @@ else
     JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=com.sun.java.swing"
 fi
 
+LOG_CONF=`echo $JAVA_OPTS | grep "logging.configuration"`
+if [ "x$LOG_CONF" = "x" ]; then
+    JAVA_OPTS="$JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/jboss-cli-logging.properties\""
+else
+    echo "logging.configuration already set in JAVA_OPTS"
+fi
+
 # Sample JPDA settings for remote socket debugging
 #JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
-eval \"$JAVA\" $JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/jboss-cli-logging.properties\" -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"${JBOSS_MODULEPATH}\" org.jboss.as.cli '"$@"'
+eval \"$JAVA\" $JAVA_OPTS -jar \""$JBOSS_HOME"/jboss-modules.jar\" -mp \""${JBOSS_MODULEPATH}"\" org.jboss.as.cli "$CLI_OPTS"
