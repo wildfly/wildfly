@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ejb.security.authorization;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.ejb.Stateless;
-
-import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
- * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author wangchao
+ *
  */
-@Stateless
-@RolesAllowed("Role1")
-@SecurityDomain("ejb3-tests")
-public class RolesAllowedOverrideBean extends RolesAllowedOverrideBeanBase {
 
-    public String defaultEcho(final String message) {
-        return message;
-    }
+@RolesAllowed("Admin")
+public class RolesAllowedOverrideBeanBase {
 
-    @PermitAll
-    public String permitAllEcho(final String message) {
-        return message;
-    }
-
-    @DenyAll
-    public String denyAllEcho(final String message) {
-        return message;
-    }
-
-    @RolesAllowed("Role2")
-    public String role2Echo(final String message) {
-        return message;
-    }
-
-    @RolesAllowed("HR")
     public String aMethod(final String message) {
+        return message;
+    }
+
+    public String bMethod(final String message) {
         return message;
     }
 
