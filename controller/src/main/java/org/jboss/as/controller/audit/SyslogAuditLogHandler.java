@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.security.KeyStore;
 import java.util.logging.ErrorManager;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -200,7 +201,6 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 throw new IllegalStateException("Unknown protocol");
             }
             handler = new SyslogHandler(syslogServerAddress, port, facility.convert(), syslogType, protocol, hostName == null ? InetAddressUtil.getLocalHostName() : hostName);
-            handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
             handler.setTruncate(truncate);
             if (maxLength != 0) {
@@ -256,6 +256,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                     context.init(keyManagers, trustManagers, null);
                     handler.setOutputStream(new SSLContextOutputStream(context, syslogServerAddress, port));
                 } else {
+                    handler.setOutputStream(new AuditLogTcpOutputStream(syslogServerAddress, port));
                     handler.setProtocol(transport == Transport.TCP ? Protocol.TCP : Protocol.SSL_TCP);
                 }
             }
@@ -431,9 +432,18 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
     }
 
+    // By default the TcpOutputStream attempts to reconnect on it's own, use our own to avoid the automatic reconnect
+    // See LOGMGR-113 for details on a better way to do this in the future
+    private static class AuditLogTcpOutputStream extends TcpOutputStream {
+        protected AuditLogTcpOutputStream(InetAddress host, int port) throws IOException {
+            super(SocketFactory.getDefault().createSocket(host, port));
+        }
+    }
+
 
     private static class SSLContextOutputStream extends TcpOutputStream {
         protected SSLContextOutputStream(SSLContext sslContext, InetAddress host, int port) throws IOException {
+            // Continue to use the deprecated constructor until LOGMGR-113 is resolved
             super(sslContext.getSocketFactory().createSocket(host, port));
         }
     }
