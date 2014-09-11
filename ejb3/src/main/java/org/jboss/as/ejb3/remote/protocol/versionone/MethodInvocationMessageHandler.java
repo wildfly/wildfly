@@ -244,7 +244,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         }
                         writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments);
                     } catch (Throwable ioe) {
-                        EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
+                        boolean isAsyncVoid = componentView.isAsynchronous(invokedMethod) && invokedMethod.getReturnType().equals(Void.TYPE);
+                        if (!isAsyncVoid)
+                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
                         //need to close it (see AS7-3402)
