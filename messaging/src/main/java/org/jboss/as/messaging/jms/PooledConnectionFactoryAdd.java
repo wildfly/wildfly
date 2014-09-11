@@ -32,6 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.NONE;
 import static org.jboss.as.messaging.CommonAttributes.NO_TX;
 import static org.jboss.as.messaging.CommonAttributes.XA_TX;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
+import static org.jboss.as.messaging.jms.Validators.validateNoDuplicateElements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);
         }
+
+        validateNoDuplicateElements(Common.ENTRIES, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,

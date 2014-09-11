@@ -33,6 +33,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -558,4 +559,7 @@ public interface MessagingMessages {
      */
     @Message(id = 11683, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
     OperationFailedException canNotRemoveLastJNDIName(String jndiName);
+
+    @Message(id = 11684, value = "Parameter %s contains duplicate elements [%s]")
+    OperationFailedException duplicateElements(String parameterName, ModelNode elements);
 }

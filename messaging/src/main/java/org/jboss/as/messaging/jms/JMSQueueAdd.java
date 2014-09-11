@@ -25,6 +25,7 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.jms.Validators.validateNoDuplicateElements;
 
 import java.util.List;
 
@@ -61,6 +62,8 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
         for (AttributeDefinition attributeDefinition : JMSQueueDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }
+
+        validateNoDuplicateElements(CommonAttributes.DESTINATION_ENTRIES, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {

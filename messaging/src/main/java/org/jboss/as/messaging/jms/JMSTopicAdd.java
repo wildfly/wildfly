@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.jms.Validators.validateNoDuplicateElements;
 
 import java.util.List;
 
@@ -56,6 +57,8 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         CommonAttributes.DESTINATION_ENTRIES.validateAndSet(operation, model);
+
+        validateNoDuplicateElements(CommonAttributes.DESTINATION_ENTRIES, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {

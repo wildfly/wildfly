@@ -29,6 +29,7 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.HA;
+import static org.jboss.as.messaging.jms.Validators.validateNoDuplicateElements;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,8 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         for (final AttributeDefinition attribute : ConnectionFactoryDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
+
+        validateNoDuplicateElements(Common.ENTRIES, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
