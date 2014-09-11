@@ -542,9 +542,8 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     public final void stop() {
         if (this.controlPoint != null) {
             this.controlPoint.pause(this);
-        } else {
-            this.done();
         }
+        this.done();
     }
 
     @Override

@@ -229,7 +229,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
                 configuration.getCreateDependencies().add(new DependencyConfigurator<Service<Component>>() {
                     @Override
                     public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), RemoteEJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName()), ControlPoint.class, controlPointInjectedValue);
+                        serviceBuilder.addDependency(ControlPointService.serviceName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName(), EJBComponentSuspendDeploymentUnitProcessor.ENTRY_POINT_NAME + deploymentUnit.getName() + "." + componentDescription.getComponentName()), ControlPoint.class, controlPointInjectedValue);
                     }
                 });
             }
