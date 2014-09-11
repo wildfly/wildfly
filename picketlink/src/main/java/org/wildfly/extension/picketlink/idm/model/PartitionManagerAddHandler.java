@@ -64,6 +64,7 @@ import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
@@ -331,6 +332,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
 
         storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
             .getTransactionManager());
+
+        storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService.getTransactionSynchronizationRegistry());
 
         if (jpaDataSourceNode.isDefined()) {
             storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
