@@ -435,8 +435,6 @@ public class SharedLocalYieldingClusterLockManager {
                             // we were first so it's our task
                             if (this.clusterSupport.lock(lockName, remaining)) {
                                 result = LockResult.ACQUIRED_FROM_CLUSTER;
-                            } else {
-                                throw new TimeoutException(MESSAGES.cannotAcquireLock(lockName));
                             }
                         } else {
                             // Some other thread is asking the cluster
