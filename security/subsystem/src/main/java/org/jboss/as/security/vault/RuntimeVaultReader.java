@@ -116,7 +116,7 @@ public class RuntimeVaultReader extends AbstractVaultReader {
             try {
                 return getValueAsString(password);
             } catch (SecurityVaultException e) {
-                throw SecurityLogger.ROOT_LOGGER.securityException(e);
+                throw SecurityLogger.ROOT_LOGGER.failedToRetrieveFromVault(password, e);
             }
 
         }

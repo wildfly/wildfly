@@ -834,5 +834,14 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Task: Remove secured attribute")
     String taskRemoveSecuredAttribute();
 
+    /**
+     * Create a {@link SecurityException}
+     * @param vaultString vault string which failed to be retrieved
+     * @param t underlying exception
+     * @return {@link SecurityException}
+     */
+    @Message(id = 85, value = "Security Exception: Error resolving vault property: %s")
+    SecurityException failedToRetrieveFromVault(String vaultString, @Cause Throwable t);
+
 
 }
