@@ -42,4 +42,9 @@ class WebAccessLogRemove extends AbstractRemoveStepHandler{
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         context.reloadRequired();
     }
+
+    @Override
+    protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        context.revertReloadRequired();
+    }
 }

@@ -66,4 +66,10 @@ class WebAccessLogAdd extends AbstractAddStepHandler {
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         context.reloadRequired();
     }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, final ModelNode operation, final ModelNode model, List<ServiceController<?>> controllers) {
+        super.rollbackRuntime(context, operation, model, controllers);
+        context.revertReloadRequired();
+    }
 }
