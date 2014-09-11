@@ -51,10 +51,12 @@ public class ClientConstants {
     public static final String OP_ADDR = "address";
     public static final String OUTCOME = "outcome";
     public static final String PATH = "path";
+    public static final String PROXIES = "proxies";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String RECURSIVE = "recursive";
+    public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String REMOVE_OPERATION = "remove";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
