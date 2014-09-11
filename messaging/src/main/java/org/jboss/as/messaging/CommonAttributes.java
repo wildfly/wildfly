@@ -33,6 +33,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
+import static org.jboss.as.messaging.jms.Validators.noDuplicateElements;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
@@ -209,7 +210,7 @@ public interface CommonAttributes {
 
     PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
             .setAllowNull(false)
-            .setElementValidator(new StringLengthValidator(1, false, true))
+            .setListValidator(noDuplicateElements(new StringLengthValidator(1, false, true)))
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
             .setRestartAllServices()

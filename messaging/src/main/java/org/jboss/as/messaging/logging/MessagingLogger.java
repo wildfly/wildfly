@@ -37,6 +37,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.messaging.Element;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
@@ -792,4 +793,7 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 75, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. Your platform is Linux, install LibAIO to enable the AIO journal.")
     void aioWarningLinux();
+
+    @Message(id = 76, value = "Parameter %s contains duplicate elements [%s]")
+    OperationFailedException duplicateElements(String parameterName, ModelNode elements);
 }
