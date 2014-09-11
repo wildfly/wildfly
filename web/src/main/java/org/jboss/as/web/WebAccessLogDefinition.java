@@ -24,6 +24,7 @@ package org.jboss.as.web;
 
 import java.util.List;
 
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -96,7 +97,7 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
         super(WebExtension.ACCESS_LOG_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log"),
                 WebAccessLogAdd.INSTANCE,
-                WebAccessLogRemove.INSTANCE);
+                new ReloadRequiredRemoveStepHandler());
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
