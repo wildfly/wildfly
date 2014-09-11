@@ -46,7 +46,10 @@ public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
     @Override
     public void invokePreDestroy(final Object managedBean) throws InjectionProviderException {
-        instanceManager.destroyInstance(managedBean);
+        if(instanceManager != null) {
+            // WFLY-3820
+            instanceManager.destroyInstance(managedBean);
+        }
     }
 
     @Override
@@ -55,6 +58,10 @@ public class JSFInjectionProvider extends DiscoverableInjectionProvider {
                 managedBean.getClass().getName().startsWith(COM_SUN_FACES)) {
             //some internal JSF instances are not destroyed properly, and they do not need to have
             //lifecycle callbacks anyway, so we don't use the instance manager to create them
+            return;
+        }
+        if(instanceManager == null) {
+            // WFLY-3820
             return;
         }
         try {
