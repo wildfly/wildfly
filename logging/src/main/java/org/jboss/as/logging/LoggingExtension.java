@@ -69,7 +69,7 @@ public class LoggingExtension implements Extension {
 
     static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
 
-    static final ClassLoaderLogContextSelector CONTEXT_SELECTOR = new ClassLoaderLogContextSelector();
+    static final ClassLoaderLogContextSelector CONTEXT_SELECTOR = new ClassLoaderLogContextSelector(true);
 
     static final ThreadLocalLogContextSelector THREAD_LOCAL_CONTEXT_SELECTOR = new ThreadLocalLogContextSelector(CONTEXT_SELECTOR);
 

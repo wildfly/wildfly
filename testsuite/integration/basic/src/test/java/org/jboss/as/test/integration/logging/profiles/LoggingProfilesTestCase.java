@@ -70,7 +70,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 @ServerSetup(LoggingProfilesTestCase.LoggingProfilesTestCaseSetup.class)
@@ -283,6 +283,11 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		WebArchive archive2 = ShrinkWrap.create(WebArchive.class,
 				"logging2.war");
 		archive2.addClasses(LoggingServlet.class);
+
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        String resourcesLocation = LoggingServlet.class.getPackage().getName().replace('.', '/') + "/";
+        archive2.addAsWebResource(tccl.getResource(resourcesLocation + "logging.jsp"), "logging.jsp");
+
 		archive2.setManifest(new Asset() {
 			@Override
 			public InputStream openStream() {
@@ -326,7 +331,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		// make some logs
 		int statusCode = testResponse(url);
 		assertTrue("Invalid response statusCode: " + statusCode,
-				statusCode == HttpServletResponse.SC_OK);
+                statusCode == HttpServletResponse.SC_OK);
 	}
 
 	@RunAsClient
@@ -440,6 +445,38 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 				br.readLine() == null);
 		br.close();
 	}
+
+    @RunAsClient
+    @Test
+    @InSequence(5)
+    public void jspProfileTest(
+            @ContainerResource ManagementClient managementClient)
+            throws MalformedURLException, IOException {
+
+        URL url = new URL("http://" + managementClient.getMgmtAddress()
+                + ":8080/logging2/logging.jsp");
+        // make some logs
+        int statusCode = testResponse(url);
+        assertTrue("Invalid response statusCode: " + statusCode,
+                statusCode == HttpServletResponse.SC_OK);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(dummyLog2), "utf-8"));
+            boolean found = false;
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // look for message id in order to support all languages
+                if (line.contains("Logging from JSP")) {
+                    found = true;
+                    break;
+                }
+            }
+            Assert.assertTrue("The JSP log was not logged via the logging profile", found);
+        } finally {
+            if (reader != null) reader.close();
+        }
+    }
 
 	static void applyUpdate(ModelNode update, final ModelControllerClient client)
 			throws IOException {
