@@ -28,9 +28,8 @@
            xmlns:javaee="http://java.sun.com/xml/ns/javaee"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd">
-   <xs:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://www.jboss.org/j2ee/schema/jboss-ejb3-spec-2_0.xsd"/>
+           version="1.1">
+   <xs:import namespace="http://java.sun.com/xml/ns/javaee"/>
 
    <xs:element name="security" type="securityType" substitutionGroup="javaee:assembly-descriptor-entry"/>
 
