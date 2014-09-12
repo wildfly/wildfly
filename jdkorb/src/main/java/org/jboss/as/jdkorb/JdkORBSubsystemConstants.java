@@ -43,6 +43,8 @@ public final class JdkORBSubsystemConstants {
     // subsystem configuration constants (elements and attributes).
 
     public static final String CLIENT = "client";
+    public static final String CONFIGURATION = "configuration";
+    public static final String SETTING = "setting";
     public static final String ORB = "orb";
     public static final String ORB_GIOP_VERSION = "giop-version";
     public static final String ORB_TCP = "tcp";
@@ -73,8 +75,6 @@ public final class JdkORBSubsystemConstants {
     public static final String PROPERTY_NAME = "name";
     public static final String PROPERTY_VALUE = "value";
 
-    public static final String SETTING = "setting";
-    public static final String DEFAULT = "default";
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";
     public static final String IOR_TRANSPORT_INTEGRITY = "integrity";
@@ -89,7 +89,7 @@ public final class JdkORBSubsystemConstants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
-    public static final String CLIENT_TRANSPORT_CONFIG = "client-transport";
+    public static final String CLIENT_TRANSPORT = "client-transport";
     public static final String CLIENT_TRANSPORT_REQUIRES_SSL = "requires-ssl";
 
     // constants for common org.omg properties.

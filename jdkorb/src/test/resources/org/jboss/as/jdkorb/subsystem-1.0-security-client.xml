@@ -7,7 +7,7 @@
     <naming root-context="JBoss/Naming/root" export-corbaloc="on"/>
     <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth"
         client-requires="None" server-supports="MutualAuth" server-requires="None"/>
-<!--     <properties> -->
-<!--         <property name="some_property" value="some_value"/> -->
-<!--     </properties> -->
+    <properties>
+        <property name="some_property" value="some_value"/>
+    </properties>
 </subsystem>

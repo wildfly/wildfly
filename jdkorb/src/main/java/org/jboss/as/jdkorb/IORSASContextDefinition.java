@@ -31,7 +31,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -65,16 +64,14 @@ public class IORSASContextDefinition extends PersistentResourceDefinition {
     static final IORSASContextDefinition INSTANCE = new IORSASContextDefinition();
 
     private IORSASContextDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.SETTING, JdkORBSubsystemConstants.IOR_SAS_CONTEXT),
-                JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.IOR_SETTINGS,
-                        JdkORBSubsystemConstants.IOR_SAS_CONTEXT),
-                new AbstractAddStepHandler(ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(JdkORBExtension.PATH_IOR_SAS, JdkORBExtension.getResourceDescriptionResolver(
+                JdkORBSubsystemConstants.IOR_SETTINGS, JdkORBSubsystemConstants.IOR_SAS_CONTEXT), new AbstractAddStepHandler(
+                ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.singletonList((AccessConstraintDefinition) JdkORBSubsystemDefinitions.JDKORB_SECURITY_DEF);
+        return Collections.singletonList((AccessConstraintDefinition) AttributeConstants.JDKORB_SECURITY_DEF);
     }
 
     @Override

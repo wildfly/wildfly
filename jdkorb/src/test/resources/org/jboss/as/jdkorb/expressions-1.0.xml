@@ -6,7 +6,7 @@
     <naming root-context="${test.exp:JBoss/Naming/root}" export-corbaloc="${test.exp:on}"/>
     <security support-ssl="${test.exp:off}" add-component-via-interceptor="${test.exp:on}" client-supports="${test.exp:MutualAuth}"
         client-requires="${test.exp:None}" server-supports="${test.exp:MutualAuth}" server-requires="${test.exp:None}"/>
-<!--     <properties> -->
-<!--         <property name="${test.exp:some_property}" value="${test.exp:some_value}"/> -->
-<!--     </properties> -->
+    <properties>
+        <property name="${test.exp:some_property}" value="${test.exp:some_value}"/>
+    </properties>
 </subsystem>

@@ -31,10 +31,8 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -99,7 +97,7 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    static final SimpleAttributeDefinition DETECT_MISORDERING =
+    static final AttributeDefinition DETECT_MISORDERING =
             new SimpleAttributeDefinitionBuilder(JdkORBSubsystemConstants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(DEFAULT_VALUE)
@@ -113,16 +111,14 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
     static final IORTransportConfigDefinition INSTANCE = new IORTransportConfigDefinition();
 
     private IORTransportConfigDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.SETTING, JdkORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
-                JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.IOR_SETTINGS,
-                        JdkORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
-                new AbstractAddStepHandler(ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(JdkORBExtension.PATH_IOR_TRANSPORT, JdkORBExtension.getResourceDescriptionResolver(
+                JdkORBSubsystemConstants.IOR_SETTINGS, JdkORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
+                new AbstractAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.singletonList((AccessConstraintDefinition) JdkORBSubsystemDefinitions.JDKORB_SECURITY_DEF);
+        return Collections.singletonList((AccessConstraintDefinition) AttributeConstants.JDKORB_SECURITY_DEF);
     }
 
     @Override

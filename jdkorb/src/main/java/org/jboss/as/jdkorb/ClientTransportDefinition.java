@@ -31,7 +31,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -48,7 +47,7 @@ import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-class ClientTransportConfigDefinition extends PersistentResourceDefinition {
+class ClientTransportDefinition extends PersistentResourceDefinition {
 
 
     static final AttributeDefinition REQUIRES_SSL =
@@ -60,18 +59,17 @@ class ClientTransportConfigDefinition extends PersistentResourceDefinition {
 
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(REQUIRES_SSL);
 
-    static final ClientTransportConfigDefinition INSTANCE = new ClientTransportConfigDefinition();
+    static final ClientTransportDefinition INSTANCE = new ClientTransportDefinition();
 
-    private ClientTransportConfigDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG, JdkORBSubsystemConstants.DEFAULT),
-                JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG),
-                new AbstractAddStepHandler(ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    private ClientTransportDefinition() {
+        super(JdkORBExtension.PATH_CLIENT_TRANSPORT, JdkORBExtension
+                .getResourceDescriptionResolver(JdkORBSubsystemConstants.CLIENT_TRANSPORT), new AbstractAddStepHandler(
+                ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return Collections.singletonList((AccessConstraintDefinition) JdkORBSubsystemDefinitions.JDKORB_SECURITY_DEF);
+        return Collections.singletonList((AccessConstraintDefinition) AttributeConstants.JDKORB_SECURITY_DEF);
     }
 
     @Override

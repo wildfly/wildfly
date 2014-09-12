@@ -79,7 +79,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testParseEmptySubsystem() throws Exception {
         // parse the subsystem xml into operations.
         String subsystemXml =
-                "<subsystem xmlns=\"" +JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" +Namespace.CURRENT.getUriString() + "\">" +
                 "</subsystem>";
         List<ModelNode> operations = super.parse(subsystemXml);
 
@@ -100,7 +100,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testParseSubsystemWithBadChild() throws Exception {
         // try parsing a XML with an invalid element.
         String subsystemXml =
-                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <invalid/>" +
                 "</subsystem>";
         try {
@@ -127,7 +127,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystemWithBadAttribute() throws Exception {
         String subsystemXml =
-                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" bad=\"very_bad\">" +
                 "</subsystem>";
         try {
             super.parse(subsystemXml);
@@ -140,7 +140,7 @@ public class JdkORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testDescribeHandler() throws Exception {
         // parse the subsystem xml and install into the first controller.
         String subsystemXml =
-                "<subsystem xmlns=\"" + JdkORBSubsystemParser.Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new AdditionalInitialization(){

@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jdkorb.csiv2.CSIV2IORToSocketInfo;
@@ -90,27 +91,6 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security").append(
             "security-domain");
-
-    /**
-     * <p>
-     * Private constructor as required by the {@code Singleton} pattern.
-     * </p>
-     */
-    private JdkORBSubsystemAdd() {
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // populate the submodel.
-        for (AttributeDefinition attrDefinition : JdkORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
-            attrDefinition.validateAndSet(operation, model);
-        }
-
-        if (model.hasDefined(JdkORBSubsystemDefinitions.ORB_INIT_SECURITY.getName())
-                && "on".equals(model.get(JdkORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).asString())) {
-            model.get(JdkORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).set(JdkORBSubsystemConstants.IDENTITY);
-        }
-    }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
@@ -242,7 +222,7 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
         ClientTransportConfigMetaData clientTransportConfigMetaData = null;
         clientTransportConfigMetaData = this.createClientTransportConfigMetaData(context,
-                model.get(ClientTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+                model.get(ClientTransportDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientTransportConfigMetaData);
     }
 
@@ -260,31 +240,53 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
     private Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties props = new Properties();
 
-        for (AttributeDefinition attrDefinition : JdkORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
+        getResourceProperties(props, ORBDefinition.INSTANCE, context,
+                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        getResourceProperties(
+                props,
+                TCPDefinition.INSTANCE,
+                context,
+                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()).get(
+                        TCPDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        getResourceProperties(
+                props,
+                InitializersDefinition.INSTANCE,
+                context,
+                model.get(ORBDefinition.INSTANCE.getPathElement().getKeyValuePair()).get(
+                        InitializersDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        getResourceProperties(props, NamingDefinition.INSTANCE, context,
+                model.get(NamingDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        getResourceProperties(props, SecurityDefinition.INSTANCE, context,
+                model.get(SecurityDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+
+        // check if the node contains a list of generic properties.
+        ModelNode configNode = model.get(JdkORBSubsystemConstants.CONFIGURATION);
+        if (configNode.hasDefined(JdkORBSubsystemConstants.PROPERTIES)) {
+            for (Property property : configNode.get(JdkORBSubsystemConstants.PROPERTIES).get(JdkORBSubsystemConstants.PROPERTY)
+                    .asPropertyList()) {
+                String name = property.getName();
+                String value = property.getValue().get(JdkORBSubsystemConstants.PROPERTY_VALUE).asString();
+                props.setProperty(name, value);
+            }
+        }
+        return props;
+    }
+
+    private void getResourceProperties(final Properties properties, PersistentResourceDefinition resource,
+            OperationContext context, ModelNode model) throws OperationFailedException {
+        for (AttributeDefinition attrDefinition : resource.getAttributes()) {
             ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
             if (resolvedModelAttribute.isDefined()) {
                 String name = attrDefinition.getName();
                 String value = resolvedModelAttribute.asString();
 
                 String jdkorbProperty = PropertiesMap.JDKORB_PROPS_MAP.get(name);
-                if (jdkorbProperty != null){
+                if (jdkorbProperty != null) {
                     name = jdkorbProperty;
                 }
-                props.setProperty(name, value);
+                properties.setProperty(name, value);
             }
         }
-
-        // check if the node contains a list of generic properties.
-        if (model.hasDefined(JdkORBSubsystemConstants.PROPERTIES)) {
-            ModelNode propertiesNode = model.get(JdkORBSubsystemConstants.PROPERTIES);
-
-            for (Property property : propertiesNode.asPropertyList()) {
-                String name = property.getName();
-                ModelNode value = property.getValue();
-                props.setProperty(name, value.asString());
-            }
-        }
-        return props;
     }
 
     /**
@@ -368,7 +370,7 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
     private ClientTransportConfigMetaData createClientTransportConfigMetaData(final OperationContext context, final ModelNode node)
             throws OperationFailedException {
-        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
+        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportDefinition.INSTANCE.getTransportConfigMetaData(
                 context, node);
         return clientTransportConfigMetaData;
     }
