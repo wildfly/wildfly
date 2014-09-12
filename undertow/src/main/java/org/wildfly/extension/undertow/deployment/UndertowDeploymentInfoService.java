@@ -263,7 +263,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleJACCAuthorization
                     (deploymentInfo);
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
-            handleSecurityCache(deploymentInfo);
+            handleSecurityCache(deploymentInfo, mergedMetaData);
 
             if(mergedMetaData.isUseJBossAuthorization()) {
                 deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
@@ -393,10 +393,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     }
 
-    private void handleSecurityCache(DeploymentInfo deploymentInfo) {
+    private void handleSecurityCache(DeploymentInfo deploymentInfo, JBossWebMetaData mergedMetaData) {
         AuthenticationManager manager = securityDomainContextValue.getValue().getAuthenticationManager();
         if(manager instanceof CacheableManager) {
             deploymentInfo.addNotificationReceiver(new CacheInvalidationNotificationReceiver((CacheableManager<?, java.security.Principal>) manager));
+            if(mergedMetaData.isFlushOnSessionInvalidation()) {
+                CacheInvalidationSessionListener listener = new CacheInvalidationSessionListener((CacheableManager<?, java.security.Principal>) manager);
+                deploymentInfo.addListener(Servlets.listener(CacheInvalidationSessionListener.class, new ImmediateInstanceFactory<EventListener>(listener)));
+            }
         }
     }
 
