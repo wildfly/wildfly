@@ -61,7 +61,6 @@ import com.sun.corba.se.spi.transport.ORBSocketFactory;
 
 public class JdkORBSocketFactory implements ORBSocketFactory {
 
-    // FIXME Security Domain should be obtained from orb configuration
     private static String securityDomain = null;
 
     public static void setSecurityDomain(final String securityDomain) {

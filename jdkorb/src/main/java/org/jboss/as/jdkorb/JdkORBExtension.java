@@ -22,8 +22,11 @@
 
 package org.jboss.as.jdkorb;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -41,9 +44,32 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class JdkORBExtension implements Extension {
 
-    private static final JdkORBSubsystemParser PARSER = JdkORBSubsystemParser.INSTANCE;
-
     public static final String SUBSYSTEM_NAME = "jdkorb";
+
+    protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    protected static final PathElement PATH_ORB = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.ORB);
+    protected static final PathElement PATH_TCP = PathElement.pathElement(JdkORBSubsystemConstants.SETTING,
+            JdkORBSubsystemConstants.ORB_TCP);
+    protected static final PathElement PATH_INITIALIZERS = PathElement.pathElement(JdkORBSubsystemConstants.SETTING,
+            JdkORBSubsystemConstants.ORB_INIT);
+    protected static final PathElement PATH_NAMING = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.NAMING);
+    protected static final PathElement PATH_SECURITY = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.SECURITY);
+    protected static final PathElement PATH_IOR_SETTINGS = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.IOR_SETTINGS);
+    protected static final PathElement PATH_IOR_TRANSPORT = PathElement.pathElement(JdkORBSubsystemConstants.SETTING,
+            JdkORBSubsystemConstants.IOR_TRANSPORT_CONFIG);
+    protected static final PathElement PATH_IOR_AS = PathElement.pathElement(JdkORBSubsystemConstants.SETTING,
+            JdkORBSubsystemConstants.IOR_AS_CONTEXT);
+    protected static final PathElement PATH_IOR_SAS = PathElement.pathElement(JdkORBSubsystemConstants.SETTING,
+            JdkORBSubsystemConstants.IOR_SAS_CONTEXT);
+    protected static final PathElement PATH_CLIENT_TRANSPORT = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.CLIENT_TRANSPORT);
+    protected static final PathElement PATH_PROPERTIES = PathElement.pathElement(JdkORBSubsystemConstants.CONFIGURATION,
+            JdkORBSubsystemConstants.PROPERTIES);
+    protected static final PathElement PATH_PROPERTY = PathElement.pathElement(JdkORBSubsystemConstants.PROPERTY);
 
     private static final String RESOURCE_NAME = JdkORBExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -64,13 +90,13 @@ public class JdkORBExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JdkORBSubsystemResource.INSTANCE);
+        final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JdkORBRootDefinition.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(PARSER);
+        subsystem.registerXMLElementWriter(JdkORBSubsystemParser.INSTANCE);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JdkORBSubsystemParser.Namespace.JdkORB_1_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.JdkORB_1_0.getUriString(), JdkORBSubsystemParser.INSTANCE);
     }
 }

@@ -1,5 +1,5 @@
 <subsystem xmlns="urn:jboss:domain:jdkorb:1.0">
-    <orb giop-version="1.2" socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
+    <orb persistent-server-id="wildfly" giop-version="1.2" socket-binding="jdkorb" ssl-socket-binding="jdkorb-ssl">
         <tcp high-water-mark="500" number-to-reclaim="30" />
         <!-- set security=client -->
         <initializers security="client" transactions="spec" />
