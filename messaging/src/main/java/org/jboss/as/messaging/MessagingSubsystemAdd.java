@@ -50,6 +50,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
     private MessagingSubsystemAdd() {
+        super(MessagingSubsystemRootResourceDefinition.MESSAGING_CAPABILITY);
     }
 
     @Override

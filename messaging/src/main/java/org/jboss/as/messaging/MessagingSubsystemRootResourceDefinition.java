@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -32,13 +33,19 @@ import org.jboss.as.controller.SimpleResourceDefinition;
  */
 public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    static final String JMX_CAPABILITY = "org.wildfly.extension.jmx";
+
+    static final RuntimeCapability<Void> MESSAGING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.extension.messaging")
+            .addRuntimeOnlyRequirements(JMX_CAPABILITY)
+            .build();
+
     public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
 
     private MessagingSubsystemRootResourceDefinition() {
         super(MessagingExtension.SUBSYSTEM_PATH,
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
                 MessagingSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                new ReloadRequiredRemoveStepHandler(MESSAGING_CAPABILITY));
         setDeprecated(MessagingExtension.DEPRECATED_SINCE);
     }
 }
