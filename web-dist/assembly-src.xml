@@ -33,7 +33,7 @@
 
     <fileSets>
         <fileSet>
-            <directory>../..</directory>
+            <directory>..</directory>
             <outputDirectory>${server.output.dir.prefix}-web-${project.version}-src</outputDirectory>
             <includes>
                 <include>**/*.xml</include>
