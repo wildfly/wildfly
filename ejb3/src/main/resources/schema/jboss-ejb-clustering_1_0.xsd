@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="urn:clustering:1.0" xmlns="urn:clustering:1.0"
+    xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+    elementFormDefault="qualified" attributeFormDefault="unqualified"
+    version="1.0">
+    <xs:import namespace="http://java.sun.com/xml/ns/javaee"/>
+    <xs:element name="clustering" type="clusteringType"
+        substitutionGroup="javaee:assembly-descriptor-entry" />
+    <xs:complexType name="clusteringType">
+        <xs:complexContent>
+            <xs:extension
+                base="javaee:jboss-assembly-descriptor-bean-entryType">
+                <xs:sequence>
+                    <xs:element name="clustered" type="xs:string" />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+</xs:schema>
