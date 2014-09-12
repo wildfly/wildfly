@@ -38,6 +38,7 @@ class JSR77ManagementSubsystemRemove extends AbstractRemoveStepHandler {
     static JSR77ManagementSubsystemRemove INSTANCE = new JSR77ManagementSubsystemRemove();
 
     private JSR77ManagementSubsystemRemove() {
+        super(JSR77ManagementRootResource.JSR77_CAPABILITY);
     }
 
     @Override
