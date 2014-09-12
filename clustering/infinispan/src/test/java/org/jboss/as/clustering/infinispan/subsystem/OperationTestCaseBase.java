@@ -13,6 +13,7 @@ import java.io.IOException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -23,7 +24,42 @@ import org.jboss.dmr.ModelNode;
 
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan-3_0.xml" ;
+    static final String SUBSYSTEM_XML_FILE = "infinispan-operations.xml" ;
+
+    static final AdditionalInitialization ADDITIONAL_INITIALIZATION = new AdditionalInitialization() {/*
+
+        @Override
+        protected void addExtraServices(ServiceTarget target) {
+            // This doesn't work, so the rest is pointless
+            Service<ModuleLoader> moduleLoaderService = new AbstractService<ModuleLoader>() {
+                @Override
+                public ModuleLoader getValue() throws IllegalStateException {
+                    return ModuleLoader.forClass(CacheAddHandler.class);
+                }
+            };
+            target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, moduleLoaderService).install();
+            final ExecutorService executor = Executors.newCachedThreadPool();
+            Service<ExecutorService> executorService = new AbstractService<ExecutorService>() {
+                @Override
+                public ExecutorService getValue() throws IllegalStateException {
+                    return executor;
+                }
+            };
+            target.addService(Services.JBOSS_SERVER_EXECUTOR, executorService).install();
+            Service<MBeanServer> mBeanServerService = new AbstractService<MBeanServer>() {
+                @Override
+                public MBeanServer getValue() throws IllegalStateException {
+                    return ManagementFactory.getPlatformMBeanServer();
+                }
+            };
+            target.addService(ServiceName.JBOSS.append("mbean", "server"), mBeanServerService).install();
+        }
+    */};
+
+    // For use in tests where we don't need OperationContext.Stage.RUNTIME execution
+    // We need to pretend the JGroups capability is there though because our capabilities have a hard requirement for it
+    // We don't have a hard requirement for JMX though so we don't have to register it
+    static final AdditionalInitialization ADMIN_ONLY_INIT = AdditionalInitialization.MANAGEMENT;
 
     public OperationTestCaseBase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
