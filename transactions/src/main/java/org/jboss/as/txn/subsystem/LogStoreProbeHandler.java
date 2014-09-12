@@ -22,13 +22,10 @@
 
 package org.jboss.as.txn.subsystem;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
@@ -43,10 +40,13 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for exposing transaction logs
@@ -170,27 +170,33 @@ public class LogStoreProbeHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if(! context.isNormalServer()) {
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-            return;
+        if (context.isNormalServer()) {
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                    final MBeanServer mbs = TransactionExtension.getMBeanServer(context);
+                    if (mbs != null) {
+                        // Get the log-store resource
+                        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                        assert resource instanceof LogStoreResource;
+                        final LogStoreResource logStore = (LogStoreResource) resource;
+                        // Get the expose-all-logs parameter value
+                        final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                        final boolean exposeAllLogs = LogStoreConstants.EXPOSE_ALL_LOGS.resolveModelAttribute(context, subModel).asBoolean();
+                        // Replace the current model with an updated one
+                        context.acquireControllerLock();
+                        final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
+                        // WFLY-3020 -- don't drop the root model
+                        storeModel.writeModel(logStore.getModel());
+                        logStore.update(storeModel);
+                    }
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                }
+            }, OperationContext.Stage.RUNTIME);
         }
-        final MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        if (mbs != null) {
-            // Get the log-store resource
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-            assert resource instanceof LogStoreResource;
-            final LogStoreResource logStore = (LogStoreResource) resource;
-            // Get the expose-all-logs parameter value
-            final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-            final boolean exposeAllLogs = LogStoreConstants.EXPOSE_ALL_LOGS.resolveModelAttribute(context, subModel).asBoolean();
-            // Replace the current model with an updated one
-            context.acquireControllerLock();
-            final Resource storeModel = probeTransactions(mbs, exposeAllLogs);
-            // WFLY-3020 -- don't drop the root model
-            storeModel.writeModel(logStore.getModel());
-            logStore.update(storeModel);
-        }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+        context.stepCompleted();
     }
 
 }
