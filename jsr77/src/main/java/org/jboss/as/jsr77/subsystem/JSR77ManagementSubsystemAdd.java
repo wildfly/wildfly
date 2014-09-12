@@ -40,7 +40,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -52,6 +51,7 @@ import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Values;
@@ -66,6 +66,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
 
 
     private JSR77ManagementSubsystemAdd() {
+        super(JSR77ManagementRootResource.JSR77_CAPABILITY);
     }
 
     @Override
@@ -88,9 +89,11 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
 
                 ServiceTarget target = context.getServiceTarget();
 
+                ServiceName mbeanServerServiceName = context.getCapabilityServiceName(JSR77ManagementRootResource.JMX_CAPABILITY, MBeanServer.class);
+
                 RegisterMBeanServerDelegateService mbeanServerService = new RegisterMBeanServerDelegateService();
                 target.addService(RegisterMBeanServerDelegateService.SERVICE_NAME, mbeanServerService)
-                    .addDependency(MBeanServerService.SERVICE_NAME, PluggableMBeanServer.class, mbeanServerService.injectedMbeanServer)
+                    .addDependency(mbeanServerServiceName, PluggableMBeanServer.class, mbeanServerService.injectedMbeanServer)
                     .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, mbeanServerService.injectedController)
                     .setInitialMode(Mode.ACTIVE)
                     .install();
@@ -99,7 +102,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
                 RegisterManagementEJBService managementEjbService = new RegisterManagementEJBService();
                 target.addService(RegisterManagementEJBService.SERVICE_NAME, managementEjbService)
                     .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, managementEjbService.deploymentRepositoryValue)
-                    .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, managementEjbService.mbeanServerValue)
+                    .addDependency(mbeanServerServiceName, MBeanServer.class, managementEjbService.mbeanServerValue)
                     //TODO I think these are needed here since we don't go through EjbClientContextSetupProcessor
                     .addDependency(DefaultEjbClientContextService.DEFAULT_SERVICE_NAME, EJBClientContext.class, managementEjbService.ejbClientContextValue)
                     .addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLEJBClientContextSelectorService.class, managementEjbService.ejbClientContextSelectorValue)
