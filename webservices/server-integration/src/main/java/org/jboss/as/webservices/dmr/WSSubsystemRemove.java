@@ -35,8 +35,9 @@ class WSSubsystemRemove extends ReloadRequiredRemoveStepHandler {
     static final WSSubsystemRemove INSTANCE = new WSSubsystemRemove();
 
     private WSSubsystemRemove() {
-
+       super(WSExtension.WEBSERVICES_CAPABILITY);
     }
+
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         super.performRuntime(context, operation, model);

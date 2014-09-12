@@ -55,6 +55,7 @@
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.jmx"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.security"/>
