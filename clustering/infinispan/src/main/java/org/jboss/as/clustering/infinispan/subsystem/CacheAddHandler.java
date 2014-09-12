@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -61,8 +62,9 @@ import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigu
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurationBuilder;
 import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
-import org.infinispan.transaction.tm.BatchModeTransactionManager;
+import org.infinispan.transaction.tm.DummyTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -97,6 +99,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.spi.CacheServiceInstaller;
+import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
 
 /**
  * Base class for cache add handlers
@@ -107,7 +112,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger(CacheAddHandler.class.getPackage().getName());
     private static final String DEFAULTS = "infinispan-defaults.xml";
-    private static final String QUERY_MODULE = "org.infinispan.query";
+    private static final ModuleIdentifier QUERY_MODULE = ModuleIdentifier.fromString("org.infinispan.query");
     private static volatile Map<CacheMode, Configuration> defaults = null;
 
     public static synchronized Configuration getDefaultConfiguration(CacheMode cacheMode) {
@@ -173,7 +178,8 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         ModelNode cacheModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         // we also need the containerModel
-        PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
+        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
         // install the services from a reusable method
@@ -182,24 +188,25 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
     Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         // get all required addresses, names and service names
-        PathAddress cacheAddress = getCacheAddressFromOperation(operation);
-        PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
+        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
         String cacheName = cacheAddress.getLastElement().getValue();
         String containerName = containerAddress.getLastElement().getValue();
 
         // get model attributes
-        ModelNode resolvedValue = null;
-        String jndiName = (resolvedValue = CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined() ? resolvedValue.asString() : null;
+        String jndiName = ModelNodes.asString(CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel));
         ServiceController.Mode initialMode = StartMode.valueOf(CacheResourceDefinition.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
-        String module = (resolvedValue = CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel)).isDefined() ? resolvedValue.asString() : (Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled() ? QUERY_MODULE : null);
-        ModuleIdentifier moduleId = (module != null) ? ModuleIdentifier.fromString(module) : null;
+        ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel));
+        if ((module == null) && Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled()) {
+            module = QUERY_MODULE;
+        }
 
         // create a list for dependencies which may need to be added during processing
         List<Dependency<?>> dependencies = new LinkedList<>();
         // Infinispan Configuration to hold the operation data
         ConfigurationBuilder builder = new ConfigurationBuilder().read(getDefaultConfiguration(this.mode));
-        CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(this.mode, builder, moduleId);
+        CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(this.mode, builder, module);
         CacheDependencies cacheDependencies = new CacheDependencies();
 
         // process cache configuration ModelNode describing overrides to defaults
@@ -225,22 +232,27 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         controllers.add(this.installJndiService(target, containerName, cacheName, defaultCache, jndiName, verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
+        Class<? extends CacheServiceInstaller> installerClass = this.mode.isClustered() ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
+        for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            log.debugf("Installing %s for cache %s of container %s", installer.getClass().getSimpleName(), cacheName, containerName);
+            controllers.addAll(installer.install(target, containerName, cacheName));
+        }
+
         return controllers;
     }
 
     void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel) throws OperationFailedException {
         // get container and cache addresses
-        final PathAddress cacheAddress = getCacheAddressFromOperation(operation);
-        final PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
+        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
 
         // get container and cache names
-        final String cacheName = cacheAddress.getLastElement().getValue();
-        final String containerName = containerAddress.getLastElement().getValue();
+        String cacheName = cacheAddress.getLastElement().getValue();
+        String containerName = containerAddress.getLastElement().getValue();
 
         // remove all services started by CacheAdd, in reverse order
         // remove the binder service
-        ModelNode resolvedValue = null;
-        final String jndiName = (resolvedValue = CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined() ? resolvedValue.asString() : null;
+        String jndiName = ModelNodes.asString(CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel));
 
         ContextNames.BindInfo binding = createCacheBinding((jndiName != null) ? JndiNameFactory.parse(jndiName) : createJndiName(containerName, cacheName));
         context.removeService(binding.getBinderServiceName());
@@ -249,17 +261,14 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         // remove the cache configuration service
         context.removeService(CacheConfigurationService.getServiceName(containerName, cacheName));
 
+        Class<? extends CacheServiceInstaller> installerClass = this.mode.isClustered() ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
+        for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            for (ServiceName name : installer.getServiceNames(containerName, cacheName)) {
+                context.removeService(name);
+            }
+        }
+
         log.debugf("cache %s removed for container %s", cacheName, containerName);
-    }
-
-    protected PathAddress getCacheAddressFromOperation(ModelNode operation) {
-        return PathAddress.pathAddress(operation.get(OP_ADDR));
-    }
-
-    protected PathAddress getCacheContainerAddressFromOperation(ModelNode operation) {
-        final PathAddress cacheAddress = getCacheAddressFromOperation(operation);
-        final PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size()-1);
-        return containerAddress;
     }
 
     ServiceController<?> installCacheConfigurationService(ServiceTarget target, String containerName, String cacheName, boolean defaultCache,
@@ -288,7 +297,6 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
         Service<Cache<Object, Object>> service = new CacheService<>(cacheName, cacheDependencies);
         ServiceBuilder<?> builder = AsynchronousService.addService(target, CacheService.getServiceName(containerName, cacheName), service)
-                .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
                 .addDependency(CacheConfigurationService.getServiceName(containerName, cacheName))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, cacheDependencies.getCacheContainerInjector())
                 .setInitialMode(initialMode)
@@ -345,7 +353,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
      * @param builder        {@link ConfigurationBuilder} object to add data to
      */
     void processModelNode(OperationContext context, String containerName, ModelNode containerModel, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
-        if (cache.hasDefined(ModelKeys.STATISTICS_ENABLED)) {
+        if (cache.hasDefined(CacheResourceDefinition.STATISTICS_ENABLED.getName())) {
             // If the cache explicitly defines statistics-enabled, disregard cache container configuration for this cache
             builder.jmxStatistics().enabled(CacheResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, cache).asBoolean());
         } else {
@@ -373,8 +381,8 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
 
         IsolationLevel isolationLevel = getDefaultConfiguration(this.mode).locking().isolationLevel();
         // locking is a child resource
-        if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
-            ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+        if (cache.hasDefined(LockingResourceDefinition.PATH.getKey()) && cache.get(LockingResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
+            ModelNode locking = cache.get(LockingResourceDefinition.PATH.getKeyValuePair());
 
             isolationLevel = IsolationLevel.valueOf(LockingResourceDefinition.ISOLATION.resolveModelAttribute(context, locking).asString());
             final boolean striping = LockingResourceDefinition.STRIPING.resolveModelAttribute(context, locking).asBoolean();
@@ -389,260 +397,218 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             ;
         }
 
-        LockingMode lockingMode = getDefaultConfiguration(this.mode).transaction().lockingMode();
-        // transaction is a child resource
-        if (cache.hasDefined(ModelKeys.TRANSACTION) && cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
-            ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+        if (cache.hasDefined(TransactionResourceDefinition.PATH.getKey())) {
+            ModelNode transaction = cache.get(TransactionResourceDefinition.PATH.getKeyValuePair());
+            if (transaction.isDefined()) {
+                long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
+                TransactionMode txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
+                LockingMode lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
+                boolean transactional = (txMode != TransactionMode.NONE);
+                boolean batching = (txMode == TransactionMode.BATCH);
+                boolean useSynchronization = (txMode == TransactionMode.NON_XA);
+                boolean recoveryEnabled = (txMode == TransactionMode.FULL_XA);
 
-            long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
-            TransactionMode txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
-            lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
-            boolean transactional = (txMode != TransactionMode.NONE);
-            boolean batching = (txMode == TransactionMode.BATCH);
-            boolean useSynchronization = (txMode == TransactionMode.NON_XA);
-            boolean recoveryEnabled = (txMode == TransactionMode.FULL_XA);
-
-            builder.transaction()
-                    .cacheStopTimeout(stopTimeout)
-                    .transactionMode(transactional ? org.infinispan.transaction.TransactionMode.TRANSACTIONAL : org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL)
-                    .lockingMode(lockingMode)
-                    .useSynchronization(useSynchronization)
-                    .recovery().enabled(recoveryEnabled)
-                    .invocationBatching().disable()
-            ;
-            if (transactional) {
-                if (batching) {
-                    cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
-                } else {
-                    dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector()));
-                    if (useSynchronization) {
-                        dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector()));
-                    } else if (recoveryEnabled) {
-                        dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector()));
-                    }
-                }
-            }
-        }
-
-        if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ) && this.mode.isSynchronous() && !this.mode.isInvalidation()) {
-            builder.locking().writeSkewCheck(true);
-            builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
-        }
-
-        // eviction is a child resource
-        if (cache.hasDefined(ModelKeys.EVICTION) && cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
-            ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-
-            final EvictionStrategy strategy = EvictionStrategy.valueOf(EvictionResourceDefinition.STRATEGY.resolveModelAttribute(context, eviction).asString());
-            builder.eviction().strategy(strategy);
-
-            if (strategy.isEnabled()) {
-                final int maxEntries = EvictionResourceDefinition.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
-                builder.eviction().maxEntries(maxEntries);
-            }
-        }
-        // expiration is a child resource
-        if (cache.hasDefined(ModelKeys.EXPIRATION) && cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
-
-            ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-
-            final long maxIdle = ExpirationResourceDefinition.MAX_IDLE.resolveModelAttribute(context, expiration).asLong();
-            final long lifespan = ExpirationResourceDefinition.LIFESPAN.resolveModelAttribute(context, expiration).asLong();
-            final long interval = ExpirationResourceDefinition.INTERVAL.resolveModelAttribute(context, expiration).asLong();
-
-            builder.expiration()
-                    .maxIdle(maxIdle)
-                    .lifespan(lifespan)
-                    .wakeUpInterval(interval)
-            ;
-            // Only enable the reaper thread if we need it
-            if ((maxIdle > 0) || (lifespan > 0)) {
-                builder.expiration().enableReaper();
-            } else {
-                builder.expiration().disableReaper();
-            }
-        }
-
-        // stores are a child resource
-        String storeKey = findStoreKey(cache);
-        if (storeKey != null) {
-            ModelNode store = getStoreModelNode(cache);
-
-            final boolean shared = StoreResourceDefinition.SHARED.resolveModelAttribute(context, store).asBoolean();
-            final boolean preload = StoreResourceDefinition.PRELOAD.resolveModelAttribute(context, store).asBoolean();
-            final boolean passivation = StoreResourceDefinition.PASSIVATION.resolveModelAttribute(context, store).asBoolean();
-            final boolean fetchState = StoreResourceDefinition.FETCH_STATE.resolveModelAttribute(context, store).asBoolean();
-            final boolean purge = StoreResourceDefinition.PURGE.resolveModelAttribute(context, store).asBoolean();
-            final boolean singleton = StoreResourceDefinition.SINGLETON.resolveModelAttribute(context, store).asBoolean();
-            // TODO Fix me
-            final boolean async = store.hasDefined(ModelKeys.WRITE_BEHIND) && store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined();
-
-            PersistenceConfigurationBuilder persistenceBuilder = builder.persistence()
-                    .passivation(passivation)
-            ;
-            StoreConfigurationBuilder<?, ?> storeBuilder = this.buildCacheStore(context, persistenceBuilder, containerName, store, storeKey, dependencies)
-                    .fetchPersistentState(fetchState)
-                    .preload(preload)
-                    .shared(shared)
-                    .purgeOnStartup(purge)
-            ;
-            storeBuilder.singleton().enabled(singleton);
-
-            if (async) {
-                ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
-                storeBuilder.async().enable()
-                        .flushLockTimeout(StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
-                        .modificationQueueSize(StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, writeBehind).asInt())
-                        .shutdownTimeout(StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
-                        .threadPoolSize(StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE.resolveModelAttribute(context, writeBehind).asInt())
+                builder.transaction()
+                        .cacheStopTimeout(stopTimeout)
+                        .transactionMode(transactional ? org.infinispan.transaction.TransactionMode.TRANSACTIONAL : org.infinispan.transaction.TransactionMode.NON_TRANSACTIONAL)
+                        .lockingMode(lockingMode)
+                        .useSynchronization(useSynchronization)
+                        .recovery().enabled(recoveryEnabled)
+                        .invocationBatching().disable()
                 ;
-            }
-
-            final Properties properties = new TypedProperties();
-            if (store.hasDefined(ModelKeys.PROPERTY)) {
-                for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
-                    // format of properties
-                    // "property" => {
-                    //   "property-name" => {"value => "property-value"}
-                    // }
-                    String propertyName = property.getName();
-                    // get the value from ModelNode {"value" => "property-value"}
-                    ModelNode propertyValue = null;
-                    propertyValue = StorePropertyResourceDefinition.VALUE.resolveModelAttribute(context,property.getValue());
-                    properties.setProperty(propertyName, propertyValue.asString());
-                }
-            }
-            storeBuilder.withProperties(properties);
-        }
-    }
-
-    private static String findStoreKey(ModelNode cache) {
-        if (cache.hasDefined(ModelKeys.STORE)) {
-            return ModelKeys.STORE;
-        } else if (cache.hasDefined(ModelKeys.FILE_STORE)) {
-            return ModelKeys.FILE_STORE;
-        } else if (cache.hasDefined(ModelKeys.STRING_KEYED_JDBC_STORE)) {
-            return ModelKeys.STRING_KEYED_JDBC_STORE;
-        } else if (cache.hasDefined(ModelKeys.BINARY_KEYED_JDBC_STORE)) {
-            return ModelKeys.BINARY_KEYED_JDBC_STORE;
-        } else if (cache.hasDefined(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
-            return ModelKeys.MIXED_KEYED_JDBC_STORE;
-        } else if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
-            return ModelKeys.REMOTE_STORE;
-        }
-        return null;
-    }
-
-    private static ModelNode getStoreModelNode(ModelNode cache) {
-        if (cache.hasDefined(ModelKeys.STORE)) {
-            return cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.FILE_STORE)) {
-            return cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.STRING_KEYED_JDBC_STORE)) {
-            return cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.BINARY_KEYED_JDBC_STORE)) {
-            return cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
-            return cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
-        } else if (cache.hasDefined(ModelKeys.REMOTE_STORE)) {
-            return cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
-        }
-        return null;
-    }
-
-
-    private StoreConfigurationBuilder<?, ?> buildCacheStore(OperationContext context, PersistenceConfigurationBuilder persistenceBuilder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) throws OperationFailedException {
-
-        ModelNode resolvedValue = null;
-        if (storeKey.equals(ModelKeys.FILE_STORE)) {
-            final SingleFileStoreConfigurationBuilder builder = persistenceBuilder.addSingleFileStore();
-
-            final String path = ((resolvedValue = FileStoreResourceDefinition.RELATIVE_PATH.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
-            final String relativeTo = ((resolvedValue = FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, store)).isDefined()) ? resolvedValue.asString() : ServerEnvironment.SERVER_DATA_DIR;
-            Injector<PathManager> injector = new Injector<PathManager>() {
-                private volatile PathManager.Callback.Handle callbackHandle;
-                @Override
-                public void inject(PathManager value) {
-                    this.callbackHandle = value.registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
-                    builder.location(value.resolveRelativePathEntry(path, relativeTo));
-                }
-
-                @Override
-                public void uninject() {
-                    if (this.callbackHandle != null) {
-                        this.callbackHandle.remove();
-                    }
-                }
-            };
-            dependencies.add(new Dependency<>(PathManagerService.SERVICE_NAME, PathManager.class, injector));
-            return builder;
-        } else if (storeKey.equals(ModelKeys.STRING_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.BINARY_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
-            ModelNode dialect = JDBCStoreResourceDefinition.DIALECT.resolveModelAttribute(context, store);
-            DatabaseType type = dialect.isDefined() ? DatabaseType.valueOf(dialect.asString()) : null;
-
-            AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store, type);
-
-            String datasource = JDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
-
-            dependencies.add(new Dependency<>(ServiceName.JBOSS.append("data-source", datasource)));
-            builder.dataSource().jndiUrl(datasource);
-            return builder;
-        } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
-            final RemoteStoreConfigurationBuilder builder = persistenceBuilder.addStore(RemoteStoreConfigurationBuilder.class);
-            for (ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
-                String outboundSocketBinding = server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString();
-                Injector<OutboundSocketBinding> injector = new Injector<OutboundSocketBinding>() {
-                    @Override
-                    public void inject(OutboundSocketBinding value) {
-                        try {
-                            builder.addServer().host(value.getResolvedDestinationAddress().getHostAddress()).port(value.getDestinationPort());
-                        } catch (UnknownHostException e) {
-                            throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, value);
+                if (transactional) {
+                    if (batching) {
+                        cacheConfigurationDependencies.getTransactionManagerInjector().inject(DummyTransactionManager.getInstance());
+                    } else {
+                        dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector()));
+                        if (useSynchronization) {
+                            dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, cacheConfigurationDependencies.getTransactionSynchronizationRegistryInjector()));
+                        } else if (recoveryEnabled) {
+                            dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector()));
                         }
                     }
+                }
+
+                if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ) && this.mode.isSynchronous() && !this.mode.isInvalidation()) {
+                    builder.locking().writeSkewCheck(true);
+                    builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
+                }
+            }
+        }
+
+        if (cache.hasDefined(EvictionResourceDefinition.PATH.getKey())) {
+            ModelNode eviction = cache.get(EvictionResourceDefinition.PATH.getKeyValuePair());
+            if (eviction.isDefined()) {
+                final EvictionStrategy strategy = EvictionStrategy.valueOf(EvictionResourceDefinition.STRATEGY.resolveModelAttribute(context, eviction).asString());
+                builder.eviction().strategy(strategy);
+
+                if (strategy.isEnabled()) {
+                    final int maxEntries = EvictionResourceDefinition.MAX_ENTRIES.resolveModelAttribute(context, eviction).asInt();
+                    builder.eviction().maxEntries(maxEntries);
+                }
+            }
+        }
+
+        if (cache.hasDefined(ExpirationResourceDefinition.PATH.getKey())) {
+            ModelNode expiration = cache.get(ExpirationResourceDefinition.PATH.getKeyValuePair());
+            if (expiration.isDefined()) {
+                final long maxIdle = ExpirationResourceDefinition.MAX_IDLE.resolveModelAttribute(context, expiration).asLong();
+                final long lifespan = ExpirationResourceDefinition.LIFESPAN.resolveModelAttribute(context, expiration).asLong();
+                final long interval = ExpirationResourceDefinition.INTERVAL.resolveModelAttribute(context, expiration).asLong();
+
+                builder.expiration()
+                        .maxIdle(maxIdle)
+                        .lifespan(lifespan)
+                        .wakeUpInterval(interval)
+                ;
+                // Only enable the reaper thread if we need it
+                if ((maxIdle > 0) || (lifespan > 0)) {
+                    builder.expiration().enableReaper();
+                } else {
+                    builder.expiration().disableReaper();
+                }
+            }
+        }
+
+        StoreType type = findStoreType(cache);
+        if (type != null) {
+            ModelNode store = cache.get(type.pathElement().getKeyValuePair());
+            if (store.isDefined()) {
+                PersistenceConfigurationBuilder persistenceBuilder = builder.persistence()
+                        .passivation(StoreResourceDefinition.PASSIVATION.resolveModelAttribute(context, store).asBoolean())
+                ;
+                StoreConfigurationBuilder<?, ?> storeBuilder = this.buildCacheStore(context, persistenceBuilder, containerName, type, store, dependencies)
+                        .fetchPersistentState(StoreResourceDefinition.FETCH_STATE.resolveModelAttribute(context, store).asBoolean())
+                        .preload(StoreResourceDefinition.PRELOAD.resolveModelAttribute(context, store).asBoolean())
+                        .shared(StoreResourceDefinition.SHARED.resolveModelAttribute(context, store).asBoolean())
+                        .purgeOnStartup(StoreResourceDefinition.PURGE.resolveModelAttribute(context, store).asBoolean())
+                ;
+                storeBuilder.singleton().enabled(StoreResourceDefinition.SINGLETON.resolveModelAttribute(context, store).asBoolean());
+
+                if (store.hasDefined(StoreWriteBehindResourceDefinition.PATH.getKey())) {
+                    ModelNode writeBehind = store.get(StoreWriteBehindResourceDefinition.PATH.getKeyValuePair());
+                    if (writeBehind.isDefined()) {
+                        storeBuilder.async().enable()
+                                .flushLockTimeout(StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
+                                .modificationQueueSize(StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, writeBehind).asInt())
+                                .shutdownTimeout(StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT.resolveModelAttribute(context, writeBehind).asLong())
+                                .threadPoolSize(StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE.resolveModelAttribute(context, writeBehind).asInt())
+                        ;
+                    }
+                }
+
+                Properties properties = new TypedProperties();
+                if (store.hasDefined(StorePropertyResourceDefinition.WILDCARD_PATH.getKey())) {
+                    for (Property property : store.get(StorePropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                        properties.setProperty(property.getName(), StorePropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString());
+                    }
+                }
+                storeBuilder.withProperties(properties);
+            }
+        }
+    }
+
+    private static StoreType findStoreType(ModelNode cache) {
+        for (StoreType store: StoreType.values()) {
+            if (cache.hasDefined(store.pathElement().getKey())) {
+                return store;
+            }
+        }
+        return null;
+    }
+
+    private StoreConfigurationBuilder<?, ?> buildCacheStore(OperationContext context, PersistenceConfigurationBuilder persistenceBuilder, String containerName, StoreType storeType, ModelNode store, List<Dependency<?>> dependencies) throws OperationFailedException {
+        switch (storeType) {
+            case FILE: {
+                final SingleFileStoreConfigurationBuilder builder = persistenceBuilder.addSingleFileStore();
+                final String path = ModelNodes.asString(FileStoreResourceDefinition.RELATIVE_PATH.resolveModelAttribute(context, store), InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName);
+                final String relativeTo = ModelNodes.asString(FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, store), ServerEnvironment.SERVER_DATA_DIR);
+                Injector<PathManager> injector = new Injector<PathManager>() {
+                    private volatile PathManager.Callback.Handle callbackHandle;
+                    @Override
+                    public void inject(PathManager value) {
+                        this.callbackHandle = value.registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+                        builder.location(value.resolveRelativePathEntry(path, relativeTo));
+                    }
+
                     @Override
                     public void uninject() {
-                        // Do nothing
+                        if (this.callbackHandle != null) {
+                            this.callbackHandle.remove();
+                        }
                     }
                 };
-                dependencies.add(new Dependency<>(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding), OutboundSocketBinding.class, injector));
+                dependencies.add(new Dependency<>(PathManagerService.SERVICE_NAME, PathManager.class, injector));
+                return builder;
             }
-            if (store.hasDefined(ModelKeys.CACHE)) {
-                builder.remoteCacheName(store.get(ModelKeys.CACHE).asString());
+            case STRING_KEYED_JDBC:
+            case BINARY_KEYED_JDBC:
+            case MIXED_KEYED_JDBC: {
+                DatabaseType type = ModelNodes.asEnum(JDBCStoreResourceDefinition.DIALECT.resolveModelAttribute(context, store), DatabaseType.class);
+
+                AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store, type);
+
+                String datasource = JDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
+
+                dependencies.add(new Dependency<>(ServiceName.JBOSS.append("data-source", datasource)));
+                builder.dataSource().jndiUrl(datasource);
+                return builder;
             }
-            if (store.hasDefined(ModelKeys.SOCKET_TIMEOUT)) {
-                builder.socketTimeout(store.require(ModelKeys.SOCKET_TIMEOUT).asLong());
+            case REMOTE: {
+                final RemoteStoreConfigurationBuilder builder = persistenceBuilder.addStore(RemoteStoreConfigurationBuilder.class);
+                for (ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
+                    String outboundSocketBinding = server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString();
+                    Injector<OutboundSocketBinding> injector = new Injector<OutboundSocketBinding>() {
+                        @Override
+                        public void inject(OutboundSocketBinding value) {
+                            try {
+                                builder.addServer().host(value.getResolvedDestinationAddress().getHostAddress()).port(value.getDestinationPort());
+                            } catch (UnknownHostException e) {
+                                throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, value);
+                            }
+                        }
+                        @Override
+                        public void uninject() {
+                            // Do nothing
+                        }
+                    };
+                    dependencies.add(new Dependency<>(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding), OutboundSocketBinding.class, injector));
+                }
+                builder.remoteCacheName(RemoteStoreResourceDefinition.CACHE.resolveModelAttribute(context, store).asString());
+                builder.socketTimeout(RemoteStoreResourceDefinition.SOCKET_TIMEOUT.resolveModelAttribute(context, store).asLong());
+                builder.tcpNoDelay(RemoteStoreResourceDefinition.TCP_NO_DELAY.resolveModelAttribute(context, store).asBoolean());
+                return builder;
             }
-            if (store.hasDefined(ModelKeys.TCP_NO_DELAY)) {
-                builder.tcpNoDelay(store.require(ModelKeys.TCP_NO_DELAY).asBoolean());
+            case CUSTOM: {
+                String className = store.require(ModelKeys.CLASS).asString();
+                try {
+                    return persistenceBuilder.addStore(StoreConfigurationBuilder.class.getClassLoader().loadClass(className).asSubclass(StoreConfigurationBuilder.class));
+                } catch (Exception e) {
+                    throw InfinispanLogger.ROOT_LOGGER.invalidCacheStore(e, className);
+                }
             }
-            return builder;
-        } else {
-            String className = store.require(ModelKeys.CLASS).asString();
-            try {
-                return persistenceBuilder.addStore(StoreConfigurationBuilder.class.getClassLoader().loadClass(className).asSubclass(StoreConfigurationBuilder.class));
-            } catch (Exception e) {
-                throw InfinispanLogger.ROOT_LOGGER.invalidCacheStore(e, className);
+            default: {
+                throw new IllegalStateException();
             }
         }
     }
 
     private static AbstractJdbcStoreConfigurationBuilder<?, ?> buildJdbcStore(PersistenceConfigurationBuilder persistenceBuilder, OperationContext context, ModelNode store, DatabaseType type) throws OperationFailedException {
-        boolean useStringKeyedTable = store.hasDefined(ModelKeys.STRING_KEYED_TABLE);
-        boolean useBinaryKeyedTable = store.hasDefined(ModelKeys.BINARY_KEYED_TABLE);
+        boolean useStringKeyedTable = store.hasDefined(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName());
+        boolean useBinaryKeyedTable = store.hasDefined(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName());
         if (useStringKeyedTable && !useBinaryKeyedTable) {
             JdbcStringBasedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcStringBasedStoreConfigurationBuilder.class);
-            buildStringKeyedTable(builder.table(), context, store.get(ModelKeys.STRING_KEYED_TABLE), type);
+            buildStringKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()), type);
             return builder;
         } else if (useBinaryKeyedTable && !useStringKeyedTable) {
             JdbcBinaryStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcBinaryStoreConfigurationBuilder.class);
-            buildBinaryKeyedTable(builder.table(), context, store.get(ModelKeys.BINARY_KEYED_TABLE), type);
+            buildBinaryKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()), type);
             return builder;
         }
         // Else, use mixed mode
         JdbcMixedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcMixedStoreConfigurationBuilder.class);
-        buildStringKeyedTable(builder.stringTable(), context, store.get(ModelKeys.STRING_KEYED_TABLE), type);
-        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(ModelKeys.BINARY_KEYED_TABLE), type);
+        buildStringKeyedTable(builder.stringTable(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()), type);
+        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()), type);
         return builder;
     }
 
@@ -655,26 +621,22 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
     }
 
     private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type, String defaultTableNamePrefix) throws OperationFailedException {
-        ModelNode tableNamePrefix = JDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table);
         builder.databaseType(type)
                 .batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .fetchSize(JDBCStoreResourceDefinition.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
-                .tableNamePrefix(tableNamePrefix.isDefined() ? tableNamePrefix.asString() : defaultTableNamePrefix)
-                .idColumnName(getColumnProperty(context, table, ModelKeys.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "id"))
-                .idColumnType(getColumnProperty(context, table, ModelKeys.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "VARCHAR"))
-                .dataColumnName(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "datum"))
-                .dataColumnType(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BINARY"))
-                .timestampColumnName(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "version"))
-                .timestampColumnType(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"))
+                .tableNamePrefix(ModelNodes.asString(JDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table), defaultTableNamePrefix))
+                .idColumnName(getColumnProperty(context, table, JDBCStoreResourceDefinition.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "id"))
+                .idColumnType(getColumnProperty(context, table, JDBCStoreResourceDefinition.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "VARCHAR"))
+                .dataColumnName(getColumnProperty(context, table, JDBCStoreResourceDefinition.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "datum"))
+                .dataColumnType(getColumnProperty(context, table, JDBCStoreResourceDefinition.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BINARY"))
+                .timestampColumnName(getColumnProperty(context, table, JDBCStoreResourceDefinition.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "version"))
+                .timestampColumnType(getColumnProperty(context, table, JDBCStoreResourceDefinition.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"))
         ;
     }
 
-    private static String getColumnProperty(OperationContext context, ModelNode table, String columnKey, AttributeDefinition columnAttribute, String defaultValue) throws OperationFailedException
-    {
-        if (!table.isDefined() || !table.hasDefined(columnKey)) return defaultValue;
-        ModelNode column = table.get(columnKey);
-        ModelNode resolvedValue = null;
-        return ((resolvedValue = columnAttribute.resolveModelAttribute(context, column)).isDefined()) ? resolvedValue.asString() : defaultValue;
+    private static String getColumnProperty(OperationContext context, ModelNode table, AttributeDefinition columnResourceDefinition, AttributeDefinition columnAttribute, String defaultValue) throws OperationFailedException {
+        if (!table.isDefined() || !table.hasDefined(columnResourceDefinition.getName())) return defaultValue;
+        return ModelNodes.asString(columnAttribute.resolveModelAttribute(context, table.get(columnResourceDefinition.getName())), defaultValue);
     }
 
     /*

@@ -26,7 +26,6 @@ import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -76,7 +75,6 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 .addAliases(InfinispanRouteLocatorService.getCacheServiceAlias(cacheName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
@@ -85,7 +83,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
     }
 
     private static ServiceName getCacheServiceName(String cacheName) {
-        ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
+        ServiceName baseServiceName = EmbeddedCacheManagerService.BASE_SERVICE_NAME;
         ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);

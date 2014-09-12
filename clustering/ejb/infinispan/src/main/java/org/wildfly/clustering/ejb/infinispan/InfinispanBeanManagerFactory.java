@@ -55,7 +55,7 @@ import org.wildfly.clustering.ejb.infinispan.group.InfinispanBeanGroupFactory;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Factory for creating an infinispan-based {@link BeanManager}.
@@ -79,7 +79,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
                 .addDependency(deploymentUnitServiceName.append("marshalling"), VersionedMarshallingConfiguration.class, factory.config)
                 .addDependency(deploymentUnitServiceName.append(name, "expiration"), ScheduledExecutorService.class, factory.scheduler)
                 .addDependency(deploymentUnitServiceName.append(name, "eviction"), Executor.class, factory.executor)
-                .addDependency(ChannelServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, factory.dispatcherFactory)
+                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(containerName), CommandDispatcherFactory.class, factory.dispatcherFactory)
                 .addDependency(CacheServiceNames.REGISTRY.getServiceName(containerName), Registry.class, factory.registry)
                 .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName), NodeFactory.class, factory.nodeFactory)
         ;

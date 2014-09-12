@@ -41,7 +41,7 @@ import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.server.group.CacheNodeFactory;
+import org.wildfly.clustering.server.group.InfinispanNodeFactory;
 import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
@@ -54,7 +54,7 @@ public class CacheRegistryFactoryService<K, V> implements Service<RegistryFactor
     public static <K, V> ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         CacheRegistryFactoryService<K, V> service = new CacheRegistryFactoryService<>();
         return AsynchronousService.addService(target, name, service)
-                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), CacheNodeFactory.class, service.factory)
+                .addDependency(CacheServiceNames.NODE_FACTORY.getServiceName(containerName, cacheName), InfinispanNodeFactory.class, service.factory)
                 .addDependency(CacheServiceNames.GROUP.getServiceName(containerName, cacheName), Group.class, service.group)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
         ;
@@ -63,7 +63,7 @@ public class CacheRegistryFactoryService<K, V> implements Service<RegistryFactor
     private final InjectedValue<Group> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
+    private final InjectedValue<InfinispanNodeFactory> factory = new InjectedValue<>();
 
     private volatile CacheRegistryFactory<K, V> value = null;
 

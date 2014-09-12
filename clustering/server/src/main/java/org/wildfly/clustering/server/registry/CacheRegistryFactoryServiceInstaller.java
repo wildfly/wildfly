@@ -25,15 +25,22 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.spi.ClusterServiceInstaller;
+import org.wildfly.clustering.server.CacheServiceBuilder;
+import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheRegistryFactoryServiceInstaller extends AbstractRegistryFactoryServiceInstaller implements ClusterServiceInstaller {
+public class CacheRegistryFactoryServiceInstaller extends RegistryFactoryServiceInstaller implements ClusteredCacheServiceInstaller {
 
-    @Override
-    protected ServiceBuilder<RegistryFactory<Object, Object>> build(ServiceTarget target, ServiceName name, String container, String cache) {
-        return CacheRegistryFactoryService.build(target, name, container, cache);
+    private static final CacheServiceBuilder<RegistryFactory<Object, Object>> BUILDER = new CacheServiceBuilder<RegistryFactory<Object, Object>>() {
+        @Override
+        public ServiceBuilder<RegistryFactory<Object, Object>> build(ServiceTarget target, ServiceName name, String container, String cache) {
+            return CacheRegistryFactoryService.build(target, name, container, cache);
+        }
+    };
+
+    public CacheRegistryFactoryServiceInstaller() {
+        super(BUILDER);
     }
 }

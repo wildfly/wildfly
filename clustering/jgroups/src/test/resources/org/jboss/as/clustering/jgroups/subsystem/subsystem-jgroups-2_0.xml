@@ -24,8 +24,8 @@
         <protocol type="FRAG2"/>
         <protocol type="RSVP"/>
         <relay site="LONDON">
-            <remote-site name="SFO" stack="minimal" cluster="global"/>
-            <remote-site name="NYC" stack="minimal" cluster="global"/>
+            <remote-site name="SFO" stack="minimal" cluster="bridge"/>
+            <remote-site name="NYC" stack="minimal" cluster="bridge"/>
         </relay>
     </stack>
 </subsystem>

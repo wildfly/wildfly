@@ -29,37 +29,37 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
- * {@link CacheNodeFactory} implementation that delegates node creation to the channel node factory
+ * {@link InfinispanNodeFactory} implementation that delegates node creation to the channel node factory
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryService implements Service<CacheNodeFactory> {
+public class CacheNodeFactoryService implements Service<InfinispanNodeFactory> {
 
-    public static ServiceBuilder<CacheNodeFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+    public static ServiceBuilder<InfinispanNodeFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
         CacheNodeFactoryService service = new CacheNodeFactoryService();
         return target.addService(name, service)
-                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(containerName), ChannelNodeFactory.class, service.factory)
+                .addDependency(GroupServiceNames.NODE_FACTORY.getServiceName(containerName), JGroupsNodeFactory.class, service.factory)
         ;
     }
 
-    private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
+    private final InjectedValue<JGroupsNodeFactory> factory = new InjectedValue<>();
 
-    private volatile CacheNodeFactory value = null;
+    private volatile InfinispanNodeFactory value = null;
 
     private CacheNodeFactoryService() {
         // Hide
     }
 
     @Override
-    public CacheNodeFactory getValue() {
+    public InfinispanNodeFactory getValue() {
         return this.value;
     }
 
     @Override
     public void start(StartContext context) {
-        this.value = new CacheNodeFactoryImpl(this.factory.getValue());
+        this.value = new CacheNodeFactory(this.factory.getValue());
     }
 
     @Override

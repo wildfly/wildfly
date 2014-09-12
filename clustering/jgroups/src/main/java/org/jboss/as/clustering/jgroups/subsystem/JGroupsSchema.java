@@ -30,8 +30,9 @@ public enum JGroupsSchema {
     VERSION_1_0(1, 0),
     VERSION_1_1(1, 1),
     VERSION_2_0(2, 0),
+    VERSION_3_0(3, 0),
     ;
-    static final JGroupsSchema CURRENT = VERSION_2_0;
+    public static final JGroupsSchema CURRENT = VERSION_3_0;
 
     private final int major;
     private final int minor;
@@ -55,6 +56,15 @@ public enum JGroupsSchema {
      * @return the namespace URI
      */
     public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:%s:%d.%d", JGroupsExtension.SUBSYSTEM_NAME, this.major, this.minor);
+        return this.format("urn:jboss:domain:jgroups:%d.%d");
+    }
+
+    /**
+     * Formats a string using the specified pattern.
+     * @param pattern a formatter pattern
+     * @return a formatted string
+     */
+    String format(String pattern) {
+        return String.format(pattern, this.major, this.minor);
     }
 }

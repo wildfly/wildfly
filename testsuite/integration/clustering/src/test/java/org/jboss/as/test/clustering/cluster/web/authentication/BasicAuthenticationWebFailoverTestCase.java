@@ -31,9 +31,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -87,14 +90,15 @@ public class BasicAuthenticationWebFailoverTestCase extends ClusterAbstractTestC
             @ArquillianResource(SecureServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        HttpClient client = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
 
         URI uri1 = SecureServlet.createURI(baseURL1);
         URI uri2 = SecureServlet.createURI(baseURL2);
 
         try {
             // Valid login, invalid role
-            setCredentials(client, "forbidden", "password", baseURL1, baseURL2);
+            setCredentials(provider, "forbidden", "password", baseURL1, baseURL2);
             HttpResponse response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatusLine().getStatusCode());
@@ -103,7 +107,7 @@ public class BasicAuthenticationWebFailoverTestCase extends ClusterAbstractTestC
             }
 
             // Invalid login, valid role
-            setCredentials(client, "allowed", "bad", baseURL1, baseURL2);
+            setCredentials(provider, "allowed", "bad", baseURL1, baseURL2);
             response = client.execute(new HttpGet(uri1));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
@@ -112,7 +116,7 @@ public class BasicAuthenticationWebFailoverTestCase extends ClusterAbstractTestC
             }
 
             // Valid login, valid role
-            setCredentials(client, "allowed", "password", baseURL1, baseURL2);
+            setCredentials(provider, "allowed", "password", baseURL1, baseURL2);
             String sessionId = null;
             response = client.execute(new HttpGet(uri1));
             try {
@@ -147,9 +151,9 @@ public class BasicAuthenticationWebFailoverTestCase extends ClusterAbstractTestC
         }
     }
 
-    private static void setCredentials(DefaultHttpClient client, String user, String password, URL... urls) {
+    private static void setCredentials(CredentialsProvider provider, String user, String password, URL... urls) {
         for (URL url: urls) {
-            client.getCredentialsProvider().setCredentials(new AuthScope(url.getHost(), url.getPort()), new UsernamePasswordCredentials(user, password));
+            provider.setCredentials(new AuthScope(url.getHost(), url.getPort()), new UsernamePasswordCredentials(user, password));
         }
     }
 }

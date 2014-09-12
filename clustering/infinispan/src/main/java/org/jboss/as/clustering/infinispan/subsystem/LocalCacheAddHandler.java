@@ -31,9 +31,7 @@ import org.infinispan.configuration.cache.CacheMode;
  */
 public class LocalCacheAddHandler extends CacheAddHandler {
 
-    static final LocalCacheAddHandler INSTANCE = new LocalCacheAddHandler();
-
-    private LocalCacheAddHandler() {
+    LocalCacheAddHandler() {
         super(CacheMode.LOCAL);
     }
 }

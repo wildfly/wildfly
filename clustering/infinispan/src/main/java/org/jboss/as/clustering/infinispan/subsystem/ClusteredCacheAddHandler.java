@@ -66,10 +66,7 @@ public abstract class ClusteredCacheAddHandler extends CacheAddHandler {
         // required attribute MODE (ASYNC/SYNC)
         final Mode mode = Mode.valueOf(ClusteredCacheResourceDefinition.MODE.resolveModelAttribute(context, cache).asString());
 
-        final long remoteTimeout = ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong();
         final int queueSize = ClusteredCacheResourceDefinition.QUEUE_SIZE.resolveModelAttribute(context, cache).asInt();
-        final long queueFlushInterval = ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong();
-        final boolean asyncMarshalling = ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean();
 
         // adjust the cache mode used based on the value of clustered attribute MODE
         CacheMode cacheMode = mode.apply(this.mode);
@@ -77,15 +74,18 @@ public abstract class ClusteredCacheAddHandler extends CacheAddHandler {
 
         // process clustered cache attributes and elements
         if (cacheMode.isSynchronous()) {
-            builder.clustering().sync().replTimeout(remoteTimeout);
+            builder.clustering().sync().replTimeout(ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.resolveModelAttribute(context, cache).asLong());
         } else {
-            builder.clustering().async().useReplQueue(queueSize > 0);
-            builder.clustering().async().replQueueMaxElements(queueSize);
-            builder.clustering().async().replQueueInterval(queueFlushInterval);
-            if(asyncMarshalling)
+            builder.clustering().async()
+                    .useReplQueue(queueSize > 0)
+                    .replQueueMaxElements(queueSize)
+                    .replQueueInterval(ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.resolveModelAttribute(context, cache).asLong())
+            ;
+            if (ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.resolveModelAttribute(context, cache).asBoolean()) {
                 builder.clustering().async().asyncMarshalling();
-            else
+            } else {
                 builder.clustering().async().syncMarshalling();
+            }
         }
     }
 }

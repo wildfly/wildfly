@@ -21,11 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResource.JGROUPS_PROTOCOL_PKG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -39,344 +40,273 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jgroups.Channel;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
-import org.jgroups.conf.PropertyConverter;
 import org.jgroups.stack.Protocol;
+import org.jgroups.util.Util;
 
 /**
  * A generic handler for protocol metrics based on reflection.
- * <p/>
- * When a request comes in, it has a protocol name and attribute name
- * - use the protocol name to load the protocol class
- * - use the attribute name and the protocol class to get the attribute field/method
- * - based on the attribute field's type, call
- * field.getInt(protocolObject)
- * field.getFloat(protocolObject)
- * field.getDouble(protocolObject)
- * to get the value of the attribute
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  * @author Radoslav Husar
+ * @author Paul Ferraro
  */
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
-    private final boolean isField;
-
-    /**
-     * @param isField whether the registered attribute is corresponding to a field,
-     *                otherwise a method is invoked
-     */
-    public ProtocolMetricsHandler(boolean isField) {
-        this.isField = isField;
+    interface Attribute {
+        String getName();
+        String getDescription();
+        Class<?> getType();
+        Object read(Object object) throws Exception;
     }
 
-    public enum FieldTypes {
-        BOOLEAN("boolean"),
-        BYTE("byte"),
-        CHAR("char"),
-        SHORT("short"),
-        INT("int"),
-        LONG("long"),
-        FLOAT("float"),
-        DOUBLE("double"),
-        STRING("class java.lang.String"),
-        NON_PRIMITIVE("non_primitive");
-        private static final Map<String, FieldTypes> MAP = new HashMap<String, FieldTypes>();
+    abstract static class AbstractAttribute<A extends AccessibleObject> implements Attribute {
+        final A accessible;
 
-        static {
-            for (FieldTypes type : FieldTypes.values()) {
-                MAP.put(type.toString(), type);
+        AbstractAttribute(A accessible) {
+            this.accessible = accessible;
+        }
+
+        @Override
+        public String getName() {
+            if (this.accessible.isAnnotationPresent(ManagedAttribute.class)) {
+                String name = this.accessible.getAnnotation(ManagedAttribute.class).name();
+                if (!name.isEmpty()) return name;
+            }
+            if (this.accessible.isAnnotationPresent(Property.class)) {
+                String name = this.accessible.getAnnotation(Property.class).name();
+                if (!name.isEmpty()) return name;
+            }
+            return null;
+        }
+
+        @Override
+        public String getDescription() {
+            if (this.accessible.isAnnotationPresent(ManagedAttribute.class)) {
+                return this.accessible.getAnnotation(ManagedAttribute.class).description();
+            }
+            if (this.accessible.isAnnotationPresent(Property.class)) {
+                return this.accessible.getAnnotation(Property.class).description();
+            }
+            return this.accessible.toString();
+        }
+
+        @Override
+        public Object read(final Object object) throws Exception {
+            PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws Exception {
+                    boolean accessible = AbstractAttribute.this.accessible.isAccessible();
+                    if (!accessible) {
+                        AbstractAttribute.this.accessible.setAccessible(true);
+                    }
+                    try {
+                        return AbstractAttribute.this.get(object);
+                    } finally {
+                        if (!accessible) {
+                            AbstractAttribute.this.accessible.setAccessible(false);
+                        }
+                    }
+                }
+            };
+            try {
+                return AccessController.doPrivileged(action);
+            } catch (PrivilegedActionException e) {
+                throw e.getException();
             }
         }
 
-        final String name;
+        abstract Object get(Object object) throws Exception;
+    }
 
-        private FieldTypes(String name) {
-            this.name = name;
+    static class FieldAttribute extends AbstractAttribute<Field> {
+        FieldAttribute(Field field) {
+            super(field);
         }
 
-        public String toString() {
-            return name;
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return (name != null) ? name : this.accessible.getName();
         }
 
-        public static FieldTypes getStat(final String stringForm) {
-            return MAP.get(stringForm);
+        @Override
+        public Class<?> getType() {
+            return this.accessible.getType();
+        }
+
+        @Override
+        Object get(Object object) throws IllegalAccessException {
+            return this.accessible.get(object);
+        }
+    }
+
+    static class MethodAttribute extends AbstractAttribute<Method> {
+        MethodAttribute(Method method) {
+            super(method);
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return (name != null) ? name : Util.methodNameToAttributeName(this.accessible.getName());
+        }
+
+        @Override
+        public Class<?> getType() {
+            return this.accessible.getReturnType();
+        }
+
+        @Override
+        Object get(Object object) throws IllegalAccessException, InvocationTargetException {
+            return this.accessible.invoke(object);
+        }
+    }
+
+    enum FieldType {
+        BOOLEAN(ModelType.BOOLEAN, Boolean.TYPE, Boolean.class) {
+            @Override
+            void setValue(ModelNode node, Object value) {
+                node.set(((Boolean) value).booleanValue());
+            }
+        },
+        INT(ModelType.INT, Integer.TYPE, Integer.class, Byte.TYPE, Byte.class, Short.TYPE, Short.class) {
+            @Override
+            void setValue(ModelNode node, Object value) {
+                node.set(((Number) value).intValue());
+            }
+        },
+        LONG(ModelType.LONG, Long.TYPE, Long.class) {
+            @Override
+            void setValue(ModelNode node, Object value) {
+                node.set(((Number) value).longValue());
+            }
+        },
+        DOUBLE(ModelType.DOUBLE, Double.TYPE, Double.class, Float.TYPE, Float.class) {
+            @Override
+            void setValue(ModelNode node, Object value) {
+                node.set(((Number) value).doubleValue());
+            }
+        },
+        STRING(ModelType.STRING) {
+            @Override
+            void setValue(ModelNode node, Object value) {
+                node.set(value.toString());
+            }
+        },
+        ;
+        private static final Map<Class<?>, FieldType> TYPES = new HashMap<>();
+
+        static {
+            for (FieldType type : FieldType.values()) {
+                for (Class<?> classType : type.types) {
+                    TYPES.put(classType, type);
+                }
+            }
+        }
+
+        private final Class<?>[] types;
+        private final ModelType modelType;
+
+        private FieldType(ModelType modelType, Class<?>... types) {
+            this.modelType = modelType;
+            this.types = types;
+        }
+
+        abstract void setValue(ModelNode node, Object value);
+
+        public ModelType getModelType() {
+            return this.modelType;
+        }
+
+        public static FieldType valueOf(Class<?> typeClass) {
+            FieldType type = TYPES.get(typeClass);
+            return (type != null) ? type : STRING;
         }
     }
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation)
-            throws OperationFailedException {
+    protected void executeRuntimeStep(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
         // get the protocol name and attribute
         PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
         String channelName = pathAddress.getElement(pathAddress.size() - 2).getValue();
         String protocolName = pathAddress.getElement(pathAddress.size() - 1).getValue();
-        String attrName = operation.require(NAME).asString();
+        String name = operation.require(NAME).asString();
 
         // lookup the channel
-        ServiceName channelServiceName = ChannelInstanceResource.CHANNEL_PARENT.append(channelName);
+        ServiceName channelServiceName = ChannelService.getServiceName(channelName);
         ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
-
-        // check that the service has been installed and started
-        boolean started = controller != null && controller.getValue() != null;
-        ModelNode result = new ModelNode();
-
-        // load the protocol class and get the attributes
-        String className = JGROUPS_PROTOCOL_PKG + "." + protocolName;
-        Class<? extends Protocol> protocolClass = null;
-        boolean loaded = false;
-        try {
-            protocolClass = Protocol.class.getClassLoader().loadClass(className).asSubclass(Protocol.class);
-            loaded = true;
-        } catch (ClassNotFoundException e) {
-            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unableToLoadProtocol(className));
-        }
-
-        if (loaded) {
-            Field field = null;
-            Method method = null;
-            boolean found = false;
-            // check the attribute is valid
-            try {
-                if (isField) {
-                    field = getField(protocolClass, attrName);
-                } else {
-                    method = getMethod(protocolClass, attrName);
-                }
-                found = true;
-            } catch (NoSuchFieldException | NoSuchMethodException e) {
-                context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(attrName));
-            }
-
-            // we now have a valid protocol instance and a valid field, get the value
-            if (found && started) {
-                Channel channel = (Channel) controller.getValue();
-
-                // we need to strip off any package name before trying to find the protocol
+        if (controller != null) {
+            Channel channel = (Channel) controller.getValue();
+            if (channel != null) {
                 int index = protocolName.lastIndexOf('.');
                 if (index > 0) {
                     protocolName = protocolName.substring(index + 1);
                 }
-                Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
-
-                if (protocol == null) {
+                final Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
+                if (protocol != null) {
+                    Attribute attribute = this.getAttribute(protocol.getClass(), name);
+                    if (attribute != null) {
+                        FieldType type = FieldType.valueOf(attribute.getType());
+                        try {
+                            ModelNode result = new ModelNode();
+                            Object value = attribute.read(protocol);
+                            if (value != null) {
+                                type.setValue(result, value);
+                            }
+                            context.getResult().set(result);
+                        } catch (Exception e) {
+                            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(name));
+                        }
+                    } else {
+                        context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
+                    }
+                } else {
                     context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.protocolNotFoundInStack(protocolName));
                 }
-
-                // get the type of the attribute and call the appropriate set method
-                FieldTypes type;
-                Class forType = isField ? field.getType() : method.getReturnType();
-                if (ChannelInstanceResourceDefinition.isEquivalentModelTypeAvailable(forType)) {
-                    type = FieldTypes.getStat(forType.toString());
-                } else {
-                    type = FieldTypes.NON_PRIMITIVE;
-                }
-
-                try {
-                    result = isField ? getProtocolFieldValue(protocol, field, type) : getProtocolMethodValue(protocol, method, type);
-                } catch (PrivilegedActionException pae) {
-                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(attrName));
-                } catch (InstantiationException ie) {
-                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.instantiationExceptionOnConverterForAttribute(attrName));
-                }
-
-                context.getResult().set(result);
             }
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
-    /**
-     * Access to fields in the protocol instance may require security privileges
-     * as we may need to adjust the access of private and protected fields using using {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}.
-     */
-    private static ModelNode getProtocolFieldValue(final Protocol p, final Field f, final FieldTypes t)
-            throws PrivilegedActionException, InstantiationException {
+    private Attribute getAttribute(Class<? extends Protocol> targetClass, String name) {
+        Map<String, Attribute> attributes = this.findProtocolAttributes(targetClass);
+        return attributes.get(name);
+    }
 
-        /*
-        if (p != null)
-            System.out.println("protocol = " + p.getName());
-        if (f != null)
-            System.out.println("field = " + f.getName());
-        if (t != null)
-            System.out.println("field type = " + t.toString());
-        */
-
-        return AccessController.doPrivileged(new PrivilegedExceptionAction<ModelNode>() {
-            @Override
-            public ModelNode run() throws Exception {
-                ModelNode result = new ModelNode();
-                String value;
-
-                if (!f.isAccessible())
-                    f.setAccessible(true);
-
-                switch (t) {
-                    case BOOLEAN:
-                        result.set(f.getBoolean(p));
-                        break;
-                    case BYTE:
-                        result.set(f.getByte(p));
-                        break;
-                    case CHAR:
-                        result.set(f.getChar(p));
-                        break;
-                    case SHORT:
-                        result.set((int) f.getShort(p));
-                        break;
-                    case INT:
-                        result.set(f.getInt(p));
-                        break;
-                    case LONG:
-                        result.set(f.getLong(p));
-                        break;
-                    case FLOAT:
-                        result.set((double) f.getFloat(p));
-                        break;
-                    case DOUBLE:
-                        result.set(f.getDouble(p));
-                        break;
-                    case STRING:
-                        value = (String) f.get(p);
-                        if (value != null)
-                            result.set(value);
-                        break;
-                    case NON_PRIMITIVE:
-                        // here, we handle all other types using JGroups PropertyConverter to convert the field to String
-                        // if the value is null, return undefined
-                        value = getStringValue(p, f);
-                        if (value != null) {
-                            result.set(value);
-                        }
-                        break;
+    Map<String, Attribute> findProtocolAttributes(Class<? extends Protocol> protocolClass) {
+        Map<String, Attribute> attributes = new HashMap<>();
+        Class<?> targetClass = protocolClass;
+        while (Protocol.class.isAssignableFrom(targetClass)) {
+            for (Method method: targetClass.getDeclaredMethods()) {
+                if ((method.getParameterTypes().length == 0) && isManagedAttribute(method)) {
+                    putIfAbsent(attributes, new MethodAttribute(method));
                 }
-                return result;
             }
-        });
-    }
-
-
-    /**
-     * Access to methods in the protocol instance may require security privileges
-     * as we may need to adjust the access of private and protected methods using {@link java.lang.reflect.AccessibleObject#setAccessible(boolean)}.
-     *
-     * @return ModelNode result of the invocation
-     */
-    private static ModelNode getProtocolMethodValue(final Protocol p, final Method m, final FieldTypes t) throws PrivilegedActionException, InstantiationException {
-
-        return AccessController.doPrivileged(new PrivilegedExceptionAction<ModelNode>() {
-            @Override
-            public ModelNode run() throws Exception {
-                ModelNode result = new ModelNode();
-                String value;
-
-                if (!m.isAccessible()) {
-                    m.setAccessible(true);
+            for (Field field: targetClass.getDeclaredFields()) {
+                if (isManagedAttribute(field)) {
+                    putIfAbsent(attributes, new FieldAttribute(field));
                 }
-
-                Object invocationResult = m.invoke(p);
-
-                switch (t) {
-                    case BOOLEAN:
-                        result.set((boolean) invocationResult);
-                        break;
-                    case BYTE:
-                        result.set((byte) invocationResult);
-                        break;
-                    case CHAR:
-                        result.set((char) invocationResult);
-                        break;
-                    case SHORT:
-                        result.set((short) invocationResult);
-                        break;
-                    case INT:
-                        result.set((int) invocationResult);
-                        break;
-                    case LONG:
-                        result.set((long) invocationResult);
-                        break;
-                    case FLOAT:
-                        result.set((double) invocationResult);
-                        break;
-                    case DOUBLE:
-                        result.set((double) invocationResult);
-                        break;
-                    case STRING:
-                        value = (String) invocationResult;
-                        if (value != null) {
-                            result.set(value);
-                        }
-                        break;
-                    case NON_PRIMITIVE:
-                        result.set(invocationResult.toString());
-                        break;
-                }
-                return result;
             }
-        });
+            targetClass = targetClass.getSuperclass();
+        }
+        return attributes;
     }
 
-    /**
-     * Gets a String value for a JGroups non-primitive field, using a JGroups converter of necessary.
-     * Note that the value of a non-primitive field may be null, in which case we return the value.
-     */
-    private static String getStringValue(final Protocol protocol, final Field field)
-            throws IllegalAccessException, InstantiationException {
-        ManagedAttribute managed = field.getAnnotation(ManagedAttribute.class);
-        Property property = field.getAnnotation(Property.class);
-
-        // mutually exclusive: managed attribute and Property?
-        assert !((managed != null) && (property != null)) : "Attribute " + field.getName() + " is both property and managed attribute";
-
-        if (managed != null) {
-            // handle non-primitive managed attribute
-            Object value = field.get(protocol);
-            if (value != null) {
-                return value.toString();
-            }
-        }
-
-        if (property != null) {
-            // handle non-primitive property value using the converter
-            Class<?> converter = property.converter();
-            if (converter != null) {
-                PropertyConverter instance = (PropertyConverter) converter.newInstance();
-                Object value = field.get(protocol);
-                if (value != null)
-                    return instance.toString(value);
-            }
-        }
-        return null;
-    }
-
-    private static Field getField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-        try {
-            return clazz.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            Class<?> superClass = clazz.getSuperclass();
-            if (superClass == null) {
-                throw e;
-            } else {
-                return getField(superClass, fieldName);
-            }
+    private static void putIfAbsent(Map<String, Attribute> attributes, Attribute attribute) {
+        String name = attribute.getName();
+        if (!attributes.containsKey(name)) {
+            attributes.put(name, attribute);
         }
     }
 
-    private static Method getMethod(Class<?> clazz, String methodName) throws NoSuchMethodException {
-        try {
-            return clazz.getDeclaredMethod(methodName);
-        } catch (NoSuchMethodException e) {
-            Class<?> superClass = clazz.getSuperclass();
-            if (superClass == null) {
-                throw e;
-            } else {
-                return getMethod(superClass, methodName);
-            }
-        }
+    private static boolean isManagedAttribute(AccessibleObject object) {
+        return object.isAnnotationPresent(ManagedAttribute.class) || (object.isAnnotationPresent(Property.class) && object.getAnnotation(Property.class).exposeAsManagedAttribute());
     }
 }

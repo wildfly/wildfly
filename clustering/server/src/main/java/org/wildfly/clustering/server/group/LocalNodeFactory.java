@@ -29,10 +29,10 @@ import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Non-clustered {@link ChannelNodeFactory}.
+ * Non-clustered {@link JGroupsNodeFactory}.
  * @author Paul Ferraro
  */
-public class LocalNodeFactory implements ChannelNodeFactory {
+public class LocalNodeFactory implements JGroupsNodeFactory {
 
     private final String cluster;
     private final String name;

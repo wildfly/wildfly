@@ -47,6 +47,7 @@ public class ModelKeys {
     // static final String CACHE_MODE = "cache-mode";
     static final String CACHE_CONTAINER = "cache-container";
     static final String CAPACITY_FACTOR = "capacity-factor";
+    static final String CHANNEL = "channel";
     static final String CHUNK_SIZE = "chunk-size";
     static final String CLASS = "class";
     static final String CLUSTER = "cluster";

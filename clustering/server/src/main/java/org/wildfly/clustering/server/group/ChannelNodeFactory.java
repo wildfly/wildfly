@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,59 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.group;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.jgroups.Address;
-import org.wildfly.clustering.group.NodeFactory;
+import org.jgroups.Channel;
+import org.jgroups.Event;
+import org.jgroups.stack.IpAddress;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Creates a node from a JGroups {@link Address}.
+ * Node factory implementation.  Node instances are cached and invalidated by the {@link org.wildfly.clustering.group.Group} when appropriate.
  * @author Paul Ferraro
  */
-public interface ChannelNodeFactory extends NodeFactory<Address>, Invalidatable<Address> {
+public class ChannelNodeFactory implements JGroupsNodeFactory, AutoCloseable {
 
+    private final ConcurrentMap<Address, Node> nodes = new ConcurrentHashMap<>();
+    private final Channel channel;
+
+    public ChannelNodeFactory(Channel channel) {
+        this.channel = channel;
+    }
+
+    @Override
+    public Node createNode(Address address) {
+        Node node = this.nodes.get(address);
+        if (node != null) return node;
+
+        IpAddress ipAddress = (IpAddress) this.channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
+        InetSocketAddress socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
+        String name = this.channel.getName(address);
+        if (name == null) {
+            // If no logical name exists, create one using physical address
+            name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
+        }
+        node = new AddressableNode(address, name, socketAddress);
+        Node existing = this.nodes.putIfAbsent(address, node);
+        return (existing != null) ? existing : node;
+    }
+
+    @Override
+    public void close() {
+        this.nodes.clear();
+    }
+
+    @Override
+    public void invalidate(Collection<Address> addresses) {
+        if (!addresses.isEmpty()) {
+            this.nodes.keySet().removeAll(addresses);
+        }
+    }
 }

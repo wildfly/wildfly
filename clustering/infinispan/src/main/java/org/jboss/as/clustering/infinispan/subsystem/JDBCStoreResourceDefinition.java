@@ -30,11 +30,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -172,8 +170,8 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
         StoreResourceDefinition.buildTransformation(version, builder);
     }
 
-    JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler, boolean allowRuntimeOnlyRegistration) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, allowRuntimeOnlyRegistration);
+    JDBCStoreResourceDefinition(StoreType store, boolean allowRuntimeOnlyRegistration) {
+        super(store, allowRuntimeOnlyRegistration);
     }
 
     @Override

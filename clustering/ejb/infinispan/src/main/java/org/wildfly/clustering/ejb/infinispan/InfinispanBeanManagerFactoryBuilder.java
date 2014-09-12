@@ -31,7 +31,6 @@ import org.jboss.as.clustering.concurrent.RemoveOnCancelScheduledExecutorService
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -94,7 +93,6 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
             }
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addDependency(GlobalComponentRegistryService.getServiceName(this.config.getContainerName()))
                 .addDependency(configurationServiceName)
                 .addDependency(deploymentUnitServiceName.append("marshalling"))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,13 +21,48 @@
  */
 package org.wildfly.clustering.server.group;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.infinispan.remoting.transport.Address;
-import org.wildfly.clustering.group.NodeFactory;
+import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Creates a node from an Infinispan {@link Address}.
+ * Infinispan cache-based {@link NodeFactory}.
  * @author Paul Ferraro
  */
-public interface CacheNodeFactory extends NodeFactory<Address>, Invalidatable<Address> {
+public class CacheNodeFactory implements InfinispanNodeFactory {
 
+    private final JGroupsNodeFactory factory;
+
+    public CacheNodeFactory(JGroupsNodeFactory factory) {
+        this.factory = factory;
+    }
+
+    @Override
+    public Node createNode(Address address) {
+        return this.factory.createNode(toJGroupsAddress(address));
+    }
+
+    @Override
+    public void invalidate(Collection<Address> addresses) {
+        if (!addresses.isEmpty()) {
+            List<org.jgroups.Address> jgroupsAddresses = new ArrayList<>(addresses.size());
+            for (Address address: addresses) {
+                jgroupsAddresses.add(toJGroupsAddress(address));
+            }
+            this.factory.invalidate(jgroupsAddresses);
+        }
+    }
+
+    private static org.jgroups.Address toJGroupsAddress(Address address) {
+        if (address == null) return null;
+        if (address instanceof JGroupsAddress) {
+            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
+            return jgroupsAddress.getJGroupsAddress();
+        }
+        throw new IllegalArgumentException(address.toString());
+    }
 }

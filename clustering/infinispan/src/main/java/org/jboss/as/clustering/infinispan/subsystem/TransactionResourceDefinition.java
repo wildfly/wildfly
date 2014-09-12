@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.transaction.LockingMode;
-import org.jboss.as.clustering.controller.AttributeOperationTransformer;
-import org.jboss.as.clustering.controller.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.OperationFactory;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;

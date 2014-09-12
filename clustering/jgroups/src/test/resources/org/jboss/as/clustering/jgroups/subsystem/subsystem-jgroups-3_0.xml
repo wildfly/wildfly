@@ -1,0 +1,37 @@
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0">
+    <channels default="${test.expr:ee}">
+        <channel name="ee"/>
+        <channel name="bridge" stack="minimal"/>
+    </channels>
+    <stacks default="${test.expr:maximal}">
+        <stack name="minimal">
+            <transport type="UDP"/>
+        </stack>
+        <stack name="maximal">
+            <transport type="TCP" socket-binding="some-binding" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups"
+                oob-executor="jgroups-oob" timer-executor="jgroups-timer" shared="${test.expr:false}"
+                thread-factory="jgroups-thread-factory" machine="${test.expr:machine1}" rack="${test.expr:rack1}" site="${test.expr:site1}" >
+                <property name="enable_bundling">${test.expr:true}</property>
+            </transport>
+            <protocol type="MPING" socket-binding="jgroups-mping">
+                <property name="name">${test.expr:value}</property>
+            </protocol>
+            <protocol type="MERGE2"/>
+            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
+            <protocol type="FD"/>
+            <protocol type="VERIFY_SUSPECT"/>
+            <protocol type="pbcast.NAKACK2"/>
+            <protocol type="UNICAST2"/>
+            <protocol type="pbcast.STABLE"/>
+            <protocol type="pbcast.GMS"/>
+            <protocol type="UFC"/>
+            <protocol type="MFC"/>
+            <protocol type="FRAG2"/>
+            <protocol type="RSVP"/>
+            <relay site="LONDON">
+                <remote-site name="SFO" channel="bridge"/>
+                <remote-site name="NYC" channel="bridge"/>
+            </relay>
+        </stack>
+    </stacks>
+</subsystem>

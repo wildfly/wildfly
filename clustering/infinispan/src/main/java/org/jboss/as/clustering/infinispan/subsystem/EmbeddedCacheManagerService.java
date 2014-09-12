@@ -43,10 +43,10 @@ import org.jboss.msc.value.Value;
 public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
+    public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
 
     public static ServiceName getServiceName(String name) {
-        return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
+        return BASE_SERVICE_NAME.append(name);
     }
 
     private final Value<EmbeddedCacheManagerConfiguration> config;

@@ -42,7 +42,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    static PathElement pathElement(String name) {
+    public static PathElement pathElement(String name) {
         return PathElement.pathElement(ModelKeys.STACK, name);
     }
 
@@ -78,7 +78,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
 
     // registration
     public StackResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK), null, StackRemoveHandler.INSTANCE);
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK), null, new StackRemoveHandler());
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

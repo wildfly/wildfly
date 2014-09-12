@@ -21,9 +21,6 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -31,30 +28,27 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
- * {@link Group} implementation based on a channel view.
+ * Service that provides a channel instrumented {@link Group}.
  * @author Paul Ferraro
  */
-public class ChannelGroupService implements Service<Group>, ChannelGroupConfiguration {
+public class ChannelGroupService implements Service<Group> {
 
-    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String cluster) {
+    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String group) {
         ChannelGroupService service = new ChannelGroupService();
         return target.addService(name, service)
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(EmbeddedCacheManagerService.getServiceName(cluster), EmbeddedCacheManager.class, service.manager)
-                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(cluster), ChannelNodeFactory.class, service.factory)
+                .addDependency(GroupServiceNames.COMMAND_DISPATCHER.getServiceName(group), CommandDispatcherFactory.class, service.factory)
         ;
     }
 
-    private final InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<>();
-    private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
+    private final InjectedValue<CommandDispatcherFactory> factory = new InjectedValue<>();
+    private volatile Group group = null;
 
-    private volatile ChannelGroup group;
-
-    public ChannelGroupService() {
+    private ChannelGroupService() {
         // Hide
     }
 
@@ -65,22 +59,11 @@ public class ChannelGroupService implements Service<Group>, ChannelGroupConfigur
 
     @Override
     public void start(StartContext context) {
-        this.group = new ChannelGroup(this);
+        this.group = this.factory.getValue().getGroup();
     }
 
     @Override
     public void stop(StopContext context) {
-        this.group.close();
         this.group = null;
-    }
-
-    @Override
-    public EmbeddedCacheManager getCacheContainer() {
-        return this.manager.getValue();
-    }
-
-    @Override
-    public ChannelNodeFactory getNodeFactory() {
-        return this.factory.getValue();
     }
 }

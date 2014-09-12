@@ -22,24 +22,28 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import java.util.ServiceLoader;
 
-import java.util.List;
-
+import org.jboss.as.clustering.dmr.ModelNodes;
+import org.jboss.as.clustering.infinispan.CacheContainer;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.spi.CacheServiceInstaller;
+import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
+import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
+import org.wildfly.clustering.spi.GroupServiceInstaller;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
+import org.wildfly.clustering.spi.LocalGroupServiceInstaller;
 
 /**
  * Remove a cache container, taking care to remove any child cache resources as well.
@@ -53,13 +57,51 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        final String containerName = address.getLastElement().getValue();
 
         // remove any existing cache entries
-        removeExistingCacheServices(context, model, containerName);
+        removeExistingCacheServices(context, address, model);
 
-        // remove the cache container services
-        CacheContainerAddHandler.removeRuntimeServices(context, operation, model);
+        final String containerName = address.getLastElement().getValue();
+
+        // need to remove all container-related services started, in reverse order
+        context.removeService(KeyAffinityServiceFactoryService.getServiceName(containerName));
+
+        // remove the BinderService entry
+        String jndiName = ModelNodes.asString(CacheContainerResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model));
+        context.removeService(CacheContainerAddHandler.createCacheContainerBinding(jndiName, containerName).getBinderServiceName());
+
+        // remove the cache container
+        context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
+        context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(containerName));
+
+        if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
+            removeServices(context, ClusteredGroupServiceInstaller.class, containerName);
+
+            context.removeService(CacheContainerAddHandler.createChannelBinding(containerName).getBinderServiceName());
+            context.removeService(ChannelService.getServiceName(containerName));
+            context.removeService(ChannelService.getStackServiceName(containerName));
+        } else {
+            removeServices(context, LocalGroupServiceInstaller.class, containerName);
+        }
+
+        String defaultCache = ModelNodes.asString(CacheContainerResourceDefinition.DEFAULT_CACHE.resolveModelAttribute(context, model));
+
+        if ((defaultCache != null) && !defaultCache.equals(CacheContainer.DEFAULT_CACHE_ALIAS)) {
+            Class<? extends CacheServiceInstaller> installerClass = model.hasDefined(TransportResourceDefinition.PATH.getKey()) ? ClusteredCacheServiceInstaller.class : LocalCacheServiceInstaller.class;
+            for (CacheServiceInstaller installer : ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+                for (ServiceName serviceName : installer.getServiceNames(containerName, CacheContainer.DEFAULT_CACHE_ALIAS)) {
+                    context.removeService(serviceName);
+                }
+            }
+        }
+    }
+
+    private static <I extends GroupServiceInstaller> void removeServices(OperationContext context, Class<I> installerClass, String group) {
+        for (I installer: ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            for (ServiceName name: installer.getServiceNames(group)) {
+                context.removeService(name);
+            }
+        }
     }
 
     /**
@@ -74,15 +116,13 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        final String containerName = address.getLastElement().getValue();
-        // used by service installation
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
         // re-install the cache container services
         CacheContainerAddHandler.installRuntimeServices(context, operation, model, verificationHandler);
 
         // re-install any existing cache services
-        reinstallExistingCacheServices(context, model, containerName, verificationHandler);
+        reinstallExistingCacheServices(context, address, model, verificationHandler);
     }
 
 
@@ -94,17 +134,14 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
      * @param containerName
      * @throws OperationFailedException
      */
-    private static void reinstallExistingCacheServices(OperationContext context, ModelNode containerModel, String containerName, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    private static void reinstallExistingCacheServices(OperationContext context, PathAddress containerAddress, ModelNode containerModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
 
-        for (String cacheType: CacheRemoveHandler.INSTANCE.getCacheTypes()) {
-            CacheAddHandler addHandler = CacheRemoveHandler.INSTANCE.getAddHandler(cacheType);
-            List<Property> caches = getCachesFromParentModel(cacheType, containerModel);
-            if (caches != null) {
-                for (Property cache: caches) {
-                    String cacheName = cache.getName();
-                    ModelNode cacheModel = cache.getValue();
-                    ModelNode operation = createCacheAddOperation(cacheType, containerName, cacheName);
-                    addHandler.installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
+        for (CacheType type: CacheType.values()) {
+            CacheAddHandler addHandler = type.getAddHandler();
+            if (containerModel.hasDefined(type.pathElement().getKey())) {
+                for (Property property: containerModel.get(type.pathElement().getKey()).asPropertyList()) {
+                    ModelNode addOperation = Util.createAddOperation(containerAddress.append(type.pathElement(property.getName())));
+                    addHandler.installRuntimeServices(context, addOperation, containerModel, property.getValue(), verificationHandler);
                 }
             }
         }
@@ -112,65 +149,17 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
 
     /**
      * Method to remove any services associated with existing caches.
-     *
-     * @param context
-     * @param containerModel
-     * @param containerName
-     * @throws OperationFailedException
      */
-    private static void removeExistingCacheServices(OperationContext context, ModelNode containerModel, String containerName) throws OperationFailedException {
+    private static void removeExistingCacheServices(OperationContext context, PathAddress containerAddress, ModelNode containerModel) throws OperationFailedException {
 
-        for (String cacheType: CacheRemoveHandler.INSTANCE.getCacheTypes()) {
-            CacheAddHandler addHandler = CacheRemoveHandler.INSTANCE.getAddHandler(cacheType);
-            List<Property> caches = getCachesFromParentModel(cacheType, containerModel);
-            if (caches != null) {
-                for (Property cache : caches) {
-                    String cacheName = cache.getName();
-                    ModelNode cacheModel = cache.getValue();
-                    ModelNode operation = createCacheRemoveOperation(cacheType, containerName, cacheName);
-                    addHandler.removeRuntimeServices(context, operation, containerModel, cacheModel);
+        for (CacheType type: CacheType.values()) {
+            CacheAddHandler addHandler = type.getAddHandler();
+            if (containerModel.hasDefined(type.pathElement().getKey())) {
+                for (Property property: containerModel.get(type.pathElement().getKey()).asPropertyList()) {
+                    ModelNode removeOperation = Util.createRemoveOperation(containerAddress.append(type.pathElement(property.getName())));
+                    addHandler.removeRuntimeServices(context, removeOperation, containerModel, property.getValue());
                 }
             }
         }
-    }
-
-    private static List<Property> getCachesFromParentModel(String cacheType, ModelNode model) {
-        // get the caches of a type
-        List<Property> cacheList = null;
-        ModelNode caches = model.get(cacheType);
-        if (caches.isDefined() && caches.getType() == ModelType.OBJECT) {
-            cacheList = caches.asPropertyList();
-            return cacheList;
-        }
-        return null;
-    }
-
-    private static ModelNode createCacheRemoveOperation(String cacheType, String containerName, String cacheName) {
-        // create the address of the cache
-        PathAddress cacheAddr = getCacheAddress(containerName, cacheName, cacheType);
-        ModelNode removeOp = new ModelNode();
-        removeOp.get(OP).set(REMOVE);
-        removeOp.get(OP_ADDR).set(cacheAddr.toModelNode());
-
-        return removeOp;
-    }
-
-    private static ModelNode createCacheAddOperation(String cacheType, String containerName, String cacheName) {
-        // create the address of the cache
-        PathAddress cacheAddr = getCacheAddress(containerName, cacheName, cacheType);
-        ModelNode addOp = new ModelNode();
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(cacheAddr.toModelNode());
-
-        return addOp;
-    }
-
-    private static PathAddress getCacheAddress(String containerName, String cacheName, String cacheType) {
-        // create the address of the cache
-        PathAddress cacheAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(ModelKeys.CACHE_CONTAINER, containerName),
-                PathElement.pathElement(cacheType, cacheName));
-        return cacheAddr;
     }
 }

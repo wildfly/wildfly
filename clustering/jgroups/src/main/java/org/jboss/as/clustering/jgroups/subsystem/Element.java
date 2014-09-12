@@ -31,11 +31,14 @@ public enum Element {
     // must be first
     UNKNOWN(null),
 
+    CHANNEL(ModelKeys.CHANNEL),
+    CHANNELS("channels"),
     PROPERTY(ModelKeys.PROPERTY),
     PROTOCOL(ModelKeys.PROTOCOL),
     RELAY(ModelKeys.RELAY),
     REMOTE_SITE(ModelKeys.REMOTE_SITE),
     STACK(ModelKeys.STACK),
+    STACKS("stacks"),
     TRANSPORT(ModelKeys.TRANSPORT),
     ;
 
@@ -51,22 +54,22 @@ public enum Element {
      * @return the local name
      */
     public String getLocalName() {
-        return name;
+        return this.name;
     }
 
-    private static final Map<String, Element> elements;
+    private static final Map<String, Element> elements = new HashMap<>();
 
     static {
-        final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
-            final String name = element.getLocalName();
-            if (name != null) map.put(name, element);
+            String name = element.getLocalName();
+            if (name != null) {
+                elements.put(name, element);
+            }
         }
-        elements = map;
     }
 
     public static Element forName(String localName) {
-        final Element element = elements.get(localName);
-        return element == null ? UNKNOWN : element;
+        Element element = elements.get(localName);
+        return (element != null) ? element : UNKNOWN;
     }
 }

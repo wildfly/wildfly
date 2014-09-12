@@ -1,3 +1,10 @@
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0">
+    <stacks default="tcp">
+        <stack name="tcp">
+            <transport type="TCP"/>
+        </stack>
+    </stacks>
+</subsystem>
 <subsystem xmlns="urn:jboss:domain:infinispan:1.3">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>

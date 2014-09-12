@@ -46,9 +46,22 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         ModelNode model = context.getModelNode();
 
         if (model.isDefined()) {
-            JGroupsSubsystemResourceDefinition.DEFAULT_STACK.marshallAsAttribute(model, writer);
+            if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+                writer.writeStartElement(Element.CHANNELS.getLocalName());
+                JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.marshallAsAttribute(model, writer);
+                for (Property property: model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                    writer.writeStartElement(Element.CHANNEL.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+                    ModelNode channel = property.getValue();
+                    ChannelResourceDefinition.STACK.marshallAsAttribute(channel, writer);
+                    ChannelResourceDefinition.MODULE.marshallAsAttribute(channel, writer);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
             if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
-                // each property represents a stack
+                writer.writeStartElement(Element.STACKS.getLocalName());
+                JGroupsSubsystemResourceDefinition.DEFAULT_STACK.marshallAsAttribute(model, writer);
                 for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                     writer.writeStartElement(Element.STACK.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
@@ -56,8 +69,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     if (stack.get(TransportResourceDefinition.PATH.getKeyValuePair()).isDefined()) {
                         ModelNode transport = stack.get(TransportResourceDefinition.PATH.getKeyValuePair());
                         writer.writeStartElement(Element.TRANSPORT.getLocalName());
-                        TransportResourceDefinition.TYPE.marshallAsAttribute(transport, writer);
-                        TransportResourceDefinition.SOCKET_BINDING.marshallAsAttribute(transport, writer);
+                        ProtocolResourceDefinition.TYPE.marshallAsAttribute(transport, writer);
+                        ProtocolResourceDefinition.SOCKET_BINDING.marshallAsAttribute(transport, writer);
                         TransportResourceDefinition.SHARED.marshallAsAttribute(transport, writer);
                         TransportResourceDefinition.DIAGNOSTICS_SOCKET_BINDING.marshallAsAttribute(transport, writer);
                         TransportResourceDefinition.DEFAULT_EXECUTOR.marshallAsAttribute(transport, writer);
@@ -87,6 +100,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                     }
                     writer.writeEndElement();
                 }
+                writer.writeEndElement();
             }
         }
         writer.writeEndElement();
@@ -97,8 +111,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         //  "property" => {
         //       "relative-to" => {"value" => "fred"},
         //   }
-        if (protocol.hasDefined(ModelKeys.PROPERTY)) {
-            for (Property property: protocol.get(ModelKeys.PROPERTY).asPropertyList()) {
+        if (protocol.hasDefined(PropertyResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property: protocol.get(PropertyResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 Property complexValue = property.getValue().asProperty();
@@ -116,8 +130,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 writer.writeStartElement(Element.REMOTE_SITE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                 ModelNode remoteSite = property.getValue();
-                RemoteSiteResourceDefinition.STACK.marshallAsAttribute(remoteSite, writer);
-                RemoteSiteResourceDefinition.CLUSTER.marshallAsAttribute(remoteSite, writer);
+                RemoteSiteResourceDefinition.CHANNEL.marshallAsAttribute(remoteSite, writer);
                 writer.writeEndElement();
             }
         }

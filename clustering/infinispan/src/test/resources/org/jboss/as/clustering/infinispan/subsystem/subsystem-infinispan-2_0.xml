@@ -21,7 +21,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
-
+<subsystem xmlns="urn:jboss:domain:jgroups:3.0">
+    <stacks default="tcp">
+        <stack name="tcp">
+            <transport type="TCP"/>
+        </stack>
+    </stacks>
+</subsystem>
 <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>

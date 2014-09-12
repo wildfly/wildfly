@@ -21,8 +21,7 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.jgroups.subsystem.ConnectedChannelService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -36,32 +35,31 @@ import org.jgroups.Channel;
  * Service providing a channel-based {@link NodeFactory}.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryService implements Service<ChannelNodeFactory> {
+public class ChannelNodeFactoryService implements Service<JGroupsNodeFactory> {
 
-    public static ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
+    public static ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target, ServiceName name, String group) {
         ChannelNodeFactoryService service = new ChannelNodeFactoryService();
         return target.addService(name, service)
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(ChannelService.getServiceName(cluster), Channel.class, service.channel)
+                .addDependency(ConnectedChannelService.getServiceName(group), Channel.class, service.channel)
         ;
     }
 
     private final InjectedValue<Channel> channel = new InjectedValue<>();
 
-    private volatile ChannelNodeFactoryImpl factory;
+    private volatile ChannelNodeFactory factory;
 
     private ChannelNodeFactoryService() {
         // Hide
     }
 
     @Override
-    public ChannelNodeFactory getValue() {
+    public JGroupsNodeFactory getValue() {
         return this.factory;
     }
 
     @Override
     public void start(StartContext context) {
-        this.factory = new ChannelNodeFactoryImpl(this.channel.getValue());
+        this.factory = new ChannelNodeFactory(this.channel.getValue());
     }
 
     @Override
