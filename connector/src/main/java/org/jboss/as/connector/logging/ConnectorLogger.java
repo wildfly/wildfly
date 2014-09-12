@@ -263,6 +263,14 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10429, value = "Unable to register recovery: %s (%s)")
     void unableToRegisterRecovery(String key, boolean isXa);
 
+    /**
+     * Logs a warning message indicating can't find the driver class name.
+     *
+     * @param driverName the driver jar.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10487, value = "Unable to find driver class name in \"%s\" jar")
+    void cannotFindDriverClassName(String driverName);
 
 }
 
