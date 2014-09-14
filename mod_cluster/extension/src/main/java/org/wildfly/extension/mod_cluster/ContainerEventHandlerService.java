@@ -36,6 +36,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.ModClusterService;
+import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.msc.inject.Injector;
@@ -84,20 +85,38 @@ public class ContainerEventHandlerService implements Service<ModClusterService> 
 
         boolean isMulticast = isMulticastEnabled(bindingManager.getValue().getDefaultInterfaceBinding().getNetworkInterfaces());
 
-        // TODO: Use the new API for this with mod_cluster 1.3.1 upgrade
         // Resolve and configure proxies
         if (outboundSocketBindings.size() > 0) {
-            List<InetSocketAddress> proxies = new LinkedList<>();
-            for (OutboundSocketBinding binding : outboundSocketBindings.values()) {
-                // Don't do resolving here, let mod_cluster deal with it
-                InetSocketAddress proxyAddress = new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
-                proxies.add(proxyAddress);
+            List<ProxyConfiguration> proxies = new LinkedList<>();
+            for (final OutboundSocketBinding binding : outboundSocketBindings.values()) {
+                proxies.add(new ProxyConfiguration() {
+
+                    @Override
+                    public InetSocketAddress getRemoteAddress() {
+                        // Both host and port may not be null in the model, no need to validate here
+                        // Don't do resolving here, let mod_cluster deal with it
+                        return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+                    }
+
+                    @Override
+                    public InetSocketAddress getLocalAddress() {
+                        if (binding.getOptionalSourceAddress() != null) {
+                            return new InetSocketAddress(binding.getOptionalSourceAddress(), binding.getAbsoluteSourcePort() == null ? 0 : binding.getAbsoluteSourcePort());
+                        } else if (binding.getAbsoluteSourcePort() != null) {
+                            // Bind to port only if source address is not configured
+                            return new InetSocketAddress(binding.getAbsoluteSourcePort());
+                        }
+                        // No binding configured so don't bind
+                        return null;
+                    }
+
+                });
             }
-            config.setProxies(proxies);
+            config.setProxyConfigurations(proxies);
         }
 
-        // Set some defaults...
-        if (config.getProxies().isEmpty()) {
+        // Set advertise if no proxies are configured
+        if (config.getProxyConfigurations().isEmpty()) {
             config.setAdvertise(isMulticast);
         }
 
