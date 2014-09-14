@@ -102,6 +102,10 @@ public class AuditLogFieldsOfLogTestCase {
         String message = event.getMessage();
         Assert.assertNotNull("Message in the syslog event is empty", message);
         message = DATE_STAMP_PATTERN.matcher(message).replaceFirst("{");
+        //TODO this is quick workaround, needs to be fixed properly: https://issues.jboss.org/browse/WFLY-3855
+        if (message.startsWith("-")){
+            message = message.substring(message.indexOf("{"));
+        }
         System.out.println(">>> " + message);
         ModelNode syslogNode = ModelNode.fromJSONString(message);
         checkLog("Syslog", syslogNode);
