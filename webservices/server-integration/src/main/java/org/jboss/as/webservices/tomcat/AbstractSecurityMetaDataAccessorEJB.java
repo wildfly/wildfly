@@ -58,7 +58,7 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
 
         for (final EJBEndpoint ejbEndpoint : getEjbEndpoints(dep)) {
             String nextSecurityDomain = ejbEndpoint.getSecurityDomain();
-            if(nextSecurityDomain.isEmpty()) {
+            if (nextSecurityDomain == null || nextSecurityDomain.isEmpty()) {
                 nextSecurityDomain = null;
             }
             securityDomain = getDomain(securityDomain, nextSecurityDomain);
