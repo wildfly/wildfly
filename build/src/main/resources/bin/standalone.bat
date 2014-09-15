@@ -35,12 +35,11 @@ if "%1" == "" (
    goto MAIN
 ) else if "%1" == "--debug" (
    goto READ-DEBUG-PORT
-) else (
-   rem This doesn't work as Windows splits on = and spaces by default
-   rem set SERVER_OPTS=%SERVER_OPTS% %1
-   shift
-   goto READ-ARGS
+) else if "%1" == "-secmgr" (
+   set SECMGR=true
 )
+shift
+goto READ-ARGS
 
 :READ-DEBUG-PORT
 set "DEBUG_MODE=true"
@@ -134,6 +133,27 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 :ENDDIRLOOP
 
+rem check the PROCESS_CONTROLLER_JAVA_OPTS
+set "X_JAVA_OPTS=%JAVA_OPTS%"
+:JAVAOPTLOOP
+rem Ensure to disable the -secmgr if the -Djava.security.manager property is found
+echo(%X_JAVA_OPTS% | findstr /r /c:"^-Djava.security.manager" > nul && (
+  if "%SECMGR%" == "true" (
+    echo ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr.
+    set SECMGR=false
+  )
+)
+
+for /f "tokens=1* delims= " %%i IN ("%X_JAVA_OPTS%") DO (
+  if %%i == "" (
+    goto ENDJAVAOPTLOOP
+  ) else (
+    set X_JAVA_OPTS=%%j
+    GOTO JAVAOPTLOOP
+  )
+)
+:ENDJAVAOPTLOOP
+
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
@@ -223,6 +243,11 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
+rem Set the module options
+set "MODULE_OPTS=-mp %JBOSS_MODULEPATH%"
+if "%SECMGR%" == "true" (
+    set "MODULE_OPTS=%MODULE_OPTS% -secmgr"
+)
 
 echo ===============================================================================
 echo.
@@ -243,7 +268,7 @@ if x%XLOGGC% == x (
    "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
    "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
       -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-      -mp "%JBOSS_MODULEPATH%" ^
+      %MODULE_OPTS% ^
       -jaxpmodule "javax.xml.jaxp-provider" ^
        org.jboss.as.standalone ^
       "-Djboss.home.dir=%JBOSS_HOME%" ^
@@ -253,7 +278,7 @@ if x%XLOGGC% == x (
    "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
    "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
       -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-      -mp "%JBOSS_MODULEPATH%" ^
+      %MODULE_OPTS% ^
       -jaxpmodule "javax.xml.jaxp-provider" ^
        org.jboss.as.standalone ^
       "-Djboss.home.dir=%JBOSS_HOME%" ^

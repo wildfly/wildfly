@@ -216,6 +216,14 @@ interface ProcessMessages {
     String argMasterPort();
 
     /**
+     * Instructions for the {@link CommandLineConstants#SECMGR} command line argument.
+     *
+     * @return the message
+     */
+    @Message(id = Message.NONE, value = "Runs the server with a security manager installed.")
+    String argSecMgr();
+
+    /**
      * Error message indicating no value was provided for a command line argument.
      *
      * @param argument the name of the argument

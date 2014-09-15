@@ -18,6 +18,9 @@ do
               DEBUG_PORT=$1
           fi
           ;;
+      -secmgr)
+          SECMGR="true"
+          ;;
       --)
           shift
           break;;
@@ -257,8 +260,21 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
+# Process the JAVA_OPTS checking for -Djava.security.manager
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr."
+    SECMGR="false"
+fi
+
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
     JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+fi
+
+# Set up the module arguments
+MODULE_OPTS="-mp \"$JBOSS_MODULEPATH\""
+if [ "$SECMGR" == "true" ]; then
+    MODULE_OPTS="$MODULE_OPTS -secmgr";
 fi
 
 # Display our environment
@@ -282,7 +298,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
@@ -295,7 +311,7 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          -jaxpmodule "javax.xml.jaxp-provider" \
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \

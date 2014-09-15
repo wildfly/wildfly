@@ -67,4 +67,7 @@ rem set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,s
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
 
+rem # Uncomment this to run with a security manager enabled
+rem set "SECMGR=true"
+
 :JAVA_OPTS_SET

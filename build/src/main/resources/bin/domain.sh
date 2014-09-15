@@ -7,6 +7,18 @@ GREP="grep"
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
 
+# Process passed in parameters
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+      -secmgr)
+          SECMGR="true"
+          ;;
+    esac
+    shift
+done
+
+
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
 darwin=false;
@@ -207,6 +219,20 @@ if $cygwin; then
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
+# Process the PROCESS_CONTROLLER_JAVA_OPTS checking for -Djava.security.manager
+# Note that HOST_CONTROLLER_JAVA_OPTS will not need to be handled here
+SECURITY_MANAGER_SET=`echo $PROCESS_CONTROLLER_JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr."
+    SECMGR="false"
+fi
+
+# Set up the module arguments
+MODULE_OPTS="-mp \"$JBOSS_MODULEPATH\""
+if [ "$SECMGR" == "true" ]; then
+    MODULE_OPTS="$MODULE_OPTS -secmgr";
+fi
+
 # Display our environment
 echo "========================================================================="
 echo ""
@@ -228,11 +254,11 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA_FROM_JVM\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
@@ -247,11 +273,11 @@ while true; do
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/process-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          org.jboss.as.process-controller \
          -jboss-home \"$JBOSS_HOME\" \
          -jvm \"$JAVA_FROM_JVM\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         $MODULE_OPTS \
          -- \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/host-controller.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \

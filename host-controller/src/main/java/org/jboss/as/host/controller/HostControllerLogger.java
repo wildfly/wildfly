@@ -514,5 +514,10 @@ public interface HostControllerLogger extends BasicLogger {
     void noDomainControllerConfigurationProvidedForAdminOnly(String policyAttribute, AdminOnlyDomainConfigPolicy policy,
                                                              String cachedDcCmdLineArg, RunningMode desiredRunningMode);
 
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 16586, value = "The java.security.manager system property was set for the host and the -secmgr " +
+            "argument was passed host controller. Ignoring the -secmgr argument.")
+    void ignoreSecMgrArg();
+
     // END WITH 16599
 }

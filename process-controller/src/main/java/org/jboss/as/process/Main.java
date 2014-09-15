@@ -96,6 +96,8 @@ public final class Main {
         // -jar is jboss-modules.jar in jboss-home
         // log config should be fixed loc
 
+        boolean javaSecurityManager = false;
+        boolean securityManagerEnabled = false;
         OUT: for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if ("-jvm".equals(arg)) {
@@ -106,6 +108,8 @@ public final class Main {
                 modulePath = args[++i];
             } else if ("-jar".equals(arg)) {
                 bootJar = args[++i];
+            } else if ("-secmgr".equals(arg)) {
+                securityManagerEnabled = true;
             } else if ("-jaxpmodule".equals(arg)) {
                 jaxpModule = args[++i];
             } else if ("--".equals(arg)) {
@@ -134,6 +138,9 @@ public final class Main {
 
                             } else {
                                 addJavaOption(arg, smOptions);
+                                if (arg.startsWith("-Djava.security.manager")) {
+                                    javaSecurityManager = true;
+                                }
                             }
                         }
                         break OUT;
@@ -213,11 +220,24 @@ public final class Main {
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
+        if (!javaSecurityManager && securityManagerEnabled) {
+            // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager
+            // If -Djava.security.manager was not used and we have a security manager that means that one of the jboss modules
+            // options -secmgr was used, in which case we propagate -secmgr
+            initialCommand.add("-secmgr");
+        }
         initialCommand.add("-mp");
         initialCommand.add(modulePath);
         initialCommand.add("-jaxpmodule");
         initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);
+
+        if (!javaSecurityManager && securityManagerEnabled) {
+            // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager
+            // If -Djava.security.manager was not used and we have a security manager that means that one of the jboss modules
+            // options -secmgr was used, in which case we propagate -secmgr
+            initialCommand.add("-secmgr");
+        }
         initialCommand.add("-mp");  // Repeat the module path so HostController's Main sees it
         initialCommand.add(modulePath);
         initialCommand.add(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR);

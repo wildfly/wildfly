@@ -243,6 +243,8 @@ public final class Main {
                             }
                         }
                     }
+                } else if (arg.equals(CommandLineConstants.SECMGR)) {
+                    // do nothing, just need to filter out as Windows batch scripts cannot filter it out
                 } else {
                     STDERR.println(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();

@@ -200,6 +200,12 @@ public final class Main {
         ProductConfig productConfig;
         String modulePath = null;
 
+        // If the security manager has been enabled with -secmgr AND the -Djava.security.manager the security manager
+        // is said to be enabled in the host controller environment
+        boolean javaSecurityManager = hostSystemProperties.containsKey("java.security.manager");
+        boolean securityManagerEnabled = System.getSecurityManager() != null;
+        securityManagerEnabled = securityManagerEnabled && !javaSecurityManager;
+
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -423,6 +429,16 @@ public final class Main {
                     if (modulePath == null) {
                         return null;
                     }
+                } else if (arg.equals(CommandLineConstants.SECMGR)) {
+                    // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager
+                    // If -Djava.security.manager was not used and we have a security manager that means that one of the jboss modules
+                    // options -secmgr was used, in which case we propagate -secmgr. Both are not allowed to be configured
+                    if (javaSecurityManager) {
+                        HostControllerLogger.ROOT_LOGGER.ignoreSecMgrArg();
+                    } else {
+                        // Enable the security manager
+                        securityManagerEnabled = true;
+                    }
                 } else {
                     STDERR.println(MESSAGES.invalidOption(arg, usageNote()));
                     return null;
@@ -435,7 +451,7 @@ public final class Main {
         productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR), hostSystemProperties);
         return new HostControllerEnvironment(hostSystemProperties, isRestart, modulePath, pmAddress, pmPort,
                 pcSocketConfig.getBindAddress(), pcSocketConfig.getBindPort(), defaultJVM,
-                domainConfig, initialDomainConfig, hostConfig, initialHostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig);
+                domainConfig, initialDomainConfig, hostConfig, initialHostConfig, initialRunningMode, backupDomainFiles, cachedDc, productConfig, securityManagerEnabled);
     }
 
     private static String parseValue(final String arg, final String key) {

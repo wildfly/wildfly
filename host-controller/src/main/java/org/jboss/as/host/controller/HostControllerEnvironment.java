@@ -236,11 +236,20 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     private volatile String hostControllerName;
     private final HostRunningModeControl runningModeControl;
+    private final boolean securityManagerEnabled;
 
     public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, String modulePath,
                                      InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
                                      Integer hostControllerPort, String defaultJVM, String domainConfig, String initialDomainConfig, String hostConfig,
                                      String initialHostConfig, RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig) {
+        this(hostSystemProperties, isRestart, modulePath, processControllerAddress, processControllerPort, hostControllerAddress, hostControllerPort, defaultJVM,
+                domainConfig, initialDomainConfig, hostConfig, initialHostConfig, initialRunningMode, backupDomainFiles, useCachedDc, productConfig, false);
+    }
+
+    public HostControllerEnvironment(Map<String, String> hostSystemProperties, boolean isRestart, String modulePath,
+                                     InetAddress processControllerAddress, Integer processControllerPort, InetAddress hostControllerAddress,
+                                     Integer hostControllerPort, String defaultJVM, String domainConfig, String initialDomainConfig, String hostConfig,
+                                     String initialHostConfig, RunningMode initialRunningMode, boolean backupDomainFiles, boolean useCachedDc, ProductConfig productConfig, boolean securityManagerEnabled) {
 
         if (hostSystemProperties == null) {
             throw MESSAGES.nullVar("hostSystemProperties");
@@ -456,6 +465,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         this.backupDomainFiles = backupDomainFiles;
         this.useCachedDc = useCachedDc;
         this.productConfig = productConfig;
+        this.securityManagerEnabled = securityManagerEnabled;
     }
 
     /**
@@ -768,6 +778,10 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     String getModulePath() {
         return modulePath;
+    }
+
+    boolean isSecurityManagerEnabled() {
+        return securityManagerEnabled;
     }
 
     /**

@@ -32,6 +32,19 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
     echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
 )
 
+rem Read command-line args.
+:READ-ARGS
+if "%1" == "" (
+   goto MAIN
+) else if "%1" == "-secmgr" (
+   set SECMGR=true
+)
+shift
+goto READ-ARGS
+
+:MAIN
+
+
 rem Read an optional configuration file.
 if "x%DOMAIN_CONF%" == "x" (
    set "DOMAIN_CONF=%DIRNAME%domain.conf.bat"
@@ -114,6 +127,28 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 :ENDDIRLOOP
 
+rem check the PROCESS_CONTROLLER_JAVA_OPTS
+set "X_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS%"
+:JAVAOPTLOOP
+rem Ensure to disable the -secmgr if the -Djava.security.manager property is found
+echo(%X_JAVA_OPTS% | findstr /r /c:"^-Djava.security.manager" > nul && (
+  if "%SECMGR%" == "true" (
+    echo ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr.
+    set SECMGR=false
+  )
+)
+
+for /f "tokens=1* delims= " %%i IN ("%X_JAVA_OPTS%") DO (
+  if %%i == "" (
+    goto ENDJAVAOPTLOOP
+  ) else (
+    set X_JAVA_OPTS=%%j
+    GOTO JAVAOPTLOOP
+  )
+)
+:ENDJAVAOPTLOOP
+
+
 rem Setup JBoss specific properties
 
 rem Set default module root paths
@@ -134,6 +169,12 @@ if "x%JBOSS_CONFIG_DIR%" == "x" (
   set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%\configuration"
 )
 
+rem Set the module options
+set "MODULE_OPTS=-mp %JBOSS_MODULEPATH%"
+if "%SECMGR%" == "true" (
+    set "MODULE_OPTS=%MODULE_OPTS% -secmgr"
+)
+
 echo ===============================================================================
 echo.
 echo   JBoss Bootstrap Environment
@@ -152,11 +193,11 @@ echo.
  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\process-controller.log" ^
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%JBOSS_MODULEPATH%" ^
+    %MODULE_OPTS% ^
      org.jboss.as.process-controller ^
     -jboss-home "%JBOSS_HOME%" ^
     -jvm "%JAVA%" ^
-    -mp "%JBOSS_MODULEPATH%" ^
+    %MODULE_OPTS% ^
     -- ^
     "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
     "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^

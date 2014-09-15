@@ -119,6 +119,7 @@ public class CommandLineConstants {
     public static final String MASTER_PORT = "--master-port";
 
     public static final String MODULE_PATH = "-mp";
+    public static final String SECMGR = "-secmgr";
 
     // java.net properties
     public static final String PREFER_IPV4_STACK = "java.net.preferIPv4Stack";

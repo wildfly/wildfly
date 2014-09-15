@@ -64,6 +64,9 @@ set "PROCESS_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
 rem The HostController process uses its own set of java options
 set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
 
+rem Uncomment this to run with a security manager enabled
+rem set "SECMGR=true"
+
 rem # Sample JPDA settings for remote socket debugging
 rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8788,server=y,suspend=n"
 rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"

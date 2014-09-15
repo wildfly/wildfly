@@ -196,6 +196,14 @@ public interface ServerMessages {
     String argDebugPort();
 
     /**
+     * Instructions for the {@link CommandLineConstants#SECMGR} command line argument.
+     *
+     * @return the message
+     */
+    @Message(id = Message.NONE, value = "Runs the server with a security manager installed.")
+    String argSecMgr();
+
+    /**
      * Creates an error message indicating a value was expected for the given command line option.
      *
      * @param option the name of the command line option
