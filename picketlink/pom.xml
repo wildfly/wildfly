@@ -7,7 +7,7 @@
     <parent>
         <artifactId>wildfly-parent</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <version>9.0.0.Alpha2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
