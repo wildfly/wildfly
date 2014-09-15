@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class CollectionSingleton implements Collector {
 
-    private final LinkedBlockingDeque<TimerData> timerDatas = new LinkedBlockingDeque<>();
+    private final LinkedBlockingDeque<TimerData> timerDatas = new LinkedBlockingDeque<TimerData>();
 
     @Override
     public void timerRun(String nodeName, String info) {
@@ -25,7 +25,7 @@ public class CollectionSingleton implements Collector {
     @Override
     public List<TimerData> collect(int expectedCount) {
         long end = System.currentTimeMillis() + 30000; //10 seconds
-        List<TimerData> ret = new ArrayList<>();
+        List<TimerData> ret = new ArrayList<TimerData>();
         for (; ; ) {
             if (ret.size() == expectedCount) {
                 break;

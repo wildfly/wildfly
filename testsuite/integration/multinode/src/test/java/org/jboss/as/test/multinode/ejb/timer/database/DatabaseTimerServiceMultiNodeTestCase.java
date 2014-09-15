@@ -190,7 +190,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
         Context clientContext = getRemoteContext(clientClient);
         RemoteTimedBean clientBean = (RemoteTimedBean) clientContext.lookup(ARCHIVE_NAME + "/" + TimedObjectTimerServiceBean.class.getSimpleName() + "!" + RemoteTimedBean.class.getName());
-        Set<String> names = new HashSet<>();
+        Set<String> names = new HashSet<String>();
         long time = System.currentTimeMillis() + TIMER_DELAY;
         for(int i = 0; i < TIMER_COUNT; ++i) {
             String name = "timer" + i;
@@ -203,7 +203,7 @@ public class DatabaseTimerServiceMultiNodeTestCase {
         Assert.assertEquals("Expected " + TIMER_COUNT + " was " + res.size() + " " + res,TIMER_COUNT, res.size());
         boolean server = false;
         boolean client = false;
-        final Set<String> newNames = new HashSet<>(names);
+        final Set<String> newNames = new HashSet<String>(names);
         for(TimerData r : res) {
             if(!newNames.remove(r.getInfo())) {
                 if(!names.contains(r.getInfo())) {
