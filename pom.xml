@@ -208,7 +208,7 @@
         <version.org.opensaml.opensaml>2.6.1</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.5.1</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.4.1</version.org.opensaml.xmltooling>
-        <version.org.picketbox>4.0.21.Beta3</version.org.picketbox>
+        <version.org.picketbox>4.9.0.Beta1</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.6.0.Final</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
