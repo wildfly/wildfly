@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
 import org.jboss.as.messaging.logging.MessagingLogger;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -61,10 +62,19 @@ public class AS7BindingRegistry implements BindingRegistry {
         // NOOP
     }
 
+    // This method is called by HornetQ when JNDI entries for its resources
+    // are updated using its own management API. We advise against using it in
+    // WildFly (and use WildFly own management API) but we must still respect the
+    // SPI contract for this method
     @Override
     public Object lookup(String name) {
-        // NOOP
-        return null;
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+        ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());
+        if (bindingService == null) {
+            return null;
+        }
+        ManagedReferenceFactory managedReferenceFactory = ManagedReferenceFactory.class.cast(bindingService.getValue());
+        return managedReferenceFactory.getReference().getInstance();
     }
 
     @Override
