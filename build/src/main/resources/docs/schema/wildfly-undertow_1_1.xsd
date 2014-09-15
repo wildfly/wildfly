@@ -355,15 +355,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cookie-name" type="xs:string" default="JSESSIONIDSSO">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                              Cooke name
-                              ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
 

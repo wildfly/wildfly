@@ -55,8 +55,8 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-    protected static final UndertowSubsystemParser_2_0 INSTANCE = new UndertowSubsystemParser_2_0();
+public class UndertowSubsystemParser_1_2 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    protected static final UndertowSubsystemParser_1_2 INSTANCE = new UndertowSubsystemParser_1_2();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
@@ -237,7 +237,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                 .build();
     }
 
-    private UndertowSubsystemParser_2_0() {
+    private UndertowSubsystemParser_1_2() {
     }
 
     /**

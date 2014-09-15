@@ -71,7 +71,6 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-@Ignore("needs ElementParser impl in core")
 public class UndertowSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
     public UndertowSubsystem10TestCase() {

@@ -22,7 +22,7 @@
   ~ */
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:2.0" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
+<subsystem xmlns="urn:jboss:domain:undertow:1.2" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
            default-server="some-server" instance-id="some-id">
 
     <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>

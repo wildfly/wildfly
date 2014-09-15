@@ -76,7 +76,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-2.0.xml");
+        return readResource("undertow-1.2.xml");
     }
 
     @Test
