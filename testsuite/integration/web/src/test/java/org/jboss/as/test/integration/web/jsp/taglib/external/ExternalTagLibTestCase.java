@@ -68,7 +68,7 @@ public class ExternalTagLibTestCase {
         doSetup();
         return ShrinkWrap.create(WebArchive.class, "test-external.war")
                 .addClass(InternalTag.class)
-                .addAsManifestResource(ExternalTagLibTestCase.class.getPackage(), "internal.tld", "internal.tld")
+                .addAsWebInfResource(ExternalTagLibTestCase.class.getPackage(), "internal.tld", "internal.tld")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF")
                 .addAsWebResource(ExternalTagLibTestCase.class.getPackage(), "test.jsp", "test.jsp");
     }

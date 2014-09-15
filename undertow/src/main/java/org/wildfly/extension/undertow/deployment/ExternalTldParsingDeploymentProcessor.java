@@ -24,8 +24,10 @@ package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.stream.XMLInputFactory;
@@ -94,6 +96,9 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
                     if(tlds.containsKey(resource.getName())) {
                         continue;
                     }
+                    if(resource.getURL().getProtocol().equals("vfs")) {
+                        continue;
+                    }
                     final TldMetaData value = parseTLD(resource);
                     if(sharedTldUris.contains(value.getUri())) {
                         //don't re-include shared TLD's
@@ -108,7 +113,11 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
                     }
                     if (value.getListeners() != null) {
                         for (ListenerMetaData l : value.getListeners()) {
-                            warMetaData.getMergedJBossWebMetaData().getListeners().add(l);
+                            List<ListenerMetaData> listeners = warMetaData.getMergedJBossWebMetaData().getListeners();
+                            if(listeners == null) {
+                                warMetaData.getMergedJBossWebMetaData().setListeners(listeners = new ArrayList<ListenerMetaData>());
+                            }
+                            listeners.add(l);
                         }
                     }
                 }
