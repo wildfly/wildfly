@@ -84,10 +84,10 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
 
-        int refreshInterval = DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.resolveModelAttribute(context, model).asInt();
-        boolean allowExecution = DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.resolveModelAttribute(context, model).asBoolean();
+        //int refreshInterval = DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.resolveModelAttribute(context, model).asInt();
+        //boolean allowExecution = DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.resolveModelAttribute(context, model).asBoolean();
 
-        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database, partition, refreshInterval, allowExecution);
+        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(name, database, partition, 0, true);
         final ServiceName serviceName = TimerPersistence.SERVICE_NAME.append(name);
         final ServiceBuilder<DatabaseTimerPersistence> builder = context.getServiceTarget().addService(serviceName, databaseTimerPersistence);
 

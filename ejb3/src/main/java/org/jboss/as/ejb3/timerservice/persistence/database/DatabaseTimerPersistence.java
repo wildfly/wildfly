@@ -280,6 +280,8 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     @Override
     public boolean shouldRun(TimerImpl timer, TransactionManager tm) {
+        return true; //as clustering has been disabled it should always run
+        /*
         if (!allowExecution) {
             //timers never execute on this node
             return false;
@@ -334,6 +336,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             safeClose(statement);
             safeClose(connection);
         }
+        */
     }
 
     @Override

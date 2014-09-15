@@ -222,12 +222,12 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
                 case PARTITION:
                     DatabaseDataStoreResourceDefinition.PARTITION.parseAndSetParameter(value, databaseDataStore, reader);
                     break;
-                case REFRESH_INTERVAL:
-                    DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.parseAndSetParameter(value, databaseDataStore, reader);
-                    break;
-                case ALLOW_EXECUTION:
-                    DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.parseAndSetParameter(value, databaseDataStore, reader);
-                    break;
+                //case REFRESH_INTERVAL:
+                //    DatabaseDataStoreResourceDefinition.REFRESH_INTERVAL.parseAndSetParameter(value, databaseDataStore, reader);
+                //    break;
+                //case ALLOW_EXECUTION:
+                //    DatabaseDataStoreResourceDefinition.ALLOW_EXECUTION.parseAndSetParameter(value, databaseDataStore, reader);
+                //    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
