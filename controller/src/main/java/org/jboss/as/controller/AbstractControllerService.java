@@ -149,35 +149,11 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param expressionResolver      the expression resolver
      * @param auditLogger             the audit logger
      */
-    @Deprecated
     protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
                                         final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer) {
-        this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
-                prepareStep, expressionResolver, auditLogger, authorizer);
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param processType             the type of process being controlled
-     * @param runningModeControl      the controller of the process' running mode
-     * @param configurationPersister  the configuration persister
-     * @param processState            the controlled process state
-     * @param rootResourceDefinition  the root resource definition
-     * @param prepareStep             the prepare step to prepend to operation execution
-     * @param expressionResolver      the expression resolver
-     * @param auditLogger             the audit logger
-     * @param bootErrorCollector      the boot error collector
-     */
-    protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
-                                        final ConfigurationPersister configurationPersister,
-                                        final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
-                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
-                                        final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer,
-                                        final BootErrorCollector bootErrorCollector) {
         this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
                 prepareStep, expressionResolver, auditLogger, authorizer);
     }

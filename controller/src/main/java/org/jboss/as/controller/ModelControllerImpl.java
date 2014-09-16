@@ -134,21 +134,34 @@ class ModelControllerImpl implements ModelController {
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
                         final ExpressionResolver expressionResolver, final Authorizer authorizer,
                         final ManagedAuditLogger auditLogger, NotificationSupport notificationSupport, final BootErrorCollector bootErrorCollector) {
+        assert serviceRegistry != null;
         this.serviceRegistry = serviceRegistry;
+        assert serviceTarget != null;
         this.serviceTarget = serviceTarget;
+        assert rootRegistration != null;
         this.rootRegistration = rootRegistration;
+        assert stateMonitor != null;
         this.stateMonitor = stateMonitor;
+        assert persister != null;
         this.persister = persister;
+        assert processType != null;
         this.processType = processType;
+        assert runningModeControl != null;
         this.runningModeControl = runningModeControl;
+        assert notificationSupport != null;
         this.notificationSupport = notificationSupport;
         this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
+        assert processState != null;
         this.processState = processState;
         this.serviceTarget.addListener(stateMonitor);
         this.executorService = executorService;
+        assert expressionResolver != null;
         this.expressionResolver = expressionResolver;
+        assert authorizer != null;
         this.authorizer = authorizer;
+        assert auditLogger != null;
         this.auditLogger = auditLogger;
+        assert bootErrorCollector != null;
         this.bootErrorCollector = bootErrorCollector;
         this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
         this.modelControllerResource = new ModelControllerResource();
@@ -696,7 +709,7 @@ class ModelControllerImpl implements ModelController {
     }
 
     void addFailureDescription(ModelNode operation, ModelNode failure) {
-        if(bootErrorCollector != null) {
+        if (bootingFlag.get()) {
             bootErrorCollector.addFailureDescription(operation, failure);
         }
     }
