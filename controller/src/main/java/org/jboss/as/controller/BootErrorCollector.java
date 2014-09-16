@@ -49,6 +49,7 @@ public class BootErrorCollector {
         errors.get(BOOT_ERRORS).setEmptyList();
         listBootErrorsHandler = new ListBootErrorsHandler(this);
     }
+
     void addFailureDescription(final ModelNode operation, final ModelNode failureDescription) {
         ModelNode error = new ModelNode();
         ModelNode failure = new ModelNode();
@@ -68,11 +69,15 @@ public class BootErrorCollector {
             }
         }
         error.get(BOOT_ERROR).set(failure);
-        errors.get(BOOT_ERRORS).add(error);
+        synchronized (errors) {
+            errors.get(BOOT_ERRORS).add(error);
+        }
     }
 
     private ModelNode getErrors() {
-        return errors.clone();
+        synchronized (errors) {
+            return errors.clone();
+        }
     }
 
     public OperationStepHandler getReadBootErrorsHandler() {
@@ -117,13 +122,14 @@ public class BootErrorCollector {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                     ModelNode bootErrors = new ModelNode();
-                    if(errors.getErrors().get(BOOT_ERRORS).isDefined()) {
-                        for (ModelNode bootError : errors.getErrors().get(BOOT_ERRORS).asList()) {
+                    ModelNode errorsNode = errors.getErrors();
+                    if(errorsNode.hasDefined(BOOT_ERRORS)) {
+                        for (ModelNode bootError : errorsNode.get(BOOT_ERRORS).asList()) {
                             secureOperationAddress(context, bootError);
                             bootErrors.get(BOOT_ERRORS).add(bootError);
                         }
                     }
-                    context.getResult().set(errors.getErrors());
+                    context.getResult().set(bootErrors);
                     context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
