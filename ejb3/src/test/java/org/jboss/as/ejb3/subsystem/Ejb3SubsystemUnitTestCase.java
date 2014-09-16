@@ -216,7 +216,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer_1_2_x(ModelTestControllerVersion controllerVersion, int modelVersionMicro) throws Exception {
-        String subsystemXml = "subsystem.xml";
+        String subsystemXml = "transform_1_2_0.xml";
         ModelVersion modelVersion = ModelVersion.create(1, 2, modelVersionMicro);
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
