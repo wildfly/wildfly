@@ -592,6 +592,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
             resourceDefinition.registerAttributes(resourceRegistration);
             resourceDefinition.registerOperations(resourceRegistration);
             resourceDefinition.registerChildren(resourceRegistration);
+            resourceDefinition.registerNotifications(resourceRegistration);
             return resourceRegistration;
         }
     }
