@@ -561,6 +561,14 @@ class TestModelControllerService extends ModelTestModelControllerService {
             }
             super.registerAttributes(resourceRegistration);
         }
+
+        @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            if (type == TestModelType.DOMAIN) {
+                return;
+            }
+            super.registerNotifications(resourceRegistration);
+        }
     }
 
 
