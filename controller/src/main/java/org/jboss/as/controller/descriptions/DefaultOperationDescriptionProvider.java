@@ -177,7 +177,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             }
         }
         if (replyParameters != null && replyParameters.length > 0) {
-            if (replyParameters.length == 1) {
+            if (replyParameters.length == 1 && replyType != ModelType.LIST) {
                 AttributeDefinition ad = replyParameters[0];
                 ModelNode param = ad.getNoTextDescription(true);
                 final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, attributeBundle);
