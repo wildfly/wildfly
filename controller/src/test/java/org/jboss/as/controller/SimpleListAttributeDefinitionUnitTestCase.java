@@ -57,7 +57,7 @@ public class SimpleListAttributeDefinitionUnitTestCase {
         Assert.assertEquals(op.get("test").get(0), model.get("test").get(0));
         Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), model.get("test").get(1));
 
-        ad = SimpleAttributeDefinitionBuilder.create("x", ModelType.OBJECT).setAllowExpression(true).build();
+        ad = SimpleAttributeDefinitionBuilder.create("x", ModelType.PROPERTY).setAllowExpression(true).build();
         ld = SimpleListAttributeDefinition.Builder.of("test", ad)
                 .setAllowExpression(true)
                 .setValidator(new ModelTypeValidator(ModelType.PROPERTY, false, true))

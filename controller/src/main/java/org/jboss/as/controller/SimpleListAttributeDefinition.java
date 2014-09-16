@@ -36,6 +36,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
+ * {@link org.jboss.as.controller.AttributeDefinition} for attributes that represent lists with
+ * simple element types (i.e. not {@link org.jboss.dmr.ModelType#LIST} or {@link org.jboss.dmr.ModelType#OBJECT}.
+ *
  * Date: 13.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -44,6 +47,7 @@ import org.jboss.dmr.ModelType;
  */
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
+
 
     @Deprecated
     protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType,
@@ -64,6 +68,8 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.valueType = valueType;
+        // This class is not appropriate for lists with complex elements. Use ObjectListAttributeDefinition
+        assert valueType.getType() != ModelType.OBJECT && valueType.getType() != ModelType.LIST;
     }
 
     public AttributeDefinition getValueType() {
@@ -87,30 +93,22 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-        addValueTypeDescription(node, null, bundle);
+        addValueTypeDescription(node);
     }
 
 
     protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
-        if (valueType.getType() == ModelType.OBJECT) {
-            final ModelNode param = valueType.getNoTextDescription(true);
-            final ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(param);
-            if (valueType instanceof ObjectTypeAttributeDefinition) {
-                ObjectTypeAttributeDefinition.class.cast(valueType).addOperationParameterDescription(bundle, prefix, childType);
-            }
-        } else {
-            addSimpleValueTypeDescription(node);
-        }
+        addValueTypeDescription(node);
     }
 
     @Override
     protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        addValueTypeDescription(node, bundle);
+        addValueTypeDescription(node);
     }
 
     @Override
     protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        addValueTypeDescription(node, bundle);
+        addValueTypeDescription(node);
     }
 
     /**
@@ -133,7 +131,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         return allowExp ? convertStringExpression(parameterElement) : parameterElement;
     }
 
-    private void addSimpleValueTypeDescription(final ModelNode node) {
+    private void addValueTypeDescription(final ModelNode node) {
         node.get(ModelDescriptionConstants.VALUE_TYPE).set(valueType.getType());
     }
 
