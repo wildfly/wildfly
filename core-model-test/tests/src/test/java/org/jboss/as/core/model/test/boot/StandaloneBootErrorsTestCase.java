@@ -40,7 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
@@ -79,7 +78,7 @@ public class StandaloneBootErrorsTestCase extends AbstractBootErrorTestCase {
         Assert.assertThat(result.hasDefined(BOOT_ERRORS), is(true));
         List<ModelNode> errors = result.get(BOOT_ERRORS).asList();
         Assert.assertThat(errors.size(), is(3));
-        ModelNode error = errors.get(0).get(BOOT_ERROR);
+        ModelNode error = errors.get(2).get(BOOT_ERROR);
         Assert.assertThat(error.get(FAILED).get(OP).asString(), is(ADD));
         Assert.assertThat(error.get(FAILED).get(ADDRESS).asString(), is("[(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-tls\")]"));
         Assert.assertThat(error.hasDefined(FAILURES), is(true));
@@ -89,7 +88,7 @@ public class StandaloneBootErrorsTestCase extends AbstractBootErrorTestCase {
         Assert.assertThat(error.get(FAILED).get(ADDRESS).asString(), is("[(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-tcp\")]"));
         Assert.assertThat(error.hasDefined(FAILURES), is(true));
         Assert.assertThat(error.get(FAILURES).asString(), is("[\"testhost\"]"));
-        error = errors.get(2).get(BOOT_ERROR);
+        error = errors.get(0).get(BOOT_ERROR);
         Assert.assertThat(error.get(FAILED).get(OP).asString(), is(ADD));
         Assert.assertThat(error.get(FAILED).get(ADDRESS).asString(), is("[(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-udp\")]"));
         Assert.assertThat(error.hasDefined(FAILURES), is(true));

@@ -704,7 +704,8 @@ abstract class AbstractOperationContext implements OperationContext {
                         MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR),
                                 step.response.get(FAILURE_DESCRIPTION));
                     }
-                    completeStepInternal();
+
+                    stepCompleted();
                 } else {
                     // Handler threw OCE after calling completeStep()
                     // Throw it on and let standard error handling deal with it
