@@ -44,32 +44,7 @@ public class DefaultAuthenticationCacheFactory {
      * @return cache implementation
      */
     public ConcurrentMap<Principal, DomainInfo> getCache() {
-        ConcurrentMap<Principal, DomainInfo> map = new BoundedConcurrentHashMap<Principal, JBossCachedAuthenticationManager.DomainInfo>(
-                1000, 16, Eviction.LIRS, new AuthenticationCacheEvictionListener()) {
-
-            private static final long serialVersionUID = 1459490003748298538L;
-
-            /** {@inheritDoc} */
-            @Override
-            public DomainInfo remove(Object key) {
-                DomainInfo removed = super.remove(key);
-                if (removed != null) {
-                    removed.logout();
-                }
-                return removed;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public void clear() {
-                Collection<DomainInfo> values = values();
-                for (DomainInfo domainInfo : values) {
-                    domainInfo.logout();
-                }
-                super.clear();
-            }
-        };
-        return map;
+        return new BoundedConcurrentHashMap<Principal, JBossCachedAuthenticationManager.DomainInfo>(1000, 16,
+                Eviction.LIRS, new AuthenticationCacheEvictionListener());
     }
-
 }

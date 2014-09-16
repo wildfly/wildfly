@@ -30,6 +30,7 @@ import javax.security.auth.login.LoginContext;
 
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
+import org.jboss.security.AuthenticationManager;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.SimplePrincipal;
 
@@ -40,7 +41,7 @@ import org.jboss.security.SimplePrincipal;
  */
 public class JBossGenericPrincipal extends GenericPrincipal {
 
-    private CacheableManager<?, Principal> cm;
+    private AuthenticationManager authManager;
 
     private Subject subject;
 
@@ -69,19 +70,19 @@ public class JBossGenericPrincipal extends GenericPrincipal {
 
     public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
             LoginContext loginContext, Object credentials) {
-        this(realm, name, password, roles, userPrincipal, loginContext, credentials, (CacheableManager<?, Principal>) null);
+        this(realm, name, password, roles, userPrincipal, loginContext, credentials, null);
     }
 
     public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
-            LoginContext loginContext, Object credentials, CacheableManager<?, Principal> cm) {
-        this(realm, name, password, roles, userPrincipal, loginContext, credentials, cm, null);
+            LoginContext loginContext, Object credentials, AuthenticationManager manager) {
+        this(realm, name, password, roles, userPrincipal, loginContext, credentials, manager, null);
     }
 
     public JBossGenericPrincipal(Realm realm, String name, String password, List<String> roles, Principal userPrincipal,
-            LoginContext loginContext, Object credentials, CacheableManager<?, Principal> cm, Subject subject) {
+            LoginContext loginContext, Object credentials, AuthenticationManager manager, Subject subject) {
         super(realm, name, password, roles, userPrincipal, loginContext);
         this.credentials = credentials;
-        this.cm = cm;
+        this.authManager = manager;
         this.subject = subject;
     }
 
@@ -90,8 +91,8 @@ public class JBossGenericPrincipal extends GenericPrincipal {
      */
     @Override
     public void logout() throws Exception {
-        if (cm != null && super.name != null)
-            cm.flushCache(new SimplePrincipal(super.name));
+        if (authManager != null && super.name != null)
+            authManager.logout(new SimplePrincipal(super.name), this.subject);
         super.logout();
     }
 

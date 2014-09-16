@@ -245,19 +245,11 @@ public class JBossWebRealm extends RealmBase {
                 } else
                     // if mapping manager is not set, handle role mapping here too
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
-                if (authenticationManager instanceof CacheableManager) {
-                    @SuppressWarnings("unchecked")
-                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, credentials, cm, subject);
-                    successAudit(userPrincipal, null);
-                    return userPrincipal;
-                } else {
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, credentials, null, subject);
-                    successAudit(userPrincipal, null);
-                    return userPrincipal;
-                }
+
+                userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
+                        userPrincipal, null, credentials, authenticationManager, subject);
+                successAudit(userPrincipal, null);
+                return userPrincipal;
             }
         } catch (Exception e) {
             WebLogger.WEB_SECURITY_LOGGER.authenticateError(e);
@@ -318,14 +310,9 @@ public class JBossWebRealm extends RealmBase {
                 } else
                     // if mapping manager is not set, handle role mapping here too
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
-                if (authenticationManager instanceof CacheableManager) {
-                    @SuppressWarnings("unchecked")
-                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, certs, cm, subject);
-                } else
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, certs, null, subject);
+
+                userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
+                        userPrincipal, null, certs, authenticationManager, subject);
             } else {
                 WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
@@ -396,14 +383,9 @@ public class JBossWebRealm extends RealmBase {
                 } else
                     // if mapping manager is not set, handle role mapping here too
                     rolesAsStringList = mapUserRoles(rolesAsStringList);
-                if (authenticationManager instanceof CacheableManager) {
-                    @SuppressWarnings("unchecked")
-                    CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, clientDigest, cm, subject);
-                } else
-                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
-                            userPrincipal, null, clientDigest, null, subject);
+
+                userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
+                        userPrincipal, null, clientDigest, authenticationManager, subject);
             } else {
                 WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is NOT authenticated");
                 userPrincipal = null;
