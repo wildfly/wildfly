@@ -32,6 +32,7 @@
         <module name="org.jboss.as.web"/>
         <module name="org.jboss.as.jpa"/>
         <module name="org.jboss.as.transactions"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.metadata"/>

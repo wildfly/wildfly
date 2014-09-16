@@ -96,4 +96,7 @@ public interface PicketLinkMessages {
 
     @Message(id = 12515, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
+
+    @Message(id = 12517, value = "Could not create transactional EntityManager.")
+    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);
 }

@@ -24,8 +24,6 @@ package org.wildfly.extension.picketlink.idm.service;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -36,6 +34,9 @@ import org.picketlink.idm.jpa.internal.JPAIdentityStore;
 import org.picketlink.idm.spi.ContextInitializer;
 import org.picketlink.idm.spi.IdentityContext;
 import org.picketlink.idm.spi.IdentityStore;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
+import org.wildfly.extension.picketlink.idm.jpa.transaction.TransactionalEntityManagerHelper;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -44,8 +45,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.metamodel.EntityType;
 import javax.transaction.Status;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -56,9 +57,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
+import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 
 /**
  * @author Pedro Igor
@@ -66,10 +67,14 @@ import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 public class JPAIdentityStoreService implements Service<JPAIdentityStoreService> {
 
     private static final String JPA_ANNOTATION_PACKAGE = "org.picketlink.idm.jpa.annotations";
+    public static final String DEFAULT_PERSISTENCE_UNIT_NAME = "identity";
+
     private final JPAStoreSubsystemConfigurationBuilder configurationBuilder;
     private JPAStoreSubsystemConfiguration storeConfig;
     private EntityManagerFactory emf;
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
+    private InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
+    private TransactionalEntityManagerHelper transactionalEntityManagerHelper;
 
     public JPAIdentityStoreService(JPAStoreSubsystemConfigurationBuilder configurationBuilder) {
         this.configurationBuilder = configurationBuilder;
@@ -78,6 +83,9 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     @Override
     public void start(StartContext startContext) throws StartException {
         this.storeConfig = this.configurationBuilder.create();
+        this.transactionalEntityManagerHelper = new TransactionalEntityManagerHelper(
+            this.transactionSynchronizationRegistry.getValue(),
+            this.transactionManager.getValue());
 
         try {
             configureEntityManagerFactory();
@@ -85,8 +93,6 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
         } catch (Exception e) {
             throw MESSAGES.idmJpaStartFailed(e);
         }
-
-        configureEntities();
 
         this.configurationBuilder.addContextInitializer(new ContextInitializer() {
             @Override
@@ -114,6 +120,10 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
 
     public InjectedValue<TransactionManager> getTransactionManager() {
         return this.transactionManager;
+    }
+
+    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
+        return this.transactionSynchronizationRegistry;
     }
 
     private void configureEntityManagerFactory() {
@@ -199,35 +209,88 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     }
 
     private EntityManager getEntityManager(TransactionManager transactionManager) {
+        EntityManager entityManager = getOrCreateTransactionalEntityManager(transactionManager);
+
+        if (entityManager == null) {
+            entityManager = createEntityManager(transactionManager);
+        }
+
+        return entityManager;
+    }
+
+    /**
+     * <p>Returns an {@link javax.persistence.EntityManager} associated with the actual {@link javax.transaction.Transaction}, if present.</p>
+     *
+     * <p>If {@link javax.transaction.Transaction} is {@link Status#STATUS_ACTIVE}, this method tries to return an entity manager
+     * already associated with it. If there is no entity manager a new one is created.</p>
+     *
+     * <p>This method is specially useful when IDM is being called from an EJB or any other component that have already started
+     * a transaction. In this case, the client code is responsible to commit or rollback the transaction accordingly.</p>
+     *
+     * <p>The returned {@link EntityManager} is always closed before the transaction completes.</p>
+     *
+     * @param transactionManager The transaction manager.
+     *
+     * @return The {@link EntityManager} associated with the actual transaction or null if there is no active transactions.
+     */
+    private EntityManager getOrCreateTransactionalEntityManager(TransactionManager transactionManager) {
+        try {
+            if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                EntityManager entityManager = this.transactionalEntityManagerHelper.getTransactionScopedEntityManager(getPersistenceUnitName());
+
+                if (entityManager == null) {
+                    entityManager = createEntityManager(transactionManager);
+                    this.transactionalEntityManagerHelper.putEntityManagerInTransactionRegistry(getPersistenceUnitName(), entityManager);
+                }
+
+                return entityManager;
+            }
+        } catch (Exception e) {
+            throw MESSAGES.idmJpaFailedCreateTransactionEntityManager(e);
+        }
+
+        return null;
+    }
+
+    private String getPersistenceUnitName() {
+        String persistenceUnitName = this.storeConfig.getEntityModuleUnitName();
+
+        if (persistenceUnitName == null) {
+            persistenceUnitName = DEFAULT_PERSISTENCE_UNIT_NAME;
+        }
+
+        return persistenceUnitName;
+    }
+
+    private EntityManager createEntityManager(TransactionManager transactionManager) {
         return (EntityManager) Proxy.newProxyInstance(Thread.currentThread()
-            .getContextClassLoader(), new Class<?>[]{EntityManager.class}, new EntityManagerInvocationHandler(this.emf
-            .createEntityManager(), this.storeConfig.getEntityModule(), transactionManager));
+            .getContextClassLoader(), new Class<?>[]{EntityManager.class}, new EntityManagerInvocationHandler(this.emf.createEntityManager(),
+            this.storeConfig.getEntityModule(), transactionManager));
     }
 
     private class EntityManagerInvocationHandler implements InvocationHandler {
 
-        private final EntityManager em;
         private final Module entityModule;
         private final TransactionManager transactionManager;
+        private final EntityManager entityManager;
 
-        public EntityManagerInvocationHandler(EntityManager em, Module entitiesModule, TransactionManager transactionManager) {
-            this.em = em;
+        public EntityManagerInvocationHandler(EntityManager entityManager, Module entitiesModule, TransactionManager transactionManager) {
+            this.entityManager = entityManager;
             this.entityModule = entitiesModule;
             this.transactionManager = transactionManager;
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Transaction tx = null;
+            boolean isManagedTransaction = false;
 
             if (isTxRequired(method)) {
                 if (this.transactionManager.getStatus() == Status.STATUS_NO_TRANSACTION) {
                     this.transactionManager.begin();
+                    isManagedTransaction = true;
                 }
 
-                this.em.joinTransaction();
-
-                tx = this.transactionManager.getTransaction();
+                this.entityManager.joinTransaction();
             }
 
             ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -237,13 +300,15 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
                     Thread.currentThread().setContextClassLoader(this.entityModule.getClassLoader());
                 }
 
-                return method.invoke(this.em, args);
+                return method.invoke(this.entityManager, args);
             } finally {
                 Thread.currentThread().setContextClassLoader(originalClassLoader);
 
-                if (tx != null) {
-                    tx.commit();
-                    this.transactionManager.suspend();
+                if (isManagedTransaction) {
+                    if (this.transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                        this.transactionManager.commit();
+                        this.transactionManager.suspend();
+                    }
                 }
             }
         }
