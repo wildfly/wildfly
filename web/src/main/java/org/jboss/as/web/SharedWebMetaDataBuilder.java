@@ -75,6 +75,7 @@ class SharedWebMetaDataBuilder {
             }
         }
         if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
+            welcomeFiles.clear();
             for (final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
                 welcomeFiles.add(file.asString());
             }
@@ -93,7 +94,11 @@ class SharedWebMetaDataBuilder {
 
         // Session config
         final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
-        sessionConfig.setSessionTimeout(30);
+        if (config.hasDefined(Constants.DEFAULT_SESSION_TIMEOUT)) {
+            sessionConfig.setSessionTimeout(config.get(Constants.DEFAULT_SESSION_TIMEOUT).asInt());
+        } else {
+            sessionConfig.setSessionTimeout(30);
+        }
         metadata.setSessionConfig(sessionConfig);
 
         // Mime mappings

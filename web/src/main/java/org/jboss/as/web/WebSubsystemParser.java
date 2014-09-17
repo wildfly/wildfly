@@ -104,6 +104,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         WebDefinition.DEFAULT_VIRTUAL_SERVER.marshallAsAttribute(node, true, writer);
         WebDefinition.INSTANCE_ID.marshallAsAttribute(node, false, writer);
         WebDefinition.NATIVE.marshallAsAttribute(node, true, writer);
+        WebDefinition.DEFAULT_SESSION_TIMEOUT.marshallAsAttribute(node, false, writer);
         if (node.hasDefined(CONFIGURATION)) {
             writeContainerConfig(writer, node.get(CONFIGURATION));
         }
@@ -364,6 +365,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case INSTANCE_ID:
                     WebDefinition.INSTANCE_ID.parseAndSetParameter(value, subsystem, reader);
                     break;
+                case DEFAULT_SESSION_TIMEOUT:
+                    attributeSupportedSince(Namespace.WEB_2_2, reader, i);
+                    WebDefinition.DEFAULT_SESSION_TIMEOUT.parseAndSetParameter(value, subsystem, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -401,7 +406,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_1:{
+                case WEB_2_1:
+                case WEB_2_2:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -756,7 +762,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_1:{
+                case WEB_2_1:
+                case WEB_2_2:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -810,6 +817,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case REAUTHENTICATE:
                     WebSSODefinition.REAUTHENTICATE.parseAndSetParameter(value, operation, reader);
                     break;
+                case HTTP_ONLY:
+                    attributeSupportedSince(Namespace.WEB_2_2, reader, i);
+                    WebSSODefinition.HTTP_ONLY.parseAndSetParameter(value, operation, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -856,7 +867,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_1:{
+                case WEB_2_1:
+                case WEB_2_2:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONDITION:
@@ -943,7 +955,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_1:{
+                case WEB_2_1:
+                case WEB_2_2:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
@@ -1050,7 +1063,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_1:{
+                case WEB_2_1:
+                case WEB_2_2:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SSL:

@@ -99,7 +99,7 @@ public class WebExtension implements Extension {
             new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", false, false, false));
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**
@@ -164,6 +164,7 @@ public class WebExtension implements Extension {
             registerTransformers_1_1_x(subsystem, 1);
             registerTransformers_1_2_0(subsystem);
             registerTransformers_1_3_0(subsystem);
+            registerTransformers_1_4_0(subsystem);
         }
     }
 
@@ -184,6 +185,10 @@ public class WebExtension implements Extension {
 
         final int defaultRedirectPort = 443;
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .end();
 
         // Discard valve
         subsystemRoot.rejectChildResource(VALVE_PATH);
@@ -287,11 +292,20 @@ public class WebExtension implements Extension {
 
     private void registerTransformers_1_2_0(SubsystemRegistration registration) {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .end();
 
         final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
         final ResourceTransformationDescriptionBuilder rewriteBuilder = hostBuilder.addChildResource(REWRITE_PATH);
         rewriteBuilder.addChildResource(REWRITECOND_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
+        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
+        ssoBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .end();
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
         connectorBuilder.getAttributeBuilder()
@@ -310,6 +324,10 @@ public class WebExtension implements Extension {
 
     private void registerTransformers_1_3_0(SubsystemRegistration registration) {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .end();
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
         connectorBuilder.getAttributeBuilder()
@@ -317,10 +335,34 @@ public class WebExtension implements Extension {
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
                 .end();
 
+        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
+        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
+        ssoBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .end();
+
         connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebSSLDefinition.CIPHER_SUITE)
                 .end();
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 3, 0));
+    }
+
+    private void registerTransformers_1_4_0(SubsystemRegistration registration) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .end();
+
+        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
+        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
+        ssoBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .end();
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {

@@ -59,6 +59,11 @@ public class WebDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(null)
                     .build();
+    protected static final SimpleAttributeDefinition DEFAULT_SESSION_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SESSION_TIMEOUT, ModelType.INT, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
 
     private WebDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
@@ -73,5 +78,6 @@ public class WebDefinition extends SimpleResourceDefinition {
         registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VIRTUAL_SERVER));
         registration.registerReadWriteAttribute(NATIVE, null, new ReloadRequiredWriteAttributeHandler(NATIVE));
         registration.registerReadWriteAttribute(INSTANCE_ID, null, new ReloadRequiredWriteAttributeHandler(INSTANCE_ID));
+        registration.registerReadWriteAttribute(DEFAULT_SESSION_TIMEOUT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_SESSION_TIMEOUT));
     }
 }

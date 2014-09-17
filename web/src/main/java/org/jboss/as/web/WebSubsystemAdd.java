@@ -88,6 +88,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         WebDefinition.DEFAULT_VIRTUAL_SERVER.validateAndSet(operation, model);
         WebDefinition.NATIVE.validateAndSet(operation, model);
         WebDefinition.INSTANCE_ID.validateAndSet(operation, model);
+        WebDefinition.DEFAULT_SESSION_TIMEOUT.validateAndSet(operation, model);
     }
 
     @Override

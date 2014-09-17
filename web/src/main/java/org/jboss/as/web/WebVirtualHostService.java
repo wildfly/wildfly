@@ -231,6 +231,7 @@ public class WebVirtualHostService implements Service<VirtualHost> {
         final SingleSignOn ssoValve = element.hasDefined(Constants.CACHE_CONTAINER) ? new ClusteredSingleSignOn(this.ssoManager.getValue()) : new SingleSignOn();
         if (element.hasDefined(Constants.DOMAIN)) ssoValve.setCookieDomain(element.get(Constants.DOMAIN).asString());
         if (element.hasDefined(Constants.REAUTHENTICATE)) ssoValve.setRequireReauthentication(element.get(Constants.REAUTHENTICATE).asBoolean());
+        if (element.hasDefined(Constants.HTTP_ONLY)) ssoValve.setCookieHttpOnly(element.get(Constants.HTTP_ONLY).asBoolean());
         return ssoValve;
     }
 

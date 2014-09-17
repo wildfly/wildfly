@@ -42,6 +42,7 @@ public interface Constants {
     String CONFIGURATION = "configuration";
     String CONNECTOR = "connector";
     String CONTAINER = "container";
+    String DEFAULT_SESSION_TIMEOUT = "default-session-timeout";
     String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     String DEFAULT_WEB_MODULE = "default-web-module";
     String DEVELOPMENT = "development";
@@ -59,6 +60,7 @@ public interface Constants {
     String FILE_ENCODING = "file-encoding";
     String FLAGS = "flags";
     String GENERATE_STRINGS_AS_CHAR_ARRAYS = "generate-strings-as-char-arrays";
+    String HTTP_ONLY = "http-only";
     String INSTANCE_ID = "instance-id";
     String JAVA_ENCODING = "java-encoding";
     String JSP_CONFIGURATION = "jsp-configuration";
