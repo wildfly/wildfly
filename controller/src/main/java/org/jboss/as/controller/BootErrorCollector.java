@@ -20,20 +20,22 @@
  */
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_SERVICES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MISSING_TRANSITIVE_DEPENDENCY_PROBLEMS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POSSIBLE_CAUSES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICES_MISSING_DEPENDENCIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICES_MISSING_TRANSITIVE_DEPENDENCIES;
+
 import org.jboss.as.controller.access.management.AuthorizedAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_ERROR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_ERRORS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MISSING_DEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 
 /**
  *
@@ -46,31 +48,40 @@ public class BootErrorCollector {
 
     public BootErrorCollector() {
         errors = new ModelNode();
-        errors.get(BOOT_ERRORS).setEmptyList();
+        errors.setEmptyList();
         listBootErrorsHandler = new ListBootErrorsHandler(this);
     }
 
     void addFailureDescription(final ModelNode operation, final ModelNode failureDescription) {
+        assert operation != null;
+        assert failureDescription != null;
+
         ModelNode error = new ModelNode();
-        ModelNode failure = new ModelNode();
         // for security reasons failure.get(FAILED).set(operation.clone());
-        ModelNode failed = failure.get(FAILED);
-        failed.get(OP).set(operation.get(OP));
-        failed.get(OP_ADDR).set(operation.get(OP_ADDR));
-        if (failureDescription != null) {
-            if (failureDescription.hasDefined(ControllerMessages.MESSAGES.failedServices())) {
-                failure.get(FAILURES).add(failureDescription.get(ControllerMessages.MESSAGES.failedServices()));
-            }
-            if (failureDescription.hasDefined(ControllerMessages.MESSAGES.servicesMissingDependencies())) {
-                failure.get(MISSING_DEPS).add(failureDescription.get(ControllerMessages.MESSAGES.servicesMissingDependencies()));
-            }
-            if (failureDescription.getType() == ModelType.STRING) {
-                failure.get(FAILURES).add(failureDescription.asString());
-            }
+        ModelNode failedOperation = error.get(FAILED_OPERATION);
+        failedOperation.get(OP).set(operation.get(OP));
+        ModelNode opAddr = operation.get(OP_ADDR);
+        if (!opAddr.isDefined()) {
+            opAddr.setEmptyList();
         }
-        error.get(BOOT_ERROR).set(failure);
+        failedOperation.get(OP_ADDR).set(opAddr);
+
+        error.get(FAILURE_DESCRIPTION).set(failureDescription.asString());
+        ModelNode report = ServiceVerificationHandler.extractFailedServicesDescription(failureDescription);
+        if (report != null) {
+            error.get(FAILED_SERVICES).set(report);
+        }
+        report = ServiceVerificationHandler.extractMissingServicesDescription(failureDescription);
+        if (report != null) {
+            error.get(SERVICES_MISSING_DEPENDENCIES).set(report);
+        }
+        report = ServiceVerificationHandler.extractTransitiveDependencyProblemDescription(failureDescription);
+        if (report != null) {
+            error.get(MISSING_TRANSITIVE_DEPENDENCY_PROBLEMS).set(report);
+        }
+
         synchronized (errors) {
-            errors.get(BOOT_ERRORS).add(error);
+            errors.add(error);
         }
     }
 
@@ -89,27 +100,45 @@ public class BootErrorCollector {
         public static final String OPERATION_NAME = "read-boot-errors";
         private final BootErrorCollector errors;
 
-        private static final AttributeDefinition OP_DEFINITION = ObjectTypeAttributeDefinition.Builder.of(OP,
-                SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.OPERATION_NAME, ModelType.STRING, false).build(),
-                SimpleListAttributeDefinition.Builder.of(OP_ADDR,
-                        SimpleAttributeDefinitionBuilder.create("address", ModelType.PROPERTY, false).build())
-                        .build())
+        private static final AttributeDefinition OP_DEFINITION = ObjectTypeAttributeDefinition.Builder.of(FAILED_OPERATION,
+                    SimpleAttributeDefinitionBuilder.create(OP, ModelType.STRING, false).build(),
+                    SimpleListAttributeDefinition.Builder.of(OP_ADDR,
+                            SimpleAttributeDefinitionBuilder.create("element", ModelType.PROPERTY, false).build())
+                            .build())
+                .setAllowNull(false)
                 .build();
-        private static final AttributeDefinition BOOT_ERROR_DEFINITION = ObjectTypeAttributeDefinition.Builder.of(BOOT_ERROR,
-                ObjectTypeAttributeDefinition.Builder.of(FAILED, OP_DEFINITION).build(),
-                SimpleListAttributeDefinition.Builder.of(MISSING_DEPS,
-                        SimpleAttributeDefinitionBuilder.create("missing-dep", ModelType.STRING, false).build())
-                        .build(),
-                SimpleListAttributeDefinition.Builder.of(FAILURES,
-                        SimpleAttributeDefinitionBuilder.create("failure", ModelType.STRING, false).build())
-                        .build())
+
+        private static final AttributeDefinition FAILURE_MESSAGE = SimpleAttributeDefinitionBuilder.create(FAILURE_DESCRIPTION, ModelType.STRING, false).build();
+
+        private static final AttributeDefinition FAILED_SVC_AD = SimpleListAttributeDefinition.Builder.of(FAILED_SERVICES,
+                SimpleAttributeDefinitionBuilder.create("element", ModelType.STRING, false).build())
+                .setAllowNull(true)
                 .build();
-        private static final AttributeDefinition RETURN_DEFINITION = ObjectTypeAttributeDefinition.Builder.of(
-                BOOT_ERRORS, BOOT_ERROR_DEFINITION).build();
+
+        private static final AttributeDefinition MISSING_DEPS_AD = SimpleListAttributeDefinition.Builder.of(SERVICES_MISSING_DEPENDENCIES,
+                SimpleAttributeDefinitionBuilder.create("element", ModelType.STRING, false).build())
+                .setAllowNull(true)
+                .build();
+
+        private static final AttributeDefinition AFFECTED_AD = SimpleListAttributeDefinition.Builder.of(SERVICES_MISSING_TRANSITIVE_DEPENDENCIES,
+                    SimpleAttributeDefinitionBuilder.create("element", ModelType.STRING, false).build())
+                .build();
+
+        private static final AttributeDefinition CAUSE_AD = SimpleListAttributeDefinition.Builder.of(POSSIBLE_CAUSES,
+                SimpleAttributeDefinitionBuilder.create("element", ModelType.STRING, false).build())
+                .build();
+
+        private static final AttributeDefinition TRANSITIVE_AD = ObjectTypeAttributeDefinition.Builder.of(MISSING_TRANSITIVE_DEPENDENCY_PROBLEMS,
+                    AFFECTED_AD, CAUSE_AD)
+                .setAllowNull(true)
+                .build();
 
         public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME,
-                ControllerResolver.getResolver("errors")).setRuntimeOnly()
-                .setReplyParameters(ObjectTypeAttributeDefinition.Builder.of(BOOT_ERRORS, RETURN_DEFINITION).build()).build();
+                ControllerResolver.getResolver("errors"))
+                .setReadOnly()
+                .setRuntimeOnly()
+                .setReplyType(ModelType.LIST)
+                .setReplyParameters(OP_DEFINITION, FAILURE_MESSAGE, FAILED_SVC_AD, MISSING_DEPS_AD, TRANSITIVE_AD).build();
 
         ListBootErrorsHandler(final BootErrorCollector errors) {
             this.errors = errors;
@@ -121,13 +150,11 @@ public class BootErrorCollector {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    ModelNode bootErrors = new ModelNode();
+                    ModelNode bootErrors = new ModelNode().setEmptyList();
                     ModelNode errorsNode = errors.getErrors();
-                    if(errorsNode.hasDefined(BOOT_ERRORS)) {
-                        for (ModelNode bootError : errorsNode.get(BOOT_ERRORS).asList()) {
-                            secureOperationAddress(context, bootError);
-                            bootErrors.get(BOOT_ERRORS).add(bootError);
-                        }
+                    for (ModelNode bootError : errorsNode.asList()) {
+                        secureOperationAddress(context, bootError);
+                        bootErrors.add(bootError);
                     }
                     context.getResult().set(bootErrors);
                     context.stepCompleted();
@@ -136,10 +163,9 @@ public class BootErrorCollector {
             context.stepCompleted();
         }
 
-        private void secureOperationAddress(OperationContext context, ModelNode error) throws OperationFailedException {
-            ModelNode bootError = error.get(BOOT_ERROR);
-            if (bootError.hasDefined(FAILED)) {
-                ModelNode failedOperation = bootError.get(FAILED);
+        private void secureOperationAddress(OperationContext context, ModelNode bootError) throws OperationFailedException {
+            if (bootError.hasDefined(FAILED_OPERATION)) {
+                ModelNode failedOperation = bootError.get(FAILED_OPERATION);
                 ModelNode address = failedOperation.get(OP_ADDR);
                 ModelNode fakeOperation = new ModelNode();
                 fakeOperation.get(ModelDescriptionConstants.OP).set(READ_RESOURCE_OPERATION);

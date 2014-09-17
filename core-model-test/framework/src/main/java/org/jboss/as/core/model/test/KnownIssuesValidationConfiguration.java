@@ -21,7 +21,6 @@
 */
 package org.jboss.as.core.model.test;
 
-import org.jboss.as.controller.PathAddress;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -53,7 +52,6 @@ import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 
 /**
  * A model validation configuration excluding validation for known issues in the model.
@@ -134,7 +132,7 @@ public class KnownIssuesValidationConfiguration extends ValidationConfiguration 
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_RESOURCE_DESCRIPTION_OPERATION);
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_RESOURCE_OPERATION);
         config.allowNullValueTypeForOperationReplyProperties(ROOT_ADDR, READ_ATTRIBUTE_OPERATION);
-        config.allowNullValueTypeForOperationReplyProperties(PathAddress.pathAddress(CORE_SERVICE, MANAGEMENT).toModelNode(), "read-boot-errors");
+        //config.allowNullValueTypeForOperationReplyProperties(PathAddress.pathAddress(CORE_SERVICE, MANAGEMENT).toModelNode(), "read-boot-errors");
         return config;
     }
 

@@ -21,7 +21,6 @@
 package org.jboss.as.controller.access.management;
 
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Set;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.access.Action;
@@ -54,7 +53,7 @@ public class AuthorizedAddress {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 37 * hash + Objects.hashCode(this.address);
+        hash = 37 * hash + (this.address != null ? this.address.hashCode() : 0);
         hash = 37 * hash + (this.elided ? 1 : 0);
         return hash;
     }
@@ -73,7 +72,7 @@ public class AuthorizedAddress {
             return false;
         }
         final AuthorizedAddress other = (AuthorizedAddress) obj;
-        if (!Objects.equals(this.address, other.address)) {
+        if (!((this.address == other.address) || (this.address != null && this.address.equals(other.address)))) {
             return false;
         }
         if (this.elided != other.elided) {

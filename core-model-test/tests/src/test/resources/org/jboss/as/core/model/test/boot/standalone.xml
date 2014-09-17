@@ -8,13 +8,13 @@
             <handlers>
                <syslog-handler name="syslog-udp" formatter="json-formatter" max-failure-count="${udp.max-failure-count:30}" syslog-format="${udp.format:RFC3164}"
                      max-length="${udp.max-length:3064}" truncate="${udp.truncate:true}" facility="${facility:KERNEL}" app-name="${app.name:MyAppName}">
-                  <udp host="${udp.host:testhost}" port="${udp.port:1514}"/>
+                  <udp host="${udp.host:testhost.nonexistent.foo}" port="${udp.port:1514}"/>
                </syslog-handler>
                <syslog-handler name="syslog-tcp" formatter="json-formatter" max-failure-count="${tcp.max-failure-count:30}" syslog-format="${tcp.format:RFC5424}" max-length="${tcp.max-length:3064}" truncate="${tcp.truncate:true}">
-                  <tcp host="${tcp.host:testhost}" port="${tcp.port:1514}" message-transfer="${tcp.transfer:OCTET_COUNTING}" reconnect-timeout="${tcp.reconnect-timeout:10}"/>
+                  <tcp host="${tcp.host:testhost.nonexistent.foo}" port="${tcp.port:1514}" message-transfer="${tcp.transfer:OCTET_COUNTING}" reconnect-timeout="${tcp.reconnect-timeout:10}"/>
                </syslog-handler>
                <syslog-handler name="syslog-tls" formatter="json-formatter" max-failure-count="${tls.max-failure-count:30}" syslog-format="${tls.format:RFC3164}" max-length="${tls.max-length:3064}" truncate="${tls.truncate:true}">
-                  <tls host="${tls.host:testhost}" port="${tls.port:1514}" message-transfer="${tls.transfer:NON_TRANSPARENT_FRAMING}" reconnect-timeout="${tcp.reconnect-timeout:10}">
+                  <tls host="${tls.host:testhost.nonexistent.foo}" port="${tls.port:1514}" message-transfer="${tls.transfer:NON_TRANSPARENT_FRAMING}" reconnect-timeout="${tcp.reconnect-timeout:10}">
                      <truststore path="${tls.truststore-path:truststore}"
                                  relative-to="jboss.server.data.dir"
                                  keystore-password="${tls.truststore-keystore-password:blah}"/>
