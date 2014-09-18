@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.manualmode.web.ssl;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.junit.Assert.assertEquals;
 
@@ -58,6 +60,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
@@ -256,7 +260,9 @@ public class HTTPWebConnectorProxyConfTestCase {
 
         final ModelControllerClient client = managementClient.getControllerClient();
         final PathAddress httpConnectorAddress = PathAddress.pathAddress(SUBSYSTEM, WEB).append(CONNECTOR, TEST_CONNECTOR_NAME);
-        Utils.applyUpdate(Util.createRemoveOperation(httpConnectorAddress), client);
+        ModelNode removeOperation = Util.createRemoveOperation(httpConnectorAddress);
+        removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        Utils.applyUpdate(removeOperation, client);
         Utils.applyUpdate(Util.createRemoveOperation(PathAddress.pathAddress(SOCKET_BINDING_GROUP, STANDARD_SOCKETS).append(
                 REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, TEST_REVERSE_PROXY_NAME)), client);
     }

@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
@@ -195,7 +197,9 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
 
-            Utils.applyUpdate(Util.createRemoveOperation(PathAddress.pathAddress(SUBSYSTEM, "web").append("connector", "https")),
+            ModelNode removeOperation = Util.createRemoveOperation(PathAddress.pathAddress(SUBSYSTEM, "web").append("connector", "https"));
+            removeOperation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            Utils.applyUpdate(removeOperation,
                     managementClient.getControllerClient());
 
             FileUtils.deleteDirectory(WORK_DIR);
