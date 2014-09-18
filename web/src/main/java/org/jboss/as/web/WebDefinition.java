@@ -63,6 +63,7 @@ public class WebDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SESSION_TIMEOUT, ModelType.INT, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(30))
                     .build();
 
     private WebDefinition() {

@@ -187,7 +187,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
                 .end();
 
         // Discard valve
@@ -294,7 +294,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
                 .end();
 
         final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
@@ -326,7 +326,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
                 .end();
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
@@ -339,7 +339,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
@@ -352,14 +352,14 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
                 .end();
 
         final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 4, 0));

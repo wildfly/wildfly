@@ -94,11 +94,7 @@ class SharedWebMetaDataBuilder {
 
         // Session config
         final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
-        if (config.hasDefined(Constants.DEFAULT_SESSION_TIMEOUT)) {
-            sessionConfig.setSessionTimeout(config.get(Constants.DEFAULT_SESSION_TIMEOUT).asInt());
-        } else {
-            sessionConfig.setSessionTimeout(30);
-        }
+        sessionConfig.setSessionTimeout(config.get(Constants.DEFAULT_SESSION_TIMEOUT).asInt());
         metadata.setSessionConfig(sessionConfig);
 
         // Mime mappings
