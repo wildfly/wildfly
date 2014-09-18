@@ -85,6 +85,9 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 11, value = "Failed to get metrics %s.")
     OperationFailedException failedToGetMetrics(String reason);
 
+    @Message(id = 12, value = "Attribute [%s] is not longer supported.")
+    OperationFailedException attributeNoLongerSupported(String attributeName);
+
     // IDM Messages 50-99
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);

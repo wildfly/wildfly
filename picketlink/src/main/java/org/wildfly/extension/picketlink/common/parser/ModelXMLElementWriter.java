@@ -86,14 +86,18 @@ public class ModelXMLElementWriter {
                     writer.writeAttribute(this.nameAttribute, valueNode.keys().iterator().next());
                 }
 
-                writeAttributes(writer, valueNode.asProperty().getValue());
+                ModelNode value = valueNode.asProperty().getValue();
 
-                for (ModelNode propertyIdentity : valueNode.asProperty().getValue().asList()) {
-                    List<ResourceDefinition> children = getChildResourceDefinitions().get(this.modelElement);
+                if (value.isDefined()) {
+                    writeAttributes(writer, value);
 
-                    if (children != null) {
-                        for (ResourceDefinition child : children) {
-                            get(child.getPathElement().getKey()).write(writer, propertyIdentity);
+                    for (ModelNode propertyIdentity : value.asList()) {
+                        List<ResourceDefinition> children = getChildResourceDefinitions().get(this.modelElement);
+
+                        if (children != null) {
+                            for (ResourceDefinition child : children) {
+                                get(child.getPathElement().getKey()).write(writer, propertyIdentity);
+                            }
                         }
                     }
                 }

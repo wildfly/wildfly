@@ -26,8 +26,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.picketlink</extension-module>
-    <subsystem xmlns="urn:jboss:domain:picketlink-federation:1.0">
-
+    <subsystem xmlns="urn:jboss:domain:picketlink-federation:2.0">
         <federation name="federation-simple-redirect-binding">
             <identity-provider name="idp-redirect.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect/" security-domain="idp" support-signatures="false" strict-post-binding="false">
                 <trust>
@@ -40,10 +39,14 @@
             </service-providers>
         </federation>
         <federation name="federation-redirect-with-signatures">
-            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123">
+                <keys>
+                    <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
+                </keys>
+            </key-store>
             <identity-provider name="idp-redirect-sig.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-redirect-sig/" security-domain="idp" support-signatures="true" strict-post-binding="false">
                 <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="servercert"/>
+                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                 </trust>
             </identity-provider>
             <service-providers>
@@ -63,10 +66,14 @@
             </service-providers>
         </federation>
         <federation name="federation-post-with-signatures">
-            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123">
+                <keys>
+                    <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
+                </keys>
+            </key-store>
             <identity-provider name="idp-post-sig.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-post-sig/" security-domain="idp" support-signatures="true">
                 <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="servercert"/>
+                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                 </trust>
             </identity-provider>
             <service-providers>
@@ -75,10 +82,14 @@
             </service-providers>
         </federation>
         <federation name="federation-with-metadata">
-            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123">
+                <keys>
+                    <key name="servercert" host="${jboss.bind.address:localhost},127.0.0.1"/>
+                </keys>
+            </key-store>
             <identity-provider name="idp-metadata.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-metadata/" security-domain="idp" support-signatures="true" support-metadata="true">
                 <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="servercert"/>
+                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
                 </trust>
             </identity-provider>
             <service-providers>

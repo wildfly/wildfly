@@ -30,6 +30,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
+import org.wildfly.extension.picketlink.federation.Namespace;
 
 import java.io.IOException;
 
@@ -38,9 +39,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Pedro Igor
  */
-public class FederationSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
+public class FederationSubsystem_1_0_UnitTestCase extends AbstractSubsystemBaseTest {
 
-    public FederationSubsystemUnitTestCase() {
+    public FederationSubsystem_1_0_UnitTestCase() {
         super(FederationExtension.SUBSYSTEM_NAME, new FederationExtension());
     }
 
@@ -78,4 +79,8 @@ public class FederationSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("federation-subsystem-expressions-1.0.xml");
     }
 
+    @Override
+    protected String normalizeXML(String xml) throws Exception {
+        return super.normalizeXML(xml).replace(Namespace.PICKETLINK_FEDERATION_1_0.getUri(), Namespace.PICKETLINK_FEDERATION_2_0.getUri());
+    }
 }

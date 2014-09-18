@@ -1,9 +1,7 @@
-<subsystem xmlns="urn:jboss:domain:picketlink-federation:1.0">
+<subsystem xmlns="urn:jboss:domain:picketlink-federation:2.0">
     <federation name="federation-without-signatures">
         <saml token-timeout="4000" clock-skew="0"/>
         <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://localhost:8080/idp/">
-            <role-generator class-name="org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator"/>
-            <attribute-manager class-name="org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttributeManager"/>
             <trust>
                 <trust-domain name="localhost"/>
                 <trust-domain name="mycompany.com2"/>
@@ -25,12 +23,15 @@
     </federation>
     <federation name="federation-with-signatures">
         <saml token-timeout="4000" clock-skew="0"/>
-        <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="jbid_test_keystore.jks" relative-to="jboss.server.data.dir"/>
+        <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="jbid_test_keystore.jks" relative-to="jboss.server.data.dir">
+            <keys>
+                <key name="servercert" host="localhost" />
+                <key name="keyAlias" host="jboss.org,127.0.0.1" />
+            </keys>
+        </key-store>
         <identity-provider name="idp-sig.war"
                            security-domain="idp" support-signatures="true"
                            url="http://localhost:8080/idp-sig/" strict-post-binding="false">
-            <role-generator code="UndertowRoleGenerator"/>
-            <attribute-manager code="EmptyAttributeManager"/>
             <trust>
                 <trust-domain name="localhost" />
                 <trust-domain name="127.0.0.1" />

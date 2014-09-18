@@ -71,6 +71,14 @@ public class IdentityProviderService extends EntityProviderService<IdentityProvi
         getFederationService().getValue().setIdpConfiguration(null);
     }
 
+    void addTrustedDomain(final String domainName) {
+        getConfiguration().addTrustDomain(domainName);
+    }
+
+    void removeTrustedDomain(final String domainName) {
+        getConfiguration().removeTrustDomain(domainName);
+    }
+
     @Override
     protected void configureWebComponents(DeploymentUnit deploymentUnit) {
         deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_SERVLET_EXTENSIONS, new IDPServletExtension(new DomainModelConfigProvider(getPicketLinkType()), getMetrics()));

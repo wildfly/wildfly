@@ -72,8 +72,8 @@ public abstract class AbstractBasicFederationTestCase {
     public void testFederationWithGlobalLogout() throws Exception {
         WebConversation conversation = new WebConversation();
         HttpUnitOptions.setLoggingHttpHeaders(true);
-        LOGGER.trace("REQEST: " +formatUrl(this.serviceProvider1));
-        WebRequest request = new GetMethodWebRequest(formatUrl(this.serviceProvider1));
+        LOGGER.trace("REQEST: " +formatUrl(this.serviceProvider1) + "/index.jsp");
+        WebRequest request = new GetMethodWebRequest(formatUrl(this.serviceProvider1)  + "/index.jsp");
         WebResponse response = conversation.getResponse(request);
         LOGGER.trace("RESPONSE: " + response.getText());
         
@@ -181,7 +181,7 @@ public abstract class AbstractBasicFederationTestCase {
         return true;
     }
     
-    private String formatUrl(URL url) {
+    static String formatUrl(URL url) {
         return url.toString();
     }
 

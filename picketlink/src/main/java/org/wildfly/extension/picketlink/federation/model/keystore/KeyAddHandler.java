@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.picketlink.federation.model.idp;
+package org.wildfly.extension.picketlink.federation.model.keystore;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -28,38 +28,37 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
+import org.wildfly.extension.picketlink.federation.service.KeyService;
+import org.wildfly.extension.picketlink.federation.service.KeyStoreProviderService;
 
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.picketlink.federation.model.idp.TrustDomainResourceDefinition.validateModelInOperation;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class TrustDomainAddHandler extends AbstractAddStepHandler {
+public class KeyAddHandler extends AbstractAddStepHandler {
 
-    static final TrustDomainAddHandler INSTANCE = new TrustDomainAddHandler();
+    static final KeyAddHandler INSTANCE = new KeyAddHandler();
 
     static void launchServices(OperationContext context, PathAddress pathAddress, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        String identityProviderAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-        String domainName = pathAddress.getLastElement().getValue();
-        TrustDomainService service = new TrustDomainService(domainName);
-        ServiceBuilder<TrustDomainService> serviceBuilder = context.getServiceTarget().addService(TrustDomainService.createServiceName(identityProviderAlias, domainName), service);
+        String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
+        String keyName = pathAddress.getLastElement().getValue();
+        String host = KeyResourceDefinition.HOST.resolveModelAttribute(context, model).asString();
+        KeyService service = new KeyService(keyName, host);
+        ServiceBuilder<KeyService> serviceBuilder = context.getServiceTarget().addService(KeyService.createServiceName(federationAlias, keyName), service);
 
-        serviceBuilder.addDependency(IdentityProviderService.createServiceName(identityProviderAlias), IdentityProviderService.class, service.getIdentityProviderService());
+        serviceBuilder.addDependency(KeyStoreProviderService.createServiceName(federationAlias), KeyStoreProviderService.class, service.getKeyStoreProviderService());
 
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
         }
 
-        ServiceController<TrustDomainService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
+        ServiceController<KeyService> controller = serviceBuilder.setInitialMode(ServiceController.Mode.PASSIVE).install();
 
         if (newControllers != null) {
             newControllers.add(controller);
@@ -67,20 +66,15 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        ModelNode model = resource.getModel();
-
-        for (SimpleAttributeDefinition attribute : TrustDomainResourceDefinition.INSTANCE.getAttributes()) {
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        for (SimpleAttributeDefinition attribute : KeyResourceDefinition.INSTANCE.getAttributes()) {
             attribute.validateAndSet(operation, model);
         }
-
-        validateModelInOperation(context, model);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                     ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
     }
-
 }

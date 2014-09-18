@@ -22,6 +22,7 @@
 package org.wildfly.extension.picketlink.federation.service;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -35,14 +36,12 @@ import org.wildfly.extension.picketlink.federation.FederationExtension;
 public class TrustDomainService implements Service<TrustDomainService> {
 
     private static final String SERVICE_NAME = "TrustDomainService";
-    private final String domainCertAlias;
     private final String domainName;
     private final InjectedValue<IdentityProviderService> identityProviderService = new InjectedValue<IdentityProviderService>();
     private final InjectedValue<FederationService> federationService = new InjectedValue<FederationService>();
 
-    public TrustDomainService(String domainName, String domainCertAlias) {
+    public TrustDomainService(String domainName) {
         this.domainName = domainName;
-        this.domainCertAlias = domainCertAlias;
     }
 
     public static ServiceName createServiceName(final String federationAlias, String domainName) {
@@ -56,19 +55,16 @@ public class TrustDomainService implements Service<TrustDomainService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        getFederationService().getValue().addTrustedDomain(this.domainName, this.domainCertAlias);
+        getIdentityProviderService().getValue().addTrustedDomain(this.domainName);
     }
 
     @Override
     public void stop(StopContext context) {
-        getFederationService().getValue().removeTrustedDomain(this.domainName);
+        getIdentityProviderService().getValue().removeTrustedDomain(this.domainName);
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     public InjectedValue<IdentityProviderService> getIdentityProviderService() {
         return this.identityProviderService;
-    }
-
-    public InjectedValue<FederationService> getFederationService() {
-        return this.federationService;
     }
 }
