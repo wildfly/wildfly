@@ -38,6 +38,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.FileUtils;
+import org.jboss.as.test.shared.ModelParserUtils;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -46,7 +47,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -63,7 +63,6 @@ import org.junit.runner.RunWith;
  * @see org.jboss.as.test.parsing.ModelParserUtils
  */
 @RunWith(Arquillian.class)
-@Ignore("WFLY-3638: use org.jboss.as.test.shared.ModelParserUtils whith new version of core.")
 public class ParseAndMarshalModelsTestCase {
 
     @Deployment(name = "test", managed = false, testable = true)
@@ -72,7 +71,7 @@ public class ParseAndMarshalModelsTestCase {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bogus.jar");
         archive.addPackage(ParseAndMarshalModelsTestCase.class.getPackage());
         archive.addClass(FileUtils.class);
-        //WFLY-3638: archive.addClass(ModelParserUtils.class);
+        archive.addClass(ModelParserUtils.class);
         archive.add(new Asset() {
             public InputStream openStream() {
                 return new ByteArrayInputStream("Dependencies: org.jboss.staxmapper,org.jboss.as.controller,org.jboss.as.deployment-repository,org.jboss.as.server,org.jboss.as.host-controller,org.jboss.as.domain-management,org.jboss.as.security\n\n".getBytes());
@@ -362,7 +361,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        throw new UnsupportedOperationException("Use \"return ModelParserUtils.standaloneXmlTest(original, file);\" when it is ready");
+        return ModelParserUtils.standaloneXmlTest(original, file);
     }
 
     @Test
@@ -405,7 +404,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        throw new UnsupportedOperationException("Use \"ModelParserUtils.hostXmlTest(original, file);\" when it is ready");
+        ModelParserUtils.hostXmlTest(original, file);
     }
 
     @Test
@@ -460,7 +459,7 @@ public class ParseAndMarshalModelsTestCase {
         if (file.exists()) {
             file.delete();
         }
-        throw new UnsupportedOperationException("Use \"return ModelParserUtils.domainXmlTest(original, file);\" when it is ready");
+        return ModelParserUtils.domainXmlTest(original, file);
     }
 
     private static void validateJsfProfiles(ModelNode model) {
