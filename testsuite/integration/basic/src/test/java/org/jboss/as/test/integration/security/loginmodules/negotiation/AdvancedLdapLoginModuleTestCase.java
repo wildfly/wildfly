@@ -157,7 +157,7 @@ public class AdvancedLdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = DEP1)
+    @Deployment(name = DEP1, testable = false)
     public static WebArchive deployment1() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP1);
     }
@@ -167,7 +167,7 @@ public class AdvancedLdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = DEP2)
+    @Deployment(name = DEP2, testable = false)
     public static WebArchive deployment2() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP2);
     }
@@ -177,7 +177,7 @@ public class AdvancedLdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = DEP3)
+    @Deployment(name = DEP3, testable = false)
     public static WebArchive deployment3() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP3);
     }
@@ -187,7 +187,7 @@ public class AdvancedLdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = DEP4)
+    @Deployment(name = DEP4, testable = false)
     public static WebArchive deployment4() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP4);
     }
@@ -329,6 +329,7 @@ public class AdvancedLdapLoginModuleTestCase {
     //@formatter:off
     @CreateDS(
         name = "JBossDS",
+        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {
             @CreatePartition(
