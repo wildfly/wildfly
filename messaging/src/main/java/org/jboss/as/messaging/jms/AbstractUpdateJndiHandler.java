@@ -93,9 +93,12 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
                     updatedEntries.add(entry);
                 }
             }
-            if (updated) {
-                context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DESTINATION_ENTRIES.getName()).set(updatedEntries);
+
+            if (!updated) {
+                throw MESSAGES.canNotRemoveUnknownEntry(jndiName);
             }
+
+            context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DESTINATION_ENTRIES.getName()).set(updatedEntries);
         }
 
 

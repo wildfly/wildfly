@@ -562,4 +562,8 @@ public interface MessagingMessages {
 
     @Message(id = 11684, value = "Parameter %s contains duplicate elements [%s]")
     OperationFailedException duplicateElements(String parameterName, ModelNode elements);
+
+    @Message(id = 11685, value = "Can not remove unknown entry %s")
+    OperationFailedException canNotRemoveUnknownEntry(String entry);
+
 }
