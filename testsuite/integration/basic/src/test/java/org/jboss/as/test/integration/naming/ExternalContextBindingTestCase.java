@@ -224,6 +224,7 @@ public class ExternalContextBindingTestCase {
     //@formatter:off
     @CreateDS(
             name = "JBossDS",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
             partitions =
                     {
                             @CreatePartition(

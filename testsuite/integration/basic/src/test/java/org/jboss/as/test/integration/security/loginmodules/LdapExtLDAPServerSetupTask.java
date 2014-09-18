@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.apache.directory.server.ldap.LdapServer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
@@ -97,6 +99,8 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
     private LdapServer ldapServer1;
     private LdapServer ldapServer2;
 
+    private boolean removeBouncyCastle = false;
+
     /**
      * Creates directory services, starts LDAP server and KDCServer
      *
@@ -107,6 +111,15 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
      *      java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        try {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+                removeBouncyCastle = true;
+            }
+        } catch (SecurityException ex) {
+            LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+        }
+
         final String hostname = Utils.getSecondaryTestAddress(managementClient, false);
         createLdap1(hostname);
         createLdap2(hostname);
@@ -115,6 +128,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
     //@formatter:off
     @CreateDS(
         name = "JBossDS",
+        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {
             @CreatePartition(
@@ -176,6 +190,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
     //@formatter:off
     @CreateDS(
         name = "JBossComDS",
+        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {
             @CreatePartition(
@@ -269,6 +284,13 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         KEYSTORE_FILE.delete();
         FileUtils.deleteDirectory(directoryService2.getInstanceLayout().getInstanceDirectory());
         FileUtils.deleteDirectory(directoryService1.getInstanceLayout().getInstanceDirectory());
+        if (removeBouncyCastle) {
+            try {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+            } catch (SecurityException ex) {
+                LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+            }
+        }
     }
 
     /**

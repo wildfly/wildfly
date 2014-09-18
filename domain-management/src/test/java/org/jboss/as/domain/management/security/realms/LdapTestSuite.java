@@ -34,7 +34,6 @@ import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.server.core.api.CoreSession;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.api.partition.Partition;
-import org.apache.directory.server.core.factory.DefaultDirectoryServiceFactory;
 import org.apache.directory.server.core.factory.DirectoryServiceFactory;
 import org.apache.directory.server.core.factory.PartitionFactory;
 import org.apache.directory.server.ldap.LdapServer;
@@ -109,7 +108,7 @@ public class LdapTestSuite {
 
     private static void startMasterLdapServer() throws Exception {
         masterWorkingDir = createWorkingDir(masterWorkingDir, "master");
-        DirectoryServiceFactory dsf = new DefaultDirectoryServiceFactory();
+        DirectoryServiceFactory dsf = new InMemoryDirectoryServiceFactory();
         dsf.init(MASTER_DIRECTORY_NAME);
         masterDirectoryService = dsf.getDirectoryService();
         masterDirectoryService.getChangeLog().setEnabled(false);
@@ -135,7 +134,7 @@ public class LdapTestSuite {
 
     private static void startSlaveLdapServer() throws Exception {
         slaveWorkingDir = createWorkingDir(slaveWorkingDir, "slave");
-        DirectoryServiceFactory dsf = new DefaultDirectoryServiceFactory();
+        DirectoryServiceFactory dsf = new InMemoryDirectoryServiceFactory();
         dsf.init(SLAVE_DIRECTORY_NAME);
         slaveDirectoryService = dsf.getDirectoryService();
         slaveDirectoryService.getChangeLog().setEnabled(false);

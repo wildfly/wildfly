@@ -54,6 +54,7 @@ public class LdapRoleMappingG2UTestCase {
     @BeforeClass
     @CreateDS(
             name = "WildFlyDS",
+            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
             partitions = @CreatePartition(name = "wildfly", suffix = "dc=wildfly,dc=org"),
             allowAnonAccess = true
     )
