@@ -100,6 +100,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultVirtualServer = WebDefinition.DEFAULT_VIRTUAL_SERVER.resolveModelAttribute(context, fullModel).asString();
 
         final boolean useNative = WebDefinition.NATIVE.resolveModelAttribute(context, fullModel).asBoolean();
+        final int defaultSessionTimeout = WebDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, fullModel).asInt();
         final ModelNode instanceIdModel = WebDefinition.INSTANCE_ID.resolveModelAttribute(context, fullModel);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
 
@@ -109,7 +110,7 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
-                final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone());
+                final SharedWebMetaDataBuilder sharedWebBuilder = new SharedWebMetaDataBuilder(config.clone(), defaultSessionTimeout);
                 final SharedTldsMetaDataBuilder sharedTldsBuilder = new SharedTldsMetaDataBuilder(config.clone());
 
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_WEB, new JBossAllXmlParserRegisteringProcessor<JBossWebMetaData>(WebJBossAllParser.ROOT_ELEMENT, WebJBossAllParser.ATTACHMENT_KEY, new WebJBossAllParser()));

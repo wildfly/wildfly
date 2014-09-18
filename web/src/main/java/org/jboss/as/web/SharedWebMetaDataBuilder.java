@@ -61,9 +61,11 @@ class SharedWebMetaDataBuilder {
      * The common container config.
      */
     private final ModelNode config;
+    private final int defaultSessionTimeout;
 
-    SharedWebMetaDataBuilder(final ModelNode containerConfig) {
+    SharedWebMetaDataBuilder(final ModelNode containerConfig, final int defaultSessionTimeout) {
         this.config = containerConfig;
+        this.defaultSessionTimeout = defaultSessionTimeout;
         init();
     }
 
@@ -94,7 +96,7 @@ class SharedWebMetaDataBuilder {
 
         // Session config
         final SessionConfigMetaData sessionConfig = new SessionConfigMetaData();
-        sessionConfig.setSessionTimeout(config.get(Constants.DEFAULT_SESSION_TIMEOUT).asInt());
+        sessionConfig.setSessionTimeout(defaultSessionTimeout);
         metadata.setSessionConfig(sessionConfig);
 
         // Mime mappings
