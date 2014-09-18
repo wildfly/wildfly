@@ -796,4 +796,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 76, value = "Parameter %s contains duplicate elements [%s]")
     OperationFailedException duplicateElements(String parameterName, ModelNode elements);
+
+    @Message(id = 77, value = "Can not remove unknown entry %s")
+    OperationFailedException canNotRemoveUnknownEntry(String entry);
+
 }

@@ -41,6 +41,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -103,9 +104,12 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
                     updatedEntries.add(entry);
                 }
             }
-            if (updated) {
-                context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DESTINATION_ENTRIES.getName()).set(updatedEntries);
+
+            if (!updated) {
+                throw MessagingLogger.ROOT_LOGGER.canNotRemoveUnknownEntry(jndiName);
             }
+
+            context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DESTINATION_ENTRIES.getName()).set(updatedEntries);
         }
 
 
