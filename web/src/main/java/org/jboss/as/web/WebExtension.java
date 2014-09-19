@@ -304,7 +304,7 @@ public class WebExtension implements Extension {
         final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
         ssoBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);

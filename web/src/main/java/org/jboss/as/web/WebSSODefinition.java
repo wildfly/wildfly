@@ -74,7 +74,6 @@ public class WebSSODefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
                     .build();
 
     protected static SimpleAttributeDefinition[] SSO_ATTRIBUTES = {
