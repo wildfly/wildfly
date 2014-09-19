@@ -294,7 +294,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testUndefine(kernelServices, address, AsyncHandlerResourceDefinition.SUBHANDLERS);
 
         // Test the add-handler operation
-        ModelNode op = OperationBuilder.create(AsyncHandlerResourceDefinition.ADD_HANDLER, address)
+        ModelNode op = OperationBuilder.create("add-handler", address)
                 .addAttribute(CommonAttributes.HANDLER_NAME, "CONSOLE")
                 .build();
         executeOperation(kernelServices, op);
@@ -304,7 +304,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         assertEquals(subhandlers, SubsystemOperations.readResult(result));
 
         // Test remove-handler operation
-        op = SubsystemOperations.createOperation(AsyncHandlerResourceDefinition.REMOVE_HANDLER.getName(), address);
+        op = SubsystemOperations.createOperation("remove-handler", address);
         op.get(CommonAttributes.HANDLER_NAME.getName()).set("CONSOLE");
         executeOperation(kernelServices, op);
         result = executeOperation(kernelServices, readOp);

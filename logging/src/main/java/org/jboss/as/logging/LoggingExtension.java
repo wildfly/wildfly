@@ -22,11 +22,10 @@
 
 package org.jboss.as.logging;
 
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.Extension;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -90,12 +88,42 @@ public class LoggingExtension implements Extension {
             ModuleIdentifier.create("org.slf4j.impl"),
     };
 
+    private static final List<String> DELEGATE_DESC_OPTS = Arrays.asList(
+            AbstractHandlerDefinition.UPDATE_OPERATION_NAME,
+            RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME
+    );
+
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
-        return new LoggingResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, LoggingExtension.class.getClassLoader());
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, LoggingExtension.class.getClassLoader(), true, false) {
+            @Override
+            public String getOperationParameterDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle) {
+                if (DELEGATE_DESC_OPTS.contains(operationName)) {
+                    return getResourceAttributeDescription(paramName, locale, bundle);
+                }
+                return super.getOperationParameterDescription(operationName, paramName, locale, bundle);
+            }
+
+            @Override
+            public String getOperationParameterValueTypeDescription(final String operationName, final String paramName, final Locale locale,
+                                                                    final ResourceBundle bundle, final String... suffixes) {
+                if (DELEGATE_DESC_OPTS.contains(operationName)) {
+                    return getResourceAttributeDescription(paramName, locale, bundle);
+                }
+                return super.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+            }
+
+            @Override
+            public String getOperationParameterDeprecatedDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle) {
+                if (DELEGATE_DESC_OPTS.contains(operationName)) {
+                    return getResourceAttributeDeprecatedDescription(paramName, locale, bundle);
+                }
+                return super.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
+            }
+        };
     }
 
     @Override
@@ -240,118 +268,6 @@ public class LoggingExtension implements Extension {
                     TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, modelVersion.getModelVersion());
                 }
             }
-        }
-    }
-
-    private static class LoggingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
-
-        private static final Map<String, String> COMMON_ATTRIBUTE_NAMES = new HashMap<String, String>();
-
-        static {
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.APPEND.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.AUTOFLUSH.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.CLASS.getName(), "logging.custom-handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENABLED.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENCODING.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), "logging.handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER_SPEC.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(AbstractHandlerDefinition.FORMATTER.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.HANDLERS.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.LEVEL.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX.getName(), "logging.size-rotating-file-handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.MODULE.getName(), "logging.custom-handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.NAME.getName(), "logging.handler");
-            COMMON_ATTRIBUTE_NAMES.put(AbstractHandlerDefinition.NAMED_FORMATTER.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.OVERFLOW_ACTION.getName(), "logging.async-handler");
-            COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.PATH.getName(), null);
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.PROPERTIES.getName(), "logging.custom-handler");
-            COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.QUEUE_LENGTH.getName(), "logging.async-handler");
-            COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.RELATIVE_TO.getName(), null);
-            COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT.getName(), "logging.size-rotating-file-handler");
-            COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE.getName(), "logging.size-rotating-file-handler");
-            COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.SUBHANDLERS.getName(), "logging.async-handler");
-            COMMON_ATTRIBUTE_NAMES.put(PeriodicHandlerResourceDefinition.SUFFIX.getName(), "logging.periodic-rotating-file-handler");
-            COMMON_ATTRIBUTE_NAMES.put(ConsoleHandlerResourceDefinition.TARGET.getName(), "logging.console-handler");
-        }
-
-        public LoggingResourceDescriptionResolver(final String keyPrefix, final String bundleBaseName, final ClassLoader bundleLoader) {
-            super(keyPrefix, bundleBaseName, bundleLoader, true, false);
-        }
-
-        @Override
-        public String getResourceAttributeDescription(final String attributeName, final Locale locale, final ResourceBundle bundle) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(attributeName.split("\\.")[0])) {
-                return bundle.getString(getBundleKey(attributeName));
-            }
-            return super.getResourceAttributeDescription(attributeName, locale, bundle);
-        }
-
-        @Override
-        public String getResourceAttributeValueTypeDescription(final String attributeName, final Locale locale, final ResourceBundle bundle, final String... suffixes) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(attributeName)) {
-                return bundle.getString(getVariableBundleKey(attributeName, suffixes));
-            }
-            return super.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
-        }
-
-        @Override
-        public String getOperationParameterDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(paramName)) {
-                return bundle.getString(getBundleKey(paramName));
-            }
-            return super.getOperationParameterDescription(operationName, paramName, locale, bundle);
-        }
-
-        @Override
-        public String getOperationParameterValueTypeDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle, final String... suffixes) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(paramName)) {
-                return bundle.getString(getVariableBundleKey(paramName, suffixes));
-            }
-            return super.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
-        }
-
-        @Override
-        public String getOperationParameterDeprecatedDescription(final String operationName, final String paramName, final Locale locale, final ResourceBundle bundle) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(paramName)) {
-                if (isReuseAttributesForAdd()) {
-                    return bundle.getString(getVariableBundleKey(paramName, ModelDescriptionConstants.DEPRECATED));
-                }
-                return bundle.getString(getVariableBundleKey(operationName, paramName, ModelDescriptionConstants.DEPRECATED));
-            }
-            return super.getOperationParameterDeprecatedDescription(operationName, paramName, locale, bundle);
-        }
-
-        @Override
-        public String getResourceAttributeDeprecatedDescription(final String attributeName, final Locale locale, final ResourceBundle bundle) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(attributeName)) {
-                return bundle.getString(getVariableBundleKey(attributeName, ModelDescriptionConstants.DEPRECATED));
-            }
-            return super.getResourceAttributeDeprecatedDescription(attributeName, locale, bundle);
-        }
-
-
-        private String getBundleKey(final String name) {
-            return getVariableBundleKey(name);
-        }
-
-        private String getVariableBundleKey(final String name, final String... variable) {
-            final String prefix = COMMON_ATTRIBUTE_NAMES.get(name.split("\\.")[0]);
-            final StringBuilder sb;
-            // Special handling for filter
-            if (prefix == null) {
-                sb = new StringBuilder(name);
-            } else {
-                sb = new StringBuilder(prefix).append('.').append(name);
-            }
-            if (variable != null) {
-                for (String arg : variable) {
-                    if (sb.length() > 0)
-                        sb.append('.');
-                    sb.append(arg);
-                }
-            }
-            return sb.toString();
         }
     }
 

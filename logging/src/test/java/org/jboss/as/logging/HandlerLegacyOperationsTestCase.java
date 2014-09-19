@@ -92,7 +92,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
         testCommonOperations(kernelServices, address);
 
         // Assign the subhandler
-        ModelNode op = OperationBuilder.create(AsyncHandlerResourceDefinition.LEGACY_ADD_HANDLER, address)
+        ModelNode op = OperationBuilder.create("assign-subhandler", address)
                 .addAttribute(CommonAttributes.HANDLER_NAME, "CONSOLE")
                 .build();
         executeOperation(kernelServices, op);
@@ -103,7 +103,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
                 .contains("CONSOLE"));
 
         // Unassign the subhandler
-        op = OperationBuilder.create(AsyncHandlerResourceDefinition.LEGACY_REMOVE_HANDLER, address)
+        op = OperationBuilder.create("unassign-subhandler", address)
                 .addAttribute(CommonAttributes.HANDLER_NAME, "CONSOLE")
                 .build();
         executeOperation(kernelServices, op);
@@ -182,7 +182,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
 
         // Test the change-file operation
         removeFile(filename);
-        ModelNode op = OperationBuilder.create(AbstractFileHandlerDefinition.CHANGE_FILE, address)
+        ModelNode op = OperationBuilder.create("change-file", address)
                 .addAttribute(CommonAttributes.FILE, defaultFile)
                 .build();
         executeOperation(kernelServices, op);
@@ -233,7 +233,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
 
         // Test the change-file operation
         removeFile(filename);
-        ModelNode op = OperationBuilder.create(AbstractFileHandlerDefinition.CHANGE_FILE, address)
+        ModelNode op = OperationBuilder.create("change-file", address)
                 .addAttribute(CommonAttributes.FILE, defaultFile)
                 .build();
         executeOperation(kernelServices, op);
@@ -284,7 +284,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
 
         // Test the change-file operation
         removeFile(filename);
-        ModelNode op = OperationBuilder.create(AbstractFileHandlerDefinition.CHANGE_FILE, address)
+        ModelNode op = OperationBuilder.create("change-file", address)
                 .addAttribute(CommonAttributes.FILE, defaultFile)
                 .build();
         executeOperation(kernelServices, op);
@@ -385,7 +385,7 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
     }
 
     private void testCommonOperations(final KernelServices kernelServices, final ModelNode address) throws Exception {
-        ModelNode op = OperationBuilder.create(AbstractHandlerDefinition.CHANGE_LEVEL, address)
+        ModelNode op = OperationBuilder.create("change-log-level", address)
                 .addAttribute(CommonAttributes.LEVEL, "DEBUG")
                 .build();
         executeOperation(kernelServices, op);
@@ -394,14 +394,14 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
         assertEquals("DEBUG", SubsystemOperations.readResultAsString(result));
 
         // Disable the handler
-        op = SubsystemOperations.createOperation(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), address);
+        op = SubsystemOperations.createOperation("disable", address);
         executeOperation(kernelServices, op);
         // Read the enabled attribute
         result = executeOperation(kernelServices, SubsystemOperations.createReadAttributeOperation(address, CommonAttributes.ENABLED));
         assertFalse("Handler should be disabled", SubsystemOperations.readResult(result).asBoolean());
 
         // Enable the handler
-        op = SubsystemOperations.createOperation(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), address);
+        op = SubsystemOperations.createOperation("enable", address);
         executeOperation(kernelServices, op);
         // Read the enabled attribute
         result = executeOperation(kernelServices, SubsystemOperations.createReadAttributeOperation(address, CommonAttributes.ENABLED));
