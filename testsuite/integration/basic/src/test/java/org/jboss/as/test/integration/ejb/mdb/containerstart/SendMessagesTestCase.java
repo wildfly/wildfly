@@ -34,7 +34,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -80,6 +79,23 @@ import org.junit.runner.RunWith;
  * test to new testsuite.
  * Testing undeploying an app in middle of MDB onMessage function and checking whether all messages will processed correctly.
  *
+ * Code sequence is:
+ * 1. deploy the application
+ * 2. send 1 "await" message
+ *    => the MDB will sleep for 15 seconds
+ * 3. undeploy the app and wait for the undeployment task to finish
+ * 4. send 50 "do not lose" messages
+ *    => after 10 seconds, the TX will timeout
+ *    => after 15 seconds, the MDB woke up and the undeployment finishes
+ * 5. ensure that the undeployment is completed
+ * 6. redeploy the application
+ * 7. send 10 "some more" messages
+ * 8. check the test receives 62 messages:
+ *    * 1 await
+ *    * 50 do not lose
+ *    * 10 some more
+ *    * 1 await (redelivered message)
+ *
  * @author Carlo de Wolf, Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
@@ -95,7 +111,7 @@ public class SendMessagesTestCase {
 
     private static String QUEUE_SEND = "queue/sendMessage";
 
-    private static final int WAIT_S = TimeoutUtil.adjust(10);
+    private static final int UNDEPLOYED_WAIT_S = TimeoutUtil.adjust(20);
     private static final int THREAD_WAIT_MS = TimeoutUtil.adjust(1000);
     private static final int RECEIVE_WAIT_S = TimeoutUtil.adjust(30);
     
@@ -160,7 +176,7 @@ public class SendMessagesTestCase {
 
     private int awaitSingleton(String where) throws Exception {
         HelperSingleton helper = (HelperSingleton) ctx.lookup(SINGLETON + "/HelperSingletonImpl!org.jboss.as.test.integration.ejb.mdb.containerstart.HelperSingleton");
-        return helper.await(where, WAIT_S, TimeUnit.SECONDS);
+        return helper.await(where, UNDEPLOYED_WAIT_S, SECONDS);
     }
 
     private static void sendMessage(Session session, MessageProducer sender, Queue replyQueue, String txt) throws JMSException {
@@ -208,7 +224,7 @@ public class SendMessagesTestCase {
                 expected.add("Reply: " + msg);
             }
 
-            undeployed.get(WAIT_S, SECONDS);
+            undeployed.get(UNDEPLOYED_WAIT_S, SECONDS);
 
             // deploying via management client, arquillian deployer does not work for some reason
             final ModelNode deployAddr = new ModelNode();
@@ -224,7 +240,7 @@ public class SendMessagesTestCase {
             log.debug("Some more messages sent");
 
             Set<String> received = new TreeSet<String>();
-            for (int i = 0; i < (1 + 50 + 10); i++) {
+            for (int i = 0; i < (1 + 50 + 10 + 1); i++) {
                 Message msg = receiver.receive(SECONDS.toMillis(RECEIVE_WAIT_S));
                 assertNotNull("did not receive message " + i, msg);
                 String text = ((TextMessage) msg).getText();
@@ -249,7 +265,7 @@ public class SendMessagesTestCase {
             public Void call() throws Exception {
                 ServerDeploymentManager deploymentManager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
                 final DeploymentPlan plan = deploymentManager.newDeploymentPlan().undeploy(MBEAN + ".jar").build();
-                deploymentManager.execute(plan).get(WAIT_S, TimeUnit.SECONDS);
+                deploymentManager.execute(plan).get(UNDEPLOYED_WAIT_S, SECONDS);
                 return null;
             }
         };
