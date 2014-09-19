@@ -23,35 +23,38 @@ package org.jboss.as.test.integration.ws.wsse.signencrypt;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import javax.xml.ws.soap.SOAPFaultException;
-import org.junit.Assert;
+
 import org.apache.cxf.ws.security.SecurityConstants;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ws.wsse.EJBEncryptServiceImpl;
+import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
+import org.jboss.as.test.integration.ws.wsse.ServiceIface;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jboss.as.test.integration.ws.wsse.KeystorePasswordCallback;
-import org.jboss.as.test.integration.ws.wsse.ServiceIface;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
  * Test WS sign + encrypt capability for multiple clients (alice and john)
- * 
+ *
  * Certificates can ge generated using keytool -genkey -keyalg RSA -storetype JKS
  * Public key can be extracted using keytool -export
  * Public key can be imported using keytool -import
  * Keystore can be listed using keytool -list -v
- * 
+ *
  * @author Rostislav Svoboda
  */
 @RunWith(Arquillian.class)
@@ -91,6 +94,7 @@ public class EJBSignEncryptMultipleClientsTestCase {
         Assert.assertEquals("Secure Hello World!", proxy.sayHello());
     }
 
+    @Ignore("WFLY-3872")
     @Test
     public void encryptedAndSignedRequestFromJohn() throws Exception {
         QName serviceName = new QName("http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy", "EJBEncryptSecurityService");
