@@ -23,6 +23,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <surefire.ejbClient.memory.args>-Xms512m -Xmx1280m -XX:MaxPermSize=256m</surefire.ejbClient.memory.args>
     </properties>
 
     <profiles>
@@ -76,29 +77,99 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
+                        <executions combine.children="append">
+                            <!-- Disable default-test execution. -->
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
 
-                            <!-- Workaround for nasty and hacky tests not cleaning up completely after themselves. -->
-                            <reuseForks>false</reuseForks>
+                            <execution>
+                                <id>basic-manualmode-ejbClient.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
 
-                            <includes>
-                                <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
-                            </includes>
-                            <runOrder>alphabetical</runOrder>
+                                    <!-- Workaround for nasty and hacky tests not cleaning up completely after themselves. -->
+                                    <reuseForks>false</reuseForks>
 
-                            <!-- Parameters to test cases. -->
-                            <systemPropertyVariables combine.children="append">
-                                <arquillian.launch>manual-mode</arquillian.launch>
-                                <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
-                                <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
-                                <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
-                                <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
-                                <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
-                                <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
-                                <javax.net.debug>ssl</javax.net.debug>
-                            </systemPropertyVariables>
-                        </configuration>
+                                    <includes>
+                                        <include>org/jboss/as/test/manualmode/**/EjbClientMarshallingParamsTestCase.java</include>
+                                    </includes>
+                                    <runOrder>alphabetical</runOrder>
 
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                    <arquillian.launch>manual-mode</arquillian.launch>
+                                    <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
+                                        <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
+                                        <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
+                                        <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
+                                        <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
+                                        <javax.net.debug>ssl</javax.net.debug>
+                                    </systemPropertyVariables>
+                                    <argLine>${surefire.ejbClient.memory.args} ${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>basic-manualmode-default-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+
+                                    <!-- Workaround for nasty and hacky tests not cleaning up completely after themselves. -->
+                                    <reuseForks>false</reuseForks>
+
+                                    <includes>
+                                        <include>org/jboss/as/test/manualmode/**/AdminOnlyAuditLogTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/AuditLogBootingLogTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/AuditLogFieldsOfLogTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/DeploymentScannerUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/EJBClientClusterConfigurationTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/RemoteOutboundConnectionReconnectTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/EJBClientReconnectionTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/SSLEJBRemoteClientTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/LayeredDistributionTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/AbstractOperationsTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/CustomFormattersTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/Log4jAppenderTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/LoggingDependenciesTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/LoggingPreferencesTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/PerDeployLoggingTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/SizeAppenderRestartTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/CustomVaultInCLITestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/GlobalOpsTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/HTTPSConnectionWithCLITestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/ManagementOpTimeoutTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/ReloadOpsTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/VaultPasswordsInCLITestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/HornetQBackupActivationTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/ParseAndMarshalModelsTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/OutboundLdapConnectionTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/VaultSystemPropertyOnServerStartTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/CustomVaultInModuleTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/HTTPSManagementInterfaceTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/HTTPSWebConnectorTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/ReloadRequiringChangesTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/ReloadWSDLPublisherTestCase.java</include>
+                                        <include>org/jboss/as/test/manualmode/**/WSAttributesChangesTestCase.java</include>
+                                    </includes> 
+                                    <runOrder>alphabetical</runOrder>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables combine.children="append">
+                                        <arquillian.launch>manual-mode</arquillian.launch>
+                                        <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
+                                        <!-- needed for SSLEJBRemoteClientTestCase only, however setting them from within the test itself isn't possible -->
+                                        <javax.net.ssl.trustStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.truststore</javax.net.ssl.trustStore>
+                                        <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
+                                        <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
+                                        <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
+                                        <javax.net.debug>ssl</javax.net.debug>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+    
+                        </executions>
                     </plugin>
                                                             
                     <plugin>
