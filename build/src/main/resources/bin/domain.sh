@@ -142,13 +142,13 @@ if $darwin; then
     do
       case $var in
         -Djboss.domain.base.dir=*)
-             JBOSS_BASE_DIR=`cd ${p#*=} ; pwd -P`
+             JBOSS_BASE_DIR=`cd ${var#*=} ; pwd -P`
              ;;
         -Djboss.domain.log.dir=*)
-             JBOSS_LOG_DIR=`cd ${p#*=} ; pwd -P`
+             JBOSS_LOG_DIR=`cd ${var#*=} ; pwd -P`
              ;;
         -Djboss.domain.config.dir=*)
-             JBOSS_CONFIG_DIR=`cd ${p#*=} ; pwd -P`
+             JBOSS_CONFIG_DIR=`cd ${var#*=} ; pwd -P`
              ;;
       esac
     done
