@@ -472,12 +472,14 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
 
         testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX, 20);
         testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.ROTATE_SIZE, "50m");
+        testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.SUFFIX, ".yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Undefine attributes
         testUndefineCommonAttributes(kernelServices, address);
         testUndefine(kernelServices, address, CommonAttributes.APPEND);
         testUndefine(kernelServices, address, CommonAttributes.AUTOFLUSH);
         testUndefine(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX);
+        testUndefine(kernelServices, address, SizeRotatingHandlerResourceDefinition.SUFFIX);
 
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));

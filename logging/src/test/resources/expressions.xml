@@ -83,6 +83,7 @@
         <rotate-size value="${test.rotate.size:64m}"/>
         <max-backup-index value="${test.max.backup.index:1024}"/>
         <append value="${test.file.append:false}"/>
+        <suffix value="${test.file.suffix:.yyyy-MM-dd'T'HH:mm:ssZ}"/>
     </size-rotating-file-handler>
 
     <syslog-handler name="syslog" enabled="${test.syslog.enabled:false}">
