@@ -54,7 +54,7 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
 
     public void init(JDBCStoreManager manager) {
         super.init(manager);
-        ClassLoader loader = GetTCLAction.getContextClassLoader();
+        ClassLoader loader = manager.getMetaData().getJDBCApplication().getClassLoader();
         try {
             Class psClass = loader.loadClass(className);
             method = psClass.getMethod(methodName);

@@ -58,5 +58,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
+        <module name="org.jboss.ironjacamar.jdbcadapters"/>
     </dependencies>
 </module>
