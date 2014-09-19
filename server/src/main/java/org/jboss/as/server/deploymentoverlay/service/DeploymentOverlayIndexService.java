@@ -25,13 +25,21 @@ package org.jboss.as.server.deploymentoverlay.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 
 /**
  * Service that aggregates all available deployment overrides
@@ -115,5 +123,19 @@ public class DeploymentOverlayIndexService implements Service<DeploymentOverlayI
     @Override
     public DeploymentOverlayIndexService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+
+    public static Set<ServiceName> getDeploymentDependencies(OperationContext context) {
+        Set<ServiceName> ret = new HashSet<ServiceName>();
+        Set<String> overlayNames = context.readResourceFromRoot(PathAddress.pathAddress(pathElement(DEPLOYMENT_OVERLAY))).getChildrenNames(DEPLOYMENT_OVERLAY);
+        for (String overlay : overlayNames) {
+            Set<String> deployments = context.readResourceFromRoot(PathAddress.pathAddress(pathElement(DEPLOYMENT_OVERLAY, overlay))).getChildrenNames(DEPLOYMENT);
+            for (String deployment : deployments) {
+                ret.add(DeploymentOverlayLinkService.SERVICE_NAME.append(overlay).append(deployment));
+            }
+
+        }
+        return ret;
     }
 }
