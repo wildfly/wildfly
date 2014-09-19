@@ -23,6 +23,7 @@ package org.jboss.as.cmp.jdbc.keygen;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -121,4 +122,11 @@ public class JDBCMySQLCreateCommand extends JDBCIdentityColumnCreateCommand {
         }
         return rows;
     }
+
+    @Override
+    protected PreparedStatement prepareStatement(Connection c, String sql, CmpEntityBeanContext ctx) throws SQLException {
+        return c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+    }
+
+
 }
