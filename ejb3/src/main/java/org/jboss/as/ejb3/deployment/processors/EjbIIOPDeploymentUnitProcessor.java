@@ -46,16 +46,16 @@ import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
-import org.jboss.as.jdkorb.deployment.JdkORBDeploymentMarker;
-import org.jboss.as.jdkorb.rmi.AttributeAnalysis;
-import org.jboss.as.jdkorb.rmi.InterfaceAnalysis;
-import org.jboss.as.jdkorb.rmi.OperationAnalysis;
-import org.jboss.as.jdkorb.rmi.RMIIIOPViolationException;
-import org.jboss.as.jdkorb.rmi.marshal.strategy.SkeletonStrategy;
-import org.jboss.as.jdkorb.service.CorbaNamingService;
-import org.jboss.as.jdkorb.service.CorbaORBService;
-import org.jboss.as.jdkorb.service.CorbaPOAService;
-import org.jboss.as.jdkorb.service.IORSecConfigMetaDataService;
+import org.jboss.as.iiop.openjdk.deployment.IIOPDeploymentMarker;
+import org.jboss.as.iiop.openjdk.rmi.AttributeAnalysis;
+import org.jboss.as.iiop.openjdk.rmi.InterfaceAnalysis;
+import org.jboss.as.iiop.openjdk.rmi.OperationAnalysis;
+import org.jboss.as.iiop.openjdk.rmi.RMIIIOPViolationException;
+import org.jboss.as.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.iiop.openjdk.service.CorbaNamingService;
+import org.jboss.as.iiop.openjdk.service.CorbaORBService;
+import org.jboss.as.iiop.openjdk.service.CorbaPOAService;
+import org.jboss.as.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -93,7 +93,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!JdkORBDeploymentMarker.isJdkORBDeployment(deploymentUnit)) {
+        if (!IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             return;
         }
 

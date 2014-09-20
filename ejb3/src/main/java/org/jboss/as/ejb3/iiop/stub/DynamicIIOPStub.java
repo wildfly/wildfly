@@ -28,7 +28,7 @@ import java.security.PrivilegedAction;
 import javax.rmi.CORBA.Util;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.as.jdkorb.rmi.marshal.strategy.StubStrategy;
+import org.jboss.as.iiop.openjdk.rmi.marshal.strategy.StubStrategy;
 import org.jboss.ejb.iiop.HandleImplIIOP;
 import org.jboss.ejb.iiop.HomeHandleImplIIOP;
 import org.omg.CORBA.BAD_OPERATION;
