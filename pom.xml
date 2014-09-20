@@ -275,7 +275,7 @@
         <module>ejb3</module>
         <module>embedded</module>
         <module>feature-pack</module>
-        <module>jdkorb</module>
+        <module>iiop-openjdk</module>
 	<module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
@@ -1194,7 +1194,7 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-jdkorb</artifactId>
+                <artifactId>wildfly-iiop-openjdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

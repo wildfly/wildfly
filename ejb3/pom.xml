@@ -72,7 +72,7 @@ vi:ts=4:sw=4:expandtab
  
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jdkorb</artifactId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
         </dependency>
 
         <dependency>

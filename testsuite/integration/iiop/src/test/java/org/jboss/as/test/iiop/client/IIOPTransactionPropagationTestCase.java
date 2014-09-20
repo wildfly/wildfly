@@ -163,11 +163,11 @@ public class IIOPTransactionPropagationTestCase {
      * The setup tasks are bound to deploy/undeploy actions.
      */
     static class JTSSetup implements ServerSetupTask {
-        public static final String JACORB_TRANSACTIONS_JTA = "spec";
-        public static final String JACORB_TRANSACTIONS_JTS = "on";
+        public static final String IIOP_TRANSACTIONS_JTA = "spec";
+        public static final String IIOP_TRANSACTIONS_JTS = "on";
 
         private boolean isTransactionJTS = true;
-        private String jacorbTransaction = JACORB_TRANSACTIONS_JTA;
+        private String iiopTransaction = IIOP_TRANSACTIONS_JTA;
 
         ManagementClient managementClient = null;
 
@@ -183,14 +183,14 @@ public class IIOPTransactionPropagationTestCase {
 
             // check what is defined before
             isTransactionJTS = checkJTSOnTransactions();
-            jacorbTransaction = checkTransactionsOnJacorb();
+            iiopTransaction = checkTransactionsOnJacorb();
 
             if (!isTransactionJTS) {
                 setTransactionJTS(true);
                 isNeedReload = true;
             }
-            if (JACORB_TRANSACTIONS_JTA.equalsIgnoreCase(jacorbTransaction)) {
-                setJacorbJTS(true);
+            if (IIOP_TRANSACTIONS_JTA.equalsIgnoreCase(iiopTransaction)) {
+                setJTS(true);
                 isNeedReload = true;
             }
 
@@ -208,8 +208,8 @@ public class IIOPTransactionPropagationTestCase {
             // get it back what was defined before
             // if it was not JTS, set it back to JTA (was set to JTS setup())
             // if it was JTA, set it back to JTA (was set to JTS in setup())
-            if (JACORB_TRANSACTIONS_JTA.equalsIgnoreCase(jacorbTransaction)) {
-                setJacorbJTS(false);
+            if (IIOP_TRANSACTIONS_JTA.equalsIgnoreCase(iiopTransaction)) {
+                setJTS(false);
                 isNeedReload = true;
             }
             if (!isTransactionJTS) {
@@ -236,7 +236,7 @@ public class IIOPTransactionPropagationTestCase {
         public String checkTransactionsOnJacorb() throws IOException, MgmtOperationException {
             /* /subsystem=jacorb:read-attribute(name=transactions) */
             final ModelNode address = new ModelNode();
-            address.add("subsystem", "jdkorb");
+            address.add("subsystem", "iiop-openjdk");
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
             operation.get(OP_ADDR).set(address);
@@ -258,15 +258,15 @@ public class IIOPTransactionPropagationTestCase {
             executeOperation(operation);
         }
 
-        public void setJacorbJTS(boolean enabled) throws IOException, MgmtOperationException {
-            String transactionsOnJacorb = (enabled) ? JACORB_TRANSACTIONS_JTS : JACORB_TRANSACTIONS_JTA;
+        public void setJTS(boolean enabled) throws IOException, MgmtOperationException {
+            String transactionsOnIIOP = (enabled) ? IIOP_TRANSACTIONS_JTS : IIOP_TRANSACTIONS_JTA;
             ModelNode address = new ModelNode();
-            address.add("subsystem", "jdkorb");
+            address.add("subsystem", "iiop-openjdk");
             ModelNode operation = new ModelNode();
             operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             operation.get(OP_ADDR).set(address);
             operation.get("name").set("transactions");
-            operation.get("value").set(transactionsOnJacorb);
+            operation.get("value").set(transactionsOnIIOP);
             log.info("operation=" + operation);
             executeOperation(operation);
         }

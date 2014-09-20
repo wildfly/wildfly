@@ -60,7 +60,7 @@
          in EJB client context-->
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.as.ee"/>
-	<module name="org.jboss.as.jdkorb"/>
+	<module name="org.jboss.as.iiop-openjdk"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.remoting"/>

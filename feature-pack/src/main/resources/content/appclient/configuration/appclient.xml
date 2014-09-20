@@ -26,7 +26,7 @@
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.jdkorb"/>
+        <extension module="org.jboss.as.iiop-openjdk"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.naming"/>
@@ -58,11 +58,10 @@
             <logger category="sun.rmi">
                 <level name="WARN"/>
             </logger>
-            <logger category="jdkorb">
+            <logger category="iiop">
                 <level name="WARN"/>
             </logger>
-            <!-- set jdkorb.config to ERROR to avoid the "jdkorb.properties not found" messages during startup -->
-            <logger category="jdkorb.config">
+            <logger category="iiop.config">
                 <level name="ERROR"/>
             </logger>
             <root-logger>
@@ -121,7 +120,7 @@
                               managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ejb3:3.0"/>
-        <subsystem xmlns="urn:jboss:domain:jdkorb:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:iiop-openjdk:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:2.0">
             <archive-validation enabled="false" />
             <bean-validation enabled="true" />
@@ -185,8 +184,8 @@
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="public">
-        <socket-binding name="jdkorb" port="3628"/>
-        <socket-binding name="jdkorb-ssl" port="3629"/>
+        <socket-binding name="iiop" port="3628"/>
+        <socket-binding name="iiop-ssl" port="3629"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
     </socket-binding-group>

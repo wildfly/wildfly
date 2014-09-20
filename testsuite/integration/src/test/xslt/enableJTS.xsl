@@ -4,11 +4,11 @@
     <!--
         An XSLT style sheet which will enable JTS,
         by adding the JTS attribute to the transactions subsystem,
-        and turning on transaction propagation in the JacORB subsystem.
+        and turning on transaction propagation in the IIOP subsystem.
     -->
     
     <xsl:variable name="transactions" select="'urn:jboss:domain:transactions:'"/>
-    <xsl:variable name="jdkorb" select="'urn:jboss:domain:jdkorb:'"/>
+    <xsl:variable name="iiop-openjdk" select="'urn:jboss:domain:iiop-openjdk:'"/>
     
     <!-- traverse the whole tree, so that all elements and attributes are eventually current node -->
     <xsl:template match="node()|@*">
@@ -17,7 +17,7 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jdkorb)]
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $iiop-openjdk)]
     					  /*[local-name()='orb']">
         <xsl:copy>
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>

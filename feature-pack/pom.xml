@@ -2275,7 +2275,7 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jdkorb</artifactId>
+            <artifactId>wildfly-iiop-openjdk</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
