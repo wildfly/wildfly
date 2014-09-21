@@ -117,6 +117,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.AuthenticationManager;
+import org.jboss.security.CacheableManager;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
 import org.jboss.security.authorization.config.AuthorizationModuleEntry;
@@ -261,6 +263,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleJACCAuthorization
                     (deploymentInfo);
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
+            handleSecurityCache(deploymentInfo, mergedMetaData);
 
             if(mergedMetaData.isUseJBossAuthorization()) {
                 deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
@@ -388,6 +391,17 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             Thread.currentThread().setContextClassLoader(oldTccl);
         }
 
+    }
+
+    private void handleSecurityCache(DeploymentInfo deploymentInfo, JBossWebMetaData mergedMetaData) {
+        AuthenticationManager manager = securityDomainContextValue.getValue().getAuthenticationManager();
+        if(manager instanceof CacheableManager) {
+            deploymentInfo.addNotificationReceiver(new CacheInvalidationNotificationReceiver((CacheableManager<?, java.security.Principal>) manager));
+            if(mergedMetaData.isFlushOnSessionInvalidation()) {
+                CacheInvalidationSessionListener listener = new CacheInvalidationSessionListener((CacheableManager<?, java.security.Principal>) manager);
+                deploymentInfo.addListener(Servlets.listener(CacheInvalidationSessionListener.class, new ImmediateInstanceFactory<EventListener>(listener)));
+            }
+        }
     }
 
     @Override
