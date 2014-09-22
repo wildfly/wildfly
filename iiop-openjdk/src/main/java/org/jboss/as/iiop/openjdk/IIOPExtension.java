@@ -65,8 +65,6 @@ public class IIOPExtension implements Extension {
             Constants.IOR_AS_CONTEXT);
     protected static final PathElement PATH_IOR_SAS = PathElement.pathElement(Constants.SETTING,
             Constants.IOR_SAS_CONTEXT);
-    protected static final PathElement PATH_CLIENT_TRANSPORT = PathElement.pathElement(Constants.CONFIGURATION,
-            Constants.CLIENT_TRANSPORT);
     protected static final PathElement PATH_PROPERTIES = PathElement.pathElement(Constants.CONFIGURATION,
             Constants.PROPERTIES);
     protected static final PathElement PATH_PROPERTY = PathElement.pathElement(Constants.PROPERTY);

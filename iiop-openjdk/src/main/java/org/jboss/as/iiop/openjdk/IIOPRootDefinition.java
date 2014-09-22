@@ -39,8 +39,7 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final AttributeDefinition[] ATTRIBUTES = {};
     static final PersistentResourceDefinition[] CHILDREN = { ORBDefinition.INSTANCE, NamingDefinition.INSTANCE,
-            SecurityDefinition.INSTANCE, IORSettingsDefinition.INSTANCE, ClientTransportDefinition.INSTANCE,
-            PropertiesDefinition.INSTANCE };
+            SecurityDefinition.INSTANCE, IORSettingsDefinition.INSTANCE, PropertiesDefinition.INSTANCE };
 
     private IIOPRootDefinition() {
         super(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver(), IIOPSubsystemAdd.INSTANCE,

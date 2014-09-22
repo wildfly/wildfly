@@ -89,7 +89,6 @@ public class IIOPSubsystemParser implements XMLStreamConstants, XMLElementReader
                                 .addChild(
                                         builder(IORSASContextDefinition.INSTANCE).addAttribute(
                                                 IORSASContextDefinition.CALLER_PROPAGATION)))
-                .addChild(builder(ClientTransportDefinition.INSTANCE).addAttribute(ClientTransportDefinition.REQUIRES_SSL))
                 .addChild(
                         builder(PropertiesDefinition.INSTANCE).addChild(
                                 builder(PropertyDefinition.INSTANCE).addAttributes(PropertyDefinition.VALUE)))

@@ -33,7 +33,7 @@ import java.util.Map;
  *
  * @author <a href="mailto:sguilhen@redhat.com">Stefan Guilhen</a>
  */
-enum SSLConfigValue {
+public enum SSLConfigValue {
 
     NONE("None", "0"), SERVERAUTH("ServerAuth", "20"), CLIENTAUTH("ClientAuth", "40"), MUTUALAUTH("MutualAuth", "60");
 

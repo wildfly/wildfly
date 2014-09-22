@@ -54,7 +54,6 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -220,10 +219,9 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
                 .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install());
 
-        ClientTransportConfigMetaData clientTransportConfigMetaData = null;
-        clientTransportConfigMetaData = this.createClientTransportConfigMetaData(context,
-                model.get(ClientTransportDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientTransportConfigMetaData);
+
+        configureClientSecurity(props);
+
     }
 
     /**
@@ -368,10 +366,9 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         return securityConfigMetaData;
     }
 
-    private ClientTransportConfigMetaData createClientTransportConfigMetaData(final OperationContext context, final ModelNode node)
-            throws OperationFailedException {
-        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportDefinition.INSTANCE.getTransportConfigMetaData(
-                context, node);
-        return clientTransportConfigMetaData;
+    private void configureClientSecurity(final Properties props) {
+        final SSLConfigValue clientRequiresSSL = SSLConfigValue
+                .fromValue(props.getProperty(Constants.SECURITY_CLIENT_REQUIRES));
+        CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientRequiresSSL);
     }
 }
