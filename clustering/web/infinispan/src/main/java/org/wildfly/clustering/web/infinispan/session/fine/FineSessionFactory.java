@@ -70,13 +70,13 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     public Session<L> createSession(String id, FineSessionCacheEntry<L> entry) {
         SessionMetaData metaData = entry.getMetaData();
         Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, id, entry);
-        SessionAttributes attributes = new FineSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.marshaller);
+        SessionAttributes attributes = new FineSessionAttributes<>(id, this.attributeCache, this.marshaller);
         return new InfinispanSession<>(id, entry.getMetaData(), attributes, entry.getLocalContext(), this.localContextFactory, this.context, mutator, this);
     }
 
     @Override
     public ImmutableSession createImmutableSession(String id, FineSessionCacheEntry<L> entry) {
-        ImmutableSessionAttributes attributes = new FineImmutableSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.marshaller);
+        ImmutableSessionAttributes attributes = new FineImmutableSessionAttributes<>(id, this.attributeCache, this.marshaller);
         return new InfinispanImmutableSession(id, entry.getMetaData(), attributes, this.context);
     }
 
@@ -97,29 +97,23 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
 
     @Override
     public void remove(final String id) {
-        FineSessionCacheEntry<L> entry = this.sessionCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS).remove(id);
-        Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> cache = this.attributeCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES);
-        for (String attribute : entry.getAttributes()) {
-            cache.remove(new SessionAttributeCacheKey(id, attribute));
-        }
+        this.sessionCache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).remove(id);
+        this.attributeCache.getAdvancedCache().removeGroup(id);
     }
 
     @Override
     public void evict(final String id) {
-        final FineSessionCacheEntry<L> entry = this.findValue(id);
-        if (entry != null) {
-            for (String attribute: entry.getAttributes()) {
-                try {
-                    this.attributeCache.evict(new SessionAttributeCacheKey(id, attribute));
-                } catch (Throwable e) {
-                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, attribute);
-                }
-            }
+        for (SessionAttributeCacheKey key: this.attributeCache.getAdvancedCache().getGroup(id).keySet()) {
             try {
-                this.sessionCache.evict(id);
+                this.attributeCache.evict(key);
             } catch (Throwable e) {
-                InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
+                InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, key.getAttribute());
             }
+        }
+        try {
+            this.sessionCache.evict(id);
+        } catch (Throwable e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
         }
     }
 }

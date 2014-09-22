@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -33,30 +34,28 @@ import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
  */
 public class FineImmutableSessionAttributes<V> implements ImmutableSessionAttributes {
     private final String id;
-    private final Set<String> attributes;
     private final Cache<SessionAttributeCacheKey, V> cache;
     private final SessionAttributeMarshaller<Object, V> marshaller;
 
-    public FineImmutableSessionAttributes(String id, Set<String> attributes, Cache<SessionAttributeCacheKey, V> attributeCache, SessionAttributeMarshaller<Object, V> marshaller) {
+    public FineImmutableSessionAttributes(String id, Cache<SessionAttributeCacheKey, V> attributeCache, SessionAttributeMarshaller<Object, V> marshaller) {
         this.id = id;
-        this.attributes = attributes;
         this.cache = attributeCache;
         this.marshaller = marshaller;
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        return this.attributes;
+        Set<String> attributes = new TreeSet<>();
+        for (SessionAttributeCacheKey key: this.cache.getAdvancedCache().getGroup(this.id).keySet()) {
+            attributes.add(key.getAttribute());
+        }
+        return attributes;
     }
 
     @Override
     public Object getAttribute(String name) {
-        V value = this.getAttributeValue(this.createKey(name));
-        return (value != null) ? this.marshaller.read(value) : null;
-    }
-
-    protected V getAttributeValue(SessionAttributeCacheKey key) {
-        return this.cache.get(key);
+        SessionAttributeCacheKey key = this.createKey(name);
+        return this.marshaller.read(this.cache.get(key));
     }
 
     protected SessionAttributeCacheKey createKey(String attribute) {

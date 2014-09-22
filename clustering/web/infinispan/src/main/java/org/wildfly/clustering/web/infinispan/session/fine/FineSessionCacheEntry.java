@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.infinispan.session.fine;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.wildfly.clustering.web.session.SessionMetaData;
@@ -34,7 +32,6 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class FineSessionCacheEntry<L> {
 
     private final SessionMetaData metaData;
-    private final Set<String> attributes = new HashSet<>();
     private final AtomicReference<L> localContext = new AtomicReference<>();
 
     public FineSessionCacheEntry(SessionMetaData metaData) {
@@ -43,10 +40,6 @@ public class FineSessionCacheEntry<L> {
 
     public SessionMetaData getMetaData() {
         return this.metaData;
-    }
-
-    public Set<String> getAttributes() {
-        return this.attributes;
     }
 
     public AtomicReference<L> getLocalContext() {
