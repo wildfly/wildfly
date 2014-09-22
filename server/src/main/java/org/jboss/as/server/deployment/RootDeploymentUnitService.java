@@ -26,6 +26,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayIndex;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceRegistry;
@@ -48,11 +49,11 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
     private final ServiceVerificationHandler serviceVerificationHandler;
     private Resource resource;
     private final AbstractVaultReader vaultReader;
+    private final DeploymentOverlayIndex deploymentOverlays;
 
     /**
      * Construct a new instance.
-     *
-     * @param name the deployment unit simple name
+     *  @param name the deployment unit simple name
      * @param managementName the deployment's domain-wide unique name
      * @param parent the parent deployment unit
      * @param registration the registration
@@ -60,9 +61,11 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param resource the model
      * @param serviceVerificationHandler
      * @param vaultReader
+     * @param deploymentOverlays
      */
-    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader) {
+    public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader, DeploymentOverlayIndex deploymentOverlays) {
         this.serviceVerificationHandler = serviceVerificationHandler;
+        this.deploymentOverlays = deploymentOverlays;
         assert name != null : "name is null";
         this.name = name;
         this.managementName = managementName;
@@ -83,6 +86,7 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
         deploymentUnit.putAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE, resource);
         deploymentUnit.putAttachment(Attachments.SERVICE_VERIFICATION_HANDLER, serviceVerificationHandler);
         deploymentUnit.putAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY, vaultReader);
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_OVERLAY_INDEX, deploymentOverlays);
 
         // Attach the deployment repo
         deploymentUnit.putAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY, serverDeploymentRepositoryInjector.getValue());

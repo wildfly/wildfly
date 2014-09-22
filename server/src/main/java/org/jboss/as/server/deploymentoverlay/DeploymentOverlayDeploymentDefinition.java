@@ -23,11 +23,11 @@
 package org.jboss.as.server.deploymentoverlay;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 
 /**
  * Links a deployment overlay to a deployment
@@ -41,11 +41,10 @@ public class DeploymentOverlayDeploymentDefinition extends SimpleResourceDefinit
         return ATTRIBUTES.clone();
     }
 
-    public DeploymentOverlayDeploymentDefinition(DeploymentOverlayPriority priority) {
+    public DeploymentOverlayDeploymentDefinition() {
         super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_DEPLOYMENT_PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY + "." + ModelDescriptionConstants.DEPLOYMENT),
-                new DeploymentOverlayDeploymentAdd(priority),
-                new DeploymentOverlayDeploymentRemove(priority));
+                new DeploymentOverlayDeploymentAdd(), ModelOnlyRemoveStepHandler.INSTANCE);
     }
 
     @Override

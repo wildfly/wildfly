@@ -37,8 +37,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.CompositeOperationAwareTransformer;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
@@ -54,28 +52,21 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.deploymentoverlay.service.ContentService;
-import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
 
 /**
  * @author Stuart Douglas
  */
-public class ContentAdd extends AbstractAddStepHandler {
+public class DeploymentOverlayContentAdd extends AbstractAddStepHandler {
 
     protected final ContentRepository contentRepository;
     private final DeploymentFileRepository remoteRepository;
@@ -83,7 +74,7 @@ public class ContentAdd extends AbstractAddStepHandler {
     protected final ParametersValidator validator = new ParametersValidator();
     protected final ParametersValidator managedContentValidator = new ParametersValidator();
 
-    public ContentAdd(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
+    public DeploymentOverlayContentAdd(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
         this.contentRepository = contentRepository;
         this.remoteRepository = remoteRepository;
         final ParametersValidator contentValidator = new ParametersValidator();
@@ -133,7 +124,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         ModelNode modified = operation.clone();
         modified.get(CONTENT).clone();
         modified.get(CONTENT).set(hash);
-        for (AttributeDefinition attr : ContentDefinition.attributes()) {
+        for (AttributeDefinition attr : DeploymentOverlayContentDefinition.attributes()) {
             attr.validateAndSet(modified, resource.getModel());
         }
         if (!contentRepository.syncContent(hash)) {
@@ -144,34 +135,6 @@ public class ContentAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-    }
-
-
-    @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String path = address.getLastElement().getValue();
-        final String name = address.getElement(address.size() - 2).getValue();
-        final byte[] content = model.get(ModelDescriptionConstants.CONTENT).asBytes();
-
-        installServices(context, verificationHandler, newControllers, name, path, content);
-
-    }
-
-    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String path, final byte[] content) {
-        final ServiceName serviceName = ContentService.SERVICE_NAME.append(name).append(path);
-        final ContentService service = new ContentService(path, content);
-
-        ServiceBuilder<ContentService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(DeploymentOverlayService.SERVICE_NAME.append(name), DeploymentOverlayService.class, service.getDeploymentOverlayServiceInjectedValue())
-                .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.getContentRepositoryInjectedValue());
-        if (verificationHandler != null) {
-            builder.addListener(verificationHandler);
-        }
-        final ServiceController<ContentService> controller = builder.install();
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
     }
 
     protected static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {

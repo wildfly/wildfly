@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -55,9 +56,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 /**
  * @author Stuart Douglas
  */
-public class ContentDefinition extends SimpleResourceDefinition {
+public class DeploymentOverlayContentDefinition extends SimpleResourceDefinition {
 
-    static final ContentAttributeDefinition CONTENT =
+    public static final ContentAttributeDefinition CONTENT =
             new ContentAttributeDefinition(ModelDescriptionConstants.CONTENT, ModelType.BYTES, false);
 
     private final ContentRepository contentRepository;
@@ -68,11 +69,11 @@ public class ContentDefinition extends SimpleResourceDefinition {
         return ATTRIBUTES.clone();
     }
 
-    public ContentDefinition(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
+    public DeploymentOverlayContentDefinition(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
         super(DeploymentOverlayModel.CONTENT_PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY,ModelDescriptionConstants.CONTENT),
-                new ContentAdd(contentRepository, remoteRepository),
-                ContentRemove.INSTANCE);
+                new DeploymentOverlayContentAdd(contentRepository, remoteRepository),
+                ModelOnlyRemoveStepHandler.INSTANCE);
         this.contentRepository = contentRepository;
         readContent = new SimpleOperationDefinition(READ_CONTENT, getResourceDescriptionResolver());
     }

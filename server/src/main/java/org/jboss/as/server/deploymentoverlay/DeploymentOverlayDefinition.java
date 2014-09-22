@@ -25,6 +25,7 @@ package org.jboss.as.server.deploymentoverlay;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 
 /**
  * @author Stuart Douglas
@@ -46,19 +46,19 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
         return ATTRIBUTES.clone();
     }
 
-    private final DeploymentOverlayPriority priority;
     private final ContentRepository contentRepo;
     private final DeploymentFileRepository fileRepository;
+    private final boolean domainLevel;
 
 
-    public DeploymentOverlayDefinition(DeploymentOverlayPriority priority, ContentRepository contentRepo, DeploymentFileRepository fileRepository) {
+    public DeploymentOverlayDefinition(boolean domainLevel,ContentRepository contentRepo, DeploymentFileRepository fileRepository) {
         super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
                 DeploymentOverlayAdd.INSTANCE,
-                DeploymentOverlayRemove.INSTANCE);
-        this.priority = priority;
+                ModelOnlyRemoveStepHandler.INSTANCE);
         this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
+        this.domainLevel = domainLevel;
     }
 
     @Override
@@ -71,10 +71,10 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (contentRepo != null) {
-            resourceRegistration.registerSubModel(new ContentDefinition(contentRepo, fileRepository));
+            resourceRegistration.registerSubModel(new DeploymentOverlayContentDefinition(contentRepo, fileRepository));
         }
-        if (priority != null) {
-            resourceRegistration.registerSubModel(new DeploymentOverlayDeploymentDefinition(priority));
+        if (!domainLevel) {
+            resourceRegistration.registerSubModel(new DeploymentOverlayDeploymentDefinition());
         }
     }
 
