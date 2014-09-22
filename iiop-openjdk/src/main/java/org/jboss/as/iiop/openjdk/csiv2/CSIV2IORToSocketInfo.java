@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.iiop.openjdk.Constants;
-import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
+import org.jboss.as.iiop.openjdk.SSLConfigValue;
 import org.omg.CSIIOP.CompoundSecMech;
 import org.omg.CSIIOP.CompoundSecMechList;
 import org.omg.CSIIOP.CompoundSecMechListHelper;
@@ -65,10 +65,18 @@ import com.sun.corba.se.spi.transport.SocketInfo;
 
 public class CSIV2IORToSocketInfo implements IORToSocketInfo {
 
-    private static boolean clientRequiresSsl;
+    private static SSLConfigValue clientRequiresSsl;
 
-    public static void setClientTransportConfigMetaData(ClientTransportConfigMetaData clientTransportConfigMetaData) {
-        clientRequiresSsl=clientTransportConfigMetaData!=null?clientTransportConfigMetaData.getRequiresSsl():false;
+    public static void setClientTransportConfigMetaData(final SSLConfigValue clientRequiresSSL) {
+        CSIV2IORToSocketInfo.clientRequiresSsl = clientRequiresSSL;
+    }
+
+    private static boolean checkClientRequiresSSL() {
+        if (clientRequiresSsl == SSLConfigValue.CLIENTAUTH || clientRequiresSsl == SSLConfigValue.MUTUALAUTH) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public List getSocketInfo(IOR ior) {
@@ -91,10 +99,10 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
         if (sslAddress != null) {
             socketInfo = createSSLSocketInfo(hostname, sslAddress.port);
         } else {
-            //FIXME not all corba object export ssl port
-//            if (clientRequiresSsl) {
-//                throw new RuntimeException("Client requires SSL but target does not support it");
-//            }
+            // FIXME not all corba object export ssl port
+            // if (clientRequiresSsl) {
+            // throw new RuntimeException("Client requires SSL but target does not support it");
+            // }
             socketInfo = createSocketInfo(hostname, primaryPort);
         }
         result.add(socketInfo);
@@ -114,7 +122,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
                 }
                 boolean targetSupportsSsl = checkSSL(sslMech.target_supports);
                 boolean targetRequiresSsl = checkSSL(sslMech.target_requires);
-                if (targetSupportsSsl && (targetRequiresSsl || clientRequiresSsl)) {
+                if (targetSupportsSsl && (targetRequiresSsl || checkClientRequiresSSL())) {
                     return extractAddress(sslMech);
                 }
             }

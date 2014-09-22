@@ -70,10 +70,6 @@ public final class Constants {
     public static final String SECURITY_SERVER_REQUIRES = "server-requires";
     public static final String SECURITY_USE_DOMAIN_SF = "use-domain-socket-factory";
     public static final String SECURITY_USE_DOMAIN_SSF = "use-domain-server-socket-factory";
-    public static final String PROPERTIES = "properties";
-    public static final String PROPERTY = "property";
-    public static final String PROPERTY_NAME = "name";
-    public static final String PROPERTY_VALUE = "value";
 
     public static final String IOR_SETTINGS = "ior-settings";
     public static final String IOR_TRANSPORT_CONFIG = "transport-config";
@@ -89,8 +85,11 @@ public final class Constants {
     public static final String IOR_AS_CONTEXT_REQUIRED = "required";
     public static final String IOR_SAS_CONTEXT = "sas-context";
     public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
-    public static final String CLIENT_TRANSPORT = "client-transport";
-    public static final String CLIENT_TRANSPORT_REQUIRES_SSL = "requires-ssl";
+
+    public static final String PROPERTIES = "properties";
+    public static final String PROPERTY = "property";
+    public static final String PROPERTY_NAME = "name";
+    public static final String PROPERTY_VALUE = "value";
 
     // constants for common org.omg properties.
     public static final String ORB_ADDRESS = "OAIAddr";

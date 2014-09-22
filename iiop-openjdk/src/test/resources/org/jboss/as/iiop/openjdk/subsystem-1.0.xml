@@ -13,7 +13,6 @@
         <as-context auth-method="username_password" realm="test_realm" required="true"/>
         <sas-context caller-propagation="supported"/>
     </ior-settings>
-    <client-transport requires-ssl="true"/>
     <properties>
         <property name="some_property" value="some_value" />
     </properties>
