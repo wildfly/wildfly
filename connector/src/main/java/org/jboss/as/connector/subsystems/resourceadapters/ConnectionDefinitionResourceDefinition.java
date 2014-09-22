@@ -27,8 +27,12 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_I
 import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CANCEL_SHUTDOWN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.GET_SHUTDOWN_DELAY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.IS_SHUTDOWN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.QUIESCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
@@ -106,6 +110,11 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
             resourceRegistration.registerOperationHandler(FLUSH_INVALID_DEFINITION, PoolOperations.FlushInvalidConnectionInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_GRACEFULY_DEFINITION, PoolOperations.FlushGracefullyConnectionInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_DEFINITION, PoolOperations.TestConnectionInPool.RA_INSTANCE);
+
+            resourceRegistration.registerOperationHandler(IS_SHUTDOWN, IsShutdownHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(GET_SHUTDOWN_DELAY, GetShutdownDelayHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(QUIESCE, QuiesceHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(CANCEL_SHUTDOWN, CancelShutdownHandler.INSTANCE);
         }
     }
 

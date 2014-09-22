@@ -23,6 +23,7 @@
 package org.jboss.as.connector.util;
 
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -38,7 +39,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Injection utility which can inject values into objects. This file is a copy
@@ -55,52 +55,54 @@ public class Injection {
 
     /**
      * Inject a value into an object property
-     * @param object The object
-     * @param propertyName The property name
+     *
+     * @param object        The object
+     * @param propertyName  The property name
      * @param propertyValue The property value
-     * @exception NoSuchMethodException If the property method cannot be found
-     * @exception IllegalAccessException If the property method cannot be accessed
-     * @exception InvocationTargetException If the property method cannot be executed
+     * @throws NoSuchMethodException     If the property method cannot be found
+     * @throws IllegalAccessException    If the property method cannot be accessed
+     * @throws InvocationTargetException If the property method cannot be executed
      */
     @SuppressWarnings("unchecked")
     public void inject(Object object, String propertyName, Object propertyValue)
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         inject(object, propertyName, propertyValue, null, false);
     }
 
     /**
      * Inject a value into an object property
-     * @param object The object
-     * @param propertyName The property name
+     *
+     * @param object        The object
+     * @param propertyName  The property name
      * @param propertyValue The property value
-     * @param propertyType The property type as a fully quilified class name
-     * @exception NoSuchMethodException If the property method cannot be found
-     * @exception IllegalAccessException If the property method cannot be accessed
-     * @exception InvocationTargetException If the property method cannot be executed
+     * @param propertyType  The property type as a fully quilified class name
+     * @throws NoSuchMethodException     If the property method cannot be found
+     * @throws IllegalAccessException    If the property method cannot be accessed
+     * @throws InvocationTargetException If the property method cannot be executed
      */
     @SuppressWarnings("unchecked")
     public void inject(Object object, String propertyName, Object propertyValue, String propertyType)
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         inject(object, propertyName, propertyValue, propertyType, false);
     }
 
     /**
      * Inject a value into an object property
-     * @param object The object
-     * @param propertyName The property name
+     *
+     * @param object        The object
+     * @param propertyName  The property name
      * @param propertyValue The property value
-     * @param propertyType The property type as a fully quilified class name
+     * @param propertyType  The property type as a fully quilified class name
      * @param includeFields Should fields be included for injection if a method can't be found
-     * @exception NoSuchMethodException If the property method cannot be found
-     * @exception IllegalAccessException If the property method cannot be accessed
-     * @exception InvocationTargetException If the property method cannot be executed
+     * @throws NoSuchMethodException     If the property method cannot be found
+     * @throws IllegalAccessException    If the property method cannot be accessed
+     * @throws InvocationTargetException If the property method cannot be executed
      */
     @SuppressWarnings("unchecked")
     public void inject(Object object,
                        String propertyName, Object propertyValue, String propertyType,
                        boolean includeFields)
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (object == null)
             throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Object"));
 
@@ -119,13 +121,13 @@ public class Injection {
             Object parameterValue = null;
             try {
                 parameterValue = getValue(propertyName, parameterClass, propertyValue,
-                                          object.getClass().getClassLoader());
+                        SecurityActions.getClassLoader(object.getClass()));
             } catch (Throwable t) {
                 throw new InvocationTargetException(t, t.getMessage());
             }
 
             if (!parameterClass.isPrimitive() || parameterValue != null)
-                method.invoke(object, new Object[] {parameterValue});
+                method.invoke(object, new Object[]{parameterValue});
         } else {
             if (!includeFields)
                 throw ConnectorLogger.ROOT_LOGGER.noSuchMethod(methodName);
@@ -138,7 +140,7 @@ public class Injection {
                 Object fieldValue = null;
                 try {
                     fieldValue = getValue(propertyName, fieldClass, propertyValue,
-                                          object.getClass().getClassLoader());
+                            SecurityActions.getClassLoader(object.getClass()));
                 } catch (Throwable t) {
                     throw new InvocationTargetException(t, t.getMessage());
                 }
@@ -151,44 +153,45 @@ public class Injection {
     }
 
     /**
-     * Compare a class name to the argument type of a Method, taking account of primitives
-     * @param propertyType the class name to check
-     * @param methodPropertyType the actual type of the property in the method
-     * @return <code>true</code> if they match
+     * Compare the type of a class with the actual value
+     *
+     * @param classType    The class type
+     * @param propertyType The property type
+     * @return True if they match, or if there is a primitive mapping
      */
-    private boolean argumentMatches(String classType, String methodArgumentType)
-    {
-        return (classType.equals(methodArgumentType))
-            || (classType.equals("java.lang.Byte") && methodArgumentType.equals("byte"))
-            || (classType.equals("java.lang.Short") && methodArgumentType.equals("short"))
-            || (classType.equals("java.lang.Integer") && methodArgumentType.equals("int"))
-            || (classType.equals("java.lang.Long") && methodArgumentType.equals("long"))
-            || (classType.equals("java.lang.Float") && methodArgumentType.equals("float"))
-            || (classType.equals("java.lang.Double") && methodArgumentType.equals("double"))
-            || (classType.equals("java.lang.Boolean") && methodArgumentType.equals("boolean"))
-            || (classType.equals("java.lang.Character") && methodArgumentType.equals("char"))
-            ;
+    private boolean argumentMatches(String classType, String propertyType) {
+        return (classType.equals(propertyType))
+                || (classType.equals("java.lang.Byte") && propertyType.equals("byte"))
+                || (classType.equals("java.lang.Short") && propertyType.equals("short"))
+                || (classType.equals("java.lang.Integer") && propertyType.equals("int"))
+                || (classType.equals("java.lang.Long") && propertyType.equals("long"))
+                || (classType.equals("java.lang.Float") && propertyType.equals("float"))
+                || (classType.equals("java.lang.Double") && propertyType.equals("double"))
+                || (classType.equals("java.lang.Boolean") && propertyType.equals("boolean"))
+                || (classType.equals("java.lang.Character") && propertyType.equals("char"));
     }
 
     /**
      * Find a method
-     * @param clz The class
-     * @param methodName The method name
+     *
+     * @param clz          The class
+     * @param methodName   The method name
      * @param propertyType The property type; can be <code>null</code>
      * @return The method; <code>null</code> if not found
      */
     protected Method findMethod(Class<?> clz, String methodName, String propertyType) {
         while (!clz.equals(Object.class)) {
             List<Method> hits = null;
-            Method[] methods = clz.getDeclaredMethods();
+            Method[] methods = SecurityActions.getDeclaredMethods(clz);
             for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
+                final Method method = methods[i];
                 if (methodName.equals(method.getName()) && method.getParameterTypes().length == 1) {
-                    if (propertyType == null || argumentMatches(propertyType,method.getParameterTypes()[0].getName())) {
+                    if (propertyType == null || argumentMatches(propertyType, method.getParameterTypes()[0].getName())) {
                         if (hits == null)
                             hits = new ArrayList<Method>(1);
 
-                        method.setAccessible(true);
+                        SecurityActions.setAccessible(method);
+
                         hits.add(method);
                     }
                 }
@@ -218,7 +221,8 @@ public class Injection {
 
     /**
      * Find a field
-     * @param clz The class
+     *
+     * @param clz       The class
      * @param fieldName The field name
      * @param fieldType The field type; can be <code>null</code>
      * @return The field; <code>null</code> if not found
@@ -226,15 +230,16 @@ public class Injection {
     protected Field findField(Class<?> clz, String fieldName, String fieldType) {
         while (!clz.equals(Object.class)) {
             List<Field> hits = null;
-            Field[] fields = clz.getDeclaredFields();
+            Field[] fields = SecurityActions.getDeclaredFields(clz);
             for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
+                final Field field = fields[i];
                 if (fieldName.equals(field.getName())) {
-                    if (fieldType == null || fieldType.equals(field.getType().getName())) {
+                    if (fieldType == null || argumentMatches(fieldType, field.getType().getName())) {
                         if (hits == null)
                             hits = new ArrayList<Field>(1);
 
-                        field.setAccessible(true);
+                        SecurityActions.setAccessible(field);
+
                         hits.add(field);
                     }
                 }
@@ -264,16 +269,17 @@ public class Injection {
 
     /**
      * Get the value
+     *
      * @param name The value name
-     * @param clz The value class
-     * @param v The value
-     * @param cl The class loader
+     * @param clz  The value class
+     * @param v    The value
+     * @param cl   The class loader
      * @return The substituted value
-     * @exception Exception Thrown in case of an error
+     * @throws Exception Thrown in case of an error
      */
     protected Object getValue(String name, Class<?> clz, Object v, ClassLoader cl) throws Exception {
         if (v instanceof String) {
-            String substituredValue = getSubstitutionValue((String)v);
+            String substituredValue = getSubstitutionValue((String) v);
 
             if (clz.equals(String.class)) {
                 v = substituredValue;
@@ -331,13 +337,13 @@ public class Injection {
                 v = prop;
             } else {
                 try {
-                    Constructor<?> constructor = clz.getConstructor(String.class);
+                    Constructor<?> constructor = SecurityActions.getConstructor(clz, String.class);
                     v = constructor.newInstance(substituredValue);
                 } catch (Throwable t) {
                     // Try static String valueOf method
                     try {
-                        Method valueOf = clz.getMethod("valueOf", String.class);
-                        v = valueOf.invoke((Object)null, substituredValue);
+                        Method valueOf = SecurityActions.getMethod(clz, "valueOf", String.class);
+                        v = valueOf.invoke((Object) null, substituredValue);
                     } catch (Throwable inner) {
                         throw ConnectorLogger.ROOT_LOGGER.noPropertyResolution(name);
                     }
@@ -350,6 +356,7 @@ public class Injection {
 
     /**
      * System property substitution
+     *
      * @param input The input string
      * @return The output
      */
@@ -376,10 +383,10 @@ public class Injection {
                 } else if (":".equals(s)) {
                     systemProperty = File.pathSeparator;
                 } else {
-                    systemProperty = WildFlySecurityManager.getPropertyPrivileged(s, null);
+                    systemProperty = SecurityActions.getSystemProperty(s);
                 }
             } else {
-                systemProperty = WildFlySecurityManager.getPropertyPrivileged(input.substring(from + 2, dv), null);
+                systemProperty = SecurityActions.getSystemProperty(input.substring(from + 2, dv));
                 defaultValue = input.substring(dv + 1, to);
             }
             String prefix = "";
@@ -395,7 +402,7 @@ public class Injection {
 
             if (systemProperty != null && !systemProperty.trim().equals("")) {
                 input = prefix + systemProperty + postfix;
-            } else if (defaultValue != null && !defaultValue.trim().equals("")) {
+            } else if (!defaultValue.trim().equals("")) {
                 input = prefix + defaultValue + postfix;
             } else {
                 input = prefix + postfix;
@@ -407,7 +414,8 @@ public class Injection {
     /**
      * Method sorter
      */
-    static class MethodSorter implements Comparator<Method> {
+    static class MethodSorter implements Comparator<Method>, Serializable {
+        private static final long serialVersionUID = 1L;
 
         /**
          * Constructor
@@ -467,7 +475,8 @@ public class Injection {
     /**
      * Field sorter
      */
-    static class FieldSorter implements Comparator<Field> {
+    static class FieldSorter implements Comparator<Field>, Serializable {
+        private static final long serialVersionUID = 1L;
 
         /**
          * Constructor
@@ -524,3 +533,4 @@ public class Injection {
         }
     }
 }
+

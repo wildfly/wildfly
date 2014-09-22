@@ -52,6 +52,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -162,6 +164,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                         dataSourceService.getDriverRegistryInjector())
                 .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
+                .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
                 .addDependency(NamingService.SERVICE_NAME);
         if (jta) {
             dataSourceServiceBuilder.addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class, dataSourceService.getTransactionIntegrationInjector())

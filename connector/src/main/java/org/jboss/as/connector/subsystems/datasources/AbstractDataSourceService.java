@@ -29,6 +29,7 @@ import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
+import org.jboss.jca.adapters.jdbc.JDBCResourceAdapter;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.spi.ClassLoaderPlugin;
 import org.jboss.jca.adapters.jdbc.xa.XAManagedConnectionFactory;
@@ -63,8 +65,12 @@ import org.jboss.jca.common.metadata.ds.DatasourcesImpl;
 import org.jboss.jca.common.metadata.ds.DriverImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.AbstractDsDeployer;
@@ -101,6 +107,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
+    private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
+
 
     private final String jndiName;
 
@@ -162,18 +171,35 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected synchronized void stopService() {
         if (deploymentMD != null) {
 
-            if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
-                for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
-                    managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
+            if (deploymentMD.getResourceAdapterKey() != null) {
+                try {
+                    raRepository.getValue().unregisterResourceAdapter(deploymentMD.getResourceAdapterKey());
+                } catch (org.jboss.jca.core.spi.rar.NotFoundException nfe) {
+                    ConnectorLogger.ROOT_LOGGER.exceptionDuringUnregistering(nfe);
                 }
             }
 
-            if (deploymentMD.getConnectionManagers() != null) {
-                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
-                    cm.shutdown();
-                }
+            if (deploymentMD.getResourceAdapter() != null) {
+                deploymentMD.getResourceAdapter().stop();
+
+                BootstrapContextCoordinator.getInstance().removeBootstrapContext(deploymentMD.getBootstrapContextIdentifier());
+            }
+
+
+        }
+
+        if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
+            for (org.jboss.jca.core.api.management.DataSource mgtDs : deploymentMD.getDataSources()) {
+                managementRepositoryValue.getValue().getDataSources().remove(mgtDs);
             }
         }
+
+        if (deploymentMD.getConnectionManagers() != null) {
+            for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                cm.shutdown();
+            }
+        }
+
 
         sqlDataSource = null;
 
@@ -214,6 +240,15 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     public Injector<ExecutorService> getExecutorServiceInjector() {
         return executor;
     }
+
+    public Injector<MetadataRepository> getMdrInjector() {
+            return mdr;
+        }
+
+    public Injector<ResourceAdapterRepository> getRaRepositoryInjector() {
+            return raRepository;
+        }
+
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
         final StringBuffer valueBuf = new StringBuffer();
@@ -368,11 +403,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         @Override
-        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
+        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
             if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
-                return subjectFactory.getValue();
+                return new PicketBoxSubjectFactory(subjectFactory.getValue());
             }
         }
 
@@ -448,7 +483,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
 
             setMcfProperties(xaManagedConnectionFactory, xaDataSourceConfig, xaDataSourceConfig.getStatement());
-            xaManagedConnectionFactory.setTransactionSynchronizationRegistry(getTransactionIntegration().getTransactionSynchronizationRegistry());
             return xaManagedConnectionFactory;
 
         }
@@ -456,10 +490,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected ManagedConnectionFactory createMcf(org.jboss.jca.common.api.metadata.ds.DataSource arg0, String arg1,
                 ClassLoader arg2) throws NotFoundException, DeployException {
-            final WildFlyLocalMCF managedConnectionFactory = new WildFlyLocalMCF();
-            if (dataSourceConfig.isJTA()) {
-                managedConnectionFactory.setTransactionSynchronizationRegistry(getTransactionIntegration().getTransactionSynchronizationRegistry());
-            }
+            final LocalManagedConnectionFactory managedConnectionFactory = new LocalManagedConnectionFactory();
             managedConnectionFactory.setDriverClass(dataSourceConfig.getDriverClass());
 
             if (dataSourceConfig.getUrlDelimiter() != null) {
@@ -600,6 +631,22 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             return DEPLOYERS_LOGGER;
         }
 
+        @Override
+        protected javax.resource.spi.ResourceAdapter createRa(String uniqueId, ClassLoader cl) throws NotFoundException, DeployException {
+
+            List<? extends ConfigProperty> l = new ArrayList<ConfigProperty>();
+
+            javax.resource.spi.ResourceAdapter rar =
+                    (javax.resource.spi.ResourceAdapter) initAndInject(JDBCResourceAdapter.class.getName(), l, cl);
+
+            return rar;
+        }
+
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+            return raRepository.getValue().registerResourceAdapter(instance);
+        }
+
     }
 
     private class WildFlyXaMCF extends XAManagedConnectionFactory {
@@ -610,22 +657,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             xaProps.putAll(inputProperties);
         }
 
-        public void setTransactionSynchronizationRegistry(javax.transaction.TransactionSynchronizationRegistry tsr) {
-            super.setTransactionSynchronizationRegistry(tsr);
-        }
-
-
     }
 
-    private class WildFlyLocalMCF extends LocalManagedConnectionFactory {
-
-        private static final long serialVersionUID = 4876371551002746953L;
-
-
-        public void setTransactionSynchronizationRegistry(javax.transaction.TransactionSynchronizationRegistry tsr) {
-            super.setTransactionSynchronizationRegistry(tsr);
-        }
-
-
-    }
 }

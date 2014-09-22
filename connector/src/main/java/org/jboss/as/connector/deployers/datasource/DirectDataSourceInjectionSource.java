@@ -64,6 +64,8 @@ import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
+import org.jboss.jca.core.spi.mdr.MetadataRepository;
+import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -236,8 +238,10 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append("DataSourceDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
         final ServiceBuilder<?> dataSourceServiceBuilder =
                 Services.addServerExecutorDependency(
-                    serviceTarget.addService(dataSourceServiceName, dataSourceService),
+                        serviceTarget.addService(dataSourceServiceName, dataSourceService),
                         dataSourceService.getExecutorServiceInjector(), false)
+                .addDependency(ConnectorServices.IRONJACAMAR_MDR, MetadataRepository.class, dataSourceService.getMdrInjector())
+                .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, dataSourceService.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
