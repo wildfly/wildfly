@@ -1540,7 +1540,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             ParseUtils.requireNoContent(reader);
 
             // create the connector node
-            connectors.get(name);
+            connectors.add(name);
         }
         return connectors;
     }

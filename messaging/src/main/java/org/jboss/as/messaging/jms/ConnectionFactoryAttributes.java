@@ -49,7 +49,7 @@ import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.AttributeMarshallers;
@@ -124,30 +124,28 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(MILLISECONDS)
                 .build();
 
-        AttributeDefinition CONNECTOR = new SimpleMapAttributeDefinition.Builder(CommonAttributes.CONNECTOR, true)
+        AttributeDefinition CONNECTOR = new StringListAttributeDefinition.Builder(CommonAttributes.CONNECTOR)
                 .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
+                .setAllowNull(true)
                 .setAttributeMarshaller(AttributeMarshallers.CONNECTORS_MARSHALLER)
                 .setCorrector(new ParameterCorrector() {
                     /*
-                     * https://issues.jboss.org/browse/WFLY-1796
+                     * https://issues.jboss.org/browse/WFLY-3883
                      *
-                     * For backwards compatibility, the connector attribute must be a map where the key is a
-                     * connector name and the value is not taken into account (in previous HornetQ versions, the value
-                     * was the backup's server connector).
+                     * For backwards compatibility, the connector attribute can be accepted when it is an
+                     * OBJECT where only the keys are meaningful and the value is not taken into account.
+                     * In that case, we convert it to the expected LIST of STRING.
                      *
-                     * This is a source of confusion when creating resources with connector: users expect to pass a
-                     * list of connectors and this fails as they must pass a map with undefined values.
-                     *
-                     * This corrector will replace a list with the map expected to populate the model.
+                     * This converter ensures that legacy operations can still be executed by the latest version.
                      */
                     @Override
                     public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
-                        if (newValue.getType() != ModelType.LIST) {
+                        if (newValue.getType() != ModelType.OBJECT) {
                             return newValue;
                         } else {
                             ModelNode correctValue = new ModelNode();
-                            for (ModelNode node : newValue.asList()) {
-                                correctValue.get(node.asString());
+                            for (String connectorRef : newValue.keys()) {
+                                correctValue.add(connectorRef);
                             }
                             return correctValue;
                         }

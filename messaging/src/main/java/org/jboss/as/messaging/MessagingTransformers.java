@@ -117,6 +117,27 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
+
+        // WFLY-3883: Convert connector attribute from a LIST of STRING to an OBJECT (where only the key are meaningful)
+        AttributeConverter connectorConverter = new AttributeConverter.DefaultAttributeConverter() {
+            @Override
+            protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                if (!attributeValue.isDefined()) {
+                    return;
+                }
+                ModelNode newValue = new ModelNode();
+                for (ModelNode connectorRef : attributeValue.asList()) {
+                    newValue.get(connectorRef.asString());
+                }
+                attributeValue.set(newValue);
+            }
+        };
+
+        final ResourceTransformationDescriptionBuilder connectionFactory = hornetqServer.addChildResource(ConnectionFactoryDefinition.PATH);
+        connectionFactory.getAttributeBuilder().setValueConverter(connectorConverter , Common.CONNECTOR);
+
+        final ResourceTransformationDescriptionBuilder pooledConnectionFactory = hornetqServer.addChildResource(PooledConnectionFactoryDefinition.PATH);
+        pooledConnectionFactory.getAttributeBuilder().setValueConverter(connectorConverter, Common.CONNECTOR);
     }
 
     /**

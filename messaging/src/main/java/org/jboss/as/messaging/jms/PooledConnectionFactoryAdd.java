@@ -127,8 +127,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
     static List<String> getConnectors(final ModelNode model) {
         List<String> connectorNames = new ArrayList<String>();
         if (model.hasDefined(CONNECTOR)) {
-            for (String connectorName : model.get(CONNECTOR).keys()) {
-                connectorNames.add(connectorName);
+            for (ModelNode connectorRef : model.get(CONNECTOR).asList()) {
+                connectorNames.add(connectorRef.asString());
             }
         }
         return connectorNames;
