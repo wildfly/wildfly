@@ -64,4 +64,7 @@ abstract class AbstractDeployment {
         }
     }
 
+    public boolean contains(String urlPattern) {
+        return urlPatternToClassMapping.keySet().contains((urlPattern));
+    }
 }
