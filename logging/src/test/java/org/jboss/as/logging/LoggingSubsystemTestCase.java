@@ -122,6 +122,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
+
     @Test
     public void testFailedTransformedBootOperationsEAP620() throws Exception {
         testFailedTransformedBootOperations1_3_0(ModelTestControllerVersion.EAP_6_2_0);
@@ -138,9 +139,9 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // Create the legacy kernel
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
-                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-                //which is strange since it should be loading it all from the current jboss modules
-                //Also this works in several other tests
+                        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                        //which is strange since it should be loading it all from the current jboss modules
+                        //Also this works in several other tests
                 .dontPersistXml()
                 .configureReverseControllerCheck(LoggingTestEnvironment.getManagementInstance(), null);
 
@@ -159,9 +160,9 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // Create the legacy kernel
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
-                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-                //which is strange since it should be loading it all from the current jboss modules
-                //Also this works in several other tests
+                        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                        //which is strange since it should be loading it all from the current jboss modules
+                        //Also this works in several other tests
                 .dontPersistXml();
 
 
@@ -199,6 +200,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH),
                                 FailedOperationTransformationConfig.ChainedConfig.createBuilder(SizeRotatingHandlerResourceDefinition.ATTRIBUTES)
                                         .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT))
+                                        .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(SizeRotatingHandlerResourceDefinition.SUFFIX))
                                         .addConfig(new RejectExpressionsConfig(SizeRotatingHandlerResourceDefinition.ATTRIBUTES))
                                         .build())
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH),
@@ -223,7 +225,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                                                           );
+        );
     }
 
     private void testTransformer1_3_0(final ModelTestControllerVersion controllerVersion) throws Exception {
@@ -279,11 +281,13 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PeriodicSizeRotatingHandlerResourceDefinition.PERIODIC_SIZE_ROTATING_FILE_HANDLER),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH),
+                                        new FailedOperationTransformationConfig.NewAttributesConfig(SizeRotatingHandlerResourceDefinition.SUFFIX))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 new NewAttributesConfig(FileHandlerResourceDefinition.NAMED_FORMATTER))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                                                           );
+        );
     }
 
     private void testTransformOperations(final KernelServices mainServices, final ModelVersion modelVersion, final ModelNode legacyModel) throws Exception {
@@ -469,14 +473,12 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                 for (Property property : modelNode.asPropertyList()) {
                     final String name = property.getName();
                     final ModelNode value = property.getValue();
-                    if (value.isDefined()) {
-                        if (value.getType() == ModelType.OBJECT) {
-                            modelNode.get(name).set(fixModel(value));
-                        } else {
-                            for (AttributeDefinition attribute : attributes) {
-                                if (name.equals(attribute.getName())) {
-                                    modelNode.remove(name);
-                                }
+                    if (value.getType() == ModelType.OBJECT) {
+                        modelNode.get(name).set(fixModel(value));
+                    } else {
+                        for (AttributeDefinition attribute : attributes) {
+                            if (name.equals(attribute.getName())) {
+                                modelNode.remove(name);
                             }
                         }
                     }

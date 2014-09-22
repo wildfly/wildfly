@@ -270,6 +270,7 @@
             <xs:element name="file" type="pathType"/>
             <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>
             <xs:element name="max-backup-index" type="positiveIntType" minOccurs="0"/>
+            <xs:element name="suffix" type="valueType" minOccurs="0"/>
             <xs:element name="append" type="booleanValueType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>

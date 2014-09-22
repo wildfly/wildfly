@@ -110,6 +110,7 @@
         <rotate-size value="64m"/>
         <max-backup-index value="1024"/>
         <append value="false"/>
+        <suffix value=".yyyy-MM-dd'T'HH:mm:ssZ"/>
     </size-rotating-file-handler>
 
     <syslog-handler name="syslog" enabled="false">

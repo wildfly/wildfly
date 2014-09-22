@@ -958,6 +958,15 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     MAX_BACKUP_INDEX.parseAndSetParameter(readStringAttributeElement(reader, "value"), node, reader);
                     break;
                 }
+                case SUFFIX: {
+                    if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                            namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3 ||
+                            namespace == Namespace.LOGGING_1_4) {
+                        throw unexpectedElement(reader);
+                    }
+                    SizeRotatingHandlerResourceDefinition.SUFFIX.parseAndSetParameter(readValueAttribute(reader), node, reader);
+                    break;
+                }
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -1766,6 +1775,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         ROTATE_SIZE.marshallAsElement(node, writer);
         MAX_BACKUP_INDEX.marshallAsElement(node, writer);
         APPEND.marshallAsElement(node, writer);
+        SizeRotatingHandlerResourceDefinition.SUFFIX.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }

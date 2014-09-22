@@ -479,7 +479,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
         // Disable the handler
         final ModelNode handlerAddress = createFileHandlerAddress(profileName, fileHandlerName).toModelNode();
-        ModelNode disableOp = legacy ? Util.getEmptyOperation(AbstractHandlerDefinition.DISABLE_HANDLER.getName(), handlerAddress)
+        ModelNode disableOp = legacy ? Util.getEmptyOperation("disable", handlerAddress)
                                      : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, false);
         executeOperation(kernelServices, disableOp);
 
@@ -498,7 +498,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         assertEquals("Handler was not disable.", 3, lines.size());
 
         // Re-enable the handler
-        ModelNode enableOp = legacy ? Util.getEmptyOperation(AbstractHandlerDefinition.ENABLE_HANDLER.getName(), handlerAddress)
+        ModelNode enableOp = legacy ? Util.getEmptyOperation("enable", handlerAddress)
                 : SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.ENABLED, true);
         executeOperation(kernelServices, enableOp);
 

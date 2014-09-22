@@ -36,13 +36,15 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class SuffixValidator extends ModelTypeValidator {
+    private final boolean denySeconds;
 
     public SuffixValidator() {
-        this(false);
+        this(false, true);
     }
 
-    public SuffixValidator(final boolean nullable) {
+    public SuffixValidator(final boolean nullable, final boolean denySeconds) {
         super(ModelType.STRING, nullable);
+        this.denySeconds = denySeconds;
     }
 
     @Override
@@ -51,10 +53,10 @@ public class SuffixValidator extends ModelTypeValidator {
         if (value.isDefined()) {
             final String suffix = value.asString();
             try {
-                new SimpleDateFormat(suffix);
-                if (suffix.contains("s") || suffix.contains("S")) {
+                if (denySeconds && (suffix.contains("s") || suffix.contains("S"))) {
                     throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
                 }
+                new SimpleDateFormat(suffix);
             } catch (IllegalArgumentException e) {
                 throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
             }
