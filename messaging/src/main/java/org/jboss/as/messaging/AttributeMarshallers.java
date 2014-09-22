@@ -76,9 +76,9 @@ public final class AttributeMarshallers {
         public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (resourceModel.hasDefined(Element.CONNECTOR.getLocalName())) {
                 writer.writeStartElement(Element.CONNECTORS.getLocalName());
-                for (Property connProp : resourceModel.get(Element.CONNECTOR.getLocalName()).asPropertyList()) {
+                for (ModelNode connector : resourceModel.get(Element.CONNECTOR.getLocalName()).asList()) {
                     writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
-                    writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
+                    writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connector.asString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
