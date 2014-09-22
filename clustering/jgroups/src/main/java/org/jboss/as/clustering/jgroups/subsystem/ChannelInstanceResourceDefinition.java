@@ -105,7 +105,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
 
         // set up the operation for the step
         PathAddress rootSubsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
-        ModelNode registerProtocolsOp = Util.createOperation("some_operation_name", rootSubsystemAddress);
+        ModelNode registerProtocolsOp = Util.createOperation("register-protocol-metrics", rootSubsystemAddress);
         if (stackName != null)
             registerProtocolsOp.get(ModelKeys.STACK).set(new ModelNode(stackName));
         registerProtocolsOp.get(MetricKeys.CHANNEL).set(new ModelNode(channelName));

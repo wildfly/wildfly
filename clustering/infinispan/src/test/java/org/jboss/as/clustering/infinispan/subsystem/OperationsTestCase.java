@@ -39,9 +39,9 @@ public class OperationsTestCase extends OperationTestCaseBase {
     // TODO
 
     // cache store test operations
-    static final ModelNode readDistCacheMixedJDBCStoreDatastoreOp = getMixedKeyedJDBCCacheStoreReadOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "datasource");
-    static final ModelNode writeDistCacheFileStoreDatastoreOp = getMixedKeyedJDBCCacheStoreWriteOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "datasource", "new-datasource");
-    static final ModelNode readDistCacheMixedJDBCStoreStringKeyedTableOp = getMixedKeyedJDBCCacheStoreReadOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "string-keyed-table");
+    static final ModelNode readDistCacheMixedJDBCStoreDatastoreOp = getMixedKeyedJDBCCacheStoreReadOperation("maximal", ModelKeys.LOCAL_CACHE, "jdbc", "datasource");
+    static final ModelNode writeDistCacheFileStoreDatastoreOp = getMixedKeyedJDBCCacheStoreWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "jdbc", "datasource", "new-datasource");
+    static final ModelNode readDistCacheMixedJDBCStoreStringKeyedTableOp = getMixedKeyedJDBCCacheStoreReadOperation("maximal", ModelKeys.LOCAL_CACHE, "jdbc", "string-keyed-table");
     // static final ModelNode writeDistCacheFileStoreStringKeyedTableOp = getMixedKeyedJDBCCacheStoreWriteOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "dist", "string-keyed-table", "new-datasource");
 
     /*
@@ -52,7 +52,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADMIN_ONLY_INIT).setSubsystemXml(subsystemXml).build();
 
         // read the cache container default cache attribute
         ModelNode result = servicesA.executeOperation(readCacheContainerDefaultCacheOp);
@@ -77,9 +77,9 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADMIN_ONLY_INIT).setSubsystemXml(subsystemXml).build();
 
-        String initialValue = "EAGER";
+        String initialValue = "LAZY";
         ModelNode readOperation = getCacheReadOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START);
 
         // read the cache container batching attribute
@@ -87,7 +87,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(initialValue, result.get(RESULT).asString());
 
-        String newValue = "LAZY";
+        String newValue = "EAGER";
         ModelNode writeOperation = getCacheWriteOperation("maximal", ModelKeys.LOCAL_CACHE, "local", ModelKeys.START, newValue);
 
         // write the batching attribute
@@ -104,13 +104,13 @@ public class OperationsTestCase extends OperationTestCaseBase {
      * Tests access to local cache attributes
      */
     @Test
-    public void testDistributedCacheMixedJDBCStoreReadWriteOperation() throws Exception {
+    public void testLocalCacheMixedJDBCStoreReadWriteOperation() throws Exception {
 
         ModelNode stringKeyedTable = createStringKeyedTable() ;
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADMIN_ONLY_INIT).setSubsystemXml(subsystemXml).build();
 
         // read the distributed cache mixed-keyed-jdbc-store datasource attribute
         ModelNode result = servicesA.executeOperation(readDistCacheMixedJDBCStoreDatastoreOp);
@@ -163,7 +163,7 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADMIN_ONLY_INIT).setSubsystemXml(subsystemXml).build();
 
         // add the distributed cache with virtual-nodes = 6, should lead to segments value of 36 (6*6)
         ModelNode distCacheAddOp = getCacheAddOperation("maximal", ModelKeys.DISTRIBUTED_CACHE, "new-dist-cache");

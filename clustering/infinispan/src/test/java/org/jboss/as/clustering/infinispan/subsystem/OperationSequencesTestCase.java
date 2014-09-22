@@ -26,7 +26,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -58,7 +58,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -90,7 +90,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
     public void testCacheContainerRemoveRollback() throws Exception {
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -126,7 +126,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
         ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
@@ -149,7 +149,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
         ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
