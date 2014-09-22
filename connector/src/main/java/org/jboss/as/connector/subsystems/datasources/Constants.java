@@ -265,6 +265,8 @@ public class Constants {
                             String str = value.asString();
                             if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
                                 throw ConnectorLogger.ROOT_LOGGER.jndiNameInvalidFormat();
+                            } else if (str.endsWith("/") || str.indexOf("//") != -1) {
+                                throw ConnectorLogger.ROOT_LOGGER.jndiNameShouldValidate();
                             }
                         }
                     } else {

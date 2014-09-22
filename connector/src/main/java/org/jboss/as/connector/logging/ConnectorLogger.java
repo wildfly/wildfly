@@ -838,6 +838,8 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 89, value = "Exception during unregistering deployment")
     void exceptionDuringUnregistering(@Cause org.jboss.jca.core.spi.rar.NotFoundException nfe);
 
+    @Message(id = 90, value = "Jndi name shouldn't include '//' or end with '/'")
+    OperationFailedException jndiNameShouldValidate();
 }
 
 
