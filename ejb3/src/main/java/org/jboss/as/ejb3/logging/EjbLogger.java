@@ -85,7 +85,6 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
 import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -462,8 +461,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 43, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s. Timer was in state %s.")
-    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime, TimerState state);
+    @Message(id = 43, value = "A previous execution of timer %s is still in progress, skipping this overlapping scheduled execution at: %s.")
+    void skipOverlappingInvokeTimeout(Timer timer, Date scheduledTime);
 
     /**
      * Returns a {@link IllegalStateException} indicating that {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
@@ -893,8 +892,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 162, value = "A previous execution of timer [%s %s] is being retried, skipping this scheduled execution at: %s")
-    void skipInvokeTimeoutDuringRetry(String timedObjectId, String timerId, Date scheduledTime);
+    @Message(id = 162, value = "A previous execution of timer %s is being retried, skipping this scheduled execution at: %s")
+    void skipInvokeTimeoutDuringRetry(Timer timer, Date scheduledTime);
 
     @LogMessage(level = ERROR)
     @Message(id = 163, value = "Cannot create table for timer persistence")
@@ -902,7 +901,7 @@ public interface EjbLogger extends BasicLogger {
 
     @LogMessage(level = ERROR)
     @Message(id = 164, value = "Exception running timer task for timer %s on EJB %s")
-    void exceptionRunningTimerTask(String timerId, String timedObjectId, @Cause  Exception e);
+    void exceptionRunningTimerTask(Timer timer, String timedObjectId, @Cause  Exception e);
 
     @LogMessage(level = ERROR)
     @Message(id = 165, value = "Error during transaction recovery")
@@ -2009,7 +2008,7 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 300, value = "Timer service with timedObjectId: %s%n is already registered")
+    @Message(id = 300, value = "Timer service with timedObjectId: %s is already registered")
     IllegalStateException timerServiceAlreadyRegistered(String timedObjectId);
 
     /**
@@ -2955,8 +2954,8 @@ public interface EjbLogger extends BasicLogger {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 446, value = "The timer '%s' is already active.")
-    IllegalStateException timerIsActive(String timerId);
+    @Message(id = 446, value = "The timer %s is already active.")
+    IllegalStateException timerIsActive(Timer timer);
 
     @Message(id = 447, value = "Transaction '%s' was already rolled back")
     RollbackException transactionAlreadyRolledBack(Transaction tx);
@@ -2977,8 +2976,8 @@ public interface EjbLogger extends BasicLogger {
     XMLStreamException unexpectedEndOfDocument(@Param Location location);
 
     @LogMessage(level = ERROR)
-    @Message(id = 453, value = "Failed to persist timer %s for object %s")
-    void failedToPersistTimer(String id, String timedObjectId, @Cause Exception e);
+    @Message(id = 453, value = "Failed to persist timer %s")
+    void failedToPersistTimer(Timer timerid, @Cause Exception e);
 
     @Message(id = 454, value = "Only one instance on <container-transaction> with an ejb-name of * can be present.")
     DeploymentUnitProcessingException mustOnlyBeSingleContainerTransactionElementWithWildcard();
