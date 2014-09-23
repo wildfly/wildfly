@@ -210,7 +210,6 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                                 MethodInvocationMessageHandler.this.writeNoSuchEJBFailureMessage(channelAssociation, invocationId, appName, moduleName, distinctName, beanName, viewClassName);
                             } else {
                                 // write out the failure
-                                throwable.printStackTrace();
                                 MethodInvocationMessageHandler.this.writeException(channelAssociation, MethodInvocationMessageHandler.this.marshallerFactory, invocationId, throwable, attachments);
                             }
                         } catch (Throwable ioe) {
