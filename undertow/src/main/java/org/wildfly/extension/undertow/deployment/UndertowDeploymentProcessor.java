@@ -283,15 +283,16 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         if (sharedSessionManagerConfig != null) {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+            infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
             ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData);
             if (sessionManagerFactoryServiceName != null) {
                 infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
             }
-        }
 
-        ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
-        infoBuilder.addDependency(sessionIdentifierCodecServiceName, SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
+            ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
+            infoBuilder.addDependency(sessionIdentifierCodecServiceName, SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
+        }
 
         infoBuilder.install();
 
