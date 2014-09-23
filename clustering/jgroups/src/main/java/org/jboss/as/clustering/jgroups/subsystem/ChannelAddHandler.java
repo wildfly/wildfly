@@ -158,13 +158,17 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         ServiceTarget target = context.getServiceTarget();
         List<ServiceController<?>> controllers = new LinkedList<>();
 
-        controllers.add(new InjectedValueServiceBuilder(target).build(ChannelService.getStackServiceName(channelName), ChannelFactoryService.getServiceName(stackName), ChannelFactory.class).install());
+        controllers.add(new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(channelName), ChannelFactoryService.getServiceName(stackName), ChannelFactory.class).install());
 
         controllers.add(ChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install());
 
         controllers.add(ConnectedChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install());
 
         controllers.add(new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(channelName), ChannelService.getServiceName(channelName), Channel.class).install());
+
+        controllers.add(ForkChannelFactoryService.build(target, channelName).setInitialMode(ON_DEMAND).install());
+
+        controllers.add(new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(channelName), ChannelFactoryService.getServiceName(channelName), ChannelFactory.class).install());
 
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
             JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", installer.getClass().getSimpleName(), channelName);

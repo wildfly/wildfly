@@ -50,8 +50,8 @@ import org.jgroups.stack.ProtocolStack;
 import org.jgroups.util.SocketFactory;
 
 /**
+ * Factory for creating fork-able channels.
  * @author Paul Ferraro
- *
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
 
@@ -191,10 +191,10 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
      */
     @Override
     public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
-        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<>(this.configuration.getProtocols().size() + 1);
+        List<org.jgroups.conf.ProtocolConfiguration> stack = new ArrayList<>(this.configuration.getProtocols().size() + 1);
         TransportConfiguration transport = this.configuration.getTransport();
-        org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(transport);
-        Map<String, String> properties = config.getProperties();
+        org.jgroups.conf.ProtocolConfiguration protocol = createProtocol(this.configuration, transport);
+        Map<String, String> properties = protocol.getProperties();
 
         if (transport.isShared()) {
             properties.put(Global.SINGLETON_NAME, this.configuration.getName());
@@ -202,25 +202,35 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
         SocketBinding binding = transport.getSocketBinding();
         if (binding != null) {
-            configureBindAddress(transport, config, binding);
-            configureServerSocket(transport, config, "bind_port", binding);
-            configureMulticastSocket(transport, config, "mcast_addr", "mcast_port", binding);
+            configureBindAddress(transport, protocol, binding);
+            configureServerSocket(transport, protocol, "bind_port", binding);
+            configureMulticastSocket(transport, protocol, "mcast_addr", "mcast_port", binding);
         }
 
         SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
         boolean diagnostics = (diagnosticsSocketBinding != null);
         properties.put("enable_diagnostics", String.valueOf(diagnostics));
         if (diagnostics) {
-            configureMulticastSocket(transport, config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
+            configureMulticastSocket(transport, protocol, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
         }
 
-        configs.add(config);
+        stack.add(protocol);
+        stack.addAll(createProtocols(this.configuration));
+
+        return stack;
+    }
+
+    static List<org.jgroups.conf.ProtocolConfiguration> createProtocols(ProtocolStackConfiguration stack) {
+
+        List<ProtocolConfiguration> protocols = stack.getProtocols();
+        List<org.jgroups.conf.ProtocolConfiguration> result = new ArrayList<>(protocols.size());
+        TransportConfiguration transport = stack.getTransport();
 
         boolean supportsMulticast = transport.hasProperty("mcast_addr");
 
-        for (ProtocolConfiguration protocol: this.configuration.getProtocols()) {
-            config = this.createProtocol(protocol);
-            binding = protocol.getSocketBinding();
+        for (ProtocolConfiguration protocol: protocols) {
+            org.jgroups.conf.ProtocolConfiguration config = createProtocol(stack, protocol);
+            SocketBinding binding = protocol.getSocketBinding();
             if (binding != null) {
                 configureBindAddress(protocol, config, binding);
                 configureServerSocket(protocol, config, "bind_port", binding);
@@ -233,10 +243,22 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             if (!supportsMulticast) {
                 setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
             }
-            configs.add(config);
+            result.add(config);
         }
 
-        return configs;
+        return result;
+    }
+
+    private static org.jgroups.conf.ProtocolConfiguration createProtocol(ProtocolStackConfiguration stack, ProtocolConfiguration protocol) {
+        String protocolName = protocol.getName();
+        final Map<String, String> properties = new HashMap<>(stack.getDefaults().getProperties(protocolName));
+        properties.putAll(protocol.getProperties());
+        return new org.jgroups.conf.ProtocolConfiguration(protocolName, properties) {
+            @Override
+            public Map<String, String> getOriginalProperties() {
+                return properties;
+            }
+        };
     }
 
     private static void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
@@ -273,18 +295,6 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         if (protocol.hasProperty(name)) {
             config.getProperties().put(name, value);
         }
-    }
-
-    private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
-        String protocol = protocolConfig.getName();
-        final Map<String, String> properties = new HashMap<>(this.configuration.getDefaults().getProperties(protocol));
-        properties.putAll(protocolConfig.getProperties());
-        return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
-            @Override
-            public Map<String, String> getOriginalProperties() {
-                return properties;
-            }
-        };
     }
 
     private static void setValue(Protocol protocol, String property, Object value) {

@@ -41,9 +41,9 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
-import org.jboss.as.clustering.jgroups.subsystem.ForkChannelService;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.msc.InjectedValueServiceBuilder;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -173,16 +173,27 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             if (transport.isDefined()) {
                 transportConfig = new Transport();
 
-                String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport), ChannelService.DEFAULT);
+                String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport));
                 long lockTimeout = TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
                 transportExecutor = ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport));
 
                 transportConfig.setLockTimeout(lockTimeout);
                 transportConfig.setClusterName(name);
 
-                controllers.addAll(installChannelServices(target, name, channel, verificationHandler));
-
                 if (!name.equals(channel)) {
+                    controllers.add(new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install());
+
+                    controllers.add(ChannelService.build(target, name).setInitialMode(ON_DEMAND).install());
+
+                    if (channel == null) {
+                        // Transport uses the default channel - we need to find its actual name to locate the appropriate ChannelFactory service
+                        PathAddress jgroupsAddress = address.subAddress(0, address.size() - 2).append(JGroupsSubsystemResourceDefinition.PATH);
+                        ModelNode jgroupsModel = context.readResourceFromRoot(jgroupsAddress).getModel();
+                        channel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, jgroupsModel));
+                    }
+
+                    controllers.add(new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).install());
+
                     for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                         log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
                         Iterator<ServiceName> serviceNames = installer.getServiceNames(channel).iterator();
@@ -229,23 +240,6 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 .install();
     }
 
-    private static Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String channel, ServiceVerificationHandler verificationHandler) {
-        if (containerName.equals(channel)) return Collections.emptyList();
-
-        List<ServiceController<?>> controllers = new LinkedList<>();
-
-        ContextNames.BindInfo bindInfo = createChannelBinding(containerName);
-        ServiceName name = ChannelService.getServiceName(containerName);
-
-        controllers.add(new BinderServiceBuilder(target).build(bindInfo, name, Channel.class).install());
-
-        controllers.add(ForkChannelService.build(target, containerName, channel).setInitialMode(ON_DEMAND).install());
-
-        controllers.add(new InjectedValueServiceBuilder(target).build(ChannelService.getStackServiceName(containerName), ChannelService.getStackServiceName(channel), ChannelFactory.class).install());
-
-        return controllers;
-    }
-
     private static ServiceController<?> installContainerConfigurationService(ServiceTarget target,
             String containerName, String defaultCache, boolean statistics, ModuleIdentifier module, Transport transportConfig,
             String transportExecutor, String listenerExecutor, String evictionExecutor, String replicationQueueExecutor,
@@ -266,7 +260,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 addExecutorDependency(configBuilder, transportExecutor, transportConfig.getExecutorInjector());
             }
             configBuilder.addDependency(ChannelService.getServiceName(containerName), Channel.class, transportConfig.getChannelInjector());
-            configBuilder.addDependency(ChannelService.getStackServiceName(containerName), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
+            configBuilder.addDependency(ChannelService.getFactoryServiceName(containerName), ChannelFactory.class, transportConfig.getChannelFactoryInjector());
         }
 
         addExecutorDependency(configBuilder, listenerExecutor, dependencies.getListenerExecutorInjector());
@@ -315,10 +309,6 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     static ContextNames.BindInfo createCacheContainerBinding(String jndiName, String container) {
         JndiName name = (jndiName != null) ? JndiNameFactory.parse(jndiName) : JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "container", container);
         return ContextNames.bindInfoFor(name.getAbsoluteName());
-    }
-
-    static ContextNames.BindInfo createChannelBinding(String channel) {
-        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, "channel", channel).getAbsoluteName());
     }
 
     static class EmbeddedCacheManagerDependencies implements EmbeddedCacheManagerConfigurationService.Dependencies {

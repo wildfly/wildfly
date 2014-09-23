@@ -42,6 +42,7 @@ public class StackRemoveHandler extends AbstractRemoveStepHandler {
 
         // remove the ChannelFactoryServiceService
         context.removeService(ChannelFactoryService.getServiceName(name));
+        context.removeService(ChannelFactoryService.createChannelFactoryBinding(name).getBinderServiceName());
     }
 
     @Override

@@ -77,9 +77,9 @@ public class CacheContainerRemoveHandler extends AbstractRemoveStepHandler {
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             removeServices(context, ClusteredGroupServiceInstaller.class, containerName);
 
-            context.removeService(CacheContainerAddHandler.createChannelBinding(containerName).getBinderServiceName());
+            context.removeService(ChannelService.createChannelBinding(containerName).getBinderServiceName());
             context.removeService(ChannelService.getServiceName(containerName));
-            context.removeService(ChannelService.getStackServiceName(containerName));
+            context.removeService(ChannelService.getFactoryServiceName(containerName));
         } else {
             removeServices(context, LocalGroupServiceInstaller.class, containerName);
         }

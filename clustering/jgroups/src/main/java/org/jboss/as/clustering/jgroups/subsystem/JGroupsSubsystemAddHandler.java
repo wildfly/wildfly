@@ -78,7 +78,7 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
             controllers.add(builder.build(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).install());
             controllers.add(builder.build(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).install());
-            controllers.add(builder.build(ChannelService.getStackServiceName(ChannelService.DEFAULT), ChannelService.getStackServiceName(defaultChannel), ChannelFactory.class).install());
+            controllers.add(builder.build(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).install());
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
