@@ -29,6 +29,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
@@ -42,11 +43,23 @@ import org.wildfly.clustering.spi.GroupServiceInstaller;
  */
 public class ChannelRemoveHandler extends AbstractRemoveStepHandler {
 
+    private final boolean allowRuntimeOnlyRegistration;
+
+    ChannelRemoveHandler(boolean allowRuntimeOnlyRegistration) {
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
+    }
+
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        for (ResourceEntry entry: resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
-            context.removeResource(PathAddress.pathAddress(entry.getPathElement()));
+        PathAddress channelAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        String channelName = channelAddress.getLastElement().getValue();
+
+        if (this.allowRuntimeOnlyRegistration && (context.getRunningMode() == RunningMode.NORMAL)) {
+            Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            for (ResourceEntry entry: resource.getChildren(ProtocolResourceDefinition.WILDCARD_PATH.getKey())) {
+                context.removeResource(PathAddress.pathAddress(entry.getPathElement()));
+            }
+            context.getResourceRegistrationForUpdate().unregisterOverrideModel(channelName);
         }
 
         super.performRemove(context, operation, model);

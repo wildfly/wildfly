@@ -94,7 +94,6 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
             OperationStepHandler handler = new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    try {
                     PathAddress subsystemAddress = channelAddress.subAddress(0, channelAddress.size() - 1);
                     // Lookup the name of the default stack if necessary
                     PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.pathElement((stackName != null) ? stackName : JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, context.readResourceFromRoot(subsystemAddress).getModel()).asString()));
@@ -137,10 +136,6 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
                         resource.registerChild(ProtocolResourceDefinition.pathElement(relayName), PlaceholderResource.INSTANCE);
                     }
                     context.stepCompleted();
-                    } catch (OperationFailedException | RuntimeException e) {
-                        e.printStackTrace(System.err);
-                        throw e;
-                    }
                 }
             };
             context.addStep(handler, OperationContext.Stage.MODEL);

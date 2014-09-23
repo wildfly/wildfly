@@ -87,7 +87,7 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
     }
 
     JGroupsSubsystemResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, JGroupsExtension.getResourceDescriptionResolver(), new JGroupsSubsystemAddHandler(ATTRIBUTES), new JGroupsSubsystemRemoveHandler());
+        super(PATH, JGroupsExtension.getResourceDescriptionResolver(), new JGroupsSubsystemAddHandler(ATTRIBUTES), new JGroupsSubsystemRemoveHandler(allowRuntimeOnlyRegistration));
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

@@ -71,7 +71,7 @@ public class ChannelResourceDefinition extends SimpleResourceDefinition {
     private final boolean allowRuntimeOnlyRegistration;
 
     ChannelResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.CHANNEL), new ChannelAddHandler(allowRuntimeOnlyRegistration, ATTRIBUTES), new ChannelRemoveHandler());
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.CHANNEL), new ChannelAddHandler(allowRuntimeOnlyRegistration, ATTRIBUTES), new ChannelRemoveHandler(allowRuntimeOnlyRegistration));
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

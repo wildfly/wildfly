@@ -45,6 +45,12 @@ import org.wildfly.clustering.spi.GroupServiceInstaller;
  */
 public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
+    private final boolean allowRuntimeOnlyRegistration;
+
+    JGroupsSubsystemRemoveHandler(boolean allowRuntimeOnlyRegistration) {
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
+    }
+
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress subsystemAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -54,7 +60,7 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
             if (channels.isDefined()) {
                 for (Property channel: channels.asPropertyList()) {
                     PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(channel.getName()));
-                    context.addStep(Util.createRemoveOperation(address), new ChannelRemoveHandler(), OperationContext.Stage.MODEL);
+                    context.addStep(Util.createRemoveOperation(address), new ChannelRemoveHandler(this.allowRuntimeOnlyRegistration), OperationContext.Stage.MODEL);
                 }
             }
         }
