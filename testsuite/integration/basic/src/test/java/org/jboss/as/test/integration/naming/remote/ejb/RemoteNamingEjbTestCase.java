@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,6 +46,19 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import org.jboss.as.naming.subsystem.NamingExtension;
+import org.jboss.as.naming.subsystem.NamingSubsystemModel;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -61,6 +75,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RemoteNamingEjbTestCase {
     private static final String ARCHIVE_NAME = "test";
+    private static final String EXPORT_PREFIX = "java:jboss/exported/";
 
     @ArquillianResource
     private URL baseUrl;
@@ -71,7 +86,7 @@ public class RemoteNamingEjbTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(Remote.class, BinderRemote.class, Bean.class, Singleton.class, StatefulBean.class);
+        jar.addClasses(Remote.class, BinderRemote.class, Bean.class, Singleton.class, StatefulBean.class, ClusteredStatefulBean.class);
         return jar;
     }
 
@@ -109,6 +124,7 @@ public class RemoteNamingEjbTestCase {
             expected.add(Bean.class.getSimpleName() + "!" + Remote.class.getName());
             expected.add(Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             expected.add(StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+            expected.add(ClusteredStatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
 
             NamingEnumeration<NameClassPair> e = ctx.list("test");
             while (e.hasMore()) {
@@ -125,6 +141,43 @@ public class RemoteNamingEjbTestCase {
             ctx.close();
             Thread.currentThread().setContextClassLoader(current);
         }
+    }
+
+    @Test
+    public void testCustomLookup() throws Exception {
+        final InitialContext ctx = getRemoteContext();
+
+        String alias = ARCHIVE_NAME + "/CustomStateful";
+
+        // add custom binding
+        addLookupBinding(alias, EXPORT_PREFIX + ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+
+        try {
+            Remote bean = (Remote) ctx.lookup(alias);
+            bean.echo("test");
+        } finally {
+            removeLookupBinding(alias);
+            reload();
+        }
+
+    }
+
+    @Test
+    public void testCustomClusteredLookup() throws Exception {
+        final InitialContext ctx = getRemoteContext();
+
+        String alias = ARCHIVE_NAME + "/CustomClusteredStateful";
+        // add custom binding
+        addLookupBinding(alias, EXPORT_PREFIX + ARCHIVE_NAME + "/" + ClusteredStatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+
+        try {
+            Remote bean = (Remote) ctx.lookup(alias);
+            bean.echo("test");
+        } finally {
+            removeLookupBinding(alias);
+            reload();
+        }
+
     }
 
     @Test
@@ -238,4 +291,51 @@ public class RemoteNamingEjbTestCase {
             Thread.currentThread().setContextClassLoader(current);
         }
     }
+
+    private void addLookupBinding(final String alias, final String lookup) throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+        address.add(BINDING, EXPORT_PREFIX + alias);
+
+        final ModelNode bindingAdd = new ModelNode();
+        bindingAdd.get(OP).set(ADD);
+        bindingAdd.get(OP_ADDR).set(address);
+        bindingAdd.get(BINDING_TYPE).set(LOOKUP);
+        bindingAdd.get(LOOKUP).set(EXPORT_PREFIX + ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
+        ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
+        Assert.assertTrue(ModelDescriptionConstants.SUCCESS.equals(addResult.get(ModelDescriptionConstants.OUTCOME).asString()));
+    }
+
+    private void removeLookupBinding(final String alias) throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+        address.add(BINDING, EXPORT_PREFIX + alias);
+
+        final ModelNode bindingRemove = new ModelNode();
+        bindingRemove.get(OP).set(REMOVE);
+        bindingRemove.get(OP_ADDR).set(address);
+        ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
+        Assert.assertTrue(ModelDescriptionConstants.SUCCESS.equals(removeResult.get(ModelDescriptionConstants.OUTCOME).asString()));
+    }
+
+    private void reload() throws Exception {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("reload");
+        managementClient.getControllerClient().execute(operation);
+        boolean reloaded = false;
+        int i = 0;
+        while (!reloaded) {
+            try {
+                Thread.sleep(5000);
+                if (managementClient.isServerInRunningState())
+                    reloaded = true;
+            } catch (Throwable t) {
+                // nothing to do, just waiting
+            } finally {
+                if (!reloaded && i++ > 10)
+                    throw new Exception("Server reloading failed");
+            }
+        }
+    }
+
 }
