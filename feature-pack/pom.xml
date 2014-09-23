@@ -94,9 +94,9 @@
 
     <dependencies>
 
-		<!-- feature pack dependencies -->
-		
-		<dependency>
+        <!-- feature pack dependencies -->
+
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-web-feature-pack</artifactId>
             <type>zip</type>
@@ -107,8 +107,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
-		<!-- module and copy artifact dependencies -->		        
+
+        <!-- module and copy artifact dependencies -->		        
 
         <dependency>
             <groupId>org.wildfly</groupId>
