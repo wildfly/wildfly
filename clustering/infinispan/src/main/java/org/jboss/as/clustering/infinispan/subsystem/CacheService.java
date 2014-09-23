@@ -47,6 +47,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheService<K, V> implements Service<Cache<K, V>> {
+    private static final Logger log = Logger.getLogger(CacheService.class);
 
     private final Dependencies dependencies;
     private final String name;
@@ -54,7 +55,6 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
     private volatile Cache<K, V> cache;
     private volatile XAResourceRecovery recovery;
 
-    private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName());
     public static ServiceName getServiceName(String container, String cache) {
         return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_ALIAS);
     }

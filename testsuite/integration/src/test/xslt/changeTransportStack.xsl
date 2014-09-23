@@ -15,9 +15,10 @@
     <xsl:param name="defaultStack" select="'tcp'"/>
 
     <!-- only change default-stack attribute directly on jgroups subsystem -->
-    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroupsns)]
+                          /*[local-name()='stacks']">
         <xsl:copy>
-            <xsl:attribute name="default-stack">
+            <xsl:attribute name="default">
                 <xsl:value-of select="$defaultStack"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>

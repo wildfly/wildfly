@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.jgroups.subsystem.ConnectedChannelService;
 import org.jboss.as.clustering.marshalling.DynamicClassTable;
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
@@ -47,13 +46,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.server.group.ChannelNodeFactory;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.server.group.JGroupsNodeFactory;
+import org.wildfly.clustering.spi.GroupServiceNames;
 
 /**
  * Service providing a CommandDispatcherFactory.
@@ -64,14 +60,11 @@ public class ChannelCommandDispatcherFactoryService implements Service<CommandDi
 
     private static final int CURRENT_VERSION = 1;
 
-    public static ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String cluster, ModuleIdentifier identifier) {
+    public static ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier identifier) {
         ChannelCommandDispatcherFactoryService service = new ChannelCommandDispatcherFactoryService(identifier);
         return AsynchronousService.addService(target, name, service)
-                // Make sure Infinispan starts its channel before we try to use it.
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(ChannelServiceNames.GROUP.getServiceName(cluster), Group.class, service.group)
-                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(cluster), ChannelNodeFactory.class, service.nodeFactory)
-                .addDependency(ChannelService.getServiceName(cluster), Channel.class, service.channel)
+                .addDependency(GroupServiceNames.NODE_FACTORY.getServiceName(group), JGroupsNodeFactory.class, service.nodeFactory)
+                .addDependency(ConnectedChannelService.getServiceName(group), Channel.class, service.channel)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, service.loader)
         ;
     }
@@ -79,8 +72,7 @@ public class ChannelCommandDispatcherFactoryService implements Service<CommandDi
     private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
 
     private final InjectedValue<Channel> channel = new InjectedValue<>();
-    private final InjectedValue<Group> group = new InjectedValue<>();
-    private final InjectedValue<ChannelNodeFactory> nodeFactory = new InjectedValue<>();
+    private final InjectedValue<JGroupsNodeFactory> nodeFactory = new InjectedValue<>();
     private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
     private final ModuleIdentifier identifier;
     private final long timeout = TimeUnit.MINUTES.toMillis(1);
@@ -125,17 +117,12 @@ public class ChannelCommandDispatcherFactoryService implements Service<CommandDi
     }
 
     @Override
-    public Group getGroup() {
-        return this.group.getValue();
-    }
-
-    @Override
     public Channel getChannel() {
         return this.channel.getValue();
     }
 
     @Override
-    public NodeFactory<Address> getNodeFactory() {
+    public JGroupsNodeFactory getNodeFactory() {
         return this.nodeFactory.getValue();
     }
 

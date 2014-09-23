@@ -27,12 +27,15 @@ package org.jboss.as.clustering.jgroups.subsystem;
  */
 class ModelKeys {
     static final String ADD_PROTOCOL = "add-protocol";
+    static final String CHANNEL = "channel";
     static final String CLUSTER = "cluster";
     static final String DEFAULT_EXECUTOR = "default-executor";
+    static final String DEFAULT_CHANNEL = "default-channel";
     static final String DEFAULT_STACK = "default-stack";
     static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
     static final String EXPORT_NATIVE_CONFIGURATION = "export-native-configuration";
     static final String MACHINE = "machine";
+    static final String MODULE = "module";
     static final String NAME = "name";
     static final String OOB_EXECUTOR = "oob-executor";
     static final String PROPERTY = "property";

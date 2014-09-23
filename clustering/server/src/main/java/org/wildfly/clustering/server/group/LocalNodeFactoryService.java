@@ -33,12 +33,12 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service providing a non-clustered {@link ChannelNodeFactory}.
+ * Service providing a non-clustered {@link JGroupsNodeFactory}.
  * @author Paul Ferraro
  */
-public class LocalNodeFactoryService implements Service<ChannelNodeFactory> {
+public class LocalNodeFactoryService implements Service<JGroupsNodeFactory> {
 
-    public static ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
+    public static ServiceBuilder<JGroupsNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
         LocalNodeFactoryService service = new LocalNodeFactoryService(cluster);
         return target.addService(name, service)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
@@ -48,14 +48,14 @@ public class LocalNodeFactoryService implements Service<ChannelNodeFactory> {
     private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
     private final String cluster;
 
-    private volatile ChannelNodeFactory factory;
+    private volatile JGroupsNodeFactory factory;
 
     private LocalNodeFactoryService(String cluster) {
         this.cluster = cluster;
     }
 
     @Override
-    public ChannelNodeFactory getValue() {
+    public JGroupsNodeFactory getValue() {
         return this.factory;
     }
 

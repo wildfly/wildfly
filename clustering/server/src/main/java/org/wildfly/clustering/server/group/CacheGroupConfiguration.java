@@ -29,5 +29,5 @@ import org.infinispan.Cache;
  */
 public interface CacheGroupConfiguration {
     Cache<?, ?> getCache();
-    CacheNodeFactory getNodeFactory();
+    InfinispanNodeFactory getNodeFactory();
 }

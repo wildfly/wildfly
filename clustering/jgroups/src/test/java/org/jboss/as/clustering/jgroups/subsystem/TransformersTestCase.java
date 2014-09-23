@@ -27,10 +27,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -61,116 +64,107 @@ import org.junit.runner.RunWith;
 @RunWith(BMUnitRunner.class)
 public class TransformersTestCase extends OperationTestCaseBase {
 
+    private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version);
+    }
+
+    private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
+        return formatArtifact("org.jboss.as:jboss-as-clustering-jgroups:%s", version);
+    }
+
+    private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
+        return String.format(pattern, version.getMavenGavVersion());
+    }
+
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer_1_1_0(
-                ModelTestControllerVersion.V7_1_2_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_2_FINAL.getMavenGavVersion()
-        );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_2_FINAL;
+        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer_1_1_0(
-                ModelTestControllerVersion.V7_1_3_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_3_FINAL.getMavenGavVersion()
-        );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_3_FINAL;
+        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerAS720() throws Exception {
-        testTransformer_1_2_0(
-                ModelTestControllerVersion.V7_2_0_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_2_0_FINAL.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_2_0_FINAL;
+        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testTransformerWF800() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
+        testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
+    }
+
+    @Test
+    public void testTransformerWF810() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
+        testTransformation(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerEAP600() throws Exception {
-        testTransformer_1_1_0(
-                ModelTestControllerVersion.EAP_6_0_0,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion()
-        );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_0;
+        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerEAP601() throws Exception {
-        testTransformer_1_1_0(
-                ModelTestControllerVersion.EAP_6_0_1,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion()
-        );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_1;
+        testTransformation(JGroupsModel.VERSION_1_1_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerEAP610() throws Exception {
-        testTransformer_1_2_0(
-                ModelTestControllerVersion.EAP_6_1_0,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_0.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_0;
+        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testTransformerEAP611() throws Exception {
-        testTransformer_1_2_0(
-                ModelTestControllerVersion.EAP_6_1_1,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_1.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_1;
+        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testTransformerEAP620() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
+        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testTransformerEAP630() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
+        testTransformation(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     /**
-     * Tests transformation of model from 2.0.0 version into 1.1.0 version.
+     * Tests transformation of model from current version into specified version.
      *
      * @throws Exception
      */
-    private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version110 = ModelVersion.create(1,1,0);
-        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
+    private void testTransformation(JGroupsModel model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version = model.getVersion();
+        String subsystemXml = readResource("subsystem-jgroups-transform.xml");
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version110)
+        builder.createLegacyKernelServicesBuilder(null, controller, version)
                 .addMavenResourceURL(mavenResourceURLs);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version110).isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version110);
-
-        // 1.1.0 API specific checks:
-        // - check description here
-    }
-
-    /**
-     * Tests transformation of model from 2.0.0 version into 1.2.0 version.
-     *
-     * @throws Exception
-     */
-    private void testTransformer_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version120 = ModelVersion.create(1,2,0);
-        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
-
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml);
-
-        // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version120)
-                .addMavenResourceURL(mavenResourceURLs);
-
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version120).isSuccessfulBoot());
-
-        // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version120);
-
-        // 1.2.0 API specific checks:
-        // - check description here
+        checkSubsystemModelTransformation(mainServices, version);
     }
 
     /**
@@ -211,58 +205,68 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testRejectionsAS712() throws Exception {
-        testRejections_1_1_0(
-                ModelTestControllerVersion.V7_1_2_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_2_FINAL.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_2_FINAL;
+        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsAS713() throws Exception {
-        testRejections_1_1_0(
-                ModelTestControllerVersion.V7_1_3_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_3_FINAL.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_1_3_FINAL;
+        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsAS720() throws Exception {
-        testRejections_1_2_0(
-                ModelTestControllerVersion.V7_2_0_FINAL,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_2_0_FINAL.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.V7_2_0_FINAL;
+        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testRejectionsWF800() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
+        this.testRejections(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
+    }
+
+    @Test
+    public void testRejectionsWF810() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
+        this.testRejections(JGroupsModel.VERSION_2_0_0, version, formatSubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsEAP600() throws Exception {
-        testRejections_1_1_0(
-                ModelTestControllerVersion.EAP_6_0_0,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_0;
+        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsEAP601() throws Exception {
-        testRejections_1_1_0(
-                ModelTestControllerVersion.EAP_6_0_1,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_0_1;
+        testRejections_1_1_0(version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsEAP610() throws Exception {
-        testRejections_1_2_0(
-                ModelTestControllerVersion.EAP_6_1_0,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_0.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_0;
+        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     @Test
     public void testRejectionsEAP611() throws Exception {
-        testRejections_1_2_0(
-                ModelTestControllerVersion.EAP_6_1_1,
-                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_1.getMavenGavVersion()
-                );
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_1_1;
+        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testRejectionsEAP620() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_2_0;
+        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
+    }
+
+    @Test
+    public void testRejectionsEAP630() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_6_3_0;
+        this.testRejections(JGroupsModel.VERSION_1_2_0, version, formatLegacySubsystemArtifact(version));
     }
 
     /**
@@ -271,12 +275,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
      * @throws Exception
      */
     private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        ModelVersion version = JGroupsModel.VERSION_1_1_0.getVersion();
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                 //which is strange since it should be loading it all from the current jboss modules
@@ -285,7 +289,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
@@ -293,70 +297,72 @@ public class TransformersTestCase extends OperationTestCaseBase {
         PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
-                version_1_1_0,
-                builder.parseXmlResource("subsystem-jgroups-2_0.xml"),
+                version,
+                builder.parseXmlResource(JGroupsSchema.CURRENT.format("subsystem-jgroups-%d_%d.xml")),
                 new FailedOperationTransformationConfig()
                         // expect certain rejected expressions
                         .addFailedAttribute(
-                                subsystemAddress.append(PathElement.pathElement("stack"))
-                                        .append(PathElement.pathElement("transport", "TRANSPORT")),
+                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
+                                        .append(TransportResourceDefinition.PATH),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
                         .addFailedAttribute(
-                                subsystemAddress.append(PathElement.pathElement("stack"))
-                                        .append(PathElement.pathElement("transport", "TRANSPORT"))
-                                        .append("property"),
+                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
+                                        .append(TransportResourceDefinition.PATH)
+                                        .append(PropertyResourceDefinition.WILDCARD_PATH),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
                         .addFailedAttribute(
-                                subsystemAddress.append(PathElement.pathElement("stack"))
-                                        .append(PathElement.pathElement("protocol"))
-                                        .append("property"),
+                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
+                                        .append(ProtocolResourceDefinition.WILDCARD_PATH)
+                                        .append(PropertyResourceDefinition.WILDCARD_PATH),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
                         // expect rejection of relay and child
                         .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY"),
+                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(RelayResourceDefinition.PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY").append("remote-site"),
+                                subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH).append(RelayResourceDefinition.PATH).append(RemoteSiteResourceDefinition.WILDCARD_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
 
-    /**
-     * Tests rejection of resources / attributes / operations in 1.2.0 model.
-     *
-     * @throws Exception
-     */
-    private void testRejections_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
-        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+    private void testRejections(JGroupsModel model, ModelTestControllerVersion controller, String... dependencies) throws Exception {
+        ModelVersion version = model.getVersion();
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
-                .addMavenResourceURL(mavenResourceURLs)
+        builder.createLegacyKernelServicesBuilder(null, controller, version)
+                .addMavenResourceURL(dependencies)
                 .dontPersistXml();
 
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+        KernelServices services = builder.build();
+        Assert.assertTrue(services.isSuccessfulBoot());
+        KernelServices legacyServices = services.getLegacyServices(version);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        // Use the real xml with expressions for testing all the attributes
-        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelTestUtils.checkFailedTransformedBootOperations(
-                mainServices,
-                version_1_2_0,
-                builder.parseXmlResource("subsystem-jgroups-transform-2_0-reject.xml"),
-                new FailedOperationTransformationConfig()
-                        // expect rejection of relay and child
-                        .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY"),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                        .addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay", "RELAY").append("remote-site"),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
-        );
+        List<ModelNode> operations = builder.parseXmlResource("subsystem-jgroups-transform-reject.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationTransformationConfig(version));
+    }
+
+    private static FailedOperationTransformationConfig createFailedOperationTransformationConfig(ModelVersion version) {
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+
+        PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(subsystemAddress, new NewAttributesConfig(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL));
+            config.addFailedAttribute(subsystemAddress.append(ChannelResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
+            PathAddress stackAddress = subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH);
+            PathAddress relayAddress = stackAddress.append(RelayResourceDefinition.PATH);
+            config.addFailedAttribute(relayAddress, FailedOperationTransformationConfig.REJECTED_RESOURCE);
+            config.addFailedAttribute(relayAddress.append(RemoteSiteResourceDefinition.WILDCARD_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE);
+        }
+
+        return config;
     }
 }

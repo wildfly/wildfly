@@ -21,7 +21,6 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
-
 <subsystem xmlns="urn:jboss:domain:infinispan:1.4">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>

@@ -36,7 +36,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -47,7 +48,6 @@ import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
-import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -124,7 +124,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
 
-        DefaultHttpClient client = new DefaultHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc2_create_url = StatefulServlet.createEmployeeURI(baseURL2);
@@ -188,7 +188,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(destroyed, "DESTROY");
 
         } finally {
-            org.apache.http.client.utils.HttpClientUtils.closeQuietly(client);
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -198,7 +198,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, URISyntaxException {
 
-        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
+        HttpClient client = HttpClients.createDefault();
 
         URI xpc1_create_url = StatefulServlet.createEmployeeURI(baseURL1);
         URI xpc1_get_url = StatefulServlet.getEmployeeURI(baseURL1);
@@ -247,7 +247,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             log.info(new Date() + "4. test is done");
 
         } finally {
-            org.apache.http.client.utils.HttpClientUtils.closeQuietly(client);
+            HttpClientUtils.closeQuietly(client);
         }
     }
 
@@ -259,7 +259,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertNotNull(message, header);
             return header.getValue();
         } finally {
-            org.apache.http.client.utils.HttpClientUtils.closeQuietly(response);
+            HttpClientUtils.closeQuietly(response);
         }
     }
 
@@ -268,7 +268,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         try {
             assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
         } finally {
-            org.apache.http.client.utils.HttpClientUtils.closeQuietly(response);
+            HttpClientUtils.closeQuietly(response);
         }
     }
 }

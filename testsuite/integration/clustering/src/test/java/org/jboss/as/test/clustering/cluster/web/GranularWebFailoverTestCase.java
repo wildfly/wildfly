@@ -37,6 +37,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
     private static final String DEPLOYMENT_NAME = "granular-distributable.war";
 
+    public GranularWebFailoverTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
+
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
@@ -58,10 +62,5 @@ public class GranularWebFailoverTestCase extends ClusteredWebFailoverAbstractCas
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_granular.xml", "jboss-web.xml");
         log.info(war.toString(true));
         return war;
-    }
-
-    @Override
-    protected String getDeploymentName() {
-        return DEPLOYMENT_NAME;
     }
 }

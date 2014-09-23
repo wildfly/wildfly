@@ -21,55 +21,27 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.naming.BinderServiceBuilder;
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
-import org.wildfly.clustering.spi.ChannelServiceNames;
+import org.wildfly.clustering.server.GroupServiceBuilder;
 
 /**
+ * Installer for a local {@link Group} service.
  * @author Paul Ferraro
  */
-public class LocalGroupServiceInstaller implements LocalServiceInstaller {
-    private final Logger logger = Logger.getLogger(this.getClass());
+public class LocalGroupServiceInstaller extends GroupServiceInstaller implements org.wildfly.clustering.spi.LocalGroupServiceInstaller {
 
-    private static ContextNames.BindInfo createBinding(String group) {
-        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "group", group).getAbsoluteName());
-    }
+    private static final GroupServiceBuilder<Group> BUILDER = new GroupServiceBuilder<Group>() {
+        @Override
+        public ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String group, ModuleIdentifier module) {
+            return LocalGroupService.build(target, name, group);
+        }
+    };
 
-    @Override
-    public Collection<ServiceName> getServiceNames(String group) {
-        return Arrays.asList(ChannelServiceNames.GROUP.getServiceName(group), createBinding(group).getBinderServiceName());
-    }
-
-    @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier moduleId) {
-        ServiceName name = ChannelServiceNames.GROUP.getServiceName(group);
-        ContextNames.BindInfo bindInfo = createBinding(group);
-
-        this.logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
-
-        ServiceBuilder<Group> builder = LocalGroupService.build(target, name, group).addAliases(CacheServiceNames.GROUP.getServiceName(group));
-        ServiceController<Group> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
-        ContextNames.BindInfo alias = ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "group", group, CacheContainer.DEFAULT_CACHE_ALIAS).getAbsoluteName());
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = new BinderServiceBuilder(target).build(bindInfo, name, Group.class)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(alias.getBindName()))
-        ;
-
-        return Arrays.asList(controller, binderBuilder.install());
+    public LocalGroupServiceInstaller() {
+        super(BUILDER);
     }
 }

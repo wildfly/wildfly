@@ -59,6 +59,15 @@ public enum InfinispanSchema {
      * @return the namespace URI
      */
     public String getNamespaceUri() {
-        return String.format("urn:jboss:domain:%s:%d.%d", InfinispanExtension.SUBSYSTEM_NAME, this.major, this.minor);
+        return this.format("urn:jboss:domain:infinispan:%d.%d");
+    }
+
+    /**
+     * Formats a string using the specified pattern.
+     * @param pattern a formatter pattern
+     * @return a formatted string
+     */
+    String format(String pattern) {
+        return String.format(pattern, this.major, this.minor);
     }
 }

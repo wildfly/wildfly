@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.transaction.LockingMode;
-import org.jboss.as.clustering.controller.AttributeOperationTransformer;
-import org.jboss.as.clustering.controller.ChainedOperationTransformer;
 import org.jboss.as.clustering.controller.OperationFactory;
 import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
+import org.jboss.as.clustering.controller.transform.AttributeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.ChainedOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -112,8 +112,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
                     if (operation.hasDefined(MODE.getName())) {
                         ModelNode mode = operation.get(MODE.getName());
-                        boolean batching = (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH);
-                        if (batching) {
+                        if ((mode.getType() == ModelType.STRING) && (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH)) {
                             mode.set(TransactionMode.NONE.name());
                             ModelNode writeBatchingOperation = OperationFactory.createWriteAttributeOperation(cacheAddress(address), CacheResourceDefinition.BATCHING.getName(), new ModelNode(true));
                             return new TransformedOperation(OperationFactory.createCompositeOperation(writeBatchingOperation, operation), OperationResultTransformer.ORIGINAL_RESULT);
@@ -156,7 +155,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                 @Override
                 public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
                     ModelNode mode = operation.hasDefined(ModelDescriptionConstants.VALUE) ? operation.get(ModelDescriptionConstants.VALUE) : null;
-                    boolean batching = (mode != null) ? (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH) : false;
+                    boolean batching = (mode != null) && (mode.getType() == ModelType.STRING) ? (TransactionMode.valueOf(mode.asString()) == TransactionMode.BATCH) : false;
                     if (batching) {
                         mode.set(TransactionMode.NONE.name());
                     }
@@ -176,7 +175,7 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
                 @Override
                 public void convertResourceAttribute(PathAddress address, String name, ModelNode value, TransformationContext context) {
-                    if (value.isDefined()) {
+                    if (value.isDefined() && (value.getType() == ModelType.STRING)) {
                         TransactionMode mode = TransactionMode.valueOf(value.asString());
                         if (mode == TransactionMode.BATCH) {
                             value.set(TransactionMode.NONE.name());
@@ -184,7 +183,10 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
                     }
                 }
             };
-            builder.getAttributeBuilder().setValueConverter(modeConverter, MODE);
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODE)
+                    .setValueConverter(modeConverter, MODE)
+                    .end();
         }
         if (InfinispanModel.VERSION_1_4_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, MODE, STOP_TIMEOUT, LOCKING);

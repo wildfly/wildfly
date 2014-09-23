@@ -29,9 +29,7 @@ import org.infinispan.configuration.cache.CacheMode;
  */
 public class InvalidationCacheAddHandler extends ClusteredCacheAddHandler {
 
-    static final InvalidationCacheAddHandler INSTANCE = new InvalidationCacheAddHandler();
-
-    private InvalidationCacheAddHandler() {
+    InvalidationCacheAddHandler() {
         super(CacheMode.INVALIDATION_SYNC);
     }
 }

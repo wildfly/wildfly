@@ -27,7 +27,9 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -49,16 +51,27 @@ import org.jgroups.jmx.JmxConfigurator;
  */
 public class ChannelService implements Service<Channel>, ChannelListener {
 
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append("channel");
+    public static final String DEFAULT = "default";
+    private static final String CHANNEL = "channel";
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append(CHANNEL);
 
-    public static ServiceName getServiceName(String id) {
-        return SERVICE_NAME.append(id);
+    static ContextNames.BindInfo createChannelBinding(String channel) {
+        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, CHANNEL, channel).getAbsoluteName());
     }
 
-    public static ServiceBuilder<Channel> build(ServiceTarget target, String id, String stack) {
+    public static ServiceName getServiceName(String id) {
+        return SERVICE_NAME.append((id != null) ? id : DEFAULT);
+    }
+
+    public static ServiceName getStackServiceName(String channel) {
+        return getServiceName(channel).append("stack");
+    }
+
+    public static ServiceBuilder<Channel> build(ServiceTarget target, String id) {
         ChannelService service = new ChannelService(id);
-        return target.addService(getServiceName(id), service)
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, service.factory)
+        ServiceName name = getServiceName(id);
+        return target.addService(name, service)
+                .addDependency(ChannelService.getStackServiceName(id), ChannelFactory.class, service.factory)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
         ;
     }

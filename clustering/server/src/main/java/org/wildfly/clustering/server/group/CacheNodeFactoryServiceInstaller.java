@@ -24,31 +24,29 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.spi.CacheServiceNames;
-import org.wildfly.clustering.spi.ClusterServiceInstaller;
-import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.spi.ClusteredCacheServiceInstaller;
+import org.wildfly.clustering.spi.LocalCacheServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryServiceInstaller implements ClusterServiceInstaller, LocalServiceInstaller {
+public class CacheNodeFactoryServiceInstaller implements LocalCacheServiceInstaller, ClusteredCacheServiceInstaller {
 
     @Override
-    public Collection<ServiceName> getServiceNames(String group) {
-        return Collections.singleton(CacheServiceNames.NODE_FACTORY.getServiceName(group));
+    public Collection<ServiceName> getServiceNames(String container, String cache) {
+        return Collections.singleton(CacheServiceNames.NODE_FACTORY.getServiceName(container, cache));
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier moduleId) {
-        ServiceName name = CacheServiceNames.NODE_FACTORY.getServiceName(group);
-        ServiceBuilder<? extends NodeFactory<?>> builder = CacheNodeFactoryService.build(target, name, group, CacheContainer.DEFAULT_CACHE_ALIAS);
+    public Collection<ServiceController<?>> install(ServiceTarget target, String container, String cache) {
+        ServiceName name = CacheServiceNames.NODE_FACTORY.getServiceName(container, cache);
+        ServiceBuilder<? extends NodeFactory<?>> builder = CacheNodeFactoryService.build(target, name, container, cache);
         ServiceController<? extends NodeFactory<?>> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         return Collections.<ServiceController<?>>singleton(controller);

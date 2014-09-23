@@ -24,12 +24,14 @@ package org.jboss.as.test.clustering.cluster.web.expiration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
@@ -58,7 +60,8 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                              throws IOException, URISyntaxException, InterruptedException {
-        DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+
+        HttpClient client = HttpClients.createDefault();
         try {
             // This should trigger session creation event, but not added attribute event
             HttpResponse response = client.execute(new HttpGet(SessionOperationServlet.createSetURI(baseURL1, "a")));

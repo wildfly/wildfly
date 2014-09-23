@@ -22,64 +22,88 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import java.util.List;
+import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
+import org.wildfly.clustering.spi.GroupServiceInstaller;
 
 /**
- * Handler for JGroups subsystem add operations.
+ * Handler for JGroups subsystem remove operations.
  *
  * @author Kabir Khan
  */
 public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
+    private final boolean allowRuntimeOnlyRegistration;
+
+    JGroupsSubsystemRemoveHandler(boolean allowRuntimeOnlyRegistration) {
+        this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
+    }
+
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        PathAddress subsystemAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
 
-        final PathAddress opAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        // Add a step *on the top of the stack* to actually remove the subsystem resource
-        ModelNode removeSubsystem = Util.createOperation(REMOVE, opAddress);
-        context.addStep(removeSubsystem, new OriginalSubsystemRemoveHandler(), OperationContext.Stage.MODEL, true);
-
-        // Now add steps on top of the one added above to remove any existing child stacks
-        if (model.hasDefined(ModelKeys.STACK)) {
-            List<Property> stacks = model.get(ModelKeys.STACK).asPropertyList();
-            for (Property stack: stacks) {
-                PathAddress address = opAddress.append(ModelKeys.STACK, stack.getName());
-                ModelNode removeStack = Util.createOperation(REMOVE, address);
-                // remove the stack
-                context.addStep(removeStack, StackRemoveHandler.INSTANCE, OperationContext.Stage.MODEL, true);
+        if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+            ModelNode channels = model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey());
+            if (channels.isDefined()) {
+                for (Property channel: channels.asPropertyList()) {
+                    PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(channel.getName()));
+                    context.addStep(Util.createRemoveOperation(address), new ChannelRemoveHandler(this.allowRuntimeOnlyRegistration), OperationContext.Stage.MODEL);
+                }
             }
         }
 
-        context.stepCompleted();
+        if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
+            ModelNode stacks = model.get(StackResourceDefinition.WILDCARD_PATH.getKey());
+            if (stacks.isDefined()) {
+                for (Property stack: stacks.asPropertyList()) {
+                    PathAddress address = subsystemAddress.append(StackResourceDefinition.pathElement(stack.getName()));
+                    context.addStep(Util.createRemoveOperation(address), new StackRemoveHandler(), OperationContext.Stage.MODEL);
+                }
+            }
+        }
+
+        super.performRemove(context, operation, model);
     }
 
-    static class OriginalSubsystemRemoveHandler extends AbstractRemoveStepHandler {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        // remove the ProtocolDefaultsService
+        context.removeService(ProtocolDefaultsService.SERVICE_NAME);
 
-        @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-            removeRuntimeServices(context, operation, model);
+        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
+        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
+            context.removeService(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT));
         }
 
-        protected void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
+        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
+        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
+            context.removeService(ChannelService.getServiceName(ChannelService.DEFAULT));
+            context.removeService(ConnectedChannelService.getServiceName(ChannelService.DEFAULT));
+            context.removeService(ChannelService.getStackServiceName(ChannelService.DEFAULT));
 
-            // remove the ProtocolDefaultsService
-            ServiceName protocolDefaultsService = ProtocolDefaultsService.SERVICE_NAME;
-            context.removeService(protocolDefaultsService);
-
-            // remove the DefaultChannelFactoryServiceAlias
-            ServiceName defaultChannelFactoryService = ChannelFactoryService.getServiceName(null);
-            context.removeService(defaultChannelFactoryService);
+            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
+                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
+                    context.removeService(name);
+                }
+            }
         }
+    }
+
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        JGroupsSubsystemAddHandler.installRuntimeServices(context, operation, model, new ServiceVerificationHandler());
     }
 }

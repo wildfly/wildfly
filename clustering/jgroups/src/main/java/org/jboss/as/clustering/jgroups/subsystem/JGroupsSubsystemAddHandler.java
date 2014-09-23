@@ -22,24 +22,29 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ServiceLoader;
 
+import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.ProtocolDefaults;
-import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.clustering.msc.InjectedValueServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
+import org.jgroups.Channel;
+import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
+import org.wildfly.clustering.spi.GroupServiceInstaller;
 
 /**
  * Handler for JGroups subsystem add operations.
@@ -49,63 +54,44 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
 
-    /*
-     * Install a custom version of JGroupsSubsystemRootResourceDefinition
-     */
-    @Override
-    protected Resource createResource(OperationContext context) {
-        // debugging
-        assert context.getServiceRegistry(false) != null;
-        // create a custom resource
-        JGroupsSubsystemResource resource = new JGroupsSubsystemResource();
-        resource.setRegistry(context.getServiceRegistry(false));
-        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
-        return resource;
-    }
-
     JGroupsSubsystemAddHandler(AttributeDefinition... attributes) {
         super(attributes);
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
 
         ROOT_LOGGER.activatingSubsystem();
+
+        controllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
+    }
+
+    static Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
+        Collection<ServiceController<?>> controllers = new LinkedList<>();
 
-        // install the protocol defaults service
-        ServiceController<ProtocolDefaults> pdsController = installProtocolDefaultsService(target, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(pdsController);
+        controllers.add(ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install());
+
+        InjectedValueServiceBuilder builder = new InjectedValueServiceBuilder(target);
+
+        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
+        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
+            controllers.add(builder.build(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).install());
+            controllers.add(builder.build(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).install());
+            controllers.add(builder.build(ChannelService.getStackServiceName(ChannelService.DEFAULT), ChannelService.getStackServiceName(defaultChannel), ChannelFactory.class).install());
+
+            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
+                Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
+                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
+                    controllers.add(builder.build(name, names.next(), Object.class).install());
+                }
+            }
         }
 
-        final String stack = JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model).asString();
-
-        // install the default channel factory service
-        ServiceController<ChannelFactory> dcfsController = installDefaultChannelFactoryService(target, stack, verificationHandler);
-        if (newControllers != null) {
-            newControllers.add(dcfsController);
+        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
+        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
+            controllers.add(builder.build(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).install());
         }
-    }
-
-    protected ServiceController<ProtocolDefaults> installProtocolDefaultsService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {
-        return AsynchronousService.addService(target, ProtocolDefaultsService.SERVICE_NAME, new ProtocolDefaultsService())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-    }
-
-    protected ServiceController<ChannelFactory> installDefaultChannelFactoryService(ServiceTarget target, String stack, ServiceVerificationHandler verificationHandler) {
-        final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
-        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<>(factory))
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
-        ;
-    }
-
-    @Override
-    protected boolean requiresRuntimeVerification() {
-        return false;
+        return controllers;
     }
 }

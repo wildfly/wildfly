@@ -52,7 +52,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
         Set<String> expectedMembers = new TreeSet<>();
         if (nodes != null) {
             for (String name: nodes) {
-                expectedMembers.add(name + "/" + containerName);
+                expectedMembers.add(name + "/ee");
             }
         }
         ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();

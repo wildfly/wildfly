@@ -27,7 +27,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -54,16 +53,16 @@ public class TransportAddHandler implements OperationStepHandler {
         // Process attributes
         for (final AttributeDefinition attribute : this.attributes) {
             // don't process properties twice - we do them below
-            if (attribute.getName().equals(ModelKeys.PROPERTIES))
+            if (attribute.getName().equals(ProtocolResourceDefinition.PROPERTIES.getName()))
                 continue;
             attribute.validateAndSet(operation, subModel);
         }
 
         // The transport config parameters  <property name=>value</property>
-        if (operation.hasDefined(ModelKeys.PROPERTIES)) {
-            for (Property property : operation.get(ModelKeys.PROPERTIES).asPropertyList()) {
+        if (operation.hasDefined(ProtocolResourceDefinition.PROPERTIES.getName())) {
+            for (Property property : operation.get(ProtocolResourceDefinition.PROPERTIES.getName()).asPropertyList()) {
                 // create a new property=name resource
-                final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
+                final Resource param = context.createResource(PathAddress.pathAddress(PropertyResourceDefinition.pathElement(property.getName())));
                 final ModelNode value = property.getValue();
                 if (!value.isDefined()) {
                     throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), TransportResourceDefinition.PATH.toString());

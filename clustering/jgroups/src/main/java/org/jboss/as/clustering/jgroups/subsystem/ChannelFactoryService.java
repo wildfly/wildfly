@@ -33,10 +33,11 @@ import org.jboss.msc.service.StopContext;
  * @author Paul Ferraro
  */
 public class ChannelFactoryService implements Service<ChannelFactory> {
+    public static final String DEFAULT = "default";
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append("stack");
 
     public static ServiceName getServiceName(String name) {
-        return (name != null) ? SERVICE_NAME.append(name) : SERVICE_NAME;
+        return SERVICE_NAME.append(name);
     }
 
     private final ProtocolStackConfiguration configuration;

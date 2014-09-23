@@ -24,7 +24,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -33,21 +35,20 @@ import org.jboss.dmr.ModelNode;
  */
 public class StackRemoveHandler extends AbstractRemoveStepHandler {
 
-    static final StackRemoveHandler INSTANCE = new StackRemoveHandler();
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        String name = address.getLastElement().getValue();
 
-        StackAddHandler.removeRuntimeServices(context, operation, model);
+        // remove the ChannelFactoryServiceService
+        context.removeService(ChannelFactoryService.getServiceName(name));
     }
 
     @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException{
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException{
         // re-install the ProtocolStack services using the information in model
         ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
 
-        StackAddHandler.installRuntimeServices(context, operation, model, verificationHandler, null);
+        StackAddHandler.installRuntimeServices(context, operation, model, verificationHandler);
     }
-
 }

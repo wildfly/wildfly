@@ -65,6 +65,13 @@ public class JGroupsSubsystemDescribeHandler implements OperationStepHandler {
         final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         result.add(createOperation(rootAddress, model, JGroupsSubsystemResourceDefinition.ATTRIBUTES));
 
+        if (model.hasDefined(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+            for (Property property: model.get(ChannelResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+                PathAddress channelAddress = rootAddress.append(ChannelResourceDefinition.pathElement(property.getName()));
+                ModelNode channel = property.getValue();
+                result.add(createOperation(channelAddress, channel, ChannelResourceDefinition.ATTRIBUTES));
+            }
+        }
         if (model.hasDefined(StackResourceDefinition.WILDCARD_PATH.getKey())) {
             for (Property property: model.get(StackResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
                 PathAddress stackAddress = rootAddress.append(StackResourceDefinition.pathElement(property.getName()));

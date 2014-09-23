@@ -283,4 +283,7 @@ public interface InfinispanLogger extends BasicLogger {
 
     @Message(id = 26, value = "Attribute 'virtual nodes' is an expression and therefore cannot be translated to attribute 'segments'.")
     String segmentsDoesNotSupportExpressions();
+
+    @Message(id = 27, value = "Could not determine 'stack' attribute from JGroups subsystem")
+    String indeterminiteStack();
 }

@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
+import org.infinispan.commons.api.BasicCacheContainer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -31,7 +32,6 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -59,6 +59,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
             .setXmlName(Attribute.CACHE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(BasicCacheContainer.DEFAULT_CACHE_NAME))
             .build();
 
     static final SimpleAttributeDefinition TCP_NO_DELAY = new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
@@ -116,7 +117,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition(boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE), new RemoteStoreAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE, allowRuntimeOnlyRegistration);
+        super(StoreType.REMOTE, allowRuntimeOnlyRegistration);
     }
 
     @Override

@@ -202,7 +202,7 @@
         <version.org.jboss.ws.cxf>5.0.0.Beta1</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.1.Beta1</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jgroups>3.4.5.Final</version.org.jgroups>
+        <version.org.jgroups>3.4.6.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.opensaml.opensaml>2.6.1</version.org.opensaml.opensaml>
