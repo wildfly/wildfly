@@ -64,13 +64,21 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                throw new TransactionRequiredException(e.getMessage());
+                final TransactionRequiredException x = new TransactionRequiredException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackException(e.getMessage());
+                final TransactionRolledbackException x = new TransactionRolledbackException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectException(e.getMessage());
+                final NoSuchObjectException x = new NoSuchObjectException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectException(e.getMessage());
+                final NoSuchObjectException x = new NoSuchObjectException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (EJBException e) {
                 //as the create exception is not propagated the init method interceptor just stashes it in a ThreadLocal
                 CreateException createException = popCreateException();
@@ -88,21 +96,21 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                throw new TransactionRequiredLocalException(e.getMessage());
+                final TransactionRequiredLocalException x = new TransactionRequiredLocalException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackLocalException(e.getMessage(),
-                                                              // AS7-5432: propagate the causing exception to the caller
-                                                              // (RuntimeExceptions thrown from the EJB-code arrive here as cause of
-                                                              // EJBTransactionRolledbackException - see org.jboss.as.ejb3.tx.CMTTxInterceptor.handleInCallerTx(...))
-                                                              e.getCausedByException());
+                final TransactionRolledbackLocalException x = new TransactionRolledbackLocalException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(),
-                                                     // AS7-5432: propagate the causing exception to the caller
-                                                     e.getCausedByException());
+                final NoSuchObjectLocalException x = new NoSuchObjectLocalException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(),
-                                                     // AS7-5432: propagate the causing exception to the caller
-                                                     e.getCausedByException());
+                final NoSuchObjectLocalException x = new NoSuchObjectLocalException(e.getMessage());
+                x.initCause(e.getCause());
+                throw x;
             } catch (EJBException e) {
                 CreateException createException = popCreateException();
                 if (createException != null) {
