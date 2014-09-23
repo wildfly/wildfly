@@ -77,6 +77,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(ACTIVATE_DEFINITION, RaActivate.INSTANCE);
+
     }
 
     @Override

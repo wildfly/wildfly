@@ -838,6 +838,10 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 89, value = "Exception during unregistering deployment")
     void exceptionDuringUnregistering(@Cause org.jboss.jca.core.spi.rar.NotFoundException nfe);
 
+    @LogMessage(level = WARN)
+    @Message(id = 90, value = "Failed to resume graceful shutdown for connection MANAGER %S")
+    void failedToResumeGraceful(String connectionManager);
+
 }
 
 

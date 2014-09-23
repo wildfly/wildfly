@@ -24,6 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CANCEL_SHUTDOWN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
@@ -37,6 +38,9 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.GET_SHUTDOWN_DELAY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.IS_SHUTDOWN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUIESCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
@@ -109,6 +113,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(FLUSH_INVALID_CONNECTION, PoolOperations.FlushInvalidConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_GRACEFULLY_CONNECTION, PoolOperations.FlushGracefullyConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_CONNECTION, PoolOperations.TestConnectionInPool.DS_INSTANCE);
+
+            resourceRegistration.registerOperationHandler(GET_SHUTDOWN_DELAY, GetShutdownDelayHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(QUIESCE, QuiesceHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(CANCEL_SHUTDOWN, CancelShutdownHandler.INSTANCE);
+            resourceRegistration.registerOperationHandler(IS_SHUTDOWN, IsShutdownHandler.INSTANCE);
         }
     }
 

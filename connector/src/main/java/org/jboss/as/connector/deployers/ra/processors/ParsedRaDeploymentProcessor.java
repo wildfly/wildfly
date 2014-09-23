@@ -56,6 +56,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.annotations.Annotations;
@@ -219,6 +220,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                         serviceTarget.addService(deployerServiceName, raDeploymentService),
                         raDeploymentService.getExecutorServiceInjector(), false)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
+                    .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, raDeploymentService.getSuspendControllerInjector())
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
                     .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())
                     .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE, ResourceAdapterDeploymentRegistry.class, raDeploymentService.getRegistryInjector())

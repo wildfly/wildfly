@@ -416,7 +416,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             ServiceController<ResourceAdapterDeployment> controller =
                     Services.addServerExecutorDependency(
-                        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator),
+                            serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator),
                             activator.getExecutorServiceInjector(), false)
                     .addDependency(HornetQActivationService.getHornetQActivationServiceName(getHornetQServiceName(hqServerName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,

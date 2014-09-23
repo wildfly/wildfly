@@ -41,6 +41,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -72,8 +73,9 @@ public class RaServicesFactory {
                         serviceTarget.addService(serviceName, service),
                         service.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, service.getSuspendControllerInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
-                        service.getRaRepositoryInjector())
+                            service.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         service.getManagementRepositoryInjector())
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE,
