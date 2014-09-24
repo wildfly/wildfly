@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.factories.annotations.Inject;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jgroups.Channel;
 
@@ -36,13 +33,6 @@ public class ChannelTransport extends JGroupsTransport {
 
     public ChannelTransport(Channel channel) {
         super(channel);
-    }
-
-    @Override
-    @Inject
-    public void setConfiguration(GlobalConfiguration config) {
-        // Turn off global jmx statistics so that Infinispan doesn't attempt to register/unregister channel/protocol mbeans.
-        this.configuration = new GlobalConfigurationBuilder().read(config).globalJmxStatistics().disable().build();
     }
 
     @Override

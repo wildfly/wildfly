@@ -21,6 +21,11 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
+
+import javax.management.MBeanServer;
+
+import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -30,6 +35,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.jgroups.JChannel;
+import org.jgroups.jmx.JmxConfigurator;
 
 /**
  * Service that connects/disconnects a channel.
@@ -43,13 +50,10 @@ public class ConnectedChannelService implements Service<Channel> {
     }
 
     public static ServiceBuilder<Channel> build(ServiceTarget target, String channel) {
-        return build(target, channel, channel);
-    }
-
-    public static ServiceBuilder<Channel> build(ServiceTarget target, String channel, String cluster) {
-        ConnectedChannelService service = new ConnectedChannelService(cluster);
+        ConnectedChannelService service = new ConnectedChannelService(channel);
         return target.addService(getServiceName(channel), service)
                 .addDependency(ChannelService.getServiceName(channel), Channel.class, service.channel)
+                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
         ;
     }
 
@@ -59,6 +63,7 @@ public class ConnectedChannelService implements Service<Channel> {
 
     private final String cluster;
     private final InjectedValue<Channel> channel = new InjectedValue<>();
+    private final InjectedValue<MBeanServer> server = new InjectedValue<>();
 
     @Override
     public Channel getValue() {
@@ -67,8 +72,16 @@ public class ConnectedChannelService implements Service<Channel> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        Channel channel = this.channel.getValue();
+        if (channel instanceof JChannel) {
+            try {
+                JmxConfigurator.registerChannel((JChannel) channel, this.server.getValue(), this.cluster);
+            } catch (Exception e) {
+                ROOT_LOGGER.debug(e.getMessage(), e);
+            }
+        }
         try {
-            this.channel.getValue().connect(this.cluster);
+            channel.connect(this.cluster);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -76,6 +89,14 @@ public class ConnectedChannelService implements Service<Channel> {
 
     @Override
     public void stop(StopContext context) {
-        this.channel.getValue().disconnect();
+        Channel channel = this.channel.getValue();
+        channel.disconnect();
+        if (channel instanceof JChannel) {
+            try {
+                JmxConfigurator.unregisterChannel((JChannel) channel, this.server.getValue(), this.cluster);
+            } catch (Exception e) {
+                ROOT_LOGGER.debug(e.getMessage(), e);
+            }
+        }
     }
 }
