@@ -45,7 +45,6 @@ import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.theories.suppliers.TestedOn;
 
 /**
  * Test case for testing the integrity of the EJB3 subsystem.

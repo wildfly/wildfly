@@ -276,7 +276,7 @@
         <module>embedded</module>
         <module>feature-pack</module>
         <module>iiop-openjdk</module>
-	<module>jaxrs</module>
+        <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
         <module>jsf</module>
@@ -305,7 +305,7 @@
         <module>weld</module>
         <module>xts</module>
         <module>rts</module>
-	<module>testsuite/shared</module>
+        <module>testsuite/shared</module>
         <module>testsuite</module>
     </modules>
 

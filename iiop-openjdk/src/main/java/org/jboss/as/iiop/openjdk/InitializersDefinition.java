@@ -53,15 +53,14 @@ public class InitializersDefinition extends PersistentResourceDefinition {
             .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
-    static final InitializersDefinition INSTANCE = new InitializersDefinition();
-
     private static final List<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(SECURITY,
             TRANSACTIONS));
 
+    static final InitializersDefinition INSTANCE = new InitializersDefinition();
+
     private InitializersDefinition() {
-        super(IIOPExtension.PATH_INITIALIZERS, IIOPExtension.getResourceDescriptionResolver(Constants.ORB,
-                Constants.ORB_INIT), InitializersAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(IIOPExtension.PATH_INITIALIZERS, IIOPExtension.getResourceDescriptionResolver(Constants.ORB, Constants.ORB_INIT),
+                new InitializersAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

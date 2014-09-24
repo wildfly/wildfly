@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,8 @@
 
 package org.jboss.as.iiop.openjdk;
 
+import java.util.Collection;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,13 +33,14 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 final class InitializersAdd extends AbstractAddStepHandler {
-    static final InitializersAdd INSTANCE = new InitializersAdd();
+
+    protected InitializersAdd(final Collection<AttributeDefinition> attributes) {
+        super(attributes);
+    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : InitializersDefinition.INSTANCE.getAttributes()) {
-            def.validateAndSet(operation, model);
-        }
+        super.populateModel(operation, model);
         if (model.hasDefined(InitializersDefinition.SECURITY.getName())
                 && "on".equals(model.get(InitializersDefinition.SECURITY.getName()).asString())) {
             model.get(InitializersDefinition.SECURITY.getName()).set(Constants.IDENTITY);

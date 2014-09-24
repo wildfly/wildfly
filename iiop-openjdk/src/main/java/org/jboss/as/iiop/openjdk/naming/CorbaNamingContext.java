@@ -174,7 +174,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.names.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            IIOPLogger.ROOT_LOGGER.debugBoundName(n.toString());
+            IIOPLogger.ROOT_LOGGER.debugBoundName(n);
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -219,7 +219,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if ((this.contexts.put(n, obj)) != null)
                 throw new CannotProceed(_this(), n.components());
 
-            IIOPLogger.ROOT_LOGGER.debugBoundContext(n.toString());
+            IIOPLogger.ROOT_LOGGER.debugBoundContext(n);
         } else {
             NameComponent[] ncx = new NameComponent[]{nb};
             org.omg.CORBA.Object context = this.resolve(ctx.components());
@@ -362,7 +362,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
 
             // do the rebinding in this context
             this.names.put(n, obj);
-            IIOPLogger.ROOT_LOGGER.debugBoundName(n.toString());
+            IIOPLogger.ROOT_LOGGER.debugBoundName(n);
         } else {
             // rebind in the correct context
             NameComponent[] ncx = new NameComponent[]{nb};
@@ -478,7 +478,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
             if (this.names.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.names.remove(n);
                 ref._release();
-                IIOPLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
+                IIOPLogger.ROOT_LOGGER.debugUnboundObject(n);
             } else if (this.contexts.containsKey(n)) {
                 org.omg.CORBA.Object ref = (org.omg.CORBA.Object) this.contexts.remove(n);
                 ref._release();
@@ -487,9 +487,9 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
                 if (oid != null)
                     contextImpls.remove(oid);
 
-                IIOPLogger.ROOT_LOGGER.debugUnboundObject(n.toString());
+                IIOPLogger.ROOT_LOGGER.debugUnboundObject(n);
             } else {
-                IIOPLogger.ROOT_LOGGER.failedToUnbindObject(n.toString());
+                IIOPLogger.ROOT_LOGGER.failedToUnbindObject(n);
                 throw new NotFound(NotFoundReason.not_context, n.components());
             }
         } else {

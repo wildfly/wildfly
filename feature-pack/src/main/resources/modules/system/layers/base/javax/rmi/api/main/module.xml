@@ -28,8 +28,8 @@
             <exports>
                 <include-set>
                     <path name="javax/rmi"/>
-		    <path name="javax/rmi/CORBA"/>
-		    <path name="org/jboss/javax/rmi"/>
+                    <path name="javax/rmi/CORBA"/>
+                    <path name="org/jboss/javax/rmi"/>
                 </include-set>
             </exports>
         </module>

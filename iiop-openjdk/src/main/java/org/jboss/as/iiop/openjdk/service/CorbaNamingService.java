@@ -97,13 +97,17 @@ public class CorbaNamingService implements Service<NamingContextExt> {
         // bind the corba naming service to JNDI.
         CorbaServiceUtil.bindObject(context.getChildTarget(), "corbanaming", namingService);
 
-        IIOPLogger.ROOT_LOGGER.corbaNamingServiceStarted();
-        IIOPLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.corbaNamingServiceStarted();
+            IIOPLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
+        }
     }
 
     @Override
     public void stop(StopContext context) {
-        IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        }
     }
 
     @Override

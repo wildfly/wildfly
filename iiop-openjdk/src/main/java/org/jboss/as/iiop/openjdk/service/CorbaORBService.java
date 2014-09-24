@@ -88,14 +88,16 @@ public class CorbaORBService implements Service<ORB> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        }
 
         try {
             // set the ORBClass and ORBSingleton class as system properties.
             properties.setProperty(Constants.ORB_CLASS, ORBImpl.class.getName());
             properties.setProperty(Constants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
-            SecurityActions.setSystemProperty(Constants.ORB_CLASS, ORBImpl.class.getName());
-            SecurityActions.setSystemProperty(Constants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
+            WildFlySecurityManager.setPropertyPrivileged(Constants.ORB_CLASS, ORBImpl.class.getName());
+            WildFlySecurityManager.setPropertyPrivileged(Constants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
 
             properties.setProperty(ORBConstants.IOR_TO_SOCKET_INFO_CLASS_PROPERTY, CSIV2IORToSocketInfo.class.getName());
 
@@ -109,7 +111,7 @@ public class CorbaORBService implements Service<ORB> {
             if (this.iiopSSLSocketBindingInjector.getValue() != null) {
                 InetSocketAddress address = this.iiopSSLSocketBindingInjector.getValue().getSocketAddress();
                 properties.setProperty(Constants.ORB_SSL_PORT, String.valueOf(address.getPort()));
-                final String sslSocket = new StringBuilder().append(Constants.SSL_SOCKET_TYPE).append(":")
+                final String sslSocket = new StringBuilder().append(Constants.SSL_SOCKET_TYPE).append(':')
                         .append(String.valueOf(address.getPort())).toString();
                 properties.setProperty(ORBConstants.LISTEN_SOCKET_PROPERTY, sslSocket);
                 if (!properties.containsKey(Constants.ORB_ADDRESS)) {
@@ -147,7 +149,9 @@ public class CorbaORBService implements Service<ORB> {
 
     @Override
     public void stop(StopContext context) {
-        IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        }
         // stop the ORB asynchronously.
         final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
         try {

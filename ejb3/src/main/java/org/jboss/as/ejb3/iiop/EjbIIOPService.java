@@ -226,8 +226,6 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
         this.useQualifiedName = useQualifiedName;
         this.module = module;
         this.beanMethodMap = Collections.unmodifiableMap(beanMethodMap);
-        for(String s: beanRepositoryIds){
-        }
         this.beanRepositoryIds = beanRepositoryIds;
         this.homeMethodMap = Collections.unmodifiableMap(homeMethodMap);
         this.homeRepositoryIds = homeRepositoryIds;
@@ -313,9 +311,6 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             }
 
             Policy[] policies = policyList.toArray(new Policy[policyList.size()]);
-
-            for(Policy policy: policyList){
-            }
 
             // If there is an interface repository, then get the homeInterfaceDef from the IR
             InterfaceDef homeInterfaceDef = null;

@@ -160,9 +160,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     ri.add_request_service_context(sc, true /*replace existing context*/);
                 }
             }
-        }
-        //} catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
-            catch (Exception e) {
+        } catch (Exception e) {
             throw IIOPMessages.MESSAGES.unexpectedException(e);
         }
     }
@@ -212,7 +210,8 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
         } catch (FormatMismatch e) {
             throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);        }
+            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+        }
     }
 
     @Override

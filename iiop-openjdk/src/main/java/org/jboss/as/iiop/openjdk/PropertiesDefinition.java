@@ -24,6 +24,7 @@ package org.jboss.as.iiop.openjdk;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -36,9 +37,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
  */
 public class PropertiesDefinition extends PersistentResourceDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = {};
-
-    static final PersistentResourceDefinition[] CHILDREN = { PropertyDefinition.INSTANCE };
+    static final List<? extends PersistentResourceDefinition> CHILDREN = Arrays.asList(PropertyDefinition.INSTANCE);
 
     static final PropertiesDefinition INSTANCE = new PropertiesDefinition();
 
@@ -50,11 +49,11 @@ public class PropertiesDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return Collections.emptyList();
     }
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        return CHILDREN;
     }
 }

@@ -27,11 +27,11 @@
     </resources>
  
     <dependencies>
-      <module name="sun.jdk"/>
-      <module name="org.jboss.as.iiop-openjdk"/>
-      <module name="org.jboss.jts"/>
-      <module name="org.jboss.jts.integration"/>
-      <module name="javax.transaction.api"/>
-      <module name="org.jboss.iiop-client"/>
+        <module name="sun.jdk"/>
+        <module name="org.jboss.as.iiop-openjdk"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.jts.integration"/>
+        <module name="javax.transaction.api"/>
+        <module name="org.jboss.iiop-client"/>
     </dependencies>
 </module>

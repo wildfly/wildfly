@@ -67,9 +67,9 @@ import org.omg.CORBA.portable.InvokeHandler;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.ResponseHandler;
 import org.omg.PortableServer.Current;
+import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
-import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -171,8 +171,6 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      */
     public EjbCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
                            final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader, final boolean home, final String securityDomain) {
-
-
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -188,16 +186,14 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
         SASCurrent sasCurrent;
         try {
-            Object o=this.orb.resolve_initial_references("SASCurrent");
-            sasCurrent = (SASCurrent) o;
+            sasCurrent = (SASCurrent) this.orb.resolve_initial_references("SASCurrent");
         } catch (InvalidName invalidName) {
             sasCurrent = null;
         }
-       this.sasCurrent = sasCurrent;
-        org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent = null;
+        this.sasCurrent = sasCurrent;
+        org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent;
         try {
-            Object o = this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
-            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) o;
+            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
         } catch (InvalidName invalidName) {
             inboundTxCurrent = null;
         }
@@ -230,11 +226,9 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      */
     public OutputStream _invoke(final String opName, final InputStream in, final ResponseHandler handler) {
 
-
         if (logger.isTraceEnabled()) {
             logger.trace("EJBObject invocation: " + opName);
         }
-
 
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {

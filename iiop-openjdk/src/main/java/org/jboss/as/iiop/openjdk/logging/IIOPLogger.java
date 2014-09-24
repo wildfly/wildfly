@@ -108,15 +108,15 @@ public interface IIOPLogger extends BasicLogger {
 
     @LogMessage(level = DEBUG)
     @Message(id = 16314, value = "Bound name: %s")
-    void debugBoundName(String name);
+    void debugBoundName(Object name);
 
     @LogMessage(level = DEBUG)
     @Message(id = 16315, value = "Bound context: %s")
-    void debugBoundContext(String context);
+    void debugBoundContext(Object context);
 
     @LogMessage(level = DEBUG)
     @Message(id = 16316, value = "Unbound: %s")
-    void debugUnboundObject(String context);
+    void debugUnboundObject(Object context);
 
     @LogMessage(level = ERROR)
     @Message(id = 16317, value = "Internal error")
@@ -128,7 +128,7 @@ public interface IIOPLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 16319, value = "Unbind failed for %s")
-    void failedToUnbindObject(String name);
+    void failedToUnbindObject(Object name);
 
     @LogMessage(level = DEBUG)
     @Message(id = 16320, value = "Unable to obtain id from object")
