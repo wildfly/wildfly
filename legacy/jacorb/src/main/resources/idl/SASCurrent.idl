@@ -1,0 +1,97 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+#include <orb.idl>
+#include <CSI.idl>
+            
+/**
+ * This IDL module defines the SASCurrent interface.
+ *
+ * @author  <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
+ */
+module org {
+    module jboss {
+        module as {
+            module jacorb {
+                module csiv2 {
+                    module idl {
+                        local interface SASCurrent : CORBA::Current {
+
+                            /**
+                             * Returns true if an SAS context arrived with the current IIOP
+                             * request.
+                             */
+                            boolean context_received();
+
+                            /**
+                             * Returns true if an SAS context containing a client authentication
+                             * token arrived with the current IIOP request.
+                             */
+                            boolean client_authentication_info_received();
+
+                            /**
+                             * Returns the username that arrived with the current IIOP request.
+                             */
+                            CSI::UTF8String get_incoming_username();
+
+                            /**
+                             * Returns the password that arrived with the current IIOP request.
+                             */
+                            CSI::UTF8String get_incoming_password();
+
+
+                            /**
+                             * Returns the target name that arrived with the current IIOP request.
+                             */
+                            CSI::UTF8String get_incoming_target_name();
+
+                            /**
+                             * Returns the <code>org.omg.CSI.IdentityToken<code> that arrived with
+                             * the current IIOP request.
+                             */
+                            CSI::IdentityToken get_incoming_identity();
+
+                            /**
+                             * Returns the <code>org.omg.CSI.IdentityTokenType<code> that arrived
+                             * with the current IIOP request.
+                             */
+                            CSI::IdentityTokenType get_incoming_identity_token_type();
+
+                            /**
+                             * Returns the principal name that arrived with the current IIOP
+                             * request.
+                             */
+                            CSI::UTF8String get_incoming_principal_name();
+
+                            /**
+                             * Sets the outgoing SAS reply to <code>ContextError</code>, with
+                             * major status "invalid evidence".
+                             */
+                            void reject_incoming_context();
+
+                        };
+                    };
+                };
+            };
+        };
+    };
+};
