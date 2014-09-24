@@ -1045,7 +1045,7 @@ public interface DomainManagementMessages {
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#SERVER_CONFIG_DIR_USERS} command line argument.
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Define the location the server config directory.")
+    @Message(id = Message.NONE, value = "Define the location of the server config directory.")
     String argServerConfigDirUsers();
 
     /**
