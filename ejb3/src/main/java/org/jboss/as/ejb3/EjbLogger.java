@@ -406,8 +406,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 14143, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s")
-    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime);
+    @Message(id = 14143, value = "A previous execution of timer %s is still in progress, skipping this overlapping scheduled execution at: %s")
+    void skipOverlappingInvokeTimeout(Timer timer, Date scheduledTime);
 
     // NOTE: messages 14144 to 14149 were moved to message bundle, do not reuse the ids
 
@@ -573,8 +573,8 @@ public interface EjbLogger extends BasicLogger {
      * Logs a waring message indicating an overlapped invoking timeout for timer
      */
     @LogMessage(level = WARN)
-    @Message(id = 14262, value = "A previous execution of timer [%s %s] is being retried, skipping this scheduled execution at: %s")
-    void skipInvokeTimeoutDuringRetry(String timedObjectId, String timerId, Date scheduledTime);
+    @Message(id = 14262, value = "A previous execution of timer %s is being retried, skipping this scheduled execution at: %s")
+    void skipInvokeTimeoutDuringRetry(Timer timer, Date scheduledTime);
 
     @LogMessage(level = ERROR)
     @Message(id = 14265, value = "Error during transaction recovery")

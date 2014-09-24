@@ -55,6 +55,15 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 public class TimerImpl implements Timer {
 
     /**
+     * The output format for {@link #toString()}
+     */
+    private static final String FORMAT = "[id=%s timedObjectId=%s auto-timer?:%b persistent?:%b timerService=%s initialExpiration=%s intervalDuration(in milli sec)=%d nextExpiration=%%s timerState=%%s info=%s]";
+    /**
+     * The output format with the cached final values, after the first toString() invocation
+     */
+    private String toStringFormat = null;
+
+    /**
      * Unique id for this timer instance
      */
     protected final String id;
@@ -603,40 +612,13 @@ public class TimerImpl implements Timer {
      */
     @Override
     public String toString() {
-        //TODO: Cache this
-        StringBuilder sb = new StringBuilder();
-        sb.append("[id=");
-        sb.append(this.id);
-        sb.append(" ");
-        sb.append("timedObjectId=");
-        if (this.timedObjectInvoker == null) {
-            sb.append("null");
-        } else {
-            sb.append(this.timedObjectInvoker.getTimedObjectId());
+        if (this.toStringFormat == null) {
+            // initialize with the first invocation
+            final String timedObjectId = this.timedObjectInvoker == null ? "null" : this.timedObjectInvoker.getTimedObjectId();
+            this.toStringFormat = String.format(FORMAT, this.id, timedObjectId, this.isAutoTimer(), this.persistent,
+                    this.timerService, this.initialExpiration, this.intervalDuration, this.info);
         }
-        sb.append(" ");
-        sb.append("auto-timer?:");
-        sb.append(this.isAutoTimer());
-        sb.append(" ");
-        sb.append("persistent?:");
-        sb.append(this.persistent);
-        sb.append(" ");
-        sb.append("timerService=");
-        sb.append(this.timerService);
-        sb.append(" ");
-        sb.append("initialExpiration=");
-        sb.append(this.initialExpiration);
-        sb.append(" ");
-        sb.append("intervalDuration(in milli sec)=");
-        sb.append(this.intervalDuration);
-        sb.append(" ");
-        sb.append("nextExpiration=");
-        sb.append(this.nextExpiration);
-        sb.append(" ");
-        sb.append("timerState=");
-        sb.append(this.timerState);
-
-        return sb.toString();
+        return String.format(this.toStringFormat, this.nextExpiration, this.timerState);
     }
 
     private void registerTimerCancellationWithTx(Transaction tx) {
