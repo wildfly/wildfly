@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.SessionConfig;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
@@ -79,7 +81,7 @@ public class DistributableSingleSignOn implements SingleSignOn {
                 if (sessionId != null) {
                     Session session = manager.getSession(sessions.getSession(deployment));
                     if (session != null) {
-                        result.add(session);
+                        result.add(new InvalidatableSession(session));
                     }
                 }
             }
@@ -111,5 +113,114 @@ public class DistributableSingleSignOn implements SingleSignOn {
     @Override
     public void close() {
         this.batch.close();
+    }
+
+    private static class InvalidatableSession implements Session {
+        private final Session session;
+
+        InvalidatableSession(Session session) {
+            this.session = session;
+        }
+
+        @Override
+        public void invalidate(HttpServerExchange exchange) {
+            Session session = this.session.getSessionManager().getSession(exchange, new SimpleSessionConfig(this.session.getId()));
+            if (session != null) {
+                session.invalidate(exchange);
+            }
+        }
+
+        @Override
+        public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
+            return this.session.changeSessionId(exchange, config);
+        }
+
+        @Override
+        public Object getAttribute(String name) {
+            return this.session.getAttribute(name);
+        }
+
+        @Override
+        public Set<String> getAttributeNames() {
+            return this.session.getAttributeNames();
+        }
+
+        @Override
+        public long getCreationTime() {
+            return this.session.getCreationTime();
+        }
+
+        @Override
+        public String getId() {
+            return this.session.getId();
+        }
+
+        @Override
+        public long getLastAccessedTime() {
+            return this.session.getLastAccessedTime();
+        }
+
+        @Override
+        public int getMaxInactiveInterval() {
+            return this.session.getMaxInactiveInterval();
+        }
+
+        @Override
+        public SessionManager getSessionManager() {
+            return this.session.getSessionManager();
+        }
+
+        @Override
+        public Object removeAttribute(String name) {
+            return this.session.removeAttribute(name);
+        }
+
+        @Override
+        public void requestDone(HttpServerExchange exchange) {
+            this.session.requestDone(exchange);
+        }
+
+        @Override
+        public Object setAttribute(String name, Object value) {
+            return this.session.setAttribute(name, value);
+        }
+
+        @Override
+        public void setMaxInactiveInterval(int interval) {
+            this.session.setMaxInactiveInterval(interval);
+        }
+    }
+
+    private static class SimpleSessionConfig implements SessionConfig {
+        private final String id;
+
+        SimpleSessionConfig(String id) {
+            this.id = id;
+        }
+
+        @Override
+        public String findSessionId(HttpServerExchange exchange) {
+            return this.id;
+        }
+
+        @Override
+        public void setSessionId(HttpServerExchange exchange, String sessionId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clearSession(HttpServerExchange exchange, String sessionId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public SessionCookieSource sessionCookieSource(HttpServerExchange exchange) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String rewriteUrl(String originalUrl, String sessionId) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

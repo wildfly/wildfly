@@ -44,20 +44,33 @@ public class AccountImpl implements Account, Serializable {
     private final Principal principal;
     private final Object credential;
 
+    private final Principal originalPrincipal;
+
     public AccountImpl(final String name) {
         this.name = name;
-        this.principal = new AccountPrincipal();
+        this.principal = new AccountPrincipal(name);
         this.credential = null;
+        this.originalPrincipal = null;
     }
 
     public AccountImpl(final Principal principal) {
         this.principal = principal;
         this.name = principal.getName();
         this.credential = null;
+        this.originalPrincipal = null;
     }
+    public AccountImpl(final Principal principal, Set<String> roles, final Object credential, Principal originalPrincipal) {
+        this.principal = principal;
+        this.credential = credential;
+        this.originalPrincipal = originalPrincipal;
+        this.name = principal.getName();
+        this.roles.addAll(roles);
+    }
+
     public AccountImpl(final Principal principal, Set<String> roles, final Object credential) {
         this.principal = principal;
         this.credential = credential;
+        this.originalPrincipal = null;
         this.name = principal.getName();
         this.roles.addAll(roles);
     }
@@ -97,13 +110,37 @@ public class AccountImpl implements Account, Serializable {
         return Collections.unmodifiableSet(roles);
     }
 
+    /**
+     * If the original principal was set then this will be returned, otherwise
+     * it will return the current principal.
+     *
+     * If principal mapping is used the principal for the verified account can be different
+     * to the principal that need to be used for authentication. When calling
+     * {@link io.undertow.security.idm.IdentityManager#verify(io.undertow.security.idm.Account)}
+     * for an existing account this is the principal that must be used.
+     *
+     * see UNDERTOW-273
+     * @return The original principal
+     */
+    public Principal getOriginalPrincipal() {
+        if (originalPrincipal != null) {
+            return originalPrincipal;
+        }
+        return principal;
+    }
+
     public Object getCredential() {
         return credential;
     }
 
-    private final class AccountPrincipal implements Principal, Serializable {
+    private static class AccountPrincipal implements Principal, Serializable {
 
         private static final long serialVersionUID = 1L;
+        private String name;
+
+        public AccountPrincipal(String name) {
+            this.name = name;
+        }
 
         @Override
         public String getName() {

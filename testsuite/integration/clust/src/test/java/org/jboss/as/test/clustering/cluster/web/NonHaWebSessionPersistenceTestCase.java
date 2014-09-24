@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.cluster.web;
 
 import java.io.IOException;
 import java.net.URL;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -35,6 +36,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -57,7 +59,7 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
     @TargetsContainer(CONTAINER_SINGLE)
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "session-persistence.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(NonHaWebSessionPersistenceTestCase.class.getPackage(), "web.xml");
         return war;
     }

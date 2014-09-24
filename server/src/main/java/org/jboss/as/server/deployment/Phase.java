@@ -216,6 +216,7 @@ public enum Phase {
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_1  = 0x0A17;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_2  = 0x0A18;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_WELD           = 0x0A19;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_UNDERTOW_SHARED_SESSION = 0x0A1A;
     public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0AE0;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
@@ -306,7 +307,6 @@ public enum Phase {
     public static final int PARSE_MAIL_SESSION_DEFINITION_ANNOTATION    = 0x2D01;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
-    public static final int PARSE_EJB_DEFAULT_SECURITY_DOMAIN           = 0x2E02;
     public static final int PARSE_PERSISTENCE_UNIT                      = 0x2F00;
     public static final int PARSE_PERMISSIONS                           = 0x3100;
     public static final int PARSE_LIFECYCLE_ANNOTATION                  = 0x3200;
@@ -400,6 +400,7 @@ public enum Phase {
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_JSF_CDI_EXTENSIONS              = 0x0302;
+    public static final int POST_MODULE_EJB_DEFAULT_SECURITY_DOMAIN     = 0x2E02;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0402;
@@ -487,6 +488,7 @@ public enum Phase {
     public static final int POST_MODULE_UNDERTOW_MODCLUSTER             = 0x3400;
 
     // INSTALL
+    public static final int INSTALL_SHARED_SESSION_MANAGER              = 0x0100;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;

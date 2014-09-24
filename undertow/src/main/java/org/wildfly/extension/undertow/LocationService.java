@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -79,11 +80,22 @@ public class LocationService implements Service<LocationService> {
 
     private HttpHandler configureHandler() {
         ArrayList<FilterRef> filters = new ArrayList<>(this.filters.size());
-        for (InjectedValue<FilterRef> injectedFilter : this.filters) {
-            filters.add(injectedFilter.getValue());
-        }
-        Collections.reverse(filters);
-        HttpHandler handler = getHttpHandler().getValue();
+                for (InjectedValue<FilterRef> injectedFilter : this.filters) {
+                    filters.add(injectedFilter.getValue());
+                }
+
+        return configureHandlerChain(getHttpHandler().getValue(), filters);
+    }
+
+    protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<FilterRef> filters) {
+        Collections.sort(filters, new Comparator<FilterRef>() {
+            @Override
+            public int compare(FilterRef o1, FilterRef o2) {
+                return o1.getPriority() >= o2.getPriority() ? 1 : -1;
+            }
+        });
+        Collections.reverse(filters); //handler chain goes last first
+        HttpHandler handler = rootHandler;
         for (FilterRef filter : filters) {
             handler = filter.createHttpHandler(handler);
         }

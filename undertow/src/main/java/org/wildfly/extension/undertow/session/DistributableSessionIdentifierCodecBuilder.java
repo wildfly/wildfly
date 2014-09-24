@@ -38,7 +38,7 @@ public interface DistributableSessionIdentifierCodecBuilder {
      * @param deploymentServiceName the service name of the deployment
      * @return a service builder
      */
-    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName);
+    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, String deploymentName);
 
     /**
      * Builds cross-deployment dependencies needed for route handling

@@ -35,10 +35,10 @@ public interface RouteLocatorBuilder {
      * Builds a {@link RouteLocator} service.
      * @param target the service target
      * @param name the service name of the route locator service
-     * @param deploymentServiceName the service name of the web deployment
+     * @param deploymentName the name of the web deployment
      * @return a service builder
      */
-    ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName);
+    ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName);
 
     /**
      * Builds the server dependencies to be made available to every deployment.

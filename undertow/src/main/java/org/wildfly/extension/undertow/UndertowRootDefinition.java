@@ -33,7 +33,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ValueExpression;
-import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.jboss.dmr.ModelNode;
@@ -77,7 +76,6 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,
             ServletContainerDefinition.INSTANCE,
-            ErrorPageDefinition.INSTANCE,
             HandlerDefinitions.INSTANCE,
             FilterDefinitions.INSTANCE
     };

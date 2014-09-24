@@ -88,22 +88,17 @@ public class Host implements Service<Host> {
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(pathHandler);
         }
+
         ArrayList<FilterRef> filters = new ArrayList<>(this.filters.size());
         for (InjectedValue<FilterRef> injectedFilter : this.filters) {
             filters.add(injectedFilter.getValue());
         }
 
+
         //handle requests that use the Expect: 100-continue header
         rootHandler = Handlers.httpContinueRead(rootHandler);
-        //we always need to add date header
-        //commented out for now as it causes issues with restEasy
-        //rootHandler = Handlers.date(rootHandler);
-        Collections.reverse(filters);
-        HttpHandler handler = rootHandler;
-        for (FilterRef filter : filters) {
-            handler = filter.createHttpHandler(handler);
-        }
-        return handler;
+
+        return LocationService.configureHandlerChain(rootHandler,filters);
     }
 
     @Override

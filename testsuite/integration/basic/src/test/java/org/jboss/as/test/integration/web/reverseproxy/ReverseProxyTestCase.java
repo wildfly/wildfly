@@ -49,6 +49,7 @@ import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
  */
@@ -77,14 +78,19 @@ public class ReverseProxyTestCase {
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             //add the hosts
+            ModelNode addSocketBindingOp = getOutboundSocketBinding(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort());
+            ManagementOperations.executeOperation(managementClient.getControllerClient(),addSocketBindingOp);
+
             op = new ModelNode();
             addr = new ModelNode();
             addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
             addr.add("configuration", "handler");
             addr.add("reverse-proxy", "myproxy");
-            addr.add("host", managementClient.getWebUri().toString() + "/server1");
+            addr.add("host", "server1");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            op.get("outbound-socket-binding").set("proxy-host");
+            op.get("path").set("/server1");
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             op = new ModelNode();
@@ -92,9 +98,12 @@ public class ReverseProxyTestCase {
             addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
             addr.add("configuration", "handler");
             addr.add("reverse-proxy", "myproxy");
-            addr.add("host", managementClient.getWebUri().toString() + "/server2");
+            addr.add("host", "server2");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+            op.get("outbound-socket-binding").set("proxy-host");
+            op.get("path").set("/server2");
+
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
 
@@ -111,6 +120,13 @@ public class ReverseProxyTestCase {
         }
     }
 
+    private static ModelNode getOutboundSocketBinding(String address, int port) {
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy-host", "add");
+        op.get("host").set(address);
+        op.get("port").set(port);
+        return op;
+    }
+
     @AfterClass
     public static void tearDown() throws Exception {
 
@@ -119,7 +135,7 @@ public class ReverseProxyTestCase {
         addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
         addr.add("configuration", "handler");
         addr.add("reverse-proxy", "myproxy");
-        addr.add("host", mc.getWebUri().toString() + "/server2");
+        addr.add("host", "server2");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -130,7 +146,7 @@ public class ReverseProxyTestCase {
         addr.add(ModelDescriptionConstants.SUBSYSTEM, "undertow");
         addr.add("configuration", "handler");
         addr.add("reverse-proxy", "myproxy");
-        addr.add("host", mc.getWebUri().toString() + "/server1");
+        addr.add("host", "server1");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -156,6 +172,10 @@ public class ReverseProxyTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ManagementOperations.executeOperation(mc.getControllerClient(), op);
+
+        op = createOpNode("socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy-host", "remove");
+        ManagementOperations.executeOperation(mc.getControllerClient(), op);
+
     }
 
     @ArquillianResource

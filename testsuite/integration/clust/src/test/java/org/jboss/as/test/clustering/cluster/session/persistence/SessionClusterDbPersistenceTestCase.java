@@ -6,6 +6,7 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.ClusterTestUtil;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebFailoverAbstractCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -16,7 +17,11 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @org.junit.Ignore("WFLY-2409")
 public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbstractCase {
-    private static final String MODULE_NAME = "session-db-cluster";
+    private static final String DEPLOYMENT_NAME = "session-db-cluster.war";
+
+    public SessionClusterDbPersistenceTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -31,17 +36,12 @@ public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbs
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addClass(SimpleServlet.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         war.setWebXML(SessionClusterDbPersistenceTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource("WEB-INF/jboss-web.xml","jboss-web.xml");
         log.info(war.toString(true));
         return war;
-    }
-
-    @Override
-    protected String getModuleName() {
-        return MODULE_NAME;
     }
 }

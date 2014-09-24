@@ -26,7 +26,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.Session;
+import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionManager;
 
 import java.util.Collections;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.Batch;
+import org.mockito.Matchers;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -106,14 +109,27 @@ public class DistributableSingleSignOnTestCase {
         when(sessions.getSession(deployment)).thenReturn(sessionId);
         when(this.registry.getSessionManager(deployment)).thenReturn(manager);
         when(manager.getSession(sessionId)).thenReturn(session);
+        when(session.getId()).thenReturn(sessionId);
 
-        Iterator<Session> result = this.subject.iterator();
+        Iterator<Session> results = this.subject.iterator();
 
-        assertTrue(result.hasNext());
-        assertSame(session, result.next());
-        assertFalse(result.hasNext());
+        assertTrue(results.hasNext());
+        Session result = results.next();
+        assertEquals(session.getId(), result.getId());
+        assertFalse(results.hasNext());
 
         verifyZeroInteractions(this.batch);
+
+        // Validate that returned sessions can be invalidated
+        HttpServerExchange exchange = new HttpServerExchange(null);
+        Session mutableSession = mock(Session.class);
+
+        when(session.getSessionManager()).thenReturn(manager);
+        when(manager.getSession(same(exchange), Matchers.<SessionConfig>any())).thenReturn(mutableSession);
+
+        result.invalidate(exchange);
+
+        verify(mutableSession).invalidate(same(exchange));
     }
 
     @Test

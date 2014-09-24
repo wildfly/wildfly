@@ -28,9 +28,6 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.jboss.ReplicationConfig;
-import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
@@ -41,8 +38,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SessionCacheConfigurationService extends AbstractCacheConfigurationService {
 
-    public static ServiceBuilder<Configuration> build(ServiceTarget target, String containerName, String cacheName, String templateCacheName, JBossWebMetaData metaData) {
-        SessionCacheConfigurationService service = new SessionCacheConfigurationService(cacheName, metaData);
+    public static ServiceBuilder<Configuration> build(ServiceTarget target, String containerName, String cacheName, String templateCacheName) {
+        SessionCacheConfigurationService service = new SessionCacheConfigurationService(cacheName);
         return target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, service.container)
                 .addDependency(CacheConfigurationService.getServiceName(containerName, templateCacheName), Configuration.class, service.configuration)
@@ -51,24 +48,9 @@ public class SessionCacheConfigurationService extends AbstractCacheConfiguration
 
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final InjectedValue<Configuration> configuration = new InjectedValue<>();
-    private final JBossWebMetaData metaData;
 
-    private SessionCacheConfigurationService(String name, JBossWebMetaData metaData) {
+    private SessionCacheConfigurationService(String name) {
         super(name);
-        this.metaData = metaData;
-        ReplicationConfig config = this.metaData.getReplicationConfig();
-        if (config == null) {
-            config = new ReplicationConfig();
-            this.metaData.setReplicationConfig(config);
-        }
-        ReplicationGranularity granularity = config.getReplicationGranularity();
-        if (granularity == null) {
-            config.setReplicationGranularity(ReplicationGranularity.SESSION);
-        }
-        Integer maxActiveSessions = this.metaData.getMaxActiveSessions();
-        if (maxActiveSessions == null) {
-            this.metaData.setMaxActiveSessions(Integer.valueOf(-1));
-        }
     }
 
     @Override

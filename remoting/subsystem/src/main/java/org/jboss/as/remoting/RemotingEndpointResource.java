@@ -24,7 +24,6 @@ package org.jboss.as.remoting;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -40,7 +39,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.extension.io.OptionAttributeDefinition;
-import org.wildfly.extension.io.OptionList;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -54,30 +52,33 @@ public class RemotingEndpointResource extends PersistentResourceDefinition {
             .build();
 
 
-    static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
-            .addOption(RemotingOptions.SEND_BUFFER_SIZE, "send-buffer-size", new ModelNode(RemotingOptions.DEFAULT_SEND_BUFFER_SIZE))
-            .addOption(RemotingOptions.RECEIVE_BUFFER_SIZE, "receive-buffer-size", new ModelNode(RemotingOptions.DEFAULT_RECEIVE_BUFFER_SIZE))
-            .addOption(RemotingOptions.BUFFER_REGION_SIZE, "buffer-region-size")
-            .addOption(RemotingOptions.TRANSMIT_WINDOW_SIZE, "transmit-window-size", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_TRANSMIT_WINDOW_SIZE))
-            .addOption(RemotingOptions.RECEIVE_WINDOW_SIZE, "receive-window-size", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_RECEIVE_WINDOW_SIZE))
-            .addOption(RemotingOptions.MAX_OUTBOUND_CHANNELS, "max-outbound-channels", new ModelNode(RemotingOptions.DEFAULT_MAX_OUTBOUND_CHANNELS))
-            .addOption(RemotingOptions.MAX_INBOUND_CHANNELS, "max-inbound-channels", new ModelNode(RemotingOptions.DEFAULT_MAX_INBOUND_CHANNELS))
-            .addOption(RemotingOptions.AUTHORIZE_ID, "authorize-id")
-            .addOption(RemotingOptions.AUTH_REALM, "auth-realm")
-            .addOption(RemotingOptions.AUTHENTICATION_RETRIES, "authentication-retries", new ModelNode(RemotingOptions.DEFAULT_AUTHENTICATION_RETRIES))
-            .addOption(RemotingOptions.MAX_OUTBOUND_MESSAGES, "max-outbound-messages", new ModelNode(RemotingOptions.OUTGOING_CHANNEL_DEFAULT_MAX_OUTBOUND_MESSAGES))
-            .addOption(RemotingOptions.MAX_INBOUND_MESSAGES, "max-inbound-messages", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_MAX_OUTBOUND_MESSAGES))
-            .addOption(RemotingOptions.HEARTBEAT_INTERVAL, "heartbeat-interval", new ModelNode(RemotingOptions.DEFAULT_HEARTBEAT_INTERVAL))
-            .addOption(RemotingOptions.MAX_INBOUND_MESSAGE_SIZE, "max-inbound-message-size", new ModelNode(RemotingOptions.DEFAULT_MAX_INBOUND_MESSAGE_SIZE))
-            .addOption(RemotingOptions.MAX_OUTBOUND_MESSAGE_SIZE, "max-outbound-message-size", new ModelNode(RemotingOptions.DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE))
-            .addOption(RemotingOptions.SERVER_NAME, "server-name")
-            .addOption(RemotingOptions.SASL_PROTOCOL, "sasl-protocol", new ModelNode(RemotingOptions.DEFAULT_SASL_PROTOCOL))
-            .build();
+    public static final OptionAttributeDefinition SEND_BUFFER_SIZE = OptionAttributeDefinition.builder("send-buffer-size", RemotingOptions.SEND_BUFFER_SIZE).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_SEND_BUFFER_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition RECEIVE_BUFFER_SIZE = OptionAttributeDefinition.builder("receive-buffer-size", RemotingOptions.RECEIVE_BUFFER_SIZE).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_RECEIVE_BUFFER_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition BUFFER_REGION_SIZE = OptionAttributeDefinition.builder("buffer-region-size", RemotingOptions.BUFFER_REGION_SIZE).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition TRANSMIT_WINDOW_SIZE = OptionAttributeDefinition.builder("transmit-window-size", RemotingOptions.TRANSMIT_WINDOW_SIZE).setDefaultValue(new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_TRANSMIT_WINDOW_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition RECEIVE_WINDOW_SIZE = OptionAttributeDefinition.builder("receive-window-size", RemotingOptions.RECEIVE_WINDOW_SIZE).setDefaultValue(new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_RECEIVE_WINDOW_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_OUTBOUND_CHANNELS = OptionAttributeDefinition.builder("max-outbound-channels", RemotingOptions.MAX_OUTBOUND_CHANNELS).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_MAX_OUTBOUND_CHANNELS)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_INBOUND_CHANNELS = OptionAttributeDefinition.builder("max-inbound-channels", RemotingOptions.MAX_INBOUND_CHANNELS).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_MAX_INBOUND_CHANNELS)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition AUTHORIZE_ID = OptionAttributeDefinition.builder("authorize-id", RemotingOptions.AUTHORIZE_ID).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition AUTH_REALM = OptionAttributeDefinition.builder("auth-realm", RemotingOptions.AUTH_REALM).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition AUTHENTICATION_RETRIES = OptionAttributeDefinition.builder("authentication-retries", RemotingOptions.AUTHENTICATION_RETRIES).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_AUTHENTICATION_RETRIES)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_OUTBOUND_MESSAGES = OptionAttributeDefinition.builder("max-outbound-messages", RemotingOptions.MAX_OUTBOUND_MESSAGES).setDefaultValue(new ModelNode(RemotingOptions.OUTGOING_CHANNEL_DEFAULT_MAX_OUTBOUND_MESSAGES)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_INBOUND_MESSAGES = OptionAttributeDefinition.builder("max-inbound-messages", RemotingOptions.MAX_INBOUND_MESSAGES).setDefaultValue(new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_MAX_OUTBOUND_MESSAGES)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition HEARTBEAT_INTERVAL = OptionAttributeDefinition.builder("heartbeat-interval", RemotingOptions.HEARTBEAT_INTERVAL).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_HEARTBEAT_INTERVAL)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_INBOUND_MESSAGE_SIZE = OptionAttributeDefinition.builder("max-inbound-message-size", RemotingOptions.MAX_INBOUND_MESSAGE_SIZE).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_MAX_INBOUND_MESSAGE_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition MAX_OUTBOUND_MESSAGE_SIZE = OptionAttributeDefinition.builder("max-outbound-message-size", RemotingOptions.MAX_OUTBOUND_MESSAGE_SIZE).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_MAX_OUTBOUND_MESSAGE_SIZE)).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition SERVER_NAME = OptionAttributeDefinition.builder("server-name", RemotingOptions.SERVER_NAME).setAllowExpression(true).build();
+    public static final OptionAttributeDefinition SASL_PROTOCOL = OptionAttributeDefinition.builder("sasl-protocol", RemotingOptions.SASL_PROTOCOL).setDefaultValue(new ModelNode(RemotingOptions.DEFAULT_SASL_PROTOCOL)).setAllowExpression(true).build();
+
 
     protected static final PathElement ENDPOINT_PATH = PathElement.pathElement("configuration", "endpoint");
     protected static final Collection<AttributeDefinition> ATTRIBUTES;
 
     static final RemotingEndpointResource INSTANCE = new RemotingEndpointResource();
+
+    public static final java.util.List<OptionAttributeDefinition> OPTIONS = Arrays.asList(SEND_BUFFER_SIZE, RECEIVE_BUFFER_SIZE, BUFFER_REGION_SIZE, TRANSMIT_WINDOW_SIZE, RECEIVE_WINDOW_SIZE,
+            MAX_OUTBOUND_CHANNELS, MAX_INBOUND_CHANNELS, AUTHORIZE_ID, AUTHORIZE_ID, AUTH_REALM, AUTHENTICATION_RETRIES, MAX_OUTBOUND_MESSAGES,
+            MAX_INBOUND_MESSAGES, HEARTBEAT_INTERVAL, MAX_INBOUND_MESSAGE_SIZE, MAX_OUTBOUND_MESSAGE_SIZE, SERVER_NAME, SASL_PROTOCOL);
 
     static {
         ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(WORKER));

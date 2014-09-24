@@ -26,7 +26,7 @@ import java.io.File;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.weld.modules.ModuleUtils;
+import org.jboss.as.test.shared.ModuleUtils;
 
 /**
  * @author baranowb

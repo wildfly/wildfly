@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -80,6 +81,11 @@ public abstract class AbstractHandlerDefinition extends PersistentResourceDefini
         if (resourceRegistration.getOperationEntry(PathAddress.EMPTY_ADDRESS, ModelDescriptionConstants.REMOVE) == null) {
             registerRemoveOperation(resourceRegistration, new DefaultHandlerRemove(), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         }
+    }
+
+    @Override
+    public Class<? extends HttpHandler> getHandlerClass() {
+        return null;
     }
 
     @Override

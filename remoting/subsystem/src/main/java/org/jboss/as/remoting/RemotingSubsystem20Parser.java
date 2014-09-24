@@ -63,7 +63,9 @@ class RemotingSubsystem20Parser extends RemotingSubsystem11Parser implements XML
 
     static final RemotingSubsystem20Parser INSTANCE = new RemotingSubsystem20Parser();
     static final PersistentResourceXMLDescription ENDPOINT_PARSER = PersistentResourceXMLDescription.builder(RemotingEndpointResource.INSTANCE)
-            .addAttributes(RemotingEndpointResource.INSTANCE.getAttributes())
+            .addAttributes(RemotingEndpointResource.WORKER, RemotingEndpointResource.SEND_BUFFER_SIZE, RemotingEndpointResource.RECEIVE_BUFFER_SIZE, RemotingEndpointResource.BUFFER_REGION_SIZE, RemotingEndpointResource.TRANSMIT_WINDOW_SIZE, RemotingEndpointResource.RECEIVE_WINDOW_SIZE,
+                    RemotingEndpointResource.MAX_OUTBOUND_CHANNELS, RemotingEndpointResource.MAX_INBOUND_CHANNELS, RemotingEndpointResource.AUTHORIZE_ID, RemotingEndpointResource.AUTHORIZE_ID, RemotingEndpointResource.AUTH_REALM, RemotingEndpointResource.AUTHENTICATION_RETRIES, RemotingEndpointResource.MAX_OUTBOUND_MESSAGES,
+                    RemotingEndpointResource.MAX_INBOUND_MESSAGES, RemotingEndpointResource.HEARTBEAT_INTERVAL, RemotingEndpointResource.MAX_INBOUND_MESSAGE_SIZE, RemotingEndpointResource.MAX_OUTBOUND_MESSAGE_SIZE, RemotingEndpointResource.SERVER_NAME, RemotingEndpointResource.SASL_PROTOCOL)
             .build();
 
     @Override

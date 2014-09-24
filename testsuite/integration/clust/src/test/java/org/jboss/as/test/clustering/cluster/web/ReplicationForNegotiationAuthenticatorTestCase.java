@@ -37,6 +37,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterTestUtil;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -46,7 +47,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWebFailoverAbstractCase {
-    private static final String MODULE_NAME = "negotiationAuthenticator";
+    private static final String DEPLOYMENT_NAME = "negotiationAuthenticator.war";
+
+    public ReplicationForNegotiationAuthenticatorTestCase() {
+        super(DEPLOYMENT_NAME);
+    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -61,8 +66,8 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
     }
        
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addClass(SimpleServlet.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");    
@@ -118,10 +123,5 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
             HttpClientUtils.closeQuietly(client);
         }
 
-    }
-
-    @Override
-    protected String getModuleName() {
-        return MODULE_NAME;
     }
 }
