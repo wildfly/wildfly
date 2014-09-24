@@ -1,0 +1,177 @@
+
+// Some definitions from the CORBA module as needed
+// by other modules. This file is for declaration
+// purposes only!!
+
+// $Id: orb.idl 82920 2009-01-15 17:29:45Z pgier $
+
+#ifndef _MYORB_IDL
+#define _MYORB_IDL
+
+/*
+  the following pragma is proprietary to JacORB. It ensures
+  that no code is ever generated when this file is included in
+  other files even when the -all compiler option is set
+ */
+
+#pragma inhibit_code_generation
+#pragma prefix "omg.org"
+
+
+module CORBA 
+{
+    typedef unsigned short ServiceOption;
+    typedef unsigned short ServiceDetailType;
+
+    // for PortableInterceptors
+    typedef sequence<string> StringSeq;
+    typedef sequence<wstring> WStringSeq;
+    typedef sequence<octet> OctetSeq;
+
+    typedef unsigned long PolicyType;
+	
+    // actually, Current is pseudo, but we need it this way so everything compiles
+    interface Current {}; 
+
+    pseudo interface Environment{};
+    pseudo interface NamedValue {};
+    pseudo interface NVList {};	
+
+    // not suitable for deriving user-defined interfaces !
+    enum TCKind { 
+	tk_null, tk_void, 
+	tk_short, tk_long, tk_ushort, tk_ulong, 
+	tk_float, tk_double, tk_boolean, tk_char, 
+	tk_octet, tk_any, tk_TypeCode, tk_Principal, tk_objref, 
+	tk_struct, tk_union, tk_enum, tk_string, 
+	tk_sequence, tk_array, tk_alias, tk_except, 
+	tk_longlong, tk_ulonglong, tk_longdouble,
+	tk_wchar, tk_wstring, tk_fixed, tk_value,
+	tk_value_box,
+	tk_native, tk_abstract_interface,
+        tk_local_interface // latest addition
+    };
+    
+    // not suitable for deriving user-defined interfaces
+    typedef string Identifier;
+    typedef string RepositoryId;
+
+    pseudo interface TypeCode { // PIDL
+	exception Bounds {};
+	exception BadKind {};
+	
+	// for all TypeCode kinds
+	boolean equal (in TypeCode tc);
+	TCKind kind ();
+
+	boolean equivalent(in TypeCode tc);
+	TypeCode get_compact_typecode();
+
+	// for tk_objref, tk_struct, tk_union, tk_enum, 
+	// tk_alias, and tk_except
+	RepositoryId id () raises (BadKind);
+	
+	// for tk_objref, tk_struct, tk_union, tk_enum, 
+	// tk_alias, and tk_except
+	Identifier name () raises (BadKind);
+	
+	// for tk_struct, tk_union, tk_enum, and tk_except
+	unsigned long member_count () raises (BadKind);
+	Identifier member_name (in unsigned long index) 
+	    raises (BadKind, Bounds);
+	
+	// for tk_struct, tk_union, and tk_except
+	TypeCode member_type (in unsigned long index) 
+	    raises (BadKind, Bounds);
+	
+	// for tk_union
+	any member_label (in unsigned long index) 
+	    raises (BadKind, Bounds);
+	TypeCode discriminator_type () raises (BadKind);
+	long default_index () raises (BadKind); 
+	
+	// for tk_string, tk_sequence, and tk_array
+	unsigned long length () raises (BadKind);
+	
+	// for tk_sequence, tk_array, and tk_alias
+	TypeCode content_type () raises (BadKind);
+       	
+    };
+
+
+    interface InterfaceDef     {};
+
+    /* this is the original PIDL from the lang. mapping, 
+       but we do not use it! Instead...
+
+    pseudo interface Principal
+    { 
+	attribute sequence<octet> name;
+    };
+    */
+
+    /* ... we use this little hack. It saves us fiddling with 
+       the generated code that uses  Principals. Actually, we 
+       should not be doing this....
+    */
+
+    typedef sequence<octet> Principal;
+
+    interface IDLType {};
+
+    enum OperationMode {OP_NORMAL, OP_ONEWAY};
+    enum ParameterMode {PARAM_IN, PARAM_OUT, PARAM_INOUT};
+
+    struct ParameterDescription {
+	Identifier name; 
+	TypeCode type; 
+	IDLType type_def;
+	ParameterMode mode;
+    };
+    typedef sequence <ParameterDescription> ParDescriptionSeq;
+	
+    interface Policy
+    {
+	readonly attribute PolicyType policy_type;
+	Policy copy();
+	void destroy();
+    };
+	
+    typedef sequence <Policy> PolicyList;
+
+    interface DomainManager
+    {
+	Policy get_domain_policy(in PolicyType policy_type);
+    };
+
+    interface ConstructionPolicy: Policy
+    {
+	void make_domain_manager(in InterfaceDef object_type,
+				 in boolean constr_policy);
+    };
+
+    typedef sequence <DomainManager> DomainManagersList;
+	
+
+    typedef short PolicyErrorCode;
+    const PolicyErrorCode BAD_POLICY = 0;
+    // ... to be continued
+
+    exception PolicyError
+    {
+	PolicyErrorCode reason;
+    };
+
+    exception UserException {};
+    pseudo interface ExceptionList {};
+
+
+    valuetype WStringValue {
+       public wstring value;
+    };
+
+
+};
+
+
+#endif /* _MYORB_IDL */

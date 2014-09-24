@@ -282,6 +282,7 @@
         <module>jsf</module>
         <module>jsr77</module>
         <module>legacy/cmp</module>
+        <module>legacy/jacorb</module>
         <module>legacy/jaxr</module>
         <module>legacy/web</module>
         <module>mail</module>
@@ -1195,6 +1196,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-iiop-openjdk</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jacorb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
