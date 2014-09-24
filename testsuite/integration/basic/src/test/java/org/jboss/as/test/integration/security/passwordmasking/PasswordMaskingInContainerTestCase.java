@@ -81,6 +81,7 @@ public class PasswordMaskingInContainerTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
+            VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
             ModelNode op;
 
             // setup DB

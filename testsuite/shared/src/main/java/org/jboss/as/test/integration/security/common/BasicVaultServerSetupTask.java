@@ -61,10 +61,8 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
     public static final String VAULT_PASSWORD = "VaultPassword";
     public static final String VAULT_ALIAS = "VaultAlias";
 
+    static final String KEY_STORE_FILE = "myVault.keystore";
     static final String RESOURCE_LOCATION = "";
-    static final String ENC_DAT_FILE = RESOURCE_LOCATION + "ENC.dat";
-    static final String SHARED_DAT_FILE = RESOURCE_LOCATION + "Shared.dat";
-    static final String VAULT_DAT_FILE = RESOURCE_LOCATION + "VAULT.dat";
 
     static final PathAddress VAULT_PATH = PathAddress.pathAddress().append(CORE_SERVICE, VAULT);
 
@@ -73,11 +71,11 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
-        // clean directory
-        clean();
+        // clean directory and keystore
+        VaultHandler.cleanFilesystem(RESOURCE_LOCATION, false, KEY_STORE_FILE);
 
         // create vault keystore
-        vaultHandler = new VaultHandler("myVault.keystore", VAULT_PASSWORD, null, RESOURCE_LOCATION, 128, VAULT_ALIAS,
+        vaultHandler = new VaultHandler(KEY_STORE_FILE, VAULT_PASSWORD, null, RESOURCE_LOCATION, 128, VAULT_ALIAS,
                 "87654321", 20);
 
         ModelNode op = new ModelNode();
@@ -145,20 +143,5 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
 
         // remove vault files
         vaultHandler.cleanUp();
-    }
-
-    private void clean() {
-        File datFile1 = new File(ENC_DAT_FILE);
-        if (datFile1.exists()) {
-            datFile1.delete();
-        }
-        File datFile2 = new File(SHARED_DAT_FILE);
-        if (datFile2.exists()) {
-            datFile2.delete();
-        }
-        File datFile3 = new File(VAULT_DAT_FILE);
-        if (datFile3.exists()) {
-            datFile3.delete();
-        }
     }
 }

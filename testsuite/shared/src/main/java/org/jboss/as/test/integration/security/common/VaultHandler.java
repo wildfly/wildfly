@@ -31,9 +31,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import org.jboss.as.security.vault.VaultSession;
+import org.jboss.logging.Logger;
 import org.picketbox.plugins.vault.PicketBoxSecurityVault;
 import org.picketbox.util.KeyStoreUtil;
-import org.jboss.logging.Logger;
 
 /**
  * VaultHandler is a handler for PicketBox Security Vault associated files. It can be used one-to-one with vault. It can create
@@ -114,6 +114,14 @@ public class VaultHandler {
                 if (!this.keyStoreType.equals("JCEKS")) {
                     throw new RuntimeException("keyStoreType has to be JCEKS when creating new key store");
                 }
+                File keyStoreParent = keyStoreFile.getAbsoluteFile().getParentFile();
+                if (keyStoreParent != null) {
+                    if (!keyStoreParent.exists()) {
+                        assert keyStoreParent.mkdirs();
+                    } else {
+                        assert keyStoreParent.isDirectory();
+                    }
+                }
                 KeyStore ks = KeyStoreUtil.createKeyStore(this.keyStoreType, this.keyStorePassword.toCharArray());
                 KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
                 keyGenerator.init(this.keySize);
@@ -128,11 +136,10 @@ public class VaultHandler {
             throw new RuntimeException("Problem creating keyStore: ", e);
         }
 
-        File vaultDirectory = new File(encodedVaultFileDirectory);
+        File vaultDirectory = new File(encodedVaultFileDirectory).getAbsoluteFile();
 
         if (!vaultDirectory.exists()) {
-            vaultDirectory.mkdirs();
-            this.encodedVaultFileDirectory = vaultDirectory.getAbsolutePath();
+            assert vaultDirectory.mkdirs();
         } else if (!vaultDirectory.isDirectory()) {
             throw new RuntimeException("Vault encryption directory has to be directory, but "
                     + vaultDirectory.getAbsolutePath() + " is not.");
@@ -182,10 +189,10 @@ public class VaultHandler {
 
     /**
      * Constructor with all default values, but encodedVaultFileDirectory.
-     * @param keyStore
+     * @param encodedVaultFileDirectory
      */
     public VaultHandler(String encodedVaultFileDirectory) {
-        this(encodedVaultFileDirectory + FILE_SEPARATOR + DEFAULT_KEYSTORE_FILE, encodedVaultFileDirectory);
+        this(getDefaultKeystoreFile(encodedVaultFileDirectory), encodedVaultFileDirectory);
     }
 
     /**
@@ -241,37 +248,7 @@ public class VaultHandler {
      */
     public void cleanUp() {
 
-        File fk = new File(keyStore);
-        fk.delete();
-
-        File f = new File(encodedVaultFileDirectory + FILE_SEPARATOR + VAULT_DAT_FILE);
-        f.delete();
-
-        f = new File(keyStore + ".original");
-        if (f.exists()) {
-            f.delete();
-        }
-
-        f = new File(encodedVaultFileDirectory + FILE_SEPARATOR + ENC_DAT_FILE);
-        if (f.exists()) {
-            f.delete();
-        }
-
-        f = new File(encodedVaultFileDirectory + FILE_SEPARATOR + ENC_DAT_FILE + ".original");
-        if (f.exists()) {
-            f.delete();
-        }
-
-        f = new File(encodedVaultFileDirectory + FILE_SEPARATOR + SHARED_DAT_FILE);
-        if (f.exists()) {
-            f.delete();
-        }
-
-        // there might be a KEYSTORE_README file in the directory as a placeholder
-        f = new File(encodedVaultFileDirectory + FILE_SEPARATOR + "KEYSTORE_README");
-        if (f.exists()) {
-            f.delete();
-        }
+        cleanFilesystem(encodedVaultFileDirectory, false, keyStore);
 
         vaultSession = null;
     }
@@ -319,6 +296,83 @@ public class VaultHandler {
         LOGGER.debug("KEYSTORE_ALIAS="+alias);
         LOGGER.debug("SALT="+salt);
         LOGGER.debug("ITERATION_COUNT="+iterationCount);
+    }
+
+    private static String getDefaultKeystoreFile(String encodedVaultFileDirectory) {
+        return encodedVaultFileDirectory + FILE_SEPARATOR + DEFAULT_KEYSTORE_FILE;
+    }
+
+    /**
+     * Removes vault files from the given directory, with the assumption that the key store is located inside
+     * the directory in a file named {@link #DEFAULT_KEYSTORE_FILE}.
+     *
+     * @param encodedVaultFileDirectory the path of the directory
+     * @param removeEncodedVaultFileDirectory {@code true} if the directory itself should be removed
+     */
+    public static void cleanFilesystem(String encodedVaultFileDirectory, boolean removeEncodedVaultFileDirectory) {
+        cleanFilesystem(encodedVaultFileDirectory, removeEncodedVaultFileDirectory, getDefaultKeystoreFile(encodedVaultFileDirectory));
+    }
+
+    /**
+     * Removes vault files from the given directory, and also removes the given key store file.
+     *
+     * @param encodedVaultFileDirectory  the path of the directory
+     * @param removeEncodedVaultFileDirectory {@code true} if the directory itself should be removed
+     * @param keyStore the path of the key store
+     */
+    public static void cleanFilesystem(String encodedVaultFileDirectory, boolean removeEncodedVaultFileDirectory, String keyStore) {
+
+        cleanFilesystem(new File(encodedVaultFileDirectory), removeEncodedVaultFileDirectory, new File(keyStore));
+    }
+
+    private static void cleanFilesystem(File encodedVaultFileDirectory, boolean removeEncodedVaultFileDirectory,
+                                        File keyStore) {
+
+        deleteIfExists(keyStore);
+
+        File f = new File(keyStore.getParent(), keyStore.getName() + ".original");
+        deleteIfExists(f);
+
+        if (removeEncodedVaultFileDirectory) {
+            deleteDirectory(encodedVaultFileDirectory);
+        } else {
+            cleanEncodedVaultFileDirectory(encodedVaultFileDirectory);
+        }
+
+    }
+
+    private static void deleteDirectory(File f) {
+        File[] children = f.isDirectory() ? f.listFiles() : null;
+        if (children != null) {
+            for (File child : children) {
+                deleteDirectory(child);
+            }
+        }
+        deleteIfExists(f);
+    }
+
+    private static void cleanEncodedVaultFileDirectory(File encodedVaultFileDirectory) {
+
+        File f = new File(encodedVaultFileDirectory, VAULT_DAT_FILE);
+        deleteIfExists(f);
+
+        f = new File(encodedVaultFileDirectory, ENC_DAT_FILE);
+        deleteIfExists(f);
+
+        f = new File(encodedVaultFileDirectory, ENC_DAT_FILE + ".original");
+        deleteIfExists(f);
+
+        f = new File(encodedVaultFileDirectory, SHARED_DAT_FILE);
+        deleteIfExists(f);
+
+        // there might be a KEYSTORE_README file in the directory as a placeholder
+        f = new File(encodedVaultFileDirectory, "KEYSTORE_README");
+        deleteIfExists(f);
+
+    }
+
+    private static void deleteIfExists(File f) {
+        assert !f.exists() || f.delete();
     }
 
 }

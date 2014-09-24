@@ -84,6 +84,8 @@ public class VaultDatasourceTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             LOGGER.info("RESOURCE_LOCATION=" + RESOURCE_LOCATION);
 
+            VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
+
             ModelNode op;
 
             // setup DB

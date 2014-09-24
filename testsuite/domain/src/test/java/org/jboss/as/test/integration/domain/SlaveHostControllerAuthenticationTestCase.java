@@ -135,6 +135,8 @@ public class SlaveHostControllerAuthenticationTestCase {
 
     private void slaveWithVaultPasswordTest() throws Exception {
 
+        VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
+
         // create new vault
         VaultHandler vaultHandler = new VaultHandler(RESOURCE_LOCATION);
 
