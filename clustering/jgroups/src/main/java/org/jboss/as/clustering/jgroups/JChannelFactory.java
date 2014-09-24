@@ -35,7 +35,6 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Channel;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -54,10 +53,6 @@ import org.jgroups.util.SocketFactory;
  * @author Paul Ferraro
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
-
-    public static String createNodeName(String cluster, ServerEnvironment environment) {
-        return environment.getNodeName() + "/" + cluster;
-    }
 
     private final ProtocolStackConfiguration configuration;
 
@@ -131,7 +126,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         stack.addProtocol(fork);
         fork.init();
 
-        channel.setName(createNodeName(id, this.configuration.getEnvironment()));
+        channel.setName(this.configuration.getEnvironment().getNodeName());
 
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {

@@ -171,14 +171,10 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         if (containerModel.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             ModelNode transport = containerModel.get(TransportResourceDefinition.PATH.getKeyValuePair());
             if (transport.isDefined()) {
-                transportConfig = new Transport();
+                transportConfig = new Transport(TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong());
 
                 String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport));
-                long lockTimeout = TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
                 transportExecutor = ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport));
-
-                transportConfig.setLockTimeout(lockTimeout);
-                transportConfig.setClusterName(name);
 
                 if (!name.equals(channel)) {
                     controllers.add(new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install());
@@ -378,16 +374,10 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         private final InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
         private final InjectedValue<Channel> channel = new InjectedValue<>();
         private final InjectedValue<Executor> executor = new InjectedValue<>();
+        private final long lockTimeout;
 
-        private Long lockTimeout;
-        private String clusterName;
-
-        void setLockTimeout(long lockTimeout) {
+        Transport(long lockTimeout) {
             this.lockTimeout = lockTimeout;
-        }
-
-        void setClusterName(String clusterName) {
-            this.clusterName = clusterName;
         }
 
         Injector<ChannelFactory> getChannelFactoryInjector() {
@@ -418,13 +408,8 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         }
 
         @Override
-        public Long getLockTimeout() {
+        public long getLockTimeout() {
             return this.lockTimeout;
-        }
-
-        @Override
-        public String getClusterName() {
-            return this.clusterName;
         }
     }
 }

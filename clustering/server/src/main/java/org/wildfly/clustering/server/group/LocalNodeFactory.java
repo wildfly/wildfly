@@ -23,7 +23,6 @@ package org.wildfly.clustering.server.group;
 
 import java.util.Collection;
 
-import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Address;
 import org.wildfly.clustering.group.Node;
@@ -39,7 +38,7 @@ public class LocalNodeFactory implements JGroupsNodeFactory {
 
     public LocalNodeFactory(String cluster, ServerEnvironment environment) {
         this.cluster = cluster;
-        this.name = JChannelFactory.createNodeName(cluster, environment);
+        this.name = environment.getNodeName();
     }
 
     @Override

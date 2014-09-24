@@ -57,7 +57,7 @@ public class MyServiceActivator implements ServiceActivator {
         ServiceController<?> factoryService = context.getServiceRegistry().getRequiredService(SingletonServiceBuilderFactory.SERVICE_NAME.append(CONTAINER_NAME, CACHE_NAME));
         SingletonServiceBuilderFactory factory = (SingletonServiceBuilderFactory) factoryService.getValue();
         factory.createSingletonServiceBuilder(name, service)
-            .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/ee")))
+            .electionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE)))
             .requireQuorum(quorum)
             .build(context.getServiceTarget())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, env)

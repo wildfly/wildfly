@@ -53,45 +53,40 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
     @Test
     public void test() throws Exception {
 
-        String cluster = "ee";
-        String nodeNameFormat = "%s/%s";
-        String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
-        String nodeName2 = String.format(nodeNameFormat, NODE_2, cluster);
-
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
             Collection<String> names = bean.getProviders();
             assertEquals(2, names.size());
-            assertTrue(names.toString(), names.contains(nodeName1));
-            assertTrue(names.toString(), names.contains(nodeName2));
+            assertTrue(names.toString(), names.contains(NODE_1));
+            assertTrue(names.toString(), names.contains(NODE_2));
             
             undeploy(DEPLOYMENT_1);
             
             names = bean.getProviders();
             assertEquals(1, names.size());
-            assertTrue(names.contains(nodeName2));
+            assertTrue(names.contains(NODE_2));
             
             deploy(DEPLOYMENT_1);
             
             names = bean.getProviders();
             assertEquals(2, names.size());
-            assertTrue(names.contains(nodeName1));
-            assertTrue(names.contains(nodeName2));
+            assertTrue(names.contains(NODE_1));
+            assertTrue(names.contains(NODE_2));
             
             stop(CONTAINER_2);
             
             names = bean.getProviders();
             assertEquals(1, names.size());
-            assertTrue(names.contains(nodeName1));
+            assertTrue(names.contains(NODE_1));
             
             start(CONTAINER_2);
             
             names = bean.getProviders();
             assertEquals(2, names.size());
-            assertTrue(names.contains(nodeName1));
-            assertTrue(names.contains(nodeName2));
+            assertTrue(names.contains(NODE_1));
+            assertTrue(names.contains(NODE_2));
         } finally {
             // reset the selector
             if (selector != null) {
