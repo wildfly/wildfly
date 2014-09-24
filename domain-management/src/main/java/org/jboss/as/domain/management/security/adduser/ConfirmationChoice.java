@@ -28,6 +28,7 @@ import static org.jboss.as.domain.management.security.adduser.AddUser.SPACE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * State to display a message to the user with option to confirm a choice.
@@ -36,6 +37,12 @@ import java.util.List;
  * on invalid input.
  */
 public class ConfirmationChoice implements State {
+
+    // These are deliberately using the default locale i.e. the same as the language the interface is presented in.
+    private static final String LONG_YES = MESSAGES.yes().toLowerCase(Locale.getDefault());
+    private static final String LONG_NO = MESSAGES.no().toLowerCase(Locale.getDefault());
+    private static final String SHORT_YES = MESSAGES.shortYes().toLowerCase(Locale.getDefault());
+    private static final String SHORT_NO = MESSAGES.shortNo().toLowerCase(Locale.getDefault());
 
     private ConsoleWrapper theConsole;
     private final String[] messageLines;
@@ -102,11 +109,11 @@ public class ConfirmationChoice implements State {
     private int convertResponse(final String response) {
         if (response != null) {
             String temp = response.toLowerCase(); // We now need to match on the current local.
-            if (MESSAGES.yes().equals(temp) || MESSAGES.shortYes().equals(temp)) {
+            if (LONG_YES.equals(temp) || SHORT_YES.equals(temp)) {
                 return YES;
             }
 
-            if (MESSAGES.no().equals(temp) || MESSAGES.shortNo().equals(temp)) {
+            if (LONG_NO.equals(temp) || SHORT_NO.equals(temp)) {
                 return NO;
             }
         }
