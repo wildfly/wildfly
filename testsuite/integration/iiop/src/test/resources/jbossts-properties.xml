@@ -61,8 +61,8 @@
     <!-- (Must be unique across all Arjuna instances.) -->
     <entry key="CoreEnvironmentBean.nodeIdentifier">1</entry>
 
-	<!-- Which Xid types to recover -->
-	<entry key="JTAEnvironmentBean.xaRecoveryNodes">1</entry>
+    <!-- Which Xid types to recover -->
+    <entry key="JTAEnvironmentBean.xaRecoveryNodes">1</entry>
 
     <entry key="JTAEnvironmentBean.xaResourceOrphanFilterClassNames">
         com.arjuna.ats.internal.jta.recovery.arjunacore.JTATransactionLogXAResourceOrphanFilter
@@ -144,9 +144,9 @@
     <entry key="RecoveryEnvironmentBean.recoveryActivatorClassNames">com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement</entry>
 
 
-	<entry key="JTAEnvironmentBean.transactionManagerClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple</entry>
+    <entry key="JTAEnvironmentBean.transactionManagerClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple</entry>
 
-	<entry key="JTAEnvironmentBean.userTransactionClassName">com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple</entry>
+    <entry key="JTAEnvironmentBean.userTransactionClassName">com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple</entry>
 
     <entry key="JTAEnvironmentBean.transactionSynchronizationRegistryClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple</entry>
 

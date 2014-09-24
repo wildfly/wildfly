@@ -578,7 +578,6 @@ public final class CSIv2Util {
         try {
             out = codec.encode_value(any);
         } catch (Exception e) {
-            e.printStackTrace();
             return new byte[0];
         }
 

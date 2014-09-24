@@ -23,6 +23,7 @@ package org.jboss.as.iiop.openjdk.csiv2;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.SSLConfigValue;
@@ -85,7 +86,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
 
         IIOPProfileTemplate iiopProfileTemplate = (IIOPProfileTemplate) ior.getProfile().getTaggedProfileTemplate();
         IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress();
-        String hostname = primary.getHost().toLowerCase();
+        String hostname = primary.getHost().toLowerCase(Locale.ENGLISH);
         int primaryPort = primary.getPort();
 
         // NOTE: we could check for 0 (i.e., CSIv2) but, for a

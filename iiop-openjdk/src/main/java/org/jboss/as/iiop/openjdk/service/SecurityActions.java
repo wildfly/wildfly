@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,13 +22,10 @@
 
 package org.jboss.as.iiop.openjdk.service;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import org.wildfly.security.manager.action.CreateThreadAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
 import static java.security.AccessController.doPrivileged;
+
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.CreateThreadAction;
 
 /**
  * <p>
@@ -50,15 +47,5 @@ class SecurityActions {
      */
     static Thread createThread(final Runnable runnable, final String threadName) {
         return ! WildFlySecurityManager.isChecking() ? new Thread(runnable, threadName) : doPrivileged(new CreateThreadAction(runnable, threadName));
-    }
-
-    static void setSystemProperty(final String key, final String value) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                System.setProperty(key, value);
-                return null;
-            }
-        });
     }
 }

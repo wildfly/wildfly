@@ -24,6 +24,7 @@ package org.jboss.as.iiop.openjdk;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -36,10 +37,8 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final IIOPRootDefinition INSTANCE = new IIOPRootDefinition();
 
-
-    static final AttributeDefinition[] ATTRIBUTES = {};
-    static final PersistentResourceDefinition[] CHILDREN = { ORBDefinition.INSTANCE, NamingDefinition.INSTANCE,
-            SecurityDefinition.INSTANCE, IORSettingsDefinition.INSTANCE, PropertiesDefinition.INSTANCE };
+    static final List<PersistentResourceDefinition> CHILDREN = Arrays.asList(ORBDefinition.INSTANCE, NamingDefinition.INSTANCE,
+            SecurityDefinition.INSTANCE, IORSettingsDefinition.INSTANCE, PropertiesDefinition.INSTANCE);
 
     private IIOPRootDefinition() {
         super(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver(), IIOPSubsystemAdd.INSTANCE,
@@ -48,11 +47,11 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return Collections.emptyList();
     }
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        return CHILDREN;
     }
 }

@@ -144,7 +144,9 @@ public class CorbaPOAService implements Service<POA> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        }
 
         ORB orb = this.orbInjector.getOptionalValue();
         POA parentPOA = this.parentPOAInjector.getOptionalValue();
@@ -184,7 +186,9 @@ public class CorbaPOAService implements Service<POA> {
 
     @Override
     public void stop(StopContext context) {
-        IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
+            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+        }
 
         // destroy parent POAs, letting they destroy their children POAs in the process.
         if (this.poa.the_parent() == null)
