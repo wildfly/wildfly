@@ -81,20 +81,21 @@ public class DMRSecurityTestCase {
      */
     @Test(expected = java.io.IOException.class)
     public void testConnect() throws Exception {
-        ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(InetAddress.
-           getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort());
+        try (ModelControllerClient modelControllerClient = ModelControllerClient.Factory.create(InetAddress.
+           getByName(TestSuiteEnvironment.getServerAddress()), TestSuiteEnvironment.getServerPort())) {
 
-        ModelNode op = new ModelNode();
+            ModelNode op = new ModelNode();
 
-        op.get(OP).set(COMPOSITE);
-        op.get(OP_ADDR).setEmptyList();
-        ModelNode modelNode = op.get(STEPS).add();
+            op.get(OP).set(COMPOSITE);
+            op.get(OP_ADDR).setEmptyList();
+            ModelNode modelNode = op.get(STEPS).add();
 
-        modelNode.get(OP).set(ADD);
-        modelNode.get(OP_ADDR).add(SUBSYSTEM, "security");
-        modelNode.get(OP_ADDR).add(SECURITY_DOMAIN, "NewSecurityDomain");
+            modelNode.get(OP).set(ADD);
+            modelNode.get(OP_ADDR).add(SUBSYSTEM, "security");
+            modelNode.get(OP_ADDR).add(SECURITY_DOMAIN, "NewSecurityDomain");
 
-        Utils.applyUpdate(op, modelControllerClient);
+            Utils.applyUpdate(op, modelControllerClient);
+        }
     }
 
 }
