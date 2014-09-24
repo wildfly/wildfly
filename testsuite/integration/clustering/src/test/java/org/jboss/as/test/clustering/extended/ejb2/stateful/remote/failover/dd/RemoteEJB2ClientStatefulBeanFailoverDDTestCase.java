@@ -79,7 +79,6 @@ public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBCli
         jar.addClasses(CounterBaseBean.class, CounterBeanDD.class, CounterRemote.class, CounterRemoteHome.class, CounterResult.class);
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;

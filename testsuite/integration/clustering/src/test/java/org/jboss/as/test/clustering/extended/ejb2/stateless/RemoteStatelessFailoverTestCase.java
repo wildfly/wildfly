@@ -161,7 +161,6 @@ public class RemoteStatelessFailoverTestCase {
         jar.addClasses(StatelessBeanBase.class, StatelessBeanDD.class, StatelessRemote.class, StatelessRemoteHome.class);
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         log.info(jar.toString(true));
         return jar;
     }
