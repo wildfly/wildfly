@@ -56,7 +56,7 @@ public class VaultToolTestCase {
   private static final String CODE_LOCATION = VaultToolTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   private static final String KEYSTORE_URL_VALUE = getKeystorePath();
   private static final String ENC_FILE_DIR_VALUE = CODE_LOCATION + "test_vault_dir";
-  private static final String MASKED_MYPASSWORD_VALUE = "MASK-UWB5tlhOmKYzJVl9KZaPN";
+  private static final String MASKED_MYPASSWORD_VALUE = "MASK-0UWB5tlhOmKYzJVl9KZaPN";
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
 
