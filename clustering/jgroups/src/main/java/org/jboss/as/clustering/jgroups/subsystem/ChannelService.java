@@ -23,12 +23,9 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,8 +38,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
-import org.jgroups.JChannel;
-import org.jgroups.jmx.JmxConfigurator;
 
 /**
  * Provides a channel for use by dependent services.
@@ -71,11 +66,9 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         ChannelService service = new ChannelService(id);
         return target.addService(getServiceName(id), service)
                 .addDependency(ChannelService.getFactoryServiceName(id), ChannelFactory.class, service.factory)
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
         ;
     }
 
-    private final InjectedValue<MBeanServer> server = new InjectedValue<>();
     private final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
     private final String id;
 
@@ -95,13 +88,6 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         ChannelFactory factory = this.factory.getValue();
         try {
             this.channel = factory.createChannel(this.id);
-            if (this.channel instanceof JChannel) {
-                try {
-                    JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.id);
-                } catch (Exception e) {
-                    ROOT_LOGGER.debug(e.getMessage(), e);
-                }
-            }
             this.channel.addChannelListener(this);
         } catch (Exception e) {
             throw new StartException(e);
@@ -117,13 +103,6 @@ public class ChannelService implements Service<Channel>, ChannelListener {
     public void stop(StopContext context) {
         if (this.channel != null) {
             this.channel.removeChannelListener(this);
-            if (this.channel instanceof JChannel) {
-                try {
-                    JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.id);
-                } catch (Exception e) {
-                    ROOT_LOGGER.debug(e.getMessage(), e);
-                }
-            }
             this.channel.close();
         }
         this.channel = null;
