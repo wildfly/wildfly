@@ -23,14 +23,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 <ejb-jar>
-	<enterprise-beans>
-		<session>
-        	<ejb-name>CounterBean</ejb-name>
-         	<home>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemoteHome</home>
-         	<remote>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemote</remote>
-         	<ejb-class>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.dd.CounterBeanDD</ejb-class>
-         	<session-type>Stateful</session-type>
-         	<transaction-type>Container</transaction-type>
+    <enterprise-beans>
+        <session>
+            <ejb-name>CounterBean</ejb-name>
+            <home>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemoteHome</home>
+            <remote>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemote</remote>
+            <ejb-class>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.dd.CounterBeanDD</ejb-class>
+            <session-type>Stateful</session-type>
+            <transaction-type>Container</transaction-type>
         </session>
         <session>
             <ejb-name>ViewChangeListenerBean</ejb-name>
@@ -40,5 +40,5 @@
             <session-type>Stateless</session-type>
             <transaction-type>Bean</transaction-type>
         </session>
-	</enterprise-beans>
+    </enterprise-beans>
 </ejb-jar>

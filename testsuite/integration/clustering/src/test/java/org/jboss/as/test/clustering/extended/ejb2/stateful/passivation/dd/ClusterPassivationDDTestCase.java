@@ -81,7 +81,6 @@ public class ClusterPassivationDDTestCase extends ClusterPassivationTestBase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(StatefulBeanBase.class, StatefulBeanDD.class, StatefulRemote.class, StatefulRemoteHome.class);
         war.addAsWebInfResource(ClusterPassivationDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        war.addAsWebInfResource(ClusterPassivationDDTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         war.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
         log.info(war.toString(true));
         return war;
