@@ -31,12 +31,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class AuthorizationBuilder {
+public class AuthorizationBuilder extends ParentBuilder<SecurityRealmAddBuilder> {
 
     private final SecurityRealmAddBuilder parent;
     private boolean built = false;
 
-    private AuthorizationBuilderChild childBuilder;
+    private ParentBuilder<AuthorizationBuilder> childBuilder;
     private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
 
     AuthorizationBuilder(final SecurityRealmAddBuilder parent) {
@@ -61,10 +61,9 @@ public class AuthorizationBuilder {
         return parent.getRealmAddress();
     }
 
-    public AuthorizationBuilder addStep(final ModelNode step) {
+    void addStep(final ModelNode step) {
         assertNotBuilt();
         additionalSteps.add(step);
-        return this;
     }
 
     public SecurityRealmAddBuilder build() {

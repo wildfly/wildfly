@@ -38,15 +38,15 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapAuthorizationBuilder implements AuthorizationBuilderChild {
+public class LdapAuthorizationBuilder extends ParentBuilder<AuthorizationBuilder> {
 
     private final AuthorizationBuilder parent;
     private boolean built = false;
 
     private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
 
-    private LdapAuthorizationBuilderChild usernameFilterChild;
-    private LdapAuthorizationBuilderChild groupFilterChild;
+    private Builder<LdapAuthorizationBuilder> usernameFilterChild;
+    private Builder<LdapAuthorizationBuilder> groupFilterChild;
 
     private String connection;
 
@@ -166,10 +166,9 @@ public class LdapAuthorizationBuilder implements AuthorizationBuilderChild {
         }
     }
 
-    public LdapAuthorizationBuilder addStep(final ModelNode step) {
+    void addStep(final ModelNode step) {
         assertNotBuilt();
         additionalSteps.add(step);
-        return this;
     }
 
     public boolean isBuilt() {

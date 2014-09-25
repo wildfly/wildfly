@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UsernameIsDnAddBuilder implements LdapAuthorizationBuilderChild {
+public class UsernameIsDnAddBuilder extends Builder<LdapAuthorizationBuilder> {
 
     private final LdapAuthorizationBuilder parent;
     private boolean built = false;
@@ -71,7 +71,8 @@ public class UsernameIsDnAddBuilder implements LdapAuthorizationBuilderChild {
             add.get(FORCE).set(true);
         }
 
-        return parent.addStep(add);
+        parent.addStep(add);
+        return parent;
     }
 
     void assertNotBuilt() {

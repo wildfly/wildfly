@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesAuthenticationBuilder implements AuthenticationBuilderChild {
+public class PropertiesAuthenticationBuilder extends Builder<AuthenticationBuilder> {
 
     private final AuthenticationBuilder parent;
     private boolean built = false;

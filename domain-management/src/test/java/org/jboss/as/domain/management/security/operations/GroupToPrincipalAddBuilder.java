@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class GroupToPrincipalAddBuilder implements LdapAuthorizationBuilderChild {
+public class GroupToPrincipalAddBuilder extends Builder<LdapAuthorizationBuilder> {
 
     private final LdapAuthorizationBuilder parent;
     private boolean built = false;
@@ -168,7 +168,8 @@ public class GroupToPrincipalAddBuilder implements LdapAuthorizationBuilderChild
             add.get(PREFER_ORIGINAL_CONNECTION).set(false);
         }
 
-        return parent.addStep(add);
+        parent.addStep(add);
+        return parent;
     }
 
     void assertNotBuilt() {

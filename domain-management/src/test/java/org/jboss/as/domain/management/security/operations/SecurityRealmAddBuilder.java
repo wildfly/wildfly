@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SecurityRealmAddBuilder {
+public class SecurityRealmAddBuilder extends ParentBuilder<ModelNode> {
 
     private boolean built = false;
     private final ModelNode realmAddress;
@@ -127,10 +127,14 @@ public class SecurityRealmAddBuilder {
         return realmAddress.clone();
     }
 
-    SecurityRealmAddBuilder addStep(final ModelNode step) {
+    void addStep(final ModelNode step) {
         assertNotBuilt();
         additionalSteps.add(step);
-        return this;
+    }
+
+
+    public boolean isBuilt() {
+        return built;
     }
 
     void assertNotBuilt() {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,17 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.domain.management.security.operations;
 
+import org.jboss.dmr.ModelNode;
+
 /**
- * An interface implemented by child builders of {@link AuthorizationBuilder}
+ * A builder that can have children.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface AuthorizationBuilderChild {
+abstract class ParentBuilder<T> extends Builder<T> {
 
-    boolean isBuilt();
-
-    AuthorizationBuilder build();
+    abstract void addStep(ModelNode step);
 
 }
