@@ -1525,7 +1525,8 @@
             <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
         </module-def>
         <module-def name="javax.websocket.api">
-            <maven-resource group="org.jboss.spec.javax.websocket" artifact="jboss-websocket-api_1.0_spec"/>
+            <maven-resource group="org.jboss.spec.javax.websocket"
+            artifact="jboss-websocket-api_1.1_spec"/>
         </module-def>
 
         <module-def name="org.wildfly.extension.batch">
