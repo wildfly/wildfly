@@ -37,6 +37,8 @@
         <module name="org.jboss.as.messaging"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.logging"/>
+        <!-- allow to create a RA that connects to a remote hornetq-server -->
+        <module name="org.jboss.remote-naming" optional="true"/>
         <module name="javax.api"/>
         <module name="javax.jms.api" />
         <module name="org.jboss.jts"/>
