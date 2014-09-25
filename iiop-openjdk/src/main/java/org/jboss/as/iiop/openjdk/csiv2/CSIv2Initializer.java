@@ -22,7 +22,7 @@
 
 package org.jboss.as.iiop.openjdk.csiv2;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -61,7 +61,7 @@ public class CSIv2Initializer extends LocalObject implements ORBInitializer {
             // register CSIv2-related policy factories.
             info.register_policy_factory(CSIv2Policy.TYPE, new CSIv2PolicyFactory(codec));
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 }

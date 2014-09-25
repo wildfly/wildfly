@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.ArrayDef;
 import org.omg.CORBA.Contained;
@@ -119,23 +118,23 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
     }
 
     public StringDef create_string(int bound) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public WstringDef create_wstring(int bound) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public SequenceDef create_sequence(int bound, org.omg.CORBA.IDLType element_type) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ArrayDef create_array(int length, org.omg.CORBA.IDLType element_type) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public FixedDef create_fixed(short digits, short scale) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 

@@ -26,7 +26,7 @@ import java.rmi.RemoteException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 
 /**
@@ -77,7 +77,7 @@ public class OperationAnalysis  extends AbstractAnalysis {
                 a.add(ExceptionAnalysis.getExceptionAnalysis(ex[i])); // map this
         }
         if (!gotRemoteException && Remote.class.isAssignableFrom(method.getDeclaringClass()))
-            throw IIOPMessages.MESSAGES.badRMIIIOPMethodSignature(getJavaName(), method.getDeclaringClass().getName(),
+            throw IIOPLogger.ROOT_LOGGER.badRMIIIOPMethodSignature(getJavaName(), method.getDeclaringClass().getName(),
                     "1.2.3");
         final ExceptionAnalysis[] exceptions = new ExceptionAnalysis[a.size()];
         mappedExceptions = (ExceptionAnalysis[]) a.toArray(exceptions);

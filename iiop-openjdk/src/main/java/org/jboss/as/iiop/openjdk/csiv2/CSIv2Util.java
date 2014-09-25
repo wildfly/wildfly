@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.service.CorbaORBService;
@@ -63,8 +62,8 @@ import org.omg.GSSUP.InitialContextTokenHelper;
 import org.omg.IOP.Codec;
 import org.omg.IOP.TAG_CSI_SEC_MECH_LIST;
 import org.omg.IOP.TAG_NULL_TAG;
-import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.SSLIOP.SSL;
 import org.omg.SSLIOP.SSLHelper;
@@ -130,7 +129,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSSLTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec, int sslPort,
                                                            ORB orb) {
         if (metadata == null) {
-            IIOPLogger.ROOT_LOGGER.createSSLTaggedComponentWithNullMetaData();
+            IIOPLogger.ROOT_LOGGER.debug("Method createSSLTaggedComponent() called with null metadata");
             return null;
         }
 
@@ -144,7 +143,7 @@ public final class CSIv2Util {
             byte[] componentData = codec.encode_value(any);
             tc = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
         return tc;
     }
@@ -168,7 +167,7 @@ public final class CSIv2Util {
     public static TaggedComponent createSecurityTaggedComponent(IORSecurityConfigMetaData metadata, Codec codec,
                                                                 int sslPort, ORB orb) {
         if (metadata == null) {
-            IIOPLogger.ROOT_LOGGER.createSecurityTaggedComponentWithNullMetaData();
+            IIOPLogger.ROOT_LOGGER.debug("Method createSecurityTaggedComponent() called with null metadata");
             return null;
         }
 
@@ -187,7 +186,7 @@ public final class CSIv2Util {
             byte[] b = codec.encode_value(any);
             tc = new TaggedComponent(TAG_CSI_SEC_MECH_LIST.value, b);
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
         return tc;
     }
@@ -368,7 +367,7 @@ public final class CSIv2Util {
                 byte[] b = codec.encode_value(any);
                 tc = new TaggedComponent(TAG_TLS_SEC_TRANS.value, b);
             } catch (InvalidTypeForEncoding e) {
-                throw IIOPMessages.MESSAGES.unexpectedException(e);
+                throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
 
@@ -795,10 +794,10 @@ public final class CSIv2Util {
             return null;
         } catch (org.omg.IOP.CodecPackage.TypeMismatch e) {
             // unexpected exception in codec
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.FormatMismatch e) {
             // unexpected exception in codec
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

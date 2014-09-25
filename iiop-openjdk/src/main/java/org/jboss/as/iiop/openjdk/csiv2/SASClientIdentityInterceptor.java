@@ -25,7 +25,6 @@ package org.jboss.as.iiop.openjdk.csiv2;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.security.RunAs;
 import org.omg.CORBA.Any;
@@ -46,10 +45,10 @@ import org.omg.CSIIOP.EstablishTrustInClient;
 import org.omg.CSIIOP.IdentityAssertion;
 import org.omg.GSSUP.InitialContextToken;
 import org.omg.IOP.Codec;
+import org.omg.IOP.ServiceContext;
 import org.omg.IOP.CodecPackage.FormatMismatch;
 import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.CodecPackage.TypeMismatch;
-import org.omg.IOP.ServiceContext;
 import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 
@@ -150,7 +149,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                     try {
                         encapsulatedEncodedName = codec.encode_value(any);
                     } catch (InvalidTypeForEncoding e) {
-                        throw IIOPMessages.MESSAGES.unexpectedException(e);
+                        throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
                     }
 
                     // create identity token.
@@ -199,7 +198,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                 ri.add_request_service_context(sc, true /*replace existing context*/);
             }
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 
@@ -217,18 +216,18 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
             // At this point contextBody should contain a CompleteEstablishContext message, which does not require any
             // treatment. ContextError messages should arrive via receive_exception().
 
-            IIOPLogger.ROOT_LOGGER.traceReceiveReply(contextBody.discriminator());
+            IIOPLogger.ROOT_LOGGER.tracef("receive_reply: got SAS reply, type %d", contextBody.discriminator());
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                throw IIOPMessages.MESSAGES.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
+                throw IIOPLogger.ROOT_LOGGER.unexpectedContextErrorInSASReply(0, CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
+            throw IIOPLogger.ROOT_LOGGER.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
+            throw IIOPLogger.ROOT_LOGGER.errorParsingSASReply(e, 0,CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -242,13 +241,13 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
             // At this point contextBody may contain either a CompleteEstablishContext message or a ContextError message.
             // Neither message requires any treatment. We decoded the contextbody just to check that it contains a
             // well-formed message.
-            IIOPLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());
+            IIOPLogger.ROOT_LOGGER.tracef("receive_exception: got SAS reply, type %d", contextBody.discriminator());
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+            throw IIOPLogger.ROOT_LOGGER.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw IIOPMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
+            throw IIOPLogger.ROOT_LOGGER.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_MAYBE);
         }
     }
 

@@ -33,7 +33,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CosNaming.BindingIterator;
 import org.omg.CosNaming.BindingIteratorHolder;
 import org.omg.CosNaming.BindingListHolder;
@@ -72,7 +72,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             try {
                 batchsize = Integer.parseInt(batch);
             } catch (NumberFormatException e) {
-                throw IIOPMessages.MESSAGES.illegalBatchSize(batch);
+                throw IIOPLogger.ROOT_LOGGER.illegalBatchSize(batch);
             }
         }
         _ctx = ctx;
@@ -195,7 +195,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             counter = 0; // reset
         } catch (Exception e) {
             more = false;
-            NamingException ne = IIOPMessages.MESSAGES.errorGettingBindingList();
+            NamingException ne = IIOPLogger.ROOT_LOGGER.errorGettingBindingList();
             ne.setRootCause(e);
             throw ne;
         }
@@ -222,7 +222,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
-            NamingException ne = IIOPMessages.MESSAGES.errorGeneratingObjectViaFactory();
+            NamingException ne = IIOPLogger.ROOT_LOGGER.errorGeneratingObjectViaFactory();
             ne.setRootCause(e);
             throw ne;
         }

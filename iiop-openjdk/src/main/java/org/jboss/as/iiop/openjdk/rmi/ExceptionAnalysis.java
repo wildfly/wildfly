@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.rmi;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 /**
  * Exception analysis.
@@ -56,7 +56,7 @@ public class ExceptionAnalysis extends ValueAnalysis {
 
         if (!Exception.class.isAssignableFrom(cls) ||
                 RuntimeException.class.isAssignableFrom(cls))
-            throw IIOPMessages.MESSAGES.badRMIIIOPExceptionType(cls.getName(), "1.2.6");
+            throw IIOPLogger.ROOT_LOGGER.badRMIIIOPExceptionType(cls.getName(), "1.2.6");
 
         // calculate exceptionRepositoryId
         StringBuffer b = new StringBuffer("IDL:");

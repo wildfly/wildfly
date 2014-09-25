@@ -36,7 +36,7 @@ import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.rmi.marshal.CDRStream;
 import org.jboss.as.iiop.openjdk.rmi.marshal.CDRStreamReader;
 import org.jboss.as.iiop.openjdk.rmi.marshal.CDRStreamWriter;
@@ -163,7 +163,7 @@ public class StubStrategy {
                         new ExceptionReader(clz, excepIds[i]);
                 exceptionMap.put(exceptionReader.getReposId(), exceptionReader);
             } catch (ClassNotFoundException e) {
-                throw IIOPMessages.MESSAGES.errorLoadingClass(excepTypes[i], e);
+                throw IIOPLogger.ROOT_LOGGER.errorLoadingClass(excepTypes[i], e);
             }
         }
 
@@ -175,7 +175,7 @@ public class StubStrategy {
             try {
                 retvalRemoteInterface = cl.loadClass(retvalType.substring(1));
             } catch (ClassNotFoundException e) {
-                throw IIOPMessages.MESSAGES.errorLoadingClass(retvalType.substring(1), e);
+                throw IIOPLogger.ROOT_LOGGER.errorLoadingClass(retvalType.substring(1), e);
             }
         }
     }
@@ -190,7 +190,7 @@ public class StubStrategy {
         int len = params.length;
 
         if (len != paramWriters.length) {
-            throw IIOPMessages.MESSAGES.errorMashalingParams();
+            throw IIOPLogger.ROOT_LOGGER.errorMashalingParams();
         }
         for (int i = 0; i < len; i++) {
             Object param = params[i];
@@ -318,13 +318,13 @@ public class StubStrategy {
                     java.lang.reflect.Method idMethod = helperClass.getMethod("id", (Class[])null);
                     this.reposId = (String) idMethod.invoke(null, (Object[])null);
                 } catch (ClassNotFoundException e) {
-                    throw IIOPMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw IIOPLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw IIOPMessages.MESSAGES.noReadMethodInHelper(helperClassName, e);
+                    throw IIOPLogger.ROOT_LOGGER.noReadMethodInHelper(helperClassName, e);
                 } catch (IllegalAccessException e) {
-                    throw IIOPMessages.MESSAGES.unexpectedException(e);
+                    throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw IIOPMessages.MESSAGES.unexpectedException(e.getTargetException());
+                    throw IIOPLogger.ROOT_LOGGER.unexpectedException(e.getTargetException());
                 }
             } else {
                 // This ExceptionReader does not correspond to an IDL-defined
@@ -345,9 +345,9 @@ public class StubStrategy {
                 try {
                     return (Exception) readMethod.invoke(null, new Object[]{in});
                 } catch (IllegalAccessException e) {
-                    throw IIOPMessages.MESSAGES.unexpectedException(e);
+                    throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw IIOPMessages.MESSAGES.errorUnmarshaling(IDLEntity.class, e.getTargetException());
+                    throw IIOPLogger.ROOT_LOGGER.errorUnmarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 in.read_string(); // read and discard the repository id

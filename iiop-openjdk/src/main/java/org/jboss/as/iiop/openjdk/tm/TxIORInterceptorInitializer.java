@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.tm;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -59,7 +59,7 @@ public class TxIORInterceptorInitializer extends LocalObject implements ORBIniti
             Codec codec = info.codec_factory().create_codec(encoding);
             info.add_ior_interceptor(new TxIORInterceptor(codec));
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 }

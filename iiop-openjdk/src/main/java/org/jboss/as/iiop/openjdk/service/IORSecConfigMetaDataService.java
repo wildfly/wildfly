@@ -52,14 +52,14 @@ public class IORSecConfigMetaDataService implements Service<IORSecurityConfigMet
     @Override
     public void start(final StartContext startContext) throws StartException {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStartup(startContext.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Starting service %s", startContext.getController().getName().getCanonicalName());
         }
     }
 
     @Override
     public void stop(final StopContext stopContext) {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStop(stopContext.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", stopContext.getController().getName().getCanonicalName());
         }
     }
 

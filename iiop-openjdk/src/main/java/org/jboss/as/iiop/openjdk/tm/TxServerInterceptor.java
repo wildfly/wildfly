@@ -23,7 +23,6 @@ package org.jboss.as.iiop.openjdk.tm;
 
 import javax.transaction.Transaction;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -89,7 +88,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
                     tx = ForeignTransaction.INSTANCE;
                 }
             } catch (InvalidSlot e) {
-                throw IIOPMessages.MESSAGES.errorGettingSlotInTxInterceptor(e);
+                throw IIOPLogger.ROOT_LOGGER.errorGettingSlotInTxInterceptor(e);
             }
 
         }
@@ -105,7 +104,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
     }
 
     public void receive_request_service_contexts(ServerRequestInfo ri) {
-        IIOPLogger.ROOT_LOGGER.traceReceiveRequestServiceContexts(ri.operation());
+        IIOPLogger.ROOT_LOGGER.tracef("Intercepting receive_request_service_contexts, operation: %s", ri.operation());
         try {
             ServiceContext sc = ri.get_request_service_context(txContextId);
             Any any = codec.decode_value(sc.context_data, PropagationContextHelper.type());
@@ -113,11 +112,11 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
         } catch (BAD_PARAM e) {
             // no service context with txContextId: do nothing
         } catch (FormatMismatch e) {
-            throw IIOPMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw IIOPLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw IIOPMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw IIOPLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (InvalidSlot e) {
-            throw IIOPMessages.MESSAGES.errorSettingSlotInTxInterceptor(e);
+            throw IIOPLogger.ROOT_LOGGER.errorSettingSlotInTxInterceptor(e);
         }
     }
 

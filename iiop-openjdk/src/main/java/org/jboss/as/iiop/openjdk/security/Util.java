@@ -30,7 +30,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.security.JSSESecurityDomain;
 
 /**
@@ -46,16 +46,16 @@ class Util {
             sslCtx = SSLContext.getInstance("TLS");
             KeyManager[] keyManagers = securityDomain.getKeyManagers();
             if (keyManagers == null)
-                throw IIOPMessages.MESSAGES.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
+                throw IIOPLogger.ROOT_LOGGER.errorObtainingKeyManagers(securityDomain.getSecurityDomain());
             TrustManager[] trustManagers = securityDomain.getTrustManagers();
             sslCtx.init(keyManagers, trustManagers, null);
             return sslCtx;
         } catch (NoSuchAlgorithmException e) {
-            throw IIOPMessages.MESSAGES.failedToGetSSLContext(e);
+            throw IIOPLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         } catch (KeyManagementException e) {
-            throw IIOPMessages.MESSAGES.failedToGetSSLContext(e);
+            throw IIOPLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         } catch (SecurityException e) {
-            throw IIOPMessages.MESSAGES.failedToGetSSLContext(e);
+            throw IIOPLogger.ROOT_LOGGER.failedToGetSSLContext(e);
         }
     }
 }

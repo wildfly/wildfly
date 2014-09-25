@@ -36,7 +36,7 @@ import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CosNaming.NameComponent;
 
 /**
@@ -158,7 +158,7 @@ public final class CNNameParser implements NameParser {
 
                 } else if (str.charAt(i) == escapeChar) {
                     if (i + 1 >= len) {
-                        throw IIOPMessages.MESSAGES.unescapedCharacter(str);
+                        throw IIOPLogger.ROOT_LOGGER.unescapedCharacter(str);
                     } else if (isMeta(str.charAt(i + 1))) {
                         ++i; // skip escape and let meta through
                         if (idMode) {
@@ -167,7 +167,7 @@ public final class CNNameParser implements NameParser {
                             kind[kindCount++] = str.charAt(i++);
                         }
                     } else {
-                        throw IIOPMessages.MESSAGES.invalidEscapedCharacter(str);
+                        throw IIOPLogger.ROOT_LOGGER.invalidEscapedCharacter(str);
                     }
 
                 } else if (idMode && str.charAt(i) == kindSeparator) {
@@ -215,11 +215,11 @@ public final class CNNameParser implements NameParser {
                 escaped = false;
             } else if (compStr.charAt(i) == escapeChar) {
                 if (i + 1 >= len) {
-                    throw IIOPMessages.MESSAGES.unescapedCharacter(compStr);
+                    throw IIOPLogger.ROOT_LOGGER.unescapedCharacter(compStr);
                 } else if (isMeta(compStr.charAt(i + 1))) {
                     escaped = true;
                 } else {
-                    throw IIOPMessages.MESSAGES.invalidEscapedCharacter(compStr);
+                    throw IIOPLogger.ROOT_LOGGER.invalidEscapedCharacter(compStr);
                 }
             } else if (compStr.charAt(i) == kindSeparator) {
                 kindSep = i;
@@ -244,11 +244,11 @@ public final class CNNameParser implements NameParser {
                     escaped = false;
                 } else if (compStr.charAt(i) == escapeChar) {
                     if (i + 1 >= len) {
-                        throw IIOPMessages.MESSAGES.unescapedCharacter(compStr);
+                        throw IIOPLogger.ROOT_LOGGER.unescapedCharacter(compStr);
                     } else if (isMeta(compStr.charAt(i + 1))) {
                         escaped = true;
                     } else {
-                        throw IIOPMessages.MESSAGES.invalidEscapedCharacter(compStr);
+                        throw IIOPLogger.ROOT_LOGGER.invalidEscapedCharacter(compStr);
                     }
                 } else {
                     newStr[j++] = compStr.charAt(i);

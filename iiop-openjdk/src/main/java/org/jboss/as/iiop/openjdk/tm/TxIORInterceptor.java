@@ -21,13 +21,13 @@
  */
 package org.jboss.as.iiop.openjdk.tm;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.LocalObject;
 import org.omg.CORBA.ORB;
 import org.omg.IOP.Codec;
-import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.PortableInterceptor.IORInfo;
 import org.omg.PortableInterceptor.IORInterceptor;
 
@@ -76,7 +76,7 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
             taggedComponentData = codec.encode_value(any);
             info.add_ior_component(new TaggedComponent(TAG_OTS_POLICY, taggedComponentData));
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.errorEncodingContext(e);
+            throw IIOPLogger.ROOT_LOGGER.errorEncodingContext(e);
         }
     }
 }

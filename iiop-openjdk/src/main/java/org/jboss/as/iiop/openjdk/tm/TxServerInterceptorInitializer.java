@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.tm;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -65,7 +65,7 @@ public class TxServerInterceptorInitializer extends LocalObject implements ORBIn
             TxServerInterceptor interceptor = new TxServerInterceptor();
             info.add_server_request_interceptor(interceptor);
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

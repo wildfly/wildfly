@@ -58,12 +58,6 @@
             <logger category="sun.rmi">
                 <level name="WARN"/>
             </logger>
-            <logger category="iiop">
-                <level name="WARN"/>
-            </logger>
-            <logger category="iiop.config">
-                <level name="ERROR"/>
-            </logger>
             <root-logger>
                 <level name="INFO"/>
                 <handlers>

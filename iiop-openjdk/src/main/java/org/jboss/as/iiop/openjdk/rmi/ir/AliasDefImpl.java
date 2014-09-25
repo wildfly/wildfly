@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.rmi.ir;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.AliasDefOperations;
 import org.omg.CORBA.AliasDefPOATie;
@@ -62,7 +62,7 @@ class AliasDefImpl extends TypedefDefImpl implements AliasDefOperations {
             original_type_def = IDLTypeImpl.getIDLType(type().content_type(),
                     repository);
         } catch (BadKind ex) {
-            throw IIOPMessages.MESSAGES.badKindForTypeCode(type().kind().value());
+            throw IIOPLogger.ROOT_LOGGER.badKindForTypeCode(type().kind().value());
         }
 
         getReference();
@@ -73,7 +73,7 @@ class AliasDefImpl extends TypedefDefImpl implements AliasDefOperations {
     }
 
     public void original_type_def(IDLType arg) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     /**

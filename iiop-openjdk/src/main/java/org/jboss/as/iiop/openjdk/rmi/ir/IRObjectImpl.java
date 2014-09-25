@@ -21,7 +21,6 @@
  */
 package org.jboss.as.iiop.openjdk.rmi.ir;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IRObject;
@@ -29,12 +28,11 @@ import org.omg.CORBA.IRObjectOperations;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.UserException;
 import org.omg.PortableServer.POA;
+import org.omg.PortableServer.Servant;
 import org.omg.PortableServer.POAPackage.ObjectAlreadyActive;
 import org.omg.PortableServer.POAPackage.ObjectNotActive;
 import org.omg.PortableServer.POAPackage.ServantAlreadyActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
-import org.omg.PortableServer.Servant;
-//import org.omg.PortableServer.POAPackage.ServantNotActive;
 
 /**
  * Abstract base class for all IR object implementations.
@@ -57,7 +55,7 @@ abstract class IRObjectImpl implements IRObjectOperations {
     }
 
     public void destroy() {
-        throw IIOPMessages.MESSAGES.cannotDestroyRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotDestroyRMIIIOPMapping();
     }
 
     public abstract IRObject getReference();
@@ -113,13 +111,13 @@ abstract class IRObjectImpl implements IRObjectOperations {
             org.omg.CORBA.Object ref = repository.poa.id_to_reference(id);
             return ref;
         } catch (WrongPolicy ex) {
-            IIOPLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            IIOPLogger.ROOT_LOGGER.debug("Exception converting CORBA servant to reference", ex);
         } catch (ServantAlreadyActive ex) {
-            IIOPLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            IIOPLogger.ROOT_LOGGER.debug("Exception converting CORBA servant to reference", ex);
         } catch (ObjectAlreadyActive ex) {
-            IIOPLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            IIOPLogger.ROOT_LOGGER.debug("Exception converting CORBA servant to reference", ex);
         } catch (ObjectNotActive ex) {
-            IIOPLogger.ROOT_LOGGER.debugExceptionConvertingServantToReference(ex);
+            IIOPLogger.ROOT_LOGGER.debug("Exception converting CORBA servant to reference", ex);
         }
         return null;
     }

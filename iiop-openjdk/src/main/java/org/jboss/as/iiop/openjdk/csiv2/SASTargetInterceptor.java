@@ -22,7 +22,6 @@
 
 package org.jboss.as.iiop.openjdk.csiv2;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -189,7 +188,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         try {
             encapsulatedErrorToken = codec.encode_value(any);
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
 
         // initialize msgBodyCtxError.
@@ -322,7 +321,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
     @Override
     public void receive_request(ServerRequestInfo ri) {
-        IIOPLogger.ROOT_LOGGER.traceReceiveRequest(ri.operation());
+        IIOPLogger.ROOT_LOGGER.tracef("receive_request: %s", ri.operation());
 
         CurrentRequestInfo threadLocal = threadLocalData.get();
 
@@ -350,7 +349,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                     // should not happen, as stateful context requests are always negotiated down to stateless in this implementation.
                     long contextId = contextBody.in_context_msg().client_context_id;
                     threadLocal.sasReply = createMsgCtxError(contextId, 4 /* major status: no context */);
-                    throw IIOPMessages.MESSAGES.missingSASContext();
+                    throw IIOPLogger.ROOT_LOGGER.missingSASContext();
                 } else if (contextBody.discriminator() == MTEstablishContext.value) {
                     EstablishContext message = contextBody.establish_msg();
                     threadLocal.contextId = message.client_context_id;
@@ -358,24 +357,24 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
 
                     if (message.client_authentication_token != null && message.client_authentication_token.length > 0) {
-                        IIOPLogger.ROOT_LOGGER.authTokenReceived();
+                        IIOPLogger.ROOT_LOGGER.trace("Received client authentication token");
                         InitialContextToken authToken = CSIv2Util.decodeInitialContextToken(
                                 message.client_authentication_token, codec);
                         if (authToken == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw IIOPMessages.MESSAGES.errorDecodingInitContextToken();
+                            throw IIOPLogger.ROOT_LOGGER.errorDecodingInitContextToken();
                         }
                         threadLocal.incomingUsername = authToken.username;
                         threadLocal.incomingPassword = authToken.password;
                         threadLocal.incomingTargetName = CSIv2Util.decodeGssExportedName(authToken.target_name);
                         if (threadLocal.incomingTargetName == null) {
                             threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                            throw IIOPMessages.MESSAGES.errorDecodingTargetInContextToken();
+                            throw IIOPLogger.ROOT_LOGGER.errorDecodingTargetInContextToken();
                         }
                         threadLocal.authenticationTokenReceived = true;
                     }
                     if (message.identity_token != null) {
-                        IIOPLogger.ROOT_LOGGER.identityTokenReceived();
+                        IIOPLogger.ROOT_LOGGER.trace("Received identity token");
                         threadLocal.incomingIdentity = message.identity_token;
                         if (message.identity_token.discriminator() == ITTPrincipalName.value) {
                             // Extract the RFC2743-encoded name from CDR encapsulation.
@@ -388,7 +387,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
 
                             if (threadLocal.incomingPrincipalName == null) {
                                 threadLocal.sasReply = createMsgCtxError(message.client_context_id, 2 /* major status: invalid mechanism */);
-                                throw IIOPMessages.MESSAGES.errorDecodingPrincipalName();
+                                throw IIOPLogger.ROOT_LOGGER.errorDecodingPrincipalName();
                             }
                         }
                     }
@@ -400,15 +399,15 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw IIOPMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw IIOPLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw IIOPMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw IIOPLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         }
     }
 
     @Override
     public void send_reply(ServerRequestInfo ri) {
-        IIOPLogger.ROOT_LOGGER.traceSendReply(ri.operation());
+        IIOPLogger.ROOT_LOGGER.tracef("send_reply: %s", ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         if (threadLocal.sasReply != null) {
@@ -416,14 +415,14 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw IIOPMessages.MESSAGES.unexpectedException(e);
+                throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
     }
 
     @Override
     public void send_exception(ServerRequestInfo ri) {
-        IIOPLogger.ROOT_LOGGER.traceSendException(ri.operation());
+        IIOPLogger.ROOT_LOGGER.tracef("send_exception: %s", ri.operation());
         CurrentRequestInfo threadLocal = (CurrentRequestInfo) threadLocalData.get();
 
         // The check below was added for interoperability  with IONA's ASP 6.0, which throws an
@@ -437,7 +436,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                 ServiceContext sc = new ServiceContext(sasContextId, codec.encode_value(threadLocal.sasReply));
                 ri.add_reply_service_context(sc, true);
             } catch (InvalidTypeForEncoding e) {
-                throw IIOPMessages.MESSAGES.unexpectedException(e);
+                throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
     }

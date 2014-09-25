@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.ValueBase;
 
@@ -107,16 +107,16 @@ public class ValueAnalysis extends ContainerAnalysis {
         super.doAnalyze();
 
         if (cls == String.class)
-            throw IIOPMessages.MESSAGES.cannotAnalyzeStringType();
+            throw IIOPLogger.ROOT_LOGGER.cannotAnalyzeStringType();
 
         if (cls == Class.class)
-            throw IIOPMessages.MESSAGES.cannotAnalyzeClassType();
+            throw IIOPLogger.ROOT_LOGGER.cannotAnalyzeClassType();
 
         if (Remote.class.isAssignableFrom(cls))
-            throw IIOPMessages.MESSAGES.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
+            throw IIOPLogger.ROOT_LOGGER.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
 
         if (cls.getName().indexOf('$') != -1)
-            throw IIOPMessages.MESSAGES.valueTypeCantBeProxy(cls.getName());
+            throw IIOPLogger.ROOT_LOGGER.valueTypeCantBeProxy(cls.getName());
 
         externalizable = Externalizable.class.isAssignableFrom(cls);
 
@@ -150,7 +150,7 @@ public class ValueAnalysis extends ContainerAnalysis {
                 try {
                     serialPersistentFields = (ObjectStreamField[]) spf.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw IIOPMessages.MESSAGES.unexpectedException(ex);
+                    throw IIOPLogger.ROOT_LOGGER.unexpectedException(ex);
                 }
 
                 // Mark this in the fields array

@@ -22,7 +22,7 @@ package org.jboss.as.iiop.openjdk.naming;
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-import org.omg.CORBA.INTERNAL;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.UserException;
 import org.omg.CosNaming.Binding;
 
@@ -47,7 +47,7 @@ public class BindingIteratorImpl extends org.omg.CosNaming.BindingIteratorPOA {
         try {
             _poa().deactivate_object(_poa().servant_to_id(this));
         } catch (UserException e) {
-            throw new INTERNAL("Caught exception destroying Iterator" + e);
+            throw IIOPLogger.ROOT_LOGGER.exceptionDestroingIterator(e.getMessage());
         }
     }
 

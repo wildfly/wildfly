@@ -49,7 +49,6 @@ import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ResolveResult;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.service.CorbaORBService;
 import org.omg.CORBA.BAD_PARAM;
@@ -136,7 +135,7 @@ public class CNCtx implements javax.naming.Context {
 
     CNCtx(ORB orb, NamingContext nctx, Hashtable env, NameComponent[] name) throws NamingException {
         if (orb == null || nctx == null)
-            throw IIOPMessages.MESSAGES.errorConstructingCNCtx();
+            throw IIOPLogger.ROOT_LOGGER.errorConstructingCNCtx();
         _orb = orb;
         _nc = nctx;
         _env = env;
@@ -240,10 +239,10 @@ public class CNCtx implements javax.naming.Context {
                     org.omg.CORBA.Object obj = _nc.resolve(_name);
                     _nc = NamingContextHelper.narrow(obj);
                     if (_nc == null) {
-                        throw IIOPMessages.MESSAGES.notANamingContext(insName);
+                        throw IIOPLogger.ROOT_LOGGER.notANamingContext(insName);
                     }
                 } catch (org.omg.CORBA.BAD_PARAM e) {
-                    throw IIOPMessages.MESSAGES.notANamingContext(insName);
+                    throw IIOPLogger.ROOT_LOGGER.notANamingContext(insName);
                 } catch (Exception e) {
                     throw org.jboss.as.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, _name);
                 }
@@ -254,7 +253,7 @@ public class CNCtx implements javax.naming.Context {
 
                 // No ORB instance specified; create one using env and defaults
                 inOrb = CorbaORBService.getCurrent();
-                IIOPLogger.ROOT_LOGGER.debugGetDefaultORB(inOrb);
+                IIOPLogger.ROOT_LOGGER.debugf("Getting default ORB %s", inOrb);
             }
             setOrbAndRootContext(inOrb, (String) null);
         }
@@ -310,7 +309,7 @@ public class CNCtx implements javax.naming.Context {
             if (savedException != null) {
                 throw savedException;
             } else {
-                throw IIOPMessages.MESSAGES.invalidURLOrIOR(url);
+                throw IIOPLogger.ROOT_LOGGER.invalidURLOrIOR(url);
             }
         } catch (MalformedURLException e) {
             throw new ConfigurationException(e.getMessage());
@@ -354,25 +353,25 @@ public class CNCtx implements javax.naming.Context {
             _nc = NamingContextHelper.narrow(ncRef);
             if (_nc == null) {
                 if (ncIor != null) {
-                    throw IIOPMessages.MESSAGES.errorConvertingIORToNamingCtx(ncIor);
+                    throw IIOPLogger.ROOT_LOGGER.errorConvertingIORToNamingCtx(ncIor);
                 } else {
-                    throw IIOPMessages.MESSAGES.errorResolvingNSInitRef();
+                    throw IIOPLogger.ROOT_LOGGER.errorResolvingNSInitRef();
                 }
             }
         } catch (org.omg.CORBA.ORBPackage.InvalidName in) {
-            NamingException ne = IIOPMessages.MESSAGES.cosNamingNotRegisteredCorrectly();
+            NamingException ne = IIOPLogger.ROOT_LOGGER.cosNamingNotRegisteredCorrectly();
             ne.setRootCause(in);
             throw ne;
         } catch (org.omg.CORBA.COMM_FAILURE e) {
-            NamingException ne = IIOPMessages.MESSAGES.errorConnectingToORB();
+            NamingException ne = IIOPLogger.ROOT_LOGGER.errorConnectingToORB();
             ne.setRootCause(e);
             throw ne;
         } catch (org.omg.CORBA.BAD_PARAM e) {
-            NamingException ne = IIOPMessages.MESSAGES.invalidURLOrIOR(ncIor);
+            NamingException ne = IIOPLogger.ROOT_LOGGER.invalidURLOrIOR(ncIor);
             ne.setRootCause(e);
             throw ne;
         } catch (org.omg.CORBA.INV_OBJREF e) {
-            NamingException ne = IIOPMessages.MESSAGES.invalidObjectReference(ncIor);
+            NamingException ne = IIOPLogger.ROOT_LOGGER.invalidObjectReference(ncIor);
             ne.setRootCause(e);
             throw ne;
         }
@@ -384,10 +383,10 @@ public class CNCtx implements javax.naming.Context {
         try {
             _nc = NamingContextHelper.narrow(ncRef);
             if (_nc == null) {
-                throw IIOPMessages.MESSAGES.errorConvertingIORToNamingCtx(ncRef.toString());
+                throw IIOPLogger.ROOT_LOGGER.errorConvertingIORToNamingCtx(ncRef.toString());
             }
         } catch (org.omg.CORBA.COMM_FAILURE e) {
-             NamingException ne = IIOPMessages.MESSAGES.errorConnectingToORB();
+             NamingException ne = IIOPLogger.ROOT_LOGGER.errorConnectingToORB();
             ne.setRootCause(e);
             throw ne;
         }
@@ -411,7 +410,7 @@ public class CNCtx implements javax.naming.Context {
                     }
                 }
             } catch (IOException e) {
-                NamingException ne = IIOPMessages.MESSAGES.invalidURLOrIOR(url);
+                NamingException ne = IIOPLogger.ROOT_LOGGER.invalidURLOrIOR(url);
                 ne.setRootCause(e);
                 throw ne;
             } finally {
@@ -420,12 +419,12 @@ public class CNCtx implements javax.naming.Context {
                         in.close();
                     }
                 } catch (IOException e) {
-                    NamingException ne = IIOPMessages.MESSAGES.invalidURLOrIOR(url);
+                    NamingException ne = IIOPLogger.ROOT_LOGGER.invalidURLOrIOR(url);
                     ne.setRootCause(e);
                     throw ne;
                 }
             }
-            throw IIOPMessages.MESSAGES.urlDoesNotContainIOR(url);
+            throw IIOPLogger.ROOT_LOGGER.urlDoesNotContainIOR(url);
         }
     }
 
@@ -488,7 +487,7 @@ public class CNCtx implements javax.naming.Context {
     public java.lang.Object lookup(Name name)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(name.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         if (name.size() == 0)
             return this; // %%% should clone() so that env can be changed
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
@@ -501,7 +500,7 @@ public class CNCtx implements javax.naming.Context {
             } catch (NamingException e) {
                 throw e;
             } catch (Exception e) {
-                NamingException ne = IIOPMessages.MESSAGES.errorGeneratingObjectViaFactory();
+                NamingException ne = IIOPLogger.ROOT_LOGGER.errorGeneratingObjectViaFactory();
                 ne.setRootCause(e);
                 throw ne;
             }
@@ -531,7 +530,7 @@ public class CNCtx implements javax.naming.Context {
     private void callBindOrRebind(NameComponent[] pth, Name name,
                                   java.lang.Object obj, boolean rebind) throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(name.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         try {
             // Call state factories to convert
             obj = NamingManager.getStateToBind(obj, name, this, _env);
@@ -554,7 +553,7 @@ public class CNCtx implements javax.naming.Context {
                 else
                     _nc.bind(pth, (org.omg.CORBA.Object) obj);
             } else
-                throw IIOPMessages.MESSAGES.notACorbaObject();
+                throw IIOPLogger.ROOT_LOGGER.notACorbaObject();
         } catch (BAD_PARAM e) {
             // probably narrow() failed?
             NamingException ne = new NotContextException(name.toString());
@@ -578,7 +577,7 @@ public class CNCtx implements javax.naming.Context {
     public void bind(Name name, java.lang.Object obj)
             throws NamingException {
         if (name.size() == 0) {
-            throw IIOPMessages.MESSAGES.invalidEmptyName();
+            throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         }
 
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
@@ -600,7 +599,7 @@ public class CNCtx implements javax.naming.Context {
                 Reference ref = (Reference) resObj;
                 RefAddr addr = ref.get("nns");
                 if (addr.getContent() instanceof javax.naming.Context) {
-                    NamingException ne = IIOPMessages.MESSAGES.noReferenceFound();
+                    NamingException ne = IIOPLogger.ROOT_LOGGER.noReferenceFound();
                     ne.setRootCause(cpe.getRootCause());
                     throw ne;
                 }
@@ -636,7 +635,7 @@ public class CNCtx implements javax.naming.Context {
     public void rebind(Name name, java.lang.Object obj)
             throws NamingException {
         if (name.size() == 0) {
-            throw IIOPMessages.MESSAGES.invalidEmptyName();
+            throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         }
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
         try {
@@ -673,7 +672,7 @@ public class CNCtx implements javax.naming.Context {
      */
     private void callUnbind(NameComponent[] path) throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(path.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(path.toString());
         try {
             _nc.unbind(path);
         } catch (NotFound e) {
@@ -730,7 +729,7 @@ public class CNCtx implements javax.naming.Context {
     public void unbind(Name name)
             throws NamingException {
         if (name.size() == 0)
-            throw IIOPMessages.MESSAGES.invalidEmptyName();
+            throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
         try {
             callUnbind(path);
@@ -766,9 +765,9 @@ public class CNCtx implements javax.naming.Context {
     public void rename(Name oldName, Name newName)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(oldName.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(oldName.toString());
         if (oldName.size() == 0 || newName.size() == 0)
-            throw IIOPMessages.MESSAGES.invalidEmptyName();
+            throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         java.lang.Object obj = lookup(oldName);
         bind(newName, obj);
         unbind(oldName);
@@ -824,7 +823,7 @@ public class CNCtx implements javax.naming.Context {
     public NamingEnumeration listBindings(Name name)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(name.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         if (name.size() > 0) {
             try {
                 java.lang.Object obj = lookup(name);
@@ -855,7 +854,7 @@ public class CNCtx implements javax.naming.Context {
     private void callDestroy(NamingContext nc)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(nc.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(nc.toString());
         try {
             nc.destroy();
         } catch (Exception e) {
@@ -886,7 +885,7 @@ public class CNCtx implements javax.naming.Context {
     public void destroySubcontext(Name name)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(name.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         NamingContext the_nc = _nc;
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
         if (name.size() > 0) {
@@ -933,7 +932,7 @@ public class CNCtx implements javax.naming.Context {
     private javax.naming.Context callBindNewContext(NameComponent[] path)
             throws NamingException {
         if (_nc == null)
-            throw IIOPMessages.MESSAGES.notANamingContext(path.toString());
+            throw IIOPLogger.ROOT_LOGGER.notANamingContext(path.toString());
         try {
             NamingContext nctx = _nc.bind_new_context(path);
             return new CNCtx(_orb, nctx, _env, makeFullName(path));
@@ -966,7 +965,7 @@ public class CNCtx implements javax.naming.Context {
     public javax.naming.Context createSubcontext(Name name)
             throws NamingException {
         if (name.size() == 0)
-            throw IIOPMessages.MESSAGES.invalidEmptyName();
+            throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         NameComponent[] path = org.jboss.as.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
         try {
             return callBindNewContext(path);

@@ -22,7 +22,6 @@
 
 package org.jboss.as.iiop.openjdk.csiv2;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.service.CorbaORBService;
@@ -71,7 +70,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
      * @param codec    the {@code Codec} used to encode the metadata when creating the tagged components.
      */
     public CSIv2Policy(IORSecurityConfigMetaData metadata, Codec codec) {
-        IIOPLogger.ROOT_LOGGER.debugIORSecurityConfigMetaData(metadata);
+        IIOPLogger.ROOT_LOGGER.debugf("IOR security config metadata: %s",metadata);
 
         // convert the ior metadata to a cached security tagged component.
         try {
@@ -82,7 +81,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
             this.sslTaggedComponent = CSIv2Util.createSSLTaggedComponent(metadata, codec, sslPort, orb);
             this.secTaggedComponent = CSIv2Util.createSecurityTaggedComponent(metadata, codec, sslPort, orb);
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

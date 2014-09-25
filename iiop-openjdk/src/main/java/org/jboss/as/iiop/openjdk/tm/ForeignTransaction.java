@@ -29,7 +29,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 /**
  * A ForeignTransaction, a marker for when we would have to import a
@@ -45,31 +45,31 @@ public class ForeignTransaction implements Transaction {
 
     public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
             SecurityException, SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public void rollback() throws IllegalStateException, SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public int getStatus() throws SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 
     public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException,
             SystemException {
-        throw IIOPMessages.MESSAGES.foreignTransaction();
+        throw IIOPLogger.ROOT_LOGGER.foreignTransaction();
     }
 }
