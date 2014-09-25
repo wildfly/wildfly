@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * @author Stuart Douglas
  */
-@WebServlet(name = "RunAsInitServlet", urlPatterns = "/runAsInit")
+@WebServlet(name = "RunAsInitServlet", urlPatterns = "/runAsInit", loadOnStartup = 100)
 @RunAs("anil")
 public class RunAsInitServlet extends HttpServlet {
 
