@@ -79,13 +79,15 @@ public class SecurityContextThreadSetupAction implements ThreadSetupAction {
 
     @Override
     public Handle setup(HttpServerExchange exchange) {
-        if(exchange == null) {
-            return null;
+        SecurityContext sc = null;
+        if(exchange != null) {
+            sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
         }
-        SecurityContext sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
         if (sc == null) {
             sc = SecurityActions.createSecurityContext(securityDomain);
-            exchange.putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, sc);
+            if(exchange != null) {
+                exchange.putAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT, sc);
+            }
         }
         SecurityActions.setSecurityContextOnAssociation(sc);
         final MappingManager mappingManager = securityDomainContext.getMappingManager();
