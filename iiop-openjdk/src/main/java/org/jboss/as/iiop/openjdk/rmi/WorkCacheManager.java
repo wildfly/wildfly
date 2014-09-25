@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 
 /**
@@ -91,7 +91,7 @@ class WorkCacheManager {
             constructor = cls.getDeclaredConstructor(new Class[]{Class.class});
             initializer = cls.getDeclaredMethod("doAnalyze");
         } catch (NoSuchMethodException ex) {
-            throw IIOPMessages.MESSAGES.unexpectedException(ex);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(ex);
         }
         workDone = new HashMap<Class, SoftReference<ContainerAnalysis>>();
         workInProgress = new HashMap<InProgressKey, ContainerAnalysis>();

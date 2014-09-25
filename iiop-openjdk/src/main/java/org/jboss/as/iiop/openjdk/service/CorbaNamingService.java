@@ -23,7 +23,6 @@
 package org.jboss.as.iiop.openjdk.service;
 
 import org.jboss.as.iiop.openjdk.IIOPExtension;
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.naming.CorbaNamingContext;
 import org.jboss.msc.inject.Injector;
@@ -66,7 +65,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+        IIOPLogger.ROOT_LOGGER.debugf("Starting service %s", context.getController().getName().getCanonicalName());
 
         ORB orb = orbInjector.getValue();
         POA rootPOA = rootPOAInjector.getValue();
@@ -91,7 +90,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
                     namingPOA.servant_to_reference(ns));
 
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.failedToStartJBossCOSNaming(e);
+            throw IIOPLogger.ROOT_LOGGER.failedToStartJBossCOSNaming(e);
         }
 
         // bind the corba naming service to JNDI.
@@ -99,14 +98,14 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
             IIOPLogger.ROOT_LOGGER.corbaNamingServiceStarted();
-            IIOPLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
+            IIOPLogger.ROOT_LOGGER.debugf("Naming: [%s]", orb.object_to_string(namingService));
         }
     }
 
     @Override
     public void stop(StopContext context) {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", context.getController().getName().getCanonicalName());
         }
     }
 

@@ -335,7 +335,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
             // if SSL is to be used, check if a security domain has been specified.
             String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
             if (securityDomain == null || securityDomain.isEmpty())
-                throw IIOPMessages.MESSAGES.noSecurityDomainSpecified();
+                throw IIOPLogger.ROOT_LOGGER.noSecurityDomainSpecified();
 
             // add the domain socket factories.
             SocketFactory.setSecurityDomain(securityDomain);

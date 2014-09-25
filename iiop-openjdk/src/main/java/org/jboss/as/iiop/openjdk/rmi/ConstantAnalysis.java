@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.rmi;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.Any;
 
 
@@ -49,7 +49,7 @@ public class ConstantAnalysis
 
         if (type == Void.TYPE ||
                 !type.isPrimitive() && type != java.lang.String.class)
-            throw IIOPMessages.MESSAGES.badConstantType(type.getName());
+            throw IIOPLogger.ROOT_LOGGER.badConstantType(type.getName());
 
         this.type = type;
         this.value = value;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.iiop.openjdk.csiv2;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.iiop.csiv2.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
@@ -49,7 +49,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
             SASCurrent sasCurrent = new SASCurrentImpl();
             info.register_initial_reference("SASCurrent", sasCurrent);
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
+            throw IIOPLogger.ROOT_LOGGER.errorRegisteringSASCurrentInitRef(e);
         }
     }
 
@@ -87,7 +87,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
 //                          }
 //                       });
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 }

@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
@@ -226,39 +226,39 @@ class ContainerImplDelegate
     }
 
     public ModuleDef create_module(String id, String name, String version) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ConstantDef create_constant(String id, String name, String version,
                                        IDLType type, org.omg.CORBA.Any value) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public StructDef create_struct(String id, String name, String version,
                                    StructMember[] members) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public UnionDef create_union(String id, String name, String version,
                                  IDLType discriminator_type,
                                  UnionMember[] members) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public EnumDef create_enum(String id, String name, String version,
                                String[] members) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public AliasDef create_alias(String id, String name, String version,
                                  IDLType original_type) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public InterfaceDef create_interface(String id, String name, String version,
                                          InterfaceDef[] base_interfaces,
                                          boolean is_abstract) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef create_value(String id, String name, String version,
@@ -267,21 +267,21 @@ class ContainerImplDelegate
                                  ValueDef[] abstract_base_values,
                                  InterfaceDef[] supported_interfaces,
                                  Initializer[] initializers) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueBoxDef create_value_box(String id, String name, String version,
                                         IDLType original_type_def) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ExceptionDef create_exception(String id, String name, String version,
                                          StructMember[] members) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public NativeDef create_native(String id, String name, String version) {
-        throw IIOPMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw IIOPLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 
@@ -300,9 +300,9 @@ class ContainerImplDelegate
 
     void add(String name, LocalContained contained) throws IRConstructionException {
         if (contained.getRepository() != delegateFor.getRepository())
-            throw IIOPMessages.MESSAGES.wrongInterfaceRepository();
+            throw IIOPLogger.ROOT_LOGGER.wrongInterfaceRepository();
         if (contMap.get(name) != null)
-            throw IIOPMessages.MESSAGES.duplicateRepositoryName();
+            throw IIOPLogger.ROOT_LOGGER.duplicateRepositoryName();
         cont.add(contained);
         contMap.put(name, contained);
     }

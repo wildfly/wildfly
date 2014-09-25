@@ -21,7 +21,7 @@
  */
 package org.jboss.as.iiop.openjdk.rmi.ir;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.TCKind;
@@ -80,11 +80,11 @@ abstract class IDLTypeImpl
             try {
                 return (LocalIDLType) repository._lookup_id(typeCode.id());
             } catch (BadKind ex) {
-                throw IIOPMessages.MESSAGES.badKindForTypeCode(tcKind.value());
+                throw IIOPLogger.ROOT_LOGGER.badKindForTypeCode(tcKind.value());
             }
         }
 
-        throw IIOPMessages.MESSAGES.badKindForTypeCode(tcKind.value());
+        throw IIOPLogger.ROOT_LOGGER.badKindForTypeCode(tcKind.value());
     }
 
     // Protected -----------------------------------------------------

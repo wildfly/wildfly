@@ -39,7 +39,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.security.JSSESecurityDomain;
@@ -85,12 +84,12 @@ public class SocketFactory implements ORBSocketFactory {
             InitialContext context = new InitialContext();
             jsseSecurityDomain = (JSSESecurityDomain) context.lookup(SecurityConstants.JAAS_CONTEXT_ROOT + securityDomain
                     + "/jsse");
-            IIOPLogger.ROOT_LOGGER.debugJSSEDomainRetrieval(securityDomain);
+            IIOPLogger.ROOT_LOGGER.debugf("Obtained JSSE security domain with name %s", securityDomain);
         } catch (NamingException ne) {
             IIOPLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
         }
         if (jsseSecurityDomain == null)
-            throw new RuntimeException(IIOPMessages.MESSAGES.failedToLookupJSSEDomain());
+            throw new RuntimeException(IIOPLogger.ROOT_LOGGER.failedToLookupJSSEDomain());
     }
 
     @Override

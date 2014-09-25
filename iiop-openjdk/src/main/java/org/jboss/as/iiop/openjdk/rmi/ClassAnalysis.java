@@ -22,7 +22,7 @@
 package org.jboss.as.iiop.openjdk.rmi;
 
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 /**
  * Analysis class for classes. These define IDL types.
@@ -67,7 +67,7 @@ public class ClassAnalysis extends AbstractAnalysis {
 
     private static String javaNameOfClass(Class cls) {
         if (cls == null)
-            throw IIOPMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw IIOPLogger.ROOT_LOGGER.cannotAnalyzeNullClass();
 
         String s = cls.getName();
 

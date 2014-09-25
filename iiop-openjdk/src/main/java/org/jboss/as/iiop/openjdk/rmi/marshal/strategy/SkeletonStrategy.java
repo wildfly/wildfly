@@ -29,7 +29,7 @@ import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.UnknownException;
 import org.omg.CORBA_2_3.portable.InputStream;
 import org.omg.CORBA_2_3.portable.OutputStream;
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.rmi.ExceptionAnalysis;
 import org.jboss.as.iiop.openjdk.rmi.RMIIIOPViolationException;
 import org.jboss.as.iiop.openjdk.rmi.marshal.CDRStream;
@@ -215,9 +215,9 @@ public class SkeletonStrategy {
                             {org.omg.CORBA.portable.OutputStream.class, clz};
                     writeMethod = helperClass.getMethod("write", paramTypes);
                 } catch (ClassNotFoundException e) {
-                    throw IIOPMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw IIOPLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw IIOPMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
+                    throw IIOPLogger.ROOT_LOGGER.noWriteMethodInHelper(helperClassName, e);
                 }
 
             } else {
@@ -227,7 +227,7 @@ public class SkeletonStrategy {
                     this.reposId = ExceptionAnalysis.getExceptionAnalysis(clz)
                             .getExceptionRepositoryId();
                 } catch (RMIIIOPViolationException e) {
-                    throw IIOPMessages.MESSAGES.cannotObtainExceptionRepositoryID(clz.getName(),  e);
+                    throw IIOPLogger.ROOT_LOGGER.cannotObtainExceptionRepositoryID(clz.getName(),  e);
                 }
             }
         }
@@ -247,9 +247,9 @@ public class SkeletonStrategy {
                 try {
                     writeMethod.invoke(null, new Object[]{out, excep});
                 } catch (IllegalAccessException e) {
-                    throw IIOPMessages.MESSAGES.unexpectedException(e);
+                    throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw IIOPMessages.MESSAGES.errorMarshaling(IDLEntity.class, e.getTargetException());
+                    throw IIOPLogger.ROOT_LOGGER.errorMarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 out.write_string(reposId);

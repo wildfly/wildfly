@@ -89,7 +89,7 @@ public class CorbaORBService implements Service<ORB> {
     @Override
     public void start(StartContext context) throws StartException {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Starting service %s", context.getController().getName().getCanonicalName());
         }
 
         try {
@@ -150,7 +150,7 @@ public class CorbaORBService implements Service<ORB> {
     @Override
     public void stop(StopContext context) {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", context.getController().getName().getCanonicalName());
         }
         // stop the ORB asynchronously.
         final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);

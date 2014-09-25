@@ -33,7 +33,7 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.spi.StateFactory;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 
 /**
@@ -79,7 +79,7 @@ public class RemoteToCorba implements StateFactory {
                         CorbaUtils.remoteToCorba((Remote) orig, ((CNCtx) ctx)._orb);
             } catch (ClassNotFoundException e) {
                 // RMI-IIOP library not available
-                throw IIOPMessages.MESSAGES.unavailableRMIPackages();
+                throw IIOPLogger.ROOT_LOGGER.unavailableRMIPackages();
             }
         }
         return null; // pass and let next state factory try

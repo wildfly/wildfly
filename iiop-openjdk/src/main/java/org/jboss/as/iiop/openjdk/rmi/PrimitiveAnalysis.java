@@ -22,7 +22,7 @@
 package org.jboss.as.iiop.openjdk.rmi;
 
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 
 /**
  * Analysis class for primitive types.
@@ -54,7 +54,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
      */
     public static PrimitiveAnalysis getPrimitiveAnalysis(final Class cls) {
         if (cls == null)
-            throw IIOPMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw IIOPLogger.ROOT_LOGGER.cannotAnalyzeNullClass();
 
         if (cls == Void.TYPE)
             return voidAnalysis;
@@ -75,7 +75,7 @@ public class PrimitiveAnalysis extends ClassAnalysis {
         if (cls == Double.TYPE)
             return doubleAnalysis;
 
-        throw IIOPMessages.MESSAGES.notAPrimitive(cls.getName());
+        throw IIOPLogger.ROOT_LOGGER.notAPrimitive(cls.getName());
     }
 
 }

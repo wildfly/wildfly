@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.iiop.openjdk.IIOPExtension;
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -145,7 +144,7 @@ public class CorbaPOAService implements Service<POA> {
     @Override
     public void start(StartContext context) throws StartException {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStartup(context.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Starting service %s", context.getController().getName().getCanonicalName());
         }
 
         ORB orb = this.orbInjector.getOptionalValue();
@@ -156,7 +155,7 @@ public class CorbaPOAService implements Service<POA> {
             try {
                 this.poa = POAHelper.narrow(orb.resolve_initial_references(this.poaName));
             } catch (Exception e) {
-                throw IIOPMessages.MESSAGES.errorResolvingInitRef(this.poaName, e);
+                throw IIOPLogger.ROOT_LOGGER.errorResolvingInitRef(this.poaName, e);
             }
         }
         // if a parent POA has been injected, we use it to create the policies and then the POA itself.
@@ -165,10 +164,10 @@ public class CorbaPOAService implements Service<POA> {
                 Policy[] poaPolicies = this.createPolicies(parentPOA);
                 this.poa = parentPOA.create_POA(this.poaName, null, poaPolicies);
             } catch (Exception e) {
-                throw IIOPMessages.MESSAGES.errorCreatingPOAFromParent(e);
+                throw IIOPLogger.ROOT_LOGGER.errorCreatingPOAFromParent(e);
             }
         } else {
-            throw IIOPMessages.MESSAGES.invalidPOACreationArgs();
+            throw IIOPLogger.ROOT_LOGGER.invalidPOACreationArgs();
         }
 
         // check if the POA should be bound to JNDI under java:/jboss.
@@ -180,14 +179,14 @@ public class CorbaPOAService implements Service<POA> {
         try {
             this.poa.the_POAManager().activate();
         } catch (Exception e) {
-            throw IIOPMessages.MESSAGES.errorActivatingPOA(e);
+            throw IIOPLogger.ROOT_LOGGER.errorActivatingPOA(e);
         }
     }
 
     @Override
     public void stop(StopContext context) {
         if (IIOPLogger.ROOT_LOGGER.isDebugEnabled()) {
-            IIOPLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
+            IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", context.getController().getName().getCanonicalName());
         }
 
         // destroy parent POAs, letting they destroy their children POAs in the process.

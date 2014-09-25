@@ -22,7 +22,6 @@
 
 package org.jboss.as.iiop.openjdk.csiv2;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.service.CorbaORBService;
@@ -35,9 +34,9 @@ import org.omg.CSIIOP.DetectMisordering;
 import org.omg.CSIIOP.DetectReplay;
 import org.omg.CSIIOP.Integrity;
 import org.omg.IOP.Codec;
-import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.TAG_INTERNET_IOP;
 import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.PortableInterceptor.IORInfo;
 import org.omg.PortableInterceptor.IORInterceptor;
 import org.omg.SSLIOP.SSL;
@@ -87,7 +86,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
                 iorSecurityConfigMetaData = new IORSecurityConfigMetaData();
             defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(iorSecurityConfigMetaData, codec, sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
-            throw IIOPMessages.MESSAGES.unexpectedException(e);
+            throw IIOPLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 
@@ -103,7 +102,7 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
         try {
             csiv2Policy = (CSIv2Policy) info.get_effective_policy(CSIv2Policy.TYPE);
         } catch (BAD_PARAM e) {
-            IIOPLogger.ROOT_LOGGER.csiv2PolicyNotFoundInIORInfo();
+            IIOPLogger.ROOT_LOGGER.debug("CSIv2Policy not found in IORInfo");
         } catch (Exception e) {
             IIOPLogger.ROOT_LOGGER.failedToFetchCSIv2Policy(e);
         }

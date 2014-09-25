@@ -37,7 +37,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 
-import org.jboss.as.iiop.openjdk.IIOPMessages;
+import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
@@ -217,7 +217,7 @@ public final class ExceptionMapper {
             } catch (NamingException ge) {
                 throw ge;
             } catch (Exception ge) {
-                NamingException ne = IIOPMessages.MESSAGES.errorGeneratingObjectViaFactory();
+                NamingException ne = IIOPLogger.ROOT_LOGGER.errorGeneratingObjectViaFactory();
                 ne.setRootCause(ge);
                 throw ne;
             }
