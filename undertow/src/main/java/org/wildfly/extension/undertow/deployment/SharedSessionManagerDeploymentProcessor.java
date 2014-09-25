@@ -36,10 +36,13 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
 
 /**
  * @author Stuart Douglas
@@ -54,14 +57,13 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
         }
         ServiceTarget target = phaseContext.getServiceTarget();
         ServiceName deploymentServiceName = deploymentUnit.getServiceName();
-        ServiceName serviceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
+        ServiceName managerServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
         DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
         if (builder != null) {
             Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            builder.build(target, serviceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, deploymentUnit.getName(), module))
+            builder.build(target, managerServiceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, deploymentUnit.getName(), module))
                     .setInitialMode(Mode.ON_DEMAND)
-                    .install()
-            ;
+                    .install();
         } else {
             InMemorySessionManager manager = new InMemorySessionManager(deploymentUnit.getName(), sharedConfig.getMaxActiveSessions());
             if (sharedConfig.getSessionConfig() != null) {
@@ -70,10 +72,16 @@ public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitPr
                 }
             }
             SessionManagerFactory factory = new ImmediateSessionManagerFactory(manager);
-            target.addService(serviceName, new ValueService<>(new ImmediateValue<>(factory)))
-                    .setInitialMode(Mode.ON_DEMAND)
-                    .install()
-            ;
+            target.addService(managerServiceName, new ValueService<>(new ImmediateValue<>(factory))).setInitialMode(Mode.ON_DEMAND).install();
+        }
+
+        ServiceName codecServiceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME);
+        DistributableSessionIdentifierCodecBuilder sessionIdentifierCodecBuilder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
+        if (sessionIdentifierCodecBuilder != null) {
+            sessionIdentifierCodecBuilder.build(target, codecServiceName, deploymentUnit.getName()).setInitialMode(Mode.ON_DEMAND).install();
+        } else {
+            // Fallback to simple codec if server does not support clustering
+            SimpleSessionIdentifierCodecService.build(target, codecServiceName).setInitialMode(Mode.ON_DEMAND).install();
         }
     }
 

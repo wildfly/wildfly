@@ -32,6 +32,7 @@ import org.jboss.msc.service.ServiceName;
 public class SharedSessionManagerConfig {
 
     public static final ServiceName SHARED_SESSION_MANAGER_SERVICE_NAME = ServiceName.of("undertow", "shared-session-manager");
+    public static final ServiceName SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME = SHARED_SESSION_MANAGER_SERVICE_NAME.append("codec");
 
     private int maxActiveSessions = -1;
     private ReplicationConfig replicationConfig;
