@@ -60,8 +60,8 @@ if $cygwin; then
 fi
 
 eval \"$JAVA\" $JAVA_OPTS \
-         -Djboss.home.dir=\"$JBOSS_HOME\" \
-         -jar \"$JBOSS_HOME/jboss-modules.jar\" \
-         -mp \"${JBOSS_MODULEPATH}\" \
+         -Djboss.home.dir=\""$JBOSS_HOME"\" \
+         -jar \""$JBOSS_HOME"/jboss-modules.jar\" \
+         -mp \""${JBOSS_MODULEPATH}"\" \
          org.jboss.as.jdr \
          "$@" 

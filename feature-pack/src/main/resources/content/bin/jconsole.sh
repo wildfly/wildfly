@@ -74,7 +74,7 @@ fi
 
 CLASSPATH=$JAVA_HOME/lib/jconsole.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
-CLASSPATH="$CLASSPATH:$JBOSS_HOME/bin/client/jboss-cli-client.jar"
+CLASSPATH="$CLASSPATH:\""$JBOSS_HOME"\"/bin/client/jboss-cli-client.jar"
 
 echo CLASSPATH $CLASSPATH
 
