@@ -65,6 +65,12 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private static final String EE_MANAGED_SCHEDULED_EXECUTOR_SERVICE_CLASS_NAME = "javax.enterprise.concurrent.ManagedScheduledExecutorService";
     private static final String EE_MANAGED_THREAD_FACTORY_CLASS_NAME = "javax.enterprise.concurrent.ManagedThreadFactory";
 
+    private static final String EJB_CONTEXT_LOCATION = "java:comp/EJBContext";
+    private static final String EJB_CONTEXT_CLASS_NAME = "javax.ejb.EJBContext";
+    private static final String EJB_SESSION_CONTEXT_CLASS_NAME = "javax.ejb.SessionContext";
+    private static final String EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME = "javax.ejb.MessageDrivenContext";
+    private static final String EJB_ENTITY_CONTEXT_CLASS_NAME = "javax.ejb.EntityContext";
+
     private final Context context;
 
     protected String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
@@ -82,7 +88,12 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
             } else if (TIMER_SERVICE_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(TimerService.class, injectionPoint.getMember());
                 return proposedName;
-            } else {
+            } else if (EJB_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_SESSION_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_ENTITY_CONTEXT_CLASS_NAME.equals(typeName)) {
+                return EJB_CONTEXT_LOCATION;
+            }  else {
                 // EE default bindings
                 EEDefaultResourceJndiNames eeDefaultResourceJndiNames = moduleDescription.getDefaultResourceJndiNames();
                 if (eeDefaultResourceJndiNames.getContextService() != null && EE_CONTEXT_SERVICE_CLASS_NAME.equals(typeName)) {
