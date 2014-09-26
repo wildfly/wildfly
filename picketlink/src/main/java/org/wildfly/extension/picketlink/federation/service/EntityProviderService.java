@@ -23,6 +23,7 @@ package org.wildfly.extension.picketlink.federation.service;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -77,6 +78,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
     @Override
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping service for %s.", getConfiguration().getAlias());
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     @Override

@@ -81,8 +81,11 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
                                             service.getFederationService());
 
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+
         ServiceController<IdentityProviderService> controller = serviceBuilder
-                                                                    .addListener(verificationHandler)
                                                                     .setInitialMode(ServiceController.Mode.PASSIVE)
                                                                     .install();
 

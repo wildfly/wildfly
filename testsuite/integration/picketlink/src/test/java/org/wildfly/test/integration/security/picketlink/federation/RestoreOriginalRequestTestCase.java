@@ -26,7 +26,6 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebForm;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,6 +40,7 @@ import org.junit.runner.RunWith;
 import java.net.URL;
 
 import static org.junit.Assert.assertTrue;
+import static org.wildfly.test.integration.security.picketlink.federation.AbstractBasicFederationTestCase.formatUrl;
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProvider;
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProvider;
 
@@ -78,17 +78,10 @@ public class RestoreOriginalRequestTestCase {
         return serviceProvider;
     }
 
-    @ArquillianResource
-    @OperateOnDeployment("service-provider-1")
-    private URL serviceProvider1;
-
-    @ArquillianResource
-    @OperateOnDeployment("service-provider-2")
-    private URL serviceProvider2;
-
     @Test
-    public void testPostOriginalRequest() throws Exception {
-        WebRequest request = new GetMethodWebRequest(serviceProvider2 + "/savedRequest/savedRequest.html");
+    @OperateOnDeployment("service-provider-2")
+    public void testPostOriginalRequest(@ArquillianResource URL serviceProvider2) throws Exception {
+        WebRequest request = new GetMethodWebRequest(formatUrl(serviceProvider2) + "/savedRequest/savedRequest.html");
         WebConversation conversation = new WebConversation();
         WebResponse response = conversation.getResponse(request);
 
@@ -105,8 +98,9 @@ public class RestoreOriginalRequestTestCase {
     }
 
     @Test
-    public void testPostOriginalRequestWithParams() throws Exception {
-        WebRequest request = new GetMethodWebRequest(serviceProvider2 + "/savedRequest/savedRequest.jsp");
+    @OperateOnDeployment("service-provider-2")
+    public void testPostOriginalRequestWithParams(@ArquillianResource URL serviceProvider2) throws Exception {
+        WebRequest request = new GetMethodWebRequest(formatUrl(serviceProvider2) + "/savedRequest/savedRequest.jsp");
 
         request.setParameter("SAVED_PARAM", "Param was saved.");
 
@@ -126,8 +120,9 @@ public class RestoreOriginalRequestTestCase {
     }
 
     @Test
-    public void testRedirectOriginalRequest() throws Exception {
-        WebRequest request = new GetMethodWebRequest(serviceProvider1 + "/savedRequest/savedRequest.html");
+    @OperateOnDeployment("service-provider-1")
+    public void testRedirectOriginalRequest(@ArquillianResource URL serviceProvider1) throws Exception {
+        WebRequest request = new GetMethodWebRequest(formatUrl(serviceProvider1) + "/savedRequest/savedRequest.html");
         WebConversation conversation = new WebConversation();
         WebResponse response = conversation.getResponse(request);
 

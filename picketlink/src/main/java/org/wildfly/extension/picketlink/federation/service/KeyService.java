@@ -22,72 +22,54 @@
 package org.wildfly.extension.picketlink.federation.service;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.picketlink.config.federation.KeyProviderType;
-import org.picketlink.config.federation.STSType;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
-import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class FederationService implements Service<FederationService> {
+public class KeyService implements Service<KeyService> {
 
-    private static final String SERVICE_NAME = "FederationService";
-    private volatile KeyProviderType keyProviderType;
-    private volatile STSType stsType;
-    private volatile IDPConfiguration idpConfiguration;
-    private final String alias;
+    private static final String SERVICE_NAME = "KeyService";
+    private final String keyName;
+    private final InjectedValue<KeyStoreProviderService> keyStoreProviderService = new InjectedValue<KeyStoreProviderService>();
+    private final String host;
 
-    public FederationService(String alias) {
-        this.alias = alias;
+    public KeyService(String keyName, String host) {
+        this.keyName = keyName;
+        this.host = host;
     }
 
-    public static ServiceName createServiceName(String alias) {
-        return ServiceName.JBOSS.append(FederationExtension.SUBSYSTEM_NAME, SERVICE_NAME, alias);
+    public static ServiceName createServiceName(final String federationAlias, String keyName) {
+        return ServiceName.JBOSS.append(FederationExtension.SUBSYSTEM_NAME, SERVICE_NAME, federationAlias + ".keystore." + keyName);
     }
 
     @Override
-    public FederationService getValue() throws IllegalStateException, IllegalArgumentException {
+    public KeyService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
+        KeyStoreProviderService keyStoreProviderService = getKeyStoreProviderService().getValue();
+
+        keyStoreProviderService.addKey(this.keyName, this.host);
     }
 
     @Override
     public void stop(StopContext context) {
+        KeyStoreProviderService keyStoreProviderService = getKeyStoreProviderService().getValue();
+
+        keyStoreProviderService.removeKey(this.keyName);
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
-    KeyProviderType getKeyProviderType() {
-        return this.keyProviderType;
-    }
-
-    void setKeyProviderType(final KeyProviderType keyProviderType) {
-        this.keyProviderType = keyProviderType;
-    }
-
-    void setSTSType(final STSType STSType) {
-        this.stsType = STSType;
-    }
-
-    STSType getStsType() {
-        return this.stsType;
-    }
-
-    IDPConfiguration getIdpConfiguration() {
-        return this.idpConfiguration;
-    }
-
-    void setIdpConfiguration(final IDPConfiguration idpConfiguration) {
-        this.idpConfiguration = idpConfiguration;
-    }
-
-    public String getAlias() {
-        return this.alias;
+    public InjectedValue<KeyStoreProviderService> getKeyStoreProviderService() {
+        return this.keyStoreProviderService;
     }
 }

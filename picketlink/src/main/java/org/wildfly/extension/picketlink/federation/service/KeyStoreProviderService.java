@@ -23,6 +23,7 @@ package org.wildfly.extension.picketlink.federation.service;
 
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -30,7 +31,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.picketlink.config.federation.AuthPropertyType;
 import org.picketlink.config.federation.KeyProviderType;
+import org.picketlink.config.federation.KeyValueType;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
+
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -69,6 +73,7 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
     @Override
     public void stop(StopContext context) {
         getFederationService().getValue().setKeyProviderType(null);
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     public InjectedValue<FederationService> getFederationService() {
@@ -96,5 +101,28 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
         keyStoreURL.setValue(resolvedPath);
 
         this.keyProviderType.add(keyStoreURL);
+    }
+
+    public void removeKey(String key) {
+        for (KeyValueType keyValueType : new ArrayList<KeyValueType>(this.keyProviderType.getValidatingAlias())) {
+            if (keyValueType.getValue() != null && keyValueType.getValue().equals(key)) {
+                this.keyProviderType.remove(keyValueType);
+            }
+        }
+    }
+
+    public void addKey(String key, String validatingHost) {
+        removeKey(key);
+
+        String[] hosts = validatingHost.split(",");
+
+        for (String host : hosts) {
+            KeyValueType kv = new KeyValueType();
+
+            kv.setKey(host);
+            kv.setValue(key);
+
+            this.keyProviderType.add(kv);
+        }
     }
 }

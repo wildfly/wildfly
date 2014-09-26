@@ -19,8 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.wildfly.extension.picketlink.federation.model;
+package org.wildfly.extension.picketlink.federation.model.keystore;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -28,26 +27,32 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.FederationService;
+import org.wildfly.extension.picketlink.federation.service.KeyService;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class FederationRemoveHandler extends AbstractRemoveStepHandler {
+public class KeyRemoveHandler extends AbstractRemoveStepHandler {
 
-    static final FederationRemoveHandler INSTANCE = new FederationRemoveHandler();
+    static final KeyRemoveHandler INSTANCE = new KeyRemoveHandler();
 
-    private FederationRemoveHandler() {
+    private KeyRemoveHandler() {
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
-            throws OperationFailedException {
-        removeFederationService(context, operation);
+        throws OperationFailedException {
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+        String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
+        String keyName = pathAddress.getLastElement().getValue();
+
+        context.removeService(KeyService.createServiceName(federationAlias, keyName));
     }
 
-    private void removeFederationService(OperationContext context, ModelNode operation) {
-        String alias = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        context.removeService(FederationService.createServiceName(alias));
+    @Override
+    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        KeyAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, null, null);
     }
 }

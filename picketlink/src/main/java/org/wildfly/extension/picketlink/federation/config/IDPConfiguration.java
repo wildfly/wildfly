@@ -71,7 +71,7 @@ public class IDPConfiguration extends IDPType implements ProviderConfiguration {
         this.securityDomain = securityDomain;
     }
 
-    public void addTrustDomain(String domain, String certAlias) {
+    public void addTrustDomain(String domain) {
         String domainsList = getDomains();
 
         if (!isNullOrEmpty(domainsList)) {
@@ -80,11 +80,7 @@ public class IDPConfiguration extends IDPType implements ProviderConfiguration {
 
         getTrust().setDomains(domainsList + domain);
 
-        if (!isNullOrEmpty(certAlias)) {
-            this.trustDomainAlias.put(domain.trim(), certAlias.trim());
-        } else {
-            this.trustDomainAlias.put(domain.trim(), domain.trim());
-        }
+        this.trustDomainAlias.put(domain.trim(), domain.trim());
     }
 
     public void removeTrustDomain(String domain) {
@@ -95,7 +91,7 @@ public class IDPConfiguration extends IDPType implements ProviderConfiguration {
 
             for (String currentDomain : domainsList.split(",")) {
                 if (!domain.equals(currentDomain) && !isNullOrEmpty(currentDomain)) {
-                    addTrustDomain(currentDomain, this.trustDomainAlias.get(currentDomain));
+                    addTrustDomain(currentDomain);
                 }
             }
         }
