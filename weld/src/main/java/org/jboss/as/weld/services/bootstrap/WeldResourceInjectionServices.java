@@ -49,6 +49,12 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
     private static final String TIMER_SERVICE_CLASS_NAME = "javax.ejb.TimerService";
     private static final String ORB_CLASS_NAME = "org.omg.CORBA.ORB";
 
+    private static final String EJB_CONTEXT_LOCATION = "java:comp/EJBContext";
+    private static final String EJB_CONTEXT_CLASS_NAME = "javax.ejb.EJBContext";
+    private static final String EJB_SESSION_CONTEXT_CLASS_NAME = "javax.ejb.SessionContext";
+    private static final String EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME = "javax.ejb.MessageDrivenContext";
+    private static final String EJB_ENTITY_CONTEXT_CLASS_NAME = "javax.ejb.EntityContext";
+
     private final Context context;
 
     @Override
@@ -66,18 +72,24 @@ public class WeldResourceInjectionServices extends AbstractResourceServices impl
 
     protected static String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
         if (injectionPoint.getType() instanceof Class<?>) {
-            Class<?> type = (Class<?>) injectionPoint.getType();
-            if (USER_TRANSACTION_CLASS_NAME.equals(type.getName())) {
+            final Class<?> type = (Class<?>) injectionPoint.getType();
+            final String typeName = type.getName();
+            if (USER_TRANSACTION_CLASS_NAME.equals(typeName)) {
                 return USER_TRANSACTION_LOCATION;
-            } else if (HANDLE_DELEGATE_CLASS_NAME.equals(type.getName())) {
+            } else if (HANDLE_DELEGATE_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(HandleDelegate.class, injectionPoint.getMember());
                 return proposedName;
-            } else if (ORB_CLASS_NAME.equals(type.getName())) {
+            } else if (ORB_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(org.omg.CORBA.ORB.class, injectionPoint.getMember());
                 return proposedName;
-            } else if (TIMER_SERVICE_CLASS_NAME.equals(type.getName())) {
+            } else if (TIMER_SERVICE_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(TimerService.class, injectionPoint.getMember());
                 return proposedName;
+            } else if (EJB_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_SESSION_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_MESSAGE_DRIVEN_CONTEXT_CLASS_NAME.equals(typeName) ||
+                    EJB_ENTITY_CONTEXT_CLASS_NAME.equals(typeName)) {
+                return EJB_CONTEXT_LOCATION;
             }
         }
         return proposedName;
