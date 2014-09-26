@@ -119,6 +119,19 @@ public class MDBTestCase {
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(MDBWithDeliveryActiveAnnotation.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
+        // grant necessary permissions
+        ejbJar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.util.PropertyPermission</classname>\n" +
+            "       <name>ts.timeout.factor</name>\n" +
+            "       <actions>read</actions>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/jboss-permissions.xml");
         logger.info(ejbJar.toString(true));
         return ejbJar;
     }

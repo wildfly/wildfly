@@ -147,6 +147,19 @@ public class SendMessagesTestCase {
     public static Archive<?> deploymentMbean() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SINGLETON + ".jar")
                 .addClasses(HelperSingleton.class, HelperSingletonImpl.class);
+        // grant necessary permissions
+        jar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.util.PropertyPermission</classname>\n" +
+            "       <name>ts.timeout.factor</name>\n" +
+            "       <actions>read</actions>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -156,6 +169,19 @@ public class SendMessagesTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MBEAN + ".jar")
                 .addClasses(ReplyingMDB.class, TimeoutUtil.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
+        // grant necessary permissions
+        jar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.util.PropertyPermission</classname>\n" +
+            "       <name>ts.timeout.factor</name>\n" +
+            "       <actions>read</actions>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }

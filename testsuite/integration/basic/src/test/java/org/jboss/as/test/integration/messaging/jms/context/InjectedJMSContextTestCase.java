@@ -47,6 +47,7 @@ import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedM
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Test;
@@ -74,8 +75,18 @@ public class InjectedJMSContextTestCase {
         return ShrinkWrap.create(JavaArchive.class, "InjectedJMSContextTestCase.jar")
                 .addClass(TimeoutUtil.class)
                 .addPackage(TransactedMDB.class.getPackage())
-                .addAsManifestResource(EmptyAsset.INSTANCE,
-                        "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource(new StringAsset("" +
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "\n" +
+                    "<permissions>\n" +
+                    "   <permission>\n" +
+                    "       <classname>java.util.PropertyPermission</classname>\n" +
+                    "       <name>ts.timeout.factor</name>\n" +
+                    "       <actions>read</actions>\n" +
+                    "   </permission>\n" +
+                    "</permissions>\n" +
+                    ""), "META-INF/jboss-permissions.xml");
     }
 
     @After
