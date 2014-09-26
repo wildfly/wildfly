@@ -244,9 +244,9 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Set the module options
-set "MODULE_OPTS=-mp %JBOSS_MODULEPATH%"
+set "MODULE_OPTS="
 if "%SECMGR%" == "true" (
-    set "MODULE_OPTS=%MODULE_OPTS% -secmgr"
+    set "MODULE_OPTS=-secmgr"
 )
 
 echo ===============================================================================
@@ -269,6 +269,7 @@ if x%XLOGGC% == x (
    "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
       -jar "%JBOSS_HOME%\jboss-modules.jar" ^
       %MODULE_OPTS% ^
+      -mp "%JBOSS_MODULEPATH%" ^
       -jaxpmodule "javax.xml.jaxp-provider" ^
        org.jboss.as.standalone ^
       "-Djboss.home.dir=%JBOSS_HOME%" ^
@@ -279,6 +280,7 @@ if x%XLOGGC% == x (
    "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
       -jar "%JBOSS_HOME%\jboss-modules.jar" ^
       %MODULE_OPTS% ^
+      -mp "%JBOSS_MODULEPATH%" ^
       -jaxpmodule "javax.xml.jaxp-provider" ^
        org.jboss.as.standalone ^
       "-Djboss.home.dir=%JBOSS_HOME%" ^

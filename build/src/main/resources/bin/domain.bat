@@ -170,9 +170,9 @@ if "x%JBOSS_CONFIG_DIR%" == "x" (
 )
 
 rem Set the module options
-set "MODULE_OPTS=-mp %JBOSS_MODULEPATH%"
+set "MODULE_OPTS="
 if "%SECMGR%" == "true" (
-    set "MODULE_OPTS=%MODULE_OPTS% -secmgr"
+    set "MODULE_OPTS=-secmgr"
 )
 
 echo ===============================================================================
@@ -194,10 +194,12 @@ echo.
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     %MODULE_OPTS% ^
+    -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.process-controller ^
     -jboss-home "%JBOSS_HOME%" ^
     -jvm "%JAVA%" ^
     %MODULE_OPTS% ^
+    -mp "%JBOSS_MODULEPATH%" ^
     -- ^
     "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
     "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
