@@ -278,6 +278,8 @@ public class WebExtension implements Extension {
 
         hostBuilder.addChildRedirection(SSO_PATH, SSO_ALIAS).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSODefinition.SSO_ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
                 .end();
 
         final ResourceTransformationDescriptionBuilder accessLogBuilder = hostBuilder.addChildRedirection(ACCESS_LOG_PATH, ACCESS_LOG_ALIAS).getAttributeBuilder()
