@@ -27,6 +27,7 @@ import java.io.IOException;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Attachments;
 import org.jboss.threads.AsyncFuture;
@@ -57,7 +58,7 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
+    AsyncFuture<OperationResponse> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException;
 
     /**
      * Execute an operation. This returns a future for the final result, which will only available after the prepared
@@ -69,7 +70,7 @@ public interface TransactionalProtocolClient {
      * @return the future result
      * @throws IOException
      */
-    <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException;
+    <T extends Operation> AsyncFuture<OperationResponse> execute(TransactionalOperationListener<T> listener, T operation) throws IOException;
 
     /**
      * The transactional operation listener.
@@ -99,7 +100,7 @@ public interface TransactionalProtocolClient {
          * @param operation the operation
          * @param result the final result
          */
-        void operationComplete(T operation, ModelNode result);
+        void operationComplete(T operation, OperationResponse result);
 
     }
 
@@ -171,7 +172,7 @@ public interface TransactionalProtocolClient {
          *
          * @return the final result
          */
-        AsyncFuture<ModelNode> getFinalResult();
+        AsyncFuture<OperationResponse> getFinalResult();
 
     }
 

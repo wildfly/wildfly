@@ -32,9 +32,12 @@ import static org.jboss.as.domain.http.server.Constants.OK;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.List;
 
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpsServer;
@@ -89,6 +92,55 @@ class DomainUtil {
             safeClose(print);
             safeClose(out);
         }
+    }
+
+    static void writeResponse(final HttpExchange exchange,
+                              final OperationResponse operationResponse,
+                              final int streamIndex) throws IOException {
+
+        final Headers responseHeaders = exchange.getResponseHeaders();
+        final OperationResponse.StreamEntry entry = operationResponse.getInputStreams().get(streamIndex);
+        final String mimeType = determineMimeType(entry, exchange);
+        responseHeaders.add(Constants.CONTENT_TYPE, mimeType + "; charset=" + Constants.UTF_8);
+
+        exchange.sendResponseHeaders(OK, 0);
+
+        final OutputStream out = exchange.getResponseBody();
+        final byte[] buffer = new byte[1024];
+
+        try {
+            final InputStream inputStream = entry.getStream();
+            int res;
+            while ((res = inputStream.read(buffer)) != -1) {
+                out.write(buffer, 0, res);
+            }
+        } finally {
+            out.flush();
+            safeClose(out);
+        }
+    }
+
+    private static String determineMimeType(OperationResponse.StreamEntry entry, HttpExchange exchange) {
+        // We see if the type provided by the response "matches" the ACCEPT header; if yes, use it
+        // If not, use application/octet-stream to trigger the browser to treat it as a download
+        String entryType = entry.getMimeType();
+        List<String> headerValues = exchange.getRequestHeaders().get(Constants.ACCEPT);
+        if (headerValues == null || headerValues.size() == 0) {
+            // The browser doesn't care
+            return entryType;
+        }
+        String wildCard = null;
+        int slash = entryType.indexOf('/');
+        if (slash > 0) {
+            wildCard = entryType.substring(0, slash) + "/*";
+        }
+        for (String acceptable : headerValues) {
+            if ("*/*".equals(acceptable) || acceptable.contains(entryType) || (wildCard != null && acceptable.contains(wildCard))) {
+                return entryType;
+            }
+        }
+
+        return "application/octet-stream";
     }
 
     static void writeResponse(final HttpExchange http, boolean isGet, boolean pretty, ModelNode response, int status,

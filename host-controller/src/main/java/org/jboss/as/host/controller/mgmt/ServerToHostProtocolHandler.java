@@ -44,7 +44,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
@@ -79,11 +80,13 @@ import org.jboss.remoting3.MessageOutputStream;
  */
 public class ServerToHostProtocolHandler implements ManagementRequestHandlerFactory {
 
-    static final ModelNode EMPTY_OP = new ModelNode();
+    static final Operation EMPTY_OP;
     static {
-        EMPTY_OP.get(OP).set("register-server"); // This is actually not used anywhere
-        EMPTY_OP.get(OP_ADDR).setEmptyList();
-        EMPTY_OP.protect();
+        ModelNode mn  = new ModelNode();
+        mn.get(OP).set("register-server"); // This is actually not used anywhere
+        mn.get(OP_ADDR).setEmptyList();
+        mn.protect();
+        EMPTY_OP = OperationBuilder.create(mn).build();
     }
 
     private final ServerInventory serverInventory;
@@ -139,11 +142,10 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
          * @param operation operation
          * @param handler the message handler
          * @param control the transaction control
-         * @param attachments the operation attachments
          * @param step the step to be executed
          * @return the result
          */
-        ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step);
+        ModelNode execute(Operation operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationStepHandler step);
 
         /**
          * Join an existing operation
@@ -151,12 +153,11 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
          * @param operation the operation to execute
          * @param handler the message handler
          * @param control the transaction control
-         * @param attachments the operation attachments
          * @param step the step to be executed
          * @param permit the permit
          * @return the result
          */
-        ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit);
+        ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationStepHandler step, int permit);
 
     }
 
@@ -177,7 +178,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     try {
                         final OperationStepHandler stepHandler = new ServerRegistrationStepHandler(serverName, context);
-                        final ModelNode result = operationExecutor.joinActiveOperation(EMPTY_OP, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY, stepHandler, operationId);
+                        final ModelNode result = operationExecutor.joinActiveOperation(EMPTY_OP.getOperation(), OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, stepHandler, operationId);
                         if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
                             safeWriteResponse(context.getChannel(), context.getRequestHeader(), DomainServerProtocol.PARAM_ERROR);
                         }
@@ -279,7 +280,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                         }
                     };
                     try {
-                        final ModelNode result = operationExecutor.execute(EMPTY_OP, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY, stepHandler);
+                        final ModelNode result = operationExecutor.execute(EMPTY_OP, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, stepHandler);
                         if(! SUCCESS.equals(result.get(OUTCOME).asString())) {
                             safeWriteResponse(context.getChannel(), context.getRequestHeader(), DomainServerProtocol.PARAM_ERROR);
                         }

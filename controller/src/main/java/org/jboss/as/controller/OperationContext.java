@@ -156,6 +156,34 @@ public interface OperationContext extends ExpressionResolver {
     boolean hasResult();
 
     /**
+     * Attach a stream to be included as part of the response. The return value of this method should be
+     * used as the value of the {@link #getResult() result} for the step that invokes this method. Callers
+     * can then use that value to find the stream in the
+     * {@link org.jboss.as.controller.client.OperationResponse response} to this operation.
+     *
+     * @param mimeType the mime type of the stream. Cannot be {@code null}
+     * @param stream the stream. Cannot be {@code null}
+     * @return a uuid for the stream. Will not be {@code null}
+     *
+     * @throws IllegalStateException if {@link #isBooting()} returns {@code true}.
+     */
+    String attachResultStream(String mimeType, InputStream stream);
+
+    /**
+     * Attach a stream to be included as part of the response, with a predetermined UUID.
+     * <p>
+     * This method is intended for use by core handlers related to managed domain operation
+     * as they propagate a stream throughout a domain. Ordinary handlers should use
+     * {@link #attachResultStream(String, java.io.InputStream)}.
+     *
+     * @param mimeType the mime type of the stream. Cannot be {@code null}
+     * @param stream the stream. Cannot be {@code null}
+     *
+     * @throws IllegalStateException if {@link #isBooting()} returns {@code true}.
+     */
+    void attachResultStream(String uuid, String mimeType, InputStream stream);
+
+    /**
      * Get the failure description response node, creating it if necessary.
      *
      * @return the failure description

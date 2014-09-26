@@ -75,5 +75,4 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         channel.receiveMessage(handler.getReceiver());
         return handler;
     }
-
 }

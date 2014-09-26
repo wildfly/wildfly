@@ -53,6 +53,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -316,8 +317,9 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
         this.legacyServices.put(modelVersion, legacyServices);
     }
 
-    protected  ModelNode internalExecute(ModelNode operation, OperationStepHandler handler) {
-        return controllerService.internalExecute(operation, OperationMessageHandler.DISCARD, OperationTransactionControl.COMMIT, null, handler);
+    protected OperationResponse internalExecute(ModelNode operation, OperationStepHandler handler) {
+        Operation op = OperationBuilder.create(operation).build();
+        return controllerService.internalExecute(op, OperationMessageHandler.DISCARD, OperationTransactionControl.COMMIT, handler);
     }
 
     protected TransformationContext createTransformationContext(TransformationTarget target) {

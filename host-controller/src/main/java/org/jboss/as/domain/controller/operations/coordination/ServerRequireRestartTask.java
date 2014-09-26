@@ -26,6 +26,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
@@ -40,7 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Emanuel Muckenhuber
  */
-class ServerRequireRestartTask implements Callable<ModelNode> {
+class ServerRequireRestartTask implements Callable<OperationResponse> {
 
     public static final String OPERATION_NAME = ServerRestartRequiredHandler.OPERATION_NAME;
     public static final ModelNode OPERATION;
@@ -55,16 +56,16 @@ class ServerRequireRestartTask implements Callable<ModelNode> {
 
     private final ServerIdentity identity;
     private final ProxyController controller;
-    private final ModelNode originalResult;
+    private final OperationResponse originalResult;
 
-    public ServerRequireRestartTask(final ServerIdentity identity, ProxyController controller, final ModelNode originalResult) {
+    public ServerRequireRestartTask(final ServerIdentity identity, ProxyController controller, final OperationResponse originalResult) {
         this.identity = identity;
         this.controller = controller;
         this.originalResult = originalResult;
     }
 
     @Override
-    public ModelNode call() throws Exception {
+    public OperationResponse call() throws Exception {
         try {
             //
             final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
@@ -81,7 +82,7 @@ class ServerRequireRestartTask implements Callable<ModelNode> {
                 }
 
                 @Override
-                public void operationCompleted(ModelNode response) {
+                public void operationCompleted(OperationResponse response) {
                     //
                 }
             };

@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.domain.http.server.Constants.ACCEPT;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_DMR_ENCODED;
 import static org.jboss.as.domain.http.server.Constants.APPLICATION_JSON;
+import static org.jboss.as.domain.http.server.Constants.BAD_REQUEST;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
 import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
@@ -71,9 +72,10 @@ import java.util.regex.Pattern;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
@@ -100,6 +102,9 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
     private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
+    private static final String JSON_PRETTY = "json.pretty";
+    private static final String USE_STREAM_AS_RESPONSE = "useStreamAsResponse";
+    private static final String USE_STREAM_AS_RESPONSE_HEADER = "org.wildfly.useStreamAsResponse";
 
     /**
      * Represents all possible management operations that can be executed using HTTP GET
@@ -154,7 +159,6 @@ class DomainApiHandler implements ManagementHttpHandler {
             if (uploadRequest) {
                 // This type of request doesn't need the content type check.
                 processUploadRequest(http);
-
                 return;
             }
             final Headers headers = http.getRequestHeaders();
@@ -246,40 +250,30 @@ class DomainApiHandler implements ManagementHttpHandler {
         if (!isGet && !POST.equals(requestMethod)) {
             ROOT_LOGGER.debug("Request rejected as method not one of (GET,POST).");
             http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
-
             return;
         }
 
         final ModelNode dmr;
-        ModelNode response;
-        int status = OK;
+        final Map<String, String> queryParameters;
 
         Headers requestHeaders = http.getRequestHeaders();
         final boolean encode = APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(ACCEPT))
                 || APPLICATION_DMR_ENCODED.equals(requestHeaders.getFirst(CONTENT_TYPE));
-
         try {
-            dmr = isGet ? convertGetRequest(request) : convertPostRequest(http.getRequestBody(), encode);
+            queryParameters = decodeQuery(request.getRawQuery());
+            dmr = isGet ? convertGetRequest(request, queryParameters) : convertPostRequest(http.getRequestBody(), encode);
         } catch (Exception iae) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", iae.getMessage());
             sendError(http,isGet,iae);
             return;
         }
+
+        final int streamIndex = getStreamIndex(requestHeaders, queryParameters);
+        final boolean pretty = dmr.hasDefined(JSON_PRETTY) && dmr.get(JSON_PRETTY).asBoolean();
         final ResponseCallback callback = new ResponseCallback() {
             @Override
-            void doSendResponse(final ModelNode response) {
-                final int status;
-                if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-                    status = getErrorResponseCode(response.asString());
-                } else {
-                    status = 200;
-                }
-                final boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
-                try {
-                    writeResponse(http, isGet, pretty, response, status, encode);
-                } catch (IOException e) {
-                    ROOT_LOGGER.responseFailed(e);
-                }
+            void doSendResponse(final OperationResponse response) {
+                DomainApiHandler.this.sendResponse(http, response, isGet, pretty, encode, streamIndex);
             }
         };
 
@@ -289,36 +283,94 @@ class DomainApiHandler implements ManagementHttpHandler {
                 public void operationPrepared(final ModelController.OperationTransaction transaction, final ModelNode result) {
                         transaction.commit();
                         // Fix prepared result
-                                result.get(OUTCOME).set(SUCCESS);
+                        result.get(OUTCOME).set(SUCCESS);
                         result.get(RESULT);
-                        callback.sendResponse(result);
+                        callback.sendResponse(OperationResponse.Factory.createSimple(result));
                     }
             } : ModelController.OperationTransactionControl.COMMIT;
 
-
+        OperationResponse response;
         try {
             dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
-            response = modelController.execute(dmr, OperationMessageHandler.DISCARD, control, OperationAttachments.EMPTY);
+            response = modelController.execute(Operation.Factory.create(dmr), OperationMessageHandler.DISCARD, control);
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
             sendError(http,isGet,t);
             return;
         }
 
-        if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            status = getErrorResponseCode(response.asString());
-        }
-
-        boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
         if (!sendPreparedResponse) {
-            writeResponse(http, isGet, pretty, response, status, encode);
+            sendResponse(http, response, isGet, pretty, encode, streamIndex);
         }
     }
 
+    private void sendResponse(HttpExchange http, OperationResponse response, boolean isGet, boolean pretty, boolean encode, int streamIndex) {
+        try {
+            ModelNode responseNode = response.getResponseNode();
+            if (responseNode.hasDefined(OUTCOME) && FAILED.equals(responseNode.get(OUTCOME).asString())) {
+                int status = getErrorResponseCode(responseNode.asString());
+                writeResponse(http, isGet, pretty, responseNode, status, encode);
+                return;
+            }
+
+            if (streamIndex < 0) {
+                writeResponse(http, isGet, pretty, responseNode, OK, encode);
+            } else {
+                List<OperationResponse.StreamEntry> streamEntries = response.getInputStreams();
+                if (streamIndex >= streamEntries.size()) {
+                    // invalid index
+                    ModelNode error = new ModelNode(HttpServerMessages.MESSAGES.invalidUseStreamAsResponseIndex(streamIndex, streamEntries.size()));
+                    writeResponse(http, isGet, true, error, BAD_REQUEST, false);
+                } else {
+                    writeResponse(http, response, streamIndex);
+                }
+            }
+        } catch (IOException e) {
+            ROOT_LOGGER.responseFailed(e);
+        } finally {
+            safeClose(response);
+        }
+
+    }
+
     private void sendError(final HttpExchange http, boolean isGet, Throwable t) throws IOException {
-        ModelNode response = new ModelNode();
-        response.set(t.getMessage());
+        sendError(http, isGet, t.getMessage());
+    }
+
+    private void sendError(final HttpExchange http, boolean isGet, String message) throws IOException {
+        ModelNode response = new ModelNode(message);
         writeResponse(http, isGet, true, response, INTERNAL_SERVER_ERROR, false);
+    }
+
+    private static int getStreamIndex(final Headers requestHeaders, final Map<String, String> queryParams) {
+        // First check for an HTTP header
+        int result = getStreamIndex(requestHeaders.get(USE_STREAM_AS_RESPONSE_HEADER));
+        if (result == -1) {
+            // Nope. Now check for a URL query parameter
+            String value = queryParams.get(USE_STREAM_AS_RESPONSE);
+            result = getStreamIndex(value == null ? null : Collections.singletonList(value));
+        }
+        return result;
+    }
+
+    private static int getStreamIndex(List<String> holder) {
+        int result;
+        if (holder != null) {
+            String val;
+            if (holder.size() > 0 && (val = holder.get(0)).length() > 0) {
+                if ("true".equalsIgnoreCase(val))  {
+                    // 'true' means param with no value
+                    result = 0;
+                } else {
+                    result = Integer.parseInt(val);
+                }
+            } else {
+                result = 0;
+            }
+        } else {
+            result = -1;
+        }
+        return result;
     }
 
     private void sendResponse(final HttpExchange exchange, final int responseCode, final String body) throws IOException {
@@ -398,9 +450,8 @@ class DomainApiHandler implements ManagementHttpHandler {
         return encode ? ModelNode.fromBase64(stream) : ModelNode.fromJSONStream(stream);
     }
 
-    private ModelNode convertGetRequest(URI request) {
+    private ModelNode convertGetRequest(URI request, Map<String, String> queryParameters) {
         ArrayList<String> pathSegments = decodePath(request.getRawPath());
-        Map<String, String> queryParameters = decodeQuery(request.getRawQuery());
 
         GetOperation operation = null;
         ModelNode dmr = new ModelNode();
@@ -577,7 +628,7 @@ class DomainApiHandler implements ManagementHttpHandler {
     private abstract static class ResponseCallback {
         private volatile boolean complete;
 
-        void sendResponse(final ModelNode response) {
+        void sendResponse(final OperationResponse response) {
             if (complete) {
                 return;
             }
@@ -585,7 +636,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             doSendResponse(response);
         }
 
-        abstract void doSendResponse(ModelNode response);
+        abstract void doSendResponse(OperationResponse response);
     }
 
 }

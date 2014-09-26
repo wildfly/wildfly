@@ -117,7 +117,7 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
                     Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
             final Transformers transformers = Transformers.Factory.create(target);
 
-            ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers));
+            ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers)).getResponseNode();
             if (FAILED.equals(result.get(OUTCOME).asString())) {
                 throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
             }

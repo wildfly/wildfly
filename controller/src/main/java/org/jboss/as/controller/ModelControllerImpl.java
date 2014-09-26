@@ -29,12 +29,14 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHED_STREAMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIME_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -43,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UUID;
 
 import java.io.IOException;
 import java.security.AccessControlContext;
@@ -53,6 +56,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,6 +75,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
 import org.jboss.as.controller.notification.NotificationSupport;
@@ -170,11 +175,43 @@ class ModelControllerImpl implements ModelController {
         auditLogger.startBoot();
     }
 
+    /**
+     * Executes an operation on the controller
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param attachments the operation attachments
+     * @return the result of the operation
+     */
+    @Override
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {
-        return internalExecute(operation, handler, control, attachments, prepareStep);
+        OperationResponse or = internalExecute(operation, handler, control, attachments, prepareStep);
+        ModelNode result = or.getResponseNode();
+        try {
+            or.close();
+        } catch (IOException e) {
+            ROOT_LOGGER.debugf(e, "Caught exception closing response to %s whose associated streams, " +
+                    "if any, were not wanted", operation);
+        }
+        return result;
     }
 
-    protected ModelNode executeReadOnlyOperation(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep, final int operationId) {
+    @Override
+    public OperationResponse execute(Operation operation, OperationMessageHandler handler, OperationTransactionControl control) {
+        return internalExecute(operation.getOperation(), handler, control, operation, prepareStep);
+    }
+
+    /**
+     * Executes an operation on the controller latching onto an existing transaction
+     *
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param prepareStep the prepare step to be executed before any other steps
+     * @param operationId the id of the current transaction
+     * @return the result of the operation
+     */
+    protected ModelNode executeReadOnlyOperation(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationStepHandler prepareStep, final int operationId) {
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(ModelController.ACCESS_PERMISSION);
@@ -217,7 +254,18 @@ class ModelControllerImpl implements ModelController {
         return response;
     }
 
-    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+    /**
+     * Executes an operation on the controller
+     * @param operation the operation
+     * @param handler the handler
+     * @param control the transaction control
+     * @param attachments the operation attachments
+     * @param prepareStep the prepare step to be executed before any other steps
+     * @return the result of the operation
+     */
+    protected OperationResponse internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control,
+        final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(ModelController.ACCESS_PERMISSION);
@@ -232,16 +280,16 @@ class ModelControllerImpl implements ModelController {
         }
         final ModelNode blockingTimeoutConfig = headers != null && headers.hasDefined(BLOCKING_TIMEOUT) ? headers.get(BLOCKING_TIMEOUT) : null;
 
-        final ModelNode response = new ModelNode();
+        final ModelNode responseNode = new ModelNode();
         // Report the correct operation response, otherwise the preparedResult would only contain
         // the result of the last active step in a composite operation
         final OperationTransactionControl originalResultTxControl = control == null ? null : new OperationTransactionControl() {
             @Override
             public void operationPrepared(OperationTransaction transaction, ModelNode result) {
-                control.operationPrepared(transaction, response);
+                control.operationPrepared(transaction, responseNode);
             }
         };
-
+        Map<String, OperationResponse.StreamEntry> responseStreams;
         AccessMechanism accessMechanism = null;
         AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
         if (accessContext != null) {
@@ -268,6 +316,7 @@ class ModelControllerImpl implements ModelController {
         }
 
         for (;;) {
+            responseStreams = null;
             // Create a random operation-id
             final Integer operationID = new Random(new SecureRandom().nextLong()).nextInt();
             final OperationContextImpl context = new OperationContextImpl(operationID, operation.get(OP).asString(),
@@ -278,16 +327,17 @@ class ModelControllerImpl implements ModelController {
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
                 try {
-                    context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
+                    context.addStep(responseNode, operation, prepareStep, OperationContext.Stage.MODEL);
                     context.executeOperation();
+                    responseStreams = context.getResponseStreams();
                 } finally {
 
-                    if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
+                    if (!responseNode.hasDefined(RESPONSE_HEADERS) || !responseNode.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
                         ControlledProcessState.State state = processState.getState();
                         switch (state) {
                             case RELOAD_REQUIRED:
                             case RESTART_REQUIRED:
-                                response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
+                                responseNode.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
                                 break;
                             default:
                                 break;
@@ -300,16 +350,20 @@ class ModelControllerImpl implements ModelController {
                 break;
             }
         }
-        return response;
+        if (responseStreams == null || responseStreams.size() == 0) {
+            return OperationResponse.Factory.createSimple(responseNode);
+        } else {
+            return new OperationResponseImpl(responseNode, responseStreams);
+        }
     }
 
-    private static ModelNode handleExternalRequestDuringBoot() {
+    private static OperationResponse handleExternalRequestDuringBoot() {
         ModelNode result = new ModelNode();
         result.get(OUTCOME).set(FAILED);
         result.get(FAILURE_DESCRIPTION).set(ControllerMessages.MESSAGES.managementUnavailableDuringBoot());
         // TODO WFCORE-185 once we have http codes for failure messages, include those, e.g.
         // result.get("http-code").set(nsre.getHttpCode());
-        return result;
+        return OperationResponse.Factory.createSimple(result);
     }
 
     boolean boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control,
@@ -515,23 +569,38 @@ class ModelControllerImpl implements ModelController {
             }
 
             @Override
+            public OperationResponse executeOperation(Operation operation, OperationMessageHandler messageHandler) throws IOException {
+                return ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT);
+            }
+
+            @Override
             public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
-                return executeAsync(operation, messageHandler, null);
+                return executeAsync(operation, messageHandler, null, ResponseConverter.TO_MODEL_NODE);
             }
 
             @Override
             public AsyncFuture<ModelNode> executeAsync(final Operation operation, final OperationMessageHandler messageHandler) {
-                return executeAsync(operation.getOperation(), messageHandler, operation);
+                return executeAsync(operation.getOperation(), messageHandler, operation, ResponseConverter.TO_MODEL_NODE);
             }
 
-            private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
-                if (executor == null) {
-                    throw MESSAGES.nullAsynchronousExecutor();
+            @Override
+            public AsyncFuture<OperationResponse> executeOperationAsync(Operation operation, OperationMessageHandler messageHandler) {
+                return executeAsync(operation.getOperation(), messageHandler, operation, ResponseConverter.TO_OPERATION_RESPONSE);
+            }
+
+            private <T> AsyncFuture<T> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler,
+                                                    final OperationAttachments attachments,
+                                                    final ResponseConverter<T> responseConverter) {
+                 if (executor == null) {
+                    throw ControllerMessages.MESSAGES.nullAsynchronousExecutor();
                 }
                 final AtomicReference<Thread> opThread = new AtomicReference<Thread>();
-                class OpTask extends AsyncFutureTask<ModelNode> {
-                    OpTask() {
+
+                class OpTask<T> extends AsyncFutureTask<T> {
+                    private final ResponseConverter<T> responseConverter;
+                    OpTask(final ResponseConverter<T> responseConverter) {
                         super(executor);
+                        this.responseConverter = responseConverter;
                     }
 
                     public void asyncCancel(final boolean interruptionDesired) {
@@ -559,26 +628,29 @@ class ModelControllerImpl implements ModelController {
                         }
                     }
 
-                    void handleResult(final ModelNode result) {
-                        if (result != null && result.hasDefined(OUTCOME) && CANCELLED.equals(result.get(OUTCOME).asString())) {
+                    void handleResult(final OperationResponse result) {
+                        ModelNode responseNode = result == null ? null : result.getResponseNode();
+                        if (responseNode != null && responseNode.hasDefined(OUTCOME) && CANCELLED.equals(responseNode.get(OUTCOME).asString())) {
                             setCancelled();
                         } else {
-                            setResult(result);
+                            setResult(responseConverter.fromOperationResponse(result));
                         }
                     }
                 }
-                final OpTask opTask = new OpTask();
+                final OpTask<T> opTask = new OpTask<T>(responseConverter);
                 final AccessControlContext acc = doPrivileged(GetAccessControlContextAction.getInstance());
                 executor.execute(new Runnable() {
                     public void run() {
                         try {
                             if (opThread.compareAndSet(null, Thread.currentThread())) {
-                                ModelNode response = doPrivileged(new PrivilegedAction<ModelNode>() {
+                                OperationResponse response = doPrivileged(new PrivilegedAction<OperationResponse>() {
 
                                     @Override
-                                    public ModelNode run() {
-                                        return ModelControllerImpl.this.execute(operation, messageHandler,
-                                                OperationTransactionControl.COMMIT, attachments);
+                                    public OperationResponse run() {
+                                        Operation op = attachments == null ? Operation.Factory.create(operation)
+                                                : Operation.Factory.create(operation, attachments.getInputStreams(), attachments.isAutoCloseStreams());
+                                        return ModelControllerImpl.this.execute(op, messageHandler,
+                                                OperationTransactionControl.COMMIT);
                                     }
                                 }, acc);
                                 opTask.handleResult(response);
@@ -927,6 +999,80 @@ class ModelControllerImpl implements ModelController {
             }
             return result;
         }
+    }
+
+    private static class OperationResponseImpl implements OperationResponse {
+
+        private final ModelNode simpleResponse;
+        private final Map<String, StreamEntry> inputStreams;
+
+        private OperationResponseImpl(ModelNode simpleResponse, Map<String, StreamEntry> inputStreams) {
+            this.simpleResponse = simpleResponse;
+            this.inputStreams = inputStreams;
+            // TODO doing this here isn't so nice
+            ModelNode header = simpleResponse.get(RESPONSE_HEADERS, ATTACHED_STREAMS);
+            header.setEmptyList();
+            List<OperationResponse.StreamEntry> streams = new ArrayList<OperationResponse.StreamEntry>();
+            for (StreamEntry entry : inputStreams.values()) {
+                ModelNode streamNode = new ModelNode();
+                streamNode.get(UUID).set(entry.getUUID());
+                streamNode.get(MIME_TYPE).set(entry.getMimeType());
+                header.add(streamNode);
+            }
+        }
+
+        @Override
+        public ModelNode getResponseNode() {
+            return simpleResponse;
+        }
+
+        @Override
+        public List<OperationResponse.StreamEntry> getInputStreams() {
+            return new ArrayList<OperationResponse.StreamEntry>(inputStreams.values());
+        }
+
+        @Override
+        public StreamEntry getInputStream(String uuid) {
+            return inputStreams.get(uuid);
+        }
+
+        @Override
+        public void close() throws IOException {
+            int i = 0;
+            for (OperationResponse.StreamEntry is : inputStreams.values()) {
+                try {
+                    is.getStream().close();
+                } catch (Exception e) {
+                    ControllerLogger.MGMT_OP_LOGGER.debugf(e, "Failed closing response stream at index %d", i);
+                }
+                i++;
+            }
+        }
+    }
+
+    private interface ResponseConverter<T> {
+        T fromOperationResponse(OperationResponse or);
+
+        ResponseConverter<ModelNode> TO_MODEL_NODE = new ResponseConverter<ModelNode>() {
+            @Override
+            public ModelNode fromOperationResponse(OperationResponse or) {
+                ModelNode result = or.getResponseNode();
+                try {
+                    or.close();
+                } catch (IOException e) {
+                    ROOT_LOGGER.debugf(e, "Caught exception closing %s whose associated streams, " +
+                            "if any, were not wanted", or);
+                }
+                return result;
+            }
+        };
+
+        ResponseConverter<OperationResponse> TO_OPERATION_RESPONSE = new ResponseConverter<OperationResponse>() {
+            @Override
+            public OperationResponse fromOperationResponse(final OperationResponse or) {
+                return or;
+            }
+        };
     }
 
 }

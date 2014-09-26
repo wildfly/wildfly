@@ -24,7 +24,6 @@ package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -36,10 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
@@ -97,6 +99,16 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return delegate.executeAsync(operation, messageHandler);
+    }
+
+    @Override
+    public OperationResponse executeOperation(Operation operation, OperationMessageHandler messageHandler) throws IOException {
+        return delegate.executeOperation(operation, messageHandler);
+    }
+
+    @Override
+    public AsyncFuture<OperationResponse> executeOperationAsync(Operation operation, OperationMessageHandler messageHandler) {
+        return delegate.executeOperationAsync(operation, messageHandler);
     }
 
     @Override

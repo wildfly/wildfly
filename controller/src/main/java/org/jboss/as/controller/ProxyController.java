@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -87,7 +88,7 @@ public interface ProxyController {
          *
          * @param response the response
          */
-        void operationCompleted(ModelNode response);
+        void operationCompleted(OperationResponse response);
     }
 
 }

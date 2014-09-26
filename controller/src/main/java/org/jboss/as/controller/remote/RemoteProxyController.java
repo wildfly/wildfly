@@ -47,6 +47,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -140,16 +141,16 @@ public class RemoteProxyController implements ProxyController {
             }
 
             @Override
-            public void operationComplete(TransactionalProtocolClient.Operation operation, ModelNode result) {
+            public void operationComplete(TransactionalProtocolClient.Operation operation, OperationResponse response) {
                 try {
-                    control.operationCompleted(result);
+                    control.operationCompleted(response);
                 } finally {
                     // Make sure the handler is called before commit/rollback returns
                     completed.countDown();
                 }
             }
         };
-        Future<ModelNode> futureResult = null;
+        Future<OperationResponse> futureResult = null;
         try {
             // Translate the operation
             final ModelNode translated = translateOperationForProxy(original);
@@ -295,7 +296,7 @@ public class RemoteProxyController implements ProxyController {
             }
 
             @Override
-            public void operationComplete(TransactionalProtocolClient.Operation operation, ModelNode result) {
+            public void operationComplete(TransactionalProtocolClient.Operation operation, OperationResponse result) {
                 completed.countDown();
             }
         };
@@ -303,7 +304,7 @@ public class RemoteProxyController implements ProxyController {
         final ModelNode validateAddress = Util.createOperation(ValidateAddressOperationHandler.OPERATION_NAME, operationAddress);
         validateAddress.get(VALUE).set(paramAddress.toModelNode());
         validateAddress.get(OPERATION_HEADERS).set(original.get(OPERATION_HEADERS));
-        Future<ModelNode> futureResult = client.execute(operationListener, validateAddress, messageHandler, null);
+        Future<OperationResponse> futureResult = client.execute(operationListener, validateAddress, messageHandler, null);
         try {
             completed.await();
         } catch (InterruptedException e) {

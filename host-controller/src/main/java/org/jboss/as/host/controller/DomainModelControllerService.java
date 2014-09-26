@@ -74,7 +74,7 @@ import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -510,19 +510,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     }
 
                     if (ok) {
+                        InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                                new MasterDomainControllerOperationHandlerService(this, new HostControllerRegistrationHandler.OperationExecutor() {
-
-                                    @Override
-                                    public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final ModelController.OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler step) {
-                                        return internalExecute(operation, handler, control, attachments, step);
-                                    }
-
-                                    @Override
-                                    public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
-                                        return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
-                                    }
-                                }, environment.getDomainTempDir()),
+                                new MasterDomainControllerOperationHandlerService(this, executor, environment.getDomainTempDir()),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
                                 HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
@@ -535,17 +525,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             if (ok) {
                 // Install the server > host operation handler
                 ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME,
-                        getExecutorServiceInjector().getValue(), new ServerToHostProtocolHandler.OperationExecutor() {
-                    @Override
-                    public ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step) {
-                        return internalExecute(operation, handler, control, attachments, step);
-                    }
-
-                    @Override
-                    public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
-                        return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
-                    }
-                }, this, expressionResolver, environment.getDomainTempDir());
+                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver, environment.getDomainTempDir());
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -972,6 +952,23 @@ public class DomainModelControllerService extends AbstractControllerService impl
         @Override
         public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
             return delegate.getDescriptionProvider(resourceRegistration);
+        }
+    }
+
+    final class InternalExecutor implements HostControllerRegistrationHandler.OperationExecutor, ServerToHostProtocolHandler.OperationExecutor {
+
+        @Override
+        public ModelNode execute(Operation operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control,
+                OperationStepHandler step) {
+            return internalExecute(operation, handler, control, step).getResponseNode();
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler,
+                                             ModelController.OperationTransactionControl control,
+                                             OperationStepHandler step, int permit) {
+            return executeReadOnlyOperation(operation, handler, control, step, permit);
         }
     }
 }

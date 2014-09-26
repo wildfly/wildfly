@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,10 +49,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController.ProxyOperationControl;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.registry.NotificationHandlerRegistration;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
@@ -174,7 +172,7 @@ public class RemoteProxyControllerProtocolTestCase {
                     }
 
                     @Override
-                    public void operationCompleted(ModelNode response) {
+                    public void operationCompleted(OperationResponse response) {
                         completed.set(true);
                     }
                 },
@@ -217,7 +215,7 @@ public class RemoteProxyControllerProtocolTestCase {
                     }
 
                     @Override
-                    public void operationCompleted(ModelNode response) {
+                    public void operationCompleted(OperationResponse response) {
                         completed.set(true);
                     }
                 },
@@ -267,7 +265,7 @@ public class RemoteProxyControllerProtocolTestCase {
         final AtomicBoolean failed = new AtomicBoolean();
         final TestFuture<ModelNode> prepared = new TestFuture<ModelNode>();
         final TestFuture<OperationTransaction> preparedTx = new TestFuture<OperationTransaction>();
-        final TestFuture<ModelNode> result = new TestFuture<ModelNode>();
+        final TestFuture<OperationResponse> result = new TestFuture<OperationResponse>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -284,7 +282,7 @@ public class RemoteProxyControllerProtocolTestCase {
                     }
 
                     @Override
-                    public void operationCompleted(ModelNode response) {
+                    public void operationCompleted(OperationResponse response) {
                         result.done(response);
                     }
                 },
@@ -297,7 +295,7 @@ public class RemoteProxyControllerProtocolTestCase {
         assertFalse(result.isDone());
         preparedTx.get().commit();
 
-        ModelNode finalResult = result.get();
+        ModelNode finalResult = result.get().getResponseNode();
         assertEquals(SUCCESS, finalResult.get(OUTCOME).asString());
         assertEquals("final", finalResult.get(RESULT).asString());
         assertEquals(2, txCompletionStatus.get());
@@ -339,7 +337,7 @@ public class RemoteProxyControllerProtocolTestCase {
         final AtomicBoolean failed = new AtomicBoolean();
         final TestFuture<ModelNode> prepared = new TestFuture<ModelNode>();
         final TestFuture<OperationTransaction> preparedTx = new TestFuture<OperationTransaction>();
-        final TestFuture<ModelNode> result = new TestFuture<ModelNode>();
+        final TestFuture<OperationResponse> result = new TestFuture<OperationResponse>();
         proxyController.execute(operation,
                 null,
                 new ProxyOperationControl() {
@@ -356,7 +354,7 @@ public class RemoteProxyControllerProtocolTestCase {
                     }
 
                     @Override
-                    public void operationCompleted(ModelNode response) {
+                    public void operationCompleted(OperationResponse response) {
                         result.done(response);
                     }
                 },
@@ -368,8 +366,8 @@ public class RemoteProxyControllerProtocolTestCase {
         assertFalse(failed.get());
         assertFalse(result.isDone());
         preparedTx.get().rollback();
-        assertEquals(SUCCESS, result.get().get(OUTCOME).asString());
-        assertEquals("prepared", result.get().get(RESULT).asString());
+        assertEquals(SUCCESS, result.get().getResponseNode().get(OUTCOME).asString());
+        assertEquals("prepared", result.get().getResponseNode().get(RESULT).asString());
         assertEquals(1, txCompletionStatus.get());
     }
 
@@ -398,9 +396,9 @@ public class RemoteProxyControllerProtocolTestCase {
         final RemoteProxyController proxyController = setupProxyHandlers(controller);
         final CommitProxyOperationControl commitControl = new CommitProxyOperationControl() {
             @Override
-            public void operationCompleted(ModelNode response) {
+            public void operationCompleted(OperationResponse response) {
                 super.operationCompleted(response);
-                result.set(response);
+                result.set(response.getResponseNode());
             }
         };
         proxyController.execute(node, null, commitControl, null);
@@ -586,21 +584,11 @@ public class RemoteProxyControllerProtocolTestCase {
         return proxyController;
     }
 
-    private static abstract class MockModelController implements ModelController {
+    private static abstract class MockModelController extends org.jboss.as.controller.MockModelController {
         protected volatile ModelNode operation;
 
         ModelNode getOperation() {
             return operation;
-        }
-
-        @Override
-        public ModelControllerClient createClient(Executor executor) {
-            return null;
-        }
-
-        @Override
-        public NotificationHandlerRegistration getNotificationRegistry() {
-            return null;
         }
     }
 
@@ -621,7 +609,7 @@ public class RemoteProxyControllerProtocolTestCase {
         }
 
         @Override
-        public void operationCompleted(ModelNode response) {
+        public void operationCompleted(OperationResponse response) {
             if(! txCompletionStatus.compareAndSet(-1, 2)) {
                 throw new IllegalStateException();
             }

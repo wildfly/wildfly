@@ -57,6 +57,7 @@ public class ModelDescriptionConstants {
     public static final String APPLICATION_CLASSIFICATION = "application-classification";
     public static final String APPLIES_TO = "applies-to";
     public static final String ARCHIVE = "archive";
+    public static final String ATTACHED_STREAMS = "attached-streams";
     public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION = "attribute-value-written";
     public static final String ATTRIBUTES = "attributes";
@@ -229,6 +230,7 @@ public class ModelDescriptionConstants {
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
     public static final String MESSAGE_TRANSFER = "message-transfer";
+    public static final String MIME_TYPE = "mime-type";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
@@ -328,6 +330,7 @@ public class ModelDescriptionConstants {
     public static final String RESTART = "restart";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
+    public static final String RESULT_PATH = "result-path";
     public static final String RESULT_PATTERN = "result-pattern";
     public static final String REASON = "reason";
     public static final String ROLE = "role";
@@ -434,6 +437,7 @@ public class ModelDescriptionConstants {
     public static final String USERNAME_FILTER = "username-filter";
     public static final String USERNAME_TO_DN = "username-to-dn";
     public static final String USERS = "users";
+    public static final String UUID = "uuid";
     public static final String VALIDATE_OPERATION = "validate-operation";
     public static final String VALID = "valid";
     public static final String VALUE = "value";

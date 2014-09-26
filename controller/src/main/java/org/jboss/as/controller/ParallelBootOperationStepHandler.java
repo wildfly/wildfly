@@ -33,6 +33,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -203,8 +204,8 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             ParallelBootTransactionControl txControl = entry.getValue();
             if (txControl.transaction == null) {
                 String failureDesc;
-                if (txControl.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
-                    failureDesc = txControl.response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
+                if (txControl.response.getResponseNode().hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
+                    failureDesc = txControl.response.getResponseNode().get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
                 } else {
                     failureDesc = MESSAGES.subsystemBootOperationFailed(entry.getKey());
                 }
@@ -397,7 +398,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         private final CountDownLatch preparedLatch;
         private final CountDownLatch committedLatch;
         private final CountDownLatch completeLatch;
-        private ModelNode response;
+        private OperationResponse response;
         private ModelController.OperationTransaction transaction;
         private boolean signalled;
 
@@ -410,7 +411,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         @Override
         public void operationFailed(ModelNode response) {
             if (!signalled) {
-                this.response = response;
+                this.response = OperationResponse.Factory.createSimple(response);
                 preparedLatch.countDown();
                 completeLatch.countDown();
                 signalled = true;
@@ -434,7 +435,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         }
 
         @Override
-        public void operationCompleted(ModelNode response) {
+        public void operationCompleted(OperationResponse response) {
             this.response = response;
             completeLatch.countDown();
         }

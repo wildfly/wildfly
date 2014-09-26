@@ -28,6 +28,7 @@ package org.jboss.as.controller.client.impl;
  */
 public interface ModelControllerProtocol {
 
+    byte CLOSE_INPUTSTREAM_REQUEST = 0x44;
     byte EXECUTE_ASYNC_CLIENT_REQUEST = 0x45;
     byte EXECUTE_CLIENT_REQUEST = 0x46;
     byte EXECUTE_TX_REQUEST = 0x47;
@@ -35,8 +36,11 @@ public interface ModelControllerProtocol {
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
     byte COMPLETE_TX_REQUEST = 0x4E;
-    byte GET_SUBJECT_REQUEST = 0x4F;
+    // This was never used in a .Final release, so byte can be re-used
+    //byte GET_SUBJECT_REQUEST = 0x4F;
+    byte GET_CHUNKED_INPUTSTREAM_REQUEST = 0x4F;
 
+    // This was never used in a .Final release before WF 9, so it's repurposed now
     byte PARAM_END = 0x60;
     byte PARAM_OPERATION = 0x61;
     byte PARAM_MESSAGE_SEVERITY = 0x62;
@@ -46,6 +50,7 @@ public interface ModelControllerProtocol {
     byte PARAM_INPUTSTREAM_INDEX = 0x66;
     byte PARAM_INPUTSTREAM_LENGTH = 0x67;
     byte PARAM_INPUTSTREAM_CONTENTS = 0x68;
+    // This was never used in a .Final release, so byte can be re-used
     //byte PARAM_PREPARED = 0x69;
     byte PARAM_COMMIT = 0x70;
     byte PARAM_ROLLBACK = 0x71;

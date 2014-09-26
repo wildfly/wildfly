@@ -25,8 +25,10 @@ package org.jboss.as.controller;
 import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -45,7 +47,7 @@ public interface ModelController {
     RuntimePermission ACCESS_PERMISSION = new RuntimePermission("canAccessModelController");
 
     /**
-     * Execute an operation, sending updates to the given handler.  This method is not intended to be invoked directly
+     * Execute an operation, sending updates to the given handler. This method is not intended to be invoked directly
      * by clients.
      *
      * @param operation the operation to execute
@@ -57,6 +59,20 @@ public interface ModelController {
      * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     ModelNode execute(ModelNode operation, OperationMessageHandler handler, OperationTransactionControl control, OperationAttachments attachments);
+
+    /**
+     * Execute an operation, sending updates to the given handler, and making available in the return value
+     * any streams that may have been associated with the response.  This method is not intended to be invoked directly
+     * by clients.
+     *
+     * @param operation the operation to execute
+     * @param handler the message handler
+     * @param control the transaction control for this operation
+     * @return the operation response
+     *
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
+     */
+    OperationResponse execute(Operation operation, OperationMessageHandler handler, OperationTransactionControl control);
 
     /**
      * Create an in-VM client.
@@ -119,4 +135,5 @@ public interface ModelController {
          */
         void rollback();
     }
+
 }

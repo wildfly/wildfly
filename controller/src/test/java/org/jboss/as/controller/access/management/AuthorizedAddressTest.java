@@ -168,6 +168,16 @@ public class AuthorizedAddressTest {
         }
 
         @Override
+        public String attachResultStream(String mimeType, InputStream stream) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void attachResultStream(String uuid, String mimeType, InputStream stream) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
         public ModelNode getFailureDescription() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }

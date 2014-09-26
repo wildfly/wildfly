@@ -58,7 +58,9 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
@@ -118,6 +120,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     private static final ModelNode APPLY_EXTENSIONS = new ModelNode();
     private static final ModelNode APPLY_DOMAIN_MODEL = new ModelNode();
+    private static final Operation GRAB_DOMAIN_RESOURCE;
     static {
         APPLY_EXTENSIONS.get(OP).set(ApplyExtensionsHandler.OPERATION_NAME);
         APPLY_EXTENSIONS.get(OPERATION_HEADERS, "execute-for-coordinator").set(true);
@@ -129,6 +132,12 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         APPLY_DOMAIN_MODEL.get(OPERATION_HEADERS, "execute-for-coordinator").set(true);
         APPLY_DOMAIN_MODEL.get(OP_ADDR).setEmptyList();
         APPLY_DOMAIN_MODEL.protect();
+
+        ModelNode mn  = new ModelNode();
+        mn.get(OP).set("grab-domain-resource"); // This is actually not used anywhere
+        mn.get(OP_ADDR).setEmptyList();
+        mn.protect();
+        GRAB_DOMAIN_RESOURCE = OperationBuilder.create(mn).build();
     }
 
     private final ExtensionRegistry extensionRegistry;
@@ -303,6 +312,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     @Override
     public AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler) {
         return masterProxy.executeAsync(operation, messageHandler);
+    }
+
+    @Override
+    public OperationResponse executeOperation(Operation operation, OperationMessageHandler messageHandler) throws IOException {
+        return masterProxy.executeOperation(operation, messageHandler);
+    }
+
+    @Override
+    public AsyncFuture<OperationResponse> executeOperationAsync(Operation operation, OperationMessageHandler messageHandler) {
+        return masterProxy.executeOperationAsync(operation, messageHandler);
     }
 
     @Override
@@ -630,7 +649,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return Integer.getInteger(name, defaultValue);
         } else {
             return AccessController.doPrivileged( new PrivilegedAction<Integer>() {
-
                 @Override
                 public Integer run() {
                     return Integer.getInteger(name, defaultValue);

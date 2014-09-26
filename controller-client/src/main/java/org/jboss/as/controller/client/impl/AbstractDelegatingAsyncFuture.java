@@ -32,21 +32,10 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author Emanuel Muckenhuber
  */
-public abstract class AbstractDelegatingAsyncFuture<T> implements AsyncFuture<T> {
+public abstract class AbstractDelegatingAsyncFuture<T> extends BasicDelegatingAsyncFuture<T, T> {
 
-    private final AsyncFuture<T> delegate;
     public AbstractDelegatingAsyncFuture(AsyncFuture<T> delegate) {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public Status await() throws InterruptedException {
-        return delegate.await();
-    }
-
-    @Override
-    public Status await(long timeout, TimeUnit unit) throws InterruptedException {
-        return delegate.await(timeout, unit);
+        super(delegate);
     }
 
     @Override
@@ -59,40 +48,8 @@ public abstract class AbstractDelegatingAsyncFuture<T> implements AsyncFuture<T>
         return delegate.getUninterruptibly(timeout, unit);
     }
 
-    @Override
-    public Status awaitUninterruptibly() {
-        return delegate.awaitUninterruptibly();
-    }
-
-    @Override
-    public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
-        return delegate.awaitUninterruptibly(timeout, unit);
-    }
-
-    @Override
-    public Status getStatus() {
-        return delegate.getStatus();
-    }
-
     public <A> void addListener(Listener<? super T, A> aListener, A attachment) {
         delegate.addListener(aListener, attachment);
-    }
-
-    @Override
-    public boolean cancel(boolean interruptionDesired) {
-        // allow custom cancellation policies
-        asyncCancel(interruptionDesired);
-        return awaitUninterruptibly() == Status.CANCELLED;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return delegate.isCancelled();
-    }
-
-    @Override
-    public boolean isDone() {
-        return delegate.isDone();
     }
 
     @Override

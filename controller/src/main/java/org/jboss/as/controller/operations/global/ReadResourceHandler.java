@@ -21,6 +21,7 @@
  */
 
 package org.jboss.as.controller.operations.global;
+
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -83,7 +84,7 @@ import org.jboss.dmr.Property;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTargetHandler implements OperationStepHandler {
+public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTargetHandler {
 
     private static final SimpleAttributeDefinition ATTRIBUTES_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelType.BOOLEAN)
             .setAllowNull(true)

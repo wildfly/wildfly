@@ -365,6 +365,9 @@ public interface ControllerClientMessages {
     @Message(id = 10652, value = "The address must be of type ModelType.LIST.")
     IllegalArgumentException invalidAddressType();
 
+    @Message(id = 10653, value = "Stream was closed")
+    IOException streamWasClosed();
+
     class LeakDescription extends Throwable {
         private static final long serialVersionUID = -7193498784746897578L;
 

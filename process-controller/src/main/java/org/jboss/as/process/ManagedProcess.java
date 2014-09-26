@@ -348,7 +348,7 @@ final class ManagedProcess {
             int exitCode;
             for (;;) try {
                 exitCode = process.waitFor();
-                log.processFinished(processName, Integer.valueOf(exitCode));
+                log.processFinished(processName, exitCode);
                 break;
             } catch (InterruptedException e) {
                 // ignore

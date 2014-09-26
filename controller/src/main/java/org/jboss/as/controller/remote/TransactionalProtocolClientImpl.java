@@ -22,10 +22,12 @@
 
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTACHED_STREAMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -48,8 +50,10 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.controller.client.impl.OperationResponseProxy;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -102,22 +106,22 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
     }
 
     @Override
-    public AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
+    public AsyncFuture<OperationResponse> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
         final Operation wrapper = TransactionalProtocolHandlers.wrap(operation, messageHandler, attachments);
         return execute(listener, wrapper);
     }
 
     @Override
-    public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
+    public <T extends Operation> AsyncFuture<OperationResponse> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
         final Subject subject = SecurityActions.getSubject();
         final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject, tempDir);
-        final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
-        final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
+        final ActiveOperation<OperationResponse, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
+        final AsyncFuture<OperationResponse> result = new AbstractDelegatingAsyncFuture<OperationResponse>(op.getResult()) {
             @Override
             public void asyncCancel(boolean interruptionDesired) {
                 try {
                     // Execute
-                    channelAssociation.executeRequest(op, new CompleteTxRequest(ModelControllerProtocol.PARAM_ROLLBACK));
+                    channelAssociation.executeRequest(op, new CompleteTxRequest(ModelControllerProtocol.PARAM_ROLLBACK, channelAssociation));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -135,7 +139,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
      *  - {@link org.jboss.as.controller.client.impl.ModelControllerProtocol#PARAM_OPERATION_FAILED}, which will complete the operation right away
      *  - or {@link org.jboss.as.controller.client.impl.ModelControllerProtocol#PARAM_OPERATION_PREPARED}
      */
-    private class ExecuteRequest extends AbstractManagementRequest<ModelNode, ExecuteRequestContext> {
+    private class ExecuteRequest extends AbstractManagementRequest<OperationResponse, ExecuteRequestContext> {
 
         @Override
         public byte getOperationType() {
@@ -143,7 +147,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+        public void sendRequest(final ActiveOperation.ResultHandler<OperationResponse> resultHandler,
                                 final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
 
             ControllerLogger.MGMT_OP_LOGGER.tracef("sending ExecuteRequest for %d", context.getOperationId());
@@ -159,7 +163,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+        protected void sendRequest(final ActiveOperation.ResultHandler<OperationResponse> resultHandler,
                                    final ManagementRequestContext<ExecuteRequestContext> context,
                                    final FlushableDataOutput output) throws IOException {
 
@@ -186,7 +190,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<OperationResponse> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
             ControllerLogger.MGMT_OP_LOGGER.tracef("received response to ExecuteRequest for %d", context.getOperationId());
             final byte responseType = input.readByte();
             final ModelNode response = new ModelNode();
@@ -211,7 +215,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                         final byte status = commit ? ModelControllerProtocol.PARAM_COMMIT : ModelControllerProtocol.PARAM_ROLLBACK;
                         try {
                             // Send the CompleteTxRequest
-                            channelAssociation.executeRequest(context.getOperationId(), new CompleteTxRequest(status));
+                            channelAssociation.executeRequest(context.getOperationId(), new CompleteTxRequest(status, channelAssociation));
                         } catch (Exception e) {
                             resultHandler.failed(e);
                         }
@@ -220,11 +224,11 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             } else {
                 // Failed
                 executeRequestContext.operationFailed(response);
-                resultHandler.done(response);
+                resultHandler.done(OperationResponse.Factory.createSimple(response));
             }
         }
 
-        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+        private void sendRequestInternal(ActiveOperation.ResultHandler<OperationResponse> resultHandler,
                                          ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
             super.sendRequest(resultHandler, context);
         }
@@ -234,12 +238,13 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
      * Signal the remote controller to either commit or rollback. The response has to be a
      * {@link org.jboss.as.controller.client.impl.ModelControllerProtocol#PARAM_OPERATION_COMPLETED}.
      */
-    private static class CompleteTxRequest extends AbstractManagementRequest<ModelNode, ExecuteRequestContext> {
+    private static class CompleteTxRequest extends AbstractManagementRequest<OperationResponse, ExecuteRequestContext> {
 
         private final byte status;
-
-        private CompleteTxRequest(byte status) {
+        private final ManagementChannelAssociation channelAssociation;
+        private CompleteTxRequest(byte status, ManagementChannelAssociation channelAssociation) {
             this.status = status;
+            this.channelAssociation = channelAssociation;
         }
 
         @Override
@@ -248,7 +253,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+        public void sendRequest(final ActiveOperation.ResultHandler<OperationResponse> resultHandler,
                                 final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
 
             ControllerLogger.MGMT_OP_LOGGER.tracef("sending CompleteTxRequest for %d", context.getOperationId());
@@ -262,24 +267,24 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context, final FlushableDataOutput output) throws IOException {
+        protected void sendRequest(final ActiveOperation.ResultHandler<OperationResponse> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context, final FlushableDataOutput output) throws IOException {
 
             ControllerLogger.MGMT_OP_LOGGER.tracef("transmitting CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             output.write(status);
         }
 
         @Override
-        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<OperationResponse> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
             ControllerLogger.MGMT_OP_LOGGER.tracef("received response to CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             // We only accept operationCompleted responses
             expectHeader(input, ModelControllerProtocol.PARAM_OPERATION_COMPLETED);
-            final ModelNode response = new ModelNode();
-            response.readExternal(input);
+            final ModelNode responseNode = new ModelNode();
+            responseNode.readExternal(input);
             // Complete the operation
-            resultHandler.done(response);
+            resultHandler.done(createOperationResponse(responseNode, channelAssociation, context.getOperationId()));
         }
 
-        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+        private void sendRequestInternal(ActiveOperation.ResultHandler<OperationResponse> resultHandler,
                                          ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
             super.sendRequest(resultHandler, context);
         }
@@ -375,7 +380,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
     }
 
-    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<ModelNode> {
+    static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<OperationResponse> {
         final OperationWrapper<?> wrapper;
         final AtomicBoolean completed = new AtomicBoolean(false);
         final Subject subject;
@@ -387,7 +392,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             this.tempDir = tempDir;
         }
 
-        void initialize(final AsyncFuture<ModelNode> result) {
+        void initialize(final AsyncFuture<OperationResponse> result) {
             wrapper.future = result;
         }
 
@@ -427,7 +432,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        public synchronized void completed(final ModelNode result) {
+        public synchronized void completed(final OperationResponse result) {
             if(completed.compareAndSet(false, true)) {
                 wrapper.completed(result);
             }
@@ -459,7 +464,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
         private final T operation;
         private final TransactionalOperationListener<T> listener;
-        private AsyncFuture<ModelNode> future;
+        private AsyncFuture<OperationResponse> future;
 
         OperationWrapper(TransactionalOperationListener<T> listener, T operation) {
             this.listener = listener;
@@ -483,7 +488,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             listener.operationPrepared(preparedOperation);
         }
 
-        void completed(final ModelNode response) {
+        void completed(final OperationResponse response) {
             listener.operationComplete(operation, response);
         }
 
@@ -493,14 +498,27 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     }
 
+
+
+    private static OperationResponse createOperationResponse(ModelNode simpleResponse, ManagementChannelAssociation channelAssociation, int operationId) {
+        final ModelNode streamHeader =  simpleResponse.hasDefined(RESPONSE_HEADERS) && simpleResponse.get(RESPONSE_HEADERS).hasDefined(ATTACHED_STREAMS)
+                ? simpleResponse.get(RESPONSE_HEADERS, ATTACHED_STREAMS)
+                : null;
+        if (streamHeader != null && streamHeader.asInt() > 0) {
+            return OperationResponseProxy.create(simpleResponse, channelAssociation, operationId, streamHeader);
+        } else {
+            return OperationResponse.Factory.createSimple(simpleResponse);
+        }
+    }
+
     static class PreparedOperationImpl<T extends Operation> implements PreparedOperation<T> {
 
         private final T operation;
         private final ModelNode preparedResult;
-        private final AsyncFuture<ModelNode> finalResult;
+        private final AsyncFuture<OperationResponse> finalResult;
         private final ModelController.OperationTransaction transaction;
 
-        protected PreparedOperationImpl(T operation, ModelNode preparedResult, AsyncFuture<ModelNode> finalResult, ModelController.OperationTransaction transaction) {
+        protected PreparedOperationImpl(T operation, ModelNode preparedResult, AsyncFuture<OperationResponse> finalResult, ModelController.OperationTransaction transaction) {
             assert finalResult != null : "null result";
             this.operation = operation;
             this.preparedResult = preparedResult;
@@ -529,7 +547,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
-        public AsyncFuture<ModelNode> getFinalResult() {
+        public AsyncFuture<OperationResponse> getFinalResult() {
             return finalResult;
         }
 

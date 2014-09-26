@@ -22,11 +22,6 @@
 
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.threads.AsyncFuture;
-
 import java.util.Collection;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -35,6 +30,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.client.OperationResponse;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * Basic operation listener backed by a blocking queue. If the limit of the queue is reached prepared operations
@@ -73,7 +74,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
     }
 
     @Override
-    public void operationComplete(T operation, ModelNode result) {
+    public void operationComplete(T operation, OperationResponse result) {
         //
     }
 
@@ -164,8 +165,8 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
         }
 
         @Override
-        public AsyncFuture<ModelNode> getFinalResult() {
-            return new CompletedResult<ModelNode>(finalResult);
+        public AsyncFuture<OperationResponse> getFinalResult() {
+            return new CompletedResult<OperationResponse>(OperationResponse.Factory.createSimple(finalResult));
         }
 
         @Override

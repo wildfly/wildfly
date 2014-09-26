@@ -35,28 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.remote.BlockingQueueOperationListener;
-import org.jboss.as.controller.remote.TransactionalOperationImpl;
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.controller.transform.OperationTransformer;
-
-import org.jboss.as.controller.transform.TransformationTarget;
-import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.controller.TransformingProxyController;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +43,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.TransformingProxyController;
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
+import org.jboss.as.controller.remote.BlockingQueueOperationListener;
+import org.jboss.as.controller.remote.TransactionalOperationImpl;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.Transformers;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * @author Emanuel Muckenhuber
@@ -84,10 +84,9 @@ class HostControllerUpdateTask {
     }
 
     public ExecutedHostRequest execute(final ProxyOperationListener listener) {
-        boolean trace = HOST_CONTROLLER_LOGGER.isTraceEnabled();
-        if (trace) {
-            HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, name);
-        }
+
+        HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, name);
+
         final TransactionalProtocolClient client = proxyController.getProtocolClient();
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
@@ -107,7 +106,7 @@ class HostControllerUpdateTask {
                         transformedOperation.get(OPERATION_HEADERS, ServerOperationsResolverHandler.DOMAIN_PUSH_TO_SERVERS).set(true);
                     }
                 }
-                final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
+                final AsyncFuture<OperationResponse> result = client.execute(subsystemListener, proxyOperation);
                 return new ExecutedHostRequest(result, transformationResult);
             } catch (IOException e) {
                 // Handle protocol failures
@@ -139,21 +138,21 @@ class HostControllerUpdateTask {
 
     static class ExecutedHostRequest implements OperationResultTransformer, OperationRejectionPolicy {
 
-        private final AsyncFuture<ModelNode> futureResult;
+        private final AsyncFuture<OperationResponse> futureResult;
         private final OperationResultTransformer resultTransformer;
         private final OperationRejectionPolicy rejectPolicy;
 
-        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationResultTransformer resultTransformer, OperationRejectionPolicy rejectPolicy) {
+        ExecutedHostRequest(AsyncFuture<OperationResponse> futureResult, OperationResultTransformer resultTransformer, OperationRejectionPolicy rejectPolicy) {
             this.futureResult = futureResult;
             this.resultTransformer = resultTransformer;
             this.rejectPolicy = rejectPolicy;
         }
 
-        ExecutedHostRequest(AsyncFuture<ModelNode> futureResult, OperationTransformer.TransformedOperation transformedOperation) {
+        ExecutedHostRequest(AsyncFuture<OperationResponse> futureResult, OperationTransformer.TransformedOperation transformedOperation) {
             this(futureResult, transformedOperation, transformedOperation);
         }
 
-        public Future<ModelNode> getFinalResult() {
+        public Future<OperationResponse> getFinalResult() {
             return futureResult;
         }
 
@@ -235,7 +234,7 @@ class HostControllerUpdateTask {
         }
 
         @Override
-        public void operationComplete(final ProxyOperation operation, final ModelNode result) {
+        public void operationComplete(final ProxyOperation operation, final OperationResponse result) {
             try {
                 super.operationComplete(operation, result);
             } finally {
@@ -269,9 +268,9 @@ class HostControllerUpdateTask {
         }
 
         @Override
-        public void operationComplete(ProxyOperation operation, ModelNode result) {
+        public void operationComplete(ProxyOperation operation, OperationResponse result) {
             try {
-                storeSubsystemVersions(operation.getOperation(), result);
+                storeSubsystemVersions(operation.getOperation(), result.getResponseNode());
             } finally {
                 delegate.operationComplete(operation, result);
             }

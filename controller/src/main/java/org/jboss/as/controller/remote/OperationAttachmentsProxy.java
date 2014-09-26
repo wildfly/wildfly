@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
@@ -39,25 +39,33 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  * A attachment proxy, lazily initializing the streams.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class OperationAttachmentsProxy implements OperationAttachments {
+class OperationAttachmentsProxy implements Operation {
 
+    private final ModelNode operation;
     private final List<ProxiedInputStream> proxiedStreams;
 
-    private OperationAttachmentsProxy(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
-        proxiedStreams = new ArrayList<ProxiedInputStream>(size);
+    private OperationAttachmentsProxy(final ModelNode operation, final List<ProxiedInputStream> proxiedStreams) {
+        this.operation = operation;
+        this.proxiedStreams = proxiedStreams;
+    }
+
+    static OperationAttachmentsProxy create(final ModelNode operation, final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
+        return new OperationAttachmentsProxy(operation, getProxiedStreams(channelAssociation, batchId, size));
+    }
+
+    private static List<ProxiedInputStream> getProxiedStreams(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
+        List<ProxiedInputStream> proxiedStreams = new ArrayList<ProxiedInputStream>(size);
         for (int i = 0; i < size; i++) {
             proxiedStreams.add(new ProxiedInputStream(channelAssociation, batchId, i));
         }
-    }
-
-    static OperationAttachmentsProxy create(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
-        return new OperationAttachmentsProxy(channelAssociation, batchId, size);
+        return proxiedStreams;
     }
 
     @Override
@@ -81,6 +89,22 @@ class OperationAttachmentsProxy implements OperationAttachments {
         for (final ProxiedInputStream stream : proxiedStreams) {
             stream.shutdown(error);
         }
+    }
+
+    @Override
+    public ModelNode getOperation() {
+        return operation;
+    }
+
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @Override
+    public final Operation clone() {
+        return new OperationAttachmentsProxy(operation, proxiedStreams);
+    }
+
+    @Override
+    public Operation clone(ModelNode operation) {
+        return new OperationAttachmentsProxy(operation, proxiedStreams);
     }
 
     private static class ProxiedInputStream extends InputStream {

@@ -78,7 +78,7 @@ public interface ModelControllerClient extends Closeable {
 
     /**
      * Execute an operation synchronously, optionally receiving progress reports.
-     *
+     * <p>
      * Note that associated input-streams have to be closed by the caller, after the
      * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
      *
@@ -90,7 +90,21 @@ public interface ModelControllerClient extends Closeable {
     ModelNode execute(Operation operation, OperationMessageHandler messageHandler) throws IOException;
 
     /**
-     * Execute an operation.
+     * Execute an operation synchronously, optionally receiving progress reports, with the response
+     * to the operation making available any input streams that the server may associate with the response.
+     * <p>
+     * Note that associated input-streams have to be closed by the caller, after the
+     * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
+     *
+     * @param operation the operation to execute
+     * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
+     * @return the result of the operation
+     * @throws IOException if an I/O error occurs while executing the operation
+     */
+    OperationResponse executeOperation(Operation operation, OperationMessageHandler messageHandler) throws IOException;
+
+    /**
+     * Execute an operation in another thread, optionally receiving progress reports.
      *
      * @param operation the operation to execute
      * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
@@ -99,8 +113,8 @@ public interface ModelControllerClient extends Closeable {
     AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler);
 
     /**
-     * Execute an operation.
-     *
+     * Execute an operation in another thread, optionally receiving progress reports.
+     * <p>
      * Note that associated input-streams have to be closed by the caller, after the
      * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
      *
@@ -110,6 +124,20 @@ public interface ModelControllerClient extends Closeable {
      */
     AsyncFuture<ModelNode> executeAsync(Operation operation, OperationMessageHandler messageHandler);
 
+    /**
+     * Execute an operation in another thread, optionally receiving progress reports, with the response
+     * to the operation making available any input streams that the server may associate with the response.
+     * <p>
+     * Note that associated input-streams have to be closed by the caller, after the
+     * operation completed {@link OperationAttachments#isAutoCloseStreams()}.
+     *
+     * @param operation the operation to execute
+     * @param messageHandler the message handler to use for operation progress reporting, or {@code null} for none
+     * @return the future result of the operation
+     */
+    AsyncFuture<OperationResponse> executeOperationAsync(Operation operation, OperationMessageHandler messageHandler);
+
+    /** Factory methods for creating a {@code ModelControllerClient}. */
     class Factory {
 
         /**

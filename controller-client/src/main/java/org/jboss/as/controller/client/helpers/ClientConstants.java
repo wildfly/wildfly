@@ -28,6 +28,8 @@ package org.jboss.as.controller.client.helpers;
  */
 public class ClientConstants {
     public static final String ADD = "add";
+    public static final String ATTACHED_STREAMS = "attached-streams";
+    @Deprecated
     public static final String AUTO_START = "auto-start";
     public static final String CHILD_TYPE = "child-type";
     public static final String COMPOSITE = "composite";
@@ -56,6 +58,7 @@ public class ClientConstants {
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String RECURSIVE = "recursive";
     public static final String REMOVE_OPERATION = "remove";
+    public static final String RESPONSE_HEADERS = "response-headers";
     public static final String RESULT = "result";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
     public static final String ROLLOUT_PLAN = "rollout-plan";

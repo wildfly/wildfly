@@ -44,8 +44,9 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
-import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -281,13 +282,9 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     @Override
-    protected ModelNode internalExecute(ModelNode operation, OperationMessageHandler handler,
-            OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler prepareStep) {
-        return super.internalExecute(operation, handler, control, attachments, prepareStep);
-    }
-
-    public  ModelNode internalExecute(ModelNode operation, OperationStepHandler handler) {
-        return internalExecute(operation, OperationMessageHandler.DISCARD, OperationTransactionControl.COMMIT, null, handler);
+    protected OperationResponse internalExecute(Operation operation, OperationMessageHandler handler,
+            OperationTransactionControl control, OperationStepHandler prepareStep) {
+        return super.internalExecute(operation, handler, control, prepareStep);
     }
 
     public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {

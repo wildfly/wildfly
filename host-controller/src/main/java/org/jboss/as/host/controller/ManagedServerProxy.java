@@ -22,22 +22,23 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+
+import java.io.IOException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.protocol.ProtocolMessages;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
-
-import java.io.IOException;
 
 /**
  * A proxy dispatching operations to the managed server.
@@ -76,14 +77,16 @@ class ManagedServerProxy implements TransactionalProtocolClient {
     }
 
     @Override
-    public AsyncFuture<ModelNode> execute(final TransactionalOperationListener<Operation> listener, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) throws IOException {
+    public AsyncFuture<OperationResponse> execute(final TransactionalOperationListener<Operation> listener, final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) throws IOException {
         return execute(listener, TransactionalProtocolHandlers.wrap(operation, messageHandler, attachments));
     }
 
     @Override
-    public <T extends Operation> AsyncFuture<ModelNode> execute(final TransactionalOperationListener<T> listener, final T operation) throws IOException {
-        if(! isConnected()) {
-            final ModelNode op = operation.getOperation();
+    public <T extends Operation> AsyncFuture<OperationResponse> execute(final TransactionalOperationListener<T> listener, final T operation) throws IOException {
+        final TransactionalProtocolClient remoteClient = this.remoteClient;
+        final ModelNode op = operation.getOperation();
+
+        if (remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
             if(ServerRestartRequiredHandler.OPERATION_NAME.equals(op.get(OP).asString())) {
                 server.requireReload();
@@ -105,12 +108,12 @@ class ManagedServerProxy implements TransactionalProtocolClient {
     static final class DisconnectedProtocolClient implements TransactionalProtocolClient {
 
         @Override
-        public AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
+        public AsyncFuture<OperationResponse> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
             return execute(listener, TransactionalProtocolHandlers.wrap(operation, messageHandler, attachments));
         }
 
         @Override
-        public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
+        public <T extends Operation> AsyncFuture<OperationResponse> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
             throw ProtocolMessages.MESSAGES.channelClosed();
         }
 

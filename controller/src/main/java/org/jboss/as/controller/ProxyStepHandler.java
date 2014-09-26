@@ -40,6 +40,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
@@ -63,7 +65,7 @@ public class ProxyStepHandler implements OperationStepHandler {
 
         final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();
         final AtomicReference<ModelNode> preparedResultRef = new AtomicReference<ModelNode>();
-        final AtomicReference<ModelNode> finalResultRef = new AtomicReference<ModelNode>();
+        final AtomicReference<OperationResponse> finalResultRef = new AtomicReference<OperationResponse>();
         final ProxyController.ProxyOperationControl proxyControl = new ProxyController.ProxyOperationControl() {
 
             @Override
@@ -74,11 +76,11 @@ public class ProxyStepHandler implements OperationStepHandler {
 
             @Override
             public void operationFailed(ModelNode response) {
-                finalResultRef.set(response);
+                finalResultRef.set(OperationResponse.Factory.createSimple(response));
             }
 
             @Override
-            public void operationCompleted(ModelNode response) {
+            public void operationCompleted(OperationResponse response) {
                 finalResultRef.set(response);
             }
         };
@@ -107,9 +109,29 @@ public class ProxyStepHandler implements OperationStepHandler {
                     }
 
                     @Override
-                    public void operationCompleted(ModelNode response) {
-                        final ModelNode result = resultTransformer.transformResult(response);
-                        proxyControl.operationCompleted(result);
+                    public void operationCompleted(final OperationResponse response) {
+                        final ModelNode result = resultTransformer.transformResult(response.getResponseNode());
+                        proxyControl.operationCompleted(new OperationResponse() {
+                            @Override
+                            public ModelNode getResponseNode() {
+                                return result;
+                            }
+
+                            @Override
+                            public List<StreamEntry> getInputStreams() {
+                                return response.getInputStreams();
+                            }
+
+                            @Override
+                            public StreamEntry getInputStream(String uuid) {
+                                return response.getInputStream(uuid);
+                            }
+
+                            @Override
+                            public void close() throws IOException {
+                                response.close();
+                            }
+                        });
                     }
 
                     @Override
@@ -140,29 +162,31 @@ public class ProxyStepHandler implements OperationStepHandler {
         } else {
             proxyController.execute(operation, messageHandler, proxyControl, new DelegatingOperationAttachments(context));
         }
-        ModelNode finalResult = finalResultRef.get();
+        OperationResponse finalResult = finalResultRef.get();
         if (finalResult != null) {
             // operation failed before it could commit
-            context.getResult().set(finalResult.get(RESULT));
-            ModelNode failureDesc = finalResult.get(FAILURE_DESCRIPTION);
+            ModelNode responseNode = finalResult.getResponseNode();
+            context.getResult().set(responseNode.get(RESULT));
+            ModelNode failureDesc = responseNode.get(FAILURE_DESCRIPTION);
             OperationFailedRuntimeException stdFailure = translateFailureDescription(failureDesc);
             if (stdFailure != null) {
                 throw stdFailure;
             }
             context.getFailureDescription().set(failureDesc);
-            if (finalResult.hasDefined(RESPONSE_HEADERS)) {
-                context.getResponseHeaders().set(finalResult.get(RESPONSE_HEADERS));
+            if (responseNode.hasDefined(RESPONSE_HEADERS)) {
+                context.getResponseHeaders().set(responseNode.get(RESPONSE_HEADERS));
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } else {
 
-            completeRemoteTransaction(context, txRef, preparedResultRef, finalResultRef);
+            completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
 
         }
     }
 
-    private void completeRemoteTransaction(OperationContext context, final AtomicReference<ModelController.OperationTransaction> txRef,
-                                           final AtomicReference<ModelNode> preparedResultRef, final AtomicReference<ModelNode> finalResultRef) {
+    private void completeRemoteTransaction(final OperationContext context, final ModelNode operation,
+                                           final AtomicReference<ModelController.OperationTransaction> txRef,
+                                           final AtomicReference<ModelNode> preparedResultRef, final AtomicReference<OperationResponse> finalResultRef) {
 
         boolean completeStepCalled = false;
         try {
@@ -199,23 +223,25 @@ public class ProxyStepHandler implements OperationStepHandler {
                         // Per the ProxyOperationControl contract, this will have been provided via operationCompleted
                         // by the time the call to OperationTransaction.commit/rollback returns
 
-                        ModelNode finalResponse = finalResultRef.get();
+                        OperationResponse finalResponse = finalResultRef.get();
                         if (finalResponse != null) {
-                            ModelNode finalResult =  finalResponse.get(RESULT);
-                            if (finalResponse.hasDefined(FAILURE_DESCRIPTION)) {
-                                context.getFailureDescription().set(finalResponse.get(FAILURE_DESCRIPTION));
+                            ModelNode responseNode = finalResponse.getResponseNode();
+                            ModelNode finalResult =  responseNode.get(RESULT);
+                            if (responseNode.hasDefined(FAILURE_DESCRIPTION)) {
+                                context.getFailureDescription().set(responseNode.get(FAILURE_DESCRIPTION));
                                 if (finalResult.isDefined()) {
                                     context.getResult().set(finalResult);
                                 }
                             } else {
                                 context.getResult().set(finalResult);
                             }
-                            if (context.getProcessType() == ProcessType.HOST_CONTROLLER && finalResponse.has(SERVER_GROUPS)) {
-                                context.getServerResults().set(finalResponse.get(SERVER_GROUPS));
+                            if (context.getProcessType() == ProcessType.HOST_CONTROLLER && responseNode.has(SERVER_GROUPS)) {
+                                context.getServerResults().set(responseNode.get(SERVER_GROUPS));
                             }
-                            if (finalResponse.hasDefined(RESPONSE_HEADERS)) {
-                                context.getResponseHeaders().set(finalResponse.get(RESPONSE_HEADERS));
-                            }
+
+                            // Make sure any streams associated with the remote response are properly
+                            // integrated with our response
+                            ResponseAttachmentInputStreamSupport.handleDomainOperationResponseStreams(context, responseNode, finalResponse.getInputStreams());
                         } else {
                             // This is an error condition
                             ControllerLogger.SERVER_MANAGEMENT_LOGGER.noFinalProxyOutcomeReceived(operation.get(OP),

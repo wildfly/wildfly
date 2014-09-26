@@ -280,6 +280,16 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
+        public String attachResultStream(String mimeType, InputStream stream) {
+            return "0";
+        }
+
+        @Override
+        public void attachResultStream(String uuid, String mimeType, InputStream stream) {
+            // no-op
+        }
+
+        @Override
         public ModelNode getServerResults() {
             return null;
         }

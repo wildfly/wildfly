@@ -190,6 +190,16 @@ public interface HttpServerMessages {
     @Message(id = 15137, value = "Content-Disposition not supported %s")
     IOException unsupportedContentDisposition(String contentDisposition);
 
+    // Used in WildFly 8
+//    @Message(id = 15138, value = "Invalid resource")
+//    String invalidResource();
+    // Used in WildFly 8
+//    @Message(id = 15139, value = "Invalid Credential Type '%s'")
+//    IllegalArgumentException invalidCredentialType(String value);
+
+    @Message(id = 15140, value = "Invalid useStreamIndex value '%d'. The operation response had %d streams attached.")
+    String invalidUseStreamAsResponseIndex(int index, int available);
+
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this
      * range commencing at 15100.

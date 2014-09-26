@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -58,6 +59,7 @@ import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.protocol.StreamUtils;
@@ -93,6 +95,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
     private final ManagementChannelAssociation channelAssociation;
     private final Executor clientRequestExecutor;
     private final Subject subject;
+    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport = new ResponseAttachmentInputStreamSupport();
 
     public ModelControllerClientOperationHandler(final ModelController controller,
                                                  final ManagementChannelAssociation channelAssociation) {
@@ -112,7 +115,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 threadFactory);
         // Allow the core threads to time out as well
         executor.allowCoreThreadTimeOut(true);
-        clientRequestExecutor = executor;
+        this.clientRequestExecutor = executor;
     }
 
     @Override
@@ -125,6 +128,14 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 return new ExecuteRequestHandler();
             case ModelControllerProtocol.CANCEL_ASYNC_REQUEST:
                 return new CancelAsyncRequestHandler();
+            case ModelControllerProtocol.GET_CHUNKED_INPUTSTREAM_REQUEST:
+                // initialize the operation ctx before executing the request handler
+                handlers.registerActiveOperation(header.getBatchId(), null);
+                return responseAttachmentSupport.getReadHandler();
+            case ModelControllerProtocol.CLOSE_INPUTSTREAM_REQUEST:
+                // initialize the operation ctx before executing the request handler
+                handlers.registerActiveOperation(header.getBatchId(), null);
+                return responseAttachmentSupport.getCloseHandler();
         }
         return handlers.resolveNext();
     }
@@ -132,7 +143,8 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
     class ExecuteRequestHandler implements ManagementRequestHandler<ModelNode, Void> {
 
         @Override
-        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<Void> context) throws IOException {
+        public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                  final ManagementRequestContext<Void> context) throws IOException {
             ControllerLogger.MGMT_OP_LOGGER.tracef("Handling ExecuteRequest for %d", context.getOperationId());
             final ModelNode operation = new ModelNode();
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_OPERATION);
@@ -161,7 +173,8 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             }, clientRequestExecutor);
         }
 
-        private void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context, final CompletedCallback callback) {
+        private void doExecute(final ModelNode operation, final int attachmentsLength,
+                               final ManagementRequestContext<Void> context, final CompletedCallback callback) {
 
             ControllerLogger.MGMT_OP_LOGGER.tracef("Executing ExecuteRequest for %d", context.getOperationId());
             // Header manipulation
@@ -187,24 +200,25 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             final boolean sendPreparedOperation = sendPreparedResponse(operation);
             final ModelController.OperationTransactionControl transactionControl = sendPreparedOperation ? new ModelController.OperationTransactionControl() {
                 @Override
-                public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode preparedResult) {
                     transaction.commit();
                     // Fix prepared result
-                    result.get(OUTCOME).set(SUCCESS);
-                    result.get(RESULT);
-                    callback.sendResponse(result);
+                    preparedResult.get(OUTCOME).set(SUCCESS);
+                    preparedResult.get(RESULT);
+                    callback.sendResponse(preparedResult);
                 }
             } : ModelController.OperationTransactionControl.COMMIT;
 
             final OperationMessageHandlerProxy messageHandlerProxy = new OperationMessageHandlerProxy(channelAssociation, batchId);
-            final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(channelAssociation, batchId, attachmentsLength);
+            final OperationAttachmentsProxy attachmentsProxy = OperationAttachmentsProxy.create(operation, channelAssociation, batchId, attachmentsLength);
             try {
                 ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, header.getRequestId());
-                result.set(controller.execute(
-                        operation,
-                        messageHandlerProxy,
-                        transactionControl,
-                        attachmentsProxy));
+                OperationResponse response = controller.execute(attachmentsProxy, messageHandlerProxy, transactionControl);
+                List<OperationResponse.StreamEntry> streams = response.getInputStreams();
+                for (int i = 0; i < streams.size(); i++) {
+                    responseAttachmentSupport.registerStream(context.getOperationId(), i, streams.get(i));
+                }
+                result.set(response.getResponseNode());
             } catch (Exception e) {
                 final ModelNode failure = new ModelNode();
                 failure.get(OUTCOME).set(FAILED);
@@ -255,7 +269,8 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
         private final ManagementRequestContext<Void> responseContext;
         private final ActiveOperation.ResultHandler<ModelNode> resultHandler;
 
-        private CompletedCallback(final ManagementResponseHeader response, final ManagementRequestContext<Void> responseContext,
+        private CompletedCallback(final ManagementResponseHeader response,
+                                  final ManagementRequestContext<Void> responseContext,
                                   final ActiveOperation.ResultHandler<ModelNode> resultHandler) {
             this.response = response;
             this.responseContext = responseContext;
@@ -272,10 +287,12 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             // cancellation of the management op by using a separate thread to send
             final CountDownLatch latch = new CountDownLatch(1);
             final IOExceptionHolder exceptionHolder = new IOExceptionHolder();
+
             responseContext.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
 
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
+
                     FlushableDataOutput output = null;
                     try {
                         MGMT_OP_LOGGER.tracef("Transmitting response for %d", context.getOperationId());

@@ -43,6 +43,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.security.Principal;
 import java.util.ArrayDeque;
@@ -53,10 +55,12 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeoutException;
@@ -68,6 +72,7 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -75,6 +80,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.InetAddressPrincipal;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -132,6 +138,8 @@ abstract class AbstractOperationContext implements OperationContext {
     private boolean auditLogged;
     private final AuditLogger auditLogger;
     private final ModelControllerImpl controller;
+    // protected by this
+    private Map<String, OperationResponse.StreamEntry> responseStreams;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL, ALLOW_RESOURCE_SERVICE_RESTART,
@@ -302,7 +310,27 @@ abstract class AbstractOperationContext implements OperationContext {
      * @return the result action
      */
     ResultAction executeOperation() {
-        return completeStepInternal();
+        try {
+            return completeStepInternal();
+        } finally {
+            // On failure close any attached response streams
+            if (resultAction != ResultAction.KEEP && !isBooting()) {
+                synchronized (this) {
+                    if (responseStreams != null) {
+                        int i = 0;
+                        for (OperationResponse.StreamEntry is : responseStreams.values()) {
+                            try {
+                                is.getStream().close();
+                            } catch (Exception e) {
+                                ControllerLogger.MGMT_OP_LOGGER.debugf(e, "Failed closing stream at index %d", i);
+                            }
+                            i++;
+                        }
+                        responseStreams.clear();
+                    }
+                }
+            }
+        }
     }
 
     private ResultAction completeStepInternal() {
@@ -941,6 +969,31 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     @Override
+    public String attachResultStream(String mimeType, InputStream stream) {
+        String domainUUID = UUID.randomUUID().toString();
+        attachResultStream(domainUUID, mimeType, stream);
+        return domainUUID;
+    }
+
+    @Override
+    public synchronized void attachResultStream(String uuid, String mimeType, InputStream stream) {
+        if (responseStreams == null) {
+            responseStreams = new LinkedHashMap<String, OperationResponse.StreamEntry>();
+        }
+        responseStreams.put(uuid, new OperationStreamEntry(uuid, mimeType, stream));
+    }
+
+    /**
+     * Get the streams attached to this context. The returned map's iterators will return items in
+     * the order in which the streams were attached to the context.
+     *
+     * @return the streams, or {@code null} if none were attached.
+     */
+    Map<String, OperationResponse.StreamEntry> getResponseStreams() {
+        return responseStreams;
+    }
+
+    @Override
     public final ModelNode getServerResults() {
         if (processType != ProcessType.HOST_CONTROLLER) {
             throw MESSAGES.serverResultsAccessNotAllowed(ProcessType.HOST_CONTROLLER, processType);
@@ -973,6 +1026,7 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     class Step {
+        private final Step parent;
         private final OperationStepHandler handler;
         final ModelNode response;
         final ModelNode operation;
@@ -985,6 +1039,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
         private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation,
                 final PathAddress address) {
+            this.parent = activeStep;
             this.handler = handler;
             this.response = response;
             this.operation = operation;
@@ -1159,6 +1214,38 @@ abstract class AbstractOperationContext implements OperationContext {
             int result = address.hashCode();
             result = 31 * result + (name != null ? name.hashCode() : 0);
             return result;
+        }
+    }
+
+    private static class OperationStreamEntry implements OperationResponse.StreamEntry {
+        private final InputStream stream;
+        private final String mimeType;
+        private final String uuid;
+
+        private OperationStreamEntry(final String uuid, String mimeType, InputStream stream) {
+            this.uuid = uuid;
+            this.mimeType = mimeType;
+            this.stream = stream;
+        }
+
+        @Override
+        public String getUUID() {
+            return uuid;
+        }
+
+        @Override
+        public String getMimeType() {
+            return mimeType;
+        }
+
+        @Override
+        public InputStream getStream() {
+            return stream;
+        }
+
+        @Override
+        public void close() throws IOException {
+            StreamUtils.safeClose(stream);
         }
     }
 }

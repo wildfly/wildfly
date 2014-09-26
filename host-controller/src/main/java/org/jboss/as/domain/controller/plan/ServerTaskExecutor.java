@@ -22,19 +22,6 @@
 
 package org.jboss.as.domain.controller.plan;
 
-import org.jboss.as.controller.Cancellable;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.remote.BlockingQueueOperationListener;
-import org.jboss.as.controller.remote.TransactionalOperationImpl;
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.controller.transform.OperationResultTransformer;
-import org.jboss.as.domain.controller.ServerIdentity;
-import org.jboss.dmr.ModelNode;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,6 +29,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import org.jboss.as.controller.Cancellable;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.OperationResponse;
+import org.jboss.as.controller.remote.BlockingQueueOperationListener;
+import org.jboss.as.controller.remote.TransactionalOperationImpl;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.ServerIdentity;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
@@ -113,7 +115,8 @@ public abstract class ServerTaskExecutor {
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
         final ServerOperation serverOperation = new ServerOperation(identity, operation, messageHandler, operationAttachments, transformer);
         try {
-            final Future<ModelNode> result = client.execute(listener, serverOperation);
+            DomainControllerLogger.HOST_CONTROLLER_LOGGER.tracef("Sending %s to %s", operation, identity);
+            final Future<OperationResponse> result = client.execute(listener, serverOperation);
             recordExecutedRequest(new ExecutedServerRequest(identity, result, transformer));
         } catch (IOException e) {
             final TransactionalProtocolClient.PreparedOperation<ServerOperation> result = BlockingQueueOperationListener.FailedOperation.create(serverOperation, e);
@@ -162,7 +165,7 @@ public abstract class ServerTaskExecutor {
         }
 
         @Override
-        public void operationComplete(ServerOperation operation, ModelNode result) {
+        public void operationComplete(ServerOperation operation, OperationResponse result) {
             super.operationComplete(operation, result);
         }
 
@@ -245,14 +248,14 @@ public abstract class ServerTaskExecutor {
     public static class ExecutedServerRequest implements OperationResultTransformer, Cancellable {
 
         private final ServerIdentity identity;
-        private final Future<ModelNode> finalResult;
+        private final Future<OperationResponse> finalResult;
         private final OperationResultTransformer transformer;
 
-        public ExecutedServerRequest(ServerIdentity identity, Future<ModelNode> finalResult) {
+        public ExecutedServerRequest(ServerIdentity identity, Future<OperationResponse> finalResult) {
             this(identity, finalResult, OperationResultTransformer.ORIGINAL_RESULT);
         }
 
-        public ExecutedServerRequest(ServerIdentity identity, Future<ModelNode> finalResult, OperationResultTransformer transformer) {
+        public ExecutedServerRequest(ServerIdentity identity, Future<OperationResponse> finalResult, OperationResultTransformer transformer) {
             this.identity = identity;
             this.finalResult = finalResult;
             this.transformer = transformer;
@@ -262,7 +265,7 @@ public abstract class ServerTaskExecutor {
             return identity;
         }
 
-        public Future<ModelNode> getFinalResult() {
+        public Future<OperationResponse> getFinalResult() {
             return finalResult;
         }
 
