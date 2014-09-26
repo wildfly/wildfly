@@ -14,13 +14,4 @@
         <role-name>peter</role-name>
         <principal-name>peter</principal-name>
     </security-role>
-
-    <servlet>
-        <servlet-name>RunAsInitServlet</servlet-name>
-        <run-as-principal>anil</run-as-principal>
-    </servlet>
-    <servlet>
-        <servlet-name>RunAsServlet</servlet-name>
-        <run-as-principal>peter</run-as-principal>
-    </servlet>
 </jboss-web>
