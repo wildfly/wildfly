@@ -31,6 +31,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,9 +41,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
+public class AdvancedFilter extends ParentBuilder<LdapAuthorizationBuilder> {
 
     private final LdapAuthorizationBuilder parent;
+    private final ModelNode address;
     private boolean built = false;
 
     private boolean force = false;
@@ -48,8 +52,12 @@ public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
     private String baseDn;
     private boolean recursive;
 
+    private CacheBuilder<AdvancedFilter> cacheBuilder = null;
+    private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
+
     AdvancedFilter(LdapAuthorizationBuilder parent) {
         this.parent = parent;
+        address = parent.getLdapAuthorizationAddress().add(USERNAME_TO_DN, ADVANCED_FILTER);
     }
 
     public AdvancedFilter setForce(final boolean force) {
@@ -80,6 +88,15 @@ public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
         return this;
     }
 
+    public CacheBuilder<AdvancedFilter> cache() {
+        assertNotBuilt();
+        if (cacheBuilder == null) {
+            cacheBuilder = new CacheBuilder<AdvancedFilter>(this, address.clone());
+        }
+
+        return cacheBuilder;
+    }
+
     @Override
     public boolean isBuilt() {
         return built;
@@ -88,11 +105,14 @@ public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
     @Override
     public LdapAuthorizationBuilder build() {
         assertNotBuilt();
+        if (cacheBuilder != null && cacheBuilder.isBuilt() == false) {
+            cacheBuilder.build();
+        }
         built = true;
 
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
-        add.get(ADDRESS).set(parent.getLdapAuthorizationAddress().add(USERNAME_TO_DN, ADVANCED_FILTER));
+        add.get(ADDRESS).set(address);
 
         if (force) {
             add.get(FORCE).set(true);
@@ -108,6 +128,10 @@ public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
         }
 
         parent.addStep(add);
+        for (ModelNode current : additionalSteps) {
+            parent.addStep(current);
+        }
+
         return parent;
     }
 
@@ -116,6 +140,12 @@ public class AdvancedFilter extends Builder<LdapAuthorizationBuilder> {
         if (built) {
             throw new IllegalStateException("Already built.");
         }
+    }
+
+    @Override
+    void addStep(ModelNode step) {
+        assertNotBuilt();
+        additionalSteps.add(step);
     }
 
 }

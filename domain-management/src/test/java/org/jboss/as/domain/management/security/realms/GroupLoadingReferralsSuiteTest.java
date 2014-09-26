@@ -31,6 +31,7 @@ import java.util.List;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
 import org.jboss.as.domain.management.security.operations.OutboundConnectionAddBuilder;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
+import org.jboss.as.domain.management.security.operations.CacheBuilder.By;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -87,7 +88,11 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
                 .setConnection(connectionName)
                 .setBaseDn(baseDn)
                 .setUsernameFilter(USERNAME_FILTER)
-                .build().build();
+                .cache()
+                .setBy(By.SEARCH_TIME)
+                .setEvictionTime(1)
+                .setMaxCacheSize(1)
+                .build().build().build();
     }
 
     private ModelNode createGroupToPrincipal(final String realmName, final String connectionName, final String usersBaseDn, final boolean preferOriginalConnection) {
@@ -98,6 +103,11 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
             .setBaseDn(G2P_USERS_BASE_DN)
             .setRecursive(false)
             .setAttribute(USERNAME_FILTER)
+            .cache()
+            .setBy(By.SEARCH_TIME)
+            .setEvictionTime(1)
+            .setMaxCacheSize(1)
+            .build()
             .build()
             .groupToPrincipal()
             .setBaseDn(G2P_GROUPS_BASE_DN)
@@ -105,7 +115,11 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
             .setIterative(true)
             .setRecursive(true)
             .setPreferOriginalConnection(preferOriginalConnection)
-            .build().build().build().build();
+            .cache()
+            .setBy(By.ACCESS_TIME)
+            .setEvictionTime(1)
+            .setMaxCacheSize(1)
+            .build().build().build().build().build();
     }
 
     private ModelNode createPrincipalToGroup(final String realmName, final String connectionName, final boolean preferOriginalConnection) {

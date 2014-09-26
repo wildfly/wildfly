@@ -22,6 +22,7 @@
 package org.jboss.as.domain.management.security.realms;
 
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
+import org.jboss.as.domain.management.security.operations.CacheBuilder.By;
 
 /**
  * A test suite test to test LDAP based group assignment where groups contain the 'member' attribute referencing the users and
@@ -42,21 +43,32 @@ public class GroupToPrincipalLdapSuiteTest extends LdapGroupAssignmentBaseSuiteT
         .setConnection(MASTER_CONNECTION_NAME)
         .setBaseDn(BASE_DN)
         .setUsernameFilter(USERNAME_FILTER)
-        .build().build()
+        .cache()
+        .setBy(By.SEARCH_TIME)
+        .setEvictionTime(1)
+        .setMaxCacheSize(1)
+        .build().build().build()
         .authorization().ldap()
         .setConnection(MASTER_CONNECTION_NAME)
         .usernameFilter()
         .setBaseDn(BASE_DN)
         .setRecursive(false)
         .setAttribute(USERNAME_FILTER)
-        .build()
+        .cache()
+        .setBy(By.ACCESS_TIME)
+        .setEvictionTime(1)
+        .setMaxCacheSize(1)
+        .build().build()
         .groupToPrincipal()
         .setBaseDn(GROUPS_DN)
         .setPrincipalAttribute("uniqueMember")
         .setIterative(true)
         .setRecursive(true)
-        .build()
-        .build().build();
+        .cache()
+        .setBy(By.SEARCH_TIME)
+        .setEvictionTime(1)
+        .setMaxCacheSize(1)
+        .build().build().build().build();
     }
 
 }

@@ -28,6 +28,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,15 +38,20 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UsernameIsDnAddBuilder extends Builder<LdapAuthorizationBuilder> {
+public class UsernameIsDnAddBuilder extends ParentBuilder<LdapAuthorizationBuilder> {
 
     private final LdapAuthorizationBuilder parent;
+    private final ModelNode address;
     private boolean built = false;
 
     private boolean force = false;
 
+    private CacheBuilder<UsernameIsDnAddBuilder> cacheBuilder = null;
+    private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
+
     UsernameIsDnAddBuilder(LdapAuthorizationBuilder parent) {
         this.parent = parent;
+        address = parent.getLdapAuthorizationAddress().add(USERNAME_TO_DN, USERNAME_IS_DN);
     }
 
     public UsernameIsDnAddBuilder setForce(final boolean force) {
@@ -51,6 +59,15 @@ public class UsernameIsDnAddBuilder extends Builder<LdapAuthorizationBuilder> {
         this.force = force;
 
         return this;
+    }
+
+    public CacheBuilder<UsernameIsDnAddBuilder> cache() {
+        assertNotBuilt();
+        if (cacheBuilder == null) {
+            cacheBuilder = new CacheBuilder<UsernameIsDnAddBuilder>(this, address.clone());
+        }
+
+        return cacheBuilder;
     }
 
     @Override
@@ -61,17 +78,24 @@ public class UsernameIsDnAddBuilder extends Builder<LdapAuthorizationBuilder> {
     @Override
     public LdapAuthorizationBuilder build() {
         assertNotBuilt();
+        if (cacheBuilder != null && cacheBuilder.isBuilt() == false) {
+            cacheBuilder.build();
+        }
         built = true;
 
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
-        add.get(ADDRESS).set(parent.getLdapAuthorizationAddress().add(USERNAME_TO_DN, USERNAME_IS_DN));
+        add.get(ADDRESS).set(address);
 
         if (force) {
             add.get(FORCE).set(true);
         }
 
         parent.addStep(add);
+        for (ModelNode current : additionalSteps) {
+            parent.addStep(current);
+        }
+
         return parent;
     }
 
@@ -80,6 +104,12 @@ public class UsernameIsDnAddBuilder extends Builder<LdapAuthorizationBuilder> {
         if (built) {
             throw new IllegalStateException("Already built.");
         }
+    }
+
+    @Override
+    void addStep(ModelNode step) {
+        assertNotBuilt();
+        additionalSteps.add(step);
     }
 
 }

@@ -34,6 +34,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,9 +44,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapAuthenticationBuilder extends Builder<AuthenticationBuilder> {
+public class LdapAuthenticationBuilder extends ParentBuilder<AuthenticationBuilder> {
 
     private final AuthenticationBuilder parent;
+    private final ModelNode address;
     private boolean built = false;
 
     private String connection;
@@ -54,8 +58,12 @@ public class LdapAuthenticationBuilder extends Builder<AuthenticationBuilder> {
     private String usernameFilter;
     private String advancedFilter;
 
+    private CacheBuilder<LdapAuthenticationBuilder> cacheBuilder = null;
+    private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
+
     LdapAuthenticationBuilder(final AuthenticationBuilder parent) {
         this.parent = parent;
+        address = parent.getRealmAddress().add(AUTHENTICATION, LDAP);
     }
 
     public LdapAuthenticationBuilder setConnection(final String connection) {
@@ -113,13 +121,25 @@ public class LdapAuthenticationBuilder extends Builder<AuthenticationBuilder> {
         return this;
     }
 
+    public CacheBuilder<LdapAuthenticationBuilder> cache() {
+        assertNotBuilt();
+        if (cacheBuilder == null) {
+            cacheBuilder = new CacheBuilder<LdapAuthenticationBuilder>(this, address.clone());
+        }
+
+        return cacheBuilder;
+    }
+
     public AuthenticationBuilder build() {
         assertNotBuilt();
+        if (cacheBuilder != null && cacheBuilder.isBuilt() == false) {
+            cacheBuilder.build();
+        }
         built = true;
 
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
-        add.get(ADDRESS).set(parent.getRealmAddress().add(AUTHENTICATION, LDAP));
+        add.get(ADDRESS).set(address);
 
         if (connection != null) {
             add.get(CONNECTION).set(connection);
@@ -144,6 +164,9 @@ public class LdapAuthenticationBuilder extends Builder<AuthenticationBuilder> {
         }
 
         parent.addStep(add);
+        for (ModelNode current : additionalSteps) {
+            parent.addStep(current);
+        }
 
         return parent;
     }
@@ -159,4 +182,9 @@ public class LdapAuthenticationBuilder extends Builder<AuthenticationBuilder> {
         }
     }
 
+    @Override
+    void addStep(ModelNode step) {
+        assertNotBuilt();
+        additionalSteps.add(step);
+    }
 }

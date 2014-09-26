@@ -41,8 +41,8 @@ import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
+import org.jboss.as.domain.management.security.operations.CacheBuilder.By;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.junit.AfterClass;
@@ -90,7 +90,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
         LdapConnectionManager connectionManager = getConnectionManager(MASTER_CONNECTION_NAME);
         assertNotNull("Connection Manager.", connectionManager);
         // Configured Credentials.
-        DirContext connection = (DirContext) connectionManager.getConnection();
+        DirContext connection = connectionManager.getConnection();
         assertNotNull("Connection with configured credentials.", connection);
         connection.close();
         // Supplied Credentials.
@@ -260,7 +260,11 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
                 .setConnection(MASTER_CONNECTION_NAME)
                 .setBaseDn(BASE_DN)
                 .setAdvancedFilter(ADVANCED_FILTER)
-                .build().build().build());
+                .cache()
+                .setBy(By.ACCESS_TIME)
+                .setEvictionTime(1)
+                .setMaxCacheSize(1)
+                .build().build().build().build());
     }
 
     @Override
@@ -270,7 +274,11 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
                 .setConnection(MASTER_CONNECTION_NAME)
                 .setBaseDn(BASE_DN)
                 .setUsernameFilter(USERNAME_FILTER)
-                .build().build();
+                .cache()
+                .setBy(By.SEARCH_TIME)
+                .setEvictionTime(1)
+                .setMaxCacheSize(1)
+                .build().build().build();
     }
 
 }

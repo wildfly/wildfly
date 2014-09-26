@@ -30,8 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ITERATIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PREFER_ORIGINAL_CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
 import org.jboss.dmr.ModelNode;
@@ -41,9 +44,10 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
+public class PrincipalToGroupBuilder extends ParentBuilder<LdapAuthorizationBuilder> {
 
     private final LdapAuthorizationBuilder parent;
+    private final ModelNode address;
     private boolean built = false;
 
     private String groupAttribute;
@@ -53,8 +57,12 @@ public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
     private boolean iterative;
     private boolean preferOriginalConnection;
 
+    private CacheBuilder<PrincipalToGroupBuilder> cacheBuilder = null;
+    private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
+
     PrincipalToGroupBuilder(LdapAuthorizationBuilder parent) {
         this.parent = parent;
+        address = parent.getLdapAuthorizationAddress().add(GROUP_SEARCH, PRINCIPAL_TO_GROUP);
     }
 
     public PrincipalToGroupBuilder setGroupDnAttribute(final String groupDnAttribute) {
@@ -99,6 +107,15 @@ public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
         return this;
     }
 
+    public CacheBuilder<PrincipalToGroupBuilder> cache() {
+        assertNotBuilt();
+        if (cacheBuilder == null) {
+            cacheBuilder = new CacheBuilder<PrincipalToGroupBuilder>(this, address.clone());
+        }
+
+        return cacheBuilder;
+    }
+
     @Override
     public boolean isBuilt() {
         return built;
@@ -107,11 +124,14 @@ public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
     @Override
     public LdapAuthorizationBuilder build() {
         assertNotBuilt();
+        if (cacheBuilder != null && cacheBuilder.isBuilt() == false) {
+            cacheBuilder.build();
+        }
         built = true;
 
         ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
-        add.get(ADDRESS).set(parent.getLdapAuthorizationAddress().add(GROUP_SEARCH, PRINCIPAL_TO_GROUP));
+        add.get(ADDRESS).set(address);
 
         if (groupDnAttribute != null) {
             add.get(GROUP_DN_ATTRIBUTE).set(groupDnAttribute);
@@ -133,6 +153,10 @@ public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
         }
 
         parent.addStep(add);
+        for (ModelNode current : additionalSteps) {
+            parent.addStep(current);
+        }
+
         return parent;
     }
 
@@ -141,6 +165,12 @@ public class PrincipalToGroupBuilder extends Builder<LdapAuthorizationBuilder> {
         if (built) {
             throw new IllegalStateException("Already built.");
         }
+    }
+
+    @Override
+    void addStep(ModelNode step) {
+        assertNotBuilt();
+        additionalSteps.add(step);
     }
 
 }

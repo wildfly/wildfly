@@ -33,4 +33,6 @@ abstract class ParentBuilder<T> extends Builder<T> {
 
     abstract void addStep(ModelNode step);
 
+    abstract void assertNotBuilt();
+
 }
