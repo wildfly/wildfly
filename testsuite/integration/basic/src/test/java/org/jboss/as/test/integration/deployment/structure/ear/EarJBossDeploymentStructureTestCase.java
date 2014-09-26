@@ -63,6 +63,18 @@ public class EarJBossDeploymentStructureTestCase {
 
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         ejbJar.addClasses(ClassLoadingEJB.class, EarJBossDeploymentStructureTestCase.class);
+        // grant necessary permissions
+        ejbJar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.lang.RuntimePermission</classname>\n" +
+            "       <name>getProtectionDomain</name>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/jboss-permissions.xml");
 
         ear.addAsModule(jarOne);
         ear.addAsModule(ignoredJar);
