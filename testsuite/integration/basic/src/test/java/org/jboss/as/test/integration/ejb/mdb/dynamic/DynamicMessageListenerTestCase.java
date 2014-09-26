@@ -32,6 +32,7 @@ import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetPrintStream;
 import org.jboss.as.test.integration.ejb.mdb.dynamic.impl.TelnetServer;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -70,6 +71,19 @@ public class DynamicMessageListenerTestCase {
                         .addPackages(true, TelnetResourceAdapter.class.getPackage(), TelnetListener.class.getPackage(), TelnetServer.class.getPackage()))
                 .addAsModule(create(JavaArchive.class, "mdb.jar")
                         .addClasses(MyMdb.class));
+        // the deployment uses PropertyEditorManager which needs this
+        ear.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.util.PropertyPermission</classname>\n" +
+            "       <name>*</name>\n" +
+            "       <actions>read,write</actions>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/permissions.xml");
         return ear;
     }
 
