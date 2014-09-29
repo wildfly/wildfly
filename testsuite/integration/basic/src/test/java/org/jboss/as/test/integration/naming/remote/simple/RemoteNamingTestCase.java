@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,6 +57,25 @@ public class RemoteNamingTestCase {
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "test.jar");
         jar.addClasses(BindingEjb.class);
+                // grant necessary permissions
+        jar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>org.jboss.as.naming.JndiPermission</classname>\n" +
+            "       <name>java:jboss/exported/-</name>\n" +
+            "       <actions>*</actions>\n" +
+            "   </permission>\n" +
+            "   <permission>\n" +
+            "       <classname>org.jboss.as.naming.JndiPermission</classname>\n" +
+            "       <name>java:jboss/exported</name>\n" +
+            "       <actions>*</actions>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""
+        ), "META-INF/jboss-permissions.xml");
+
         return jar;
     }
 
