@@ -224,3 +224,19 @@ objectClass: group
 objectClass: uidObject
 uid: GroupNine
 
+# Entry for a user with a bad group
+
+dn: uid=TestUserEleven,ou=users,dc=principal-to-group,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupMember
+objectClass: inetOrgPerson
+objectClass: uidObject
+objectClass: person
+objectClass: organizationalPerson
+cn: Test User Eleven
+sn: Test User Eleven
+uid: TestUserEleven
+memberOf: uid=GroupTwo,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+memberOf: uid=MissingGroup,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+userPassword: passwordEleven
+
