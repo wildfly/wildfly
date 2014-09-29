@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,6 +82,16 @@ public class PoolOverrideTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-pool-override-test.jar");
         jar.addPackage(PoolAnnotatedEJB.class.getPackage());
         jar.addAsManifestResource(PoolOverrideTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsResource(new StringAsset("" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "\n" +
+            "<permissions>\n" +
+            "   <permission>\n" +
+            "       <classname>java.lang.RuntimePermission</classname>\n" +
+            "       <name>modifyThread</name>\n" +
+            "   </permission>\n" +
+            "</permissions>\n" +
+            ""), "META-INF/jboss-permissions.xml");
         return jar;
     }
 
