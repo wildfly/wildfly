@@ -41,7 +41,7 @@
                         </username-to-dn>
                         <group-search group-name="SIMPLE" iterative="true" group-dn-attribute="dn" group-name-attribute="uid">
                             <cache eviction-time="300" cache-failures="false" max-cache-size="25" />
-                            <principal-to-group />
+                            <principal-to-group group-attribute="groups" prefer-original-connection="false" skip-missing-groups="true" />
                         </group-search>
                     </ldap>
                 </authorization>
@@ -85,7 +85,7 @@
                         </username-to-dn>
                         <group-search group-name="SIMPLE" iterative="true" group-dn-attribute="dn" group-name-attribute="uid">
                             <cache type="by-access-time" eviction-time="300" cache-failures="false" max-cache-size="25" />
-                            <principal-to-group />
+                            <principal-to-group group-attribute="groups" prefer-original-connection="false" skip-missing-groups="true" />
                         </group-search>
                     </ldap>
                 </authorization>

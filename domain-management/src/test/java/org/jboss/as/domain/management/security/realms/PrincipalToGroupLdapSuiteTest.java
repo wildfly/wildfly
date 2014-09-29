@@ -61,6 +61,7 @@ public class PrincipalToGroupLdapSuiteTest extends LdapGroupAssignmentBaseSuiteT
         .build().build()
         .principalToGroup()
         .setIterative(true)
+        .setSkipMissingGroups(true)
         .cache()
         .setBy(By.SEARCH_TIME)
         .setEvictionTime(1)

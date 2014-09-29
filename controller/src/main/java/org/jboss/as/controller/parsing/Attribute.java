@@ -150,6 +150,7 @@ public enum Attribute {
     SHA1("sha1"),
     SIZE("size"),
     SKIP_GROUP_LOADING("skip-group-loading"),
+    SKIP_MISSING_GROUPS("skip-missing-groups"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_REF("socket-binding-ref"),
     SOURCE_INTERFACE("source-interface"),

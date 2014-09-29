@@ -377,6 +377,7 @@ public class ModelDescriptionConstants {
     public static final String RESTART_SERVERS = "restart-servers";
     public static final String SERVER_LOGGER = "server-logger";
     public static final String SHUTDOWN = "shutdown";
+    public static final String SKIP_MISSING_GROUPS = "skip-missing-groups";
     public static final String SOCKET_BINDING = "socket-binding";
     public static final String SOCKET_BINDING_REF = "socket-binding-ref";
     public static final String SOCKET_BINDING_GROUP = "socket-binding-group";

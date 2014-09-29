@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ITE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PREFER_ORIGINAL_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SKIP_MISSING_GROUPS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class PrincipalToGroupBuilder extends ParentBuilder<LdapAuthorizationBuil
     private String groupNameAttribute;
     private boolean iterative;
     private boolean preferOriginalConnection;
+    private boolean skipMissingGroups;
 
     private CacheBuilder<PrincipalToGroupBuilder> cacheBuilder = null;
     private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
@@ -107,6 +109,13 @@ public class PrincipalToGroupBuilder extends ParentBuilder<LdapAuthorizationBuil
         return this;
     }
 
+    public PrincipalToGroupBuilder setSkipMissingGroups(final boolean skipMissingGroups) {
+        assertNotBuilt();
+        this.skipMissingGroups = skipMissingGroups;
+
+        return this;
+    }
+
     public CacheBuilder<PrincipalToGroupBuilder> cache() {
         assertNotBuilt();
         if (cacheBuilder == null) {
@@ -150,6 +159,9 @@ public class PrincipalToGroupBuilder extends ParentBuilder<LdapAuthorizationBuil
         }
         if (preferOriginalConnection == false) {
             add.get(PREFER_ORIGINAL_CONNECTION).set(preferOriginalConnection);
+        }
+        if (skipMissingGroups == true) {
+            add.get(SKIP_MISSING_GROUPS).set(skipMissingGroups);
         }
 
         parent.addStep(add);
