@@ -49,6 +49,7 @@ import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,7 +144,17 @@ public class JMSResourceDefinitionsTestCase {
                         MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
-                        create("beans.xml"));
+                        create("beans.xml"))
+                .addAsResource(new StringAsset("" +
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                        "\n" +
+                        "<permissions>\n" +
+                        "   <permission>\n" +
+                        "       <classname>java.lang.RuntimePermission</classname>\n" +
+                        "       <name>getProtectionDomain</name>\n" +
+                        "   </permission>\n" +
+                        "</permissions>\n" +
+                        ""), "META-INF/jboss-permissions.xml");
         System.out.println("archive = " + archive.toString(true));
         return archive;
     }

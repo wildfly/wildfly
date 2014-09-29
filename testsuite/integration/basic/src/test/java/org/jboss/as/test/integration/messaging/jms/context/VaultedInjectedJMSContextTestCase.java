@@ -58,6 +58,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -148,7 +149,17 @@ public class VaultedInjectedJMSContextTestCase {
         return ShrinkWrap.create(JavaArchive.class, "VaultedInjectedJMSContextTestCase.jar")
                 .addClass(TimeoutUtil.class)
                 .addPackage(VaultedMessageProducer.class.getPackage())
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource(new StringAsset("" +
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "\n" +
+                    "<permissions>\n" +
+                    "   <permission>\n" +
+                    "       <classname>java.lang.RuntimePermission</classname>\n" +
+                    "       <name>getProtectionDomain</name>\n" +
+                    "   </permission>\n" +
+                    "</permissions>\n" +
+                    ""), "META-INF/jboss-permissions.xml");
     }
 
     @Test
