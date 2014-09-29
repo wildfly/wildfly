@@ -8,6 +8,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,7 +50,18 @@ public class MultipleClientRemoteJndiTestCase {
 	public static WebArchive deploymentThree() {
 		return ShrinkWrap.create(WebArchive.class, "binder.war")
 				.addClasses(BindRmiServlet.class, MyObject.class)
-				.setWebXML(MultipleClientRemoteJndiTestCase.class.getPackage(), "web.xml");
+                .setWebXML(MultipleClientRemoteJndiTestCase.class.getPackage(), "web.xml")
+                .addAsResource(new StringAsset("" +
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "\n" +
+                    "<permissions>\n" +
+                    "   <permission>\n" +
+                    "       <classname>org.jboss.as.naming.JndiPermission</classname>\n" +
+                    "       <name>java:jboss/exported/-</name>\n" +
+                    "       <actions>*</actions>\n" +
+                    "   </permission>\n" +
+                    "</permissions>\n" +
+                    ""), "META-INF/jboss-permissions.xml");
 	}
 
 	@Test
