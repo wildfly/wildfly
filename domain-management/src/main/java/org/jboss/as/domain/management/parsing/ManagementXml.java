@@ -2492,7 +2492,7 @@ public class ManagementXml {
                     break;
                 case PRINCIPAL_TO_GROUP:
                     filterFound = true;
-                    parsePrincipalToGroup_1_6(reader, expectedNs, address, childAdd);
+                    parsePrincipalToGroup_1_7(reader, expectedNs, address, childAdd);
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -2690,6 +2690,41 @@ public class ManagementXml {
                     }
                     case PREFER_ORIGINAL_CONNECTION: {
                         PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(PRINCIPAL_TO_GROUP));
+    }
+
+    private static void parsePrincipalToGroup_1_7(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case GROUP_ATTRIBUTE: {
+                        PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case PREFER_ORIGINAL_CONNECTION: {
+                        PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SKIP_MISSING_GROUPS: {
+                        PrincipalToGroupResourceDefinition.SKIP_MISSING_GROUPS.parseAndSetParameter(value, addOp, reader);
                         break;
                     }
                     default: {
@@ -3739,6 +3774,7 @@ public class ManagementXml {
                     writer.writeStartElement(Element.PRINCIPAL_TO_GROUP.getLocalName());
                     PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.marshallAsAttribute(principalToGroup, writer);
                     PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.marshallAsAttribute(principalToGroup, writer);
+                    PrincipalToGroupResourceDefinition.SKIP_MISSING_GROUPS.marshallAsAttribute(principalToGroup, writer);
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();

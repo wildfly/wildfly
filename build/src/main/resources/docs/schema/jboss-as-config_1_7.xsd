@@ -1038,6 +1038,15 @@
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
+                        <xs:attribute name="skip-missing-groups" type="xs:boolean" default="false">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    If an entry references non-existent groups then authentication is aborted due to the inability to
+                                    query a users complete set of groups, setting this option to true allows for non-existant groups 
+                                    to be silently ignored.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
                     </xs:complexType>
                 </xs:element>
             </xs:choice>
