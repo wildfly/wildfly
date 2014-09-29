@@ -24,10 +24,23 @@ package org.wildfly.extension.picketlink.federation;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.keystore.KeyResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.parser.FederationSubsystemWriter;
+
+import static org.wildfly.extension.picketlink.federation.Namespace.CURRENT;
+import static org.wildfly.extension.picketlink.federation.Namespace.PICKETLINK_FEDERATION_1_0;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -35,6 +48,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 public class FederationExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "picketlink-federation";
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = FederationExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -43,14 +57,31 @@ public class FederationExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, Namespace.CURRENT.getMajor(), Namespace.CURRENT.getMinor());
+        SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT.getMajor(), CURRENT.getMinor());
 
-        subsystem.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
-        subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());
+        subsystemRegistration.registerSubsystemModel(new FederationSubsystemRootResourceDefinition(context));
+        subsystemRegistration.registerXMLElementWriter(FederationSubsystemWriter.INSTANCE);
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_0(context, subsystemRegistration);
+        }
+    }
+
+    private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder federationTransfDescBuilder = builder
+            .addChildResource(new FederationResourceDefinition(context));
+        ResourceTransformationDescriptionBuilder keyStoreTransfDescBuilder = federationTransfDescBuilder
+            .addChildResource(KeyStoreProviderResourceDefinition.INSTANCE);
+
+        keyStoreTransfDescBuilder.rejectChildResource(KeyResourceDefinition.INSTANCE.getPathElement());
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), Namespace.CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, CURRENT.getUri(), CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_FEDERATION_1_0.getUri(), PICKETLINK_FEDERATION_1_0.getXMLReader());
     }
 }

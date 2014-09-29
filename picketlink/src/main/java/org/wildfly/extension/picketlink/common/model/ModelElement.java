@@ -115,6 +115,8 @@ public enum ModelElement {
     KEY_STORE_PASSWORD("password"),
     KEY_STORE_SIGN_KEY_ALIAS("sign-key-alias"),
     KEY_STORE_SIGN_KEY_PASSWORD("sign-key-password"),
+    HOST("host"),
+    KEY("key"),
     /*
      * Service Provider model elements
      */

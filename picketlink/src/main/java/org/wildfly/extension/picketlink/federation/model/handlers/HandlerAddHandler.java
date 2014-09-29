@@ -65,7 +65,7 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
     static void launchServices(final OperationContext context, final PathAddress pathAddress , final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         Handler newHandler = new Handler();
 
-        ModelNode classNameNode = HandlerResourceDefinition.CLASS.resolveModelAttribute(context, model);
+        ModelNode classNameNode = HandlerResourceDefinition.CLASS_NAME.resolveModelAttribute(context, model);
         ModelNode codeNode = HandlerResourceDefinition.CODE.resolveModelAttribute(context, model);
         String typeName;
 

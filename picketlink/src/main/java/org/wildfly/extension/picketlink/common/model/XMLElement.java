@@ -38,6 +38,7 @@ public enum XMLElement {
     LDAP_MAPPINGS("mappings"),
     IDENTITY_STORE_CREDENTIAL_HANDLERS("credential-handlers"),
     TRUST("trust"),
+    KEYS("keys"),
     SERVICE_PROVIDERS("service-providers"),
     HANDLERS("handlers");
 

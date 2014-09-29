@@ -20,12 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.picketlink.federation.model.handlers;
+package org.wildfly.extension.picketlink.federation.model.keystore;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
@@ -34,27 +32,15 @@ import org.wildfly.extension.picketlink.federation.model.AbstractFederationResou
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
  */
-public class HandlerResourceDefinition extends AbstractFederationResourceDefinition {
+public class KeyResourceDefinition extends AbstractFederationResourceDefinition {
 
-    public static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CLASS_NAME.getName(), ModelType.STRING, true)
+    public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelElement.HOST.getName(), ModelType.STRING, false)
         .setAllowExpression(true)
-        .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
 
-    public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<HandlerTypeEnum>(HandlerTypeEnum.class, true, true))
-        .setAllowExpression(true)
-        .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
-        .build();
+    public static final KeyResourceDefinition INSTANCE = new KeyResourceDefinition();
 
-    public static final HandlerResourceDefinition INSTANCE = new HandlerResourceDefinition();
-
-    private HandlerResourceDefinition() {
-        super(ModelElement.COMMON_HANDLER, HandlerAddHandler.INSTANCE, HandlerRemoveHandler.INSTANCE, CLASS_NAME, CODE);
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        addChildResourceDefinition(HandlerParameterResourceDefinition.INSTANCE, resourceRegistration);
+    private KeyResourceDefinition() {
+        super(ModelElement.KEY, KeyAddHandler.INSTANCE, KeyRemoveHandler.INSTANCE, HOST);
     }
 }

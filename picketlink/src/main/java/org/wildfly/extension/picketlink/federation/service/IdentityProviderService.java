@@ -69,6 +69,14 @@ public class IdentityProviderService extends EntityProviderService<IdentityProvi
         getFederationService().getValue().setIdpConfiguration(null);
     }
 
+    void addTrustedDomain(final String domainName) {
+        getConfiguration().addTrustDomain(domainName);
+    }
+
+    void removeTrustedDomain(final String domainName) {
+        getConfiguration().removeTrustDomain(domainName);
+    }
+
     @Override
     protected List<Class<? extends SAML2Handler>> getDefaultHandlers() {
         List<Class<? extends SAML2Handler>> defaultHandlers = new ArrayList<Class<? extends SAML2Handler>>();

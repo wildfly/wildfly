@@ -1,0 +1,603 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the PicketLink Subsystem.",
+        "attributes" => {},
+        "operations" => undefined,
+        "notifications" => undefined,
+        "children" => {"federation" => {
+            "description" => "The configuration of a federation.",
+            "model-description" => undefined
+        }}
+    },
+    "address" => [("subsystem" => "picketlink-federation")],
+    "children" => [{
+        "model-description" => {
+            "description" => "The configuration of a federation.",
+            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+            "attributes" => {},
+            "operations" => undefined,
+            "notifications" => undefined,
+            "children" => {
+                "key-store" => {
+                    "description" => "Key store configuration.",
+                    "model-description" => undefined
+                },
+                "service-provider" => {
+                    "description" => "The configuration of a Sevice Provider.",
+                    "model-description" => undefined
+                },
+                "identity-provider" => {
+                    "description" => "The configuration of an Identity Provider.",
+                    "model-description" => undefined
+                },
+                "saml" => {
+                    "description" => "The SAML configurations for the federation.",
+                    "model-description" => undefined
+                }
+            }
+        },
+        "address" => [
+            ("subsystem" => "picketlink-federation"),
+            ("federation" => "*")
+        ],
+        "children" => [
+            {
+                "model-description" => {
+                    "description" => "Key store configuration.",
+                    "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                    "attributes" => {
+                        "file" => {
+                            "type" => STRING,
+                            "description" => "The file path for the key store.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        },
+                        "sign-key-password" => {
+                            "type" => STRING,
+                            "description" => "Password for the sign key alias.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L,
+                            "access-constraints" => {"sensitive" => {"credential" => {"type" => "core"}}}
+                        },
+                        "relative-to" => {
+                            "type" => STRING,
+                            "description" => "Relative path when file is specified.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "requires" => ["file"],
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        },
+                        "password" => {
+                            "type" => STRING,
+                            "description" => "Password for the key store.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L,
+                            "access-constraints" => {"sensitive" => {"credential" => {"type" => "core"}}}
+                        },
+                        "sign-key-alias" => {
+                            "type" => STRING,
+                            "description" => "Key to be used to sign.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L,
+                            "access-constraints" => {"sensitive" => {"credential" => {"type" => "core"}}}
+                        }
+                    },
+                    "operations" => undefined,
+                    "notifications" => undefined,
+                    "children" => {"key" => {
+                        "description" => "Key configuration",
+                        "model-description" => undefined
+                    }}
+                },
+                "address" => [
+                    ("subsystem" => "picketlink-federation"),
+                    ("federation" => "*"),
+                    ("key-store" => "key-store")
+                ],
+                "children" => [{
+                    "model-description" => {
+                        "description" => "Key configuration",
+                        "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                        "attributes" => {"host" => {
+                            "type" => STRING,
+                            "description" => "The host name to be validated using this key.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        }},
+                        "operations" => undefined,
+                        "notifications" => undefined,
+                        "children" => {}
+                    },
+                    "address" => [
+                        ("subsystem" => "picketlink-federation"),
+                        ("federation" => "*"),
+                        ("key-store" => "key-store"),
+                        ("key" => "*")
+                    ]
+                }]
+            },
+            {
+                "model-description" => {
+                    "description" => "The configuration of a Sevice Provider.",
+                    "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                    "attributes" => {
+                        "error-page" => {
+                            "type" => STRING,
+                            "description" => "Defines a URI for the error page.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => "/error.jsp",
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        },
+                        "support-metadata" => {
+                            "type" => BOOLEAN,
+                            "description" => "Enable/Disable SAML Metadata Support.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "strict-post-binding" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates if the SP should always expect a response using HTTP POST Binding from the IDP.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => true
+                        },
+                        "security-domain" => {
+                            "type" => STRING,
+                            "description" => "Security Domain for the service provider.",
+                            "expressions-allowed" => false,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L,
+                            "access-constraints" => {"sensitive" => {"security-domain-ref" => {"type" => "core"}}}
+                        },
+                        "post-binding" => {
+                            "type" => STRING,
+                            "description" => "Indicate if this service provider uses a HTTP POST(true) or REDIRECT(false) binding.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => true,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        },
+                        "support-signatures" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates if messages should be signed.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "url" => {
+                            "type" => STRING,
+                            "description" => "The URL of the service provider.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        },
+                        "logout-page" => {
+                            "type" => STRING,
+                            "description" => "Defines a URI for the logout page.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => "/logout.jsp",
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        }
+                    },
+                    "operations" => undefined,
+                    "notifications" => undefined,
+                    "children" => {"handler" => {
+                        "description" => "The configuration of a handler.",
+                        "model-description" => undefined
+                    }}
+                },
+                "address" => [
+                    ("subsystem" => "picketlink-federation"),
+                    ("federation" => "*"),
+                    ("service-provider" => "*")
+                ],
+                "children" => [{
+                    "model-description" => {
+                        "description" => "The configuration of a handler.",
+                        "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                        "attributes" => {
+                            "code" => {
+                                "type" => STRING,
+                                "description" => "The alias for one of the built-in types.",
+                                "expressions-allowed" => true,
+                                "nillable" => true,
+                                "alternatives" => ["class-name"],
+                                "allowed" => [
+                                    "SAML2IssuerTrustHandler",
+                                    "SAML2AuthenticationHandler",
+                                    "RolesGenerationHandler",
+                                    "SAML2AttributeHandler",
+                                    "SAML2EncryptionHandler",
+                                    "SAML2InResponseToVerificationHandler",
+                                    "SAML2LogOutHandler",
+                                    "SAML2SignatureGenerationHandler",
+                                    "SAML2SignatureValidationHandler"
+                                ]
+                            },
+                            "class-name" => {
+                                "type" => STRING,
+                                "description" => "Handler class name.",
+                                "expressions-allowed" => true,
+                                "nillable" => true,
+                                "alternatives" => ["code"],
+                                "min-length" => 1L,
+                                "max-length" => 2147483647L
+                            }
+                        },
+                        "operations" => undefined,
+                        "notifications" => undefined,
+                        "children" => {"handler-parameter" => {
+                            "description" => "The configuration of a handler parameter.",
+                            "model-description" => undefined
+                        }}
+                    },
+                    "address" => [
+                        ("subsystem" => "picketlink-federation"),
+                        ("federation" => "*"),
+                        ("service-provider" => "*"),
+                        ("handler" => "*")
+                    ],
+                    "children" => [{
+                        "model-description" => {
+                            "description" => "The configuration of a handler parameter.",
+                            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                            "attributes" => {"value" => {
+                                "type" => STRING,
+                                "description" => "Handler parameter value.",
+                                "expressions-allowed" => true,
+                                "nillable" => false,
+                                "min-length" => 1L,
+                                "max-length" => 2147483647L
+                            }},
+                            "operations" => undefined,
+                            "notifications" => undefined,
+                            "children" => {}
+                        },
+                        "address" => [
+                            ("subsystem" => "picketlink-federation"),
+                            ("federation" => "*"),
+                            ("service-provider" => "*"),
+                            ("handler" => "*"),
+                            ("handler-parameter" => "*")
+                        ]
+                    }]
+                }]
+            },
+            {
+                "model-description" => {
+                    "description" => "The configuration of an Identity Provider.",
+                    "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                    "attributes" => {
+                        "ssl-authentication" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates where SSL authentication is supported or not.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "support-metadata" => {
+                            "type" => BOOLEAN,
+                            "description" => "Enable/Disable SAML Metadata Support.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "strict-post-binding" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates where the IDP should respond back to SPs using HTTP POST Binding.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => true
+                        },
+                        "security-domain" => {
+                            "type" => STRING,
+                            "description" => "Security Domain for the Identity Provider.",
+                            "expressions-allowed" => false,
+                            "nillable" => true,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L,
+                            "access-constraints" => {"sensitive" => {"security-domain-ref" => {"type" => "core"}}}
+                        },
+                        "encrypt" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates where SAML Assertions should be encrypted.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "external" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates if it is a Remote IDP.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "support-signatures" => {
+                            "type" => BOOLEAN,
+                            "description" => "Indicates where messages should be signed.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => false
+                        },
+                        "url" => {
+                            "type" => STRING,
+                            "description" => "The URL of the Identity Provider.",
+                            "expressions-allowed" => true,
+                            "nillable" => false,
+                            "min-length" => 1L,
+                            "max-length" => 2147483647L
+                        }
+                    },
+                    "operations" => undefined,
+                    "notifications" => undefined,
+                    "children" => {
+                        "attribute-manager" => {
+                            "description" => "The attribute manager implementation for an Identity Provider.",
+                            "model-description" => undefined
+                        },
+                        "trust-domain" => {
+                            "description" => "The configuration of a trust domain.",
+                            "model-description" => undefined
+                        },
+                        "role-generator" => {
+                            "description" => "The role generator implementation for an Identity Provider.",
+                            "model-description" => undefined
+                        },
+                        "handler" => {
+                            "description" => "The configuration of a handler.",
+                            "model-description" => undefined
+                        }
+                    }
+                },
+                "address" => [
+                    ("subsystem" => "picketlink-federation"),
+                    ("federation" => "*"),
+                    ("identity-provider" => "*")
+                ],
+                "children" => [
+                    {
+                        "model-description" => {
+                            "description" => "The attribute manager implementation for an Identity Provider.",
+                            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                            "attributes" => {
+                                "module" => {
+                                    "type" => STRING,
+                                    "description" => "An alternative module from where classes should be loaded from.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "requires" => ["class-name"],
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                },
+                                "code" => {
+                                    "type" => STRING,
+                                    "description" => "The alias for one of the built-in types.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["class-name"],
+                                    "allowed" => [
+                                        "ServerAttributeManager",
+                                        "EmptyAttributeManager"
+                                    ]
+                                },
+                                "class-name" => {
+                                    "type" => STRING,
+                                    "description" => "The type name. Usually the full qualified name.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["code"],
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                }
+                            },
+                            "operations" => undefined,
+                            "notifications" => undefined,
+                            "children" => {}
+                        },
+                        "address" => [
+                            ("subsystem" => "picketlink-federation"),
+                            ("federation" => "*"),
+                            ("identity-provider" => "*"),
+                            ("attribute-manager" => "*")
+                        ]
+                    },
+                    {
+                        "model-description" => {
+                            "description" => "The configuration of a trust domain.",
+                            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                            "attributes" => {"cert-alias" => {
+                                "type" => STRING,
+                                "description" => "Certificate alias for this domain.",
+                                "expressions-allowed" => true,
+                                "nillable" => true,
+                                "min-length" => 1L,
+                                "max-length" => 2147483647L,
+                                "deprecated" => {
+                                    "since" => "1.1.0",
+                                    "reason" => "No longer supported for use on recent version servers; maintained only for use on older version servers in a mixed-version managed domain."
+                                }
+                            }},
+                            "operations" => undefined,
+                            "notifications" => undefined,
+                            "children" => {}
+                        },
+                        "address" => [
+                            ("subsystem" => "picketlink-federation"),
+                            ("federation" => "*"),
+                            ("identity-provider" => "*"),
+                            ("trust-domain" => "*")
+                        ]
+                    },
+                    {
+                        "model-description" => {
+                            "description" => "The role generator implementation for an Identity Provider.",
+                            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                            "attributes" => {
+                                "module" => {
+                                    "type" => STRING,
+                                    "description" => "An alternative module from where classes should be loaded from.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "requires" => ["class-name"],
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                },
+                                "code" => {
+                                    "type" => STRING,
+                                    "description" => "The alias for one of the built-in types.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["class-name"],
+                                    "allowed" => [
+                                        "TomcatRoleGenerator",
+                                        "JBossWebRoleGenerator",
+                                        "DefaultRoleGenerator",
+                                        "EmptyRoleGenerator"
+                                    ]
+                                },
+                                "class-name" => {
+                                    "type" => STRING,
+                                    "description" => "The type name. Usually the full qualified name.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["code"],
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                }
+                            },
+                            "operations" => undefined,
+                            "notifications" => undefined,
+                            "children" => {}
+                        },
+                        "address" => [
+                            ("subsystem" => "picketlink-federation"),
+                            ("federation" => "*"),
+                            ("identity-provider" => "*"),
+                            ("role-generator" => "*")
+                        ]
+                    },
+                    {
+                        "model-description" => {
+                            "description" => "The configuration of a handler.",
+                            "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                            "attributes" => {
+                                "code" => {
+                                    "type" => STRING,
+                                    "description" => "The alias for one of the built-in types.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["class-name"],
+                                    "allowed" => [
+                                        "SAML2IssuerTrustHandler",
+                                        "SAML2AuthenticationHandler",
+                                        "RolesGenerationHandler",
+                                        "SAML2AttributeHandler",
+                                        "SAML2EncryptionHandler",
+                                        "SAML2InResponseToVerificationHandler",
+                                        "SAML2LogOutHandler",
+                                        "SAML2SignatureGenerationHandler",
+                                        "SAML2SignatureValidationHandler"
+                                    ]
+                                },
+                                "class-name" => {
+                                    "type" => STRING,
+                                    "description" => "Handler class name.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => true,
+                                    "alternatives" => ["code"],
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                }
+                            },
+                            "operations" => undefined,
+                            "notifications" => undefined,
+                            "children" => {"handler-parameter" => {
+                                "description" => "The configuration of a handler parameter.",
+                                "model-description" => undefined
+                            }}
+                        },
+                        "address" => [
+                            ("subsystem" => "picketlink-federation"),
+                            ("federation" => "*"),
+                            ("identity-provider" => "*"),
+                            ("handler" => "*")
+                        ],
+                        "children" => [{
+                            "model-description" => {
+                                "description" => "The configuration of a handler parameter.",
+                                "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                                "attributes" => {"value" => {
+                                    "type" => STRING,
+                                    "description" => "Handler parameter value.",
+                                    "expressions-allowed" => true,
+                                    "nillable" => false,
+                                    "min-length" => 1L,
+                                    "max-length" => 2147483647L
+                                }},
+                                "operations" => undefined,
+                                "notifications" => undefined,
+                                "children" => {}
+                            },
+                            "address" => [
+                                ("subsystem" => "picketlink-federation"),
+                                ("federation" => "*"),
+                                ("identity-provider" => "*"),
+                                ("handler" => "*"),
+                                ("handler-parameter" => "*")
+                            ]
+                        }]
+                    }
+                ]
+            },
+            {
+                "model-description" => {
+                    "description" => "The SAML configurations for the federation.",
+                    "access-constraints" => {"sensitive" => {"federation" => {"type" => "picketlink-federation"}}},
+                    "attributes" => {
+                        "clock-skew" => {
+                            "type" => INT,
+                            "description" => "Clock skew.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => 0
+                        },
+                        "token-timeout" => {
+                            "type" => INT,
+                            "description" => "Token timeout.",
+                            "expressions-allowed" => true,
+                            "nillable" => true,
+                            "default" => 5000
+                        }
+                    },
+                    "operations" => undefined,
+                    "notifications" => undefined,
+                    "children" => {}
+                },
+                "address" => [
+                    ("subsystem" => "picketlink-federation"),
+                    ("federation" => "*"),
+                    ("saml" => "saml")
+                ]
+            }
+        ]
+    }]
+}

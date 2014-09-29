@@ -23,11 +23,11 @@
  */
 package org.jboss.as.subsystem.test;
 
+import org.jboss.as.controller.ModelVersion;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.jboss.as.controller.ModelVersion;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -53,6 +53,7 @@ class KnownVersions {
         final String CORE_MODEL_7_1_3 = "1.3.0";
         final String CORE_MODEL_7_2_0 = "1.4.0";
         final String CORE_MODEL_EAP_6_2_0 = "1.5.0";
+        final String CORE_MODEL_EAP_6_3_0 = "1.6.0";
 
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "configadmin", "1.1.0", CORE_MODEL_7_2_0);
@@ -100,6 +101,7 @@ class KnownVersions {
         addSubsystemVersion(map, "naming", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "osgi", "1.1.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "picketlink-federation", "1.0.0", CORE_MODEL_EAP_6_3_0);
         addSubsystemVersion(map, "pojo", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.2.0", CORE_MODEL_7_2_0);

@@ -31,6 +31,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.FederationExtension;
 import org.wildfly.extension.picketlink.federation.model.idp.IdentityProviderResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.keystore.KeyStoreProviderResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.saml.SAMLResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.sp.ServiceProviderResourceDefinition;
 

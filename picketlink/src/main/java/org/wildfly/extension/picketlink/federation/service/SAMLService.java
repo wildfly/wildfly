@@ -22,6 +22,7 @@
 package org.wildfly.extension.picketlink.federation.service;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -61,6 +62,7 @@ public class SAMLService implements Service<SAMLService> {
     @Override
     public void stop(StopContext context) {
         getFederationService().getValue().setSTSType(null);
+        context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     public InjectedValue<FederationService> getFederationService() {

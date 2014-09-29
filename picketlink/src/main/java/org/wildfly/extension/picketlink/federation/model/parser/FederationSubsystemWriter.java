@@ -48,6 +48,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTIT
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_SAML_METADATA;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_SAML_METADATA_ORGANIZATION;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_TRUST_DOMAIN;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.KEY;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.KEY_STORE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SAML;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SERVICE_PROVIDER;
@@ -59,7 +60,9 @@ import static org.wildfly.extension.picketlink.common.model.XMLElement.SERVICE_P
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class FederationSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext> {
+public class FederationSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext>  {
+
+    public static final FederationSubsystemWriter INSTANCE = new FederationSubsystemWriter();
 
     private static final Map<String, ModelXMLElementWriter> writers = new HashMap<String, ModelXMLElementWriter>();
 
@@ -68,6 +71,7 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
         registerWriter(FEDERATION, COMMON_NAME);
         registerWriter(IDENTITY_PROVIDER, COMMON_NAME);
         registerWriter(KEY_STORE);
+        registerWriter(KEY, COMMON_NAME, XMLElement.KEYS);
         registerWriter(IDENTITY_PROVIDER_SAML_METADATA);
         registerWriter(IDENTITY_PROVIDER_SAML_METADATA_ORGANIZATION);
         registerWriter(IDENTITY_PROVIDER_TRUST_DOMAIN, COMMON_NAME, XMLElement.TRUST);
@@ -77,6 +81,10 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
         registerWriter(COMMON_HANDLER_PARAMETER, COMMON_NAME);
         registerWriter(SERVICE_PROVIDER, COMMON_NAME, SERVICE_PROVIDERS);
         registerWriter(SAML);
+    }
+
+    private FederationSubsystemWriter() {
+        // singleton
     }
 
     @Override

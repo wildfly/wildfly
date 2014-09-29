@@ -38,15 +38,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Pedro Igor
  */
-public class FederationSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
+public class FederationSubsystem_1_1_UnitTestCase extends AbstractSubsystemBaseTest {
 
-    public FederationSubsystemUnitTestCase() {
+    public FederationSubsystem_1_1_UnitTestCase() {
         super(FederationExtension.SUBSYSTEM_NAME, new FederationExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("federation-subsystem-1.0.xml");
+        return readResource("federation-subsystem-1.1.xml");
     }
 
     @Test
@@ -75,7 +75,7 @@ public class FederationSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("federation-subsystem-expressions-1.0.xml");
+        standardSubsystemTest("federation-subsystem-expressions-1.1.xml");
     }
 
 }

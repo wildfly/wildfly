@@ -59,12 +59,6 @@ public interface PicketLinkMessages {
     @Message(id = 12503, value = "Could not load class [%s].")
     RuntimeException couldNotLoadClass(String mappingClass, @Cause Throwable e);
 
-    @Message(id = 12507, value = "No type provided for %s. You must specify a class-name or code.")
-    OperationFailedException typeNotProvided(String elementName);
-
-    @Message(id = 12514, value = "Failed to get metrics %s.")
-    String failedToGetMetrics(String reason);
-
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -74,6 +68,9 @@ public interface PicketLinkMessages {
 
     @Message(id = 12506, value = "Could not lookup EntityManagerFactory [%s].")
     SecurityConfigurationException idmJpaEMFLookupFailed(String entityManagerFactoryJndiName);
+
+    @Message(id = 12507, value = "No type provided for %s. You must specify a class-name or code.")
+    OperationFailedException typeNotProvided(String elementName);
 
     @Message(id = 12508, value = "You must provide at least one identity configuration.")
     OperationFailedException idmNoIdentityConfigurationProvided();
@@ -94,8 +91,14 @@ public interface PicketLinkMessages {
     @Message(id = 12513, value = "Required attribute [%s] for [%s].")
     OperationFailedException federationRequiredAttribute(String attributeName, String configuration);
 
+    @Message(id = 12514, value = "Failed to get metrics %s.")
+    String failedToGetMetrics(String reason);
+
     @Message(id = 12515, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
+
+    @Message(id = 12516, value = "Attribute [%s] is not longer supported.")
+    OperationFailedException attributeNoLongerSupported(String attributeName);
 
     @Message(id = 12517, value = "Could not create transactional EntityManager.")
     SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);

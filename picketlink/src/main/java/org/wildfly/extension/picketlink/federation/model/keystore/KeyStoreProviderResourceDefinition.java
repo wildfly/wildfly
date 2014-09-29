@@ -20,13 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.picketlink.federation.model;
+package org.wildfly.extension.picketlink.federation.model.keystore;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -58,5 +60,10 @@ public class KeyStoreProviderResourceDefinition extends AbstractFederationResour
 
     private KeyStoreProviderResourceDefinition() {
         super(ModelElement.KEY_STORE, ModelElement.KEY_STORE.getName(), KeyStoreProviderAddHandler.INSTANCE, KeyStoreProviderRemoveHandler.INSTANCE, FILE, RELATIVE_TO, PASSWORD, SIGN_KEY_ALIAS, SIGN_KEY_PASSWORD);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        addChildResourceDefinition(KeyResourceDefinition.INSTANCE, resourceRegistration);
     }
 }
