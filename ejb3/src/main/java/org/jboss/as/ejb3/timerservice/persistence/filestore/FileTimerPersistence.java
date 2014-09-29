@@ -55,6 +55,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilePermission;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.security.PrivilegedAction;
@@ -68,6 +69,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
@@ -79,6 +81,7 @@ import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
  */
 public class FileTimerPersistence implements TimerPersistence, Service<FileTimerPersistence> {
 
+    private static final FilePermission FILE_PERMISSION = new FilePermission("<<ALL FILES>>", "read,write,delete");
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
     private final boolean createIfNotExists;
@@ -97,14 +100,30 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
 
     public FileTimerPersistence(final boolean createIfNotExists, final String path, final String pathRelativeTo) {
+        final SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(FILE_PERMISSION);
+        }
         this.createIfNotExists = createIfNotExists;
         this.path = path;
         this.pathRelativeTo = pathRelativeTo;
     }
 
     @Override
-    public synchronized void start(final StartContext context) {
+    public void start(final StartContext context) {
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                public Void run() {
+                    doStart();
+                    return null;
+                }
+            });
+        } else {
+            doStart();
+        }
+    }
 
+    private void doStart() {
         final RiverMarshallerFactory factory = new RiverMarshallerFactory();
         final MarshallingConfiguration configuration = new MarshallingConfiguration();
         configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.getValue()));
@@ -127,7 +146,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (!baseDir.isDirectory()) {
             throw EjbLogger.ROOT_LOGGER.invalidTimerFileStoreDir(baseDir);
         }
-
     }
 
     @Override
@@ -430,27 +448,32 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
         @Override
         public void afterCompletion(final int status) {
-            if (timer == null) {
-                return;
-            }
-            try {
-                lock.lock();
-                if (status == Status.STATUS_COMMITTED) {
-                    final Map<String, TimerImpl> map = getTimers(timer.getTimedObjectId(), timer.getTimerService());
-                    if (timer.getState() == TimerState.CANCELED ||
-                            timer.getState() == TimerState.EXPIRED) {
-                        map.remove(timer.getId());
-                    } else {
-                        if (newTimer || map.containsKey(timer.getId())) {
-                            //if an existing timer is not in the map it has been cancelled by another thread
-                            map.put(timer.getId(), timer);
-                        }
+            doPrivileged(new PrivilegedAction<Void>() {
+                public Void run() {
+                    if (timer == null) {
+                        return null;
                     }
-                    writeFile(timer);
+                    try {
+                        lock.lock();
+                        if (status == Status.STATUS_COMMITTED) {
+                            final Map<String, TimerImpl> map = getTimers(timer.getTimedObjectId(), timer.getTimerService());
+                            if (timer.getState() == TimerState.CANCELED ||
+                                    timer.getState() == TimerState.EXPIRED) {
+                                map.remove(timer.getId());
+                            } else {
+                                if (newTimer || map.containsKey(timer.getId())) {
+                                    //if an existing timer is not in the map it has been cancelled by another thread
+                                    map.put(timer.getId(), timer);
+                                }
+                            }
+                            writeFile(timer);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
+                    return null;
                 }
-            } finally {
-                lock.unlock();
-            }
+            });
         }
 
 
