@@ -60,10 +60,8 @@ public class EjbExceptionTransformingInterceptorFactories {
 
     private static <T extends Throwable> T copyCause(T newThrowable, Throwable originalThrowable) {
         Throwable cause = originalThrowable.getCause();
-        if (cause != null) try {
+        if (cause != null) {
             newThrowable.initCause(cause);
-        } catch (IllegalStateException ignored) {
-            // some exceptions rudely don't allow cause initialization
         }
         return newThrowable;
     }
@@ -74,17 +72,13 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                // this exception explicitly forbids initializing a cause
-                throw new TransactionRequiredException(e.getMessage());
+                throw copyCause(new TransactionRequiredException(e.getMessage()), e);
             } catch (EJBTransactionRolledbackException e) {
-                // this exception explicitly forbids initializing a cause
-                throw new TransactionRolledbackException(e.getMessage());
+                throw copyCause(new TransactionRolledbackException(e.getMessage()), e);
             } catch (NoSuchEJBException e) {
-                // this exception explicitly forbids initializing a cause
-                throw new NoSuchObjectException(e.getMessage());
+                throw copyCause(new NoSuchObjectException(e.getMessage()), e);
             } catch (NoSuchEntityException e) {
-                // this exception explicitly forbids initializing a cause
-                throw new NoSuchObjectException(e.getMessage());
+                throw copyCause(new NoSuchObjectException(e.getMessage()), e);
             } catch (EJBException e) {
                 //as the create exception is not propagated the init method interceptor just stashes it in a ThreadLocal
                 CreateException createException = popCreateException();
@@ -104,11 +98,11 @@ public class EjbExceptionTransformingInterceptorFactories {
             } catch (EJBTransactionRequiredException e) {
                 throw copyCause(new TransactionRequiredLocalException(e.getMessage()), e);
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackLocalException(e.getMessage(), e);
+                throw copyCause(new TransactionRolledbackLocalException(e.getMessage()), e);
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(), e);
+                throw copyCause(new NoSuchObjectLocalException(e.getMessage()), e);
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectLocalException(e.getMessage(), e);
+                throw copyCause(new NoSuchObjectLocalException(e.getMessage()), e);
             } catch (EJBException e) {
                 CreateException createException = popCreateException();
                 if (createException != null) {
