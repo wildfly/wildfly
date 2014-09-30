@@ -273,7 +273,7 @@ fi
 
 # Set up the module arguments
 MODULE_OPTS=""
-if [ "$SECMGR" == "true" ]; then
+if [ "$SECMGR" = "true" ]; then
     MODULE_OPTS="$MODULE_OPTS -secmgr";
 fi
 
