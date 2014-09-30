@@ -38,6 +38,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.ByteBufferSlicePool;
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.OptionMap;
@@ -101,6 +102,11 @@ public abstract class ListenerService<T> implements Service<T> {
     }
 
     protected int getBufferSize() {
+        //not sure if this is best possible solution
+        if (bufferPool.getValue() instanceof ByteBufferSlicePool){
+            ByteBufferSlicePool pool =(ByteBufferSlicePool)bufferPool.getValue();
+            return pool.getBufferSize();
+        }
         return 8192;
     }
 
