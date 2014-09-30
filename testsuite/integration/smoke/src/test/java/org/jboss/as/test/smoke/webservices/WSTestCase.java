@@ -31,6 +31,7 @@ import javax.xml.ws.Service;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -59,7 +60,7 @@ public class WSTestCase {
         webserviceAddress = new ModelNode();
         webserviceAddress.add("subsystem", "webservices");
 	}
-	
+
     @ContainerResource
     private ManagementClient managementClient;
 
@@ -75,6 +76,7 @@ public class WSTestCase {
     }
 
     @Test
+    @InSequence(1)
     public void testWSDL() throws Exception {
         String s = performCall("?wsdl");
         Assert.assertNotNull(s);
@@ -82,6 +84,7 @@ public class WSTestCase {
     }
 
     @Test
+    @InSequence(2)
     public void testManagementDescription() throws Exception {
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
@@ -109,19 +112,20 @@ public class WSTestCase {
     }
 
     @Test
+    @InSequence(3)
     public void testManagementDescriptionMetrics() throws Exception {
-    	setStatisticsEnabled(true);  	
+    	setStatisticsEnabled(true);
     	final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
         address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
         address.add("endpoint", "*"); // get all endpoints
-       
+
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
         operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
-                
+
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
         for (final ModelNode endpointResult : result.get("result").asList()) {
@@ -134,8 +138,8 @@ public class WSTestCase {
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "request-count");
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "response-count");
         }
-               
-        setStatisticsEnabled(false);     
+
+        setStatisticsEnabled(false);
         result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
         for (final ModelNode endpointResult : result.get("result").asList()) {
@@ -158,6 +162,7 @@ public class WSTestCase {
     }
 
     @Test
+    @InSequence(4)
     public void testAccess() throws Exception {
         URL wsdlURL = new URL(this.url.toExternalForm() + "ws-example?wsdl");
         QName serviceName = new QName("http://webservices.smoke.test.as.jboss.org/", "EndpointService");
@@ -170,8 +175,8 @@ public class WSTestCase {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
         return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
     }
-    
-    
+
+
     private void setStatisticsEnabled(boolean enabled) throws Exception {
         final ModelNode updateStatistics = new ModelNode();
         updateStatistics.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
