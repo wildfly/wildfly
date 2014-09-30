@@ -6,6 +6,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">target/jbossas</property>
+            <property name="jboss.options">-Xms128M -Xmx128M</property>
             <property name="containerNameMap">
               main-server-group=backend,
               master:server-one=backend-1,
