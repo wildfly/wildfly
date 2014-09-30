@@ -32,7 +32,7 @@ import javax.enterprise.inject.Instance;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -66,7 +66,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class CrossModuleAccessibilityTestCase {
 
-    private static final List<TempTestModule> testModules = new ArrayList<>();
+    private static final List<TestModule> testModules = new ArrayList<>();
 
     public static void doSetup() throws Exception {
         addModule("alpha", "alpha-module.xml", AlphaBean.class, AlphaLookup.class);
@@ -78,7 +78,7 @@ public class CrossModuleAccessibilityTestCase {
     private static void addModule(String moduleName, String moduleXml, Class<?> beanType, Class<?> lookupType) throws Exception {
         URL url = beanType.getResource(moduleXml);
         File moduleXmlFile = new File(url.toURI());
-        TempTestModule testModule = new TempTestModule("test." + moduleName, moduleXmlFile);
+        TestModule testModule = new TestModule("test." + moduleName, moduleXmlFile);
         JavaArchive jar = testModule.addResource(moduleName + ".jar");
         jar.addClass(beanType);
         jar.addClass(lookupType);
@@ -89,7 +89,7 @@ public class CrossModuleAccessibilityTestCase {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        for (TempTestModule testModule : testModules) {
+        for (TestModule testModule : testModules) {
             testModule.remove();
         }
     }
@@ -99,7 +99,7 @@ public class CrossModuleAccessibilityTestCase {
         doSetup();
         WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addClass(CrossModuleAccessibilityTestCase.class)
-                .addClass(TempTestModule.class)
+                .addClass(TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.alpha meta-inf, test.bravo meta-inf, test.charlie meta-inf, test.delta meta-inf\n"), "MANIFEST.MF");
         return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);

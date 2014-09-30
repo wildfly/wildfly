@@ -42,7 +42,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -87,7 +87,7 @@ public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManage
                    .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                    .addAsManifestResource(new StringAsset("Dependencies: org.picketlink.idm.api meta-inf,test.picketlink-emf-module-test meta-inf,org.jboss.dmr meta-inf,org.jboss.as.controller meta-inf\n"), "MANIFEST.MF")
                    .addClass(CustomCredentialHandlerTestCase.class)
-                   .addClass(TempTestModule.class)
+                   .addClass(TestModule.class)
                    .addClass(AbstractIdentityManagementServerSetupTask.class)
                    .addClass(AbstractBasicIdentityManagementTestCase.class);
     }
@@ -120,7 +120,7 @@ public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManage
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        private TempTestModule module;
+        private TestModule module;
 
         public IdentityManagementServerSetupTask() {
             super("jpa.ds.idm", PARTITION_MANAGER_JNDI_NAME);
@@ -176,12 +176,12 @@ public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManage
         }
 
 
-        private TempTestModule createModule() throws IOException {
+        private TestModule createModule() throws IOException {
             File moduleXml = new File(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                 .getResource(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                     .getSimpleName() + "-module.xml").getFile());
 
-            TempTestModule module = new TempTestModule("test.picketlink-emf-module-test", moduleXml);
+            TestModule module = new TestModule("test.picketlink-emf-module-test", moduleXml);
 
             module.addResource("picketlink-emf-module-test.jar")
                 .addClass(CustomCredential.class)

@@ -25,8 +25,8 @@ package org.jboss.as.test.integration.ejb.singleton.dependson.session;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.singleton.dependson.mdb.CallCounterInterface;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
-import org.jboss.as.test.shared.TempTestModule;
 
 /**
  * @author baranowb
@@ -34,7 +34,7 @@ import org.jboss.as.test.shared.TempTestModule;
  */
 public class SetupModuleServerSetupTask implements ServerSetupTask{
 
-    private volatile TempTestModule testModule;
+    private volatile TestModule testModule;
     @Override
     public void setup(ManagementClient arg0, String arg1) throws Exception {
         testModule = ModuleUtils.createTestModuleWithEEDependencies(SessionConstants.TEST_MODULE_NAME);

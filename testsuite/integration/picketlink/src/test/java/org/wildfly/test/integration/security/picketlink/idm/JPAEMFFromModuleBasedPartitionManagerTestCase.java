@@ -38,7 +38,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -78,7 +78,7 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsManifestResource(new StringAsset("Dependencies: org.picketlink.idm.api meta-inf,org.jboss.dmr meta-inf,org.jboss.as.controller\n"), "MANIFEST.MF")
             .addClass(JPAEMFFromModuleBasedPartitionManagerTestCase.class)
-            .addClass(TempTestModule.class)
+            .addClass(TestModule.class)
             .addClass(AbstractBasicIdentityManagementTestCase.class)
             .addClass(AbstractIdentityManagementServerSetupTask.class);
     }
@@ -93,18 +93,18 @@ public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasic
 
     static class IdentityManagementServerSetupTask extends AbstractIdentityManagementServerSetupTask {
 
-        private TempTestModule module;
+        private TestModule module;
 
         public IdentityManagementServerSetupTask() {
             super("jpa.emf.idm", PARTITION_MANAGER_JNDI_NAME);
         }
 
-        private TempTestModule createModule() throws IOException {
+        private TestModule createModule() throws IOException {
             File moduleXml = new File(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                 .getResource(JPAEMFFromModuleBasedPartitionManagerTestCase.class
                     .getSimpleName() + "-module.xml").getFile());
 
-            TempTestModule module = new TempTestModule("test.picketlink-emf-module-test", moduleXml);
+            TestModule module = new TestModule("test.picketlink-emf-module-test", moduleXml);
 
             module.addResource("picketlink-emf-module-test.jar")
                 .addClass(AbstractCredentialTypeEntity.class)

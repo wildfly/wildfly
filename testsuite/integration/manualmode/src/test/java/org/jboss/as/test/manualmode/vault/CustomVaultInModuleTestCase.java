@@ -42,7 +42,7 @@ import org.jboss.as.test.manualmode.vault.module.TestVaultParser;
 import org.jboss.as.test.manualmode.vault.module.TestVaultRemoveHandler;
 import org.jboss.as.test.manualmode.vault.module.TestVaultResolveExpressionHandler;
 import org.jboss.as.test.manualmode.vault.module.TestVaultSubsystemResourceDescription;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -73,7 +73,7 @@ public class CustomVaultInModuleTestCase {
     @ArquillianResource
     private static ContainerController containerController;
 
-    private TempTestModule testModule;
+    private TestModule testModule;
 
     @Test
     public void testCustomVault() throws Exception {
@@ -128,7 +128,7 @@ public class CustomVaultInModuleTestCase {
 
     private void createTestModule() throws Exception {
         File moduleXml = new File(CustomSecurityVault.class.getResource(CustomVaultInModuleTestCase.class.getSimpleName() + "-module.xml").toURI());
-        testModule = new TempTestModule(MODULE_NAME, moduleXml);
+        testModule = new TestModule(MODULE_NAME, moduleXml);
 
         JavaArchive archive = testModule.addResource("test-custom-vault-in-module.jar")
         	.addClass(CustomSecurityVault.class)

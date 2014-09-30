@@ -28,7 +28,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -45,14 +45,14 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
 
     @Inject
     private InjectedBean injectedBean;
-    private static TempTestModule testModule;
+    private static TestModule testModule;
 
     public static void doSetup() throws Exception {
         tearDown();
 
         URL url = BuiltInBeanWithPackagePrivateConstructor.class.getResource("test-module.xml");
         File moduleXmlFile = new File(url.toURI());
-        testModule = new TempTestModule("test.module-accessibility", moduleXmlFile);
+        testModule = new TestModule("test.module-accessibility", moduleXmlFile);
         JavaArchive jar = testModule.addResource("module-accessibility.jar");
         jar.addClass(BuiltInBeanWithPackagePrivateConstructor.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");

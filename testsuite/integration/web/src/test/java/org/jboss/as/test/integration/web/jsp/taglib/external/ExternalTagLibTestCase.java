@@ -33,8 +33,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
-import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,7 +53,7 @@ public class ExternalTagLibTestCase {
     private static final String EXTERNAL_DEPENDENCY_ONLY_WAR = "external-dependency-only.war";
 	private static final String MODULE_NAME = "external-tag-lib";
 	private static final String TEST_JSP = "test.jsp";
-    private static TempTestModule testModule;
+    private static TestModule testModule;
 
     @AfterClass
     public static void tearDown() throws Exception {
