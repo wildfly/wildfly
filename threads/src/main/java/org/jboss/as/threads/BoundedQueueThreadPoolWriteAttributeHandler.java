@@ -61,7 +61,15 @@ public class BoundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteAtt
         } else if(PoolAttributeDefinitions.MAX_THREADS.getName().equals(attributeName)) {
             pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
         } else if(PoolAttributeDefinitions.CORE_THREADS.getName().equals(attributeName)) {
-            pool.setCoreThreads(PoolAttributeDefinitions.CORE_THREADS.resolveModelAttribute(context, model).asInt());
+            int coreCount;
+            ModelNode coreNode = PoolAttributeDefinitions.CORE_THREADS.resolveModelAttribute(context, model);
+            if (coreNode.isDefined()) {
+                coreCount = coreNode.asInt();
+            } else {
+                // Core is same as max
+                coreCount = PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt();
+            }
+            pool.setCoreThreads(coreCount);
         } else if(PoolAttributeDefinitions.QUEUE_LENGTH.getName().equals(attributeName)) {
             if (forRollback) {
                 context.revertReloadRequired();
