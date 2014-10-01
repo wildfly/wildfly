@@ -88,7 +88,7 @@ public class WebExtension extends AbstractLegacyExtension {
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
     private static final String extensionName = "org.jboss.as.web";
 
@@ -163,6 +163,7 @@ public class WebExtension extends AbstractLegacyExtension {
             registerTransformers_1_3_0(subsystem);
             registerTransformers_1_4_0(subsystem);
             registerTransformers_2_0_0(subsystem);
+            registerTransformers_2_1_0(subsystem);
         }
         return Collections.singleton(registration);
     }
@@ -386,6 +387,23 @@ public class WebExtension extends AbstractLegacyExtension {
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, 0, 0));
+    }
+
+    private void registerTransformers_2_1_0(SubsystemRegistration registration) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        subsystemRoot.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(30)), WebDefinition.DEFAULT_SESSION_TIMEOUT)
+                .end();
+
+        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
+        final ResourceTransformationDescriptionBuilder ssoBuilder = hostBuilder.addChildResource(SSO_PATH);
+        ssoBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSODefinition.HTTP_ONLY)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, new ModelNode(true)), WebSSODefinition.HTTP_ONLY)
+                .end();
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, 1, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
