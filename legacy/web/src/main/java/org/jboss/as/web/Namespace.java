@@ -39,13 +39,12 @@ enum Namespace {
     WEB_1_4("urn:jboss:domain:web:1.4"),
     WEB_1_5("urn:jboss:domain:web:1.5"),
     WEB_2_0("urn:jboss:domain:web:2.0"),
-    WEB_2_1("urn:jboss:domain:web:2.1"),
-    WEB_2_2("urn:jboss:domain:web:2.2");
+    WEB_2_1("urn:jboss:domain:web:2.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = WEB_2_2;
+    public static final Namespace CURRENT = WEB_2_1;
 
     private final String name;
 

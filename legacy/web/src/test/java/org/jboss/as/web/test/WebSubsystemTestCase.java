@@ -49,6 +49,7 @@ import static org.jboss.as.web.WebExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.web.WebExtension.VALVE_PATH;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,7 +109,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-2.2.0.xml");
+        return readResource("subsystem-2.1.0.xml");
     }
 
     @Override
@@ -118,21 +119,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected ProcessType getProcessType() {
-                return ProcessType.HOST_CONTROLLER;
-            }
-
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-        };
-
+        return new TestAdditionalInitialization();
     }
 
     @Override
@@ -483,7 +470,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -617,7 +604,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
         .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
@@ -647,7 +634,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
         .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
@@ -927,4 +914,20 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             return new ModelNode(value.asBoolean());
         }
     }
+
+    private static class TestAdditionalInitialization extends AdditionalInitialization implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
+        }
+
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+    };
+
 }

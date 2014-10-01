@@ -48,6 +48,7 @@
             <xs:element maxOccurs="unbounded" ref="virtual-server" />
             <xs:element minOccurs="0" maxOccurs="unbounded" ref="valve" />
         </xs:sequence>
+        <xs:attribute name="default-session-timeout" default="30" type="xs:int" />
         <xs:attribute name="default-virtual-server" />
         <xs:attribute name="instance-id" />
         <xs:attribute name="native" default="true" type="xs:boolean" />
@@ -219,6 +220,15 @@
                 <xs:documentation>
                 <![CDATA[
                   Each request should cause a reauthentication.
+                  ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="http-only" default="true" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                <![CDATA[
+                  Use a httponly cookie.
                   ]]>
                 </xs:documentation>
             </xs:annotation>
@@ -439,3 +449,4 @@
     </xs:complexType>
 
 </xs:schema>
+

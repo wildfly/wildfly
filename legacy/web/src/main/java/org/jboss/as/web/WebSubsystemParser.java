@@ -22,8 +22,6 @@
 
 package org.jboss.as.web;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -57,8 +55,11 @@ import static org.jboss.as.web.WebExtension.DIRECTORY_PATH;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 import static org.jboss.as.web.WebExtension.SSO_PATH;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -369,7 +370,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     WebDefinition.INSTANCE_ID.parseAndSetParameter(value, subsystem, reader);
                     break;
                 case DEFAULT_SESSION_TIMEOUT:
-                    attributeSupportedSince(Namespace.WEB_2_2, reader, i);
+                    attributeSupportedSince(Namespace.WEB_2_1, reader, i);
                     WebDefinition.DEFAULT_SESSION_TIMEOUT.parseAndSetParameter(value, subsystem, reader);
                     break;
                 default:
@@ -410,8 +411,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_4:
                 case WEB_1_5:
                 case WEB_2_0:
-                case WEB_2_1:
-                case WEB_2_2: {
+                case WEB_2_1:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -767,8 +767,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_4:
                 case WEB_1_5:
                 case WEB_2_0:
-                case WEB_2_1:
-                case WEB_2_2: {
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -823,7 +822,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     WebSSODefinition.REAUTHENTICATE.parseAndSetParameter(value, operation, reader);
                     break;
                 case HTTP_ONLY:
-                    attributeSupportedSince(Namespace.WEB_2_2, reader, i);
+                    attributeSupportedSince(Namespace.WEB_2_1, reader, i);
                     WebSSODefinition.HTTP_ONLY.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
@@ -873,8 +872,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_4:
                 case WEB_1_5:
                 case WEB_2_0:
-                case WEB_2_1:
-                case WEB_2_2: {
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONDITION:
@@ -962,8 +960,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_4:
                 case WEB_1_5:
                 case WEB_2_0:
-                case WEB_2_1:
-                case WEB_2_2: {
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
@@ -1072,8 +1069,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_4:
                 case WEB_1_5:
                 case WEB_2_0:
-                case WEB_2_1:
-                case WEB_2_2: {
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SSL:
