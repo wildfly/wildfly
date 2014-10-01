@@ -129,7 +129,8 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
     private static boolean hasCxfModuleDependency(DeploymentUnit unit) {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
-            if ("org.apache.cxf".equals(dep.getIdentifier().getName())) {
+            final String id = dep.getIdentifier().getName();
+            if ("org.apache.cxf".equals(id) || "org.apache.cxf.impl".equals(id)) {
                 return true;
             }
         }
