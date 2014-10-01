@@ -14,6 +14,9 @@ do
       -secmgr)
           SECMGR="true"
           ;;
+      *)
+          SERVER_OPTS="$SERVER_OPTS \"$1\""
+          ;;
     esac
     shift
 done
@@ -127,7 +130,7 @@ fi
 
 if $linux; then
     # consolidate the host-controller and command line opts
-    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $@"
+    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $SERVER_OPTS"
     # process the host-controller options
     for var in $HOST_CONTROLLER_OPTS
     do
@@ -149,7 +152,7 @@ fi
 
 if $solaris; then
     # consolidate the host-controller and command line opts
-    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $@"
+    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $SERVER_OPTS"
     # process the host-controller options
     for var in $HOST_CONTROLLER_OPTS
     do
@@ -172,7 +175,7 @@ fi
 # No readlink -m on BSD
 if $darwin; then
     # consolidate the host-controller and command line opts
-    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $@"
+    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $SERVER_OPTS"
     # process the host-controller options
     for var in $HOST_CONTROLLER_OPTS
     do
@@ -267,7 +270,7 @@ while true; do
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA_FROM_JVM\" \
-         '"$@"'
+         "$SERVER_OPTS"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
@@ -288,7 +291,7 @@ while true; do
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA_FROM_JVM\" \
-         '"$@"' "&"
+         "$SERVER_OPTS" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
       trap "kill -HUP  $JBOSS_PID" HUP
