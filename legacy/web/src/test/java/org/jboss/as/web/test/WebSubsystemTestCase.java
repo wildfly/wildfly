@@ -49,6 +49,7 @@ import static org.jboss.as.web.WebExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.web.WebExtension.VALVE_PATH;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,6 +64,7 @@ import org.jboss.as.controller.transform.OperationTransformer.TransformedOperati
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -106,8 +108,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-2.1.0.xml");
-
+        return readResource("subsystem-2.2.0.xml");
     }
 
     @Override
@@ -215,6 +216,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> xmlOps = builder.parseXmlResource("subsystem.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
+        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
         // valve
         .addFailedAttribute(subsystem.append(VALVE_PATH), REJECTED_RESOURCE)
                 // configuration=container
@@ -266,7 +268,9 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         .addFailedAttribute(defaultHost.append(PathElement.pathElement("rewrite", "with-conditions"), PathElement.pathElement("condition", "no-flags")),
                 new SetMissingRewriteConditionFlagsConfig("flags"))
         .addFailedAttribute(defaultHost.append(PathElement.pathElement("configuration", "sso")),
-                new FailedOperationTransformationConfig.RejectExpressionsConfig("reauthenticate", "domain"));
+                new FailedOperationTransformationConfig.ChainedConfig(createChainedConfigList(
+                new FailedOperationTransformationConfig.RejectExpressionsConfig("reauthenticate", "domain"),
+                new BooleanExpressionConfig("http-only")), "reauthenticate", "domain", "http-only"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
 
@@ -322,6 +326,9 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelNode ssoConfig = mainModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.SSO);
         Assert.assertTrue(ssoConfig.isDefined());
+        if (ssoConfig.hasDefined(Constants.HTTP_ONLY) && ssoConfig.get(Constants.HTTP_ONLY).asBoolean()) {
+            ssoConfig.remove(Constants.HTTP_ONLY);
+        }
         Assert.assertFalse(legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.SSO).isDefined());
         compare(ssoConfig, legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.SSO, Constants.CONFIGURATION), true);
 
@@ -440,6 +447,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformationEAP630() throws Exception {
+        testTransformation_1_4_0(ModelTestControllerVersion.EAP_6_3_0);
+    }
+
+   @Test
     @Ignore("WFLY-3153")
     public void testTransformationWildFly8() throws Exception {
         testTransformation_2_0(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL);
@@ -464,6 +476,26 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
     }
+
+    private void testTransformation_1_4_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
+        String subsystemXml = readResource("subsystem-1.4.0.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
+    }
+
 
     private void testTransformation_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
@@ -525,6 +557,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testRejectingTransformersAS630() throws Exception {
+        testRejectingTransformers_1_4_0(ModelTestControllerVersion.EAP_6_3_0);
+    }
+
+    @Test
     @Ignore("WFLY-3153")
     public void testRejectingTransformersWildFly8() throws Exception {
         testRejectingTransformers_2_0(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL);
@@ -550,11 +587,12 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> xmlOps = builder.parseXmlResource("subsystem.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
-
+        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
                             new FailedOperationTransformationConfig.NewAttributesConfig("ssl-protocol"))
         .addFailedAttribute(defaultHost.append(PathElement.pathElement("rewrite", "with-conditions"), PathElement.pathElement("condition", "no-flags")),
-                new SetMissingRewriteConditionFlagsConfig("flags"));
+                new SetMissingRewriteConditionFlagsConfig("flags"))
+        .addFailedAttribute(defaultHost.append("configuration", "sso"), new BooleanExpressionConfig("http-only"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
 
@@ -579,18 +617,46 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.1.0.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
 
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
+        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http")),
-                            new FailedOperationTransformationConfig.NewAttributesConfig("redirect-binding", "proxy-binding"));
+                            new FailedOperationTransformationConfig.NewAttributesConfig("redirect-binding", "proxy-binding"))
+        .addFailedAttribute(subsystem.append("virtual-server", "default-host").append("configuration", "sso"), new BooleanExpressionConfig("http-only"));
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
 
         checkUndefinedCipherSuite(mainServices, modelVersion);
     }
 
-    private void testRejectingTransformers_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejectingTransformers_1_4_0(ModelTestControllerVersion controllerVersion) throws Exception {
+
+        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        final PathAddress subsystem = PathAddress.EMPTY_ADDRESS.append("subsystem", "web");
+
+        List<ModelNode> xmlOps = builder.parseXmlResource("subsystem-2.2.0.xml");
+
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
+        .addFailedAttribute(subsystem, new IntExpressionConfig("default-session-timeout"))
+        .addFailedAttribute(subsystem.append("virtual-server", "default-host").append("configuration", "sso"), new BooleanExpressionConfig("http-only"));
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
+    }
+
+   private void testRejectingTransformers_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
 
         ModelVersion modelVersion = ModelVersion.create(2, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -739,6 +805,14 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return addr;
     }
 
+    private List<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>> createChainedConfigList(FailedOperationTransformationConfig.AttributesPathAddressConfig<?>...cfgs){
+        List<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
+        for (AttributesPathAddressConfig<?> cfg : cfgs) {
+            list.add(cfg);
+        }
+        return list;
+    }
+
     @Override
     protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
         final ModelNode operation = createDescribeOperation();
@@ -825,4 +899,32 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             return new ModelNode("NC");
         }
 	}
+
+    private static final class IntExpressionConfig extends RejectExpressionsConfig {
+
+        public IntExpressionConfig(String... attributes) {
+            // FIXME GlobalSessionTimeOutConfig constructor
+            super(attributes);
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            ModelNode value = super.correctValue(toResolve, isWriteAttribute);
+            return new ModelNode(value.asInt());
+        }
+    }
+
+    private static final class BooleanExpressionConfig extends RejectExpressionsConfig {
+
+        public BooleanExpressionConfig(String... attributes) {
+            // FIXME GlobalSessionTimeOutConfig constructor
+            super(attributes);
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            ModelNode value = super.correctValue(toResolve, isWriteAttribute);
+            return new ModelNode(value.asBoolean());
+        }
+    }
 }

@@ -26,6 +26,7 @@ import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -54,12 +55,19 @@ public class WebDefinition extends ModelOnlyResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(null)
                     .build();
+    protected static final SimpleAttributeDefinition DEFAULT_SESSION_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SESSION_TIMEOUT, ModelType.INT, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(30))
+                    .setMeasurementUnit(MeasurementUnit.MINUTES)
+                    .build();
     public static final WebDefinition INSTANCE = new WebDefinition();
 
     private WebDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
-                WebExtension.getResourceDescriptionResolver(null)
-                , DEFAULT_VIRTUAL_SERVER, NATIVE, INSTANCE_ID);
+                WebExtension.getResourceDescriptionResolver(null),
+                DEFAULT_VIRTUAL_SERVER, NATIVE, INSTANCE_ID, DEFAULT_SESSION_TIMEOUT);
     }
 
 
