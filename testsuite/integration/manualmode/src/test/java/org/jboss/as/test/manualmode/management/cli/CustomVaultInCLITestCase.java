@@ -38,7 +38,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,7 +75,7 @@ public class CustomVaultInCLITestCase {
     private static String MODULE_NAME = "test.custom.vault.in.cli";
     private static String JAR_NAME = "custom-dummy-vault-module.jar";
     private static final String CONTAINER = "default-jbossas";
-    private static TempTestModule customVaultModule;
+    private static TestModule customVaultModule;
 
     @ArquillianResource
     private static ContainerController containerController;
@@ -162,7 +162,7 @@ public class CustomVaultInCLITestCase {
 
         FileUtils.write(MODULE_FILE, moduleXML);
 
-        customVaultModule = new TempTestModule(MODULE_NAME, MODULE_FILE);
+        customVaultModule = new TestModule(MODULE_NAME, MODULE_FILE);
         customVaultModule.addResource(JAR_NAME).addClass(CustomDummyVault.class);
         customVaultModule.create(true);
 

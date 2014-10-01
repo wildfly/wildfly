@@ -25,8 +25,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
-import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
 public class StaticModuleToDeploymentVisibilityEarTest {
 
     private static final String MODULE_NAME = "weld-modules-deployment-ear";
-    private static TempTestModule testModule;
+    private static TestModule testModule;
 
     public static void doSetup() throws Exception {
         testModule = ModuleUtils.createTestModuleWithEEDependencies(MODULE_NAME);
@@ -69,7 +69,7 @@ public class StaticModuleToDeploymentVisibilityEarTest {
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
         WebArchive war1 = ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityEarTest.class, FooImpl1.class, TempTestModule.class)
+                .addClasses(StaticModuleToDeploymentVisibilityEarTest.class, FooImpl1.class, TestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         WebArchive war2 = ShrinkWrap.create(WebArchive.class)
                 .addClasses(FooImpl2.class)

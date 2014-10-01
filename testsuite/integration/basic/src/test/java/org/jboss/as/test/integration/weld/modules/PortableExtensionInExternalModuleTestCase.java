@@ -30,8 +30,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ModuleUtils;
-import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -68,7 +68,7 @@ public class PortableExtensionInExternalModuleTestCase {
     private static final String MANIFEST = "MANIFEST.MF";
 
     private static final String MODULE_NAME = "portable-extension";
-    private static TempTestModule testModule;
+    private static TestModule testModule;
 
     @Inject
     private PortableExtension extension;
@@ -82,7 +82,7 @@ public class PortableExtensionInExternalModuleTestCase {
     public static void doSetup() throws Exception {
         URL url = PortableExtension.class.getResource(MODULE_NAME + "-module.xml");
         File moduleXmlFile = new File(url.toURI());
-        testModule = new TempTestModule("test." + MODULE_NAME, moduleXmlFile);
+        testModule = new TestModule("test." + MODULE_NAME, moduleXmlFile);
         testModule.addResource("portable-extension.jar")
             .addClasses(PortableExtension.class, PortableExtensionLookup.class, PortableExtensionModuleLookup.class)
             .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
@@ -112,7 +112,7 @@ public class PortableExtensionInExternalModuleTestCase {
 
         WebArchive webSubdeployment = ShrinkWrap.create(WebArchive.class, "web-subdeployment.war")
                 .addClass(PortableExtensionInExternalModuleTestCase.class)
-                .addClass(TempTestModule.class)
+                .addClass(TestModule.class)
                 .addAsWebInfResource(newBeans11Descriptor("annotated"), "beans.xml");
 
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(library).addAsModule(ejbSubdeployment)

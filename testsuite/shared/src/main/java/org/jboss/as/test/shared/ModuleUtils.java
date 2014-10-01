@@ -27,18 +27,19 @@ import java.util.List;
 
 import javax.enterprise.inject.spi.Extension;
 
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 
 public class ModuleUtils {
 
     private static final String[] EE_DEPENDENCIES = new String[] {"javax.enterprise.api", "javax.inject.api", "javax.servlet.api", "javax.servlet.jsp.api"};
-    public static TempTestModule createTestModuleWithEEDependencies(String moduleName) {
-        TempTestModule testModule = new TempTestModule("test." + moduleName, EE_DEPENDENCIES);
+    public static TestModule createTestModuleWithEEDependencies(String moduleName) {
+        TestModule testModule = new TestModule("test." + moduleName, EE_DEPENDENCIES);
         return testModule;
     }
 
-    public static final TempTestModule.ClassCallback ENTERPRISE_INJECT = new TempTestModule.ClassCallback() {
+    public static final TestModule.ClassCallback ENTERPRISE_INJECT = new TestModule.ClassCallback() {
         @Override
         public void classesAdded(JavaArchive jar, List<Class<?>> classes) {
             List<Class<Extension>> extensions = new ArrayList<Class<Extension>>(1);
