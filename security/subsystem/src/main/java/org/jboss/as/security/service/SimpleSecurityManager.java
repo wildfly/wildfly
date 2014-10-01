@@ -80,6 +80,7 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -533,18 +534,38 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param securityDomain the security domain being checked.
      * @return {@code true} if JACC was enabled for the domain; {@code false} otherwise.
      */
-    private boolean isJaccEnabled(String securityDomain) {
-        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(securityDomain);
-        if (applicationPolicy != null) {
-            AuthorizationInfo authorizationInfo = applicationPolicy.getAuthorizationInfo();
-            if (authorizationInfo != null) {
-                for (AuthorizationModuleEntry entry : authorizationInfo.getModuleEntries()) {
-                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
-                        return true;
+    private boolean isJaccEnabled(final String securityDomain) {
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(securityDomain);
+                    if (applicationPolicy != null) {
+                        AuthorizationInfo authorizationInfo = applicationPolicy.getAuthorizationInfo();
+                        if (authorizationInfo != null) {
+                            for (AuthorizationModuleEntry entry : authorizationInfo.getModuleEntries()) {
+                                if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                }
+            });
+        } else {
+            ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(securityDomain);
+            if (applicationPolicy != null) {
+                AuthorizationInfo authorizationInfo = applicationPolicy.getAuthorizationInfo();
+                if (authorizationInfo != null) {
+                    for (AuthorizationModuleEntry entry : authorizationInfo.getModuleEntries()) {
+                        if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                            return true;
+                        }
                     }
                 }
             }
+            return false;
         }
-        return false;
     }
 }
