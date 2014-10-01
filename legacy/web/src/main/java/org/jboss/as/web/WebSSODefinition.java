@@ -32,6 +32,7 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -61,9 +62,15 @@ public class WebSSODefinition extends ModelOnlyResourceDefinition {
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
+    protected static final SimpleAttributeDefinition HTTP_ONLY =
+            new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
+                    .build();
     protected static SimpleAttributeDefinition[] SSO_ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
-            CACHE_CONTAINER, CACHE_NAME, DOMAIN, REAUTHENTICATE
+            CACHE_CONTAINER, CACHE_NAME, DOMAIN, REAUTHENTICATE, HTTP_ONLY
     };
 
 
