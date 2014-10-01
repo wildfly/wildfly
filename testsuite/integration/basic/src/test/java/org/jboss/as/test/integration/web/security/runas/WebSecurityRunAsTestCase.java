@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -79,6 +80,7 @@ public class WebSecurityRunAsTestCase {
     private URL url;
 
     @Test
+    @Ignore("Requires Undertow 1.1.CR2 or 1.2.x")
     public void testServletRunAsInInitMethod() throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {

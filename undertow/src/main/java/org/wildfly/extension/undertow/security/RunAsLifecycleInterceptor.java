@@ -81,6 +81,7 @@ public class RunAsLifecycleInterceptor implements LifecycleInterceptor {
 
     @Override
     public void init(FilterInfo filterInfo, Filter filter, LifecycleContext context) throws ServletException {
+        context.proceed();
     }
 
     @Override
@@ -89,6 +90,7 @@ public class RunAsLifecycleInterceptor implements LifecycleInterceptor {
     }
 
     @Override
-    public void destroy(FilterInfo filterInfo, Filter filter, LifecycleContext context) {
+    public void destroy(FilterInfo filterInfo, Filter filter, LifecycleContext context) throws ServletException {
+        context.proceed();
     }
 }
