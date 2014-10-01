@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -78,9 +77,8 @@ public class VaultedInjectedJMSContextTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            File vaultFile = new File(VAULT_LOCATION);
-            vaultFile.delete();
-            vaultFile.mkdirs();
+
+            VaultHandler.cleanFilesystem(VAULT_LOCATION, true);
 
             // create new vault
             vaultHandler = new VaultHandler(VAULT_LOCATION);

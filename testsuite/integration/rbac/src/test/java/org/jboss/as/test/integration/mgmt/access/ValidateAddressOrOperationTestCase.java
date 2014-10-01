@@ -108,6 +108,8 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
+            VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
+
             ModelNode op;
 
             // create new vault
@@ -179,8 +181,8 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         }
 
     }
-    
-    
+
+
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return ShrinkWrap.create(JavaArchive.class).addClass(ValidateAddressOrOperationTestCase.class);

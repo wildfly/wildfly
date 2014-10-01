@@ -32,36 +32,34 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.net.URL;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.h2.tools.Server;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.VaultHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.h2.tools.Server;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.security.common.Utils;
-
-import java.io.IOException;
-import java.net.URL;
-
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
@@ -83,6 +81,8 @@ public class PasswordMaskingTestCase {
 
        @Override
        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+
+           VaultHandler.cleanFilesystem(RESOURCE_LOCATION, true);
 
            ModelNode op;
 
