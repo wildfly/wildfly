@@ -61,7 +61,7 @@ set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing"
 
 echo "%JAVA_OPTS%" | findstr /I "logging.configuration" > nul
 if errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -Dlogging.configuration=file:%JBOSS_HOME%\bin\jboss-cli-logging.properties"
+  set "JAVA_OPTS=%JAVA_OPTS% -Dlogging.configuration=file:"%JBOSS_HOME%"\bin\jboss-cli-logging.properties"
 ) else (
   echo logging.configuration already set in JAVA_OPTS
 )
