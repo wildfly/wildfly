@@ -75,7 +75,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
         final ServiceName outboundSocketBindingDependency = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBindingRef);
         // fetch the connection creation options from the model
         final OptionMap connectionCreationOptions = ConnectorResource.getOptions(context, fullModel.get(CommonAttributes.PROPERTY));
-        final String username = fullModel.hasDefined(CommonAttributes.USERNAME) ? fullModel.require(CommonAttributes.USERNAME).asString() : null;
+        final String username = RemoteOutboundConnectionResourceDefinition.USERNAME.resolveModelAttribute(context, fullModel).asString();
         final String securityRealm = fullModel.hasDefined(CommonAttributes.SECURITY_REALM) ? fullModel.require(CommonAttributes.SECURITY_REALM).asString() : null;
 
         // create the service
