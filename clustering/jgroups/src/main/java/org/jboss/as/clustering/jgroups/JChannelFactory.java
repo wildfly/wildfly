@@ -26,8 +26,9 @@ import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,8 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jgroups.Channel;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -54,6 +57,7 @@ import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
 import org.jgroups.util.SocketFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Factory for creating fork-able channels.
@@ -74,7 +78,13 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
     @Override
     public Channel createChannel(final String id) throws Exception {
-        JChannel channel = new JChannel(this);
+        PrivilegedExceptionAction<JChannel> action = new PrivilegedExceptionAction<JChannel>() {
+            @Override
+            public JChannel run() throws Exception {
+                return new JChannel(JChannelFactory.this);
+            }
+        };
+        JChannel channel = WildFlySecurityManager.doChecked(action);
         ProtocolStack stack = channel.getProtocolStack();
 
         // We need to synchronize on shared transport,
@@ -219,12 +229,25 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         }
 
         stack.add(protocol);
-        stack.addAll(createProtocols(this.configuration));
+
+        final Class<? extends TP> transportClass = introspector.getProtocolClass().asSubclass(TP.class);
+        PrivilegedExceptionAction<TP> action = new PrivilegedExceptionAction<TP>() {
+            @Override
+            public TP run() throws InstantiationException, IllegalAccessException {
+                return transportClass.newInstance();
+            }
+        };
+
+        try {
+            stack.addAll(createProtocols(this.configuration, WildFlySecurityManager.doChecked(action).isMulticastCapable()));
+        } catch (PrivilegedActionException e) {
+            throw new IllegalStateException(e.getCause());
+        }
 
         return stack;
     }
 
-    static List<org.jgroups.conf.ProtocolConfiguration> createProtocols(ProtocolStackConfiguration stack) {
+    static List<org.jgroups.conf.ProtocolConfiguration> createProtocols(ProtocolStackConfiguration stack, boolean multicastCapable) {
 
         List<ProtocolConfiguration> protocols = stack.getProtocols();
         List<org.jgroups.conf.ProtocolConfiguration> result = new ArrayList<>(protocols.size());
@@ -243,6 +266,10 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                 // If no socket-binding was specified, use bind address of transport
                 configureBindAddress(introspector, config, transport.getSocketBinding());
             }
+            if (!multicastCapable) {
+                setProperty(introspector, config, "use_mcast_xmit", String.valueOf(false));
+                setProperty(introspector, config, "use_mcast_xmit_req", String.valueOf(false));
+            }
             result.add(config);
         }
 
@@ -251,44 +278,52 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
     private static org.jgroups.conf.ProtocolConfiguration createProtocol(ProtocolStackConfiguration stack, ProtocolConfiguration protocol) {
         String protocolName = protocol.getName();
+        ModuleIdentifier module = protocol.getModule();
         final Map<String, String> properties = new HashMap<>(stack.getDefaults().getProperties(protocolName));
         properties.putAll(protocol.getProperties());
-        return new org.jgroups.conf.ProtocolConfiguration(protocolName, properties) {
-            @Override
-            public Map<String, String> getOriginalProperties() {
-                return properties;
-            }
-        };
+        if (module.equals(ProtocolConfiguration.DEFAULT_MODULE) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
+            protocolName = org.jgroups.conf.ProtocolConfiguration.protocol_prefix + "." + protocolName;
+        }
+        try {
+            return new org.jgroups.conf.ProtocolConfiguration(protocolName, properties, stack.getModuleLoader().loadModule(module).getClassLoader()) {
+                @Override
+                public Map<String, String> getOriginalProperties() {
+                    return properties;
+                }
+            };
+        } catch (ModuleLoadException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private static void configureBindAddress(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        setPropertyNoOverride(introspector, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
+        setSocketBindingProperty(introspector, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
     private static void configureServerSocket(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        setPropertyNoOverride(introspector, config, property, String.valueOf(binding.getSocketAddress().getPort()));
+        setSocketBindingProperty(introspector, config, property, String.valueOf(binding.getSocketAddress().getPort()));
     }
 
     private static void configureMulticastSocket(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            setPropertyNoOverride(introspector, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            setPropertyNoOverride(introspector, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            setSocketBindingProperty(introspector, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            setSocketBindingProperty(introspector, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
             ROOT_LOGGER.couldNotSetAddressAndPortNoMulticastSocket(e, config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
     }
 
-    private static void setPropertyNoOverride(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
+    private static void setSocketBindingProperty(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
         try {
-            Map<String, String> originalProperties = config.getOriginalProperties();
-            if (originalProperties.containsKey(name)) {
-                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, config.getProtocolName(), value, originalProperties.get(name));
+            Map<String, String> properties = config.getOriginalProperties();
+            if (properties.containsKey(name)) {
+                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, config.getProtocolName(), value, properties.get(name));
             }
+            setProperty(introspector, config, name, value);
         } catch (Exception e) {
             ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, config.getProtocolName());
         }
-        setProperty(introspector, config, name, value);
     }
 
     private static void setProperty(Introspector introspector, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
@@ -306,17 +341,22 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         }
     }
 
+    /*
+     * Collects the configurable properties for a given protocol.
+     * This includes all fields and methods annotated with @Property for a given protocol
+     */
     private static class Introspector {
+        final Class<? extends Protocol> protocolClass;
         final Set<String> properties = new HashSet<>();
 
         Introspector(org.jgroups.conf.ProtocolConfiguration config) {
             String name = config.getProtocolName();
             try {
-                final Class<? extends Protocol> protocolClass = config.getClassLoader().loadClass(name).asSubclass(Protocol.class);
+                this.protocolClass = config.getClassLoader().loadClass(name).asSubclass(Protocol.class);
                 PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
                     @Override
                     public Void run() {
-                        Class<?> targetClass = protocolClass;
+                        Class<?> targetClass = Introspector.this.protocolClass;
                         while (Protocol.class.isAssignableFrom(targetClass)) {
                             for (Method method: targetClass.getDeclaredMethods()) {
                                 if (method.isAnnotationPresent(Property.class)) {
@@ -337,10 +377,14 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
                         return null;
                     }
                 };
-                AccessController.doPrivileged(action);
+                WildFlySecurityManager.doChecked(action);
             } catch (ClassNotFoundException e) {
                 throw new IllegalArgumentException(e);
             }
+        }
+
+        Class<? extends Protocol> getProtocolClass() {
+            return this.protocolClass;
         }
 
         boolean hasProperty(String property) {
