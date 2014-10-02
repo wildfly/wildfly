@@ -24,6 +24,7 @@ package org.jboss.as.controller.audit;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.PortUnreachableException;
 import java.security.KeyStore;
 import java.util.logging.ErrorManager;
 
@@ -470,13 +471,29 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
 
         void throwAsIoOrRuntimeException(Throwable t) throws IOException {
+            if (t instanceof PortUnreachableException && transport == Transport.UDP) {
+                //This is an exception that may or may not happen, see the javadoc for DatagramSocket.send().
+                //We don't want something this unreliable polluting the failure count.
+                //With UDP syslogging set up against a non-existent syslog server:
+                //On OS X this exception never happens.
+                //On Linux this seems to happens every other send, so we end up with a loop
+                //    odd send works; failure count = 0
+                //    even send fails; failure count = 1
+                //    odd send works; failure count reset to 0
+                //
+                //Also, we don't want the full stack trace for this which would get printed by StandardFailureCountHandler.StandardFailureCountHandler.failure(),
+                //which also handles the failure count, so we swallow the exception and print a warning.
+
+                ControllerLogger.MGMT_OP_LOGGER.udpSyslogServerUnavailable(getName(), t.getLocalizedMessage());
+                return;
+            }
             if (t instanceof IOException) {
-                throw (IOException)error;
+                throw (IOException)t;
             }
             if (t instanceof RuntimeException) {
-                throw (RuntimeException)error;
+                throw (RuntimeException)t;
             }
-            throw new RuntimeException(error);
+            throw new RuntimeException(t);
         }
     }
 }

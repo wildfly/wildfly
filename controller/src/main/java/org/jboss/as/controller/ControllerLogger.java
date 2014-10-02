@@ -532,6 +532,10 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13420, value = "Notification of type %s is not described for the resource at the address %s")
     void notificationIsNotDescribed(String type, PathAddress source);
 
+    @LogMessage(level = WARN)
+    @Message(id = 13421, value = "Update of the management operation audit log failed on the handler '%s' due to '%s'. Please make sure that the syslog server is running and reachable")
+    void udpSyslogServerUnavailable(String name, String message);
+
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 
 }
