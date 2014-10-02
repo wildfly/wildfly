@@ -27,10 +27,10 @@ import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Util;
 
 /**
- * An AddressGenerator which generates TopologyUUID addresses with specified site, rack and machine ids.
+ * An AddressGenerator which generates ExtendedUUID addresses with specified site, rack and machine ids.
  *
  * @author Tristan Tarrant
- *
+ * @author Paul Ferraro
  */
 public class TopologyAddressGenerator implements AddressGenerator {
     // Based on org.jgroups.util.TopologyUUID from JGroups 3.4.x

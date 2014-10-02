@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups;
 import java.util.Map;
 
 import org.jboss.as.network.SocketBinding;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Defines the configuration of a JGroups protocol.
@@ -31,9 +32,13 @@ import org.jboss.as.network.SocketBinding;
  */
 public interface ProtocolConfiguration {
 
+    ModuleIdentifier DEFAULT_MODULE = ModuleIdentifier.create("org.jgroups");
+
     String getName();
 
     Map<String, String> getProperties();
 
     SocketBinding getSocketBinding();
+
+    ModuleIdentifier getModule();
 }

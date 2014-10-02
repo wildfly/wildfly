@@ -145,6 +145,11 @@
                 <xs:documentation>Provides an address/port binding for a protocol.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="module" type="xs:string" default="org.jgroups">
+            <xs:annotation>
+                <xs:documentation>Indicates the module from which to load this protocol.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="transport">
@@ -234,7 +239,7 @@
         </xs:attribute>
         <xs:attribute name="channel" type="xs:string" use="required">
             <xs:annotation>
-                <xs:documentation>The stack name used to create a bridge channel to this remote site.</xs:documentation>
+                <xs:documentation>The bridge channel to this remote site.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
