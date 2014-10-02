@@ -25,9 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -506,46 +503,14 @@ public class StackAddHandler extends AbstractAddStepHandler {
         private final String name;
         private final InjectedValue<SocketBinding> socketBinding = new InjectedValue<>();
         private final Map<String, String> properties = new HashMap<>();
-        final Class<?> protocolClass;
 
         Protocol(final String name) {
             this.name = name;
-            PrivilegedAction<Class<?>> action = new PrivilegedAction<Class<?>>() {
-                @Override
-                public Class<?> run() {
-                    try {
-                        return Protocol.this.getClass().getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + name);
-                    } catch (ClassNotFoundException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-            };
-            this.protocolClass = AccessController.doPrivileged(action);
         }
 
         @Override
         public String getName() {
             return this.name;
-        }
-
-        @Override
-        public boolean hasProperty(final String property) {
-            PrivilegedAction<Field> action = new PrivilegedAction<Field>() {
-                @Override
-                public Field run() {
-                    return getField(Protocol.this.protocolClass, property);
-                }
-            };
-            return AccessController.doPrivileged(action) != null;
-        }
-
-        static Field getField(Class<?> targetClass, String property) {
-            try {
-                return targetClass.getDeclaredField(property);
-            } catch (NoSuchFieldException e) {
-                Class<?> superClass = targetClass.getSuperclass();
-                return (superClass != null) && org.jgroups.stack.Protocol.class.isAssignableFrom(superClass) ? getField(superClass, property) : null;
-            }
         }
 
         @Override

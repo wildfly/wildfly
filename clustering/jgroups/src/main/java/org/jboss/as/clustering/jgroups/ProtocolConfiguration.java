@@ -33,8 +33,6 @@ public interface ProtocolConfiguration {
 
     String getName();
 
-    boolean hasProperty(String property);
-
     Map<String, String> getProperties();
 
     SocketBinding getSocketBinding();
