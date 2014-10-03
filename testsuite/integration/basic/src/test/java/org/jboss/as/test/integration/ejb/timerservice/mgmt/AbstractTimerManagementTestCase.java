@@ -26,6 +26,7 @@ import org.junit.Assert;
  * @author: baranowb
  */
 public abstract class AbstractTimerManagementTestCase {
+
     @ContainerResource
     protected ManagementClient managementClient;
     private static final String APP_NAME = "ejb-mgmt-timers";
@@ -128,7 +129,7 @@ public abstract class AbstractTimerManagementTestCase {
         assertNoTimers();
         this.bean.createTimer();
         Assert.assertEquals("Wrong initial timer ticks!", 0, this.bean.getTimerTicks());
-        triggerTimer();
+        this.triggerTimer();
         Assert.assertEquals("Wrong after trigger timer ticks!", 1, this.bean.getTimerTicks());
         this.bean.waitOnTimeout();
         Assert.assertEquals("Timer should fire twice!", 2, this.bean.getTimerTicks());
@@ -138,14 +139,17 @@ public abstract class AbstractTimerManagementTestCase {
         assertNoTimers();
         this.bean.createTimer();
         Assert.assertEquals("Wrong initial timer ticks!", 0, this.bean.getTimerTicks());
-        triggerTimer();
+        this.triggerTimer();
         Assert.assertEquals("Wrong after trigger timer ticks!", 1, this.bean.getTimerTicks());
         this.suspendTimer();
         this.waitOverTimer();
         Assert.assertEquals("Timer should fire once!", 1, this.bean.getTimerTicks());
         this.activateTimer();
-        this.bean.waitOnTimeout();
+        // give the timer task time to fire after activation
+        this.shortWait();
         Assert.assertEquals("Timer should fire twice!", 2, this.bean.getTimerTicks());
+        this.bean.waitOnTimeout();
+        Assert.assertEquals("Timer should fire 3 times!", 3, this.bean.getTimerTicks());
     }
 
     protected void suspendTimer() throws Exception {
@@ -215,7 +219,7 @@ public abstract class AbstractTimerManagementTestCase {
         final Set<String> lst = tmp.keys();
         Assert.assertEquals(1, lst.size());
         this.timerId = lst.iterator().next();
-        this.timerAddress = address.pathAddress(address, PathElement.pathElement("timer", this.timerId));
+        this.timerAddress = PathAddress.pathAddress(address, PathElement.pathElement("timer", this.timerId));
         return this.timerAddress;
     }
 
@@ -257,8 +261,12 @@ public abstract class AbstractTimerManagementTestCase {
         return 3000;
     }
 
+    protected void shortWait() throws Exception {
+        Thread.sleep(500);
+    }
+
     protected void waitOverTimer() throws Exception {
-        Thread.currentThread().sleep(this.getDelay() + 1000);
+        Thread.sleep(this.getDelay() + 1000);
     }
 
     protected void assertNoTimers() {

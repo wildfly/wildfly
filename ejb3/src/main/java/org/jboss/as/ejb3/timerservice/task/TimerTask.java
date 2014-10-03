@@ -134,18 +134,17 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             }
 
             //we lock the timer for this check, because if a cancel is in progress then
-            //we do not want to do the isActive check, but wait for the cancelling transaction to finish
+            //we do not want to do the isActive check, but wait for the canceling transaction to finish
             //one way or another
             timer.lock();
             try {
                 if (!timer.isActive()) {
-                    ROOT_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + "for " + timer);
+                    ROOT_LOGGER.debug("Timer is not active, skipping this scheduled execution at: " + now + " for " + timer);
                     return;
                 }
                 // set the current date as the "previous run" of the timer.
                 timer.setPreviousRun(new Date());
-                Date nextTimeout = this.calculateNextTimeout(timer);
-                timer.setNextTimeout(nextTimeout);
+                timer.setNextTimeout(this.calculateNextTimeout(timer));
                 // change the state to mark it as in timeout method
                 timer.setTimerState(TimerState.IN_TIMEOUT);
 
@@ -191,10 +190,13 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
     protected Date calculateNextTimeout(TimerImpl timer) {
         long intervalDuration = timer.getInterval();
         if (intervalDuration > 0) {
-            long now = new Date().getTime();
+            long now = System.currentTimeMillis();
             long nextExpiration = timer.getNextExpiration().getTime();
+            if (nextExpiration > now) {
+                return timer.getNextExpiration();
+            }
             // compute skipped number of interval
-            int periods = (int) ((now - nextExpiration) / intervalDuration);
+            long periods = (now - nextExpiration) / intervalDuration;
             // compute the next timeout date
             return new Date(nextExpiration + (periods * intervalDuration) + intervalDuration);
         }

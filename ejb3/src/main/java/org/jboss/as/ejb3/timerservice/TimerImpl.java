@@ -555,7 +555,7 @@ public class TimerImpl implements Timer {
         sb.append(this.id);
         sb.append(" ");
         sb.append("timedObjectId=");
-        sb.append(timedObjectId);
+        sb.append(this.timedObjectId);
         sb.append(" ");
         sb.append("auto-timer?:");
         sb.append(this.isAutoTimer());
@@ -574,6 +574,9 @@ public class TimerImpl implements Timer {
         sb.append(" ");
         sb.append("nextExpiration=");
         sb.append(this.nextExpiration);
+        sb.append(" ");
+        sb.append("previousRun=");
+        sb.append(this.previousRun);
         sb.append(" ");
         sb.append("timerState=");
         sb.append(this.timerState);

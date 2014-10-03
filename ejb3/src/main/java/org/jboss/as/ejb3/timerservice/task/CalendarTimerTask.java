@@ -72,6 +72,10 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
         if (currentTimeout == null) {
             return null;
         }
+        long now = System.currentTimeMillis();
+        if (currentTimeout.getTime() > now) {
+            return currentTimeout;
+        }
         Calendar cal = new GregorianCalendar();
         cal.setTime(currentTimeout);
         // now compute the next timeout date
