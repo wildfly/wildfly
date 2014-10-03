@@ -77,6 +77,9 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor implements Inter
     public static class Factory extends ComponentInterceptorFactory {
 
         private final MethodIdentifier methodIdentifier;
+        /**
+         * If this is false it means the bean is a SFSB, and can only be NOT_SUPPORTED or REQUIRES_NEW
+         */
         private final boolean treatRequiredAsRequiresNew;
 
         public Factory(final MethodIdentifier methodIdentifier, final boolean treatRequiredAsRequiresNew) {
@@ -89,9 +92,14 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor implements Inter
             final EJBComponent ejb = (EJBComponent) component;
             TransactionAttributeType txAttr;
             if (methodIdentifier == null) {
-                txAttr = TransactionAttributeType.REQUIRED;
+                if(treatRequiredAsRequiresNew) {
+                    txAttr = TransactionAttributeType.REQUIRED;
+                } else {
+                    //for stateful beans we default to NOT_SUPPORTED
+                    txAttr = TransactionAttributeType.NOT_SUPPORTED;
+                }
             } else {
-                txAttr = ejb.getTransactionAttributeType(MethodIntf.BEAN, methodIdentifier);
+                txAttr = ejb.getTransactionAttributeType(MethodIntf.BEAN, methodIdentifier, treatRequiredAsRequiresNew ? TransactionAttributeType.REQUIRES_NEW : TransactionAttributeType.NOT_SUPPORTED);
             }
             final int txTimeout;
             if(methodIdentifier == null) {
@@ -101,6 +109,13 @@ public class LifecycleCMTTxInterceptor extends CMTTxInterceptor implements Inter
             }
             if (treatRequiredAsRequiresNew && txAttr == TransactionAttributeType.REQUIRED) {
                 txAttr = TransactionAttributeType.REQUIRES_NEW;
+            }
+            if(!treatRequiredAsRequiresNew ) {
+                if(txAttr != TransactionAttributeType.NOT_SUPPORTED &&
+                        txAttr != TransactionAttributeType.REQUIRES_NEW) {
+                    EjbLogger.ROOT_LOGGER.invalidTransactionTypeForSfsbLifecycleMethod(txAttr, methodIdentifier);
+                    txAttr = TransactionAttributeType.NOT_SUPPORTED;
+                }
             }
             final LifecycleCMTTxInterceptor interceptor = new LifecycleCMTTxInterceptor(txAttr, txTimeout);
             return interceptor;

@@ -343,16 +343,19 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
     }
 
     public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final MethodIdentifier method) {
+        return getTransactionAttributeType(methodIntf, method, TransactionAttributeType.REQUIRED);
+    }
+
+    public TransactionAttributeType getTransactionAttributeType(final MethodIntf methodIntf, final MethodIdentifier method, TransactionAttributeType defaultType) {
         TransactionAttributeType txAttr = txAttrs.get(new MethodTransactionAttributeKey(methodIntf, method));
         //fall back to type bean if not found
         if (txAttr == null && methodIntf != MethodIntf.BEAN) {
             txAttr = txAttrs.get(new MethodTransactionAttributeKey(MethodIntf.BEAN, method));
         }
         if (txAttr == null)
-            return TransactionAttributeType.REQUIRED;
+            return defaultType;
         return txAttr;
     }
-
     public TransactionManager getTransactionManager() {
         return this.transactionManager;
     }
