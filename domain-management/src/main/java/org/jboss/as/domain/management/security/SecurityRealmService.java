@@ -65,6 +65,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm {
 
+    public static final String LOADED_USERNAME_KEY = SecurityRealmService.class.getName() + ".LOADED_USERNAME";
     public static final String SKIP_GROUP_LOADING_KEY = SecurityRealmService.class.getName() + ".SKIP_GROUP_LOADING";
 
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
@@ -181,10 +182,13 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             public SubjectUserInfo createSubjectUserInfo(Collection<Principal> userPrincipals) throws IOException {
                 Subject subject = this.subject == null ? new Subject() : this.subject;
                 Collection<Principal> allPrincipals = subject.getPrincipals();
-                for (Principal userPrincipal : userPrincipals) {
-                    allPrincipals.add(userPrincipal);
-                    // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
-                    allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
+                if (sharedState.containsKey(LOADED_USERNAME_KEY)) {
+                    allPrincipals.add(new RealmUser(getName(), (String) sharedState.get(LOADED_USERNAME_KEY)));
+                } else {
+                    for (Principal userPrincipal : userPrincipals) {
+                        allPrincipals.add(userPrincipal);
+                        allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
+                    }
                 }
 
                 Object skipGroupLoading = sharedState.get(SKIP_GROUP_LOADING_KEY);
