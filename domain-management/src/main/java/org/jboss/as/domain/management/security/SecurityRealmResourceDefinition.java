@@ -77,11 +77,13 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new PlugInResourceDefinition());
+        resourceRegistration.registerSubModel(new KerberosServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new SecretServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new SSLServerIdentityResourceDefinition());
         resourceRegistration.registerSubModel(new TruststoreAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new LocalAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new JaasAuthenticationResourceDefinition());
+        resourceRegistration.registerSubModel(new KerberosAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new LdapAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new XmlAuthenticationResourceDefinition());

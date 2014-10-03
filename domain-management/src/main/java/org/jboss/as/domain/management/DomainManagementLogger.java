@@ -23,6 +23,9 @@
 package org.jboss.as.domain.management;
 
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.ERROR;
+
+import javax.security.auth.login.LoginException;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -109,6 +112,12 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 15207, value = "Failed to retrieve attribute %s from search result.")
     void failedRetrieveLdapAttribute(String attribute);
 
+    /**
+     * Logs a message indicating that attempting to login using a specific keytab failed.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 15208, value = "Login failed using Keytab for principal '%s' to handle request for host '%s'")
+    void keytabLoginFailed(String principal, String host, @Cause LoginException e);
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages also contains messages
      * in this range commencing 15220.

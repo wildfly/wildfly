@@ -50,6 +50,7 @@ import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.SubjectIdentity;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -72,6 +73,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     private final InjectedValue<SSLContext> sslContext = new InjectedValue<SSLContext>();
 
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
+    private final InjectedValue<KeytabIdentityFactoryService> keytabFactory = new InjectedValue<KeytabIdentityFactoryService>();
     private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
 
     private final String name;
@@ -230,6 +232,13 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
         throw MESSAGES.noCallbackHandlerForMechanism(mechanism.toString(), name);
     }
 
+    @Override
+    public SubjectIdentity getSubjectIdentity(String forHost, boolean isClient) {
+        KeytabIdentityFactoryService kifs = keytabFactory.getOptionalValue();
+
+        return kifs != null ? kifs.getSubjectIdentity(forHost, isClient) : null;
+    }
+
     /*
      * Injectors
      */
@@ -244,6 +253,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
         return secretCallbackFactory;
+    }
+
+    public InjectedValue<KeytabIdentityFactoryService> getKeytabIdentityFactoryInjector() {
+        return keytabFactory;
     }
 
     public InjectedSetValue<CallbackHandlerService> getCallbackHandlerService() {

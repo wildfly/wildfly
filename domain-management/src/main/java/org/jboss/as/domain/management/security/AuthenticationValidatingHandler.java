@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KERBEROS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYTAB;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.HashSet;
@@ -76,12 +79,21 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         String realmName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         Set<String> children = resource.getChildrenNames(ModelDescriptionConstants.AUTHENTICATION);
+
+        if (children.contains(KERBEROS)) {
+            Resource kerberosIdentity = resource.getChild(PathElement.pathElement(SERVER_IDENTITY, KERBEROS));
+            if (kerberosIdentity == null || kerberosIdentity.getChildrenNames(KEYTAB).size() < 1) {
+                throw DomainManagementMessages.MESSAGES.kerberosWithoutKeytab(realmName);
+            }
+        }
+
         /*
-         * Truststore and Local can be defined in addition to the username/password mechanism so exclude these from the
+         * Truststore, Local, and Kerberos can be defined in addition to the username/password mechanism so exclude these from the
          * validation check.
          */
         children.remove(ModelDescriptionConstants.TRUSTSTORE);
         children.remove(ModelDescriptionConstants.LOCAL);
+        children.remove(KERBEROS);
         if (children.size() > 1) {
             Set<String> invalid = new HashSet<String>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.descriptions;
 
-
 /**
  * String constants frequently used in model descriptions.
  *

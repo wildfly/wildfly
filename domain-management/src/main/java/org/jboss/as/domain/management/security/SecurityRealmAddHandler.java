@@ -44,7 +44,9 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KERBEROS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYTAB;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
@@ -66,6 +68,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
@@ -152,6 +156,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             if (authentication.hasDefined(LOCAL)) {
                 addLocalService(context, authentication.require(LOCAL), realmName, serviceTarget, newControllers, realmBuilder, injectorSet.injector());
             }
+            if (authentication.hasDefined(KERBEROS)) {
+                addKerberosService(context, authentication.require(KERBEROS), realmName, serviceTarget, newControllers, realmBuilder, injectorSet.injector());
+            }
+
             if (authentication.hasDefined(JAAS)) {
                 addJaasService(context, authentication.require(JAAS), realmName, serviceTarget, newControllers, context.isNormalServer(), realmBuilder, injectorSet.injector());
             } else if (authentication.hasDefined(LDAP)) {
@@ -181,6 +189,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             }
             if (serverIdentities.hasDefined(SECRET)) {
                 addSecretService(context, serverIdentities.require(SECRET), realmName,serviceTarget,newControllers, realmBuilder, securityRealmService.getSecretCallbackFactory());
+            }
+            if (serverIdentities.hasDefined(KERBEROS)) {
+                addKerberosIdentityServices(context, serverIdentities.require(KERBEROS), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getKeytabIdentityFactoryInjector());
             }
         }
 
@@ -241,6 +252,21 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         CallbackHandlerService.ServiceUtil.addDependency(realmBuilder, injector, clientCertServiceName, false);
+    }
+
+    private void addKerberosService(OperationContext context, ModelNode kerberos, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector) throws OperationFailedException {
+        ServiceName kerberosServiceName = KerberosCallbackHandler.ServiceUtil.createServiceName(realmName);
+        boolean removeRealm = KerberosAuthenticationResourceDefinition.REMOVE_REALM.resolveModelAttribute(context, kerberos).asBoolean();
+        KerberosCallbackHandler kerberosCallbackHandler = new KerberosCallbackHandler(removeRealm);
+
+        ServiceBuilder<?> ccBuilder = serviceTarget.addService(kerberosServiceName, kerberosCallbackHandler);
+        final ServiceController<?> sc = ccBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(sc);
+        }
+
+        CallbackHandlerService.ServiceUtil.addDependency(realmBuilder, injector, kerberosServiceName, false);
     }
 
     private void addJaasService(OperationContext context, ModelNode jaas, String realmName, ServiceTarget serviceTarget,
@@ -698,6 +724,54 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         CallbackHandlerFactory.ServiceUtil.addDependency(realmBuilder, injector, secretServiceName, false);
+    }
+
+    private void addKerberosIdentityServices(OperationContext context, ModelNode kerberos, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> controllers, ServiceBuilder<?> realmBuilder, Injector<KeytabIdentityFactoryService> injector) throws OperationFailedException {
+         ServiceName keyIdentityName = KeytabIdentityFactoryService.ServiceUtil.createServiceName(realmName);
+         KeytabIdentityFactoryService kifs = new KeytabIdentityFactoryService();
+         ServiceBuilder<KeytabIdentityFactoryService> kifsBuilder = serviceTarget.addService(keyIdentityName, kifs)
+                 .setInitialMode(ON_DEMAND);
+
+         if (kerberos.hasDefined(KEYTAB)) {
+             List<Property> keytabList = kerberos.get(KEYTAB).asPropertyList();
+             for (Property current : keytabList) {
+                 String principal = current.getName();
+                 ModelNode keytab = current.getValue();
+                 String path = KeytabResourceDefinition.PATH.resolveModelAttribute(context, keytab).asString();
+                 ModelNode relativeToNode = KeytabResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, keytab);
+                 String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
+                 boolean debug = KeytabResourceDefinition.DEBUG.resolveModelAttribute(context, keytab).asBoolean();
+                 final String[] forHostsValues;
+                 ModelNode forHosts = KeytabResourceDefinition.FOR_HOSTS.resolveModelAttribute(context, keytab);
+                 if (forHosts.isDefined()) {
+                     List<ModelNode> list = forHosts.asList();
+                     forHostsValues = new String[list.size()];
+                     for (int i=0;i<list.size();i++) {
+                         forHostsValues[i] = list.get(i).asString();
+                     }
+                 } else {
+                     forHostsValues = new String[0];
+                 }
+
+                 ServiceName keytabName = KeytabService.ServiceUtil.createServiceName(realmName, principal);
+                 KeytabService ks = new KeytabService(principal, path, relativeTo, forHostsValues, debug);
+
+                 ServiceBuilder<KeytabService> keytabBuilder = serviceTarget.addService(keytabName, ks).setInitialMode(ON_DEMAND);
+
+                if (relativeTo != null) {
+                    keytabBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, ks.getPathManagerInjector());
+                    keytabBuilder.addDependency(pathName(relativeTo));
+                }
+
+                 controllers.add(keytabBuilder.install());
+                 KeytabService.ServiceUtil.addDependency(kifsBuilder, kifs.getKeytabInjector(), realmName, principal);
+             }
+         }
+
+         controllers.add(kifsBuilder.install());
+
+         KeytabIdentityFactoryService.ServiceUtil.addDependency(realmBuilder, injector, realmName);
     }
 
     private void addUsersService(OperationContext context, ModelNode users, String realmName, ServiceTarget serviceTarget,

@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYTAB;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -80,6 +81,33 @@ public class ManagementUtil {
         assert realmName != null : "operation did not have an address that included a " + SECURITY_REALM;
         return realmName;
     }
+
+    static ServiceController<KeytabService> getKeytabService(final OperationContext context, final ModelNode operation) {
+        ServiceRegistry registry = context.getServiceRegistry(false);
+
+        return (ServiceController<KeytabService>) registry.getRequiredService(getKeytabServiceName(operation));
+    }
+
+    static ServiceName getKeytabServiceName(final ModelNode operation) {
+        String realmName = null;
+        String principal = null;
+        PathAddress pa = PathAddress.pathAddress(operation.require(OP_ADDR));
+        for (int i = pa.size() - 1; i > 0; i--) {
+            PathElement pe = pa.getElement(i);
+            String key = pe.getKey();
+            if (SECURITY_REALM.equals(key)) {
+                realmName = pe.getValue();
+                break; // By the time this is found the principal should have already been found.
+            } else if (KEYTAB.equals(key)) {
+                principal = pe.getValue();
+            }
+        }
+        assert realmName != null : "operation did not have an address that included a " + SECURITY_REALM;
+        assert principal != null : "operation did not have an address that included a " + KEYTAB;
+
+        return KeytabService.ServiceUtil.createServiceName(realmName, principal);
+    }
+
 
     static void updateUserDomainCallbackHandler(final OperationContext context, final ModelNode operation, final boolean forRollback) {
         UserDomainCallbackHandler cbh = getUserDomainCallbackHandler(context, operation);

@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.domain.management;
 
 import java.util.Map;
@@ -77,6 +78,17 @@ public interface SecurityRealm {
      * @return A CallbackHandlerFactory for a pre-configured secret.
      */
     CallbackHandlerFactory getSecretCallbackHandlerFactory();
+
+    /**
+     * Used to obtain a {@link SubjectIdentity} containing a {@link Subject} for the Kerberos server identity represented by this {@link SecurityRealm}.
+     *
+     * This method can return {@code null} if there is no appropriate identity.
+     *
+     * @param forHost The name of the host this identity should represent.
+     * @param isClient Is the caller acting on the client side or server side of the connection.
+     * @return A {@link SubjectIdentity} for the server identity or {@code null} if none are available.
+     */
+    SubjectIdentity getSubjectIdentity(final String forHost, final boolean isClient);
 
     public static final class ServiceUtil {
 

@@ -79,6 +79,7 @@ public enum Attribute {
     FILTER("filter"),
     FIXED_PORT("fixed-port"),
     FIXED_SOURCE_PORT("fixed-source-port"),
+    FOR_HOSTS("for-hosts"),
     FORCE("force"),
     FORMATTER("formatter"),
     GROUP("group"),

@@ -916,6 +916,39 @@ public interface DomainManagementMessages {
     @Message(id = 21005, value = "No operation was found that has been holding the operation execution write lock for long than [%d] seconds")
     String noNonProgressingOperationFound(long timeout);
 
+    /**
+     * Create an exception indicating an error parsing the Keytab location.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21006, value = "Invalid Keytab path")
+    StartException invalidKeytab(@Cause Exception cause);
+
+    /**
+     * Create an exception to indicate that logout has already been called on the SubjectIdentity.
+     *
+     * @return a {@link IllegalStateException} for the error.
+     */
+    @Message(id = 21007, value = "logout has already been called on this SubjectIdentity.")
+    IllegalStateException subjectIdentityLoggedOut();
+
+    /**
+     * Create an exception indicating an error obtaining a Kerberos TGT.
+     *
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 21008, value = "Unable to obtain Kerberos TGT")
+    OperationFailedException unableToObtainTGT(@Cause Exception cause);
+
+    /**
+     * Create an {@link OperationFailedException} where a security realm has Kerberos enabled for authentication but no Keytab in the server-identities.
+     *
+     * @param realm The name of the security realm.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 21009, value = "Kerberos is enabled for authentication on security realm '%s' but no Keytab has been added to the server-identity.")
+    OperationFailedException kerberosWithoutKeytab(String realm);
+
     /*
      * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
      *

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,16 +22,34 @@
 
 package org.jboss.as.domain.management;
 
+import javax.security.auth.Subject;
+
 /**
- * An enumeration of the authentication mechanisms that can be supported by a security realm.
+ * Obtained from a {@link SecurityRealm} to provide a {@link Subject} representing the servers identity.
+ *
+ * This identity is returned instead of just the {@link Subject} as it adds the ability to logout so that the {@link Subject}
+ * can be cleaned up.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public enum AuthenticationMechanism {
-    /*
-     * Values are ordered in priority order, do not re-order unless deliberately changing priority order.
-     */
+public interface SubjectIdentity {
 
-    LOCAL, CLIENT_CERT, KERBEROS, DIGEST, PLAIN;
+    /**
+     * Get the {@link Subject} instance wrapped by this {@code SubjectIdentity}.
+     *
+     * This method will always return the same instance of {@link Subject} and will never return {@code null}.
+     *
+     * @return The associated {@link Subject}
+     * @throws IllegalStateException If called after {@link SubjectIdentity#logout()}
+     */
+    Subject getSubject();
+
+    /**
+     * Clean up this instance and logout any identity associated with the {@link Subject}.
+     *
+     * After this method is called the instance of this SubjectIdentity should be discarded as it will no longer be useable to
+     * obtain a {@link Subject} instance.
+     */
+    void logout();
 
 }
