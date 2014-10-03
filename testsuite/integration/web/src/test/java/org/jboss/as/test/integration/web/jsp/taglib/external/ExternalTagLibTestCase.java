@@ -21,8 +21,8 @@
  */
 package org.jboss.as.test.integration.web.jsp.taglib.external;
 
-import java.io.File;
 import java.net.URL;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.ModuleUtils;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -48,18 +49,18 @@ import org.junit.runner.RunWith;
 public class ExternalTagLibTestCase {
 
     private static final String MODULE_NAME = "external-tag-lib";
-
+    private static TempTestModule testModule;
     public static void doSetup() throws Exception {
-        tearDown();
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
+        testModule = ModuleUtils.createTestModuleWithEEDependencies(MODULE_NAME);
+        JavaArchive jar = testModule.addResource("module.jar");
         jar.addClass(ExternalTag.class);
         jar.addAsManifestResource(ExternalTagLibTestCase.class.getPackage(), "external.tld", "external.tld");
-        ModuleUtils.createSimpleTestModule(MODULE_NAME, jar);
+        testModule.create(true);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        ModuleUtils.deleteRecursively(new File(ModuleUtils.getModulePath(), "test"));
+        testModule.remove();
     }
 
 

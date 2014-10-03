@@ -21,28 +21,30 @@
  */
 package org.jboss.as.test.integration.weld.modules;
 
-import static org.jboss.as.test.shared.ModuleUtils.createTestModule;
-import static org.jboss.as.test.shared.ModuleUtils.deleteRecursively;
-import static org.jboss.as.test.shared.ModuleUtils.getModulePath;
-
 import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.inject.Instance;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.TempTestModule;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 
 /**
  * Tests accessibility between modules deployed in WF.
@@ -64,17 +66,32 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class CrossModuleAccessibilityTestCase {
 
+    private static final List<TempTestModule> testModules = new ArrayList<>();
+
     public static void doSetup() throws Exception {
-        tearDown();
-        createTestModule("alpha", "alpha-module.xml", AlphaBean.class, AlphaLookup.class);
-        createTestModule("bravo", "bravo-module.xml", BravoBean.class, BravoLookup.class);
-        createTestModule("charlie", "charlie-module.xml", CharlieBean.class, CharlieLookup.class);
-        createTestModule("delta", "delta-module.xml", DeltaBean.class, DeltaLookup.class);
+        addModule("alpha", "alpha-module.xml", AlphaBean.class, AlphaLookup.class);
+        addModule("bravo", "bravo-module.xml", BravoBean.class, BravoLookup.class);
+        addModule("charlie", "charlie-module.xml", CharlieBean.class, CharlieLookup.class);
+        addModule("delta", "delta-module.xml", DeltaBean.class, DeltaLookup.class);
+    }
+
+    private static void addModule(String moduleName, String moduleXml, Class<?> beanType, Class<?> lookupType) throws Exception {
+        URL url = beanType.getResource(moduleXml);
+        File moduleXmlFile = new File(url.toURI());
+        TempTestModule testModule = new TempTestModule("test." + moduleName, moduleXmlFile);
+        JavaArchive jar = testModule.addResource(moduleName + ".jar");
+        jar.addClass(beanType);
+        jar.addClass(lookupType);
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        testModules.add(testModule);
+        testModule.create(true);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        deleteRecursively(new File(getModulePath(), "test"));
+        for (TempTestModule testModule : testModules) {
+            testModule.remove();
+        }
     }
 
     @Deployment
@@ -82,6 +99,7 @@ public class CrossModuleAccessibilityTestCase {
         doSetup();
         WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addClass(CrossModuleAccessibilityTestCase.class)
+                .addClass(TempTestModule.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.alpha meta-inf, test.bravo meta-inf, test.charlie meta-inf, test.delta meta-inf\n"), "MANIFEST.MF");
         return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);
