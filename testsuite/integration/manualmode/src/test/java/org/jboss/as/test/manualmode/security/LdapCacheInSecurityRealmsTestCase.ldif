@@ -1,0 +1,142 @@
+version: 1
+
+dn: dc=jboss,dc=org
+dc: jboss
+objectClass: top
+objectClass: domain
+
+dn: ou=Users,dc=jboss,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: uid=jduke,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke
+userPassword: theduke
+
+dn: uid=jduke0,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke0
+userPassword: theduke
+
+dn: uid=jduke1,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke1
+userPassword: theduke
+
+dn: uid=jduke2,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke2
+userPassword: theduke
+
+dn: uid=jduke3,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke3
+userPassword: theduke
+
+dn: uid=jduke4,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke4
+userPassword: theduke
+
+dn: uid=jduke5,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke5
+userPassword: theduke
+
+dn: uid=jduke6,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke6
+userPassword: theduke
+
+dn: uid=jduke7,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke7
+userPassword: theduke
+
+dn: uid=jduke8,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke8
+userPassword: theduke
+
+dn: uid=jduke9,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+description: cn=Admin,ou=Groups,dc=jboss,dc=org
+cn: Java Duke
+sn: duke
+uid: jduke9
+userPassword: theduke
+
+dn: ou=Groups,dc=jboss,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Groups
+
+dn: cn=Admin,ou=Groups,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Admin
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+member: uid=jduke0,ou=Users,dc=jboss,dc=org
+member: uid=jduke1,ou=Users,dc=jboss,dc=org
+member: uid=jduke2,ou=Users,dc=jboss,dc=org
+member: uid=jduke3,ou=Users,dc=jboss,dc=org
+member: uid=jduke4,ou=Users,dc=jboss,dc=org
+member: uid=jduke5,ou=Users,dc=jboss,dc=org
+member: uid=jduke6,ou=Users,dc=jboss,dc=org
+member: uid=jduke7,ou=Users,dc=jboss,dc=org
+member: uid=jduke8,ou=Users,dc=jboss,dc=org
+member: uid=jduke9,ou=Users,dc=jboss,dc=org
