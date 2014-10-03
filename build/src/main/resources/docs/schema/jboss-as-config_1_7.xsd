@@ -438,8 +438,76 @@
         <xs:sequence>
             <xs:element name="ssl" type="sslType" minOccurs="0" />
             <xs:element name="secret" type="secretType" minOccurs="0" />
+            <xs:element name="kerberos" type="kerberosIdentityType" minOccurs="0" />
         </xs:sequence>
     </xs:complexType>
+
+    <xs:complexType name="kerberosIdentityType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a servers Kerberos identity.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="keytab">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            Reference to an individual keytab.
+
+                            On receipt of an incoming request the host name will be extracted from the request and the keytab to be used will be selected as follows: -
+                              1 - Iterate the list of keytabs and identify one where the host name is listed in the for-hosts attribute.
+                              2 - Iterate the list of keytabs and compare the host name against the host extracted from the request.
+                              3 - Use the keytab where for-hosts is set to '*'.
+                              
+                            If no match is found no keytab will be selected and Kerberos will not be available for communication as that host.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute name="path" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The path of the keytab.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="relative-to" use="optional" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The name of another previously named path, or of one of the
+                                standard paths provided by the system. If 'relative-to' is
+                                provided, the value of the 'path' attribute is treated as
+                                relative to the path specified by this attribute.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="principal" use="required" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The name of the principal represented by the keytab.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="for-hosts" use="optional" type="stringListType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                A space separated list of the host names this keytab can be used for.  Can also be set to '*' if applicable for all hosts if a better match is not found.
+                                
+                                If multiple keytabs are defined as handling the same host which one is selected is undefined and subject to change,
+                                for predictability you should ensure that no more than one keytab is defined per host.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="stringListType">
+        <xs:annotation>
+            <xs:documentation>A list of String.</xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:string"/>
+    </xs:simpleType>
 
     <xs:complexType name="secretType">
         <xs:annotation>
@@ -728,6 +796,15 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="kerberos" type="kerberosAuthenticationType" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Configuration to enable Kerberos authentication.
+                        
+                        Currently only supported for HTTP.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element> 
             <xs:choice minOccurs="0">
                 <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />
                 <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
@@ -738,6 +815,25 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="kerberosAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition to enable Kerberos for
+                authentication.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="remove-realm" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    When a user is authenticated using Kerberos typically their identity will be represented in the form username@REALM, 
+                    setting this option to true will strip the @REALM part of the name.
+
+                    This may be desired to bring the names in-line with username/password based authentication if used in parallel.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
     <xs:complexType name="jaasAuthenticationType">
         <xs:annotation>
             <xs:documentation>

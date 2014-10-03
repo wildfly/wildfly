@@ -89,7 +89,9 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_D
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KERBEROS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYTAB;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
@@ -132,7 +134,9 @@ import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource;
 import org.jboss.as.domain.management.security.BaseLdapUserSearchResource;
 import org.jboss.as.domain.management.security.GroupToPrincipalResourceDefinition;
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.KerberosAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
+import org.jboss.as.domain.management.security.KeytabResourceDefinition;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.LdapCacheResourceDefinition;
@@ -716,7 +720,7 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SERVER_IDENTITIES:
-                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    parseServerIdentities_1_0(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
                     parseAuthentication_1_0(reader, expectedNs, realmAddress, list);
@@ -748,7 +752,7 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SERVER_IDENTITIES:
-                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    parseServerIdentities_1_0(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
                     parseAuthentication_1_1(reader, expectedNs, realmAddress, list);
@@ -786,10 +790,30 @@ public class ManagementXml {
                     parsePlugIns(reader, expectedNs, realmAddress, list);
                     break;
                 case SERVER_IDENTITIES:
-                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                        case DOMAIN_1_6:
+                            parseServerIdentities_1_0(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseServerIdentities_1_7(reader, expectedNs, realmAddress, list);
+                            break;
+                    }
                     break;
                 case AUTHENTICATION: {
-                    parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                        case DOMAIN_1_6:
+                            parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseAuthentication_1_7(reader, expectedNs, realmAddress, list);
+                            break;
+                    }
                     break;
                 }
                 case AUTHORIZATION:
@@ -834,7 +858,7 @@ public class ManagementXml {
         }
     }
 
-    private static void parseServerIdentities(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parseServerIdentities_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -848,6 +872,33 @@ public class ManagementXml {
                 }
                 case SSL: {
                     parseSSL(reader, expectedNs, realmAddress, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseServerIdentities_1_7(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECRET: {
+                    parseSecret(reader, realmAddress, list);
+                    break;
+                }
+                case SSL: {
+                    parseSSL(reader, expectedNs, realmAddress, list);
+                    break;
+                }
+                case KERBEROS: {
+                    parseKerberosIdentity(reader, expectedNs, realmAddress, list);
                     break;
                 }
                 default: {
@@ -1108,6 +1159,80 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
+    private static void parseKerberosIdentity(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        ModelNode kerberos = new ModelNode();
+        kerberos.get(OP).set(ADD);
+        ModelNode kerberosAddress = realmAddress.clone().add(SERVER_IDENTITY, KERBEROS);
+        kerberos.get(OP_ADDR).set(kerberosAddress);
+        list.add(kerberos);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case KEYTAB:
+                    parseKeyTab(reader, expectedNs, kerberosAddress, list);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+
+        }
+
+    }
+
+    private static void parseKeyTab(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        ModelNode keytab = new ModelNode();
+        keytab.get(OP).set(ADD);
+        list.add(keytab);
+
+        Set<Attribute> requiredAttributes = EnumSet.of(Attribute.PRINCIPAL, Attribute.PATH);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                requiredAttributes.remove(attribute);
+                switch (attribute) {
+                    case PRINCIPAL:
+                        keytab.get(OP_ADDR).set(parentAddress).add(KEYTAB, value);
+                        break;
+                    case PATH:
+                        KeytabResourceDefinition.PATH.parseAndSetParameter(value, keytab, reader);
+                        break;
+                    case RELATIVE_TO:
+                        KeytabResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, keytab, reader);
+                        break;
+                    case FOR_HOSTS:
+                        for (String host : reader.getListAttributeValue(i)) {
+                            KeytabResourceDefinition.FOR_HOSTS.parseAndAddParameterElement(host, keytab, reader);
+                        }
+                        break;
+                    case DEBUG:
+                        KeytabResourceDefinition.DEBUG.parseAndSetParameter(value, keytab, reader);
+                        break;
+                    default:
+                        throw unexpectedAttribute(reader, i);
+
+                }
+            }
+        }
+
+        // This would pick up if the address for the operation has not yet been set.
+        if (requiredAttributes.isEmpty() == false) {
+            throw missingRequired(reader, requiredAttributes);
+        }
+
+        requireNoContent(reader);
+
+    }
+
     private static void parseAuthentication_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         int userCount = 0;
@@ -1310,6 +1435,120 @@ public class ManagementXml {
                 }
             }
         }
+    }
+
+    private static void parseAuthentication_1_7(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        // Only one truststore can be defined.
+        boolean trustStoreFound = false;
+        // Only one local can be defined.
+        boolean localFound = false;
+        // Only one kerberos can be defined.
+        boolean kerberosFound = false;
+        // Only one of ldap, properties or users can be defined.
+        boolean usernamePasswordFound = false;
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+
+            switch (element) {
+                case JAAS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseJaasAuthentication_1_6(reader, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case KERBEROS: {
+                    parseKerberosAuthentication_1_7(reader, realmAddress, list);
+                    kerberosFound = true;
+                    break;
+                }
+                case LDAP: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLdapAuthentication_1_7(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PROPERTIES: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parsePropertiesAuthentication_1_1(reader, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case TRUSTSTORE: {
+                    if (trustStoreFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseTruststore(reader, expectedNs, realmAddress, list);
+                    trustStoreFound = true;
+                    break;
+                }
+                case USERS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseUsersAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PLUG_IN: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    ModelNode parentAddress = realmAddress.clone().add(AUTHENTICATION);
+                    parsePlugIn_Authentication(reader, expectedNs, parentAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case LOCAL: {
+                    if (localFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLocalAuthentication_1_6(reader, expectedNs, realmAddress, list);
+
+                    localFound = true;
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseKerberosAuthentication_1_7(final XMLExtendedStreamReader reader,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, KERBEROS);
+        ModelNode kerberos = Util.getEmptyOperation(ADD, addr);
+        list.add(kerberos);
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case REMOVE_REALM:
+                        KerberosAuthenticationResourceDefinition.REMOVE_REALM.parseAndSetParameter(value, kerberos, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        requireNoContent(reader);
     }
 
     private static void parseJaasAuthentication_1_1(final XMLExtendedStreamReader reader,
@@ -3538,6 +3777,26 @@ public class ManagementXml {
     private void writeServerIdentities(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
         writer.writeStartElement(Element.SERVER_IDENTITIES.getLocalName());
         ModelNode serverIdentities = realm.get(SERVER_IDENTITY);
+        if (serverIdentities.hasDefined(KERBEROS)) {
+            writer.writeStartElement(Element.KERBEROS.getLocalName());
+            ModelNode kerberos = serverIdentities.require(KERBEROS);
+
+            if (kerberos.hasDefined(KEYTAB)) {
+                List<Property> keytabList = kerberos.get(KEYTAB).asPropertyList();
+                for (Property current : keytabList) {
+                    ModelNode currentNode = current.getValue();
+                    writer.writeEmptyElement(KEYTAB);
+                    writer.writeAttribute(Attribute.PRINCIPAL.getLocalName(), current.getName());
+                    KeytabResourceDefinition.PATH.marshallAsAttribute(currentNode, writer);
+                    KeytabResourceDefinition.RELATIVE_TO.marshallAsAttribute(currentNode, writer);
+                    KeytabResourceDefinition.FOR_HOSTS.marshallAsElement(currentNode, writer);
+                    KeytabResourceDefinition.DEBUG.marshallAsAttribute(currentNode, writer);
+                }
+            }
+
+            writer.writeEndElement();
+        }
+
         if (serverIdentities.hasDefined(SSL)) {
             writer.writeStartElement(Element.SSL.getLocalName());
             ModelNode ssl = serverIdentities.get(SSL);
@@ -3611,6 +3870,12 @@ public class ManagementXml {
             LocalAuthenticationResourceDefinition.ALLOWED_USERS.marshallAsAttribute(local, writer);
             LocalAuthenticationResourceDefinition.SKIP_GROUP_LOADING.marshallAsAttribute(local, writer);
             writer.writeEndElement();
+        }
+
+        if (authentication.hasDefined(KERBEROS)) {
+            ModelNode kerberos = authentication.require(KERBEROS);
+            writer.writeEmptyElement(Element.KERBEROS.getLocalName());
+            KerberosAuthenticationResourceDefinition.REMOVE_REALM.marshallAsAttribute(kerberos, writer);
         }
 
         if (authentication.hasDefined(JAAS)) {
