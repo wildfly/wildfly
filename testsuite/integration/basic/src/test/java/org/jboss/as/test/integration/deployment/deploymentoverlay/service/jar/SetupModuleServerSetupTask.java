@@ -24,19 +24,19 @@ package org.jboss.as.test.integration.deployment.deploymentoverlay.service.jar;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.TempTestModule;
+import org.jboss.as.test.module.util.TestModule;
 
 /**
  * @author baranowb
  * 
  */
 public class SetupModuleServerSetupTask implements ServerSetupTask {
-    private volatile TempTestModule testModule;
+    private volatile TestModule testModule;
 
     @Override
     public void setup(ManagementClient arg0, String arg1) throws Exception {
         // this.testModule = ModuleUtils.createTestModuleWithEEDependencies(Constants.TEST_MODULE_NAME);
-        this.testModule = new TempTestModule(Constants.TEST_MODULE_NAME_FULL, "javaee.api", "javax.ejb.api");
+        this.testModule = new TestModule(Constants.TEST_MODULE_NAME_FULL, "javaee.api", "javax.ejb.api");
         this.testModule.addResource("module.jar").addClasses(Constants.class, InterceptorType.class, InterceptorBase.class,
                 InterceptorTestimony.class);
         this.testModule.create();

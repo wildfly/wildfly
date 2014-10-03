@@ -27,7 +27,7 @@ package org.jboss.as.test.integration.deployment.deploymentoverlay.service.ear;
  *
  */
 public interface Constants {
-    String TEST_MODULE_NAME = "OverlayTest";
+    String TEST_MODULE_NAME = "OverlayTest-ear";
     String TEST_MODULE_NAME_FULL = "test." + TEST_MODULE_NAME;
     
     String DEPLOYMENT_NAME_TESTER = "tester";
