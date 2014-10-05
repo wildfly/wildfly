@@ -187,7 +187,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
 
-        logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Starting timerservice for timedObjectId: " + getInvoker().getTimedObjectId());
+        }
         final EJBComponent component = ejbComponentInjectedValue.getValue();
         this.transactionManager = component.getTransactionManager();
         this.tsr = component.getTransactionSynchronizationRegistry();
@@ -698,8 +700,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         //timers are removed from the list as they are loaded
         final List<ScheduleTimer> newAutoTimers = new LinkedList<ScheduleTimer>(autoTimers);
 
-        ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active persistentTimers for timedObjectId: "
-                + getInvoker().getTimedObjectId());
+        if (ROOT_LOGGER.isDebugEnabled()) {
+            ROOT_LOGGER.debug("Found " + restorableTimers.size() + " active persistentTimers for timedObjectId: "
+                    + getInvoker().getTimedObjectId());
+        }
         // now "start" each of the restorable timer. This involves, moving the timer to an ACTIVE state
         // and scheduling the timer task
         for (final TimerImpl activeTimer : restorableTimers) {
@@ -732,13 +736,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                     activeTimer.setTimerState(TimerState.CANCELED);
                 } else {
                     startTimer(activeTimer);
-                    ROOT_LOGGER.debug("Started timer: " + activeTimer);
+                    ROOT_LOGGER.debugv("Started timer: {0}", activeTimer);
                 }
                 this.persistTimer(activeTimer, false);
             } else if (!ineligibleTimerStates.contains(activeTimer.getState())) {
                 startTimer(activeTimer);
             }
-            ROOT_LOGGER.debug("Started timer: " + activeTimer);
+            ROOT_LOGGER.debugv("Started timer: {0}",  activeTimer);
         }
 
         for (ScheduleTimer timer : newAutoTimers) {
@@ -871,14 +875,14 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             long intervalDuration = timer.getInterval();
             final Task task = new Task(timerTask, ejbComponentInjectedValue.getValue().getControlPoint());
             if (intervalDuration > 0) {
-                ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
-                        + " milliseconds from now with repeated interval=" + intervalDuration);
+                ROOT_LOGGER.debugv("Scheduling timer {0} at fixed rate, starting at {1} milliseconds from now with repeated interval={2}",
+                        timer, delay, intervalDuration);
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
             } else {
-                ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milliseconds from now");
+                ROOT_LOGGER.debugv("Scheduling a single action timer {0} starting at {1} milliseconds from now", timer, delay);
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
@@ -1143,7 +1147,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         @Override
         public void afterCompletion(int status) {
             if (status == Status.STATUS_COMMITTED) {
-                ROOT_LOGGER.debug("commit timer creation: " + this.timer);
+                ROOT_LOGGER.debugv("commit timer creation: {0}", this.timer);
                 timers.put(timer.getId(), timer);
 
                 registerTimerResource(timer.getId());
@@ -1158,7 +1162,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         break;
                 }
             } else if (status == Status.STATUS_ROLLEDBACK) {
-                ROOT_LOGGER.debug("Rolling back timer creation: " + this.timer);
+                ROOT_LOGGER.debugv("Rolling back timer creation: {0}", this.timer);
                 this.timer.setTimerState(TimerState.CANCELED);
             }
         }
