@@ -168,7 +168,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
 
     }
 
-    private void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case OPTION: {
@@ -182,7 +182,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         }
     }
 
-    private void parseChannelCreationOption(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseChannelCreationOption(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.NAME, EJB3SubsystemXMLAttribute.TYPE);
         final int count = reader.getAttributeCount();
         String optionName = null;
@@ -197,10 +197,10 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
                     optionName = attributeValue;
                     break;
                 case TYPE:
-                    ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.parseAndSetParameter(attributeValue, operation, reader);
+                    RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.parseAndSetParameter(attributeValue, operation, reader);
                     break;
                 case VALUE:
-                    ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.parseAndSetParameter(attributeValue, operation, reader);
+                    RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.parseAndSetParameter(attributeValue, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

@@ -168,11 +168,11 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
             for (final Property optionProperty : channelCreationOptions.asPropertyList()) {
                 final String name = optionProperty.getName();
                 final ModelNode propValueModel = optionProperty.getValue();
-                final String type = ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.resolveModelAttribute(context,propValueModel).asString();
+                final String type = RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.resolveModelAttribute(context,propValueModel).asString();
                 final String optionClassName = this.getClassNameForChannelOptionType(type);
                 final String fullyQualifiedOptionName = optionClassName + "." + name;
                 final Option option = Option.fromString(fullyQualifiedOptionName, loader);
-                final String value = ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.resolveModelAttribute(context, propValueModel).asString();
+                final String value = RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.resolveModelAttribute(context, propValueModel).asString();
                 builder.set(option, option.parseValue(value, loader));
             }
             return builder.getMap();

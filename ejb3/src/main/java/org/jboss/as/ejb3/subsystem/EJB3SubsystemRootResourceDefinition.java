@@ -49,9 +49,9 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
@@ -254,6 +254,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         // subsystem=ejb3/service=iiop
         subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
+
+        subsystemRegistration.registerSubModel(RemotingProfileResourceDefinition.INSTANCE);
     }
 
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
@@ -299,6 +301,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
+        builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
     }
 
@@ -321,6 +324,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
         PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
+        builder.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.REMOTING_PROFILE));
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
     }
 

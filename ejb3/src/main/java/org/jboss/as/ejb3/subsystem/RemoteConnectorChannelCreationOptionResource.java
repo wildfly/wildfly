@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,13 +32,10 @@ import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -54,9 +48,9 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Jaikiran Pai
  */
-class ChannelCreationOptionResource extends SimpleResourceDefinition {
+class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinition {
 
-    static final ChannelCreationOptionResource INSTANCE = new ChannelCreationOptionResource();
+    static final RemoteConnectorChannelCreationOptionResource INSTANCE = new RemoteConnectorChannelCreationOptionResource();
 
     /**
      * Attribute definition of the channel creation option "value"
@@ -72,7 +66,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_TYPE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.TYPE, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).setValidator(AllowedChannelOptionTypesValidator.INSTANCE).build();
 
-    ChannelCreationOptionResource() {
+    RemoteConnectorChannelCreationOptionResource() {
         super(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
                 new ChannelCreationOptionAdd(),
@@ -100,7 +94,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel);
+            RemoteConnectorChannelCreationOptionResource.recreateParentService(context, parentModel);
         }
 
         @Override
@@ -119,13 +113,24 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         }
 
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.validateAndSet(operation, model);
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.validateAndSet(operation, model);
+            RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.validateAndSet(operation, model);
+            RemoteConnectorChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.validateAndSet(operation, model);
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel);
+            RemoteConnectorChannelCreationOptionResource.recreateParentService(context, parentModel);
+        }
+
+        @Override
+        protected PathAddress getParentAddress(PathAddress address) {
+            for (int i = address.size() - 1; i >= 0; i--) {
+                PathElement pe = address.getElement(i);
+                if (pe.getKey().equals("service") && pe.getValue().equals("remote")) {
+                    return address.subAddress(0, i + 1);
+                }
+            }
+            return null;
         }
 
         @Override
@@ -144,7 +149,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode ejb3RemoteServiceModelNode) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, ejb3RemoteServiceModelNode);
+            RemoteConnectorChannelCreationOptionResource.recreateParentService(context, ejb3RemoteServiceModelNode);
         }
 
         @Override
@@ -153,39 +158,9 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         }
     }
 
-    private static class AllowedChannelOptionTypesValidator extends ModelTypeValidator implements AllowedValuesValidator {
-        private static AllowedChannelOptionTypesValidator INSTANCE = new AllowedChannelOptionTypesValidator();
-
-        private final List<ModelNode> allowedChannelOptTypes;
-
-        private AllowedChannelOptionTypesValidator() {
-            super(ModelType.STRING, false);
-            allowedChannelOptTypes = new ArrayList<ModelNode>();
-            allowedChannelOptTypes.add(new ModelNode().set("remoting"));
-            allowedChannelOptTypes.add(new ModelNode().set("xnio"));
-        }
-
-        @Override
-        public List<ModelNode> getAllowedValues() {
-            return allowedChannelOptTypes;
-        }
-
-        @Override
-        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            super.validateParameter(parameterName, value);
-            if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                if (!this.allowedChannelOptTypes.contains(value)) {
-                    throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(value.asString());
-                }
-            }
-        }
-    }
-
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
         parent.addChildResource(INSTANCE.getPathElement())
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CHANNEL_CREATION_OPTION_VALUE);
     }
-
-
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * @author Jaikiran Pai
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public enum EJB3SubsystemXMLAttribute {
     UNKNOWN(null),
@@ -39,6 +40,7 @@ public enum EJB3SubsystemXMLAttribute {
     CACHE_REF("cache-ref"),
     @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
     @Deprecated CLUSTERED_CACHE_REF("clustered-cache-ref"),
+    CONNECT_TIMEOUT("connect-timeout"),
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
@@ -49,6 +51,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),
+    EXCLUDE_LOCAL_RECEIVER("exclude-local-receiver"),
 
     @Deprecated GROUPS_PATH("groups-path"),
 
@@ -59,11 +62,15 @@ public enum EJB3SubsystemXMLAttribute {
 
     KEEPALIVE_TIME("keepalive-time"),
 
+    LOCAL_RECEIVER_PASS_BY_VALUE("local-receiver-pass-by-value"),
+
     MAX_POOL_SIZE("max-pool-size"),
     MAX_SIZE("max-size"),
     MAX_THREADS("max-threads"),
 
     NAME("name"),
+
+    OUTBOUND_CONNECTION_REF("outbound-connection-ref"),
 
     PARTITION("partition"),
     REFRESH_INTERVAL("refresh-interval"),

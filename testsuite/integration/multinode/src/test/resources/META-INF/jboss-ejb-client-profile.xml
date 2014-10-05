@@ -1,0 +1,5 @@
+<jboss-ejb-client xmlns="urn:jboss:ejb-client:1.3">
+    <client-context>
+        <profile name="test-profile" />
+    </client-context>
+</jboss-ejb-client>

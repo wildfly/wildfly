@@ -90,10 +90,10 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         // register channel-creation-options as sub model for EJB remote service
-        resourceRegistration.registerSubModel(new ChannelCreationOptionResource());
+        resourceRegistration.registerSubModel(new RemoteConnectorChannelCreationOptionResource());
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder builder) {
-        ChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
+        RemoteConnectorChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
     }
 }

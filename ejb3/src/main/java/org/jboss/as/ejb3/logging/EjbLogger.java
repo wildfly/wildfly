@@ -3028,4 +3028,7 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 464, value = "The \"" + EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS + "\" attribute may not be set to true")
     OperationFailedException disableDefaultEjbPermissionsCannotBeTrue();
+
+    @Message(id = 465, value = "Invalid client descriptor configuration: 'profile' and 'remoting-ejb-receivers' cannot be used together")
+    DeploymentUnitProcessingException profileAndRemotingEjbReceiversUsedTogether();
 }
