@@ -72,8 +72,11 @@ public class ChannelRemoveHandler extends AbstractRemoveStepHandler {
 
         context.removeService(ChannelService.getServiceName(channelName));
         context.removeService(ChannelService.createChannelBinding(channelName).getBinderServiceName());
-        context.removeService(ChannelService.getStackServiceName(channelName));
+        context.removeService(ChannelService.getFactoryServiceName(channelName));
         context.removeService(ConnectedChannelService.getServiceName(channelName));
+
+        context.removeService(ChannelFactoryService.getServiceName(channelName));
+        context.removeService(ChannelFactoryService.createChannelFactoryBinding(channelName).getBinderServiceName());
 
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
             for (ServiceName serviceName : installer.getServiceNames(channelName)) {

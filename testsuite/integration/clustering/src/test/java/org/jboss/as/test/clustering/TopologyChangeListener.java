@@ -30,7 +30,7 @@ public interface TopologyChangeListener {
      * @param containerName the cache container name
      * @param cacheName the cache name
      * @param nodes the anticipated topology
-     * @throws InterruptedException if topology to stabilize did not stabilize within a reasonable amount of time - or the process was interrupted.
+     * @throws InterruptedException if topology did not stabilize within a reasonable amount of time - or the process was interrupted.
      */
     void establishTopology(String containerName, String cacheName, String... nodes) throws InterruptedException;
 }

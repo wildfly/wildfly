@@ -63,8 +63,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
     }
 
     interface TransportConfiguration {
-        String getClusterName();
-        Long getLockTimeout();
+        long getLockTimeout();
         Channel getChannel();
         ChannelFactory getChannelFactory();
         Executor getExecutor();
@@ -143,10 +142,8 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
         if (transport != null) {
             transportBuilder.transport(new ChannelTransport(transport.getChannel()));
-            Long timeout = transport.getLockTimeout();
-            if (timeout != null) {
-                transportBuilder.distributedSyncTimeout(timeout.longValue());
-            }
+            transportBuilder.distributedSyncTimeout(transport.getLockTimeout());
+
             // Topology is retrieved from the channel
             ProtocolStackConfiguration stack = transport.getChannelFactory().getProtocolStackConfiguration();
             org.jboss.as.clustering.jgroups.TransportConfiguration.Topology topology = stack.getTransport().getTopology();
@@ -165,8 +162,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
                 }
             }
 
-            String clusterName = transport.getClusterName();
-            transportBuilder.clusterName((clusterName != null) ? clusterName : this.name);
+            transportBuilder.clusterName(this.name);
 
             Executor executor = transport.getExecutor();
             if (executor != null) {

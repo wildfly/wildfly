@@ -63,9 +63,6 @@ public class CommandDispatcherTestCase {
 
     @Test
     public void test() throws Exception {
-        String cluster = "server";
-        String nodeNameFormat = "%s/%s";
-        String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
@@ -73,7 +70,7 @@ public class CommandDispatcherTestCase {
             ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName1));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_1));
             assertTrue(topology.getRemoteNodes().toString() + " should be empty", topology.getRemoteNodes().isEmpty());
         } finally {
             // reset the selector

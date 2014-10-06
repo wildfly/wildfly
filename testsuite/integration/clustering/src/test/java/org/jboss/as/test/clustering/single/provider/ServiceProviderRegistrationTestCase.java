@@ -65,17 +65,13 @@ public class ServiceProviderRegistrationTestCase {
     @Test
     public void test() throws Exception {
 
-        String cluster = "server";
-        String nodeNameFormat = "%s/%s";
-        String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
-
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
             ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
             Collection<String> names = bean.getProviders();
             assertEquals(1, names.size());
-            assertTrue(names.toString(), names.contains(nodeName1));
+            assertTrue(names.toString(), names.contains(NODE_1));
         } finally {
             // reset the selector
             if (selector != null) {

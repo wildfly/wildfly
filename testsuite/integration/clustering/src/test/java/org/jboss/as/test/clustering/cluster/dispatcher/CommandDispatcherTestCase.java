@@ -52,10 +52,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
-        String cluster = "ee";
-        String nodeNameFormat = "%s/%s";
-        String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
-        String nodeName2 = String.format(nodeNameFormat, NODE_2, cluster);
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
@@ -63,16 +59,16 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
             ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName2));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_1));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(NODE_2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
             undeploy(DEPLOYMENT_2);
 
             topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName1));
-            assertEquals(nodeName1, topology.getLocalNode());
+            assertTrue(topology.getNodes().contains(NODE_1));
+            assertEquals(NODE_1, topology.getLocalNode());
             assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
             deploy(DEPLOYMENT_2);
@@ -81,16 +77,16 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().contains(nodeName2));
+            assertTrue(topology.getNodes().contains(NODE_1));
+            assertTrue(topology.getNodes().contains(NODE_2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
             stop(CONTAINER_1);
 
             topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName2));
-            assertEquals(nodeName2, topology.getLocalNode());
+            assertTrue(topology.getNodes().contains(NODE_2));
+            assertEquals(NODE_2, topology.getLocalNode());
             assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
             start(CONTAINER_1);
@@ -99,8 +95,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             topology = bean.getClusterTopology();
             assertEquals(topology.getNodes().toString(), 2, topology.getNodes().size());
-            assertTrue(topology.getNodes().toString() + " should contain " + nodeName1, topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().toString() + " should contain " + nodeName2, topology.getNodes().contains(nodeName2));
+            assertTrue(topology.getNodes().toString() + " should contain " + NODE_1, topology.getNodes().contains(NODE_1));
+            assertTrue(topology.getNodes().toString() + " should contain " + NODE_2, topology.getNodes().contains(NODE_2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
         } finally {
             // reset the selector

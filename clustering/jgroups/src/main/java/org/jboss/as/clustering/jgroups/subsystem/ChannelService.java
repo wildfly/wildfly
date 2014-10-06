@@ -55,7 +55,7 @@ public class ChannelService implements Service<Channel>, ChannelListener {
     private static final String CHANNEL = "channel";
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append(CHANNEL);
 
-    static ContextNames.BindInfo createChannelBinding(String channel) {
+    public static ContextNames.BindInfo createChannelBinding(String channel) {
         return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, CHANNEL, channel).getAbsoluteName());
     }
 
@@ -63,15 +63,14 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         return SERVICE_NAME.append((id != null) ? id : DEFAULT);
     }
 
-    public static ServiceName getStackServiceName(String channel) {
-        return getServiceName(channel).append("stack");
+    public static ServiceName getFactoryServiceName(String channel) {
+        return getServiceName(channel).append(ChannelFactoryService.FACTORY);
     }
 
     public static ServiceBuilder<Channel> build(ServiceTarget target, String id) {
         ChannelService service = new ChannelService(id);
-        ServiceName name = getServiceName(id);
-        return target.addService(name, service)
-                .addDependency(ChannelService.getStackServiceName(id), ChannelFactory.class, service.factory)
+        return target.addService(getServiceName(id), service)
+                .addDependency(ChannelService.getFactoryServiceName(id), ChannelFactory.class, service.factory)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
         ;
     }
@@ -96,10 +95,14 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         ChannelFactory factory = this.factory.getValue();
         try {
             this.channel = factory.createChannel(this.id);
+            if (this.channel instanceof JChannel) {
+                try {
+                    JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.id);
+                } catch (Exception e) {
+                    ROOT_LOGGER.debug(e.getMessage(), e);
+                }
+            }
             this.channel.addChannelListener(this);
-            // Don't connect the channel here
-            // This will be done by Infinispan (see AS7-5904)
-            JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.id);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -114,12 +117,14 @@ public class ChannelService implements Service<Channel>, ChannelListener {
     public void stop(StopContext context) {
         if (this.channel != null) {
             this.channel.removeChannelListener(this);
-            this.channel.close();
-            try {
-                JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.id);
-            } catch (Exception e) {
-                ROOT_LOGGER.debug(e.getMessage(), e);
+            if (this.channel instanceof JChannel) {
+                try {
+                    JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.id);
+                } catch (Exception e) {
+                    ROOT_LOGGER.debug(e.getMessage(), e);
+                }
             }
+            this.channel.close();
         }
         this.channel = null;
     }

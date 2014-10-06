@@ -30,8 +30,8 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +51,7 @@ import org.jboss.as.clustering.jgroups.RelayConfiguration;
 import org.jboss.as.clustering.jgroups.RemoteSiteConfiguration;
 import org.jboss.as.clustering.jgroups.TransportConfiguration;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
+import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -66,6 +67,7 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossExecutors;
 import org.jgroups.Channel;
@@ -188,7 +190,8 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String transportSocketBinding = ModelNodes.asString(ProtocolResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, transport));
 
         // create the channel factory service builder
-        ServiceBuilder<ChannelFactory> builder = context.getServiceTarget().addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
+        ServiceTarget target = context.getServiceTarget();
+        ServiceBuilder<ChannelFactory> builder = target.addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
                 .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -214,7 +217,9 @@ public class StackAddHandler extends AbstractAddStepHandler {
             builder.addDependency(ChannelService.getServiceName(entry.getKey()), Channel.class, entry.getValue());
         }
 
-        return Collections.<ServiceController<?>>singleton(builder.install());
+        ServiceBuilder<?> binderBuilder = new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class);
+
+        return Arrays.asList(builder.install(), binderBuilder.install());
     }
 
     private static void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {

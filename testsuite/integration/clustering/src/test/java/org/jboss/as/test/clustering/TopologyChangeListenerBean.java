@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -49,12 +50,7 @@ public class TopologyChangeListenerBean implements TopologyChangeListener {
 
     @Override
     public void establishTopology(String containerName, String cacheName, String... nodes) throws InterruptedException {
-        Set<String> expectedMembers = new TreeSet<>();
-        if (nodes != null) {
-            for (String name: nodes) {
-                expectedMembers.add(name + "/ee");
-            }
-        }
+        Set<String> expectedMembers = new TreeSet<>(Arrays.asList(nodes));
         ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
         ServiceName name = ServiceName.JBOSS.append("infinispan", containerName, cacheName);
         Cache<?, ?> cache = ServiceContainerHelper.findValue(registry, name);

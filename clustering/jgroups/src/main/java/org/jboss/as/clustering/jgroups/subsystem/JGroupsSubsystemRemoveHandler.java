@@ -92,7 +92,7 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
             context.removeService(ChannelService.getServiceName(ChannelService.DEFAULT));
             context.removeService(ConnectedChannelService.getServiceName(ChannelService.DEFAULT));
-            context.removeService(ChannelService.getStackServiceName(ChannelService.DEFAULT));
+            context.removeService(ChannelService.getFactoryServiceName(ChannelService.DEFAULT));
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {

@@ -24,6 +24,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
+import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -34,10 +36,15 @@ import org.jboss.msc.service.StopContext;
  */
 public class ChannelFactoryService implements Service<ChannelFactory> {
     public static final String DEFAULT = "default";
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append("stack");
+    static final String FACTORY = "factory";
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append(FACTORY);
+
+    static ContextNames.BindInfo createChannelFactoryBinding(String stack) {
+        return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, FACTORY, stack).getAbsoluteName());
+    }
 
     public static ServiceName getServiceName(String name) {
-        return SERVICE_NAME.append(name);
+        return SERVICE_NAME.append((name != null) ? name : DEFAULT);
     }
 
     private final ProtocolStackConfiguration configuration;
