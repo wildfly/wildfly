@@ -484,6 +484,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             @Override
             public int getConfidentialPort(HttpServerExchange exchange) {
                 int port = exchange.getConnection().getLocalAddress(InetSocketAddress.class).getPort();
+                if (port<0){
+                    UndertowLogger.ROOT_LOGGER.debugf("Confidential port not defined for port %s", port);
+                }
                 return host.getValue().getServer().getValue().lookupSecurePort(port);
             }
         };
