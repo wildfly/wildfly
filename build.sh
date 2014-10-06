@@ -22,6 +22,8 @@ MAVEN_HOME=""
 MAVEN_OPTS="$MAVEN_OPTS -Xmx768M"
 export MAVEN_OPTS
 
+./tools/download-maven.sh
+
 #  Default search path for maven.
 MAVEN_SEARCH_PATH="\
     tools
