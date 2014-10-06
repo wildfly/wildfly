@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -71,9 +71,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -416,6 +418,14 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
+    public void restart() throws Exception {
+        ModelNode op = new ModelNode();
+        op.get("operation").set(SHUTDOWN);
+        op.get(RESTART).set("true");
+        applyUpdate(op);
+        waitForServerToRestart(TIMEOUT);
+    }
+
     public String setSystemProperty(String propName, String propValue) throws Exception {
         if (propName == null || propName.trim().length() == 0) {
             throw new IllegalArgumentException("Empty system property name specified!");
@@ -517,6 +527,36 @@ public final class RemoteDeployer implements Deployer {
         }
         op.get("operation").set(operation);
         return op;
+    }
+
+    private void waitForServerToRestart(int timeout) throws Exception {
+        Thread.sleep(1000);
+        long start = System.currentTimeMillis();
+        long now;
+        do {
+            final ModelControllerClient client = newModelControllerClient();
+            ModelNode operation = new ModelNode();
+            operation.get(OP_ADDR).setEmptyList();
+            operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+            operation.get(NAME).set("server-state");
+            try {
+                ModelNode result = client.execute(operation);
+                boolean normal = "running".equals(result.get(RESULT).asString());
+                if (normal) {
+                    return;
+                }
+            } catch (Exception e) {
+                //NOOP
+            } finally {
+                client.close();
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+            now = System.currentTimeMillis();
+        } while (now - start < timeout);
+        throw new Exception("Server did not restart!");
     }
 
     private static String getSystemProperty(final String name, final String defaultValue) {
