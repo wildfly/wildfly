@@ -181,7 +181,7 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
                         }
                     });
                 } else {
-                    throw EjbLogger.ROOT_LOGGER.timerIsActive(timer.getId());
+                    throw EjbLogger.ROOT_LOGGER.timerIsActive(timer);
                 }
             }
         });

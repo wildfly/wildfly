@@ -43,7 +43,10 @@ import org.jboss.as.ejb3.timerservice.task.TimerTask;
  * @version $Revision: $
  */
 public class TimerImpl implements Timer {
-
+    /**
+     * The output format with the cached final values, after the first toString() invocation
+     */
+    private String toStringTemplate = null;
     /**
      * Unique id for this timer instance
      */
@@ -144,7 +147,6 @@ public class TimerImpl implements Timer {
         this.timerService = service;
         this.timedObjectInvoker = service.getInvoker();
         this.handle = new TimerHandleImpl(this.id, this.timedObjectInvoker.getTimedObjectId(), service);
-
     }
 
     /**
@@ -549,40 +551,36 @@ public class TimerImpl implements Timer {
      */
     @Override
     public String toString() {
-        //TODO: Cache this
-        StringBuilder sb = new StringBuilder();
-        sb.append("[id=");
-        sb.append(this.id);
-        sb.append(" ");
-        sb.append("timedObjectId=");
-        sb.append(timedObjectId);
-        sb.append(" ");
-        sb.append("auto-timer?:");
-        sb.append(this.isAutoTimer());
-        sb.append(" ");
-        sb.append("persistent?:");
-        sb.append(this.persistent);
-        sb.append(" ");
-        sb.append("timerService=");
-        sb.append(this.timerService);
-        sb.append(" ");
-        sb.append("initialExpiration=");
-        sb.append(this.initialExpiration);
-        sb.append(" ");
-        sb.append("intervalDuration(in milli sec)=");
-        sb.append(this.intervalDuration);
-        sb.append(" ");
-        sb.append("nextExpiration=");
+        if (this.toStringTemplate == null) {
+            // initialize with the first invocation
+            StringBuilder sb = new StringBuilder();
+            sb.append("[id=");
+            sb.append(this.id);
+            sb.append(" timedObjectId=");
+            sb.append(timedObjectId);
+            sb.append(" auto-timer?:");
+            sb.append(this.isAutoTimer());
+            sb.append(" persistent?:");
+            sb.append(this.persistent);
+            sb.append(" timerService=");
+            sb.append(this.timerService);
+            sb.append(" initialExpiration=");
+            sb.append(this.initialExpiration);
+            sb.append(" intervalDuration(in milli sec)=");
+            sb.append(this.intervalDuration);
+            this.toStringTemplate = sb.toString();
+        }
+        // complete with the dynamic values
+        StringBuilder sb = new StringBuilder(this.toStringTemplate);
+        sb.append(" nextExpiration=");
         sb.append(this.nextExpiration);
-        sb.append(" ");
-        sb.append("timerState=");
+        sb.append(" timerState=");
         sb.append(this.timerState);
-        sb.append(" ");
-        sb.append("info=");
+        sb.append(" info=");
         sb.append(this.info);
-
+        sb.append("]");
         return sb.toString();
-    }
+   }
 
     public Object getPrimaryKey() {
         return primaryKey;

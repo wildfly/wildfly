@@ -91,8 +91,8 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      */
     @Override
     public void run() {
+        final TimerImpl timer = timerService.getTimer(timerId);
         try {
-            TimerImpl timer = timerService.getTimer(timerId);
             if (cancelled) {
                 ROOT_LOGGER.debug("Timer task was cancelled for " + timer);
                 return;
@@ -106,7 +106,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             // If a retry thread is in progress, we don't want to allow another
             // interval to execute until the retry is complete. See JIRA-1926.
             if (timer.isInRetry()) {
-                ROOT_LOGGER.skipInvokeTimeoutDuringRetry(timer.getTimedObjectId(), timer.getId(), now);
+                ROOT_LOGGER.skipInvokeTimeoutDuringRetry(timer, now);
                 // compute the next timeout, See JIRA AS7-2995.
                 timer.setNextTimeout(calculateNextTimeout(timer));
                 timerService.persistTimer(timer, false);
@@ -118,7 +118,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
             // If the recurring timer running longer than the interval is, we don't want to allow another
             // execution until it is complete. See JIRA AS7-3119
             if (timer.getState() == TimerState.IN_TIMEOUT || timer.getState() == TimerState.RETRY_TIMEOUT) {
-                ROOT_LOGGER.skipOverlappingInvokeTimeout(timer.getTimedObjectId(), timer.getId(), now, timer.getState());
+                ROOT_LOGGER.skipOverlappingInvokeTimeout(timer, now);
                 timer.setNextTimeout(this.calculateNextTimeout(timer));
                 timerService.persistTimer(timer, false);
                 scheduleTimeoutIfRequired(timer);
@@ -177,7 +177,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 timerService.persistTimer(timer, false);
             }
         } catch (Exception e) {
-            ROOT_LOGGER.exceptionRunningTimerTask(timerId, timedObjectId, e);
+            ROOT_LOGGER.exceptionRunningTimerTask(timer, timedObjectId, e);
         }
     }
 
