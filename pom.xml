@@ -642,7 +642,7 @@
                                 			maven-help-plugin
                                 		</artifactId>
                                 		<versionRange>
-                                			[2.1.1,)
+                                			[2.2,)
                                 		</versionRange>
                                 		<goals>
                                        <goal>active-profiles</goal>

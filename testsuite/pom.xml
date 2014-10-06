@@ -252,7 +252,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
-                <version>2.1.1</version>
+                <version>${version.help.plugin}</version>
                 <inherited>true</inherited>
                 <executions>
                     <execution><id>help.active-profiles</id>
