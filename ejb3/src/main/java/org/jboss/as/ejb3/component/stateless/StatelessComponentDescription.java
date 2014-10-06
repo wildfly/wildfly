@@ -58,6 +58,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
@@ -109,11 +110,22 @@ public class StatelessComponentDescription extends SessionBeanComponentDescripti
             public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 if (TransactionManagementType.CONTAINER.equals(getTransactionManagementType())) {
 
-                    final EEApplicationClasses applicationClasses = context.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-                    InterceptorClassDescription interceptorConfig = ComponentDescription.mergeInterceptorConfig(configuration.getComponentClass(), applicationClasses.getClassByName(description.getComponentClassName()), description, MetadataCompleteMarker.isMetadataComplete(context.getDeploymentUnit()));
+                    if (!description.isIgnoreLifecycleInterceptors()) {
 
-                    configuration.addPostConstructInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPostConstruct(), true), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
-                    configuration.addPreDestroyInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPreDestroy(), true), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                        final EEApplicationClasses applicationClasses = context.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+                        InterceptorClassDescription interceptorConfig = ComponentDescription.mergeInterceptorConfig(configuration.getComponentClass(), applicationClasses.getClassByName(description.getComponentClassName()), description, MetadataCompleteMarker.isMetadataComplete(context.getDeploymentUnit()));
+
+                        MethodIdentifier postConstructMethod = interceptorConfig.getPostConstruct();
+                        if (postConstructMethod != null) {
+                            configuration.addPostConstructInterceptor(new LifecycleCMTTxInterceptor.Factory(postConstructMethod, true), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                        }
+
+                        MethodIdentifier preDestroyMethod = interceptorConfig.getPreDestroy();
+                        if (preDestroyMethod != null) {
+                            configuration.addPreDestroyInterceptor(new LifecycleCMTTxInterceptor.Factory(preDestroyMethod, true), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                        }
+
+                    }
 
                     configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
                 }
