@@ -109,10 +109,8 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals(29, firstTimeout.get(Calendar.DAY_OF_MONTH));
     }
 
-
     @Test
     public void testCalendarBasedTimeout() {
-
         for (TimeZone tz : getTimezones()) {
             this.timezone = tz;
             this.timeZoneDisplayName = this.timezone.getDisplayName();
@@ -126,8 +124,6 @@ public class CalendarBasedTimeoutTestCase {
             testRun29thOfFeb();
             testSomeSpecificTime();
             testEvery10Seconds();
-            testWithStartInThePast();
-            testWithStartInTheFutureAndLaterSchedule();
         }
     }
 
@@ -499,91 +495,98 @@ public class CalendarBasedTimeoutTestCase {
 
     }
 
+
     /**
-     * Create a Timeout with a Schedule start date in the past (day before) to ensure the time is set correctly.
+     * WFLY-1468
+     * Create a Timeout with a schedule start date in the past (day before) to ensure the time is set correctly.
      * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
      *
      * The test is run for each day of a whole year.
      */
-    //@Test
-    public void testWithStartInThePast() {
-        Calendar start = new GregorianCalendar(this.timezone);
-        start.clear();
-        start.set(2014, 3, 18);
-        Calendar end = (Calendar) start.clone();
-        end.add(Calendar.YEAR, 1);
-        do {
-            // setup schedule
-            ScheduleExpression schedule = this.getTimezoneSpecificScheduleExpression();
-            schedule.month("*");
-            schedule.dayOfMonth("1");
-            schedule.hour("0-1");
-            schedule.minute("0");
-            schedule.second("0/5");
-            Calendar scheduleStart = (Calendar) start.clone();
-            // subtract one day
-            scheduleStart.add(Calendar.DAY_OF_MONTH, -1);
-            if(scheduleStart.get(Calendar.DAY_OF_MONTH) == 1) {
-                // if the previous day is 1, subtract one more day
-                scheduleStart.add(Calendar.DAY_OF_MONTH, -1);
-            }
-            schedule.start(scheduleStart.getTime());
-            // create calendar timeout and retrieve first timeout
-            CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
-            Calendar firstTimeout = calendarTimeout.getFirstTimeout();
-            // assert first timeout result
-            if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
-                    firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
-                    firstTimeout.get(Calendar.MINUTE) != 0 ||
-                    firstTimeout.get(Calendar.SECOND) != 0) {
-                Assert.fail(timeZoneDisplayName);
-            }
-            // move to next day
-            start.add(Calendar.DAY_OF_MONTH,1);
-        } while (start.before(end));
+    @Test
+    public void testWFLY1468() {
+        ScheduleExpression schedule = new ScheduleExpression();
+        int year = 2013;
+        int month = Calendar.JUNE;
+        int dayOfMonth = 3;
+        int hourOfDay = 2;
+        int minutes = 0;
+        Calendar start = new GregorianCalendar(year, month, dayOfMonth, hourOfDay, minutes);
+        schedule.hour("0-12")
+                .month("*")
+                .dayOfMonth("3")
+                .minute("0/5")
+                .second("0")
+                .start(start.getTime());
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+        // assert first timeout result
+        if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 3 ||
+                firstTimeout.get(Calendar.HOUR_OF_DAY) != 2 ||
+                firstTimeout.get(Calendar.MINUTE) != 0 ||
+                firstTimeout.get(Calendar.SECOND) != 0) {
+            Assert.fail(firstTimeout.toString());
+        }
     }
 
     /**
-     * Check a Timeout if the Schedule start date in the future (day after)
-     * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
-     *
-     * The test is run for each day of a whole year.
+     * Testcase #1 for WFLY-3947
      */
-    //@Test
-    public void testWithStartInTheFutureAndLaterSchedule() {
-        Calendar start = new GregorianCalendar(this.timezone);
+    @Test
+    public void testWFLY3947_1() {
+        TimeZone timeZone = TimeZone.getTimeZone("Europe/Lisbon");
+        int year = 2013;
+        int month = Calendar.MARCH;
+        int dayOfMonth = 31;
+        int hourOfDay = 3;
+        int minute = 30;
+        int second = 0;
+
+        Calendar start = new GregorianCalendar(timeZone);
         start.clear();
-        start.set(2014, 3, 18);
-        Calendar end = (Calendar) start.clone();
-        end.add(Calendar.YEAR, 1);
-        do {
-            // setup schedule
-            ScheduleExpression schedule = this.getTimezoneSpecificScheduleExpression();
-            schedule.month("*");
-            schedule.dayOfMonth("1");
-            schedule.hour("0-12");
-            schedule.minute("0/5");
-            schedule.second("0");
-            Calendar scheduleStart = (Calendar) start.clone();
-            // add one day
-            scheduleStart.add(Calendar.DAY_OF_MONTH, 1);
-            if(scheduleStart.get(Calendar.DAY_OF_MONTH) == 1) {
-                // if the next day is 1, add one more day, to avoid first timeout by advancing minutes only
-                scheduleStart.add(Calendar.DAY_OF_MONTH, 1);
-            }
-            schedule.start(scheduleStart.getTime());
-            // create calendar timeout and retrieve first timeout
-            CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
-            Calendar firstTimeout = calendarTimeout.getFirstTimeout();
-            // assert first timeout result
-            if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
-                    firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
-                    firstTimeout.get(Calendar.MINUTE) != 0) {
-                Assert.fail(timeZoneDisplayName);
-            }
-            // move to next day
-            start.add(Calendar.DAY_OF_MONTH,1);
-        } while (start.before(end));
+        start.set(year, month, dayOfMonth, hourOfDay, minute, second);
+
+        ScheduleExpression expression = new ScheduleExpression().timezone(timeZone.getID()).dayOfMonth("*").hour("1").minute("30").second("0").start(start.getTime());
+
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(expression);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+        Assert.assertNotNull(firstTimeout);
+        Assert.assertEquals(year, firstTimeout.get(Calendar.YEAR));
+        Assert.assertEquals(Calendar.APRIL, firstTimeout.get(Calendar.MONTH));
+        Assert.assertEquals(1, firstTimeout.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(1, firstTimeout.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(30, firstTimeout.get(Calendar.MINUTE));
+        Assert.assertEquals(second, firstTimeout.get(Calendar.SECOND));
+    }
+
+    /**
+     * Testcase #2 for WFLY-3947
+     */
+    @Test
+    public void testWFLY3947_2() {
+        TimeZone timeZone = TimeZone.getTimeZone("Australia/Lord_Howe");
+        int year = 2013;
+        int month = Calendar.OCTOBER;
+        int dayOfMonth = 6;
+        int hourOfDay = 2;
+        int minute = 41;
+        int second = 0;
+
+        Calendar start = new GregorianCalendar(timeZone);
+        start.clear();
+        start.set(year, month, dayOfMonth, hourOfDay, minute, second);
+
+        ScheduleExpression expression = new ScheduleExpression().timezone(timeZone.getID()).dayOfMonth("*").hour("2, 3").minute("20, 40").second("0").start(start.getTime());
+
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(expression);
+        Calendar firstTimeout = calendarTimeout.getFirstTimeout();
+        Assert.assertNotNull(firstTimeout);
+        Assert.assertEquals(year, firstTimeout.get(Calendar.YEAR));
+        Assert.assertEquals(month, firstTimeout.get(Calendar.MONTH));
+        Assert.assertEquals(dayOfMonth, firstTimeout.get(Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(3, firstTimeout.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(20, firstTimeout.get(Calendar.MINUTE));
+        Assert.assertEquals(second, firstTimeout.get(Calendar.SECOND));
     }
 
     private ScheduleExpression getTimezoneSpecificScheduleExpression() {

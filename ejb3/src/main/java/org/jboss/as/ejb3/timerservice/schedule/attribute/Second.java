@@ -24,8 +24,6 @@ package org.jboss.as.ejb3.timerservice.schedule.attribute;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
-import java.util.Calendar;
-
 /**
  * Represents the value of a second constructed out of a {@link javax.ejb.ScheduleExpression#getSecond()}
  * <p/>
@@ -74,15 +72,13 @@ public class Second extends IntegerBasedExpression {
         super(value);
     }
 
-
-    public Integer getNextMatch(Calendar currentCal) {
+    public Integer getNextMatch(int currentSecond) {
         if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD) {
-            return currentCal.get(Calendar.SECOND);
+            return currentSecond;
         }
         if (this.absoluteValues.isEmpty()) {
             return null;
         }
-        int currentSecond = currentCal.get(Calendar.SECOND);
         for (Integer second : this.absoluteValues) {
             if (currentSecond == second) {
                 return currentSecond;
