@@ -670,10 +670,16 @@ final class HandlerOperations {
                     // Get the resolver
                     final ModelNodeResolver<String> resolver = configurationProperty.resolver();
                     // Resolve the value
-                    final String resolvedValue = (resolver == null ? model.asString() : resolver.resolveValue(context, model));
-                    // Set the string value
-                    configuration.setPropertyValueString(configurationProperty.getPropertyName(),
-                            (resolvedValue == null ? null : resolvedValue));
+                    final String resolvedValue = (resolver == null ? (model.isDefined() ? model.asString() : null) : resolver.resolveValue(context, model));
+                    if (resolvedValue == null) {
+                        // The value must be set to null and then the property removed,
+                        // Note that primitive attributes should use a default value as null is invalid
+                        configuration.setPropertyValueString(configurationProperty.getPropertyName(), null);
+                        configuration.removeProperty(configurationProperty.getPropertyName());
+                    } else {
+                        // Set the string value
+                        configuration.setPropertyValueString(configurationProperty.getPropertyName(), resolvedValue);
+                    }
                 }
             } else {
                 LoggingLogger.ROOT_LOGGER.invalidPropertyAttribute(attribute.getName());
