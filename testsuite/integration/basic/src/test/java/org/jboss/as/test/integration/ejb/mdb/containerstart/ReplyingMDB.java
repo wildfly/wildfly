@@ -62,8 +62,8 @@ public class ReplyingMDB implements MessageListener {
     private Connection connection;
     private Session session;
     private MessageProducer sender;
-    
-    private static final int WAIT_S = TimeoutUtil.adjust(10);
+
+    private static final int WAIT_S = TimeoutUtil.adjust(15);
 
     public void onMessage(Message m) {
         try {
@@ -76,7 +76,9 @@ public class ReplyingMDB implements MessageListener {
                     // we have received the first message
                     HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                     HelperSingletonImpl.barrier.reset();
-                    // wait for undeploy, the MDB will be interrupted when it is undeployed
+                    // wait for undeploy to start and wake up after the transaction
+                    // timeout is hit.
+                    // Since HornetQ 2.4.3.Final, the MDB is *not* interrupted when it is undeployed
                     Thread.sleep(SECONDS.toMillis(WAIT_S));
                 }
                 replyMessage = session.createTextMessage("Reply: " + text);
