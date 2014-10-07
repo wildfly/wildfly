@@ -112,6 +112,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -308,7 +309,7 @@ class HornetQServerAdd implements OperationStepHandler {
                         if (broadcastGroupModel.hasDefined(JGROUPS_STACK.getName())) {
                             String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, broadcastGroupModel).asString();
                             String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, broadcastGroupModel).asString();
-                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            serviceBuilder.addDependency(ChannelFactoryService.getServiceName(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
                             hqService.getJGroupsChannels().put(key, channelName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getBroadcastBaseServiceName(hqServiceName).append(name);
@@ -324,7 +325,7 @@ class HornetQServerAdd implements OperationStepHandler {
                         if (discoveryGroupModel.hasDefined(JGROUPS_STACK.getName())) {
                             String jgroupsStack = JGROUPS_STACK.resolveModelAttribute(context, discoveryGroupModel).asString();
                             String channelName = JGROUPS_CHANNEL.resolveModelAttribute(context, discoveryGroupModel).asString();
-                            serviceBuilder.addDependency(ServiceName.JBOSS.append("jgroups").append("stack").append(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
+                            serviceBuilder.addDependency(ChannelFactoryService.getServiceName(jgroupsStack), ChannelFactory.class, hqService.getJGroupsInjector(key));
                             hqService.getJGroupsChannels().put(key, channelName);
                         } else {
                             final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(name);
