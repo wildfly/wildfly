@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<host xmlns="urn:jboss:domain:1.7">
+    <management>
+        <security-realms>
+            <!-- Kerberos Security Realm Definition -->
+
+            <security-realm name="OneKeyTab">
+                <server-identities>
+                    <kerberos>
+                        <keytab principal="HTTP/localhost@WILDFLY.ORG" path="localhost.keytab" relative-to="jboss.server.config.dir" for-hosts="localhost wildfly.org" />
+                    </kerberos>
+                </server-identities>
+            </security-realm>
+
+            <security-realm name="TwoKeyTabs">
+                <server-identities>
+                    <kerberos>
+                        <keytab principal="HTTP/localhost@WILDFLY.ORG" path="localhost.keytab" relative-to="jboss.server.config.dir" for-hosts="localhost wildfly.org" />
+                        <keytab principal="HTTP/dev.wildfly.org@WILDFLY.ORG" path="dev.keytab" debug="true" />
+                    </kerberos>
+                </server-identities>
+            </security-realm>
+
+            <security-realm name="AuthenticationEnabled">
+                <server-identities>
+                    <kerberos>
+                        <keytab principal="HTTP/localhost@WILDFLY.ORG" path="localhost.keytab" relative-to="jboss.server.config.dir" for-hosts="localhost wildfly.org" />
+                    </kerberos>
+                </server-identities>
+                <authentication>
+                    <kerberos remove-realm="true" />
+                </authentication>
+            </security-realm>
+
+        </security-realms>
+
+        <management-interfaces>
+            <native-interface>
+                <socket interface="management" port="${jboss.management.native.port:9999}" />
+            </native-interface>
+        </management-interfaces>
+    </management>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}" />
+        </interface>
+    </interfaces>
+
+</host>
