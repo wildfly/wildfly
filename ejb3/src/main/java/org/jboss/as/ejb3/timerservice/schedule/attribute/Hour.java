@@ -23,8 +23,6 @@ package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
-import java.util.Calendar;
-
 /**
  * Represents the value of a hour constructed out of a {@link javax.ejb.ScheduleExpression#getHour()}
  * <p/>
@@ -119,14 +117,13 @@ public class Hour extends IntegerBasedExpression {
         }
     }
 
-    public Integer getNextMatch(Calendar currentCal) {
+    public Integer getNextMatch(int currentHour) {
         if (this.scheduleExpressionType == ScheduleExpressionType.WILDCARD) {
-            return currentCal.get(Calendar.HOUR_OF_DAY);
+            return currentHour;
         }
         if (this.absoluteValues.isEmpty()) {
             return null;
         }
-        int currentHour = currentCal.get(Calendar.HOUR_OF_DAY);
         for (Integer hour : this.absoluteValues) {
             if (currentHour == hour) {
                 return currentHour;
@@ -137,4 +134,5 @@ public class Hour extends IntegerBasedExpression {
         }
         return this.absoluteValues.first();
     }
+
 }
