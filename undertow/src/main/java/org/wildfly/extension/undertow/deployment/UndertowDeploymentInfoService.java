@@ -377,7 +377,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
             deploymentInfo.setServerName("WildFly " + Version.AS_VERSION);
-            if (undertowService.getValue().statisticsEnabled()) {
+            if (undertowService.getValue().isStatisticsEnabled()) {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
             }
 

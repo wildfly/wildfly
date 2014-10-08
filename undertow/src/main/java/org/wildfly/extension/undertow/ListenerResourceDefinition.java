@@ -24,11 +24,19 @@ package org.wildfly.extension.undertow;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import io.undertow.UndertowOptions;
+import io.undertow.server.ConnectorStatistics;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -44,8 +52,12 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.xnio.Options;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
+ * @author Stuart Douglas
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
@@ -110,6 +122,37 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
     public static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(new ModelNode(false)).setAllowExpression(true).build();
 
+    public enum ConnectorStat {
+        REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, false).setStorageRuntime().build()),
+        BYTES_SENT(new SimpleAttributeDefinitionBuilder("bytes-sent", ModelType.LONG, false).setStorageRuntime().build()),
+        BYTES_RECEIVED(new SimpleAttributeDefinitionBuilder("bytes-received", ModelType.LONG, false).setStorageRuntime().build()),
+        ERROR_COUNT(new SimpleAttributeDefinitionBuilder("error-count", ModelType.LONG, false).setStorageRuntime().build()),
+        PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("processing-time", ModelType.LONG, false).setStorageRuntime().build()),
+        MAX_PROCESSING_TIME(new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.LONG, false).setStorageRuntime().build());
+
+        private static final Map<String, ConnectorStat> MAP = new HashMap<>();
+
+        static {
+            for (ConnectorStat stat : EnumSet.allOf(ConnectorStat.class)) {
+                MAP.put(stat.toString(), stat);
+            }
+        }
+
+        final AttributeDefinition definition;
+
+        private ConnectorStat(final AttributeDefinition definition) {
+            this.definition = definition;
+        }
+
+        @Override
+        public final String toString() {
+            return definition.getName();
+        }
+
+        public static synchronized ConnectorStat getStat(final String stringForm) {
+            return MAP.get(stringForm);
+        }
+    }
 
     protected static final Collection ATTRIBUTES;
     protected static final List<AccessConstraintDefinition> CONSTRAINTS = Arrays.asList(UndertowExtension.LISTENER_CONSTRAINT);
@@ -142,6 +185,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         super.registerOperations(resourceRegistration);
         super.registerAddOperation(resourceRegistration, getAddHandler(), OperationEntry.Flag.RESTART_NONE);
         super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(getAddHandler()), OperationEntry.Flag.RESTART_NONE);
+        resourceRegistration.registerOperationHandler(ResetConnectorStatisticsHandler.DEFINITION, ResetConnectorStatisticsHandler.INSTANCE);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        for(ConnectorStat attr : ConnectorStat.values()) {
+            resourceRegistration.registerReadOnlyAttribute(attr.definition, ReadStatisticHandler.INSTANCE);
+        }
     }
 
     @Override
@@ -150,4 +202,51 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     protected abstract ListenerAdd getAddHandler();
+
+
+    private static class ReadStatisticHandler implements OperationStepHandler {
+
+        public static final ReadStatisticHandler INSTANCE = new ReadStatisticHandler();
+
+        private ReadStatisticHandler() {
+
+        }
+
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            final String name = address.getLastElement().getValue();
+            ListenerService<?> service = (ListenerService<?>) context.getServiceRegistry(false).getService(UndertowService.listenerName(name)).getValue();
+            String op = operation.get(NAME).asString();
+            ConnectorStatistics stats = service.getOpenListener().getConnectorStatistics();
+            if(stats != null) {
+                ConnectorStat element = ConnectorStat.getStat(op);
+                switch (element) {
+                    case BYTES_RECEIVED:
+                        context.getResult().set(stats.getBytesReceived());
+                        break;
+                    case BYTES_SENT:
+                        context.getResult().set(stats.getBytesSent());
+                        break;
+                    case ERROR_COUNT:
+                        context.getResult().set(stats.getErrorCount());
+                        break;
+                    case MAX_PROCESSING_TIME:
+                        context.getResult().set(stats.getMaxProcessingTime());
+                        break;
+                    case PROCESSING_TIME:
+                        context.getResult().set(stats.getProcessingTime());
+                        break;
+                    case REQUEST_COUNT:
+                        context.getResult().set(stats.getRequestCount());
+                        break;
+                }
+            } else {
+                context.getResult().set(0L);
+            }
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+
+    }
+
 }
