@@ -34,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
@@ -44,6 +45,7 @@ import org.xnio.IoUtils;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-3950")
 public class SarTestCase {
 
     @ArquillianResource
