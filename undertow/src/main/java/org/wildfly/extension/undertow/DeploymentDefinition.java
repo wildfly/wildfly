@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.undertow.server.session.SessionManager;
+import io.undertow.server.session.SessionManagerStatistics;
 import io.undertow.servlet.api.Deployment;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -101,6 +102,7 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
             SessionManager sessionManager = deployment.getSessionManager();
 
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
+            SessionManagerStatistics sms = sessionManager instanceof SessionManagerStatistics ? (SessionManagerStatistics) sessionManager : null;
 
             if (stat == null) {
                 context.getFailureDescription().set(UndertowLogger.ROOT_LOGGER.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
@@ -110,28 +112,52 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
                     case ACTIVE_SESSIONS:
                         result.set(sessionManager.getActiveSessions().size());
                         break;
-                    /*case EXPIRED_SESSIONS:
-                        result.set(sm.getExpiredSessions());
+                    case EXPIRED_SESSIONS:
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getExpiredSessionCount());
+                        }
                         break;
                     case MAX_ACTIVE_SESSIONS:
-                        result.set(sm.getMaxActive());
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getMaxActiveSessions());
+                        }
                         break;
-                    */case SESSIONS_CREATED:
-                        result.set(sessionManager.getAllSessions().size());
+                    case SESSIONS_CREATED:
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getCreatedSessionCount());
+                        }
                         break;
-                    /*case DUPLICATED_SESSION_IDS:
-                        result.set(sm.getDuplicates());
-                        break;
+                    //case DUPLICATED_SESSION_IDS:
+                    //    result.set(sm.getDuplicates());
+                    //    break;
                     case SESSION_AVG_ALIVE_TIME:
-                        result.set(sm.getSessionAverageAliveTime());
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getAverageSessionAliveTime());
+                        }
                         break;
                     case SESSION_MAX_ALIVE_TIME:
-                        result.set(sm.getSessionMaxAliveTime());
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getMaxSessionAliveTime());
+                        }
                         break;
                     case REJECTED_SESSIONS:
-                        result.set(sm.getRejectedSessions());
+                        if(sms == null) {
+                            result.set(0);
+                        } else {
+                            result.set((int)sms.getRejectedSessions());
+                        }
                         break;
-                    */default:
+                    default:
                         throw new IllegalStateException(UndertowLogger.ROOT_LOGGER.unknownMetric(stat));
                 }
                 context.getResult().set(result);
@@ -144,13 +170,13 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
     public enum SessionStat {
         ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("active-sessions", ModelType.INT, false).setStorageRuntime().build()),
-        //EXPIRED_SESSIONS(new SimpleAttributeDefinition("expired-sessions", ModelType.INT, false)),
-        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT, false).setStorageRuntime().build());
-        /*DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
-        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinition("session-avg-alive-time", ModelType.INT, false)),
-        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinition("session-max-alive-time", ModelType.INT, false)),
-        REJECTED_SESSIONS(new SimpleAttributeDefinition("rejected-sessions", ModelType.INT, false)),
-        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinition("max-active-sessions", ModelType.INT, false));*/
+        EXPIRED_SESSIONS(new SimpleAttributeDefinitionBuilder("expired-sessions", ModelType.INT, false).setStorageRuntime().build()),
+        SESSIONS_CREATED(new SimpleAttributeDefinitionBuilder("sessions-created", ModelType.INT, false).setStorageRuntime().build()),
+        //DUPLICATED_SESSION_IDS(new SimpleAttributeDefinition("duplicated-session-ids", ModelType.INT, false)),
+        SESSION_AVG_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-avg-alive-time", ModelType.INT, false).setStorageRuntime().build()),
+        SESSION_MAX_ALIVE_TIME(new SimpleAttributeDefinitionBuilder("session-max-alive-time", ModelType.INT, false).setStorageRuntime().build()),
+        REJECTED_SESSIONS(new SimpleAttributeDefinitionBuilder("rejected-sessions", ModelType.INT, false).setStorageRuntime().build()),
+        MAX_ACTIVE_SESSIONS(new SimpleAttributeDefinitionBuilder("max-active-sessions", ModelType.INT, false).setStorageRuntime().build());
 
         private static final Map<String, SessionStat> MAP = new HashMap<>();
 
