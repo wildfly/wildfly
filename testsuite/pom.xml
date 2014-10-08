@@ -580,14 +580,16 @@
                 <!-- Override IPv4 defaults from the top. -->
                 <node0>::1</node0>
                 <node1>::1</node1>
-                <mcast>ff01::1</mcast>      <!-- ff01::1  is IPv6 Node-Local scope mcast addr. -->
+                <!-- Allow loopback to multicast -->
+                <!-- ip -6 route add table local local ff13::/16 dev lo metric 5 -->
+                <mcast>ff13::1</mcast>
 
                 <!-- Override xsite IPv4 defaults from the top.  -->
                 <node2>::1</node2>
                 <node3>::1</node3>
-                <mcast1>ff01::2</mcast1>
-                <mcast2>ff01::3</mcast2>
-                <mcast3>ff01::4</mcast3>
+                <mcast1>ff13::2</mcast1>
+                <mcast2>ff13::3</mcast2>
+                <mcast3>ff13::4</mcast3>
 
             </properties>
         </profile>
