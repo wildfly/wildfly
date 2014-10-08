@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,11 +48,11 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -75,7 +75,7 @@ public class LdapExtPasswordCachingTestCase {
     public static final String SECURITY_DOMAIN_NAME_PREFIX = "test-";    
     
     private static Logger LOGGER = Logger.getLogger(LdapExtPasswordCachingTestCase.class);
-    private ExternalPasswordProvider passwordProvider = new ExternalPasswordProvider(); 
+    private static final ExternalPasswordProvider passwordProvider = new ExternalPasswordProvider(System.getProperty("java.io.tmpdir") + File.separator + "tmp.password");
 
     private static final String DEP1 = "DEP1";  
     private static final String DEP2 = "DEP2";
@@ -83,7 +83,6 @@ public class LdapExtPasswordCachingTestCase {
     private static final String EXT = "EXT";  
     private static final String EXTC = "EXTC";
     private static final String EXTC500 = "EXTC:500"; 
-    private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
 
     // Public methods --------------------------------------------------------
 
@@ -154,7 +153,8 @@ public class LdapExtPasswordCachingTestCase {
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password from cache: 1", 1, passwordProvider.readFileCounter());
                 
-        Thread.sleep(ADJUSTED_SECOND);
+        long WAIT = 800;
+        Thread.sleep(WAIT);
         
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password from cache: 1", 1, passwordProvider.readFileCounter());
@@ -165,7 +165,7 @@ public class LdapExtPasswordCachingTestCase {
      * Password should be stored for [:expiration_in_millis] after authentication request 
      * and then another call for password is needed
      * 
-     * expiration_in_millis is set to 500 
+     * expiration_in_millis is set to 500 in test
      * 
      * @throws Exception
      */ 
@@ -181,10 +181,15 @@ public class LdapExtPasswordCachingTestCase {
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password from cache 1", 1, passwordProvider.readFileCounter());
                 
-        Thread.sleep(ADJUSTED_SECOND);
+        long WAIT = 800;
+        Thread.sleep(WAIT);
         
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password call 2", 2, passwordProvider.readFileCounter());            
+        checkPrincipal(webAppURL, "jduke");
+        assertEquals("Password from cache 2", 2, passwordProvider.readFileCounter());
+
+
     } 
 
     // Private methods -------------------------------------------------------
@@ -305,11 +310,16 @@ public class LdapExtPasswordCachingTestCase {
                jre = javaExe.getAbsolutePath();
             // Build the command to run this jre
             String cmd = jre + " -cp "+ ExternalPasswordProvider.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-            				 + " org.jboss.as.test.integration.security.loginmodules.ExternalPasswordProvider ";
+            				 + " org.jboss.as.test.integration.security.loginmodules.ExternalPasswordProvider "+passwordProvider.getCounterFile() + " ";
             
             return "{" + extOption +"}"+cmd;
          }
     }    
     
+    @AfterClass
+    public static void cleanup(){
+        System.out.println("doing cleanup");
+        passwordProvider.cleanup();
+    }
     
 }
