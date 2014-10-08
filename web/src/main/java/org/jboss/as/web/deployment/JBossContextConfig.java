@@ -68,6 +68,7 @@ import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.marshalling.ClassResolver;
 import org.jboss.marshalling.ModularClassResolver;
+import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
@@ -116,6 +117,11 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.RunAsIdentity;
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityContext;
+import org.jboss.security.SecurityRolesAssociation;
+import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -191,6 +197,85 @@ public class JBossContextConfig extends ContextConfig {
                 context.getServletContext().setAttribute(ServletContext.ORDERED_LIBS, order);
             }
         }
+
+        if (event.getType().equals(Lifecycle.LOAD_ON_STARTUP_EVENT)) {
+            final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+            JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+
+            // Process Servlet API related annotations that were dependent on
+            // Servlet declarations
+            if (ok && (metaData != null)) {
+                // Resolve type specific annotations to their corresponding Servlet
+                // components
+                metaData.resolveAnnotations();
+                // Same process for Catalina
+                resolveAnnotations(metaData.getAnnotations());
+            }
+
+            if (ok) {
+                resolveServletSecurity();
+            }
+
+            if (ok) {
+                validateSecurityRoles();
+            }
+
+            if (ok && (metaData != null)) {
+                // Resolve run as
+                metaData.resolveRunAs();
+            }
+        }
+
+        if (event.getType().equals(Lifecycle.BEFORE_LOAD_ON_STARTUP_EVENT)) {
+            String servletClass = (String) event.getData();
+            if (!servletClass.contains("org.apache")) // ignore apache servlets
+                beforeLoadOnStartup(servletClass);
+        }
+
+        if (event.getType().equals(Lifecycle.AFTER_LOAD_ON_STARTUP_EVENT)) {
+            String servletClass = (String) event.getData();
+            if (!servletClass.contains("org.apache")) // ignore apache servlets
+                afterLoadOnStartup(servletClass);
+        }
+
+        if (event.getType().equals(Lifecycle.BEFORE_STOP_EVENT)) {
+            final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+            final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+
+            String securityDomain = SecurityUtil.unprefixSecurityDomain(metaData.getSecurityDomain());
+            if (securityDomain == null) {
+                securityDomain = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+            }
+
+            SecurityContext sc = SecurityActions.getSecurityContext();
+            if (sc == null) {
+                sc = SecurityActions.createSecurityContext(securityDomain);
+                SecurityActions.setSecurityContextOnAssociation(sc);
+            }
+
+            JBossServletsMetaData servletsMetadata = metaData.getServlets();
+            Map<String, RunAsIdentityMetaData> runAsIdentityMetaData = metaData.getRunAsIdentity();
+
+            try {
+                for (String servlet : servletsMetadata.keySet()) {
+                    JBossServletMetaData servletMetaData = servletsMetadata.get(servlet);
+                    String servletName = servletMetaData.getServletName();
+                    RunAsIdentityMetaData identity = runAsIdentityMetaData.get(servletName);
+                    RunAsIdentity runAsIdentity = null;
+                    if (identity != null) {
+                        WebLogger.WEB_SECURITY_LOGGER.tracef("%s, runAs: %s", servletName, identity);
+                        runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
+                                identity.getRunAsRoles());
+                    }
+                    SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
+                }
+
+            } catch (Throwable e) {
+                WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
+            }
+
+        }
+
         super.lifecycleEvent(event);
     }
 
@@ -581,6 +666,52 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
+    @Override
+    protected void beforeLoadOnStartup(Object data) {
+        WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+
+        String securityDomain = SecurityUtil.unprefixSecurityDomain(metaData.getSecurityDomain());
+        if (securityDomain == null) {
+            securityDomain = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+        }
+
+        JBossServletsMetaData servletsMetadata = metaData.getServlets();
+        Map<String, RunAsIdentityMetaData> runAsIdentityMetaData = metaData.getRunAsIdentity();
+
+        try {
+            for (String servlet : servletsMetadata.keySet()) {
+                JBossServletMetaData servletMetaData = servletsMetadata.get(servlet);
+                if (data.equals(servletMetaData.getServletClass())) {
+                    String servletName = servletMetaData.getServletName();
+                    RunAsIdentityMetaData identity = runAsIdentityMetaData.get(servletName);
+                    RunAsIdentity runAsIdentity = null;
+                    if (identity != null) {
+                        WebLogger.WEB_SECURITY_LOGGER.tracef("%s, runAs: %s", servletName, identity);
+                        runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
+                                identity.getRunAsRoles());
+                    }
+
+                    SecurityContext sc = SecurityActions.getSecurityContext();
+                    if (sc == null) {
+                        sc = SecurityActions.createSecurityContext(securityDomain);
+                        SecurityActions.setSecurityContextOnAssociation(sc);
+                    }
+
+                    SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
+                }
+            }
+        } catch (Throwable e) {
+            WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
+        }
+    }
+
+    @Override
+    protected void afterLoadOnStartup(Object data) {
+        SecurityActions.clearSecurityContext();
+        SecurityRolesAssociation.setSecurityRoles(null);
+    }
+
     /**
      * Migrate TLD metadata to Catalina. This is separate, and is not subject to
      * the order defined.
@@ -861,32 +992,6 @@ public class JBossContextConfig extends ContextConfig {
 
     @Override
     protected void completeConfig() {
-        final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-
-        // Process Servlet API related annotations that were dependent on
-        // Servlet declarations
-        if (ok && (metaData != null)) {
-            // Resolve type specific annotations to their corresponding Servlet
-            // components
-            metaData.resolveAnnotations();
-            // Same process for Catalina
-            resolveAnnotations(metaData.getAnnotations());
-        }
-
-        if (ok) {
-            resolveServletSecurity();
-        }
-
-        if (ok) {
-            validateSecurityRoles();
-        }
-
-        if (ok && (metaData != null)) {
-            // Resolve run as
-            metaData.resolveRunAs();
-        }
-
         // Configure configure global authenticators.
         if (ok) {
             if (! authenValves.isEmpty()) {
