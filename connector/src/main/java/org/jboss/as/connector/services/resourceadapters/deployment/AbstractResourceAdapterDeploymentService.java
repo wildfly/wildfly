@@ -63,6 +63,7 @@ import org.jboss.jca.common.api.metadata.spec.XsdString;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
+import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -595,11 +596,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
         }
 
         @Override
-        protected SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
+        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(String securityDomain) throws DeployException {
             if (securityDomain == null || securityDomain.trim().equals("")) {
                 return null;
             } else {
-                return subjectFactory.getValue();
+                return new PicketBoxSubjectFactory(subjectFactory.getValue());
             }
         }
 
