@@ -95,7 +95,7 @@ public class CustomHandlerOperationsTestCase extends AbstractLoggingOperationsTe
     }
 
     private void testCustomHandler(final String profileName) throws Exception {
-        final ModelNode address = createCustomHandlerAddress(profileName, "CONSOLE").toModelNode();
+        final ModelNode address = createCustomHandlerAddress(profileName, "CONSOLE2").toModelNode();
 
         // Add the handler
         final ModelNode addOp = Operations.createAddOperation(address);
