@@ -27,7 +27,7 @@ package org.jboss.as.mail.extension;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -50,15 +50,14 @@ import org.jboss.msc.service.ServiceTarget;
  * component declaring the annotation.
  *
  * @author Tomaz Cerar
+ * @author Eduardo Martins
  */
-class DirectMailSessionInjectionSource extends InjectionSource {
+class MailSessionDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
-    private final String jndiName;
     private final SessionProvider provider;
 
-
-    public DirectMailSessionInjectionSource(final String jndiName, final SessionProvider provider) {
-        this.jndiName = jndiName;
+    public MailSessionDefinitionInjectionSource(final String jndiName, final SessionProvider provider) {
+        super(jndiName);
         this.provider = provider;
     }
 
@@ -120,5 +119,23 @@ class DirectMailSessionInjectionSource extends InjectionSource {
         valueSourceServiceBuilder.addDependency(bindInfo.getBinderServiceName(), ManagedReferenceFactory.class, injector);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
+        MailSessionDefinitionInjectionSource that = (MailSessionDefinitionInjectionSource) o;
+
+        if (provider != null ? !provider.equals(that.provider) : that.provider != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (provider != null ? provider.hashCode() : 0);
+        return result;
+    }
 }

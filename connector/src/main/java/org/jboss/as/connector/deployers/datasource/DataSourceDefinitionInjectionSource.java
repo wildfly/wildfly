@@ -22,17 +22,6 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
-
-import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.sql.XADataSource;
-
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
@@ -44,7 +33,7 @@ import org.jboss.as.connector.subsystems.datasources.XaDataSourceService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -77,6 +66,15 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
+import javax.sql.XADataSource;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+
 /**
  * A binding description for DataSourceDefinition annotations.
  * <p/>
@@ -85,14 +83,13 @@ import org.jboss.security.SubjectFactory;
  *
  * @author Jason T. Greene
  */
-public class DirectDataSourceInjectionSource extends InjectionSource {
+public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
     public static final String USER_PROP = "user";
     public static final String URL_PROP = "url";
     public static final String UPPERCASE_URL_PROP = "URL";
     public static final String TRANSACTIONAL_PROP = "transactional";
     public static final String SERVER_NAME_PROP = "serverName";
-    public static final String PROPERTIES_PROP = "properties";
     public static final String PORT_NUMBER_PROP = "portNumber";
     public static final String PASSWORD_PROP = "password";
     public static final String MIN_POOL_SIZE_PROP = "minPoolSize";
@@ -105,7 +102,6 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     public static final String DATABASE_NAME_PROP = "databaseName";
     public static final String MAX_POOL_SIZE_PROP = "maxPoolSize";
 
-    private final String jndiName;
     private String className;
     private String description;
     private String url;
@@ -128,10 +124,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
     private String user;
     private String password;
 
-    private String[] properties;
-
-    public DirectDataSourceInjectionSource(final String jndiName) {
-        this.jndiName = jndiName;
+    public DataSourceDefinitionInjectionSource(final String jndiName) {
+        super(jndiName);
     }
 
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
@@ -144,21 +138,8 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         try {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
 
-            final Map<String, String> props = new HashMap<String, String>();
-            if (properties != null) {
-                for (String prop : properties) {
-                    if (prop.contains("=")) {
-                        int index = prop.indexOf('=');
-                        final String name = prop.substring(0, index);
-                        final String value = prop.substring(index + 1, prop.length());
-                        props.put(name, value);
-                    } else {
-                        props.put(prop, "");
-                    }
-                }
-            }
-            clearUnknownProperties(reflectionIndex, clazz, props);
-            populateProperties(reflectionIndex, clazz, props);
+            clearUnknownProperties(reflectionIndex, clazz, properties);
+            populateProperties(reflectionIndex, clazz, properties);
             DsSecurityImpl dsSecurity = new DsSecurityImpl(user, password, null, null);
 
             if (XADataSource.class.isAssignableFrom(clazz) && transactional) {
@@ -171,7 +152,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 final ModifiableXaDataSource dataSource = new ModifiableXaDataSource(transactionIsolation(),
                         null, dsSecurity, null, null, null,
                         null, null, null, poolName, true,
-                        jndiName, false, false, Defaults.CONNECTABLE, Defaults.TRACKING, props,
+                        jndiName, false, false, Defaults.CONNECTABLE, Defaults.TRACKING, properties,
                         className, null, null,
                         xaPool, null);
                 final XaDataSourceService xds = new XaDataSourceService(jndiName, module.getClassLoader());
@@ -182,7 +163,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                                                              initialPoolSize < 0 ? Defaults.INITIAL_POOL_SIZE : Integer.valueOf(initialPoolSize),
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
-                final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), props,
+                final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), properties,
                         null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, Defaults.CONNECTABLE, Defaults.TRACKING, commonPool);
                 final LocalDataSourceService ds = new LocalDataSourceService(jndiName, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
@@ -516,14 +497,53 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         this.password = password;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-    public String[] getProperties() {
-        return properties;
+        DataSourceDefinitionInjectionSource that = (DataSourceDefinitionInjectionSource) o;
+
+        if (initialPoolSize != that.initialPoolSize) return false;
+        if (isolationLevel != that.isolationLevel) return false;
+        if (loginTimeout != that.loginTimeout) return false;
+        if (maxIdleTime != that.maxIdleTime) return false;
+        if (maxPoolSize != that.maxPoolSize) return false;
+        if (maxStatements != that.maxStatements) return false;
+        if (minPoolSize != that.minPoolSize) return false;
+        if (portNumber != that.portNumber) return false;
+        if (transactional != that.transactional) return false;
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (databaseName != null ? !databaseName.equals(that.databaseName) : that.databaseName != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
+        if (serverName != null ? !serverName.equals(that.serverName) : that.serverName != null) return false;
+        if (url != null ? !url.equals(that.url) : that.url != null) return false;
+        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+
+        return true;
     }
 
-
-    public void setProperties(String[] properties) {
-        this.properties = properties;
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (databaseName != null ? databaseName.hashCode() : 0);
+        result = 31 * result + (serverName != null ? serverName.hashCode() : 0);
+        result = 31 * result + portNumber;
+        result = 31 * result + loginTimeout;
+        result = 31 * result + isolationLevel;
+        result = 31 * result + (transactional ? 1 : 0);
+        result = 31 * result + initialPoolSize;
+        result = 31 * result + maxIdleTime;
+        result = 31 * result + maxPoolSize;
+        result = 31 * result + maxStatements;
+        result = 31 * result + minPoolSize;
+        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        return result;
     }
-
 }

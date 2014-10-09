@@ -45,6 +45,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.logging.MessagingLogger;
@@ -68,8 +69,9 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
+ * @author Eduardo Martins
  */
-public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
+public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
     /*
     String description() default "";
@@ -86,7 +88,6 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
     int minPoolSize() default -1;
     */
 
-    private final String name;
     // not used: HornetQ CF implements all JMS CF interfaces
     private String interfaceName;
     // not used
@@ -95,13 +96,12 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
     private String user;
     private String password;
     private String clientId;
-    private Map<String, String> properties = new HashMap<String, String>();
     private boolean transactional;
     private int maxPoolSize;
     private int minPoolSize;
 
-    public DirectJMSConnectionFactoryInjectionSource(String name) {
-        this.name = name;
+    public JMSConnectionFactoryDefinitionInjectionSource(String jndiName) {
+        super(jndiName);
     }
 
     void setInterfaceName(String interfaceName) {
@@ -128,10 +128,6 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
         this.clientId = clientId;
     }
 
-    void addProperty(String key, String value) {
-        properties.put(key, value);
-    }
-
     void setTransactional(boolean transactional) {
         this.transactional = transactional;
     }
@@ -144,13 +140,12 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
         this.minPoolSize = minPoolSize;
     }
 
-
     @Override
     public void getResourceValue(ResolutionContext context, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         try {
-            startedPooledConnectionFactory(context, name, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
+            startedPooledConnectionFactory(context, jndiName, serviceBuilder, phaseContext.getServiceTarget(), deploymentUnit, injector);
         } catch (OperationFailedException e) {
             throw new DeploymentUnitProcessingException(e);
         }
@@ -284,5 +279,43 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
      */
     private String getHornetQServerName() {
         return properties.containsKey(HORNETQ_SERVER) ? properties.get(HORNETQ_SERVER) : DEFAULT;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        JMSConnectionFactoryDefinitionInjectionSource that = (JMSConnectionFactoryDefinitionInjectionSource) o;
+
+        if (maxPoolSize != that.maxPoolSize) return false;
+        if (minPoolSize != that.minPoolSize) return false;
+        if (transactional != that.transactional) return false;
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
+        if (interfaceName != null ? !interfaceName.equals(that.interfaceName) : that.interfaceName != null)
+            return false;
+        if (password != null ? !password.equals(that.password) : that.password != null) return false;
+        if (resourceAdapter != null ? !resourceAdapter.equals(that.resourceAdapter) : that.resourceAdapter != null)
+            return false;
+        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (interfaceName != null ? interfaceName.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (resourceAdapter != null ? resourceAdapter.hashCode() : 0);
+        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
+        result = 31 * result + (transactional ? 1 : 0);
+        result = 31 * result + maxPoolSize;
+        result = 31 * result + minPoolSize;
+        return result;
     }
 }

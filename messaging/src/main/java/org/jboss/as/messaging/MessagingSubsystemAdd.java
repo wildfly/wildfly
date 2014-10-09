@@ -31,8 +31,10 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.deployment.CDIDeploymentProcessor;
 import org.jboss.as.messaging.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 import org.jboss.as.messaging.deployment.DefaultJMSConnectionFactoryResourceReferenceProcessor;
-import org.jboss.as.messaging.deployment.MessagingJMSDefinitionAnnotationParser;
-import org.jboss.as.messaging.deployment.MessagingJMSDefinitionDeploymentProcessor;
+import org.jboss.as.messaging.deployment.JMSConnectionFactoryDefinitionAnnotationProcessor;
+import org.jboss.as.messaging.deployment.JMSConnectionFactoryDefinitionDescriptorProcessor;
+import org.jboss.as.messaging.deployment.JMSDestinationDefinitionAnnotationProcessor;
+import org.jboss.as.messaging.deployment.JMSDestinationDefinitionDescriptorProcessor;
 import org.jboss.as.messaging.deployment.MessagingDependencyProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlParsingDeploymentUnitProcessor;
@@ -66,11 +68,13 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 // keep the statements ordered by phase + priority
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_JMS_CONNECTION_FACTORY_RESOURCE_INJECTION, new DefaultJMSConnectionFactoryResourceReferenceProcessor());
-                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new MessagingJMSDefinitionAnnotationParser());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_JMS_DESTINATION, new JMSDestinationDefinitionAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_JMS_CONNECTION_FACTORY, new JMSConnectionFactoryDefinitionAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MESSAGING_XML_RESOURCES, new MessagingXmlParsingDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JMS, new MessagingDependencyProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JMS_CDI_EXTENSIONS, new CDIDeploymentProcessor());
-                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JMS_DEFINITION_DEPLOYMENT, new MessagingJMSDefinitionDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_JMS_CONNECTION_FACTORY, new JMSConnectionFactoryDefinitionDescriptorProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_JMS_DESTINATION, new JMSDestinationDefinitionDescriptorProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_DEFAULT_BINDINGS_JMS_CONNECTION_FACTORY, new DefaultJMSConnectionFactoryBindingProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_MESSAGING_XML_RESOURCES, new MessagingXmlInstallDeploymentUnitProcessor());
             }
