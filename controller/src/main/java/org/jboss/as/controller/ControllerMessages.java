@@ -2649,7 +2649,7 @@ public interface ControllerMessages {
     String cannotGetControllerLock();
 
     @Message(id = 13451, value = "Cannot configure an interface to use 'any-ipv6-address' when system property java.net.preferIPv4Stack is true")
-    String invalidAnyIPv6();
+    StartException invalidAnyIPv6();
 
     @Message(id = 13452, value = "Legacy extension '%s' is not supported on servers running this version. The extension " +
             "is only supported for use by hosts running a previous release in a mixed-version managed domain")

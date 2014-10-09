@@ -68,15 +68,19 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
+import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.vfs.VirtualFile;
 import org.junit.After;
@@ -89,13 +93,13 @@ import org.junit.Test;
  *
  * @author Emanuel Muckenhuber
  */
-public class ServerControllerUnitTestCase {
+public class InterfaceManagementUnitTestCase {
 
     private final ServiceContainer container = ServiceContainer.Factory.create();
     private ModelController controller;
 
     @Before
-    public void beforeClass() throws Exception {
+    public void before() throws Exception {
         final ServiceTarget target = container.subTarget();
         final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), null, null);
         final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
@@ -105,13 +109,32 @@ public class ServerControllerUnitTestCase {
         final ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
+        // Create demand for the interface service we'll be adding so we can validate what happens in start()
+        Service<Void> passiveService = new Service<Void>() {
+            @Override
+            public void start(StartContext context) throws StartException {
+            }
+
+            @Override
+            public void stop(StopContext context) {
+            }
+
+            @Override
+            public Void getValue() throws IllegalStateException, IllegalArgumentException {
+                return null;
+            }
+        };
+        target.addService(ServiceName.JBOSS.append("interface.management.test.case.passive"), passiveService)
+                .addDependency(NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append("test"))
+                .install();
+
         svc.latch.await(20, TimeUnit.SECONDS);
         this.controller = svc.getValue();
 
     }
 
     @After
-    public void afterClass() {
+    public void after() {
         container.shutdown();
     }
 
@@ -120,7 +143,7 @@ public class ServerControllerUnitTestCase {
         final ModelControllerClient client = controller.createClient(Executors.newCachedThreadPool());
         final ModelNode base = new ModelNode();
         base.get(ModelDescriptionConstants.OP).set("add");
-        base.get(ModelDescriptionConstants.OP_ADDR).add("interface", "alternative");
+        base.get(ModelDescriptionConstants.OP_ADDR).add("interface", "test");
         {
             final ModelNode operation = base.clone();
             operation.get("any-address").set(true);
@@ -169,7 +192,7 @@ public class ServerControllerUnitTestCase {
     public void testUpdateInterface() throws IOException {
         final ModelControllerClient client = controller.createClient(Executors.newCachedThreadPool());
         final ModelNode address = new ModelNode();
-        address.add("interface", "other");
+        address.add("interface", "test");
         {
             final ModelNode operation = new ModelNode();
             operation.get(ModelDescriptionConstants.OP).set("add");
@@ -208,7 +231,7 @@ public class ServerControllerUnitTestCase {
 
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("add");
-        operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "complex");
+        operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "test");
         // This won't be resolvable with the runtime layer enabled
         populateCritieria(operation, Nesting.TOP,
                 InterfaceDefinition.LOOPBACK);

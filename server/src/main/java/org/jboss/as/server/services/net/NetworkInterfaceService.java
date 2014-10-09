@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.interfaces.OverallInterfaceCriteria;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
@@ -88,6 +89,11 @@ public class NetworkInterfaceService implements Service<NetworkInterfaceBinding>
 
     public synchronized void start(StartContext arg0) throws StartException {
         log.debug("Starting NetworkInterfaceService\n");
+        // WFLY-184 Reject any-ipv6-address config if java.net.preferIPv4Stack=true
+        if (anyLocalV6 && SecurityActions.getBoolean("java.net.preferIPv4Stack")) {
+            throw ControllerMessages.MESSAGES.invalidAnyIPv6();
+        }
+
         try {
             this.interfaceBinding = createBinding(anyLocalV4, anyLocalV6, anyLocal, criteria);
         } catch (Exception e) {
