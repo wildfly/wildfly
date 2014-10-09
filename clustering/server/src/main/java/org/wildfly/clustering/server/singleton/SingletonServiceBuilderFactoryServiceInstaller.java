@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -50,11 +49,9 @@ public class SingletonServiceBuilderFactoryServiceInstaller implements CacheServ
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String container, String cache) {
+    public void install(ServiceTarget target, String container, String cache) {
         ServiceName name = CacheServiceNames.SINGLETON_SERVICE_BUILDER.getServiceName(container, cache);
 
-        ServiceBuilder<SingletonServiceBuilderFactory> builder = this.builder.build(target, name, container, cache);
-
-        return Collections.<ServiceController<?>>singleton(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
+        this.builder.build(target, name, container, cache).setInitialMode(ServiceController.Mode.ACTIVE).install();
     }
 }

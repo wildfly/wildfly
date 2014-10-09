@@ -26,11 +26,9 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -62,15 +60,13 @@ public class CommandDispatcherFactoryServiceInstaller implements GroupServiceIns
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier module) {
+    public void install(ServiceTarget target, String group, ModuleIdentifier module) {
         ServiceName name = GroupServiceNames.COMMAND_DISPATCHER.getServiceName(group);
         ContextNames.BindInfo bindInfo = createBinding(group);
 
         this.logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        ServiceBuilder<CommandDispatcherFactory> builder = this.builder.build(target, name, group, module).setInitialMode(ServiceController.Mode.ON_DEMAND);
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = new BinderServiceBuilder(target).build(bindInfo, name, CommandDispatcherFactory.class);
-
-        return Arrays.asList(builder.install(), binderBuilder.install());
+        this.builder.build(target, name, group, module).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        new BinderServiceBuilder(target).build(bindInfo, name, CommandDispatcherFactory.class).install();
     }
 }

@@ -28,7 +28,6 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,7 +58,6 @@ public class CacheRemoveHandler extends AbstractRemoveStepHandler {
         PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 1);
         ModelNode containerModel = context.readResourceFromRoot(containerAddress).getModel();
 
-        ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        type.getAddHandler().installRuntimeServices(context, operation, containerModel, cacheModel, verificationHandler);
+        type.getAddHandler().installRuntimeServices(context, operation, containerModel, cacheModel);
     }
 }

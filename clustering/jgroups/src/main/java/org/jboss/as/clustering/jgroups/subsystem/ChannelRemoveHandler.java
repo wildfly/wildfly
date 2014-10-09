@@ -23,20 +23,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ServiceLoader;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
-import org.wildfly.clustering.spi.GroupServiceInstaller;
 
 /**
  * Handler for /subsystem=jgroups/channel=*:remove() operations
@@ -66,27 +60,12 @@ public class ChannelRemoveHandler extends AbstractRemoveStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress channelAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String channelName = channelAddress.getLastElement().getValue();
-
-        context.removeService(ChannelService.getServiceName(channelName));
-        context.removeService(ChannelService.createChannelBinding(channelName).getBinderServiceName());
-        context.removeService(ChannelService.getFactoryServiceName(channelName));
-        context.removeService(ConnectedChannelService.getServiceName(channelName));
-
-        context.removeService(ChannelFactoryService.getServiceName(channelName));
-        context.removeService(ChannelFactoryService.createChannelFactoryBinding(channelName).getBinderServiceName());
-
-        for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-            for (ServiceName serviceName : installer.getServiceNames(channelName)) {
-                context.removeService(serviceName);
-            }
-        }
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
+        ChannelAddHandler.removeRuntimeServices(context, operation, model);
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        ChannelAddHandler.installRuntimeServices(context, operation, model, new ServiceVerificationHandler());
+        ChannelAddHandler.installRuntimeServices(context, operation, model);
     }
 }

@@ -32,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -86,9 +85,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_TYPE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_TYPE));
     }
 
-    private static void recreateParentService(OperationContext context, ModelNode ejb3RemoteServiceModelNode,
-                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        EJB3RemoteServiceAdd.INSTANCE.installRuntimeServices(context, ejb3RemoteServiceModelNode, verificationHandler);
+    private static void recreateParentService(OperationContext context, ModelNode ejb3RemoteServiceModelNode) throws OperationFailedException {
+        EJB3RemoteServiceAdd.INSTANCE.installRuntimeServices(context, ejb3RemoteServiceModelNode);
     }
 
     /**
@@ -101,9 +99,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel, verificationHandler);
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+            ChannelCreationOptionResource.recreateParentService(context, parentModel);
         }
 
         @Override
@@ -127,9 +124,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel, verificationHandler);
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+            ChannelCreationOptionResource.recreateParentService(context, parentModel);
         }
 
         @Override
@@ -147,9 +143,8 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode ejb3RemoteServiceModelNode,
-                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, ejb3RemoteServiceModelNode, verificationHandler);
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode ejb3RemoteServiceModelNode) throws OperationFailedException {
+            ChannelCreationOptionResource.recreateParentService(context, ejb3RemoteServiceModelNode);
         }
 
         @Override

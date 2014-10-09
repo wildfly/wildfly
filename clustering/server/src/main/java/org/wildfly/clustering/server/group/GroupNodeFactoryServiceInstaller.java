@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -50,11 +49,8 @@ public class GroupNodeFactoryServiceInstaller implements GroupServiceInstaller {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier module) {
+    public void install(ServiceTarget target, String group, ModuleIdentifier module) {
         ServiceName name = GroupServiceNames.NODE_FACTORY.getServiceName(group);
-        ServiceBuilder<JGroupsNodeFactory> builder = this.builder.build(target, name, group, module);
-        ServiceController<JGroupsNodeFactory> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
-        return Collections.<ServiceController<?>>singleton(controller);
+        this.builder.build(target, name, group, module).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
     }
 }

@@ -26,14 +26,11 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.CacheServiceBuilder;
 import org.wildfly.clustering.spi.CacheServiceInstaller;
@@ -62,18 +59,16 @@ public class RegistryFactoryServiceInstaller implements CacheServiceInstaller {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String container, String cache) {
+    public void install(ServiceTarget target, String container, String cache) {
         ServiceName name = CacheServiceNames.REGISTRY_FACTORY.getServiceName(container, cache);
         ContextNames.BindInfo bindInfo = createBinding(container, cache);
 
         this.logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        ServiceBuilder<RegistryFactory<Object, Object>> factoryBuilder = this.builder.build(target, name, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        this.builder.build(target, name, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        ServiceBuilder<Registry<Object, Object>> builder = RegistryService.build(target, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND);
+        RegistryService.build(target, container, cache).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        ServiceBuilder<ManagedReferenceFactory> binderBuilder = new BinderServiceBuilder(target).build(bindInfo, name, RegistryFactory.class);
-
-        return Arrays.asList(factoryBuilder.install(), builder.install(), binderBuilder.install());
+        new BinderServiceBuilder(target).build(bindInfo, name, RegistryFactory.class).install();
     }
 }

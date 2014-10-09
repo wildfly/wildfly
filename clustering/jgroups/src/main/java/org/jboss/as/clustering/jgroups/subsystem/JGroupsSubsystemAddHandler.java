@@ -24,10 +24,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.ServiceLoader;
 
 import org.jboss.as.clustering.dmr.ModelNodes;
@@ -37,9 +34,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
@@ -59,39 +54,60 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ROOT_LOGGER.activatingSubsystem();
 
-        controllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
+        installRuntimeServices(context, operation, model);
     }
 
-    static Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
-        Collection<ServiceController<?>> controllers = new LinkedList<>();
 
-        controllers.add(ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install());
+        ProtocolDefaultsService.build(target).setInitialMode(ON_DEMAND).install();
 
         InjectedValueServiceBuilder builder = new InjectedValueServiceBuilder(target);
 
         String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
         if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
-            controllers.add(builder.build(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).install());
-            controllers.add(builder.build(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).install());
-            controllers.add(builder.build(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).install());
+            builder.build(ChannelService.getServiceName(ChannelService.DEFAULT), ChannelService.getServiceName(defaultChannel), Channel.class).install();
+            builder.build(ConnectedChannelService.getServiceName(ChannelService.DEFAULT), ConnectedChannelService.getServiceName(defaultChannel), Channel.class).install();
+            builder.build(ChannelService.getFactoryServiceName(ChannelService.DEFAULT), ChannelService.getFactoryServiceName(defaultChannel), ChannelFactory.class).install();
 
             for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                 Iterator<ServiceName> names = installer.getServiceNames(defaultChannel).iterator();
                 for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
-                    controllers.add(builder.build(name, names.next(), Object.class).install());
+                    builder.build(name, names.next(), Object.class).install();
                 }
             }
         }
 
         String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
         if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
-            controllers.add(builder.build(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).install());
+            builder.build(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT), ChannelFactoryService.getServiceName(defaultStack), ChannelFactory.class).install();
         }
-        return controllers;
+    }
+
+    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        // remove the ProtocolDefaultsService
+        context.removeService(ProtocolDefaultsService.SERVICE_NAME);
+
+        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
+        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
+            context.removeService(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT));
+        }
+
+        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
+        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
+            context.removeService(ChannelService.getServiceName(ChannelService.DEFAULT));
+            context.removeService(ConnectedChannelService.getServiceName(ChannelService.DEFAULT));
+            context.removeService(ChannelService.getFactoryServiceName(ChannelService.DEFAULT));
+
+            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
+                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
+                    context.removeService(name);
+                }
+            }
+        }
     }
 }

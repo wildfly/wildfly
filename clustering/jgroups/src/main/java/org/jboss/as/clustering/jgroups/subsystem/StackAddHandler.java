@@ -30,8 +30,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +54,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
@@ -117,15 +115,13 @@ public class StackAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         // Because we use child resources in a read-only manner to configure the protocol stack, replace the local model with the full model
-        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-
-        newControllers.addAll(installRuntimeServices(context, operation, fullModel, verificationHandler));
+        installRuntimeServices(context, operation, Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS)));
     }
 
-    static Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String name = address.getLastElement().getValue();
@@ -194,7 +190,6 @@ public class StackAddHandler extends AbstractAddStepHandler {
         ServiceBuilder<ChannelFactory> builder = target.addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
                 .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
         // add transport dependencies
         addSocketBindingDependency(builder, transportSocketBinding, transportConfig.getSocketBindingInjector());
@@ -216,10 +211,18 @@ public class StackAddHandler extends AbstractAddStepHandler {
         for (Map.Entry<String, Injector<Channel>> entry: channels) {
             builder.addDependency(ChannelService.getServiceName(entry.getKey()), Channel.class, entry.getValue());
         }
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-        ServiceBuilder<?> binderBuilder = new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class);
+        new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(name), ChannelFactoryService.getServiceName(name), ChannelFactory.class).install();
+    }
 
-        return Arrays.asList(builder.install(), binderBuilder.install());
+    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
+        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        String name = address.getLastElement().getValue();
+
+        // remove the ChannelFactoryServiceService
+        context.removeService(ChannelFactoryService.getServiceName(name));
+        context.removeService(ChannelFactoryService.createChannelFactoryBinding(name).getBinderServiceName());
     }
 
     private static void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig) throws OperationFailedException {
@@ -285,11 +288,6 @@ public class StackAddHandler extends AbstractAddStepHandler {
          if ( protocols == null || !(protocols.size() > 0)) {
              throw JGroupsLogger.ROOT_LOGGER.protocolListNotDefined(stackName);
          }
-    }
-
-    @Override
-    protected boolean requiresRuntimeVerification() {
-        return false;
     }
 
     static class ProtocolStack implements ProtocolStackConfiguration {

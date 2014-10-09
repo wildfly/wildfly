@@ -23,14 +23,12 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -46,7 +44,12 @@ public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) {
         context.reloadRequired();
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        context.revertReloadRequired();
     }
 }
