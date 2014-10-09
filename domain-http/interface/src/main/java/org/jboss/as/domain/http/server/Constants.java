@@ -54,6 +54,7 @@ public interface Constants {
     String CONTENT_TYPE = "Content-Type";
     String HOST = "Host";
     String LOCATION = "Location";
+    String NEGOTIATE = "Negotiate";
     String ORIGIN = "Origin";
     String REFERER = "Referer";
     String RETRY_AFTER = "Retry-After";

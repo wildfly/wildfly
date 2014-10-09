@@ -28,7 +28,7 @@ import java.io.IOException;
  * The interface to be implemented by a plug-in providing identity information during the authentication process.
  *
  * Plug-Ins can also optionally implement either the {@link PlugInConfigurationSupport} or {@link PlugInLifecycleSupport}
- * interfaces to be provided with configuration and a shared state map and optionally to recieve a notification once the
+ * interfaces to be provided with configuration and a shared state map and optionally to receive a notification once the
  * authentication process has completed.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

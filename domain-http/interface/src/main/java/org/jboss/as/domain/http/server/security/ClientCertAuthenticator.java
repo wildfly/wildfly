@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -41,9 +40,7 @@ import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 
 /**
  * A simple authenticator to be used when the ONLY supported mechanism is ClientCert.

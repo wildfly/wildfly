@@ -43,6 +43,7 @@ import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.http.server.security.FourZeroThreeAuthenticator;
+import org.jboss.as.domain.http.server.security.SpnegoAuthenticator;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
@@ -140,6 +141,11 @@ public class ManagementHttpServer {
                 }
             } else {
                 certAuthMode = CertAuth.NONE;
+            }
+
+            // SPNEGO is added late so it can wrap any existing mechanism.
+            if (authenticationMechanisms.contains(AuthenticationMechanism.KERBEROS)) {
+                auth = new SpnegoAuthenticator(securityRealm, auth);
             }
 
             // By this point if an authenticator could have been defined it would have been.

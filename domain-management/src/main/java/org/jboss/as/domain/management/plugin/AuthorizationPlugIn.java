@@ -28,7 +28,7 @@ import java.io.IOException;
  * Interface to be implemented by a plug-in providing role information used for authorization decisions.
  *
  * Plug-Ins can also optionally implement either the {@link PlugInConfigurationSupport} or {@link PlugInLifecycleSupport}
- * interfaces to be provided with configuration and a shared state map and optionally to recieve a notification once the
+ * interfaces to be provided with configuration and a shared state map and optionally to receive a notification once the
  * authentication process has completed.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

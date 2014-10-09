@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -55,7 +54,6 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
 import org.jboss.sasl.callback.DigestHashCallback;
