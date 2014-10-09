@@ -119,8 +119,8 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
         for (String host : hosts) {
             KeyValueType kv = new KeyValueType();
 
-            kv.setKey(host);
-            kv.setValue(key);
+            kv.setKey(host.trim());
+            kv.setValue(key.trim());
 
             this.keyProviderType.add(kv);
         }
