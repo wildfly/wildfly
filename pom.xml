@@ -208,7 +208,6 @@
         <version.org.opensaml.opensaml>2.6.1</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.5.1</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.4.1</version.org.opensaml.xmltooling>
-        <version.org.picketbox>4.9.0.Beta1</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.7.0.Beta2</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
@@ -6234,30 +6233,6 @@
                 <groupId>org.picketlink.distribution</groupId>
                 <artifactId>picketlink-wildfly8</artifactId>
                 <version>${version.org.picketlink}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.picketbox</groupId>
-                <artifactId>picketbox-infinispan</artifactId>
-                <version>${version.org.picketbox}</version>
-                <exclusions>
-                  <exclusion>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>picketbox-spi-bare</artifactId>
-                  </exclusion>
-                  <exclusion>
-                    <groupId>org.picketbox</groupId>
-                    <artifactId>jbosssx-bare</artifactId>
-                  </exclusion>
-                  <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging-spi</artifactId>
-                  </exclusion>
-                  <exclusion>
-                    <groupId>org.infinispan</groupId>
-                    <artifactId>infinispan-core</artifactId>
-                  </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
