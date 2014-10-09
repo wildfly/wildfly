@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +48,7 @@ import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.ldap.LdapServer;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -110,7 +112,7 @@ public class LdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = SECURITY_DOMAIN_LDAP)
+    @Deployment(name = SECURITY_DOMAIN_LDAP, testable = false)
     public static WebArchive deploymentLdap() {
         return createWar(SECURITY_DOMAIN_LDAP);
     }
@@ -120,7 +122,7 @@ public class LdapLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = SECURITY_DOMAIN_LDAPS)
+    @Deployment(name = SECURITY_DOMAIN_LDAPS, testable = false)
     public static WebArchive deploymentLdaps() {
         return createWar(SECURITY_DOMAIN_LDAPS);
     }
@@ -322,6 +324,7 @@ public class LdapLoginModuleTestCase {
     //@formatter:off
     @CreateDS(
         name = "JBossDS",
+        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {
             @CreatePartition(
@@ -354,6 +357,7 @@ public class LdapLoginModuleTestCase {
 
         private DirectoryService directoryService;
         private LdapServer ldapServer;
+        private boolean removeBouncyCastle = false;
 
         /**
          * Creates directory services, starts LDAP server and KDCServer
@@ -365,6 +369,14 @@ public class LdapLoginModuleTestCase {
          *      java.lang.String)
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            try {
+                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                    Security.addProvider(new BouncyCastleProvider());
+                    removeBouncyCastle = true;
+                }
+            } catch (SecurityException ex) {
+                LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+            }
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
@@ -402,6 +414,13 @@ public class LdapLoginModuleTestCase {
             directoryService.shutdown();
             KEYSTORE_FILE.delete();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
+            if (removeBouncyCastle) {
+                try {
+                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+                } catch (SecurityException ex) {
+                    LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+                }
+            }
         }
     }
 

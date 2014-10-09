@@ -125,7 +125,7 @@ public class SPNEGOLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = "WEB")
+    @Deployment(name = "WEB", testable = false)
     public static WebArchive deployment() {
         LOGGER.debug("Web deployment");
         return createWebApp(WEBAPP_NAME, "web-spnego-authn.xml", "SPNEGO");
@@ -136,7 +136,7 @@ public class SPNEGOLoginModuleTestCase {
      *
      * @return
      */
-    @Deployment(name = "WEB-FORM")
+    @Deployment(name = "WEB-FORM", testable = false)
     public static WebArchive deploymentWebFormFallback() {
         LOGGER.debug("Web deployment with FORM fallback");
         final WebArchive war = createWebApp(WEBAPP_NAME_FALLBACK, "web-spnego-form-fallback.xml", "SPNEGO-with-fallback");
@@ -154,7 +154,7 @@ public class SPNEGOLoginModuleTestCase {
      * @throws IOException
      * @throws IllegalArgumentException
      */
-    @Deployment(name = "EJB")
+    @Deployment(name = "EJB", testable = false)
     public static JavaArchive deploymentEjb() throws IllegalArgumentException, IOException {
         final JavaArchive jar = ShrinkWrap
                 .create(JavaArchive.class, "ejb-spnego.jar")
@@ -354,6 +354,7 @@ public class SPNEGOLoginModuleTestCase {
     //@formatter:off
     @CreateDS(
         name = "JBossDS",
+        factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
         partitions =
         {
             @CreatePartition(
