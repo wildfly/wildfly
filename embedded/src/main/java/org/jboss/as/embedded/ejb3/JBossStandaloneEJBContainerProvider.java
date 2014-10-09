@@ -64,7 +64,7 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
     @Override
     public EJBContainer createEJBContainer(Map<?, ?> properties) throws EJBException {
 
-        if (properties.containsKey(EJBContainer.PROVIDER)) {
+        if (properties != null && properties.containsKey(EJBContainer.PROVIDER)) {
             if (!JBossStandaloneEJBContainer.class.getName().equals(properties.get(EJBContainer.PROVIDER).toString())) {
                 return null;
             }
