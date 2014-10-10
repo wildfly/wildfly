@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
+import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
@@ -59,6 +60,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityConstants;
@@ -304,9 +306,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_IDENTIFIER_CODEC_SERVICE_NAME), SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
         } else {
             ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, deploymentName, module, metaData);
-            if (sessionManagerFactoryServiceName != null) {
-                infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
-            }
+            infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
 
             ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, deploymentName, metaData);
             infoBuilder.addDependency(sessionIdentifierCodecServiceName, SessionIdentifierCodec.class, undertowDeploymentInfoService.getSessionIdentifierCodecInjector());
@@ -363,10 +363,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private static ServiceName installSessionManagerFactory(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, Module module, JBossWebMetaData metaData) {
+        ServiceName name = deploymentServiceName.append("session");
         if (metaData.getDistributable() != null) {
             DistributableSessionManagerFactoryBuilder sessionManagerFactoryBuilder = new DistributableSessionManagerFactoryBuilderValue().getValue();
             if (sessionManagerFactoryBuilder != null) {
-                ServiceName name = deploymentServiceName.append("session");
                 sessionManagerFactoryBuilder.build(target, name, new SimpleDistributableSessionManagerConfiguration(metaData, deploymentName, module))
                         .setInitialMode(Mode.ON_DEMAND)
                         .install()
@@ -376,7 +376,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             // Fallback to local session manager if server does not support clustering
             UndertowLogger.ROOT_LOGGER.clusteringNotSupported();
         }
-        return null;
+        Integer maxActiveSessions = metaData.getMaxActiveSessions();
+        InMemorySessionManagerFactory factory = (maxActiveSessions != null) ? new InMemorySessionManagerFactory(maxActiveSessions.intValue()) : new InMemorySessionManagerFactory();
+        target.addService(name,  new ValueService<>(new ImmediateValue<>(factory))).setInitialMode(Mode.ON_DEMAND).install();
+        return name;
     }
 
     private static ServiceName installSessionIdentifierCodec(ServiceTarget target, ServiceName deploymentServiceName, String deploymentName, JBossWebMetaData metaData) {
