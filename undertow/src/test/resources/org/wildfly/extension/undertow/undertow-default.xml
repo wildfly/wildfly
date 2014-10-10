@@ -10,6 +10,7 @@
        </server>
        <servlet-container name="default" >
            <jsp-config/>
+           <websockets/>
        </servlet-container>
        <handlers>
            <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />

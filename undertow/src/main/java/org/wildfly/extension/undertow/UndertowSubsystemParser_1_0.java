@@ -116,6 +116,12 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 )
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
+                                .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
+                                    @Override
+                                    public void additionalOperations(PathAddress address, ModelNode addOperation, List<ModelNode> operations) {
+                                        operations.add(Util.createAddOperation(address.append(UndertowExtension.PATH_WEBSOCKETS))); //backwards compat
+                                    }
+                                })
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
                                 .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
