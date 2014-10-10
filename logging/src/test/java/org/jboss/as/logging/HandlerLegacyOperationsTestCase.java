@@ -119,6 +119,12 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
         testUpdateProperties(kernelServices, address, AsyncHandlerResourceDefinition.QUEUE_LENGTH, 20);
 
         // Clean-up
+
+        // Remove the console handler from the async-handler before the handler is removed
+        final ModelNode removeHandlerOp = SubsystemOperations.createOperation("remove-handler", address);
+        removeHandlerOp.get("name").set("CONSOLE");
+        executeOperation(kernelServices, removeHandlerOp);
+
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
         verifyRemoved(kernelServices, consoleAddress);
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));

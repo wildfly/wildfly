@@ -582,18 +582,26 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                 result = LESS;
             } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
                 result = GREATER;
+            } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key1)) {
+                result = LESS;
+            } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key2)) {
+                result = GREATER;
+            } else if (CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName().equals(key1)) {
+                result = LESS;
+            } else if (CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName().equals(key2)) {
+                result = GREATER;
             } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1)) {
-                result = LESS;
+                result = GREATER;
             } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key2)) {
-                result = GREATER;
+                result = LESS;
             } else if (LoggerResourceDefinition.LOGGER.equals(key1)) {
-                result = LESS;
+                result = GREATER;
             } else if (LoggerResourceDefinition.LOGGER.equals(key2)) {
-                result = GREATER;
-            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key1) && !(LoggerResourceDefinition.LOGGER.equals(key2) || RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key2))) {
                 result = LESS;
-            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key2) && !(LoggerResourceDefinition.LOGGER.equals(key1) || RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1))) {
+            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key1)) {
                 result = GREATER;
+            } else if (AsyncHandlerResourceDefinition.ASYNC_HANDLER.equals(key2)) {
+                result = LESS;
             }
             return result;
         }

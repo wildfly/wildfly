@@ -110,6 +110,12 @@ public class LoggerLegacyOperationsTestCase extends AbstractOperationsTestCase {
         assertEquals(handlers, SubsystemOperations.readResult(result));
 
         // Clean-up
+
+        // Remove the console handler from the root logger before the handler is removed
+        final ModelNode removeHandlerOp = SubsystemOperations.createOperation("remove-handler", address);
+        removeHandlerOp.get("name").set("CONSOLE");
+        executeOperation(kernelServices, removeHandlerOp);
+
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
         verifyRemoved(kernelServices, consoleAddress);
         executeOperation(kernelServices, SubsystemOperations.createOperation(

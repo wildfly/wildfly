@@ -36,6 +36,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN;
 
@@ -66,6 +67,7 @@ import org.jboss.logmanager.Logger.AttachmentKey;
 import org.jboss.logmanager.config.FormatterConfiguration;
 import org.jboss.logmanager.config.HandlerConfiguration;
 import org.jboss.logmanager.config.LogContextConfiguration;
+import org.jboss.logmanager.config.LoggerConfiguration;
 import org.jboss.logmanager.config.PojoConfiguration;
 import org.jboss.logmanager.config.PropertyConfigurable;
 import org.jboss.logmanager.formatters.PatternFormatter;
@@ -432,8 +434,40 @@ final class HandlerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
-            // Validating wouldn't work until the LogContextConfiguration.commit() happens as handlers could still be
-            // named as attached removed the check for this reason.
+            // Check that the handler is not assigned to a logger
+            final List<String> loggerNames = logContextConfiguration.getLoggerNames();
+            final List<String> assigned = new ArrayList<String>();
+            for (String loggerName : loggerNames) {
+                final LoggerConfiguration c = logContextConfiguration.getLoggerConfiguration(loggerName);
+                if (c != null) {
+                    if (c.getHandlerNames().contains(name)) {
+                        if (ROOT_LOGGER_NAME.equals(loggerName)) {
+                            assigned.add(RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME);
+                        } else {
+                            assigned.add(loggerName);
+                        }
+                    }
+                }
+            }
+            if (!assigned.isEmpty()) {
+                context.setRollbackOnly();
+                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAttachedToLoggers(name, assigned));
+            }
+
+            // Check for handlers that haven been assigned the handler that is attempting to be removed
+            final List<String> handlerNames = logContextConfiguration.getHandlerNames();
+            for (String handlerName : handlerNames) {
+                final HandlerConfiguration c = logContextConfiguration.getHandlerConfiguration(handlerName);
+                if (c != null) {
+                    if (c.getHandlerNames().contains(name)) {
+                        assigned.add(handlerName);
+                    }
+                }
+            }
+            if (!assigned.isEmpty()) {
+                context.setRollbackOnly();
+                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAttachedToHandlers(name, assigned));
+            }
 
             // Remove the handler
             logContextConfiguration.removeHandlerConfiguration(name);
@@ -809,7 +843,7 @@ final class HandlerOperations {
      * @param handlerName the name of the handler to enable.
      */
     static boolean isDisabledHandler(final LogContext logContext, final String handlerName) {
-        final Map<String, String> disableHandlers = logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
+        final Map<String, String> disableHandlers = logContext.getAttachment(ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
         return disableHandlers != null && disableHandlers.containsKey(handlerName);
     }
 
@@ -830,7 +864,7 @@ final class HandlerOperations {
         } catch (IllegalArgumentException e) {
             // do nothing
         }
-        final Map<String, String> disableHandlers = configuration.getLogContext().getAttachment(CommonAttributes.ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
+        final Map<String, String> disableHandlers = configuration.getLogContext().getAttachment(ROOT_LOGGER_NAME, DISABLED_HANDLERS_KEY);
         if (disableHandlers != null && disableHandlers.containsKey(handlerName)) {
             synchronized (HANDLER_LOCK) {
                 final String filter = disableHandlers.get(handlerName);
@@ -856,7 +890,7 @@ final class HandlerOperations {
         } catch (IllegalArgumentException e) {
             // do nothing
         }
-        final Logger root = configuration.getLogContext().getLogger(CommonAttributes.ROOT_LOGGER_NAME);
+        final Logger root = configuration.getLogContext().getLogger(ROOT_LOGGER_NAME);
         Map<String, String> disableHandlers = root.getAttachment(DISABLED_HANDLERS_KEY);
         synchronized (HANDLER_LOCK) {
             if (disableHandlers == null) {

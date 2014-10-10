@@ -34,6 +34,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
@@ -254,8 +255,13 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         // Second line will start with the clear string, followed by the color string
         assertTrue("Line logged does not match expected: 4", Arrays.equals("[changed-pattern] Test message 4".getBytes(ENCODING), lines.get(3).getBytes(ENCODING)));
 
+        // Remove the handler operation
+        final ModelNode removeHandlerOp = SubsystemOperations.createOperation("remove-handler", loggerAddress);
+        removeHandlerOp.get("name").set(fileHandlerName);
+
         // Finally clean everything up
         op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(removeHandlerOp)
                 .addStep(SubsystemOperations.createRemoveOperation(handlerAddress))
                 .addStep(SubsystemOperations.createRemoveOperation(patternFormatterAddress))
                 .addStep(SubsystemOperations.createRemoveOperation(loggerAddress))
@@ -311,6 +317,24 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         assertTrue("Subhandler CONSOLE should have been removed: " + result, SubsystemOperations.readResult(result)
                 .asList()
                 .isEmpty());
+
+        // Clean-up
+        executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
+        verifyRemoved(kernelServices, consoleAddress);
+        executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));
+        verifyRemoved(kernelServices, address);
+
+        // Add an async-handler with the console-handler assigned, then attempt to remove the async-handler which should
+        // result in a failure
+        executeOperation(kernelServices, CompositeOperationBuilder.create()
+                .addStep(SubsystemOperations.createAddOperation(consoleAddress))
+                .addStep(addOp)
+                .build().getOperation());
+
+        // Attempt to remove the CONSOLE handler
+        final ModelNode removeHandlerOp = SubsystemOperations.createOperation("remove-handler", address);
+        removeHandlerOp.get("name").set("CONSOLE");
+        executeOperationForFailure(kernelServices, removeHandlerOp);
 
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
