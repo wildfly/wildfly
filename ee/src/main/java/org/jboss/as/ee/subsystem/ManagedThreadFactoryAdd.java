@@ -26,15 +26,11 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * @author Eduardo Martins
@@ -48,7 +44,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
         final String jndiName = ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
@@ -63,14 +59,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         if (contextService != null) {
             serviceBuilder.addDependency(ConcurrentServiceNames.getContextServiceServiceName(contextService), ContextServiceImpl.class, service.getContextServiceInjector());
         }
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-        if (newControllers != null) {
-            newControllers.add(
-                    serviceBuilder.install());
-        } else {
-            serviceBuilder.install();
-        }
+
+        serviceBuilder.install();
     }
 }
