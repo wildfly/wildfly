@@ -330,6 +330,7 @@ public class Constants {
 
     static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.TRACKING.getLocalName())
+            .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
