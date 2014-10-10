@@ -123,15 +123,10 @@
         </dependency>
 
         <dependency>
-         <groupId>org.picketbox</groupId>
-         <artifactId>picketbox</artifactId>
-        </dependency>
-
-        <dependency>
-         <groupId>org.wildfly.core</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-         <type>pom</type>
-         <scope>test</scope>
+            <type>pom</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

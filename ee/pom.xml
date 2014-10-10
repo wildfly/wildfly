@@ -108,10 +108,6 @@
             <artifactId>jboss-interceptors-api_1.2_spec</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.picketbox</groupId>
-            <artifactId>picketbox</artifactId>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
