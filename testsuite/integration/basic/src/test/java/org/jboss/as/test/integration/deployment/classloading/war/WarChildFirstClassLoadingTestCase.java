@@ -21,9 +21,10 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.war;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import javax.ejb.Stateless;
 
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -41,17 +42,7 @@ public class WarChildFirstClassLoadingTestCase {
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addClasses(WarChildFirstClassLoadingTestCase.class, Stateless.class);
-        war.addAsWebInfResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.lang.RuntimePermission</classname>\n" +
-            "       <name>getClassLoader</name>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""
-        ), "permissions.xml");
+        war.addAsWebInfResource(createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return war;
     }
 

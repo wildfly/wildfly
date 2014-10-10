@@ -24,10 +24,12 @@ package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -148,18 +150,7 @@ public class SendMessagesTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SINGLETON + ".jar")
                 .addClasses(HelperSingleton.class, HelperSingletonImpl.class);
         // grant necessary permissions
-        jar.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.util.PropertyPermission</classname>\n" +
-            "       <name>ts.timeout.factor</name>\n" +
-            "       <actions>read</actions>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""
-        ), "META-INF/jboss-permissions.xml");
+        jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -170,18 +161,7 @@ public class SendMessagesTestCase {
                 .addClasses(ReplyingMDB.class, TimeoutUtil.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
         // grant necessary permissions
-        jar.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.util.PropertyPermission</classname>\n" +
-            "       <name>ts.timeout.factor</name>\n" +
-            "       <actions>read</actions>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""
-        ), "META-INF/jboss-permissions.xml");
+        jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }

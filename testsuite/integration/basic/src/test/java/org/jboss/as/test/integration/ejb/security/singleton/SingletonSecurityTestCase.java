@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.integration.ejb.security.singleton;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.logging.Logger;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
 
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -57,16 +58,7 @@ public class SingletonSecurityTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-security.jar");
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
         jar.addPackage(CommonCriteria.class.getPackage());
-        jar.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.lang.RuntimePermission</classname>\n" +
-            "       <name>org.jboss.security.setSecurityContext</name>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""), "META-INF/jboss-permissions.xml");
+        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.setSecurityContext")), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }

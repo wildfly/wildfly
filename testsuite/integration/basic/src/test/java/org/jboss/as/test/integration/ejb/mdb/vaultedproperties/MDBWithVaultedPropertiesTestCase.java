@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -56,7 +57,6 @@ import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -167,16 +167,7 @@ public class MDBWithVaultedPropertiesTestCase {
                 .addClass(StoreVaultedPropertyTask.class)
                 .addClass(MDB.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource(new StringAsset("" +
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "\n" +
-                    "<permissions>\n" +
-                    "   <permission>\n" +
-                    "       <classname>java.lang.RuntimePermission</classname>\n" +
-                    "       <name>getProtectionDomain</name>\n" +
-                    "   </permission>\n" +
-                    "</permissions>\n" +
-                    ""), "META-INF/jboss-permissions.xml");
+                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
     }
 
     @Resource(mappedName = CLEAR_TEXT_DESTINATION_LOOKUP)

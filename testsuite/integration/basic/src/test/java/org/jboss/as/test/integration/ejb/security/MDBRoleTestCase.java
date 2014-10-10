@@ -35,7 +35,6 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,9 +54,11 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.PropertyPermission;
 
 /**
  * Deploys a message driven bean and a stateless bean which is injected into MDB
@@ -86,17 +87,7 @@ public class MDBRoleTestCase {
         deployment.addAsManifestResource(MDBRoleTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
       deployment.addPackage(CommonCriteria.class.getPackage());
       // grant necessary permissions
-      deployment.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.util.PropertyPermission</classname>\n" +
-            "       <name>ts.timeout.factor</name>\n" +
-            "       <actions>read</actions>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""), "META-INF/jboss-permissions.xml");
+      deployment.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
       return deployment;
    }
 

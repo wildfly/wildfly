@@ -23,10 +23,12 @@
 package org.jboss.as.test.integration.ejb.mdb.cmt.notsupported;
 
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -48,7 +50,6 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,18 +105,7 @@ public class ContainerManagedTransactionNotSupportedTestCase {
         jar.addPackage(BaseMDB.class.getPackage());
         jar.addAsManifestResource(ContainerManagedTransactionNotSupportedMDBWithDD.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         // grant necessary permissions
-        jar.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.util.PropertyPermission</classname>\n" +
-            "       <name>ts.timeout.factor</name>\n" +
-            "       <actions>read</actions>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""
-        ), "META-INF/jboss-permissions.xml");
+        jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
 
         return jar;
     }

@@ -23,7 +23,9 @@
 package org.jboss.as.test.integration.ejb.mdb.activationconfig.unit;
 
 import static org.jboss.as.test.integration.ejb.mdb.activationconfig.JMSHelper.assertSendAndReceiveTextMessage;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -97,18 +99,7 @@ public class MDBActivationConfigTestCase {
                 .addClasses(JMSOperations.class, JMSMessagingUtil.class, JmsQueueSetup.class)
                 .addClasses(TimeoutUtil.class)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF")
-                .addAsResource(new StringAsset("" +
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "\n" +
-                    "<permissions>\n" +
-                    "   <permission>\n" +
-                    "       <classname>java.util.PropertyPermission</classname>\n" +
-                    "       <name>ts.timeout.factor</name>\n" +
-                    "       <actions>read</actions>\n" +
-                    "   </permission>\n" +
-                    "</permissions>\n" +
-                    ""
-                ), "META-INF/jboss-permissions.xml");
+                .addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
     }
 
     /**

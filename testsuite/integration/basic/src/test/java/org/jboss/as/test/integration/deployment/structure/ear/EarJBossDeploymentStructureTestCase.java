@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.deployment.structure.ear;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import javax.ejb.EJB;
@@ -64,17 +65,7 @@ public class EarJBossDeploymentStructureTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         ejbJar.addClasses(ClassLoadingEJB.class, EarJBossDeploymentStructureTestCase.class);
         // grant necessary permissions
-        ejbJar.addAsResource(new StringAsset("" +
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "\n" +
-            "<permissions>\n" +
-            "   <permission>\n" +
-            "       <classname>java.lang.RuntimePermission</classname>\n" +
-            "       <name>getProtectionDomain</name>\n" +
-            "   </permission>\n" +
-            "</permissions>\n" +
-            ""
-        ), "META-INF/jboss-permissions.xml");
+        ejbJar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
 
         ear.addAsModule(jarOne);
         ear.addAsModule(ignoredJar);
