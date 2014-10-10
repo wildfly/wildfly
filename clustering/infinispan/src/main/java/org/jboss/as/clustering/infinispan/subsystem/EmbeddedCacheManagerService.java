@@ -31,10 +31,12 @@ import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
@@ -49,11 +51,17 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
         return BASE_SERVICE_NAME.append(name);
     }
 
-    private final Value<EmbeddedCacheManagerConfiguration> config;
+    static ServiceBuilder<EmbeddedCacheManager> build(ServiceTarget target, String name) {
+        EmbeddedCacheManagerService service = new EmbeddedCacheManagerService();
+        return target.addService(getServiceName(name), service)
+                .addDependency(EmbeddedCacheManagerConfigurationService.getServiceName(name), EmbeddedCacheManagerConfiguration.class, service.config)
+        ;
+    }
+
+    private final InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<>();
     private volatile EmbeddedCacheManager container;
 
-    public EmbeddedCacheManagerService(Value<EmbeddedCacheManagerConfiguration> config) {
-        this.config = config;
+    private EmbeddedCacheManagerService() {
     }
 
     @Override

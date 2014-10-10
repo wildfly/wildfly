@@ -26,15 +26,12 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.group.Group;
@@ -64,18 +61,14 @@ public class GroupServiceInstaller implements org.wildfly.clustering.spi.GroupSe
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier module) {
-        List<ServiceController<?>> controllers = new LinkedList<>();
-
+    public void install(ServiceTarget target, String group, ModuleIdentifier module) {
         ServiceName name = GroupServiceNames.GROUP.getServiceName(group);
         ContextNames.BindInfo bindInfo = createBinding(group);
 
         this.logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        controllers.add(this.builder.build(target, name, group, module).setInitialMode(ON_DEMAND).install());
+        this.builder.build(target, name, group, module).setInitialMode(ON_DEMAND).install();
 
-        controllers.add(new BinderServiceBuilder(target).build(bindInfo, name, Group.class).install());
-
-        return controllers;
+        new BinderServiceBuilder(target).build(bindInfo, name, Group.class).install();
     }
 }

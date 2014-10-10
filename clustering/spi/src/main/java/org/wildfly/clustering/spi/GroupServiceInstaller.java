@@ -24,7 +24,6 @@ package org.wildfly.clustering.spi;
 import java.util.Collection;
 
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -45,7 +44,6 @@ public interface GroupServiceInstaller {
      * @param target the service target in which to install services
      * @param group the group to which the installed services are associated
      * @param module the unique identifier of the module upon which these services should operate
-     * @return a collection of installed services
      */
-    Collection<ServiceController<?>> install(ServiceTarget target, String group, ModuleIdentifier module);
+    void install(ServiceTarget target, String group, ModuleIdentifier module);
 }

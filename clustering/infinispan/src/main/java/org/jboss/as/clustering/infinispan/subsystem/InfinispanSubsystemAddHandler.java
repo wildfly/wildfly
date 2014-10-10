@@ -24,21 +24,18 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
-import java.util.List;
-
 import org.jboss.as.clustering.infinispan.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
@@ -61,7 +58,7 @@ public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandle
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
 
         OperationStepHandler step = new AbstractDeploymentChainStep() {
@@ -71,10 +68,5 @@ public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandle
             }
         };
         context.addStep(step, OperationContext.Stage.RUNTIME);
-    }
-
-    @Override
-    protected boolean requiresRuntimeVerification() {
-        return false;
     }
 }

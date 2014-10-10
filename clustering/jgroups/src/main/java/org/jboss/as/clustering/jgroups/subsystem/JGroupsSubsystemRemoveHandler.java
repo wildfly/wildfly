@@ -23,20 +23,13 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ServiceLoader;
-
-import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.spi.ClusteredGroupServiceInstaller;
-import org.wildfly.clustering.spi.GroupServiceInstaller;
 
 /**
  * Handler for JGroups subsystem remove operations.
@@ -80,30 +73,11 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        // remove the ProtocolDefaultsService
-        context.removeService(ProtocolDefaultsService.SERVICE_NAME);
-
-        String defaultStack = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.resolveModelAttribute(context, model));
-        if ((defaultStack != null) && !defaultStack.equals(ChannelFactoryService.DEFAULT)) {
-            context.removeService(ChannelFactoryService.getServiceName(ChannelFactoryService.DEFAULT));
-        }
-
-        String defaultChannel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, model));
-        if ((defaultChannel != null) && !defaultChannel.equals(ChannelService.DEFAULT)) {
-            context.removeService(ChannelService.getServiceName(ChannelService.DEFAULT));
-            context.removeService(ConnectedChannelService.getServiceName(ChannelService.DEFAULT));
-            context.removeService(ChannelService.getFactoryServiceName(ChannelService.DEFAULT));
-
-            for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
-                for (ServiceName name : installer.getServiceNames(ChannelService.DEFAULT)) {
-                    context.removeService(name);
-                }
-            }
-        }
+        JGroupsSubsystemAddHandler.removeRuntimeServices(context, operation, model);
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        JGroupsSubsystemAddHandler.installRuntimeServices(context, operation, model, new ServiceVerificationHandler());
+        JGroupsSubsystemAddHandler.installRuntimeServices(context, operation, model);
     }
 }

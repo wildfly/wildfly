@@ -90,8 +90,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
     @Test
     @BMRule(name="Test remove rollback operation",
-            targetClass="org.jboss.as.clustering.infinispan.subsystem.CacheContainerRemoveHandler",
-            targetMethod="removeExistingCacheServices",
+            targetClass="org.jboss.as.clustering.infinispan.subsystem.CacheContainerAddHandler",
+            targetMethod="removeRuntimeServices",
             targetLocation="AT ENTRY",
             action="$1.setRollbackOnly()")
     public void testCacheContainerRemoveRollback() throws Exception {

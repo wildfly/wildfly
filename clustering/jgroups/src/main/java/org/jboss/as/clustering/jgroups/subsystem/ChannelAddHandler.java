@@ -25,10 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -50,7 +47,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -60,7 +56,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.jgroups.conf.ProtocolConfiguration;
@@ -143,11 +139,11 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        newControllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        installRuntimeServices(context, operation, model);
     }
 
-    static Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         String channelName = address.getLastElement().getValue();
@@ -156,26 +152,49 @@ public class ChannelAddHandler extends AbstractAddStepHandler {
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(ChannelResourceDefinition.MODULE.resolveModelAttribute(context, model));
 
         ServiceTarget target = context.getServiceTarget();
-        List<ServiceController<?>> controllers = new LinkedList<>();
 
-        controllers.add(new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(channelName), ChannelFactoryService.getServiceName(stackName), ChannelFactory.class).install());
+        // Install channel factory alias
+        new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(channelName), ChannelFactoryService.getServiceName(stackName), ChannelFactory.class).install();
 
-        controllers.add(ChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install());
+        // Install channel
+        ChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install();
 
-        controllers.add(ConnectedChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install());
+        // Install channel connector
+        ConnectedChannelService.build(target, channelName).setInitialMode(ON_DEMAND).install();
 
-        controllers.add(new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(channelName), ChannelService.getServiceName(channelName), Channel.class).install());
+        // Install channel jndi binding
+        new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(channelName), ChannelService.getServiceName(channelName), Channel.class).install();
 
-        controllers.add(ForkChannelFactoryService.build(target, channelName).setInitialMode(ON_DEMAND).install());
+        // Install fork channel factory
+        ForkChannelFactoryService.build(target, channelName).setInitialMode(ON_DEMAND).install();
 
-        controllers.add(new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(channelName), ChannelFactoryService.getServiceName(channelName), ChannelFactory.class).install());
+        // Install fork channel factory jndi binding
+        new BinderServiceBuilder(target).build(ChannelFactoryService.createChannelFactoryBinding(channelName), ChannelFactoryService.getServiceName(channelName), ChannelFactory.class).install();
 
+        // Install group services for channel
         for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
             JGroupsLogger.ROOT_LOGGER.debugf("Installing %s for channel %s", installer.getClass().getSimpleName(), channelName);
-            controllers.addAll(installer.install(target, channelName, module));
+            installer.install(target, channelName, module);
         }
+    }
 
-        return controllers;
+    static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) {
+        PathAddress channelAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        String channelName = channelAddress.getLastElement().getValue();
+
+        context.removeService(ChannelService.getServiceName(channelName));
+        context.removeService(ChannelService.createChannelBinding(channelName).getBinderServiceName());
+        context.removeService(ChannelService.getFactoryServiceName(channelName));
+        context.removeService(ConnectedChannelService.getServiceName(channelName));
+
+        context.removeService(ChannelFactoryService.getServiceName(channelName));
+        context.removeService(ChannelFactoryService.createChannelFactoryBinding(channelName).getBinderServiceName());
+
+        for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
+            for (ServiceName serviceName : installer.getServiceNames(channelName)) {
+                context.removeService(serviceName);
+            }
+        }
     }
 
     static ResourceDefinition createProtocolResourceDefinition(String protocolName) throws OperationFailedException {

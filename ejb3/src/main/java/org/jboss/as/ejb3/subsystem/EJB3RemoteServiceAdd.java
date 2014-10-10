@@ -21,9 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 
@@ -36,7 +33,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.logging.EjbLogger;
@@ -58,7 +54,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -90,51 +85,37 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        newControllers.addAll(installRuntimeServices(context, model, verificationHandler));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+        installRuntimeServices(context, model);
+
         // add ejb remote transactions repository service
         final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceController<?> transactionRepositoryServiceController = serviceTarget.addService(EJBRemoteTransactionsRepository.SERVICE_NAME, transactionsRepository)
+        serviceTarget.addService(EJBRemoteTransactionsRepository.SERVICE_NAME, transactionsRepository)
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
                 .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, RecoveryManagerService.class, transactionsRepository.getRecoveryManagerInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-        newControllers.add(transactionRepositoryServiceController);
 
         // Service responsible for tracking cancel() invocations on remote async method calls
         final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService = new RemoteAsyncInvocationCancelStatusService();
-        final ServiceController<?> asyncCancelTrackerServiceController = serviceTarget.addService(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, asyncInvocationCancelStatusService)
-                .install();
-        newControllers.add(asyncCancelTrackerServiceController);
-
+        serviceTarget.addService(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, asyncInvocationCancelStatusService).install();
     }
 
-    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
 
-        final List<ServiceController<?>> services = new ArrayList<>();
         final ServiceTarget target = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector
-        ServiceBuilder<?> clientMappingEntryProviderServiceBuilder = new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, remotingServerInfoServiceName)
+        new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, remotingServerInfoServiceName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-        if (verificationHandler != null) {
-            clientMappingEntryProviderServiceBuilder.addListener(verificationHandler);
-        }
-        services.add(clientMappingEntryProviderServiceBuilder.install());
+                .install();
 
-        ServiceBuilder<?> registryInstallerBuilder = new RegistryInstallerService().build(target)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-        if (verificationHandler != null) {
-            registryInstallerBuilder.addListener(verificationHandler);
-        }
-        services.add(registryInstallerBuilder.install());
+        new RegistryInstallerService().build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         // Handle case where no infinispan subsystem exists or does not define an ejb cache-container
         Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
@@ -143,10 +124,10 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
             // Install services that would normally be installed by this container/cache
             ModuleIdentifier module = Module.forClass(this.getClass()).getIdentifier();
             for (GroupServiceInstaller installer: ServiceLoader.load(LocalGroupServiceInstaller.class, LocalGroupServiceInstaller.class.getClassLoader())) {
-                services.addAll(installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module));
+                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, module);
             }
             for (CacheServiceInstaller installer: ServiceLoader.load(LocalCacheServiceInstaller.class, LocalCacheServiceInstaller.class.getClassLoader())) {
-                services.addAll(installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheServiceNameFactory.DEFAULT_CACHE));
+                installer.install(target, BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME, CacheServiceNameFactory.DEFAULT_CACHE);
             }
         }
 
@@ -154,12 +135,12 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x02, new String[]{"river"}, channelCreationOptions);
-        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
-        // add dependency on the Remoting subsystem endpoint
-        ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
-        // add dependency on the remoting server (which allows remoting connector to connect to it)
-        // add rest of the dependencies
-        ejbRemoteConnectorServiceBuilder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService())
+        target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService)
+                // add dependency on the Remoting subsystem endpoint
+                .addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector())
+                // add dependency on the remoting server (which allows remoting connector to connect to it)
+                // add rest of the dependencies
+                .addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbRemoteConnectorService.getDeploymentRepositoryInjector())
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbRemoteConnectorService.getEJBRemoteTransactionsRepositoryInjector())
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, ejbRemoteConnectorService.getClusterRegistryCollectorInjector())
@@ -167,13 +148,8 @@ public class EJB3RemoteServiceAdd extends AbstractAddStepHandler {
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, ejbRemoteConnectorService.getTxSyncRegistryInjector())
                 .addDependency(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, RemoteAsyncInvocationCancelStatusService.class, ejbRemoteConnectorService.getAsyncInvocationCancelStatusInjector())
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, ejbRemoteConnectorService.getRemotingConnectorInfoInjectedValue())
-                .setInitialMode(ServiceController.Mode.ACTIVE);
-        if (verificationHandler != null) {
-            ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);
-        }
-        services.add(ejbRemoteConnectorServiceBuilder.install());
-
-        return services;
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     @Override

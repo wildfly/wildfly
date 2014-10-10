@@ -23,7 +23,6 @@ package org.wildfly.clustering.spi;
 
 import java.util.Collection;
 
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -45,7 +44,6 @@ public interface CacheServiceInstaller {
      * @param target the service target in which to install services
      * @param container the name of the cache container to which the installed services are associated
      * @param cache the name of the cache to which the installed services are associated
-     * @return a collection of installed services
      */
-    Collection<ServiceController<?>> install(ServiceTarget target, String container, String cache);
+    void install(ServiceTarget target, String container, String cache);
 }
