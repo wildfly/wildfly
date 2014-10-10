@@ -15,7 +15,7 @@ do
           SECMGR="true"
           ;;
       *)
-          SERVER_OPTS="$SERVER_OPTS \"$1\""
+          SERVER_OPTS="$SERVER_OPTS '$1'"
           ;;
     esac
     shift

@@ -5,7 +5,7 @@ while [ "$#" -gt 0 ]
 do
     case "$1" in
       *)
-          CLI_OPTS="$CLI_OPTS \"$1\""
+          CLI_OPTS="$CLI_OPTS '$1'"
           ;;
     esac
     shift
