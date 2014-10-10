@@ -131,6 +131,7 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                 .addAttribute(ServletContainerDefinition.IGNORE_FLUSH)
                                 .addAttribute(ServletContainerDefinition.EAGER_FILTER_INIT)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT)
+                                .addAttribute(ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -171,6 +172,14 @@ public class UndertowSubsystemParser_2_0 implements XMLStreamConstants, XMLEleme
                                                 .addAttributes(
                                                         PersistentSessionsDefinition.PATH,
                                                         PersistentSessionsDefinition.RELATIVE_TO
+                                                )
+                                )
+                                .addChild(
+                                        builder(WebsocketsDefinition.INSTANCE)
+                                                .addAttributes(
+                                                        WebsocketsDefinition.WORKER,
+                                                        WebsocketsDefinition.BUFFER_POOL,
+                                                        WebsocketsDefinition.DISPATCH_TO_WORKER
                                                 )
                                 )
                 )

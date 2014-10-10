@@ -87,6 +87,7 @@
                         http-only="true"
                         max-age="1000"/>
         <!--<persistent-sessions relative-to="${server.data.dir}" path="web-sessions"/>-->
+        <websockets dispatch-to-worker="true" buffer-pool="default" worker="default" />
     </servlet-container>
 
     <handlers>

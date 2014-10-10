@@ -104,6 +104,15 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(30))
                     .build(); //30 minutes
 
+
+    protected static final AttributeDefinition DISABLE_CACHING_FOR_SECURED_PAGES =
+            new SimpleAttributeDefinitionBuilder("disable-caching-for-secured-pages", ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(true))
+                    .build(); //30 minutes
+
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
@@ -113,13 +122,16 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
             USE_LISTENER_ENCODING,
             IGNORE_FLUSH,
             EAGER_FILTER_INIT,
-            DEFAULT_SESSION_TIMEOUT);
+            DEFAULT_SESSION_TIMEOUT,
+            DISABLE_CACHING_FOR_SECURED_PAGES
+            );
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();
         children.add(JspDefinition.INSTANCE);
         children.add(SessionCookieDefinition.INSTANCE);
         children.add(PersistentSessionsDefinition.INSTANCE);
+        children.add(WebsocketsDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 

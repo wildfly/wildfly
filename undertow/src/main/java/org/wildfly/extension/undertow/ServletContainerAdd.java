@@ -36,6 +36,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.io.IOServices;
+import org.xnio.Pool;
+import org.xnio.XnioWorker;
 
 import java.util.List;
 
@@ -82,8 +86,11 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
         final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
         final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
+        final boolean disableCachingForSecuredPages = ServletContainerDefinition.DISABLE_CACHING_FOR_SECURED_PAGES.resolveModelAttribute(context, model).asBoolean();
 
         final int sessionTimeout = ServletContainerDefinition.DEFAULT_SESSION_TIMEOUT.resolveModelAttribute(context, model).asInt();
+
+        WebsocketsDefinition.WebSocketInfo info = WebsocketsDefinition.INSTANCE.getConfig(context, model);
 
         final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
                 ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
@@ -93,7 +100,8 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 useListenerEncoding,
                 ignoreFlush,
                 eagerFilterInit,
-                sessionTimeout);
+                sessionTimeout,
+                disableCachingForSecuredPages, info != null, info != null && info.isDispatchToWorker());
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {
@@ -101,6 +109,10 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         }
         if(persistentSessions) {
             builder.addDependency(AbstractPersistentSessionManager.SERVICE_NAME, SessionPersistenceManager.class, container.getSessionPersistenceManagerInjectedValue());
+        }
+        if(info != null) {
+            builder.addDependency(IOServices.WORKER.append(info.getWorker()), XnioWorker.class, container.getWebsocketsWorker());
+            builder.addDependency(IOServices.BUFFER_POOL.append(info.getBufferPool()), Pool.class, (InjectedValue)container.getWebsocketsBufferPool());
         }
 
         newControllers.add(builder
