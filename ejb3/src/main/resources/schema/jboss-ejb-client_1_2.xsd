@@ -86,7 +86,7 @@
         <xsd:attribute name="deployment-node-selector" type="xsd:string" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The fully qualified classname of the class which implements the
+                    The fully qualified class name of the class which implements the
                     org.jboss.ejb.client.DeploymentNodeSelector
                     interface. The instance of this class will be used for selecting nodes, from among multiple eligible
                     nodes within an EJB client context, which can handle a particular deployment
@@ -137,7 +137,7 @@
         <xsd:attribute name="outbound-connection-ref" type="xsd:string" use="required">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    Reference to an outbound connection configured in the remoting subsytem
+                    Reference to an outbound connection configured in the remoting subsystem
                 </documentation>
             </annotation>
         </xsd:attribute>
@@ -210,7 +210,7 @@
         <xsd:attribute name="cluster-node-selector" type="xsd:string" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The fully qualified classname of the class which implements the
+                    The fully qualified class name of the class which implements the
                     org.jboss.ejb.client.ClusterNodeSelector
                     interface. The instance of this class will be used for selecting nodes, within the cluster, for
                     handling

@@ -101,7 +101,7 @@
         <xsd:attribute name="outbound-connection-ref" type="xsd:string" use="required">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    Reference to an outbound connection configured in the remoting subsytem
+                    Reference to an outbound connection configured in the remoting subsystem
                 </documentation>
             </annotation>
         </xsd:attribute>
