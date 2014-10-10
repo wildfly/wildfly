@@ -65,7 +65,7 @@
                     </documentation>
                 </annotation>
             </xsd:element>
-            <xsd:element name="clusters" type="clustersType">
+            <xsd:element name="clusters" type="clustersType" minOccurs="0">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Cluster configurations applicable for this client context
