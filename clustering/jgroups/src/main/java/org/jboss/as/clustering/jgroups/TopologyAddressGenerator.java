@@ -22,32 +22,34 @@
 package org.jboss.as.clustering.jgroups;
 
 import org.jgroups.Address;
-import org.jgroups.Channel;
 import org.jgroups.stack.AddressGenerator;
-import org.jgroups.util.TopologyUUID;
+import org.jgroups.util.ExtendedUUID;
+import org.jgroups.util.Util;
 
 /**
- * An AddressGenerator which generates TopologyUUID addresses with specified site, rack and machine ids.
+ * An AddressGenerator which generates ExtendedUUID addresses with specified site, rack and machine ids.
  *
  * @author Tristan Tarrant
- *
+ * @author Paul Ferraro
  */
 public class TopologyAddressGenerator implements AddressGenerator {
+    // Based on org.jgroups.util.TopologyUUID from JGroups 3.4.x
+    private static final byte[] SITE = Util.stringToBytes("site-id");
+    private static final byte[] RACK = Util.stringToBytes("rack-id");
+    private static final byte[] MACHINE = Util.stringToBytes("machine-id");
 
-    private final Channel channel;
-    private final String machine;
-    private final String rack;
-    private final String site;
+    private final TransportConfiguration.Topology topology;
 
-    public TopologyAddressGenerator(Channel channel, String site, String rack, String machine) {
-        this.channel = channel;
-        this.site = site;
-        this.rack = rack;
-        this.machine = machine;
+    public TopologyAddressGenerator(TransportConfiguration.Topology topology) {
+        this.topology = topology;
     }
 
     @Override
     public Address generateAddress() {
-        return TopologyUUID.randomUUID(this.channel.getName(), this.site, this.rack, this.machine);
+        ExtendedUUID uuid = ExtendedUUID.randomUUID();
+        uuid.put(SITE, Util.stringToBytes(this.topology.getSite()));
+        uuid.put(RACK, Util.stringToBytes(this.topology.getRack()));
+        uuid.put(MACHINE, Util.stringToBytes(this.topology.getMachine()));
+        return uuid;
     }
 }

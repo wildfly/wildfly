@@ -64,8 +64,7 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
             try {
                 ChannelFactory factory = controller.awaitValue();
                 // Create a temporary channel, but don't connect it
-                Channel channel = factory.createChannel(UUID.randomUUID().toString());
-                try {
+                try (Channel channel = factory.createChannel(UUID.randomUUID().toString())) {
                     // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack
                     List<Protocol> protocols = channel.getProtocolStack().getProtocols();
                     Collections.reverse(protocols);
@@ -73,8 +72,6 @@ public class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
                     stack.addProtocols(protocols);
                     context.getResult().set(stack.printProtocolSpecAsXML());
                     context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                } finally {
-                    channel.close();
                 }
             } finally {
                 controller.setMode(mode);

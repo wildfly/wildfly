@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.modules.ModuleLoader;
 import org.jgroups.Channel;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.stack.Configurator;
@@ -39,9 +40,9 @@ import org.jgroups.stack.ProtocolStack;
  */
 public class ForkChannelFactory implements ChannelFactory {
 
-    final ProtocolStackConfiguration parentStack;
-    final List<ProtocolConfiguration> protocols;
-    final Channel channel;
+    private final ProtocolStackConfiguration parentStack;
+    private final List<ProtocolConfiguration> protocols;
+    private final Channel channel;
 
     public ForkChannelFactory(Channel channel, ProtocolStackConfiguration parentStack, List<ProtocolConfiguration> protocols) {
         this.channel = channel;
@@ -57,79 +58,66 @@ public class ForkChannelFactory implements ChannelFactory {
     public Channel createChannel(String id) throws Exception {
         JGroupsLogger.ROOT_LOGGER.debugf("Creating fork channel %s from channel %s", id, this.channel.getClusterName());
 
-        final String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
-        ProtocolStackConfiguration forkStack = new ProtocolStackConfiguration() {
-            @Override
-            public String getName() {
-                return stackName;
-            }
-
-            @Override
-            public ProtocolDefaults getDefaults() {
-                return ForkChannelFactory.this.parentStack.getDefaults();
-            }
-
-            @Override
-            public TransportConfiguration getTransport() {
-                return ForkChannelFactory.this.parentStack.getTransport();
-            }
-
-            @Override
-            public List<ProtocolConfiguration> getProtocols() {
-                return ForkChannelFactory.this.protocols;
-            }
-
-            @Override
-            public ServerEnvironment getEnvironment() {
-                return ForkChannelFactory.this.parentStack.getEnvironment();
-            }
-
-            @Override
-            public RelayConfiguration getRelay() {
-                return ForkChannelFactory.this.parentStack.getRelay();
-            }
-        };
-        List<Protocol> protocols = Configurator.createProtocols(JChannelFactory.createProtocols(forkStack), new ProtocolStack());
+        String stackName = this.protocols.isEmpty() ? this.channel.getClusterName() : id;
+        ProtocolStackConfiguration forkStack = new ForkProtocolStackConfiguration(stackName, this.parentStack, this.protocols);
+        List<Protocol> protocols = Configurator.createProtocols(JChannelFactory.createProtocols(forkStack, this.channel.getProtocolStack().getTransport().isMulticastCapable()), new ProtocolStack());
 
         return new ForkChannel(this.channel, stackName, id, protocols.toArray(new Protocol[protocols.size()]));
     }
 
     @Override
     public ProtocolStackConfiguration getProtocolStackConfiguration() {
-        return new ProtocolStackConfiguration() {
-            @Override
-            public String getName() {
-                return ForkChannelFactory.this.channel.getClusterName();
-            }
+        List<ProtocolConfiguration> parentProtocols = this.parentStack.getProtocols();
+        List<ProtocolConfiguration> protocols = new ArrayList<>(parentProtocols.size() + this.protocols.size());
+        protocols.addAll(parentProtocols);
+        protocols.addAll(this.protocols);
+        return new ForkProtocolStackConfiguration(this.channel.getClusterName(), this.parentStack, protocols);
+    }
 
-            @Override
-            public ProtocolDefaults getDefaults() {
-                return ForkChannelFactory.this.parentStack.getDefaults();
-            }
+    private static class ForkProtocolStackConfiguration implements ProtocolStackConfiguration {
+        private final String name;
+        private final List<ProtocolConfiguration> protocols;
+        private final ProtocolStackConfiguration parentStack;
 
-            @Override
-            public TransportConfiguration getTransport() {
-                return ForkChannelFactory.this.parentStack.getTransport();
-            }
+        ForkProtocolStackConfiguration(String name, ProtocolStackConfiguration parentStack, List<ProtocolConfiguration> protocols) {
+            this.name = name;
+            this.protocols = protocols;
+            this.parentStack = parentStack;
+        }
 
-            @Override
-            public List<ProtocolConfiguration> getProtocols() {
-                List<ProtocolConfiguration> parentProtocols = ForkChannelFactory.this.parentStack.getProtocols();
-                List<ProtocolConfiguration> protocols = new ArrayList<>(parentProtocols.size() + ForkChannelFactory.this.protocols.size());
-                protocols.addAll(parentProtocols);
-                protocols.addAll(ForkChannelFactory.this.protocols);
-                return protocols;
-            }
+        @Override
+        public String getName() {
+            return this.name;
+        }
 
-            @Override
-            public ServerEnvironment getEnvironment() {
-                return ForkChannelFactory.this.parentStack.getEnvironment();
-            }
+        @Override
+        public List<ProtocolConfiguration> getProtocols() {
+            return this.protocols;
+        }
 
-            @Override
-            public RelayConfiguration getRelay() {
-                return ForkChannelFactory.this.parentStack.getRelay();
-            }
-        };
+        @Override
+        public ProtocolDefaults getDefaults() {
+            return this.parentStack.getDefaults();
+        }
+
+        @Override
+        public TransportConfiguration getTransport() {
+            return this.parentStack.getTransport();
+        }
+
+        @Override
+        public ModuleLoader getModuleLoader() {
+            return this.parentStack.getModuleLoader();
+        }
+
+        @Override
+        public ServerEnvironment getEnvironment() {
+            return this.parentStack.getEnvironment();
+        }
+
+        @Override
+        public RelayConfiguration getRelay() {
+            return this.parentStack.getRelay();
+        }
     }
 }
