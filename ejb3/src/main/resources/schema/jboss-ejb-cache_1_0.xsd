@@ -28,11 +28,11 @@
    <xs:complexType name="cacheType">
       <xs:complexContent>
          <xs:extension base="javaee:jboss-assembly-descriptor-bean-entryType">
-	      <xs:sequence>
-    	     <xs:element name="cache-ref" type="xs:string"/>
-      	</xs:sequence>
-      	</xs:extension>
-      	</xs:complexContent>
+            <xs:sequence>
+               <xs:element name="cache-ref" type="xs:string"/>
+            </xs:sequence>
+         </xs:extension>
+      </xs:complexContent>
    </xs:complexType>
 
 </xs:schema>

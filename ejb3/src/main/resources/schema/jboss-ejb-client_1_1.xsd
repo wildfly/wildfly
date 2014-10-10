@@ -45,12 +45,12 @@
         </xsd:annotation>
         <xsd:all>
             <xsd:element name="client-context" type="client-contextType">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configurations that will be used to setup an EJB client context for the
                         deployment.
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:all>
 
@@ -59,18 +59,18 @@
     <xsd:complexType name="client-contextType">
         <xsd:all>
             <xsd:element name="ejb-receivers" type="ejb-receiversType">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures EJB receivers for the client context
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
-            <xsd:element name="clusters" type="clustersType">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+            <xsd:element name="clusters" type="clustersType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
                         Cluster configurations applicable for this client context
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:all>
     </xsd:complexType>
@@ -78,50 +78,50 @@
     <xsd:complexType name="ejb-receiversType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="remoting-ejb-receiver" type="remoting-ejb-receiverType">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures a remoting based EJB receiver
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:choice>
         <xsd:attribute name="exclude-local-receiver" type="xsd:boolean" use="optional" default="false">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     Set to true if the local receiver which gets added to the EJB client context by default, has to be
                     excluded from the context
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="local-receiver-pass-by-value" type="xsd:boolean" use="optional" default="true">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     Set to false if the local receiver that's available in the EJB client context, should use
                     pass-by-reference (instead of pass-by-value) semantics for the EJB invocations.
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
 
     <xsd:complexType name="remoting-ejb-receiverType">
         <xsd:attribute name="outbound-connection-ref" type="xsd:string" use="required">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
-                    Reference to an outbound connection configured in the remoting subsytem
-                </documentation>
-            </annotation>
+            <xsd:annotation>
+                <xsd:documentation>
+                    Reference to an outbound connection configured in the remoting subsystem
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="clustersType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="cluster" type="clusterType">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures a cluster in the client context
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:choice>
     </xsd:complexType>
@@ -129,122 +129,121 @@
     <xsd:complexType name="clusterType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="channel-creation-options" type="channel-creation-optionsType" maxOccurs="1">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures the channel creation options for the nodes in this cluster
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
             <xsd:element name="connection-creation-options" type="connection-creation-optionsType" maxOccurs="1">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures the connection creation options for the nodes in this cluster
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
             <xsd:element name="node" type="clusterNodeType" maxOccurs="unbounded">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures the channel creation options for the nodes in this cluster
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The name of the cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The timeout in milliseconds while creating a connection for the nodes in the cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="max-allowed-connected-nodes" type="xsd:long" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The maximum number of nodes to which the connection will be established in the cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="cluster-node-selector" type="xsd:string" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
-                    The fully qualified classname of the class which implements the
+            <xsd:annotation>
+                <xsd:documentation>
+                    The fully qualified class name of the class which implements the
                     org.jboss.ejb.client.ClusterNodeSelector
                     interface. The instance of this class will be used for selecting nodes, within the cluster, for
-                    handling
-                    invocations
-                </documentation>
-            </annotation>
+                    handling invocations
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="username" type="xsd:string" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The username that will be used for authentication during connection creation for nodes in the
                     cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="security-realm" type="xsd:string" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The security-realm that will be used for authentication during connection creation for nodes in the
                     cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="clusterNodeType">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
             <xsd:element name="channel-creation-options" type="channel-creation-optionsType" maxOccurs="1">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures the channel creation options for the node
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
             <xsd:element name="connection-creation-options" type="connection-creation-optionsType" maxOccurs="1">
-                <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                    <documentation>
+                <xsd:annotation>
+                    <xsd:documentation>
                         Configures the connection creation options for the node
-                    </documentation>
-                </annotation>
+                    </xsd:documentation>
+                </xsd:annotation>
             </xsd:element>
         </xsd:choice>
         <xsd:attribute name="name" type="xsd:string" use="required">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The name of the cluster node
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The timeout in milliseconds while creating a connection for the node
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="username" type="xsd:string" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The username that will be used for authentication during connection creation for the node
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="security-realm" type="xsd:string" use="optional">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The security-realm that will be used for authentication during connection creation for the node
                     cluster
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
@@ -262,18 +261,18 @@
 
     <xsd:complexType name="propertyType">
         <xsd:attribute name="name" type="xsd:string" use="required">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The name of the property. Example org.xnio.Options.SASL_POLICY_NOANONYMOUS
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="value" type="xsd:string" use="required">
-            <annotation xmlns="http://www.w3.org/2001/XMLSchema">
-                <documentation>
+            <xsd:annotation>
+                <xsd:documentation>
                     The value of the property.
-                </documentation>
-            </annotation>
+                </xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
 
     </xsd:complexType>
