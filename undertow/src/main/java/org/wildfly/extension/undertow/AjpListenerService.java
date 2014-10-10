@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import io.undertow.UndertowOptions;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
 import org.jboss.msc.service.StartContext;
@@ -51,7 +52,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     @Override
     protected OpenListener createOpenListener() {
-        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap(), getBufferSize());
+        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap(), getBufferSize());
         ajpOpenListener.setScheme(scheme);
         return ajpOpenListener;
     }

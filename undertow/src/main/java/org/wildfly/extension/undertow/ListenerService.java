@@ -101,6 +101,10 @@ public abstract class ListenerService<T> implements Service<T> {
         return serverService;
     }
 
+    protected UndertowService getUndertowService() {
+        return serverService.getValue().getUndertowService();
+    }
+
     protected int getBufferSize() {
         //not sure if this is best possible solution
         if (bufferPool.getValue() instanceof ByteBufferSlicePool){
@@ -158,6 +162,9 @@ public abstract class ListenerService<T> implements Service<T> {
         listenerHandlerWrappers.add(wrapper);
     }
 
+    public OpenListener getOpenListener() {
+        return openListener;
+    }
 
     protected abstract OpenListener createOpenListener();
 
@@ -190,4 +197,6 @@ public abstract class ListenerService<T> implements Service<T> {
 
         }
     }
+
+
 }

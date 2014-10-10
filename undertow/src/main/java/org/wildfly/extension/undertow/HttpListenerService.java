@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import io.undertow.UndertowOptions;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.ListenerRegistry;
@@ -90,7 +91,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
 
     @Override
     protected OpenListener createOpenListener() {
-        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap(), getBufferSize());
+        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap(), getBufferSize());
     }
 
     @Override

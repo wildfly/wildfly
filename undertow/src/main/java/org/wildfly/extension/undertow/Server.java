@@ -144,6 +144,10 @@ public class Server implements Service<Server> {
         return undertowService;
     }
 
+    UndertowService getUndertowService() {
+        return undertowService.getValue();
+    }
+
     public String getName() {
         return name;
     }

@@ -226,7 +226,7 @@ public class UndertowService implements Service<UndertowService> {
         this.instanceId = instanceId;
     }
 
-    public boolean statisticsEnabled() {
+    public boolean isStatisticsEnabled() {
         return statistics;
     }
 
