@@ -27,8 +27,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.picketlink.config.federation.KeyValueType;
-import org.picketlink.config.federation.TrustType;
 import org.picketlink.identity.federation.bindings.wildfly.idp.IDPServletExtension;
 import org.picketlink.identity.federation.core.saml.v2.interfaces.SAML2Handler;
 import org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler;
@@ -101,33 +99,5 @@ public class IdentityProviderService extends EntityProviderService<IdentityProvi
 
     @Override
     protected void doConfigureDeployment(DeploymentUnit deploymentUnit) {
-        if (getConfiguration().getKeyProvider() != null) {
-            TrustType trustType = getConfiguration().getTrust();
-
-            if (trustType != null) {
-                String domainsStr = trustType.getDomains();
-
-                if (domainsStr != null) {
-                    String[] domains = domainsStr.split(",");
-
-                    for (String domain : domains) {
-                        KeyValueType kv = new KeyValueType();
-
-                        kv.setKey(domain);
-
-                        String value = domain;
-
-                        if (getConfiguration().getTrustDomainAlias() != null) {
-                            value = getConfiguration().getTrustDomainAlias().get(domain);
-                        }
-
-                        kv.setValue(value);
-
-                        getConfiguration().getKeyProvider().remove(kv);
-                        getConfiguration().getKeyProvider().add(kv);
-                    }
-                }
-            }
-        }
     }
 }
