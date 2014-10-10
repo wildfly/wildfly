@@ -139,10 +139,10 @@ public class DomainDeploymentOverlayTestCase {
 
     @Before
     public void setUp() throws Exception {
-        ctx = CLITestUtil.getCommandContext();
-        ctx.connectController();
-
         client = testSupport.getDomainMasterLifecycleUtil().createDomainClient();
+        ctx = CLITestUtil.getCommandContext();
+        //todo replace with proper fix coming with newer wildfly core.
+        ctx.connectController(testSupport.getDomainMasterConfiguration().getHostControllerManagementAddress(),testSupport.getDomainMasterConfiguration().getHostControllerManagementPort());
     }
 
     @After
