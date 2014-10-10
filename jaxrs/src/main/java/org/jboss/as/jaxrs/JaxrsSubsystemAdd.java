@@ -22,11 +22,10 @@
 
 package org.jboss.as.jaxrs;
 
-import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jaxrs.deployment.JaxrsAnnotationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsCdiIntegrationProcessor;
 import org.jboss.as.jaxrs.deployment.JaxrsComponentDeployer;
@@ -38,7 +37,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -54,7 +52,8 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performBoottime(final OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource) {
+
         final ServiceTarget serviceTarget = context.getServiceTarget();
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {

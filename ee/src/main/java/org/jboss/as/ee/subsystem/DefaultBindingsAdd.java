@@ -24,15 +24,12 @@ package org.jboss.as.ee.subsystem;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
 
 /**
  * @author Eduardo Martins
@@ -47,7 +44,8 @@ public class DefaultBindingsAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
         if(model.hasDefined(DefaultBindingsResourceDefinition.CONTEXT_SERVICE)) {
             final String contextService = DefaultBindingsResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
             defaultBindingsConfigurationProcessor.setContextService(contextService);
