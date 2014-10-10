@@ -20,12 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.mod_cluster.undertow.metric;
+package org.wildfly.mod_cluster.undertow;
 
 import java.util.Set;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -36,33 +37,41 @@ import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
 import org.wildfly.extension.undertow.deployment.UndertowAttachments;
+import org.wildfly.mod_cluster.undertow.metric.BytesReceivedHttpHandler;
+import org.wildfly.mod_cluster.undertow.metric.BytesSentHttpHandler;
+import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
+import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
 
 /**
- * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} that registers metrics on deployment if mod_cluster
- * module is loaded.
+ * {@link DeploymentUnitProcessor} which adds a dependency on {@link UndertowEventHandlerAdapterBuilder} to web
+ * dependencies (see <a href="https://issues.jboss.org/browse/WFLY-3942">WFLY-3942</a>) and registers metrics on
+ * deployment if mod_cluster module is loaded.
  * <p/>
  * <ul>
- * <li>{@link RequestCountHttpHandler}</li>
- * <li>{@link RunningRequestsHttpHandler}</li>
- * <li>{@link BytesReceivedHttpHandler}</li>
- * <li>{@link BytesSentHttpHandler}</li>
+ * <li>{@link org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler}</li>
+ * <li>{@link org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler}</li>
+ * <li>{@link org.wildfly.mod_cluster.undertow.metric.BytesReceivedHttpHandler}</li>
+ * <li>{@link org.wildfly.mod_cluster.undertow.metric.BytesSentHttpHandler}</li>
  * </ul>
  *
  * @author Radoslav Husar
- * @version Jan 2014
+ * @version Oct 2014
  * @since 8.0
  */
-class MetricDeploymentProcessor implements DeploymentUnitProcessor {
+public class ModClusterUndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private Set<LoadMetric> enabledMetrics;
+    private final Set<LoadMetric> enabledMetrics;
 
-    MetricDeploymentProcessor(Set<LoadMetric> enabledMetrics) {
+    public ModClusterUndertowDeploymentProcessor(Set<LoadMetric> enabledMetrics) {
         this.enabledMetrics = enabledMetrics;
     }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        // Add mod_cluster-undertow integration service (jboss.modcluster.undertow) as a web deployment dependency
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, UndertowEventHandlerAdapterBuilder.SERVICE_NAME);
 
         // Request count wrapping
         if (isMetricEnabled(RequestCountLoadMetric.class)) {
@@ -114,7 +123,7 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
     /**
      * Checks whether this {@link Class} is configured to be used.
      *
-     * @param metricClass
+     * @param metricClass Class to check whether it's configured to be used
      * @return true if any of the enabled metrics is enabled, false otherwise
      */
     private boolean isMetricEnabled(Class metricClass) {
