@@ -214,9 +214,24 @@ final class HandlerOperations {
             HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
             boolean replaceHandler = false;
             final boolean exists = configuration != null;
+            // Check that the handler does not exist. If the server is booting handlers with the same name are replaced,
+            // rather than producing a boot error. This could happen if the XML was manually updated and the logging.properties
+            // file was using the old values.
+            if (exists && !context.isBooting()) {
+                context.setRollbackOnly();
+                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(name));
+            }
             if (!exists) {
                 LoggingLogger.ROOT_LOGGER.tracef("Adding handler '%s' at '%s'", name, LoggingOperations.getAddress(operation));
-                configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+                try {
+                    configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+                } catch (IllegalArgumentException e) {
+                    context.setRollbackOnly();
+                    throw e;
+                } catch (OperationFailedException e) {
+                    context.setRollbackOnly();
+                    throw e;
+                }
             } else if (Log4jAppenderHandler.class.getName().equals(configuration.getClassName())) {
                 // Check the POJO names
                 final PojoConfiguration log4jPojo = logContextConfiguration.getPojoConfiguration(name);
@@ -236,7 +251,15 @@ final class HandlerOperations {
                 if (logContextConfiguration.getPojoNames().contains(name)) {
                     logContextConfiguration.removePojoConfiguration(name);
                 }
-                configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+                try {
+                    configuration = createHandlerConfiguration(className, moduleName, name, logContextConfiguration);
+                } catch (IllegalArgumentException e) {
+                    context.setRollbackOnly();
+                    throw e;
+                } catch (OperationFailedException e) {
+                    context.setRollbackOnly();
+                    throw e;
+                }
             }
 
             for (AttributeDefinition attribute : attributes) {
