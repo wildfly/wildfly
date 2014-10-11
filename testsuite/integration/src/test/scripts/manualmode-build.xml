@@ -26,8 +26,12 @@
 
     <!-- import shared ant targets -->
     <import file="common-targets.xml" as="common"/>
+    <import file="clustering-common-targets.xml" as="clustering-common"/>
 
     <target name="build-manual-mode" description="Builds server configurations for manual mode tests">
+
+        <!-- Configure all standalone-ha.xml profiles not to be chatty by setting ip_ttl=0 -->
+        <ts.config-as.configure-multicast-ttl name="jbossas" mcast.ttl="${mcast.ttl}"/>
 
         <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
         <copy todir="target/jbossas-with-remote-outbound-connection">
