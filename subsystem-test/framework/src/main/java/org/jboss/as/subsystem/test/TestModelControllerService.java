@@ -29,9 +29,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.global.GlobalNotifications;
@@ -45,8 +47,8 @@ import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.controller.resources.ServerDeploymentResourceDefinition;
-import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -81,14 +83,24 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     @Override
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        super.performControllerInitialization(target, rootResource, rootRegistration);
+        final ServiceLoader<ModelControllerServiceInitialization> sl = ServiceLoader.load(ModelControllerServiceInitialization.class);
+        for (ModelControllerServiceInitialization init : sl) {
+            if (additionalInit.getProcessType().isServer()) {
+                init.initializeStandalone(target, rootRegistration, rootResource);
+            } else {
+                init.initializeHost(target, rootRegistration, rootResource);
+            }
+        }
+    }
+
+    @Override
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);
 
         ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDefinition.create(contentRepository, null));
 
-        //Hack to be able to access the registry for the jmx facade
-
-        rootRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
         GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
         extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
         controllerInitializer.setTestModelControllerService(this);

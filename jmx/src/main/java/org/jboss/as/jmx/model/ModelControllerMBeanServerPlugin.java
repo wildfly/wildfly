@@ -21,9 +21,9 @@
 */
 package org.jboss.as.jmx.model;
 
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -75,17 +75,18 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     private final AtomicLong notificationSequenceNumber = new AtomicLong(0);
 
     public ModelControllerMBeanServerPlugin(final ConfiguredDomains configuredDomains, ModelController controller, final MBeanServerDelegate delegate,
-                                            boolean legacyWithProperPropertyFormat, boolean forStandalone) {
+                                            boolean legacyWithProperPropertyFormat, boolean forStandalone,
+                                            ManagementModelIntegration.ManagementModelProvider managementModelProvider) {
         assert configuredDomains != null;
         this.configuredDomains = configuredDomains;
         this.notificationRegistry = controller.getNotificationRegistry();
 
         legacyHelper = configuredDomains.getLegacyDomain() != null ?
                 new ModelControllerMBeanHelper(TypeConverters.createLegacyTypeConverters(legacyWithProperPropertyFormat),
-                        configuredDomains, configuredDomains.getLegacyDomain(), controller, forStandalone) : null;
+                        configuredDomains, configuredDomains.getLegacyDomain(), controller, forStandalone, managementModelProvider) : null;
         exprHelper = configuredDomains.getExprDomain() != null ?
                 new ModelControllerMBeanHelper(TypeConverters.createExpressionTypeConverters(), configuredDomains,
-                        configuredDomains.getExprDomain(), controller, forStandalone) : null;
+                        configuredDomains.getExprDomain(), controller, forStandalone, managementModelProvider) : null;
 
         // JMX notifications for MBean registration/unregistration are emitted by the MBeanServerDelegate and not by the
         // MBeans itself. If we have a reference on the delegate, we add a listener for any WildFly resource address

@@ -31,6 +31,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.jmx.model.ConfiguredDomains;
+import org.jboss.as.jmx.model.ManagementModelIntegration;
 import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
@@ -61,6 +62,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final JmxAuthorizer authorizer;
     private final ManagedAuditLogger auditLoggerInfo;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
+    private final InjectedValue<ManagementModelIntegration.ManagementModelProvider> managementModelProviderValue = new InjectedValue<ManagementModelIntegration.ManagementModelProvider>();
     private final boolean forStandalone;
     private PluggableMBeanServer mBeanServer;
     private MBeanServerPlugin showModelPlugin;
@@ -87,6 +89,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
             .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, service.modelControllerValue)
+            .addDependency(ManagementModelIntegration.SERVICE_NAME, ManagementModelIntegration.ManagementModelProvider.class, service.managementModelProviderValue)
             .install();
     }
 
@@ -102,7 +105,8 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
         if (resolvedDomainName != null || expressionsDomainName != null) {
             //TODO make these configurable
             ConfiguredDomains configuredDomains = new ConfiguredDomains(resolvedDomainName, expressionsDomainName);
-            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), delegate, legacyWithProperPropertyFormat, forStandalone);
+            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(),
+                    delegate, legacyWithProperPropertyFormat, forStandalone, managementModelProviderValue.getValue());
             pluggable.addPlugin(showModelPlugin);
         }
         mBeanServer = pluggable;

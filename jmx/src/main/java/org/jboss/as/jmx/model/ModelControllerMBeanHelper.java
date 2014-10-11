@@ -69,8 +69,6 @@ import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.jmx.model.ResourceAccessControlUtil.ResourceAccessControl;
 import org.jboss.as.jmx.model.RootResourceIterator.ResourceAction;
-import org.jboss.as.server.operations.RootResourceHack;
-import org.jboss.as.server.operations.RootResourceHack.ResourceAndRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,15 +88,18 @@ public class ModelControllerMBeanHelper {
     private final TypeConverters converters;
     private final ConfiguredDomains configuredDomains;
     private final String domain;
+    private final ManagementModelIntegration.ManagementModelProvider managementModelProvider;
 
     ModelControllerMBeanHelper(TypeConverters converters, ConfiguredDomains configuredDomains, String domain,
-                               ModelController controller, boolean standalone) {
+                               ModelController controller, boolean standalone,
+                               ManagementModelIntegration.ManagementModelProvider managementModelProvider) {
         this.converters = converters;
         this.configuredDomains = configuredDomains;
         this.domain = domain;
         this.controller = controller;
         this.accessControlUtil = new ResourceAccessControlUtil(controller);
         this.standalone = standalone;
+        this.managementModelProvider = managementModelProvider;
     }
 
     int getMBeanCount() {
@@ -176,7 +177,7 @@ public class ModelControllerMBeanHelper {
         return ObjectNameAddressUtil.resolvePathAddress(domain, getRootResourceAndRegistration().getResource(), name);
     }
 
-    PathAddress resolvePathAddress(final ObjectName name, ResourceAndRegistration reg) {
+    PathAddress resolvePathAddress(final ObjectName name, ManagementModelIntegration.ResourceAndRegistration reg) {
         return ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
     }
 
@@ -192,7 +193,7 @@ public class ModelControllerMBeanHelper {
     }
 
     MBeanInfo getMBeanInfo(final ObjectName name) throws InstanceNotFoundException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -202,7 +203,7 @@ public class ModelControllerMBeanHelper {
     }
 
     Object getAttribute(final ObjectName name, final String attribute)  throws AttributeNotFoundException, InstanceNotFoundException, ReflectionException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -212,7 +213,7 @@ public class ModelControllerMBeanHelper {
     }
 
     AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -229,7 +230,7 @@ public class ModelControllerMBeanHelper {
         return list;
     }
 
-    private Object getAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final String attribute, final ResourceAccessControl accessControl)  throws ReflectionException, AttributeNotFoundException, InstanceNotFoundException {
+    private Object getAttribute(final ManagementModelIntegration.ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final String attribute, final ResourceAccessControl accessControl)  throws ReflectionException, AttributeNotFoundException, InstanceNotFoundException {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
@@ -258,7 +259,7 @@ public class ModelControllerMBeanHelper {
 
 
     void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException, InvalidAttributeValueException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -269,7 +270,7 @@ public class ModelControllerMBeanHelper {
     }
 
     AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException, ReflectionException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -290,7 +291,7 @@ public class ModelControllerMBeanHelper {
         return attributes;
     }
 
-    private void setAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final Attribute attribute, ResourceAccessControl accessControl)  throws InvalidAttributeValueException, AttributeNotFoundException, InstanceNotFoundException {
+    private void setAttribute(final ManagementModelIntegration.ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final Attribute attribute, ResourceAccessControl accessControl)  throws InvalidAttributeValueException, AttributeNotFoundException, InstanceNotFoundException {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
@@ -352,7 +353,7 @@ public class ModelControllerMBeanHelper {
             throw MESSAGES.differentLengths("params", "signature");
         }
 
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
             throw MESSAGES.mbeanNotFound(name);
@@ -464,8 +465,8 @@ public class ModelControllerMBeanHelper {
         return converters.fromModelNode(description.get(REPLY_PROPERTIES), result.get(RESULT));
     }
 
-    private ResourceAndRegistration getRootResourceAndRegistration() {
-        return RootResourceHack.INSTANCE.getRootResource(controller);
+    private ManagementModelIntegration.ResourceAndRegistration getRootResourceAndRegistration() {
+        return managementModelProvider.getResourceAndRegistration();
     }
 
     private ModelNode execute(ModelNode op) {
@@ -473,7 +474,7 @@ public class ModelControllerMBeanHelper {
         return controller.execute(op, null, OperationTransactionControl.COMMIT, null);
     }
 
-    private ImmutableManagementResourceRegistration getMBeanRegistration(PathAddress address, ResourceAndRegistration reg) throws InstanceNotFoundException {
+    private ImmutableManagementResourceRegistration getMBeanRegistration(PathAddress address, ManagementModelIntegration.ResourceAndRegistration reg) throws InstanceNotFoundException {
         //TODO Populate MBeanInfo
         ImmutableManagementResourceRegistration resourceRegistration = reg.getRegistration().getSubModel(address);
         if (resourceRegistration == null) {
@@ -529,7 +530,7 @@ public class ModelControllerMBeanHelper {
     }
 
     ImmutableManagementResourceRegistration getMBeanRegistration(ObjectName name) throws InstanceNotFoundException {
-        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final ManagementModelIntegration.ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         return getMBeanRegistration(address, reg);
     }

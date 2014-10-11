@@ -25,6 +25,7 @@
 package org.jboss.as.jmx.test.util;
 
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessState.State;
 import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
@@ -41,7 +43,10 @@ import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorize
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 
@@ -54,6 +59,7 @@ public abstract class TestModelControllerService extends AbstractControllerServi
 
     private final ControlledProcessState processState;
     final AtomicBoolean state = new AtomicBoolean(true);
+    private final ProcessType processType;
     private final CountDownLatch latch = new CountDownLatch(2);
 
     protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
@@ -61,6 +67,7 @@ public abstract class TestModelControllerService extends AbstractControllerServi
         super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootResourceDefinition,
                 null, ExpressionResolver.TEST_RESOLVER, auditLogger, authorizer == null ? new DelegatingConfigurableAuthorizer() : authorizer);
         this.processState = processState;
+        this.processType = processType;
     }
 
     public AtomicBoolean getSharedState() {
@@ -87,6 +94,19 @@ public abstract class TestModelControllerService extends AbstractControllerServi
     protected void bootThreadDone() {
         super.bootThreadDone();
         latch.countDown();
+    }
+
+    @Override
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        super.performControllerInitialization(target, rootResource, rootRegistration);
+        final ServiceLoader<ModelControllerServiceInitialization> sl = ServiceLoader.load(ModelControllerServiceInitialization.class);
+        for (ModelControllerServiceInitialization init : sl) {
+            if (processType.isServer()) {
+                init.initializeStandalone(target, rootRegistration, rootResource);
+            } else {
+                init.initializeHost(target, rootRegistration, rootResource);
+            }
+        }
     }
 
     public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {

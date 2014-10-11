@@ -92,7 +92,6 @@ import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.jmx.test.util.AbstractControllerTestBase;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
-import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -764,7 +763,6 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
-        registration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
 
         GlobalNotifications.registerGlobalNotifications(registration, processType);
         TestServiceListener listener = new TestServiceListener();
