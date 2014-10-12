@@ -462,7 +462,12 @@ public class GlobalOperationHandlers {
 
             if (aliasEntry == null) {
                 if (resource != null && resource.hasChildren(childType)) {
-                    set.addAll(resource.getChildrenNames(childType));
+                    Set<String> childNames = resource.getChildrenNames(childType);
+                    if (element.isWildcard()) {
+                        set.addAll(childNames);
+                    } else if (childNames.contains(element.getValue())) {
+                        set.add(element.getValue());
+                    }
                 }
             } else {
                 //PathAddress target = aliasEntry.getTargetAddress();
