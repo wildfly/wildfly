@@ -48,13 +48,14 @@ class SharedWebMetaDataBuilder {
 
     static final List<String> welcomeFiles = new ArrayList<String>();
     static final List<MimeMappingMetaData> mimeMappings = new ArrayList<MimeMappingMetaData>();
+    static final List<String> defaultWelcomeFiles = new ArrayList<String>();
 
     static {
         // Create the default mappings
         createMappings(mimeMappings);
-        welcomeFiles.add("index.html");
-        welcomeFiles.add("index.htm");
-        welcomeFiles.add("index.jsp");
+        defaultWelcomeFiles.add("index.html");
+        defaultWelcomeFiles.add("index.htm");
+        defaultWelcomeFiles.add("index.jsp");
     }
 
     /**
@@ -76,11 +77,13 @@ class SharedWebMetaDataBuilder {
                 mimeMappings.add(createMimeMapping(mapping.getName(), mapping.getValue().asString()));
             }
         }
+        welcomeFiles.clear();
         if (containerConfig.hasDefined(Constants.WELCOME_FILE)) {
-            welcomeFiles.clear();
             for (final ModelNode file : containerConfig.get(Constants.WELCOME_FILE).asList()) {
                 welcomeFiles.add(file.asString());
             }
+        } else {
+            welcomeFiles.addAll(defaultWelcomeFiles);
         }
     }
 
