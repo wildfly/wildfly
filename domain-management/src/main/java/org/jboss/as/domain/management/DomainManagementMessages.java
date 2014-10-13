@@ -169,10 +169,10 @@ public interface DomainManagementMessages {
      *
      * @param username the username not found.
      *
-     * @return an {@link IOException} for the error.
+     * @return an {@link NamingException} for the error.
      */
     @Message(id = 15231, value = "User '%s' not found in directory.")
-    IOException userNotFoundInDirectory(String username);
+    NamingException userNotFoundInDirectory(String username);
 
     /**
      * Creates an exception indicating that no java.io.Console is available.
