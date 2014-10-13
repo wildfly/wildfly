@@ -29,7 +29,6 @@ import javax.security.jacc.EJBRoleRefPermission;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.CodeSource;
-import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
@@ -248,7 +247,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             for (String roleName : requiredRoles) {
                 EJBRoleRefPermission permission = new EJBRoleRefPermission(ejbName, roleName);
                 ProtectionDomain pd = new ProtectionDomain (null, null, null, rolesPrincipals.toArray(new Principal[rolesPrincipals.size()]));
-                if (Policy.getPolicy().implies(pd, permission))
+                if (SecurityActions.getPolicy().implies(pd, permission))
                     return true;
             }
             return false;

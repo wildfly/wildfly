@@ -22,6 +22,8 @@
 
 package org.jboss.as.security.service;
 
+import java.security.AccessController;
+import java.security.Policy;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -114,6 +116,19 @@ class SecurityActions {
     private static RemotingContextAssociationActions remotingContextAccociationActions() {
         return ! WildFlySecurityManager.isChecking() ? RemotingContextAssociationActions.NON_PRIVILEGED
                 : RemotingContextAssociationActions.PRIVILEGED;
+    }
+
+    static Policy getPolicy() {
+        if(WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(new PrivilegedAction<Policy>() {
+                @Override
+                public Policy run() {
+                    return Policy.getPolicy();
+                }
+            });
+        } else {
+            return Policy.getPolicy();
+        }
     }
 
     private interface RemotingContextAssociationActions {
