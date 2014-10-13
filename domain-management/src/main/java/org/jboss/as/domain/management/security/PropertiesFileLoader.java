@@ -230,13 +230,13 @@ public class PropertiesFileLoader {
         Arrays.sort(escapeArray);
         for(int i = 0; i < name.length(); ++i) {
             char ch = name.charAt(i);
-            if(Arrays.binarySearch(escapeArray,ch) >=0 ) {
+            if (Arrays.binarySearch(escapeArray, ch) >= 0) {
                 StringBuilder builder = new StringBuilder();
                 builder.append(name, 0, i);
                 builder.append('\\').append(ch);
                 for(int j = i + 1; j < name.length(); ++j) {
                     ch = name.charAt(j);
-                    if(Arrays.binarySearch(escapeArray,ch)>0) {
+                    if (Arrays.binarySearch(escapeArray, ch) >= 0) {
                         builder.append('\\');
                     }
                     builder.append(ch);
