@@ -22,11 +22,7 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -55,13 +51,15 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
-
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
@@ -175,6 +173,16 @@ public class ServerInventoryImpl implements ServerInventory {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
         ManagedServer server = servers.get(serverName);
+        if (server != null && server.getState() == ServerStatus.FAILED) {
+            //If the server failed stop it to
+            //  refresh the parameters passed in to the new process
+            //  readd it in the process controller
+
+            //The gracefulTimeout value does not seem to be used in this case, but initialise it to 1s just in case it gets added.
+            //In practise the server has already stopped so the time should be less than this
+            stopServer(serverName, 1000, true);
+            server = null;
+        }
         if(server == null) {
             // Create a new authKey
             final byte[] authKey = new byte[16];
