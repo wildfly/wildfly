@@ -43,6 +43,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.modules.ModuleIdentifier;
@@ -97,7 +98,7 @@ public interface NamingLogger extends BasicLogger {
     @Message(id = 6, value = "Closing channel %s due to an error")
     void closingChannel(Channel channel, @Cause Throwable t);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = DEBUG)
     @Message(id = 7, value = "Channel end notification received, closing channel %s")
     void closingChannelOnChannelEnd(Channel channel);
 
