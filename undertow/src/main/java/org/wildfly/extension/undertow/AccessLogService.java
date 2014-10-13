@@ -85,7 +85,7 @@ class AccessLogService implements Service<AccessLogService> {
     }
 
     protected AccessLogHandler configureAccessLogHandler(HttpHandler handler) {
-        return new AccessLogHandler(handler, logReceiver, pattern, AccessLogHandler.class.getClassLoader());
+        return new AccessLogHandler(handler, logReceiver, pattern, AccessLogService.class.getClassLoader());
     }
 
 }
