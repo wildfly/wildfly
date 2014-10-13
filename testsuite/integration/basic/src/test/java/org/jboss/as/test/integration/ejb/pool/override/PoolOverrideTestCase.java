@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.pool.override;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -81,6 +83,7 @@ public class PoolOverrideTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-pool-override-test.jar");
         jar.addPackage(PoolAnnotatedEJB.class.getPackage());
         jar.addAsManifestResource(PoolOverrideTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("modifyThread")), "META-INF/jboss-permissions.xml");
         return jar;
     }
 

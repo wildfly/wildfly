@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
 import java.io.IOException;
@@ -143,7 +144,8 @@ public class JMSResourceDefinitionsTestCase {
                         MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
-                        create("beans.xml"));
+                        create("beans.xml"))
+                .addAsResource(createPermissionsXmlAsset(new RuntimePermission("getProtectionDomain")), "META-INF/jboss-permissions.xml");
         System.out.println("archive = " + archive.toString(true));
         return archive;
     }

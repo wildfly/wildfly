@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.security.singleton;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+
 import java.util.logging.Logger;
 
 import javax.ejb.EJBAccessException;
@@ -56,6 +58,7 @@ public class SingletonSecurityTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb3-singleton-security.jar");
         jar.addPackage(SingletonSecurityTestCase.class.getPackage());
         jar.addPackage(CommonCriteria.class.getPackage());
+        jar.addAsResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.setSecurityContext")), "META-INF/jboss-permissions.xml");
         log.info(jar.toString(true));
         return jar;
     }

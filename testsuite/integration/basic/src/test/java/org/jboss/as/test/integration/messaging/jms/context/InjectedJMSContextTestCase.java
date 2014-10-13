@@ -25,8 +25,10 @@ package org.jboss.as.test.integration.messaging.jms.context;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertThat;
 
+import java.util.PropertyPermission;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -74,8 +76,8 @@ public class InjectedJMSContextTestCase {
         return ShrinkWrap.create(JavaArchive.class, "InjectedJMSContextTestCase.jar")
                 .addClass(TimeoutUtil.class)
                 .addPackage(TransactedMDB.class.getPackage())
-                .addAsManifestResource(EmptyAsset.INSTANCE,
-                        "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
     }
 
     @After

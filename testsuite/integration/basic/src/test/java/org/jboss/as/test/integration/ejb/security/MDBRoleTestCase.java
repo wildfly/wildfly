@@ -54,9 +54,11 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.PropertyPermission;
 
 /**
  * Deploys a message driven bean and a stateless bean which is injected into MDB
@@ -84,6 +86,8 @@ public class MDBRoleTestCase {
          .addClass(TimeoutUtil.class);
         deployment.addAsManifestResource(MDBRoleTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
       deployment.addPackage(CommonCriteria.class.getPackage());
+      // grant necessary permissions
+      deployment.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "META-INF/jboss-permissions.xml");
       return deployment;
    }
 
