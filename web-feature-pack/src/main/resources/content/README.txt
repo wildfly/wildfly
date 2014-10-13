@@ -1,9 +1,9 @@
  _       ___ __    __________         ____ 
-| |     / (_) /___/ / ____/ /_  __   ( __ )
-| | /| / / / / __  / /_  / / / / /  / __  |
-| |/ |/ / / / /_/ / __/ / / /_/ /  / /_/ / 
-|__/|__/_/_/\__,_/_/   /_/\__, /   \____/  
-                         /____/            
+| |     / (_) /___/ / ____/ /_  __   / __ \
+| | /| / / / / __  / /_  / / / / /  / /_/ /
+| |/ |/ / / / /_/ / __/ / / /_/ /   \__, /
+|__/|__/_/_/\__,_/_/   /_/\__, /   /____/
+                         /____/
 
 Welcome to WildFly (formerly known as JBoss Application Server)
 http://www.wildfly.org/
@@ -26,8 +26,9 @@ Key Features
 
 Release Notes
 -------------
-You can obtain the release notes here:
-TODO
+You can obtain the 9.0.0.Beta1 release notes here:
+
+https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12313721&version=12321687
 
 Getting Started
 ---------------
@@ -38,7 +39,7 @@ WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
 available on the JBoss.org site:
 
-https://docs.jboss.org/author/display/AS72/Documentation
+https://docs.jboss.org/author/display/WFLY9/Documentation
 
 
 Starting a Standalone Server
@@ -78,5 +79,7 @@ A WildFly server can be stopped by pressing Ctrl-C on the command line.
 If the server is running in a background process, the server can be stopped
 using the JBoss CLI:
 
-<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=:shutdown
+<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=:shutdown      (Unix / Linux)
+
+<JBOSS_HOME>\bin\jboss-cli.bat --connect --command=:shutdown     (Windows)
 
