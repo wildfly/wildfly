@@ -97,9 +97,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE);
                         if (managementRepoService != null) {
                             try {
-                                final ModelNode result = context.getResult();
-                                result.set("" + stats.getValue(attributeName));
-
+                                setModelValue(context.getResult(), attributeName);
                             } catch (Exception e) {
                                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                             }
@@ -113,6 +111,15 @@ public abstract class PoolMetrics implements OperationStepHandler {
 
         }
 
+        private void setModelValue(ModelNode result, String attributeName) {
+            if (stats.getType(attributeName) == int.class) {
+                result.set((Integer) stats.getValue(attributeName));
+            } else if (stats.getType(attributeName) == long.class) {
+                result.set((Long) stats.getValue(attributeName));
+            } else {
+                result.set("" + stats.getValue(attributeName));
+            }
+        }
     }
 
 }
