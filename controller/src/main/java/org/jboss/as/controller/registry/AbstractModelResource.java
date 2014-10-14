@@ -137,11 +137,18 @@ public abstract class AbstractModelResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        final ResourceProvider provider = getProvider(address.getKey());
-        if(provider == null) {
-            return null;
+        synchronized (children) {
+            final ResourceProvider provider = getProvider(address.getKey());
+            if(provider == null) {
+                return null;
+            }
+            final Resource removed = provider.remove(address.getValue());
+            // Cleanup default resource providers
+            if ((provider instanceof DefaultResourceProvider) && !provider.hasChildren()) {
+                children.remove(address.getKey());
+            }
+            return removed;
         }
-        return provider.remove(address.getValue());
     }
 
     @Override
