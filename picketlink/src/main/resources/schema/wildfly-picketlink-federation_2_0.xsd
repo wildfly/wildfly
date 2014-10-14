@@ -222,7 +222,7 @@
                 <xsd:documentation>Enable/Disable SAML Metadata Support.</xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="ssl-authentication" type="xsd:string" use="optional" default="false">
+        <xsd:attribute name="ssl-authentication" type="xsd:boolean" use="optional" default="false">
             <xsd:annotation>
                 <xsd:documentation>Indicates if the identity provider should also support HTTP CLIENT_CERT authentication.</xsd:documentation>
             </xsd:annotation>
