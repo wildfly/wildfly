@@ -30,6 +30,8 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelType;
 
@@ -66,6 +68,12 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
         ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
 
+        if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
+            builder.addOperationTransformationOverride(ProtocolResourceDefinition.ADD.getName())
+                    .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ProtocolResourceDefinition.MODULE.getDefaultValue()), ProtocolResourceDefinition.MODULE)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, ProtocolResourceDefinition.MODULE)
+                    .end();
+        }
         if (JGroupsModel.VERSION_2_0_0.requiresTransformation(version)) {
             builder.rejectChildResource(RelayResourceDefinition.PATH);
         } else {

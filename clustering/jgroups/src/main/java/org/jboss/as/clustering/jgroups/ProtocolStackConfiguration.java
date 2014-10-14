@@ -24,6 +24,7 @@ package org.jboss.as.clustering.jgroups;
 import java.util.List;
 
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Defines the configuration of a JGroups protocol stack.
@@ -42,4 +43,6 @@ public interface ProtocolStackConfiguration {
     ServerEnvironment getEnvironment();
 
     RelayConfiguration getRelay();
+
+    ModuleLoader getModuleLoader();
 }

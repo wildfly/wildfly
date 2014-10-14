@@ -80,10 +80,9 @@ public class SubsystemFeaturesTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testLegacyOperations() throws Exception {
-        List<ModelNode> ops = new LinkedList<ModelNode>();
+        List<ModelNode> ops = new LinkedList<>();
         PathAddress subsystemAddress = PathAddress.EMPTY_ADDRESS.append(SUBSYSTEM, getMainSubsystemName());
         PathAddress udpAddress = subsystemAddress.append("stack", "udp");
-        PathAddress tcpAddress = subsystemAddress.append("stack", "tcp");
 
         ModelNode op = Util.createAddOperation(subsystemAddress);
         ///subsystem=jgroups:add(default-stack=udp)
@@ -170,6 +169,7 @@ public class SubsystemFeaturesTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
+            @Override
             protected RunningMode getRunningMode() {
                 return RunningMode.ADMIN_ONLY;
             }

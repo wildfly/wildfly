@@ -230,16 +230,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case TYPE: {
-                    ProtocolResourceDefinition.TYPE.parseAndSetParameter(value, operation, reader);
-                    break;
-                }
                 case SHARED: {
                     TransportResourceDefinition.SHARED.parseAndSetParameter(value, operation, reader);
-                    break;
-                }
-                case SOCKET_BINDING: {
-                    ProtocolResourceDefinition.SOCKET_BINDING.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case DIAGNOSTICS_SOCKET_BINDING: {
@@ -281,7 +273,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     }
                 }
                 default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    this.parseProtocolAttribute(reader, i, operation);
                 }
             }
         }
@@ -291,16 +283,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case PROPERTY: {
-                    this.parseProperty(reader, address, operations);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-            }
+            this.parseProtocolElement(reader, address, operations);
         }
     }
 
@@ -312,33 +295,47 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            String value = reader.getAttributeValue(i);
-            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case TYPE: {
-                    ProtocolResourceDefinition.TYPE.parseAndSetParameter(type, operation, reader);
-                    break;
-                }
-                case SOCKET_BINDING: {
-                    ProtocolResourceDefinition.SOCKET_BINDING.parseAndSetParameter(value, operation, reader);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
+            this.parseProtocolAttribute(reader, i, operation);
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case PROPERTY: {
-                    this.parseProperty(reader, address, operations);
+            this.parseProtocolElement(reader, address, operations);
+        }
+    }
+
+    private void parseProtocolAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation) throws XMLStreamException {
+        String value = reader.getAttributeValue(index);
+        Attribute attribute = Attribute.forName(reader.getAttributeLocalName(index));
+        switch (attribute) {
+            case TYPE: {
+                ProtocolResourceDefinition.TYPE.parseAndSetParameter(value, operation, reader);
+                break;
+            }
+            case SOCKET_BINDING: {
+                ProtocolResourceDefinition.SOCKET_BINDING.parseAndSetParameter(value, operation, reader);
+                break;
+            }
+            case MODULE: {
+                if (this.schema.since(JGroupsSchema.VERSION_3_0)) {
+                    ProtocolResourceDefinition.MODULE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
-                default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
+            }
+            default: {
+                throw ParseUtils.unexpectedAttribute(reader, index);
+            }
+        }
+    }
+
+    private void parseProtocolElement(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        Element element = Element.forName(reader.getLocalName());
+        switch (element) {
+            case PROPERTY: {
+                this.parseProperty(reader, address, operations);
+                break;
+            }
+            default: {
+                throw ParseUtils.unexpectedElement(reader);
             }
         }
     }
