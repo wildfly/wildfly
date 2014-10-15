@@ -42,17 +42,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <enableAssertions>false</enableAssertions>
-                </configuration>
-            </plugin>
-
             <!-- JAR -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>

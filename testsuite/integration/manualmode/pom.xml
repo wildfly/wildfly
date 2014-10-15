@@ -111,7 +111,7 @@
                                         <javax.net.ssl.keyStore>${basedir}/src/test/resources/ejb3/ssl/jbossClient.keystore</javax.net.ssl.keyStore>
                                         <javax.net.ssl.trustStorePassword>clientPassword</javax.net.ssl.trustStorePassword>
                                         <javax.net.ssl.keyStorePassword>clientPassword</javax.net.ssl.keyStorePassword>
-                                        <javax.net.debug>ssl</javax.net.debug>
+                                        <!--<javax.net.debug>ssl</javax.net.debug>-->
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

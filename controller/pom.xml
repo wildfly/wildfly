@@ -45,31 +45,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>java.util.logging.manager</name>
-                            <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                        <property>
-                            <name>jboss.remoting.leakdebugging</name>
-                            <value>false</value>
-                        </property>
-                        <property>
-                            <name>test.level</name>
-                            <value>${test.level}</value>
-                        </property>
-                    </systemProperties>
-                    <argLine>-Duser.region=US -Duser.language=en</argLine>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <enableAssertions>true</enableAssertions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <compilerArgument>

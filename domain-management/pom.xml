@@ -51,11 +51,6 @@
                         <include>**/*TestCase.java</include>
                         <include>**/*TestSuite.java</include>
                     </includes>
-                    <enableAssertions>false</enableAssertions>
-                    
-                    <additionalClasspathElements>
-                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                    </additionalClasspathElements>                                        
                 </configuration>
             </plugin>
             <plugin>

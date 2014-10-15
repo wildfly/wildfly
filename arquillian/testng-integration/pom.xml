@@ -110,7 +110,6 @@
                           <value>${jboss.home}/modules</value>
                         </property>
                     </systemProperties>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

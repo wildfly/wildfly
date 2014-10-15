@@ -308,12 +308,12 @@
                 </configuration>
             </plugin>
 
-            <plugin>
+       <!--     <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
                 <version>1.4.1</version>
                 <executions>
-                    <!--<execution> <id>ts.config-client.replace-localhost-properties</id> <phase>verify</phase> <goals><goal>replace</goal></goals> </execution>-->
+                    &lt;!&ndash;<execution> <id>ts.config-client.replace-localhost-properties</id> <phase>verify</phase> <goals><goal>replace</goal></goals> </execution>&ndash;&gt;
                     <execution> <id>ts.fix-logs.ARQ-775</id> <phase>verify</phase> <goals><goal>replace</goal></goals> </execution>
                 </executions>
                 <configuration>
@@ -322,9 +322,9 @@
                         <include>target/surefire-reports/**/*.txt</include>
                     </includes>
                     <replacements>
-                        <!-- Fix one-letter-per-line. -->
+                        &lt;!&ndash; Fix one-letter-per-line. &ndash;&gt;
                         <replacement> <token>^(.)\n(?!..+\n)</token> <value>$1</value> </replacement>
-                        <!-- Fix double newlines. -->
+                        &lt;!&ndash; Fix double newlines. &ndash;&gt;
                         <replacement> <token>\n(?=\n)</token> <value></value> </replacement>
                     </replacements>
 
@@ -333,7 +333,7 @@
                     </regexFlags>
                     <encoding>UTF-8</encoding>
                 </configuration>
-            </plugin>
+            </plugin>-->
 
         </plugins>
     </build>

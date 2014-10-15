@@ -43,10 +43,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>**/*TestCase.java</include>
-                    </includes>
-                    <enableAssertions>false</enableAssertions>
                     <systemPropertyVariables>
                         <jboss.cli.config>${project.basedir}/../build/src/main/resources/bin/jboss-cli.xml</jboss.cli.config>
                     </systemPropertyVariables>

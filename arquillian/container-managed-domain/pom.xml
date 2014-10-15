@@ -114,10 +114,6 @@
                 <configuration>
                     <systemProperties>
                         <property>
-                          <name>java.util.logging.manager</name>
-                          <value>org.jboss.logmanager.LogManager</value>
-                        </property>
-                        <property>
                           <name>jboss.home</name>
                           <value>${basedir}/target/jbossas</value>
                         </property>

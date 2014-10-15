@@ -49,15 +49,6 @@ vi:ts=4:sw=4:expandtab
                     </compilerArgument>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>org/jboss/as/ejb3/**/*TestCase.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
