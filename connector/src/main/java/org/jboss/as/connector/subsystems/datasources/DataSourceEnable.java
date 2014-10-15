@@ -48,6 +48,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -131,6 +132,16 @@ public class DataSourceEnable implements OperationStepHandler {
                 final String securityDomainName = dsSecurityConfig.getSecurityDomain();
                 if (securityDomainName != null) {
                     builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                }
+            }
+             // add dependency on security domain service if applicable for recovery config
+            if (dataSourceConfig.getRecovery() != null) {
+                final Credential credential = dataSourceConfig.getRecovery().getCredential();
+                if (credential != null) {
+                    final String securityDomainName = credential.getSecurityDomain();
+                    if (securityDomainName != null) {
+                        builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                    }
                 }
             }
             int propertiesCount = 0;
