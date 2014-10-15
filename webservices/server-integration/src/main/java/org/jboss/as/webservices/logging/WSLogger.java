@@ -45,6 +45,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.wsf.spi.WSFException;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
 /**
@@ -281,4 +282,10 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 65, value = "Annotation '@%s' found on class '%s'. Perhaps you forgot to add a '%s' module dependency to your deployment?")
     void missingModuleDependency(String annotation, String clazz, String module);
+
+    @Message(id = 66, value = "Servlet class %s declared in web.xml; either provide a proper deployment relying on JBossWS or disable the webservices subsystem for the "
+            + "current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
+            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
+    WSFException invalidWSServlet(String servletClass);
+
 }
