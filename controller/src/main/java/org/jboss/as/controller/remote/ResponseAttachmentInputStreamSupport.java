@@ -26,12 +26,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
+import java.io.Closeable;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
@@ -53,6 +59,11 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2014 Red Hat Inc.
  */
 public class ResponseAttachmentInputStreamSupport {
+
+    /** Timeout for cleaning up streams that have not been read by the end user */
+    private static final int STREAM_TIMEOUT = 30000;
+    /** Timeout for cleaning up streams that have not been read by the end user */
+    private static final int CLEANUP_INTERVAL = 10000;
 
     /**
      * Deal with streams attached to an operation response from a proxied domain process.
@@ -79,11 +90,64 @@ public class ResponseAttachmentInputStreamSupport {
         }
     }
 
-    private final Map<InputStreamKey, OperationResponse.StreamEntry> streamMap  = new ConcurrentHashMap<InputStreamKey, OperationResponse.StreamEntry>();
+    private final Map<InputStreamKey, TimedStreamEntry> streamMap  = new ConcurrentHashMap<InputStreamKey, TimedStreamEntry>();
+    private final ScheduledFuture<?> cleanupTaskFuture;
+    private final int timeout;
+    private volatile boolean stopped;
 
-    void registerStream(int operationId, int index, OperationResponse.StreamEntry stream) {
-        InputStreamKey key = new InputStreamKey(operationId, index);
-        streamMap.put(key, stream);
+    /**
+     * <strong>For test usage only</strong> as it has no facility for closing attached streams.
+     */
+    public ResponseAttachmentInputStreamSupport() {
+        this(STREAM_TIMEOUT);
+    }
+
+    /** Package protected constructor to allow unit tests to control timing of cleanup. */
+    ResponseAttachmentInputStreamSupport(int streamTimeout) {
+        this.timeout = streamTimeout;
+        cleanupTaskFuture = null;
+    }
+
+    /**
+     * Create a new support with the given timeout for closing unread streams.
+     *
+     * @param scheduledExecutorService scheduled executor to use to periodically clean up unused streams. Cannot be {@code null}
+     */
+    public ResponseAttachmentInputStreamSupport(ScheduledExecutorService scheduledExecutorService) {
+        this(scheduledExecutorService, STREAM_TIMEOUT, CLEANUP_INTERVAL);
+    }
+
+    /** Package protected constructor to allow unit tests to control timing of cleanup. */
+    ResponseAttachmentInputStreamSupport(ScheduledExecutorService scheduledExecutorService, int streamTimeout, int cleanupInterval) {
+        timeout = streamTimeout;
+        cleanupTaskFuture = scheduledExecutorService.scheduleWithFixedDelay(new CleanupTask(), cleanupInterval, cleanupInterval, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Registers a set of streams that were associated with a particular request. Does nothing if {@link #shutdown()}
+     * has been invoked, in which case any use of the {@link #getReadHandler() read handler} will result in behavior
+     * equivalent to what would be seen if the the registered stream had 0 bytes of content.
+     *
+     * @param operationId id of the request
+     * @param streams the streams. Cannot be {@code null} but may be empty
+     */
+    synchronized void registerStreams(int operationId, List<OperationResponse.StreamEntry> streams) {
+        // ^^^ synchronize on 'this' to avoid races with shutdown
+
+        if (!stopped) {
+            // Streams share a timestamp so activity on any is sufficient to keep the rest alive
+            AtomicLong timestamp = new AtomicLong(System.currentTimeMillis());
+            for (int i = 0; i < streams.size(); i++) {
+                OperationResponse.StreamEntry stream = streams.get(i);
+                InputStreamKey key = new InputStreamKey(operationId, i);
+                streamMap.put(key, new TimedStreamEntry(stream, timestamp));
+            }
+        } else {
+            // Just close the streams, as no caller ever will
+            for (int i = 0; i < streams.size(); i++) {
+                closeStreamEntry(streams.get(i), operationId, i);
+            }
+        }
     }
 
     /**
@@ -91,7 +155,7 @@ public class ResponseAttachmentInputStreamSupport {
      *
      * @return  the handler
      */
-    ManagementRequestHandler<?, ?> getReadHandler() {
+    ManagementRequestHandler<Void, Void> getReadHandler() {
         return new ReadHandler();
     }
 
@@ -100,13 +164,70 @@ public class ResponseAttachmentInputStreamSupport {
      *
      * @return  the handler
      */
-    ManagementRequestHandler<?, ?> getCloseHandler() {
+    ManagementRequestHandler<Void, Void> getCloseHandler() {
         return new AbstractAttachmentHandler() {
             @Override
-            void handleRequest(OperationResponse.StreamEntry entry, FlushableDataOutput output) throws IOException {
-                // No-op, since the superclass will close the entry in a finally block
+            void handleRequest(TimedStreamEntry entry, FlushableDataOutput output) throws IOException {
+                // no-op as AbstractAttachmentHandler will close the entry after calling this
+            }
+
+            @Override
+            void handleMissingStream(int requestId, int index, FlushableDataOutput output) throws IOException {
+                // no-op as there's nothing to do
             }
         };
+    }
+
+    /**
+     * Closes any registered stream entries that have not yet been consumed
+     */
+    public final synchronized void shutdown() {  // synchronize on 'this' to avoid races with registerStreams
+        stopped = true;
+        // If the cleanup task is running tell it to stop looping, and then remove it from the scheduled executor
+        if (cleanupTaskFuture != null) {
+            cleanupTaskFuture.cancel(false);
+        }
+
+        // Close remaining streams
+        for (Map.Entry<InputStreamKey, TimedStreamEntry> entry : streamMap.entrySet()) {
+            InputStreamKey key = entry.getKey();
+            TimedStreamEntry timedStreamEntry = entry.getValue();
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (timedStreamEntry) { // ensure there's no race with a request that got a ref before we removed it
+                closeStreamEntry(timedStreamEntry, key.requestId, key.index);
+            }
+        }
+    }
+
+    /** Close and remove expired streams. Package protected to allow unit tests to invoke it. */
+    void gc() {
+        if (stopped) {
+            return;
+        }
+        long expirationTime = System.currentTimeMillis() - timeout;
+        for (Iterator<Map.Entry<InputStreamKey, TimedStreamEntry>> iter = streamMap.entrySet().iterator(); iter.hasNext();) {
+            if (stopped) {
+                return;
+            }
+            Map.Entry<InputStreamKey, TimedStreamEntry> entry = iter.next();
+            TimedStreamEntry timedStreamEntry = entry.getValue();
+            if (timedStreamEntry.timestamp.get() <= expirationTime) {
+                iter.remove();
+                InputStreamKey key = entry.getKey();
+                //noinspection SynchronizationOnLocalVariableOrMethodParameter
+                synchronized (timedStreamEntry) { // ensure there's no race with a request that got a ref before we removed it
+                    closeStreamEntry(timedStreamEntry, key.requestId, key.index);
+                }
+            }
+        }
+    }
+
+    private static void closeStreamEntry(Closeable closeable, int requestId, int streamIndex) {
+        try {
+            closeable.close();
+        } catch (IOException e) {
+            ControllerLogger.ROOT_LOGGER.debugf(e, "Caught exception closing attached response stream at index %d for operation %d", streamIndex, requestId);
+        }
     }
 
     /**
@@ -156,18 +277,26 @@ public class ResponseAttachmentInputStreamSupport {
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
                     final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
-                    final OperationResponse.StreamEntry entry = streamMap.remove(key);  // remove as we'll never use it again
+                    final TimedStreamEntry entry = streamMap.remove(key);  // remove as we'll never use it again
 
                     FlushableDataOutput output = null;
                     try {
                         output = context.writeMessage(response);
-                        if (entry != null) {
-                            handleRequest(entry, output);
-                        } else {
+                        if (entry == null) {
                             // Either a bogus request or a request for a stream that has timed out
-                            // and been cleaned up. Respond as if stream was empty
-                            ControllerLogger.MGMT_OP_LOGGER.debugf("Received request for unavailable stream at index %d for request id %d; responding with EOF", index, requestId);
-                            output.write(ModelControllerProtocol.PARAM_END);
+                            // and been cleaned up.
+                            handleMissingStream(requestId, index, output);
+                        } else {
+                            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+                            synchronized (entry) { // lock out any gc work
+                                if (entry.closed) {
+                                    // Just cleaned up
+                                    handleMissingStream(requestId, index, output);
+                                } else {
+                                    handleRequest(entry, output);
+                                    entry.timestamp.set(System.currentTimeMillis());
+                                }
+                            }
                         }
                         output.writeByte(ManagementProtocol.RESPONSE_END);
                         output.close();
@@ -180,21 +309,27 @@ public class ResponseAttachmentInputStreamSupport {
             });
         }
 
-        abstract void handleRequest(final OperationResponse.StreamEntry entry, final FlushableDataOutput output) throws IOException;
+        abstract void handleRequest(final TimedStreamEntry entry, final FlushableDataOutput output) throws IOException;
+
+        abstract void handleMissingStream(int requestId, int index, final FlushableDataOutput output) throws IOException;
     }
 
     private class ReadHandler extends AbstractAttachmentHandler {
         private static final int BUFFER_SIZE = 8192;
 
         @Override
-        void handleRequest(OperationResponse.StreamEntry entry, FlushableDataOutput output) throws IOException {
+        void handleRequest(TimedStreamEntry entry, FlushableDataOutput output) throws IOException {
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (entry) {
-                InputStream input = entry.getStream();
+                InputStream input = entry.streamEntry.getStream();
                 int read = 0;
                 byte[] buffer = new byte[BUFFER_SIZE];
                 do {
+                    // Set the timestamp on each loop so if there are blocking delays reading or writing
+                    // they don't accumulate
+                    entry.timestamp.set(System.currentTimeMillis());
+
                     int totalRead = 0;
                     int remaining = BUFFER_SIZE;
                     // Read a full buffer if possible before sending
@@ -213,6 +348,38 @@ public class ResponseAttachmentInputStreamSupport {
 
                 output.writeByte(ModelControllerProtocol.PARAM_END);
             }
+        }
+
+        @Override
+        void handleMissingStream(int requestId, int index, FlushableDataOutput output) throws IOException {
+            // Respond as if stream was empty
+            ControllerLogger.MGMT_OP_LOGGER.debugf("Received request for unavailable stream at index %d for request id %d; responding with EOF", index, requestId);
+            output.write(ModelControllerProtocol.PARAM_END);
+        }
+    }
+
+    private static class TimedStreamEntry implements Closeable {
+        private final OperationResponse.StreamEntry streamEntry;
+        private final AtomicLong timestamp;
+        private boolean closed;
+
+        private TimedStreamEntry(OperationResponse.StreamEntry streamEntry, AtomicLong timestamp) {
+            this.streamEntry = streamEntry;
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public void close() throws IOException {
+            streamEntry.close();
+            closed = true;
+        }
+    }
+
+    private class CleanupTask implements Runnable {
+
+        @Override
+        public void run() {
+            ResponseAttachmentInputStreamSupport.this.gc();
         }
     }
 }

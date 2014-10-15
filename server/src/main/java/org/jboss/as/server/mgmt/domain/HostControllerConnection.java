@@ -23,6 +23,7 @@
 package org.jboss.as.server.mgmt.domain;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
@@ -83,12 +84,15 @@ class HostControllerConnection extends FutureManagementChannel {
     private final ManagementChannelHandler channelHandler;
     private final ExecutorService executorService;
     private final int initialOperationID;
+    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport;
 
     private volatile ProtocolConnectionConfiguration configuration;
     private volatile ReconnectRunner reconnectRunner;
 
     HostControllerConnection(final String serverProcessName, final String userName, final int initialOperationID,
-                             final ProtocolConnectionConfiguration configuration, final ExecutorService executorService) {
+                             final ProtocolConnectionConfiguration configuration,
+                             final ResponseAttachmentInputStreamSupport responseAttachmentSupport,
+                             final ExecutorService executorService) {
         this.userName = userName;
         this.serverProcessName = serverProcessName;
         this.configuration = configuration;
@@ -96,6 +100,7 @@ class HostControllerConnection extends FutureManagementChannel {
         this.executorService = executorService;
         this.channelHandler = new ManagementChannelHandler(this, executorService);
         this.connectionManager = ProtocolConnectionManager.create(configuration, this, new ReconnectTask());
+        this.responseAttachmentSupport = responseAttachmentSupport;
     }
 
     ManagementChannelHandler getChannelHandler() {
@@ -127,7 +132,7 @@ class HostControllerConnection extends FutureManagementChannel {
             channelHandler.executeRequest(new ServerRegisterRequest(), null, callback);
             // HC is the same version, so it will support sending the subject
             channelHandler.getAttachments().attach(TransactionalProtocolClient.SEND_SUBJECT, Boolean.TRUE);
-            channelHandler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, channelHandler));
+            channelHandler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, channelHandler, responseAttachmentSupport));
             ok = true;
         } finally {
             if(!ok) {

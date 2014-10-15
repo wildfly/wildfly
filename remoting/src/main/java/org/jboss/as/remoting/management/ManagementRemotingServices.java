@@ -28,6 +28,7 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
@@ -141,6 +142,7 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param channelName the name of the channel
      * @param executorServiceName service name of the executor service to use in the operation handler service
      * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param scheduledExecutorServiceName  service name of the scheduled executor service to use in the operation handler service
      * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      */
     public static void installManagementChannelServices(
@@ -149,7 +151,9 @@ public final class ManagementRemotingServices extends RemotingServices {
             final AbstractModelControllerOperationHandlerFactoryService operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
-            ServiceName executorServiceName, final ServiceVerificationHandler verificationHandler,
+            final ServiceName executorServiceName,
+            final ServiceName scheduledExecutorServiceName,
+            final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
 
         final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE,
@@ -159,6 +163,7 @@ public final class ManagementRemotingServices extends RemotingServices {
         final ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
             .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
             .addDependency(executorServiceName, ExecutorService.class, operationHandlerService.getExecutorInjector())
+            .addDependency(scheduledExecutorServiceName, ScheduledExecutorService.class, operationHandlerService.getScheduledExecutorInjector())
             .setInitialMode(ACTIVE);
 
         addController(newControllers, verificationHandler, builder);

@@ -47,6 +47,7 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.ServerService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
@@ -100,6 +101,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 Services.JBOSS_SERVER_CONTROLLER,
                 ManagementRemotingServices.MANAGEMENT_CHANNEL,
                 Services.JBOSS_SERVER_EXECUTOR,
+                ServerService.JBOSS_SERVER_SCHEDULED_EXECUTOR,
                 verificationHandler,
                 newControllers);
     }

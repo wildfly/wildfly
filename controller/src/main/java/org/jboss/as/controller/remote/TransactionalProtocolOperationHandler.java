@@ -33,7 +33,6 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.security.auth.Subject;
@@ -72,11 +71,13 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
     private final ModelController controller;
     private final ManagementChannelAssociation channelAssociation;
-    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport = new ResponseAttachmentInputStreamSupport();
+    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport;
 
-    public TransactionalProtocolOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation) {
+    public TransactionalProtocolOperationHandler(final ModelController controller, final ManagementChannelAssociation channelAssociation,
+                                                 final ResponseAttachmentInputStreamSupport responseAttachmentSupport) {
         this.controller = controller;
         this.channelAssociation = channelAssociation;
+        this.responseAttachmentSupport = responseAttachmentSupport;
     }
 
     @Override
@@ -475,10 +476,9 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             assert prepared;
             assert responseChannel != null;
             ControllerLogger.MGMT_OP_LOGGER.tracef("sending completed response for %d  --- interrupted: %s", getOperationId(), Thread.currentThread().isInterrupted());
-            List<OperationResponse.StreamEntry> streams = response.getInputStreams();
-            for (int i = 0; i < streams.size(); i++) {
-                streamSupport.registerStream(operation.getOperationId(), i, streams.get(i));
-            }
+
+            streamSupport.registerStreams(operation.getOperationId(), response.getInputStreams());
+
             try {
                 // 4) operation-completed (done)
                 sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_COMPLETED, response.getResponseNode());

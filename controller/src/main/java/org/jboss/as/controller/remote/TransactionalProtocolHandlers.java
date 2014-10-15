@@ -22,12 +22,11 @@
 
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.ModelController;
+import java.io.IOException;
+
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,28 +48,6 @@ public final class TransactionalProtocolHandlers {
         final TransactionalProtocolClientImpl client = new TransactionalProtocolClientImpl(channelAssociation);
         channelAssociation.addHandlerFactory(client);
         return client;
-    }
-
-    /**
-     * Add a transaction protocol request handler to an existing channel.
-     *
-     * @param association the channel association
-     * @param controller the model controller
-     */
-    public static void addAsHandlerFactory(final ManagementChannelHandler association, final ModelController controller) {
-        final ManagementRequestHandlerFactory handlerFactory = createHandler(association, controller);
-        association.addHandlerFactory(handlerFactory);
-    }
-
-    /**
-     * Create a transactional protocol request handler.
-     *
-     * @param association the management channel
-     * @param controller the model controller
-     * @return the handler factory
-     */
-    public static ManagementRequestHandlerFactory createHandler(final ManagementChannelAssociation association, final ModelController controller) {
-        return new TransactionalProtocolOperationHandler(controller, association);
     }
 
     /**

@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -95,17 +94,21 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
     private final ManagementChannelAssociation channelAssociation;
     private final Executor clientRequestExecutor;
     private final Subject subject;
-    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport = new ResponseAttachmentInputStreamSupport();
+    private final ResponseAttachmentInputStreamSupport responseAttachmentSupport;
 
     public ModelControllerClientOperationHandler(final ModelController controller,
-                                                 final ManagementChannelAssociation channelAssociation) {
-        this(controller, channelAssociation, new Subject());
+                                                 final ManagementChannelAssociation channelAssociation,
+                                                 final ResponseAttachmentInputStreamSupport responseAttachmentSupport) {
+        this(controller, channelAssociation, responseAttachmentSupport, new Subject());
     }
 
     public ModelControllerClientOperationHandler(final ModelController controller,
-                                                 final ManagementChannelAssociation channelAssociation, final Subject subject) {
+                                                 final ManagementChannelAssociation channelAssociation,
+                                                 final ResponseAttachmentInputStreamSupport responseAttachmentSupport,
+                                                 final Subject subject) {
         this.controller = controller;
         this.channelAssociation = channelAssociation;
+        this.responseAttachmentSupport = responseAttachmentSupport;
         this.subject = subject;
         // Create the client request executor
         final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE);
@@ -214,10 +217,9 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             try {
                 ROOT_LOGGER.tracef("Executing client request %d(%d)", batchId, header.getRequestId());
                 OperationResponse response = controller.execute(attachmentsProxy, messageHandlerProxy, transactionControl);
-                List<OperationResponse.StreamEntry> streams = response.getInputStreams();
-                for (int i = 0; i < streams.size(); i++) {
-                    responseAttachmentSupport.registerStream(context.getOperationId(), i, streams.get(i));
-                }
+
+                responseAttachmentSupport.registerStreams(context.getOperationId(), response.getInputStreams());
+
                 result.set(response.getResponseNode());
             } catch (Exception e) {
                 final ModelNode failure = new ModelNode();

@@ -142,6 +142,8 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
                         cacheImplementation.clearAll();
                         cacheImplementation = null;
                         if (executorService != null) {
+                            // FIXME context.execute() should not be used for blocking tasks. Inject a scheduled executor
+                            // and get rid of this
                             executorService.shutdown();
                             executorService = null;
                         }

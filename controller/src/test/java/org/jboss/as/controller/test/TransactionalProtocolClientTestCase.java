@@ -43,12 +43,15 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.BlockingQueueOperationListener;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
+import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.ChannelServer;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
@@ -106,7 +109,9 @@ public class TransactionalProtocolClientTestCase {
             public void channelOpened(final Channel channel) {
                 final MockController controller = new MockController();
                 final ManagementChannelHandler channels = new ManagementChannelHandler(channel, remoteExecutors);
-                TransactionalProtocolHandlers.addAsHandlerFactory(channels, controller);
+                final ManagementRequestHandlerFactory handlerFactory =
+                        new TransactionalProtocolOperationHandler(controller, channels, new ResponseAttachmentInputStreamSupport());
+                channels.addHandlerFactory(handlerFactory);
                 transferQueue.offer(controller);
                 channel.receiveMessage(channels.getReceiver());
             }

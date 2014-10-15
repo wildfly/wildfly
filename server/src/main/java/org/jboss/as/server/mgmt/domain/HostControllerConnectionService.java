@@ -30,6 +30,8 @@ import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -37,6 +39,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.StreamUtils;
@@ -65,6 +68,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private static final long SERVER_CONNECTION_TIMEOUT = 60000;
 
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutorInjector = new InjectedValue<ScheduledExecutorService>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<ControlledProcessStateService> processStateServiceInjectedValue = new InjectedValue<ControlledProcessStateService>();
 
@@ -76,6 +80,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private final byte[] initialAuthKey;
     private final int initialOperationID;
     private final boolean managementSubsystemEndpoint;
+    private volatile ResponseAttachmentInputStreamSupport responseAttachmentSupport;
 
     private HostControllerClient client;
 
@@ -104,9 +109,10 @@ public class HostControllerConnectionService implements Service<HostControllerCl
             configuration.setCallbackHandler(HostControllerConnection.createClientCallbackHandler(userName, initialAuthKey));
             configuration.setConnectionTimeout(SERVER_CONNECTION_TIMEOUT);
             configuration.setSslContext(getAcceptingSSLContext());
+            this.responseAttachmentSupport = new ResponseAttachmentInputStreamSupport(scheduledExecutorInjector.getValue());
             // Create the connection
             final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, initialOperationID,
-                    configuration, executorInjector.getValue());
+                    configuration, responseAttachmentSupport, executorInjector.getValue());
             // Trigger the started notification based on the process state listener
             final ControlledProcessStateService processService = processStateServiceInjectedValue.getValue();
             processService.addPropertyChangeListener(new PropertyChangeListener() {
@@ -128,9 +134,27 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
-        StreamUtils.safeClose(client);
-        client = null;
+    public synchronized void stop(final StopContext stopContext) {
+        final ExecutorService executorService = executorInjector.getValue();
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    responseAttachmentSupport.shutdown();
+                } finally {
+                    StreamUtils.safeClose(client);
+                    client = null;
+                    stopContext.complete();
+                }
+            }
+        };
+        try {
+            executorService.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            stopContext.asynchronous();
+        }
     }
 
     @Override
@@ -151,6 +175,8 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     }
 
     public InjectedValue<ExecutorService> getExecutorInjector() { return executorInjector;}
+
+    public InjectedValue<ScheduledExecutorService> getScheduledExecutorInjector() { return scheduledExecutorInjector;}
 
     private static SSLContext getAcceptingSSLContext() throws IOException {
         /*

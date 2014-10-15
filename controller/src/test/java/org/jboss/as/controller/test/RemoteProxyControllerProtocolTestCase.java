@@ -53,6 +53,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.remote.RemoteProxyController;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -75,11 +76,12 @@ import org.xnio.IoUtils;
  */
 public class RemoteProxyControllerProtocolTestCase {
 
+    ResponseAttachmentInputStreamSupport responseAttachmentSupport;
     RemoteChannelPairSetup channels;
 
     @Before
     public void start() throws Exception {
-
+        responseAttachmentSupport = new ResponseAttachmentInputStreamSupport();
     }
 
     @After
@@ -87,6 +89,8 @@ public class RemoteProxyControllerProtocolTestCase {
         channels.stopChannels();
         channels.shutdownRemoting();
         channels = null;
+        responseAttachmentSupport.shutdown();
+        responseAttachmentSupport = null;
     }
 
     @Test @Ignore("OperationMessageHandlerProxy turned off temporarily")
@@ -556,7 +560,7 @@ public class RemoteProxyControllerProtocolTestCase {
                 @Override
                 public ManagementChannelHandler startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
-                    support.addHandlerFactory(new TransactionalProtocolOperationHandler(proxiedController, support));
+                    support.addHandlerFactory(new TransactionalProtocolOperationHandler(proxiedController, support, responseAttachmentSupport));
                     channel.addCloseHandler(new CloseHandler<Channel>() {
                         @Override
                         public void handleClose(Channel closed, IOException exception) {

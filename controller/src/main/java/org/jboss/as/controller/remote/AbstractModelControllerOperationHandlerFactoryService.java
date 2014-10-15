@@ -24,6 +24,8 @@ package org.jboss.as.controller.remote;
 import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -45,6 +47,9 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
+    private final InjectedValue<ScheduledExecutorService> scheduledExecutor = new InjectedValue<ScheduledExecutorService>();
+
+    private ResponseAttachmentInputStreamSupport responseAttachmentSupport;
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -59,16 +64,39 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         return executor;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public synchronized void start(StartContext context) throws StartException {
-        SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
+    public InjectedValue<ScheduledExecutorService> getScheduledExecutorInjector() {
+        return scheduledExecutor;
     }
 
     /** {@inheritDoc} */
     @Override
-    public synchronized void stop(StopContext context) {
-        //
+    public synchronized void start(StartContext context) throws StartException {
+        SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
+        responseAttachmentSupport = new ResponseAttachmentInputStreamSupport(scheduledExecutor.getValue());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized void stop(final StopContext stopContext) {
+        final ExecutorService executorService = executor.getValue();
+        final Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    responseAttachmentSupport.shutdown();
+                } finally {
+                    stopContext.complete();
+                }
+            }
+        };
+        try {
+            executorService.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            stopContext.asynchronous();
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -83,6 +111,10 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
 
     protected ExecutorService getExecutor() {
         return executor.getValue();
+    }
+
+    protected ResponseAttachmentInputStreamSupport getResponseAttachmentSupport() {
+        return responseAttachmentSupport;
     }
 
 }

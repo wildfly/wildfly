@@ -45,6 +45,7 @@ import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.client.impl.InputStreamEntry;
 import org.jboss.as.controller.registry.NotificationHandlerRegistration;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
+import org.jboss.as.controller.remote.ResponseAttachmentInputStreamSupport;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -87,7 +88,7 @@ public class ModelControllerClientTestCase {
                 @Override
                 public ManagementChannelHandler startReceiving(Channel channel) {
                     final ManagementChannelHandler support = new ManagementChannelHandler(channel, channels.getExecutorService());
-                    support.addHandlerFactory(new ModelControllerClientOperationHandler(controller, support));
+                    support.addHandlerFactory(new ModelControllerClientOperationHandler(controller, support, new ResponseAttachmentInputStreamSupport()));
                     channel.receiveMessage(support.getReceiver());
                     return support;
                 }
