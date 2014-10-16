@@ -150,7 +150,31 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final String coordinatorURL = ENVIRONMENT_URL.resolveModelAttribute(context, model).asString();
+        String coordinatorURL = ENVIRONMENT_URL.resolveModelAttribute(context, model).asString();
+
+        if (coordinatorURL != null) {
+            String[] attrs = coordinatorURL.split("/");
+            boolean isIPv6Address = false;
+
+            for (int i = 0; i < attrs.length; i++) {
+                if (attrs[i].startsWith("::1")) {
+                    attrs[i] = "[" + attrs[i].substring(0, 3) + "]" + attrs[i].substring(3);
+                    isIPv6Address = true;
+                    break;
+                }
+            }
+
+            if (isIPv6Address) {
+                StringBuffer sb = new StringBuffer(attrs[0]);
+
+                for (int i = 1; i < attrs.length; i++) {
+                    sb.append('/').append(attrs[i]);
+                }
+
+                coordinatorURL = sb.toString();
+            }
+        }
+
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
