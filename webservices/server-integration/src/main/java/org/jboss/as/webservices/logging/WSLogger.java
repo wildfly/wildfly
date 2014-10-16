@@ -248,9 +248,9 @@ public interface WSLogger extends BasicLogger {
     // @Message(id = 55, value = "Config %s, %s handler chain %s: doesn't contain handler with name %s")
     // OperationFailedException missingHandler(String configName, String handlerChainType, String handlerChainId, String handlerName);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 56, value = "Method invocation failed with exception: %s")
-    void methodInvocationFailed(@Cause Throwable cause, String message);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 56, value = "Method invocation failed with exception: %s")
+    //void methodInvocationFailed(@Cause Throwable cause, String message);
 
     @Message(id = 57, value = "Unable to get URL for: %s")
     DeploymentUnitProcessingException cannotGetURLForDescriptor(@Cause Throwable cause, String resourcePath);
