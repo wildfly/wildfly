@@ -55,7 +55,7 @@ public class AuthMethodParser {
                     ret.add(createAuthMethodConfig(part, replacements));
                 } else {
                     final String name = part.substring(0, index);
-                    Map<String, Deque<String>> props = QueryParameterUtils.parseQueryString(part.substring(index + 1));
+                    Map<String, Deque<String>> props = QueryParameterUtils.parseQueryString(part.substring(index + 1), UTF_8);
                     final AuthMethodConfig authMethodConfig = createAuthMethodConfig(name, replacements);
                     for (Map.Entry<String, Deque<String>> entry : props.entrySet()) {
                         Deque<String> val = entry.getValue();

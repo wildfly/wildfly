@@ -52,7 +52,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     @Override
     protected OpenListener createOpenListener() {
-        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap(), getBufferSize());
+        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).set(UndertowOptions.ENABLE_CONNECTOR_STATISTICS, getUndertowService().isStatisticsEnabled()).getMap());
         ajpOpenListener.setScheme(scheme);
         return ajpOpenListener;
     }

@@ -31,7 +31,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -58,8 +57,7 @@ class LocationAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
         final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
@@ -78,12 +76,8 @@ class LocationAdd extends AbstractAddStepHandler {
 
         configureFilterRef(fullModel, builder, service, address);
 
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
-        builder.addListener(verificationHandler);
-        final ServiceController<LocationService> serviceController = builder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
+        builder.setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 
     private static void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service,PathAddress address) {

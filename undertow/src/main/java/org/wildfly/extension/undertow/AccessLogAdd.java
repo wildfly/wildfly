@@ -25,13 +25,11 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.io.File;
-import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,7 +47,7 @@ class AccessLogAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
@@ -69,11 +67,7 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker());
 
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
-        builder.addListener(verificationHandler);
-        final ServiceController<AccessLogService> serviceController = builder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
+        builder.setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
     }
 }

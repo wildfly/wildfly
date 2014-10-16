@@ -24,14 +24,11 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.CommonWebServer;
@@ -52,15 +49,16 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
+
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress parentAddress = address.subAddress(0, address.size() - 1);
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress));
 
         final String name = address.getLastElement().getValue();
-        final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, model).asString();
-        final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, model).asString();
+        final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, resource.getModel()).asString();
+        final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, resource.getModel()).asString();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context,subsystemModel).asString();
 
         final ServiceName serverName = UndertowService.SERVER.append(name);
@@ -70,7 +68,6 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
-        builder.addListener(verificationHandler);
         boolean isDefaultServer = name.equals(defaultServerName);
 
         if (isDefaultServer) { //only install for default server
@@ -84,20 +81,10 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
             addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
             addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.AJP_LISTENER_PATH);
             addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTPS_LISTENER_PATH);
+            commonServerBuilder.install();
 
-            final ServiceController<WebServerService> commonServerController = commonServerBuilder.install();
-
-            if (verificationHandler != null) {
-                commonServerController.addListener(verificationHandler);
-            }
-            if (newControllers != null) {
-                newControllers.add(commonServerController);
-            }
         }
-        final ServiceController<Server> serviceController = builder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
+        builder.install();
     }
 
 

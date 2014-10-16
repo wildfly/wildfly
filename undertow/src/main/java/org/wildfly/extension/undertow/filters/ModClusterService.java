@@ -2,7 +2,6 @@ package org.wildfly.extension.undertow.filters;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -124,7 +123,7 @@ public class ModClusterService extends FilterService {
         }
     }
 
-    static ServiceController<FilterService> install(String name, ServiceTarget serviceTarget, ModelNode model, OperationContext operationContext, ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
+    static ServiceController<FilterService> install(String name, ServiceTarget serviceTarget, ModelNode model, OperationContext operationContext) throws OperationFailedException {
         String securityKey = null;
         ModelNode securityKeyNode = ModClusterDefinition.SECURITY_KEY.resolveModelAttribute(operationContext, model);
         if(securityKeyNode.isDefined()) {
@@ -143,9 +142,6 @@ public class ModClusterService extends FilterService {
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.MANAGEMENT_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.managementSocketBinding);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(ModClusterDefinition.ADVERTISE_SOCKET_BINDING.resolveModelAttribute(operationContext, model).asString()), SocketBinding.class, service.advertiseSocketBinding);
         builder.addDependency(IOServices.WORKER.append(ModClusterDefinition.WORKER.resolveModelAttribute(operationContext, model).asString()), XnioWorker.class, service.workerInjectedValue);
-        if(serviceVerificationHandler != null) {
-            builder.addListener(serviceVerificationHandler);
-        }
         return builder.install();
     }
 }

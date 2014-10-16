@@ -24,17 +24,13 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
 
-import io.undertow.server.handlers.cache.DirectBufferCache;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -53,9 +49,8 @@ final class BufferCacheAdd extends AbstractAddStepHandler {
             def.validateAndSet(operation, model);
         }
     }
-
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         int bufferSize = BufferCacheDefinition.BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
@@ -65,14 +60,8 @@ final class BufferCacheAdd extends AbstractAddStepHandler {
         final BufferCacheService service = new BufferCacheService(bufferSize, buffersPerRegions, maxRegions);
         final ServiceTarget target = context.getServiceTarget();
 
-        ServiceBuilder<DirectBufferCache> builder = target.addService(BufferCacheService.SERVICE_NAME.append(name), service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND);
-
-
-        builder.addListener(verificationHandler);
-        final ServiceController<DirectBufferCache> serviceController = builder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
+        target.addService(BufferCacheService.SERVICE_NAME.append(name), service)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
     }
 }
