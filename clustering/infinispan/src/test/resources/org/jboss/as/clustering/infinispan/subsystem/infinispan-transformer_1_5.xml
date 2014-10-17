@@ -34,7 +34,8 @@
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <file-store fetch-state="false" passivation="false" path="path" preload="true" purge="false" relative-to="jboss.server.temp.dir" shared="true" singleton="true">
                 <!-- Leave out flush-lock-timeout here to test transformations of the default value (to 5 seconds) -->
-                <write-behind modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />            </file-store>
+                <write-behind modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1"/>
+            </file-store>
             <indexing index="LOCAL">
                 <!--
                      TODO: These are not configurable in 7.1.x and should only be discarded if they have different values from the values assumed in 7.1.x.

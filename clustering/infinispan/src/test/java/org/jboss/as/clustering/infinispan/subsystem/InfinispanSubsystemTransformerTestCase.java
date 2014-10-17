@@ -45,7 +45,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.*;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -212,6 +213,11 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         testTransformer_1_4_1(ModelTestControllerVersion.EAP_6_2_0);
     }
 
+    @Test
+    public void testTransformer630() throws Exception {
+        testTransformer_1_5_0(ModelTestControllerVersion.EAP_6_3_0);
+    }
+
     private void testTransformer_1_4_1(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 4, 1);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -226,6 +232,22 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version);
+    }
+
+    private void testTransformer_1_5_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion version = ModelVersion.create(1, 5, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+
+        Assert.assertTrue("Main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, version);

@@ -55,6 +55,7 @@ public class InfinispanTransformers {
         registerTransformers130(subsystem);
         registerTransformers140(subsystem);
         registerTransformers141(subsystem);
+        registerTransformers150(subsystem);
     }
 
     /**
@@ -360,7 +361,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(distributedCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(distributedCacheBuilder);
 
         ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
         replicatedCacheBuilder.getAttributeBuilder()
@@ -369,7 +370,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(replicatedCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(replicatedCacheBuilder);
 
         final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH);
         invalidationCacheBuilder.getAttributeBuilder()
@@ -378,7 +379,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(invalidationCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(invalidationCacheBuilder);
 
         final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH);
         localCacheBuilder.getAttributeBuilder()
@@ -387,7 +388,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(localCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(localCacheBuilder);
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
@@ -416,7 +417,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(distributedCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(distributedCacheBuilder);
 
         ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
         replicatedCacheBuilder.getAttributeBuilder()
@@ -425,7 +426,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(replicatedCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(replicatedCacheBuilder);
 
         final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH);
         invalidationCacheBuilder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS_ENABLED)
@@ -433,7 +434,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(invalidationCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(invalidationCacheBuilder);
 
         final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH);
         localCacheBuilder.getAttributeBuilder()
@@ -442,47 +443,72 @@ public class InfinispanTransformers {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS_ENABLED)
                 .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS_ENABLED)
                 .end();
-        registerCacheResourceChildren14(localCacheBuilder);
+        registerCacheResourceChildrenConvertFlushLockTimeout(localCacheBuilder);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 4, 1));
     }
 
-    private static void registerCacheResourceChildren14(final ResourceTransformationDescriptionBuilder cacheBuilder) {
+    /**
+     * Register the transformers for transforming from current to 1.5.0 management api version, including:
+     * - default value of flush-lock-timeout is converted (WFLY-3435)
+     *
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers150(final SubsystemRegistration subsystem) {
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder cacheContainerBuilder = builder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH);
+
+        final ResourceTransformationDescriptionBuilder distributedCacheBuilder = cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH);
+        registerCacheResourceChildrenConvertFlushLockTimeout(distributedCacheBuilder);
+
+        final ResourceTransformationDescriptionBuilder replicatedCacheBuilder = cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH);
+        registerCacheResourceChildrenConvertFlushLockTimeout(replicatedCacheBuilder);
+
+        final ResourceTransformationDescriptionBuilder invalidationCacheBuilder = cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH);
+        registerCacheResourceChildrenConvertFlushLockTimeout(invalidationCacheBuilder);
+
+        final ResourceTransformationDescriptionBuilder localCacheBuilder = cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH);
+        registerCacheResourceChildrenConvertFlushLockTimeout(localCacheBuilder);
+
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 5, 0));
+    }
+
+    private static void registerCacheResourceChildrenConvertFlushLockTimeout(final ResourceTransformationDescriptionBuilder cacheBuilder) {
 
         // Store transformers
-        registerJdbcStoreTransformers14(cacheBuilder);
+        registerJdbcStoreTransformersConvertFlushLockTimeout(cacheBuilder);
 
         //fileStore=FILE_STORE
         ResourceTransformationDescriptionBuilder fileStoreBuilder = cacheBuilder.addChildResource(FileStoreResourceDefinition.FILE_STORE_PATH);
-        registerStoreTransformerChildren14(fileStoreBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(fileStoreBuilder);
 
         //store=STORE
         ResourceTransformationDescriptionBuilder storeBuilder = cacheBuilder.addChildResource(StoreResourceDefinition.STORE_PATH);
-        registerStoreTransformerChildren14(storeBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(storeBuilder);
 
         //remote-store=REMOTE_STORE
         ResourceTransformationDescriptionBuilder remoteStoreBuilder = cacheBuilder.addChildResource(RemoteStoreResourceDefinition.REMOTE_STORE_PATH);
-        registerStoreTransformerChildren14(remoteStoreBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(remoteStoreBuilder);
 
     }
 
-    private static void registerJdbcStoreTransformers14(ResourceTransformationDescriptionBuilder cacheBuilder) {
+    private static void registerJdbcStoreTransformersConvertFlushLockTimeout(ResourceTransformationDescriptionBuilder cacheBuilder) {
 
         //binaryKeyedJdbcStore
         ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH);
-        registerStoreTransformerChildren14(binaryKeyedJdbcStoreBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(binaryKeyedJdbcStoreBuilder);
 
         //stringKeyedJdbcStore
         ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH);
-        registerStoreTransformerChildren14(stringKeyedJdbcStoreBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(stringKeyedJdbcStoreBuilder);
 
         //mixedKeyedJdbcStore
         ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = cacheBuilder.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH);
-        registerStoreTransformerChildren14(mixedKeyedJdbcStoreBuilder);
+        registerStoreTransformerChildrenConvertFlushLockTimeout(mixedKeyedJdbcStoreBuilder);
 
     }
 
-    private static void registerStoreTransformerChildren14(ResourceTransformationDescriptionBuilder parent) {
+    private static void registerStoreTransformerChildrenConvertFlushLockTimeout(ResourceTransformationDescriptionBuilder parent) {
 
         parent.addChildResource(StoreWriteBehindResourceDefinition.STORE_WRITE_BEHIND_PATH)
                 .getAttributeBuilder()
