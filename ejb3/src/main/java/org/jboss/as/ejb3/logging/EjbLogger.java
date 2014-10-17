@@ -3023,8 +3023,8 @@ public interface EjbLogger extends BasicLogger {
     void jdbcDatabaseDialectDetectionFailed(String validDialects);
 
     @LogMessage(level = WARN)
-    @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecycle method %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")
-    void invalidTransactionTypeForSfsbLifecycleMethod(TransactionAttributeType txAttr, MethodIdentifier method);
+    @Message(id = 463, value = "Invalid transaction attribute type %s on SFSB lifecycle method %s of class %s, valid types are REQUIRES_NEW and NOT_SUPPORTED. Method will be treated as NOT_SUPPORTED.")
+    void invalidTransactionTypeForSfsbLifecycleMethod(TransactionAttributeType txAttr, MethodIdentifier method, Class<?> clazz);
 
     @Message(id = 464, value = "The \"" + EJB3SubsystemModel.DISABLE_DEFAULT_EJB_PERMISSIONS + "\" attribute may not be set to true")
     OperationFailedException disableDefaultEjbPermissionsCannotBeTrue();
