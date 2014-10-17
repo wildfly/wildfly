@@ -71,6 +71,8 @@ public enum Attribute {
     DIRECTORY_GROUPING("directory-grouping"),
     DESTINATION_PORT("destination-port"),
     ENABLED("enabled"),
+    ENABLED_CIPHER_SUITES("enabled-cipher-suites"),
+    ENABLED_PROTOCOLS("enabled-protocols"),
     ENV_CLASSPATH_IGNORED("env-classpath-ignored"),
     ESCAPE_CONTROL_CHARACTERS("escape-control-characters"),
     ESCAPE_NEW_LINE("escape-new-line"),
