@@ -28,10 +28,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
+import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Pedro Silva
@@ -39,17 +43,35 @@ import org.jboss.msc.service.ServiceName;
 public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
 
     private final AttributeDefinition[] attributes;
+    private final List<AttributeDefinition> alternativeAttributes = new ArrayList<AttributeDefinition>();
 
     IDMConfigAddStepHandler(final AttributeDefinition... attributes) {
         super(ModelElement.PARTITION_MANAGER.getName());
         this.attributes = attributes != null ? attributes : new AttributeDefinition[0];
+
+        for (AttributeDefinition attribute : this.attributes) {
+            if (attribute.getAlternatives() != null && attribute.getAlternatives().length > 0) {
+                this.alternativeAttributes.add(attribute);
+            }
+        }
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (!this.alternativeAttributes.isEmpty()) {
+            context.addStep(new AlternativeAttributeValidationStepHandler(
+                    this.alternativeAttributes.toArray(new AttributeDefinition[this.alternativeAttributes.size()]))
+                , OperationContext.Stage.MODEL);
+        }
+        super.execute(context, operation);
     }
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String federationName = parentAddress.getLastElement().getValue();
         PartitionManagerRemoveHandler.INSTANCE.removeIdentityStoreServices(context, parentModel, federationName);
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
+        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
+            .getValue(), parentModel, verificationHandler, null, false);
     }
 
     @Override

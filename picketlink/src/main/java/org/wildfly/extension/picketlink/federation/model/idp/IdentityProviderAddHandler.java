@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -64,9 +64,15 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new IdentityProviderValidationStepHandler(), OperationContext.Stage.MODEL);
+        super.execute(context, operation);
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-        ModelNode identityProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
+        ModelNode identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
         launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress);
     }
 
@@ -79,13 +85,17 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
                                             service.getFederationService());
 
+        IDPConfiguration configuration = service.getConfiguration();
+
+        if (!configuration.isExternal()) {
+            serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
+        }
+
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
         }
 
-        ServiceController<IdentityProviderService> controller = serviceBuilder
-                                                                    .setInitialMode(ServiceController.Mode.PASSIVE)
-                                                                    .install();
+        ServiceController<IdentityProviderService> controller = serviceBuilder.install();
 
         if (newControllers != null) {
             newControllers.add(controller);
@@ -109,7 +119,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
             if (securityDomain.isDefined()) {
                 idpType.setSecurityDomain(securityDomain.asString());
             } else {
-                throw MESSAGES.federationRequiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
+                throw MESSAGES.requiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
             }
 
             boolean supportsSignatures = IdentityProviderResourceDefinition.SUPPORT_SIGNATURES.resolveModelAttribute(context, fromModel).asBoolean();

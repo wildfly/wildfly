@@ -26,6 +26,7 @@
            </security-domain>
            
            <?messaging-domain?>
+           <?picketlink-security-domains?>
        </security-domains>
    </subsystem>
    <supplement name="standalone">
@@ -35,5 +36,22 @@
    <supplement name="domain">
       <replacement placeholder="@@realm-users-roles-users@@" attributeValue="${jboss.domain.config.dir}/application-users.properties"/>
       <replacement placeholder="@@realm-users-roles-roles@@" attributeValue="${jboss.domain.config.dir}/application-roles.properties"/>
+   </supplement>
+   <supplement name="picketlink">
+       <replacement placeholder="picketlink-security-domains">
+           <security-domain name="idp" cache-type="default">
+               <authentication>
+                   <login-module code="UsersRoles" flag="required">
+                       <module-option name="usersProperties" value="users.properties"/>
+                       <module-option name="rolesProperties" value="roles.properties"/>
+                   </login-module>
+               </authentication>
+           </security-domain>
+           <security-domain name="sp" cache-type="default">
+               <authentication>
+                   <login-module code="org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule" flag="required"/>
+               </authentication>
+           </security-domain>
+       </replacement>
    </supplement>
 </config>

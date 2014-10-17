@@ -98,16 +98,25 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String federationName = address.getLastElement().getValue();
         ModelNode partitionManager = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
-        createPartitionManagerService(context, federationName, partitionManager, verificationHandler, newControllers);
+        createPartitionManagerService(context, federationName, partitionManager, verificationHandler, newControllers, false);
     }
 
-    public void createPartitionManagerService(final OperationContext context, String federationName, final ModelNode partitionManager, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    public void validateModel(final OperationContext context, String partitionManagerName, final ModelNode partitionManager) throws OperationFailedException {
+        createPartitionManagerService(context, partitionManagerName, partitionManager, null, null, true);
+    }
+
+    public void createPartitionManagerService(final OperationContext context, String partitionManagerName, final ModelNode partitionManager, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, boolean onlyValidate) throws OperationFailedException {
         String jndiName = PartitionManagerResourceDefinition.IDENTITY_MANAGEMENT_JNDI_URL
             .resolveModelAttribute(context, partitionManager).asString();
         IdentityConfigurationBuilder builder = new IdentityConfigurationBuilder();
-        PartitionManagerService partitionManagerService = new PartitionManagerService(federationName, jndiName, builder);
-        ServiceBuilder<PartitionManager> serviceBuilder = context.getServiceTarget()
-            .addService(PartitionManagerService.createServiceName(federationName), partitionManagerService);
+        PartitionManagerService partitionManagerService = new PartitionManagerService(partitionManagerName, jndiName, builder);
+        ServiceBuilder<PartitionManager> serviceBuilder = null;
+
+        if (!onlyValidate) {
+            serviceBuilder = context.getServiceTarget()
+                .addService(PartitionManagerService.createServiceName(partitionManagerName), partitionManagerService);
+        }
+
         ModelNode identityConfigurationNode = partitionManager.get(IDENTITY_CONFIGURATION.getName());
 
         if (!identityConfigurationNode.isDefined()) {
@@ -118,27 +127,29 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             String configurationName = identityConfiguration.getName();
             NamedIdentityConfigurationBuilder namedIdentityConfigurationBuilder = builder.named(configurationName);
 
-            ModelNode value = identityConfiguration.getValue();
-
-            if (!value.isDefined()) {
+            if (!identityConfiguration.getValue().isDefined()) {
                 throw MESSAGES.idmNoIdentityStoreProvided(configurationName);
             }
 
-            for (ModelNode store : value.asList()) {
+            List<ModelNode> identityStores = identityConfiguration.getValue().asList();
+
+            for (ModelNode store : identityStores) {
                 configureIdentityStore(context, serviceBuilder, verificationHandler, newControllers, partitionManagerService, configurationName, namedIdentityConfigurationBuilder, store);
             }
         }
 
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
+        if (!onlyValidate) {
+            if (verificationHandler != null) {
+                serviceBuilder.addListener(verificationHandler);
+            }
 
-        ServiceController<PartitionManager> controller = serviceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            ServiceController<PartitionManager> controller = serviceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
     }
 
@@ -282,26 +293,29 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         fileStoreBuilder.asyncWrite(asyncWrite.asBoolean());
         fileStoreBuilder.asyncWriteThreadPool(asyncWriteThreadPool.asInt());
 
-        FileIdentityStoreService storeService = new FileIdentityStoreService(fileStoreBuilder, workingDir, relativeTo);
-        ServiceName storeServiceName = PartitionManagerService
-            .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE.getName());
-        ServiceBuilder<FileIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
-            .addService(storeServiceName, storeService);
+        if (serviceBuilder != null) {
+            FileIdentityStoreService storeService = new FileIdentityStoreService(fileStoreBuilder, workingDir, relativeTo);
+            ServiceName storeServiceName = PartitionManagerService
+                .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE
+                    .getName());
+            ServiceBuilder<FileIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
+                .addService(storeServiceName, storeService);
 
-        storeServiceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, storeService.getPathManager());
+            storeServiceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, storeService.getPathManager());
 
-        serviceBuilder.addDependency(storeServiceName);
+            serviceBuilder.addDependency(storeServiceName);
 
-        if (verificationHandler != null) {
-            storeServiceBuilder.addListener(verificationHandler);
-        }
+            if (verificationHandler != null) {
+                storeServiceBuilder.addListener(verificationHandler);
+            }
 
-        ServiceController<FileIdentityStoreService> controller = storeServiceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            ServiceController<FileIdentityStoreService> controller = storeServiceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
 
         return fileStoreBuilder;
@@ -324,50 +338,57 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
 
         storeConfig.entityModuleUnitName(jpaEntityModuleUnitName.asString());
 
-        JPAIdentityStoreService storeService = new JPAIdentityStoreService(storeConfig);
-        ServiceName storeServiceName = PartitionManagerService
-            .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.JPA_STORE.getName());
-        ServiceBuilder<JPAIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
-            .addService(storeServiceName, storeService);
+        if (serviceBuilder != null) {
+            JPAIdentityStoreService storeService = new JPAIdentityStoreService(storeConfig);
+            ServiceName storeServiceName = PartitionManagerService
+                .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.JPA_STORE
+                    .getName());
+            ServiceBuilder<JPAIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
+                .addService(storeServiceName, storeService);
 
-        storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
-            .getTransactionManager());
+            storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
+                .getTransactionManager());
 
-        storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService.getTransactionSynchronizationRegistry());
-
-        if (jpaDataSourceNode.isDefined()) {
-            storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
             storeServiceBuilder
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(toJndiName(jpaDataSourceNode.asString()).split("/")));
-        }
+                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService
+                    .getTransactionSynchronizationRegistry());
 
-        if (jpaEntityManagerFactoryNode.isDefined()) {
-            storeConfig.entityManagerFactoryJndiName(jpaEntityManagerFactoryNode.asString());
-            storeServiceBuilder
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jpaEntityManagerFactoryNode.asString().split("/")),
-                    ValueManagedReferenceFactory.class, new InjectedValue<ValueManagedReferenceFactory>());
-        }
+            if (jpaDataSourceNode.isDefined()) {
+                storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
+                storeServiceBuilder
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME
+                        .append(toJndiName(jpaDataSourceNode.asString()).split("/")));
+            }
 
-        serviceBuilder.addDependency(storeServiceName);
+            if (jpaEntityManagerFactoryNode.isDefined()) {
+                storeConfig.entityManagerFactoryJndiName(jpaEntityManagerFactoryNode.asString());
+                storeServiceBuilder
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jpaEntityManagerFactoryNode.asString().split("/")),
+                        ValueManagedReferenceFactory.class, new InjectedValue<ValueManagedReferenceFactory>());
+            }
 
-        if (verificationHandler != null) {
-            storeServiceBuilder.addListener(verificationHandler);
-        }
+            serviceBuilder.addDependency(storeServiceName);
 
-        ServiceController<JPAIdentityStoreService> controller = storeServiceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            if (verificationHandler != null) {
+                storeServiceBuilder.addListener(verificationHandler);
+            }
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            ServiceController<JPAIdentityStoreService> controller = storeServiceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
+
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
 
         return storeConfig;
     }
 
-    @SuppressWarnings("unchecked")
     private void configureSupportedTypes(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder storeConfig) throws OperationFailedException {
-        if (identityStore.hasDefined(SUPPORTED_TYPES.getName())) {
+        boolean hasSupportedType = identityStore.hasDefined(SUPPORTED_TYPES.getName());
+
+        if (hasSupportedType) {
             ModelNode featuresSetNode = identityStore.get(SUPPORTED_TYPES.getName()).asProperty().getValue();
             ModelNode supportsAllNode = SupportedTypesResourceDefinition.SUPPORTS_ALL
                 .resolveModelAttribute(context, featuresSetNode);
@@ -375,6 +396,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             if (supportsAllNode.asBoolean()) {
                 storeConfig.supportAllFeatures();
             }
+
+            hasSupportedType = supportsAllNode.asBoolean();
 
             if (featuresSetNode.hasDefined(SUPPORTED_TYPE.getName())) {
                 for (Property supportedTypeNode : featuresSetNode.get(SUPPORTED_TYPE.getName()).asPropertyList()) {
@@ -400,8 +423,14 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     } else {
                         storeConfig.supportType(attributedTypeClass);
                     }
+
+                    hasSupportedType = true;
                 }
             }
+        }
+
+        if (!hasSupportedType) {
+            throw MESSAGES.idmNoSupportedTypesDefined();
         }
     }
 

@@ -43,6 +43,8 @@ public class FederationArchiveUtil {
         war.addAsWebResource(FederationArchiveUtil.class.getPackage(), "login-error.jsp", "login-error.jsp");
         war.add(new StringAsset(indexContent != null ? indexContent : "Welcome to IdP"), "index.jsp");
         war.add(new StringAsset(hostedIndexContent != null ? hostedIndexContent : "Welcome to IdP hosted"), "hosted/index.jsp");
+        war.addAsResource(new StringAsset("tomcat=tomcat"), "users.properties");
+        war.addAsResource(new StringAsset("tomcat=gooduser"), "roles.properties");
 
         return war;
     }

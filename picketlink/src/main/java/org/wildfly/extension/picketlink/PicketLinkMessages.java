@@ -59,6 +59,18 @@ public interface PicketLinkMessages {
     @Message(id = 12503, value = "Could not load class [%s].")
     RuntimeException couldNotLoadClass(String mappingClass, @Cause Throwable e);
 
+    @Message(id = 12518, value = "[%s] can only have [%d] child of type [%s].")
+    OperationFailedException invalidChildTypeOccurrence(String parentPathElement, int maxOccurs, String elementName);
+
+    @Message(id = 15519, value = "Invalid attribute [%s] definition for [%s]. Only one of the following attributes are allowed: [%s].")
+    OperationFailedException invalidAlternativeAttributeOccurrence(String attributeName, String pathElement, String attributeNames);
+
+    @Message(id = 12520, value = "Required attribute [%s] for [%s].")
+    OperationFailedException requiredAttribute(String attributeName, String configuration);
+
+    @Message(id = 12521, value = "[%s] requires one of the given attributes [%s].")
+    OperationFailedException requiredAlternativeAttributes(String pathElement, String attributeNames);
+
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -78,6 +90,9 @@ public interface PicketLinkMessages {
     @Message(id = 12509, value = "You must provide at least one identity store for identity configuration [%s].")
     OperationFailedException idmNoIdentityStoreProvided(String identityConfiguration);
 
+    @Message(id = 12522, value = "No supported type provided.")
+    OperationFailedException idmNoSupportedTypesDefined();
+
     // Federation Messages
     @Message(id = 12510, value = "No Identity Provider configuration found for federation [%s]. ")
     IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);
@@ -87,9 +102,6 @@ public interface PicketLinkMessages {
 
     @Message(id = 12512, value = "Could not parse default STS configuration.")
     RuntimeException federationCouldNotParseSTSConfig(@Cause Throwable t);
-
-    @Message(id = 12513, value = "Required attribute [%s] for [%s].")
-    OperationFailedException federationRequiredAttribute(String attributeName, String configuration);
 
     @Message(id = 12514, value = "Failed to get metrics %s.")
     String failedToGetMetrics(String reason);
