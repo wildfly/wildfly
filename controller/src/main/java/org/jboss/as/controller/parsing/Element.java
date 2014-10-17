@@ -64,6 +64,7 @@ public enum Element {
     DEPLOYMENT_OVERLAY("deployment-overlay"),
     DEPLOYMENT_OVERLAYS("deployment-overlays"),
 
+    ENGINE("engine"),
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXCLUDE("exclude"),
     EXTENSION("extension"),
