@@ -28,7 +28,7 @@
       <subsystem>resource-adapters.xml</subsystem>
       <subsystem>request-controller.xml</subsystem>
       <subsystem>sar.xml</subsystem>
-      <subsystem>security.xml</subsystem>
+      <subsystem supplement="picketlink">security.xml</subsystem>
       <subsystem>transactions.xml</subsystem>
       <subsystem>undertow.xml</subsystem>
       <subsystem>webservices.xml</subsystem>

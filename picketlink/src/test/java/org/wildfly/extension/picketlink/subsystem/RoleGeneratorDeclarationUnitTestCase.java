@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -30,29 +29,28 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
-import org.wildfly.extension.picketlink.idm.IDMExtension;
+import org.wildfly.extension.picketlink.federation.FederationExtension;
 
 import java.io.IOException;
-import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Pedro Igor
  */
-public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
+public class RoleGeneratorDeclarationUnitTestCase extends AbstractSubsystemBaseTest {
 
-    public IDMSubsystemUnitTestCase() {
-        super(IDMExtension.SUBSYSTEM_NAME, new IDMExtension());
+    public RoleGeneratorDeclarationUnitTestCase() {
+        super(FederationExtension.SUBSYSTEM_NAME, new FederationExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("identity-management-subsystem-1.0.xml");
+        return readResource("federation-subsystem-invalid-role-generator.xml");
     }
 
     @Test
-    public void testRuntime() throws Exception {
+    public void testSubsystem() throws Exception {
         System.setProperty("jboss.server.data.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
@@ -72,16 +70,6 @@ public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
         KernelServices mainServices = builder.build();
 
-        assertTrue(mainServices.isSuccessfulBoot());
-    }
-
-    @Test
-    public void testExpressions() throws Exception {
-        standardSubsystemTest("identity-management-subsystem-expressions-1.0.xml");
-    }
-
-    @Override
-    protected void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
-        // we can not remove resources and leave subsystem in invalid state
+        assertFalse(mainServices.isSuccessfulBoot());
     }
 }

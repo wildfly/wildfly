@@ -29,10 +29,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -52,11 +52,13 @@ public class IDMConfigRemoveStepHandler extends RestartParentResourceRemoveHandl
 
     @Override
     protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.updateModel(context, operation);
+
         final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
         Resource resource = context.readResourceFromRoot(address);
         final ModelNode parentModel = Resource.Tools.readModel(resource);
 
-        super.updateModel(context, operation);
+        PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
 
         // removes the store services considering the parent model before the current child resource is removed.
         context.addStep(new OperationStepHandler() {
@@ -77,7 +79,8 @@ public class IDMConfigRemoveStepHandler extends RestartParentResourceRemoveHandl
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement().getValue(), parentModel, verificationHandler, null);
+        PartitionManagerAddHandler.INSTANCE.createPartitionManagerService(context, parentAddress.getLastElement()
+            .getValue(), parentModel, verificationHandler, null, false);
     }
 
     @Override

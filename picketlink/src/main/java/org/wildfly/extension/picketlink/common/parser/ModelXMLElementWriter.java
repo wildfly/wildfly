@@ -75,11 +75,14 @@ public class ModelXMLElementWriter {
         String nodeName = modelNode.asProperty().getName();
 
         if (nodeName.equals(this.modelElement.getName())) {
-            if (this.parentElement != null) {
+            List<ModelNode> modelNodes = modelNode.asProperty().getValue().asList();
+            boolean writeParrent = this.parentElement != null && !modelNodes.isEmpty();
+
+            if (writeParrent) {
                 writer.writeStartElement(this.parentElement.getName());
             }
 
-            for (ModelNode valueNode : modelNode.asProperty().getValue().asList()) {
+            for (ModelNode valueNode : modelNodes) {
                 writer.writeStartElement(this.modelElement.getName());
 
                 if (this.nameAttribute != null) {
@@ -105,7 +108,7 @@ public class ModelXMLElementWriter {
                 writer.writeEndElement();
             }
 
-            if (this.parentElement != null) {
+            if (writeParrent) {
                 writer.writeEndElement();
             }
         }

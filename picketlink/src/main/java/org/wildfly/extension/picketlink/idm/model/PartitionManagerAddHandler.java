@@ -61,7 +61,6 @@ import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguratio
 import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
@@ -78,6 +77,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_ST
 import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPES;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -98,47 +98,58 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String federationName = address.getLastElement().getValue();
         ModelNode partitionManager = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
-        createPartitionManagerService(context, federationName, partitionManager, verificationHandler, newControllers);
+        createPartitionManagerService(context, federationName, partitionManager, verificationHandler, newControllers, false);
     }
 
-    public void createPartitionManagerService(final OperationContext context, String federationName, final ModelNode partitionManager, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    public void validateModel(final OperationContext context, String partitionManagerName, final ModelNode partitionManager) throws OperationFailedException {
+        createPartitionManagerService(context, partitionManagerName, partitionManager, null, null, true);
+    }
+
+    public void createPartitionManagerService(final OperationContext context, String partitionManagerName, final ModelNode partitionManager, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, boolean onlyValidate) throws OperationFailedException {
         String jndiName = PartitionManagerResourceDefinition.IDENTITY_MANAGEMENT_JNDI_URL
             .resolveModelAttribute(context, partitionManager).asString();
         IdentityConfigurationBuilder builder = new IdentityConfigurationBuilder();
-        PartitionManagerService partitionManagerService = new PartitionManagerService(federationName, jndiName, builder);
-        ServiceBuilder<PartitionManager> serviceBuilder = context.getServiceTarget()
-            .addService(PartitionManagerService.createServiceName(federationName), partitionManagerService);
+        PartitionManagerService partitionManagerService = new PartitionManagerService(partitionManagerName, jndiName, builder);
+        ServiceBuilder<PartitionManager> serviceBuilder = null;
+
+        if (!onlyValidate) {
+            serviceBuilder = context.getServiceTarget()
+                .addService(PartitionManagerService.createServiceName(partitionManagerName), partitionManagerService);
+        }
+
         ModelNode identityConfigurationNode = partitionManager.get(IDENTITY_CONFIGURATION.getName());
 
         if (!identityConfigurationNode.isDefined()) {
-            throw PicketLinkLogger.ROOT_LOGGER.idmNoIdentityConfigurationProvided();
+            throw ROOT_LOGGER.idmNoIdentityConfigurationProvided();
         }
 
         for (Property identityConfiguration : identityConfigurationNode.asPropertyList()) {
             String configurationName = identityConfiguration.getName();
             NamedIdentityConfigurationBuilder namedIdentityConfigurationBuilder = builder.named(configurationName);
 
-            ModelNode value = identityConfiguration.getValue();
-
-            if (!value.isDefined()) {
-                throw PicketLinkLogger.ROOT_LOGGER.idmNoIdentityStoreProvided(configurationName);
+            if (!identityConfiguration.getValue().isDefined()) {
+                throw ROOT_LOGGER.idmNoIdentityStoreProvided(configurationName);
             }
 
-            for (ModelNode store : value.asList()) {
+            List<ModelNode> identityStores = identityConfiguration.getValue().asList();
+
+            for (ModelNode store : identityStores) {
                 configureIdentityStore(context, serviceBuilder, verificationHandler, newControllers, partitionManagerService, configurationName, namedIdentityConfigurationBuilder, store);
             }
         }
 
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
+        if (!onlyValidate) {
+            if (verificationHandler != null) {
+                serviceBuilder.addListener(verificationHandler);
+            }
 
-        ServiceController<PartitionManager> controller = serviceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            ServiceController<PartitionManager> controller = serviceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
     }
 
@@ -206,7 +217,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = AttributedTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(LDAP_STORE_MAPPING.getName());
+                    throw ROOT_LOGGER.typeNotProvided(LDAP_STORE_MAPPING.getName());
                 }
 
                 LDAPMappingConfigurationBuilder storeMapping = storeConfig
@@ -282,26 +293,29 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         fileStoreBuilder.asyncWrite(asyncWrite.asBoolean());
         fileStoreBuilder.asyncWriteThreadPool(asyncWriteThreadPool.asInt());
 
-        FileIdentityStoreService storeService = new FileIdentityStoreService(fileStoreBuilder, workingDir, relativeTo);
-        ServiceName storeServiceName = PartitionManagerService
-            .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE.getName());
-        ServiceBuilder<FileIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
-            .addService(storeServiceName, storeService);
+        if (serviceBuilder != null) {
+            FileIdentityStoreService storeService = new FileIdentityStoreService(fileStoreBuilder, workingDir, relativeTo);
+            ServiceName storeServiceName = PartitionManagerService
+                .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE
+                    .getName());
+            ServiceBuilder<FileIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
+                .addService(storeServiceName, storeService);
 
-        storeServiceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, storeService.getPathManager());
+            storeServiceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, storeService.getPathManager());
 
-        serviceBuilder.addDependency(storeServiceName);
+            serviceBuilder.addDependency(storeServiceName);
 
-        if (verificationHandler != null) {
-            storeServiceBuilder.addListener(verificationHandler);
-        }
+            if (verificationHandler != null) {
+                storeServiceBuilder.addListener(verificationHandler);
+            }
 
-        ServiceController<FileIdentityStoreService> controller = storeServiceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            ServiceController<FileIdentityStoreService> controller = storeServiceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
 
         return fileStoreBuilder;
@@ -324,50 +338,57 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
 
         storeConfig.entityModuleUnitName(jpaEntityModuleUnitName.asString());
 
-        JPAIdentityStoreService storeService = new JPAIdentityStoreService(storeConfig);
-        ServiceName storeServiceName = PartitionManagerService
-            .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.JPA_STORE.getName());
-        ServiceBuilder<JPAIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
-            .addService(storeServiceName, storeService);
+        if (serviceBuilder != null) {
+            JPAIdentityStoreService storeService = new JPAIdentityStoreService(storeConfig);
+            ServiceName storeServiceName = PartitionManagerService
+                .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.JPA_STORE
+                    .getName());
+            ServiceBuilder<JPAIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
+                .addService(storeServiceName, storeService);
 
-        storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
-            .getTransactionManager());
+            storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, storeService
+                .getTransactionManager());
 
-        storeServiceBuilder.addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService.getTransactionSynchronizationRegistry());
-
-        if (jpaDataSourceNode.isDefined()) {
-            storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
             storeServiceBuilder
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(toJndiName(jpaDataSourceNode.asString()).split("/")));
-        }
+                .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, storeService
+                    .getTransactionSynchronizationRegistry());
 
-        if (jpaEntityManagerFactoryNode.isDefined()) {
-            storeConfig.entityManagerFactoryJndiName(jpaEntityManagerFactoryNode.asString());
-            storeServiceBuilder
-                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jpaEntityManagerFactoryNode.asString().split("/")),
-                    ValueManagedReferenceFactory.class, new InjectedValue<ValueManagedReferenceFactory>());
-        }
+            if (jpaDataSourceNode.isDefined()) {
+                storeConfig.dataSourceJndiUrl(toJndiName(jpaDataSourceNode.asString()));
+                storeServiceBuilder
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME
+                        .append(toJndiName(jpaDataSourceNode.asString()).split("/")));
+            }
 
-        serviceBuilder.addDependency(storeServiceName);
+            if (jpaEntityManagerFactoryNode.isDefined()) {
+                storeConfig.entityManagerFactoryJndiName(jpaEntityManagerFactoryNode.asString());
+                storeServiceBuilder
+                    .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(jpaEntityManagerFactoryNode.asString().split("/")),
+                        ValueManagedReferenceFactory.class, new InjectedValue<ValueManagedReferenceFactory>());
+            }
 
-        if (verificationHandler != null) {
-            storeServiceBuilder.addListener(verificationHandler);
-        }
+            serviceBuilder.addDependency(storeServiceName);
 
-        ServiceController<JPAIdentityStoreService> controller = storeServiceBuilder
-            .setInitialMode(Mode.PASSIVE)
-            .install();
+            if (verificationHandler != null) {
+                storeServiceBuilder.addListener(verificationHandler);
+            }
 
-        if (newControllers != null) {
-            newControllers.add(controller);
+            ServiceController<JPAIdentityStoreService> controller = storeServiceBuilder
+                .setInitialMode(Mode.PASSIVE)
+                .install();
+
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         }
 
         return storeConfig;
     }
 
-    @SuppressWarnings("unchecked")
-    private void configureSupportedTypes(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder<?, ?> storeConfig) throws OperationFailedException {
-        if (identityStore.hasDefined(SUPPORTED_TYPES.getName())) {
+    private void configureSupportedTypes(OperationContext context, ModelNode identityStore, IdentityStoreConfigurationBuilder storeConfig) throws OperationFailedException {
+        boolean hasSupportedType = identityStore.hasDefined(SUPPORTED_TYPES.getName());
+
+        if (hasSupportedType) {
             ModelNode featuresSetNode = identityStore.get(SUPPORTED_TYPES.getName()).asProperty().getValue();
             ModelNode supportsAllNode = SupportedTypesResourceDefinition.SUPPORTS_ALL
                 .resolveModelAttribute(context, featuresSetNode);
@@ -375,6 +396,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             if (supportsAllNode.asBoolean()) {
                 storeConfig.supportAllFeatures();
             }
+
+            hasSupportedType = supportsAllNode.asBoolean();
 
             if (featuresSetNode.hasDefined(SUPPORTED_TYPE.getName())) {
                 for (Property supportedTypeNode : featuresSetNode.get(SUPPORTED_TYPE.getName()).asPropertyList()) {
@@ -389,7 +412,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     } else if (codeNode.isDefined()) {
                         typeName = AttributedTypeEnum.forType(codeNode.asString());
                     } else {
-                        throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(SUPPORTED_TYPE.getName());
+                        throw ROOT_LOGGER.typeNotProvided(SUPPORTED_TYPE.getName());
                     }
 
                     ModelNode moduleNode = SupportedTypeResourceDefinition.MODULE.resolveModelAttribute(context, supportedType);
@@ -400,8 +423,14 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     } else {
                         storeConfig.supportType(attributedTypeClass);
                     }
+
+                    hasSupportedType = true;
                 }
             }
+        }
+
+        if (!hasSupportedType) {
+            throw ROOT_LOGGER.idmNoSupportedTypesDefined();
         }
     }
 
@@ -422,7 +451,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = CredentialTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
+                    throw ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
                 storeConfig.addCredentialHandler(this.<CredentialHandler>loadClass(moduleNode, typeName));
@@ -448,7 +477,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             try {
                 module = moduleLoader.loadModule(ModuleIdentifier.create(moduleNode.asString()));
             } catch (ModuleLoadException e) {
-                throw PicketLinkLogger.ROOT_LOGGER.moduleCouldNotLoad(moduleNode.asString(), e);
+                throw ROOT_LOGGER.moduleCouldNotLoad(moduleNode.asString(), e);
             }
         } else {
             // fallback to caller module.
@@ -469,7 +498,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 return (Class<T>) getClass().getClassLoader().loadClass(typeName);
             }
         } catch (ClassNotFoundException cnfe) {
-            throw PicketLinkLogger.ROOT_LOGGER.couldNotLoadClass(typeName, cnfe);
+            throw ROOT_LOGGER.couldNotLoadClass(typeName, cnfe);
         }
     }
 }

@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.picketlink.common.model;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
@@ -52,18 +53,31 @@ public abstract class AbstractResourceDefinition extends SimpleResourceDefinitio
 
     private final ModelElement modelElement;
     private final List<SimpleAttributeDefinition> attributes = new ArrayList<SimpleAttributeDefinition>();
+    private final List<AttributeDefinition> alternativeAttributes = new ArrayList<AttributeDefinition>();
 
     protected AbstractResourceDefinition(ModelElement modelElement, final OperationStepHandler addHandler,
                                             final OperationStepHandler removeHandler, ResourceDescriptionResolver resourceDescriptor, SimpleAttributeDefinition... attributes) {
         super(PathElement.pathElement(modelElement.getName()), resourceDescriptor, addHandler, removeHandler);
         this.modelElement = modelElement;
-        Collections.addAll(this.attributes, attributes);
+        initializeAttributes(attributes);
     }
 
     protected AbstractResourceDefinition(ModelElement modelElement, String name, final OperationStepHandler addHandler, final OperationStepHandler removeHandler,ResourceDescriptionResolver resourceDescriptor, SimpleAttributeDefinition... attributes) {
         super(PathElement.pathElement(modelElement.getName(), name), resourceDescriptor, addHandler, removeHandler);
         this.modelElement = modelElement;
+        initializeAttributes(attributes);
+    }
+
+    private void initializeAttributes(SimpleAttributeDefinition[] attributes) {
         Collections.addAll(this.attributes, attributes);
+
+        for (SimpleAttributeDefinition attribute : getAttributes()) {
+            boolean hasAlternatives = attribute.getAlternatives() != null && attribute.getAlternatives().length > 0;
+
+            if (hasAlternatives) {
+                alternativeAttributes.add(attribute);
+            }
+        }
     }
 
     public static List<SimpleAttributeDefinition> getAttributeDefinition(ModelElement modelElement) {
@@ -124,6 +138,10 @@ public abstract class AbstractResourceDefinition extends SimpleResourceDefinitio
     }
 
     protected abstract OperationStepHandler createAttributeWriterHandler();
+
+    protected List<AttributeDefinition> getAlternativesAttributes() {
+        return this.alternativeAttributes;
+    }
 
     public List<SimpleAttributeDefinition> getAttributes() {
         return Collections.unmodifiableList(this.attributes);

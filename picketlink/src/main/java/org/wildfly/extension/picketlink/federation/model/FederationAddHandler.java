@@ -55,18 +55,22 @@ public class FederationAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                          ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-        launchServices(operation, context, verificationHandler, newControllers);
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+        launchServices(operation, pathAddress, context, verificationHandler, newControllers);
     }
 
-    void launchServices(ModelNode operation, OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+    void launchServices(ModelNode operation, PathAddress pathAddress, OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         String alias = pathAddress.getLastElement().getValue();
         FederationService service = new FederationService(alias);
         ServiceBuilder<FederationService> serviceBuilder = context.getServiceTarget().addService(FederationService.createServiceName(alias), service);
 
         serviceBuilder.addDependency(UndertowService.UNDERTOW);
 
-        ServiceController<FederationService> controller = serviceBuilder.addListener(verificationHandler).setInitialMode(Mode.ACTIVE).install();
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+
+        ServiceController<FederationService> controller = serviceBuilder.setInitialMode(Mode.ACTIVE).install();
 
         if (newControllers != null) {
             newControllers.add(controller);

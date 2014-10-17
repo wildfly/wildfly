@@ -23,10 +23,14 @@
 package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.AbstractResourceDefinition;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 import java.util.List;
@@ -52,6 +56,19 @@ public abstract class AbstractIDMResourceDefinition extends AbstractResourceDefi
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
         List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new IDMConfigWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()]));
+        final List<AttributeDefinition> alternativeAttributes = getAlternativesAttributes();
+
+        return new IDMConfigWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                if (!alternativeAttributes.isEmpty()) {
+                    context.addStep(new AlternativeAttributeValidationStepHandler(alternativeAttributes
+                            .toArray(new AttributeDefinition[alternativeAttributes.size()])),
+                        OperationContext.Stage.MODEL);
+                }
+
+                super.execute(context, operation);
+            }
+        };
     }
 }

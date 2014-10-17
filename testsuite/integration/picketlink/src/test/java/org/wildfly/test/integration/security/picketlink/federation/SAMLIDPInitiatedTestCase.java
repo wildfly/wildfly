@@ -28,27 +28,25 @@ import com.meterware.httpunit.WebForm;
 import com.meterware.httpunit.WebLink;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProvider;
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProvider;
 
@@ -57,7 +55,8 @@ import static org.wildfly.test.integration.security.picketlink.federation.util.F
  * @author Peter Skopek - porting to WF integration testsuite
  */
 @RunWith (Arquillian.class)
-@ServerSetup({AbstractBasicFederationTestCase.BasicSecurityDomainServerSetupTask.class})
+// the standalone-picketlink.xml, the example configuration used by this test, contains all required security domains already
+//@ServerSetup({ AbstractBasicFederationTestCase.BasicSecurityDomainServerSetupTask.class })
 @RunAsClient
 public class SAMLIDPInitiatedTestCase {
 
