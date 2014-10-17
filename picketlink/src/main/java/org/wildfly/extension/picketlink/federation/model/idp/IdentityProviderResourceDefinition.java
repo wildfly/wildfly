@@ -22,7 +22,12 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
@@ -32,6 +37,8 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -102,5 +109,17 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
                 resourceRegistration.registerMetric(def, IdentityProviderMetricsOperationHandler.INSTANCE);
             }
         }
+    }
+
+    @Override
+    protected OperationStepHandler createAttributeWriterHandler() {
+        List<SimpleAttributeDefinition> attributes = getAttributes();
+        return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.addStep(new IdentityProviderValidationStepHandler(), OperationContext.Stage.MODEL);
+                super.execute(context, operation);
+            }
+        };
     }
 }

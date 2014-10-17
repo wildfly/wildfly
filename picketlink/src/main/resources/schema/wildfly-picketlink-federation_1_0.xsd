@@ -36,8 +36,8 @@
         <xsd:sequence>
             <xsd:element name="saml" type="samlType" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="key-store" type="keyStoreType" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="identity-provider" type="identityProviderType" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="service-providers" type="serviceProvidersType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="identity-provider" type="identityProviderType" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="service-providers" type="serviceProvidersType" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required">
             <xsd:annotation>

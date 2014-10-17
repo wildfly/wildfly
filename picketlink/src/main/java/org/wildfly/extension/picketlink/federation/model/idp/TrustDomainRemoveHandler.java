@@ -25,7 +25,6 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.federation.service.TrustDomainService;
 
@@ -44,7 +43,7 @@ public class TrustDomainRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
-        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
         String identityProviderAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
         String domainName = pathAddress.getLastElement().getValue();
 

@@ -45,10 +45,13 @@ import org.wildfly.extension.picketlink.federation.model.sp.ServiceProviderResou
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER;
@@ -304,29 +307,36 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
 
     protected void parseElement(final ElementParser parser, ModelElement parentElement, final ModelNode parentNode,
         final XMLExtendedStreamReader reader, final List<ModelNode> addOperations) throws XMLStreamException {
+        Set<String> visited = new HashSet<>();
+
         while (reader.hasNext() && reader.nextTag() != END_DOCUMENT) {
+            String tagName = reader.getLocalName();
+
             if (!reader.isStartElement()) {
-                if (reader.isEndElement() && reader.getLocalName().equals(parentElement.getName())) {
+                if (reader.isEndElement() && tagName.equals(parentElement.getName())) {
                     break;
                 }
+
                 continue;
             }
 
-            if (reader.getLocalName().equals(parentElement.getName())) {
-                continue;
-            }
+            if (!tagName.equals(parentElement.getName())) {
+                ModelElement element = ModelElement.forName(tagName);
 
-            ModelElement element = ModelElement.forName(reader.getLocalName());
-
-            if (element == null) {
-                if (XMLElement.forName(reader.getLocalName()) != null) {
-                    continue;
+                if (element != null) {
+                    parser.parse(reader, element, parentNode, addOperations);
+                } else {
+                    if (XMLElement.forName(tagName) != null) {
+                        if (visited.contains(tagName)) {
+                            throw duplicateNamedElement(reader, tagName);
+                        }
+                    } else {
+                        throw unexpectedElement(reader);
+                    }
                 }
-
-                throw unexpectedElement(reader);
             }
 
-            parser.parse(reader, element, parentNode, addOperations);
+            visited.add(tagName);
         }
     }
 

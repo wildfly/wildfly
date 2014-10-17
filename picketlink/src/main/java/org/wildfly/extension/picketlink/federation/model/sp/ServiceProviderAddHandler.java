@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -58,6 +59,11 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.execute(context, operation);
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                      final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchService(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
@@ -72,13 +78,15 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias),
             FederationService.class,service.getFederationService());
 
+        SPConfiguration configuration = service.getConfiguration();
+
+        serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
+
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
         }
 
-        ServiceController<ServiceProviderService> controller = serviceBuilder
-                                                                   .setInitialMode(ServiceController.Mode.PASSIVE)
-                                                                   .install();
+        ServiceController<ServiceProviderService> controller = serviceBuilder.install();
 
         if (newControllers != null) {
             newControllers.add(controller);

@@ -88,6 +88,18 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 12, value = "Attribute [%s] is not longer supported.")
     OperationFailedException attributeNoLongerSupported(String attributeName);
 
+    @Message(id = 13, value = "[%s] can only have [%d] child of type [%s].")
+    OperationFailedException invalidChildTypeOccurrence(String parentPathElement, int maxOccurs, String elementName);
+
+    @Message(id = 14, value = "Invalid attribute [%s] definition for [%s]. Only one of the following attributes are allowed: [%s].")
+    OperationFailedException invalidAlternativeAttributeOccurrence(String attributeName, String pathElement, String attributeNames);
+
+    @Message(id = 15, value = "Required attribute [%s] for [%s].")
+    OperationFailedException requiredAttribute(String attributeName, String configuration);
+
+    @Message(id = 16, value = "[%s] requires one of the given attributes [%s].")
+    OperationFailedException requiredAlternativeAttributes(String pathElement, String attributeNames);
+
     // IDM Messages 50-99
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -107,6 +119,9 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 55, value = "You must provide at least one identity store for identity configuration [%s].")
     OperationFailedException idmNoIdentityStoreProvided(String identityConfiguration);
 
+    @Message(id = 56, value = "No supported type provided.")
+    OperationFailedException idmNoSupportedTypesDefined();
+
     // Federation Messages - 100-150
     @Message(id = 100, value = "No Identity Provider configuration found for federation [%s]. ")
     IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);
@@ -116,9 +131,6 @@ public interface PicketLinkLogger extends BasicLogger {
 
     @Message(id = 102, value = "Could not parse default STS configuration.")
     RuntimeException federationCouldNotParseSTSConfig(@Cause Throwable t);
-
-    @Message(id = 103, value = "Required attribute [%s] for [%s].")
-    OperationFailedException federationRequiredAttribute(String attributeName, String configuration);
 
     @Message(id = 104, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);

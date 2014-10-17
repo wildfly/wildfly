@@ -38,6 +38,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.picketlink.config.federation.KeyValueType;
 import org.picketlink.config.federation.handler.Handler;
+import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
@@ -126,6 +127,14 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
             // a reload is required to get the chain properly updated with the domain model state.
             context.reloadRequired();
         }
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeValidationStepHandler(new SimpleAttributeDefinition[] {
+            HandlerResourceDefinition.CLASS_NAME, HandlerResourceDefinition.CODE
+        }), OperationContext.Stage.MODEL);
+        super.execute(context, operation);
     }
 
     @Override

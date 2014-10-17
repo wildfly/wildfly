@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -39,13 +39,13 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -66,9 +66,15 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new IdentityProviderValidationStepHandler(), OperationContext.Stage.MODEL);
+        super.execute(context, operation);
+    }
+
+    @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-        ModelNode identityProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
+        ModelNode identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
         launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress);
     }
 
@@ -81,13 +87,17 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
                                             service.getFederationService());
 
+        IDPConfiguration configuration = service.getConfiguration();
+
+        if (!configuration.isExternal()) {
+            serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(configuration.getSecurityDomain()));
+        }
+
         if (verificationHandler != null) {
             serviceBuilder.addListener(verificationHandler);
         }
 
-        ServiceController<IdentityProviderService> controller = serviceBuilder
-                                                                    .setInitialMode(ServiceController.Mode.PASSIVE)
-                                                                    .install();
+        ServiceController<IdentityProviderService> controller = serviceBuilder.install();
 
         if (newControllers != null) {
             newControllers.add(controller);
@@ -111,7 +121,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
             if (securityDomain.isDefined()) {
                 idpType.setSecurityDomain(securityDomain.asString());
             } else {
-                throw PicketLinkLogger.ROOT_LOGGER.federationRequiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
+                throw ROOT_LOGGER.requiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
             }
 
             boolean supportsSignatures = IdentityProviderResourceDefinition.SUPPORT_SIGNATURES.resolveModelAttribute(context, fromModel).asBoolean();
@@ -148,7 +158,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     roleGeneratorType = RoleGeneratorTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ROLE_GENERATOR.getName());
+                    throw ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ROLE_GENERATOR.getName());
                 }
             } else {
                 roleGeneratorType = UndertowRoleGenerator.class.getName();
@@ -169,7 +179,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     attributeManagerType = AttributeManagerTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER.getName());
+                    throw ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER.getName());
                 }
             } else {
                 attributeManagerType = UndertowAttributeManager.class.getName();
