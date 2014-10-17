@@ -2778,6 +2778,10 @@ public interface ControllerMessages {
     @Message(id = 13492, value = "The attribute %s value has been changed from %s to %s.")
     String attributeValueWritten(String attributeName, ModelNode currentValue, ModelNode newVal);
 
+    // #379 in WildFly 9+
+    @Message(id = 13493, value = "System boot is in process; execution of remote management operations is not currently available")
+    String managementUnavailableDuringBoot();
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 
 }

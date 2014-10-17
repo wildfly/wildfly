@@ -32,6 +32,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -76,8 +78,8 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.NotificationHandlerRegistration;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -243,17 +245,26 @@ class ModelControllerImpl implements ModelController {
         AccessMechanism accessMechanism = null;
         AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
         if (accessContext != null) {
+            // External caller of some sort.
             if (operation.hasDefined(OPERATION_HEADERS)) {
                 ModelNode operationHeaders = operation.get(OPERATION_HEADERS);
+                // Internal domain ManagementRequestHandler impls will set a header to track an op through the domain
                 if (operationHeaders.hasDefined(DOMAIN_UUID)) {
                     accessContext.setDomainUuid(operationHeaders.get(DOMAIN_UUID).asString());
                 }
+                // Native and http ManagementRequestHandler impls, plus those used for intra-domain comms
+                // will always set a header to specify the access mechanism. JMX directly sets it on the accessContext
                 if (operationHeaders.hasDefined(ACCESS_MECHANISM)) {
                     accessContext
                             .setAccessMechanism(AccessMechanism.valueOf(operationHeaders.get(ACCESS_MECHANISM).asString()));
                 }
             }
             accessMechanism = accessContext.getAccessMechanism();
+        } // else its an internal caller as external callers always get an AccessAuditContext
+
+        // WFCORE-184. Exclude external callers during boot. AccessMechanism is always set for external callers
+        if (accessMechanism != null && bootingFlag.get()) {
+            return handleExternalRequestDuringBoot();
         }
 
         for (;;) {
@@ -290,6 +301,15 @@ class ModelControllerImpl implements ModelController {
             }
         }
         return response;
+    }
+
+    private static ModelNode handleExternalRequestDuringBoot() {
+        ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(FAILED);
+        result.get(FAILURE_DESCRIPTION).set(ControllerMessages.MESSAGES.managementUnavailableDuringBoot());
+        // TODO WFCORE-185 once we have http codes for failure messages, include those, e.g.
+        // result.get("http-code").set(nsre.getHttpCode());
+        return result;
     }
 
     boolean boot(final List<ModelNode> bootList, final OperationMessageHandler handler, final OperationTransactionControl control,
