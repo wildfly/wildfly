@@ -55,8 +55,10 @@ import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -600,6 +602,26 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         String protocol = SSLServerIdentityResourceDefinition.PROTOCOL.resolveModelAttribute(context, ssl).asString();
 
+        // Enabled Cipher Suites
+        final Set<String> enabledCipherSuites = new HashSet<String>();
+        ModelNode suitesNode = SSLServerIdentityResourceDefinition.ENABLED_CIPHER_SUITES.resolveModelAttribute(context, ssl);
+        if (suitesNode.isDefined()) {
+            List<ModelNode> list = suitesNode.asList();
+            for (ModelNode current : list) {
+                enabledCipherSuites.add(current.asString());
+            }
+        }
+
+        // Enabled Protocols
+        final Set<String> enabledProtocols = new HashSet<String>();
+        ModelNode protocolsNode = SSLServerIdentityResourceDefinition.ENABLED_PROTOCOLS.resolveModelAttribute(context, ssl);
+        if (protocolsNode.isDefined()) {
+            List<ModelNode> list = protocolsNode.asList();
+            for (ModelNode current : list) {
+                enabledProtocols.add(current.asString());
+            }
+        }
+
         /*
          * At this point we register two SSLContextService instances, one linked to both the key and trust store and the other just for trust.
          *
@@ -610,7 +632,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         if (keyManagerServiceName != null) {
             // An alias will not be set on the trust based SSLContext.
-            SSLContextService fullSSLContextService = new SSLContextService(protocol);
+            SSLContextService fullSSLContextService = new SSLContextService(protocol, enabledCipherSuites, enabledProtocols);
             ServiceBuilder<SSLContext> fullBuilder = serviceTarget.addService(fullServiceName, fullSSLContextService);
             AbstractKeyManagerService.ServiceUtil.addDependency(fullBuilder, fullSSLContextService.getKeyManagerInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName));
             if (trustManagerServiceName != null) {
@@ -622,7 +644,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         // Always register this one - if no KeyStore is defined we can add an alias to this.
-        SSLContextService trustOnlySSLContextService = new SSLContextService(protocol);
+        SSLContextService trustOnlySSLContextService = new SSLContextService(protocol, enabledCipherSuites, enabledProtocols);
         ServiceBuilder<SSLContext> trustBuilder = serviceTarget.addService(trustOnlyServiceName, trustOnlySSLContextService);
         if (keyManagerServiceName == null) {
             // No KeyStore so just alias to this.

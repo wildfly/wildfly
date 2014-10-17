@@ -949,6 +949,28 @@ public interface DomainManagementMessages {
     @Message(id = 21009, value = "Kerberos is enabled for authentication on security realm '%s' but no Keytab has been added to the server-identity.")
     OperationFailedException kerberosWithoutKeytab(String realm);
 
+    // 21005 - 21009 are in use within EAP 6
+
+    /**
+     * Create an {@link StartException} where the requested cipher suites do not match any of the supported cipher suites.
+     *
+     * @param supported the supported cipher suites
+     * @param requested the requested cipher suites
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21010, value = "No cipher suites in common, supported=(%s), requested=(%s)")
+    StartException noCipherSuitesInCommon(String supported, String requested);
+
+    /**
+     * Create an {@link StartException} where the requested protocols do not match any of the supported protocols.
+     *
+     * @param supported the supported protocols
+     * @param requested the requested protocols
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21011, value = "No protocols in common, supported=(%s), requested=(%s)")
+    StartException noProtocolsInCommon(String supported, String requested);
+
     /*
      * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
      *
