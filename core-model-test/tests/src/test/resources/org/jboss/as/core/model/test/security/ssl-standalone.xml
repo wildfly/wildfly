@@ -40,7 +40,17 @@
                     <local default-user="$local" skip-group-loading="true"/>                    
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>                            
-            </security-realm>            
+            </security-realm>
+            
+            <!-- Protocol and Cipher Suite Selection -->
+            <security-realm name="ProtocolSuite">
+                <server-identities>
+                    <ssl protocol="TLSv1.1">
+                        <engine enabled-cipher-suites="TLS_PSK_WITH_NULL_SHA256 TLS_PSK_WITH_NULL_SHA384 TLS_PSK_WITH_RC4_128_SHA" enabled-protocols="TLSv1 TLSv1.1" />
+                        <keystore path="server.keystore" relative-to="jboss.server.config.dir" keystore-password="keystore_password" />
+                   </ssl>
+                </server-identities>
+            </security-realm>
         
             <!-- Set of realms using security provider based stores. -->
         
