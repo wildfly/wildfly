@@ -28,6 +28,11 @@
                                         cacheMode="${cacheMode}"
                 />
         <ts.config-as.configure-multicast-ttl name="wildfly-${cacheMode}-${stack}-0" mcast.ttl="${mcast.ttl}"/>
+        <ts.config-as.add-interface name="wildfly-${cacheMode}-${stack}-0"
+                                    interface="multicast"
+                                    inet-address="${node0}"/>
+        <ts.config-as.change-jgroups-multicast-interface name="wildfly-${cacheMode}-${stack}-0"
+                                                         interface="multicast"/>
 
         <echo message="  =========  Building config clustering-${cacheMode}-${stack}-1  =========  "/>
         <copy todir="target/wildfly-${cacheMode}-${stack}-1" overwrite="true">
@@ -45,6 +50,11 @@
                                         cacheMode="${cacheMode}"
                 />
         <ts.config-as.configure-multicast-ttl name="wildfly-${cacheMode}-${stack}-1" mcast.ttl="${mcast.ttl}"/>
+        <ts.config-as.add-interface name="wildfly-${cacheMode}-${stack}-1"
+                                    interface="multicast"
+                                    inet-address="${node0}"/>
+        <ts.config-as.change-jgroups-multicast-interface name="wildfly-${cacheMode}-${stack}-1"
+                                                         interface="multicast"/>
 
     </target>
 
