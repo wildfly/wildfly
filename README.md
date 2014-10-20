@@ -82,7 +82,7 @@ Using Eclipse
 4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
    set forbidden reference to WARNING
 5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
-   formatter configs in ide-configs/eclipse
+   formatter configs in [ide-configs/eclipse](https://github.com/wildfly/wildfly-core/tree/master/ide-configs) in the wildfly-core repository.
 6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
    and deselect all actions except for "Remove trailing whitespace"
 7. Use import on the root pom, which will pull in all modules
