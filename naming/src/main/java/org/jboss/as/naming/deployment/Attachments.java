@@ -22,7 +22,9 @@
 package org.jboss.as.naming.deployment;
 
 import org.jboss.as.naming.context.external.ExternalContexts;
+import org.jboss.as.naming.service.SharedBinderService;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * The Naming subsystem's DU attachment keys.
@@ -34,4 +36,9 @@ public final class Attachments {
      * The DU key where the subsystem's {@link ExternalContexts} instance may be found by DUPs.
      */
     public static final AttachmentKey<ExternalContexts> EXTERNAL_CONTEXTS = AttachmentKey.create(ExternalContexts.class);
+
+    /**
+     * the DU key that holds the binder service names acquired by the deployment
+     */
+    public static final AttachmentKey<AttachmentList<SharedBinderService.ReleaseHandler>> SHARED_BINDER_SERVICES_ACQUIRED = AttachmentKey.createList(SharedBinderService.ReleaseHandler.class);
 }

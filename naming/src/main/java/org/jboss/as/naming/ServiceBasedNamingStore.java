@@ -367,4 +367,9 @@ public class ServiceBasedNamingStore implements NamingStore {
         }
         return new CompositeName();
     }
+
+    @Override
+    public String toString() {
+        return getServiceNameBase().toString();
+    }
 }

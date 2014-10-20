@@ -22,7 +22,7 @@
 package org.jboss.as.naming.deployment;
 
 import org.jboss.as.naming.logging.NamingLogger;
-import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.SharedBinderService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,14 +33,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link Service} which on stop releases runtime installed {@link org.jboss.as.naming.service.BinderService}s.
+ * A {@link Service} which on stop releases acquired {@link org.jboss.as.naming.service.SharedBinderService}s.
  *
  * @author Eduardo Martins
  *
  */
 public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseService.References> {
 
-    private final References references = new References();
+    private final References references;
+
+    public RuntimeBindReleaseService(List<SharedBinderService.ReleaseHandler> servicesAcquiredOnDeploy) {
+        this.references = new References(servicesAcquiredOnDeploy);
+    }
+
+    public RuntimeBindReleaseService() {
+        this(null);
+    }
 
     @Override
     public References getValue() throws IllegalStateException, IllegalArgumentException {
@@ -59,47 +67,45 @@ public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseServ
 
     public static class References {
 
-        // List instead of Set because binder services use a counter to track its references, which means that for instance, N rebinds will increase the binder service ref counter N times, thus the related BinderServices should have N entries too
-        private volatile List<BinderService> services;
+        // List instead of Set because binder services use a counter to track its references, and a deployment may have multiple components acquiring same shared bind
+        private List<SharedBinderService.ReleaseHandler> services;
 
-        private References() {
-
-        }
-
-        public void add(BinderService service) {
-            synchronized (this) {
-                if (services == null) {
-                    services = new ArrayList<BinderService>();
+        private References(List<SharedBinderService.ReleaseHandler> servicesAcquiredOnDeploy) {
+            if (servicesAcquiredOnDeploy != null) {
+                for (SharedBinderService.ReleaseHandler service : servicesAcquiredOnDeploy) {
+                    add(service);
                 }
-                services.add(service);
             }
         }
 
-        public boolean contains(ServiceName serviceName) {
-            synchronized (this) {
-                if (services != null) {
-                    for (BinderService service : services) {
-                        if (serviceName.equals(service.getServiceName())) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
+        public synchronized void add(SharedBinderService.ReleaseHandler service) {
+            if (services == null) {
+                services = new ArrayList<>();
             }
+            services.add(service);
         }
 
-        public void releaseAll() {
-            synchronized (this) {
-                if (services != null) {
-                    for (BinderService service : services) {
-                        try {
-                            service.release();
-                        } catch (Throwable e) {
-                            NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
-                        }
+        public synchronized boolean contains(ServiceName serviceName) {
+            if (services != null) {
+                for (SharedBinderService.ReleaseHandler service : services) {
+                    if (serviceName.equals(service.getServiceName())) {
+                        return true;
                     }
-                    services = null;
                 }
+            }
+            return false;
+        }
+
+        public synchronized void releaseAll() {
+            if (services != null) {
+                for (SharedBinderService.ReleaseHandler service : services) {
+                    try {
+                        service.release();
+                    } catch (Throwable e) {
+                        NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
+                    }
+                }
+                services = null;
             }
         }
 
