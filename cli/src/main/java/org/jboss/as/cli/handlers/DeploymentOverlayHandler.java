@@ -1032,7 +1032,7 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                 steps.add(op);
 
             if (redeployAffected.isPresent(ctx.getParsedCommandLine())) {
-                final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
+                final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup, true);
                 if (!matchingDeployments.isEmpty()) {
                     if (serverGroup == null) {
                         for (String deployment : matchingDeployments) {

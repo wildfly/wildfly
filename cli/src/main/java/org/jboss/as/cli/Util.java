@@ -153,6 +153,7 @@ public class Util {
     public static final String STEP_3 = "step-3";
     public static final String STEPS = "steps";
     public static final String STORAGE = "storage";
+    public static final String SUBDEPLOYMENT = "subdeployment";
     public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
@@ -514,9 +515,14 @@ public class Util {
     }
 
     public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr, String serverGroup) {
+        return getMatchingDeployments(client, wildcardExpr, serverGroup, false);
+    }
 
-        final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-        final ModelNode request;
+    public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr, String serverGroup,
+            boolean matchSubdeployments) {
+
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        ModelNode request;
         try {
             if(serverGroup != null) {
                 builder.addNode(Util.SERVER_GROUP, serverGroup);
@@ -529,9 +535,53 @@ public class Util {
         }
 
         try {
-            final ModelNode outcome = client.execute(request);
+            ModelNode outcome = client.execute(request);
             if (isSuccess(outcome)) {
-                return getList(outcome, wildcardExpr);
+                if(!outcome.hasDefined(RESULT)) {
+                    return Collections.emptyList();
+                }
+                final List<ModelNode> nodeList = outcome.get(RESULT).asList();
+                if(nodeList.isEmpty()) {
+                    return Collections.emptyList();
+                }
+                final List<String> list = new ArrayList<String>(nodeList.size());
+                final Pattern pattern = Pattern.compile(wildcardToJavaRegex(wildcardExpr));
+                for(ModelNode node : nodeList) {
+                    final String candidate = node.asString();
+                    if(pattern.matcher(candidate).matches()) {
+                        list.add(candidate);
+                    } else if(matchSubdeployments) {
+                        // look into subdeployments
+                        builder = new DefaultOperationRequestBuilder();
+                        try {
+                            if(serverGroup != null) {
+                                builder.addNode(Util.SERVER_GROUP, serverGroup);
+                            }
+                            builder.addNode(Util.DEPLOYMENT, candidate);
+                            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+                            builder.addProperty(Util.CHILD_TYPE, Util.SUBDEPLOYMENT);
+                            request = builder.buildRequest();
+                        } catch (OperationFormatException e) {
+                            throw new IllegalStateException("Failed to build operation", e);
+                        }
+
+                        outcome = client.execute(request);
+                        if (isSuccess(outcome) && outcome.hasDefined(RESULT)) {
+                            final List<ModelNode> subdList = outcome.get(RESULT).asList();
+                            if(!subdList.isEmpty()) {
+                                for(ModelNode subd : subdList) {
+                                    final String subdName = subd.asString();
+                                    if(pattern.matcher(subdName).matches()) {
+                                        list.add(candidate);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return list;
             }
         } catch (Exception e) {
         }
