@@ -33,6 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED_CIPHER_SUITES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED_PROTOCOLS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
@@ -973,7 +975,20 @@ public class ManagementXml {
                     break;
                 }
                 case SSL: {
-                    parseSSL(reader, expectedNs, realmAddress, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                        case DOMAIN_2_0:
+                        case DOMAIN_2_1:
+                            parseSSL_1_0(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseSSL_2_2(reader, expectedNs, realmAddress, list);
+                    }
                     break;
                 }
                 default: {
@@ -995,7 +1010,7 @@ public class ManagementXml {
         list.add(secret);
     }
 
-    private static void parseSSL(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+    private static void parseSSL_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         ModelNode ssl = new ModelNode();
         ssl.get(OP).set(ADD);
@@ -1050,6 +1065,82 @@ public class ManagementXml {
             }
         }
 
+    }
+
+    private static void parseSSL_2_2(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        ModelNode ssl = new ModelNode();
+        ssl.get(OP).set(ADD);
+        ssl.get(OP_ADDR).set(realmAddress).add(SERVER_IDENTITY, SSL);
+        list.add(ssl);
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PROTOCOL: {
+                        SSLServerIdentityResourceDefinition.PROTOCOL.parseAndSetParameter(value, ssl, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ENGINE: {
+                    parseEngine(reader, ssl);
+                    break;
+                }
+                case KEYSTORE: {
+                    parseKeystore_2_1(reader, ssl, true);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseEngine(final XMLExtendedStreamReader reader, final ModelNode addOperation)
+            throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ENABLED_CIPHER_SUITES:
+                        for (String value : reader.getListAttributeValue(i)) {
+                            SSLServerIdentityResourceDefinition.ENABLED_CIPHER_SUITES.parseAndAddParameterElement(value, addOperation, reader);
+                        }
+                        break;
+                    case ENABLED_PROTOCOLS: {
+                        for (String value : reader.getListAttributeValue(i)) {
+                            SSLServerIdentityResourceDefinition.ENABLED_PROTOCOLS.parseAndAddParameterElement(value, addOperation, reader);
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        requireNoContent(reader);
     }
 
     private static void parseKeystore_1_0(final XMLExtendedStreamReader reader, final ModelNode addOperation)
@@ -3579,6 +3670,12 @@ public class ManagementXml {
             writer.writeStartElement(Element.SSL.getLocalName());
             ModelNode ssl = serverIdentities.get(SSL);
             SSLServerIdentityResourceDefinition.PROTOCOL.marshallAsAttribute(ssl, writer);
+            if (ssl.hasDefined(ENABLED_CIPHER_SUITES) || ssl.hasDefined(ENABLED_PROTOCOLS)) {
+                writer.writeEmptyElement(Element.ENGINE.getLocalName());
+                SSLServerIdentityResourceDefinition.ENABLED_CIPHER_SUITES.marshallAsElement(ssl, writer);
+                SSLServerIdentityResourceDefinition.ENABLED_PROTOCOLS.marshallAsElement(ssl, writer);
+            }
+
             boolean hasProvider = ssl.hasDefined(KEYSTORE_PROVIDER)
                     && (JKS.equals(ssl.require(KEYSTORE_PROVIDER).asString()) == false);
             if (hasProvider || ssl.hasDefined(KeystoreAttributes.KEYSTORE_PATH.getName())) {
