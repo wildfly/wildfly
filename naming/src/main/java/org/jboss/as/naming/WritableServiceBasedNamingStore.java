@@ -26,6 +26,7 @@ import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
 import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.SharedBinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -78,7 +79,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         }
         try {
             // unlike on deployment processors, we may assume here it's a shareable bind if the owner is a deployment, because deployment unshareable namespaces are readonly stores
-            final BinderService binderService = new BinderService(name.toString(), null, deploymentUnitServiceName != null);
+            final BinderService binderService = deploymentUnitServiceName != null ? new SharedBinderService(name.toString(), null) : new BinderService(name.toString(), null);
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .addInjection(binderService.getManagedObjectInjector(), new ImmediateManagedReferenceFactory(object))
@@ -96,9 +97,8 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
                 throw startException;
             }
             if (deploymentUnitServiceName != null) {
-                binderService.acquire();
                 final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) binderServiceController.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
-                duBindingReferences.add(binderService);
+                duBindingReferences.acquire(((SharedBinderService) binderService));
             }
         } catch (Exception e) {
             throw namingException("Failed to bind [" + object + "] at location [" + bindName + "]", e);
@@ -114,11 +114,10 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             bind(name, object, owner, bindName);
         } else {
             final BinderService binderService = (BinderService) controller.getService();
-            if (owner instanceof ServiceName) {
+            if (owner instanceof ServiceName && binderService instanceof SharedBinderService) {
                 final ServiceName deploymentUnitServiceName = (ServiceName) owner;
-                binderService.acquire();
                 final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
-                duBindingReferences.add(binderService);
+                duBindingReferences.acquire(((SharedBinderService) binderService));
             }
             binderService.getManagedObjectInjector().setValue(new ImmediateValue(new ImmediateManagedReferenceFactory(object)));
         }
@@ -135,7 +134,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         if (controller == null) {
             throw NamingLogger.ROOT_LOGGER.cannotResolveService(bindName);
         }
-        controller.setMode(ServiceController.Mode.REMOVE);
+        ((BinderService) controller.getService()).stopNow();
         final StabilityMonitor monitor = new StabilityMonitor();
         monitor.addController(controller);
         try {
