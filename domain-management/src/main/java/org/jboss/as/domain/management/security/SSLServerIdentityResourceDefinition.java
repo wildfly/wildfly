@@ -22,6 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.ModelDescriptionConstants.TLS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.TLSV1;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.TLSV1_1;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.TLSV1_2;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -52,7 +56,7 @@ import org.jboss.dmr.ModelType;
 public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition PROTOCOL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROTOCOL, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("TLS")).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setDefaultValue(new ModelNode(TLS)).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
@@ -64,6 +68,7 @@ public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinitio
             .build();
 
     public static final StringListAttributeDefinition ENABLED_PROTOCOLS = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.ENABLED_PROTOCOLS)
+            .setDefaultValue(new ModelNode().add(TLSV1).add(TLSV1_1).add(TLSV1_2))
             .setAllowExpression(true)
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
