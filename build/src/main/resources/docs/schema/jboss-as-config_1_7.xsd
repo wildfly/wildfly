@@ -531,12 +531,42 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
+            <xs:element name="engine" type="engineType" minOccurs="0" />        
             <xs:element name="keystore" type="realmExtendedKeyStoreType" />
         </xs:sequence>
         <xs:attribute name="protocol" type="xs:string" default="TLS">
             <xs:annotation>
                 <xs:documentation>
                     The protocol to use when creating the SSLContext.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="engineType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration options specific to the
+                unlerlying SSLEngine created for request handling.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="enabled-protocols" use="optional" type="stringListType" default="TLSv1 TLSv1.1 TLSv1.2">
+            <xs:annotation>
+                <xs:documentation>
+                    A space separated list of protocols that may be enabled on the SSLEngine handling requests.
+
+                    At runtime the intersection of the available protocols and the protocols specified here will be used, if that
+                    results in an empy list an error will be reported.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="enabled-cipher-suites" use="optional" type="stringListType">
+            <xs:annotation>
+                <xs:documentation>
+                    A space separated list of cipher suites that may be enabled on the SSLEngine handling requests.
+
+                    At runtime the intersection of the available suites and the suites specified here will be used, if that
+                    results in an empy list an error will be reported.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
