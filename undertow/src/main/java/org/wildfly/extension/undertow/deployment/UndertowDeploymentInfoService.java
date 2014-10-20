@@ -117,7 +117,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.AuthenticationManager;
 import org.jboss.security.CacheableManager;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
@@ -167,10 +166,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.jboss.security.AuthenticationManager;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
+
+import org.jboss.security.authentication.JBossCachedAuthenticationManager;
 
 /**
  * Service that builds up the undertow metadata.
@@ -407,6 +409,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     @Override
     public synchronized void stop(final StopContext stopContext) {
         IoUtils.safeClose(this.deploymentInfo.getResourceManager());
+        AuthenticationManager authManager = securityDomainContextValue.getValue().getAuthenticationManager();
+        if (authManager != null && authManager instanceof JBossCachedAuthenticationManager) {
+            ((JBossCachedAuthenticationManager)authManager).releaseModuleEntries(module.getClassLoader());
+        }
         this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
     }
