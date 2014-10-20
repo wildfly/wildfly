@@ -87,6 +87,10 @@ public class ModelDescriptionConstants {
     public static final String SUBJECT = "subject";
     public static final String TEST = "test";
     public static final String THROW = "throw";
+    public static final String TLS = "TLS";
+    public static final String TLSV1 = "TLSv1";
+    public static final String TLSV1_1 = "TLSv1.1";
+    public static final String TLSV1_2 = "TLSv1.2";
     public static final String URL = "url";
     public static final String USERNAME = "username";
     public static final String VALUE = "value";

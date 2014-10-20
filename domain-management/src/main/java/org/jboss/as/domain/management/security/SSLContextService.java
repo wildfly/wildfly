@@ -87,7 +87,7 @@ public class SSLContextService implements Service<SSLContext> {
             SSLContext sslContext = SSLContext.getInstance(protocol);
             sslContext.init(keyManagers, trustManagers, null);
 
-            if (enabledCipherSuites.isEmpty() != false || enabledProtocols.isEmpty() != false) {
+            if (enabledCipherSuites.isEmpty() != true || enabledProtocols.isEmpty() != true) {
                 SSLParameters parameters = sslContext.getSupportedSSLParameters();
 
                 String[] commonCiphers;
