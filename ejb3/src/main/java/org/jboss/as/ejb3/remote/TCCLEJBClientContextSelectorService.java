@@ -100,6 +100,17 @@ public class TCCLEJBClientContextSelectorService implements Service<TCCLEJBClien
         }
     }
 
+    /**
+     * Unassociates a {@link EJBClientContext} with the passed <code>classLoader</code>.
+     *
+     * @param classLoader      The classloader with which the EJB client context has to be associated
+     */
+    public EJBClientContext unRegisterEJBClientContext(final ClassLoader classLoader) {
+        synchronized (this.ejbClientContexts) {
+            return this.ejbClientContexts.remove(classLoader);
+        }
+    }
+
     @Override
     public void registerContext(final EJBClientContextIdentifier identifier, final EJBClientContext context) {
         final EJBClientContext previousRegisteredContext = this.identifiableContexts.putIfAbsent(identifier, context);
