@@ -51,6 +51,28 @@ public class DDBasedMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(DDBasedMDB.class);
 
+    static {
+        // @see https://issues.jboss.org/browse/WFLY-3989
+        // do an activity that depends on TCCL being the right one (== the application classloader)
+        final String className = DDBasedMDB.class.getName();
+        try {
+            loadClassThroughTCCL(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load " + className + " through TCCL " + Thread.currentThread().getContextClassLoader() + " in the static block of MDB");
+        }
+    }
+
+    public DDBasedMDB() {
+        // @see https://issues.jboss.org/browse/WFLY-3989
+        // do an activity that depends on TCCL being the right one (== the application classloader)
+        final String className = this.getClass().getName();
+        try {
+            loadClassThroughTCCL(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load " + className + " through TCCL " + Thread.currentThread().getContextClassLoader() + " in the constructor of MDB");
+        }
+    }
+
     @Override
     public void onMessage(Message message) {
         logger.info("Received message " + message + " in MDB " + this.getClass().getName());
@@ -87,4 +109,7 @@ public class DDBasedMDB implements MessageListener {
         }
     }
 
+    private static void loadClassThroughTCCL(String className) throws ClassNotFoundException {
+        Thread.currentThread().getContextClassLoader().loadClass(className);
+    }
 }
