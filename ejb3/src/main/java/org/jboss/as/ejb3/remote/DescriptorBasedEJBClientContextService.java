@@ -124,6 +124,18 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
 
     @Override
     public synchronized void stop(StopContext context) {
+        final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
+        if (localEjbReceiver != null) {
+            localEjbReceiver.stop(context);
+            logger.debug("Removed a local EJB receiver from descriptor based EJB client context named " + context.getController().getName());
+        }
+        if(this.ejbClientContext != null) {
+            try {
+                this.ejbClientContext.close();
+            } catch(IOException e) {
+                logger.warn("Failed to close ejb context", e);
+            }
+        }
         this.ejbClientContext = null;
     }
 

@@ -90,6 +90,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
         final DescriptorBasedEJBClientContextService service = new DescriptorBasedEJBClientContextService(ejbClientConfiguration, module.getClassLoader());
         // add the service
         final ServiceBuilder serviceBuilder = serviceTarget.addService(ejbClientContextServiceName, service);
+
         // add the remoting connection reference dependencies
         for (final EJBClientDescriptorMetaData.RemotingReceiverConfiguration remotingReceiverConfiguration : ejbClientDescriptorMetaData.getRemotingReceiverConfigurations()) {
             final String connectionRef = remotingReceiverConfiguration.getOutboundConnectionRef();
@@ -134,7 +135,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
     }
 
     @Override
-    public void undeploy(DeploymentUnit context) {
+    public void undeploy(DeploymentUnit unit) {
 
     }
 
