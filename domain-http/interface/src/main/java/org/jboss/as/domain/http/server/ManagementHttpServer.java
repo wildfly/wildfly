@@ -178,19 +178,14 @@ public class ManagementHttpServer {
 
                     @Override
                     public void configure(HttpsParameters params) {
-                        SSLParameters sslparams = context.getDefaultSSLParameters();
-
                         switch (certAuthMode) {
                             case NEED:
-                                sslparams.setNeedClientAuth(true);
+                                params.setNeedClientAuth(true);
                                 break;
                             case WANT:
-                                sslparams.setWantClientAuth(true);
+                                params.setWantClientAuth(true);
                                 break;
                         }
-
-                        params.setSSLParameters(sslparams);
-
                     }
                 });
                 secureHttpServer.setExecutor(executor);
