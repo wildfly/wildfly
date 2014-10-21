@@ -53,6 +53,7 @@ public class VaultTool {
     public static final String ATTRIBUTE_PARAM = "attribute";
     public static final String SEC_ATTR_VALUE_PARAM = "sec-attr";
     public static final String CHECK_SEC_ATTR_EXISTS_PARAM = "check-sec-attr";
+    public static final String REMOVE_SEC_ATTR_PARAM = "remove-sec-attr";
     public static final String HELP_PARAM = "help";
 
     private VaultInteractiveSession session = null;
@@ -79,8 +80,6 @@ public class VaultTool {
             try {
                 tool = new VaultTool(args);
                 returnVal = tool.execute();
-                if (returnVal != 100)
-                    tool.summary();
             } catch (Exception e) {
                 System.err.println("Problem occured:");
                 e.printStackTrace(System.err);
@@ -121,9 +120,11 @@ public class VaultTool {
                             tool.setSession(null);
                             break;
                         default:
+                            in.close();
                             System.exit(0);
                     }
                 } catch (InputMismatchException e) {
+                    in.close();
                     System.exit(0);
                 }
             }
@@ -162,11 +163,13 @@ public class VaultTool {
         options.addOption("a", ATTRIBUTE_PARAM, true, "Attribute name");
 
         OptionGroup og = new OptionGroup();
-        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, "Secured attribute value (such as password) to store");
+        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, "Add secured attribute value (such as password) to store");
         Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, "Check whether the secured attribute already exists in the vault");
+        Option r = new Option("r", REMOVE_SEC_ATTR_PARAM, false, "Remove secured attribute from the Vault");
         Option h = new Option("h", HELP_PARAM, false, "Help");
         og.addOption(x);
         og.addOption(c);
+        og.addOption(r);
         og.addOption(h);
         og.setRequired(true);
         options.addOptionGroup(og);
@@ -196,16 +199,31 @@ public class VaultTool {
             // check password
             if (nonInteractiveSession.checkSecuredAttribute(vaultBlock, attributeName)) {
                 System.out.println("Password already exists.");
+                summary();
                 return 0;
             } else {
                 System.out.println("Password doesn't exist.");
                 return 5;
             }
-        } else {
+        } else if (cmdLine.hasOption(REMOVE_SEC_ATTR_PARAM)) {
+            // remove password
+            if (nonInteractiveSession.removeSecuredAttribute(vaultBlock, attributeName)) {
+                System.out.println("Secured attribute " + VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName) + " has been successfuly removed from vault");
+                return 0;
+            } else {
+                System.out.println("Secured attribute " + VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName) + " was not removed from vault, check whether it exist");
+                return 6;
+            }
+
+        } else if (cmdLine.hasOption(SEC_ATTR_VALUE_PARAM)) {
             // add password
             String password = cmdLine.getOptionValue(SEC_ATTR_VALUE_PARAM, "password");
             nonInteractiveSession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, password.toCharArray());
+            summary();
             return 0;
+        } else {
+            System.out.println("Action not specified.");
+            return -1;
         }
     }
 

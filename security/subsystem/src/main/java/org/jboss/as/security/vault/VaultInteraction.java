@@ -49,8 +49,7 @@ public class VaultInteraction {
 
         Scanner in = new Scanner(System.in);
         while (true) {
-            String commandStr = "Please enter a Digit::   0: Store a secured attribute " + " 1: Check whether a secured attribute exists "
-                    + " 2: Exit";
+            String commandStr = "Please enter a Digit::  0: Store a secured attribute  1: Check whether a secured attribute exists  2: Remove secured attribute  3: Exit";
 
             System.out.println(commandStr);
             int choice = in.nextInt();
@@ -72,7 +71,7 @@ public class VaultInteraction {
                     try {
                         vaultNISession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
                     } catch (Exception e) {
-                        System.out.println("Exception occurred:" + e.getLocalizedMessage());
+                        System.out.println("Problem occurred:" + e.getLocalizedMessage());
                     }
                     break;
                 case 1:
@@ -94,10 +93,34 @@ public class VaultInteraction {
                         else
                             System.out.println("A value exists for (" + vaultBlock + ", " + attributeName + ")");
                     } catch (Exception e) {
-                        System.out.println("Exception occurred:" + e.getLocalizedMessage());
+                        System.out.println("Problem occurred:" + e.getLocalizedMessage());
+                    }
+                    break;
+                case 2:
+                    System.out.println("Task: Remove secured attribute");
+                    try {
+                        vaultBlock = null;
+
+                        while (vaultBlock == null || vaultBlock.length() == 0) {
+                            vaultBlock = console.readLine("Enter Vault Block:");
+                        }
+
+                        attributeName = null;
+
+                        while (attributeName == null || attributeName.length() == 0) {
+                            attributeName = console.readLine("Enter Attribute Name:");
+                        }
+                        if (!vaultNISession.removeSecuredAttribute(vaultBlock, attributeName)) {
+                            System.out.println("Secured attribute " + VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName) + " was not removed from vault, check whether it exist");
+                        } else {
+                            System.out.println("Secured attribute " + VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName) + " has been successfuly removed from vault");
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Problem occurred:" + e.getLocalizedMessage());
                     }
                     break;
                 default:
+                    in.close();
                     System.exit(0);
             }
         }
