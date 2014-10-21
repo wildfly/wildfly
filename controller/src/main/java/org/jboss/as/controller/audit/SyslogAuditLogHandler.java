@@ -225,7 +225,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                     handler.setUseMessageDelimiter(false);
                 }
 
-                if (transport == Transport.TLS && (tlsClientCertStorePath != null || tlsTrustStorePath != null)){
+                if (transport == Transport.TLS){
                     final SSLContext context = SSLContext.getInstance("TLS");
                     KeyManager[] keyManagers = null;
                     if (tlsClientCertStorePath != null){
