@@ -54,6 +54,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.smoke.mgmt.servermodule.archive.sar.Simple;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -74,6 +75,11 @@ import org.xnio.IoUtils;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ServerInModuleDeploymentTestCase {
+
+    // Max time to wait for some action to complete, in ms
+    private static final int TIMEOUT = TimeoutUtil.adjust(20000);
+    // Pause time between checks whether some action has completed, in ms
+    private static final int BACKOFF = 10;
 
     @ContainerResource
     private ManagementClient managementClient;
@@ -241,13 +247,19 @@ public class ServerInModuleDeploymentTestCase {
                     StreamUtils.safeClose(out);
                 }
                 Assert.assertTrue(dodeploy.exists());
-                while (!deployed.exists()) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (deployed.exists()) {
+                        break;
+                    }
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
                     }
                 }
+
+                Assert.assertTrue(deployed.exists());
             }
 
             @Override
@@ -261,13 +273,13 @@ public class ServerInModuleDeploymentTestCase {
                 // so we don't end up having our own file deleted
                 final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!dodeploy.exists() && !isdeploying.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -286,13 +298,14 @@ public class ServerInModuleDeploymentTestCase {
             public void undeploy() {
                 final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                final File undeployed = new File(deployDir, "test-deployment.sar.undeployed");
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -304,6 +317,22 @@ public class ServerInModuleDeploymentTestCase {
 
                 // Delete file from deploy directory
                 deployed.delete();
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (undeployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(BACKOFF);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                if (!undeployed.exists()) {
+                    Assert.fail("undeploy step did not complete in a reasonably timely fashion");
+                }
             }
         });
 
@@ -350,13 +379,19 @@ public class ServerInModuleDeploymentTestCase {
                 }
 
                 Assert.assertTrue(file.exists());
-                while (!deployed.exists()) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (deployed.exists()) {
+                        break;
+                    }
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
                     }
                 }
+
+                Assert.assertTrue(deployed.exists());
             }
 
             @Override
@@ -369,13 +404,13 @@ public class ServerInModuleDeploymentTestCase {
                 // let that complete
                 // so we don't end up having our own file deleted
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!isdeploying.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -393,13 +428,14 @@ public class ServerInModuleDeploymentTestCase {
             @Override
             public void undeploy() {
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                final File undeployed = new File(deployDir, "test-deployment.sar.undeployed");
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!isdeploying.exists() && deployed.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -411,6 +447,22 @@ public class ServerInModuleDeploymentTestCase {
 
                 // Delete file from deploy directory
                 target.delete();
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (undeployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(BACKOFF);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                if (!undeployed.exists()) {
+                    Assert.fail("undeploy step did not complete in a reasonably timely fashion");
+                }
             }
         });
     }
@@ -447,13 +499,19 @@ public class ServerInModuleDeploymentTestCase {
                     StreamUtils.safeClose(out);
                 }
                 Assert.assertTrue(dodeploy.exists());
-                while (!deployed.exists()) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (deployed.exists()) {
+                        break;
+                    }
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                         throw new RuntimeException(e);
                     }
                 }
+
+                Assert.assertTrue(deployed.exists());
             }
 
             @Override
@@ -467,13 +525,13 @@ public class ServerInModuleDeploymentTestCase {
                 // so we don't end up having our own file deleted
                 final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!dodeploy.exists() && !isdeploying.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -492,13 +550,14 @@ public class ServerInModuleDeploymentTestCase {
             public void undeploy() {
                 final File dodeploy = new File(deployDir, "test-deployment.sar.dodeploy");
                 final File isdeploying = new File(deployDir, "test-deployment.sar.isdeploying");
-                for (int i = 0; i < 500; i++) {
+                final File undeployed = new File(deployDir, "test-deployment.sar.undeployed");
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
                     if (!dodeploy.exists() && !isdeploying.exists() && deployed.exists()) {
                         break;
                     }
                     // Wait for the last action to complete :(
                     try {
-                        Thread.sleep(10);
+                        Thread.sleep(BACKOFF);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -510,6 +569,22 @@ public class ServerInModuleDeploymentTestCase {
 
                 // Delete file from deploy directory
                 deployed.delete();
+                for (int i = 0; i < TIMEOUT / BACKOFF; i++) {
+                    if (undeployed.exists()) {
+                        break;
+                    }
+                    // Wait for the last action to complete :(
+                    try {
+                        Thread.sleep(BACKOFF);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+
+                if (!undeployed.exists()) {
+                    Assert.fail("undeploy step did not complete in a reasonably timely fashion");
+                }
             }
         });
     }
@@ -603,12 +678,16 @@ public class ServerInModuleDeploymentTestCase {
                 // listener.await();
                 try {
                     long start = System.currentTimeMillis();
-                    while (System.currentTimeMillis() - start < 10000) {
+                    while (System.currentTimeMillis() - start < TIMEOUT) {
                         mbeanServer.getMBeanInfo(name);
-                        Thread.sleep(100);
+                        Thread.sleep(BACKOFF);
                     }
                     Assert.fail("Should not have found MBean");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
                 } catch (Exception expected) {
+                    // expected
                 }
                 if (!fromFile) {
                     Assert.assertEquals(initialHashes, getAllDeploymentHashesFromContentDir(false));
@@ -649,7 +728,7 @@ public class ServerInModuleDeploymentTestCase {
 
     private void awaitDeploymentExecution(Future<?> future) {
         try {
-            future.get(20, TimeUnit.SECONDS);
+            future.get(TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
