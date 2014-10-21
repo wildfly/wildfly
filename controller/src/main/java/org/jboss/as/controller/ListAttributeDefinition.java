@@ -52,19 +52,19 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
 
     @Deprecated
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
-        this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null,
+        this(name, name, null, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null,
                 null, null, (AttributeAccess.Flag[]) null);
     }
 
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator,
                                       final AttributeAccess.Flag... flags) {
-        this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null, null, null, flags);
+        this(name, name, null, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null, null, null, flags);
     }
 
     @Deprecated
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator) {
-        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, null, null, null, false, null, null,
+        this(name, xmlName, null, allowNull, false, minSize, maxSize, elementValidator, null, null, null, false, null, null,
                 (Boolean) null);
     }
 
@@ -73,7 +73,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
             final int minSize, final int maxSize, final ParameterValidator elementValidator,
             final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
             boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,
+        this(name, xmlName, null, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,
                 deprecated, null, null, flags);
     }
 
@@ -89,7 +89,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                       final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                       final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, alternatives, requires, null, false, null, null, null, flags);
+        this(name, xmlName, null, allowNull, false, minSize, maxSize, elementValidator, alternatives, requires, null, false, null, null, null, flags);
     }
 
     protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
@@ -97,7 +97,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
                                    final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
                                    final boolean resourceOnly, final DeprecationData deprecated,
                                    final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
+        this(name, xmlName, null, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, flags);
     }
 
@@ -105,7 +105,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                    final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
+        this(name, xmlName, null, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
                 null, false, null, null, null, flags);
     }
 
@@ -114,19 +114,29 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                    final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
                                    final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
+        this(name, xmlName, null, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
                 attributeMarshaller, false, null, accessConstraints, null, flags);
     }
 
+    @Deprecated
     protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
                                       final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                       final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
                                       final boolean resourceOnly,  final DeprecationData deprecated,
                                       final AccessConstraintDefinition[] accessConstraints, final Boolean niSignificant,
                                       final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, allowExpressions, null, null,
-                new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, niSignificant, flags);
+        this(name, xmlName, null, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, niSignificant, flags);
+    }
+
+    protected ListAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue,
+            final boolean allowNull, final boolean allowExpressions, final int minSize, final int maxSize,
+            final ParameterValidator elementValidator, final String[] alternatives, final String[] requires,
+            final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
+            final AccessConstraintDefinition[] accessConstraints, final Boolean niSignificant,
+            final AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, ModelType.LIST, allowNull, allowExpressions, null, null, new ListValidator(
+                elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecated, accessConstraints, niSignificant, flags);
         this.elementValidator = elementValidator;
     }
 
