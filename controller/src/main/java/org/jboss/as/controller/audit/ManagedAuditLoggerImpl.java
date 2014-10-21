@@ -449,6 +449,17 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             config.unlock();
         }
     }
+
+    @Override
+    public void updateSyslogHandlerReconnectTimeout(String name, int reconnectTimeout) {
+        config.lock();
+        try {
+            SyslogAuditLogHandler handler = (SyslogAuditLogHandler)config.getConfiguredHandler(name);
+            handler.setReconnectTimeout(reconnectTimeout);
+        } finally {
+            config.unlock();
+        }
+    }
     // Immediate updates
 
     @Override
@@ -950,5 +961,4 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             config.unlock();
         }
     }
-
  }

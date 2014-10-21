@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_CERT_STORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECONNECT_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -335,6 +336,10 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
                 auditLogger.updateSyslogHandlerAppName(Util.getNameFromAddress(operation.require(OP_ADDR)), resolveAppName(context, operation.get(VALUE), environmentReader));
             } else if (attributeName.equals(FACILITY.getName())) {
                 auditLogger.updateSyslogHandlerFacility(Util.getNameFromAddress(operation.require(OP_ADDR)), Facility.valueOf(resolvedValue.asString()));
+            } else if (attributeName.equals(RECONNECT_TIMEOUT)) {
+                PathAddress addr = PathAddress.pathAddress(operation.require(OP_ADDR));
+                addr = addr.subAddress(0, addr.size() - 1);
+                auditLogger.updateSyslogHandlerReconnectTimeout(Util.getNameFromAddress(addr), resolvedValue.asInt());
             } else {
                 auditLogger.getUpdater().updateHandler(createHandler(pathManager, context, operation, environmentReader));
             }
@@ -351,6 +356,10 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
                 auditLogger.updateSyslogHandlerAppName(Util.getNameFromAddress(operation.require(OP_ADDR)), resolveAppName(context, valueToRestore, environmentReader));
             } else if (attributeName.equals(FACILITY.getName())) {
                 auditLogger.updateSyslogHandlerFacility(Util.getNameFromAddress(operation.require(OP_ADDR)), Facility.valueOf(valueToRestore.asString()));
+            } else if (attributeName.equals(RECONNECT_TIMEOUT)) {
+                PathAddress addr = PathAddress.pathAddress(operation.require(OP_ADDR));
+                addr = addr.subAddress(0, addr.size() - 1);
+                auditLogger.updateSyslogHandlerReconnectTimeout(Util.getNameFromAddress(addr), valueToRestore.asInt());
             } else {
                 auditLogger.getUpdater().rollbackChanges();
             }

@@ -139,7 +139,15 @@ public interface ManagedAuditLogger extends AuditLogger {
      * @param appName the app name
      */
     void updateSyslogHandlerAppName(String name, String appName);
-    //ImmeduateUpdates - end
+
+    /**
+     * Update the handler reconnect timeout. This will take effect immediately
+     *
+     * @param name the name of the handler
+     * @param reconnectTimeout the app name
+     */
+    void updateSyslogHandlerReconnectTimeout(String name, int reconnectTimeout);
+    //ImmediateUpdates - end
 
 
     /**
@@ -256,4 +264,6 @@ public interface ManagedAuditLogger extends AuditLogger {
         void applyChanges();
 
     }
+
+
 }

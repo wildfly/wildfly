@@ -186,5 +186,9 @@ public interface AuditLogger {
         @Override
         public void updateSyslogHandlerAppName(String name, String appName) {
         }
+
+        @Override
+        public void updateSyslogHandlerReconnectTimeout(String name, int reconnectTimeout) {
+        }
     };
 }
