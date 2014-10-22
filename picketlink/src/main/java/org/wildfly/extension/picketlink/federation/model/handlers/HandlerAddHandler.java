@@ -25,12 +25,10 @@ package org.wildfly.extension.picketlink.federation.model.handlers;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -41,23 +39,19 @@ import org.picketlink.config.federation.KeyValueType;
 import org.picketlink.config.federation.handler.Handler;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
 import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 import java.util.List;
-import java.util.Set;
 
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.registry.Resource.ResourceEntry;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER;
 import static org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition.getHandlerType;
 import static org.wildfly.extension.picketlink.federation.service.SAMLHandlerService.createServiceName;
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -125,27 +119,10 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
         context.addStep(new AlternativeAttributeValidationStepHandler(new SimpleAttributeDefinition[] {
             HandlerResourceDefinition.CLASS_NAME, HandlerResourceDefinition.CODE
         }), OperationContext.Stage.MODEL);
-        context.addStep(new OperationStepHandler() {
+        context.addStep(new UniqueTypeValidationStepHandler(ModelElement.COMMON_HANDLER) {
             @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-                String handlerName = pathAddress.getLastElement().getValue();
-                ModelNode handlerNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-                String handlerType = getHandlerType(context, handlerNode);
-                PathAddress parentAddress = pathAddress.subAddress(0, pathAddress.size() - 1);
-                Resource parentResource = context.readResourceFromRoot(parentAddress);
-                Set<ResourceEntry> existingHandlers = parentResource.getChildren(ModelElement.COMMON_HANDLER.getName());
-
-                for (ResourceEntry existingHandlerEntry : existingHandlers) {
-                    String existingHandlerName = existingHandlerEntry.getName();
-                    String existingHandlerType = getHandlerType(context, existingHandlerEntry.getModel());
-
-                    if (!handlerName.equals(existingHandlerName) && (handlerType.equals(existingHandlerType))) {
-                        throw ROOT_LOGGER.federationHandlerAlreadyDefined(handlerType);
-                    }
-                }
-
-                context.stepCompleted();
+            protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                return getHandlerType(context, model);
             }
         }, OperationContext.Stage.MODEL);
         super.execute(context, operation);

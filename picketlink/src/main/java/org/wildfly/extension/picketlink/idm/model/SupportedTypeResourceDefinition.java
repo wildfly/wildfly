@@ -22,11 +22,16 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -50,6 +55,19 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
     public static final SupportedTypeResourceDefinition INSTANCE = new SupportedTypeResourceDefinition(CLASS_NAME, CODE, MODULE);
 
     private SupportedTypeResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.SUPPORTED_TYPE, new IDMConfigAddStepHandler(attributes), attributes);
+        super(ModelElement.SUPPORTED_TYPE, new SupportedTypeAddHandler(attributes), attributes);
+    }
+
+    static String getSupportedType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+        ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
+        ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
+
+        if (classNameNode.isDefined()) {
+            return classNameNode.asString();
+        } else if (codeNode.isDefined()) {
+            return AttributedTypeEnum.forType(codeNode.asString());
+        } else {
+            throw ROOT_LOGGER.idmNoSupportedTypesDefined();
+        }
     }
 }

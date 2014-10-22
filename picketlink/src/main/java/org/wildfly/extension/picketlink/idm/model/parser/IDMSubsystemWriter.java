@@ -30,7 +30,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.XMLElement;
 import org.wildfly.extension.picketlink.common.parser.ModelXMLElementWriter;
 import org.wildfly.extension.picketlink.idm.Namespace;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -84,13 +83,7 @@ public class IDMSubsystemWriter implements XMLStreamConstants, XMLElementWriter<
             List<ModelNode> identityManagement = subsystemNode.asList();
 
             for (ModelNode modelNode : identityManagement) {
-                String modelName = modelNode.asProperty().getName();
-
-                if (modelName.equals(PARTITION_MANAGER.getName())) {
-                    writers.get(PARTITION_MANAGER.getName()).write(writer, modelNode);
-                } else {
-                    PicketLinkLogger.ROOT_LOGGER.parserUnexpectedElement(modelName);
-                }
+                writers.get(PARTITION_MANAGER.getName()).write(writer, modelNode);
             }
         }
 

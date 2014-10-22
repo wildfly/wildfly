@@ -30,7 +30,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.XMLElement;
 import org.wildfly.extension.picketlink.common.parser.ModelXMLElementWriter;
 import org.wildfly.extension.picketlink.federation.Namespace;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -98,13 +97,7 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
             List<ModelNode> identityManagement = subsystemNode.asList();
 
             for (ModelNode modelNode : identityManagement) {
-                String modelName = modelNode.asProperty().getName();
-
-                if (modelName.equals(FEDERATION.getName())) {
-                    writers.get(FEDERATION.getName()).write(writer, modelNode);
-                } else {
-                    PicketLinkLogger.ROOT_LOGGER.parserUnexpectedElement(modelName);
-                }
+                writers.get(FEDERATION.getName()).write(writer, modelNode);
             }
         }
 

@@ -22,9 +22,12 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 
@@ -50,6 +53,17 @@ public class CredentialHandlerResourceDefinition extends AbstractIDMResourceDefi
     public static final CredentialHandlerResourceDefinition INSTANCE = new CredentialHandlerResourceDefinition(CLASS_NAME, CODE, MODULE);
 
     private CredentialHandlerResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER, new IDMConfigAddStepHandler(attributes), attributes);
+        super(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER, new CredentialHandlerAddHandler(attributes), attributes);
+    }
+
+    static String getCredentialType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+        ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
+        ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
+
+        if (classNameNode.isDefined()) {
+            return classNameNode.asString();
+        }
+
+        return CredentialTypeEnum.forType(codeNode.asString());
     }
 }

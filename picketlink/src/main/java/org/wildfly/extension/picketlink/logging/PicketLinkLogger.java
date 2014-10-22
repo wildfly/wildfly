@@ -100,6 +100,9 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 16, value = "[%s] requires one of the given attributes [%s].")
     OperationFailedException requiredAlternativeAttributes(String pathElement, String attributeNames);
 
+    @Message(id = 17, value = "Type [%s] already defined.")
+    IllegalStateException typeAlreadyDefined(String clazz);
+
     // IDM Messages 50-99
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -134,7 +137,4 @@ public interface PicketLinkLogger extends BasicLogger {
 
     @Message(id = 104, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
-
-    @Message(id = 105, value = "Handler [%s] already defined.")
-    IllegalStateException federationHandlerAlreadyDefined(String clazz);
 }
