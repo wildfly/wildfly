@@ -5,7 +5,7 @@
 /subsystem=logging/logger=org.apache.catalina.authenticator:add(level=TRACE)
 /subsystem=logging/logger=org.jboss.as.web.security:add(level=TRACE)
 /subsystem=logging/logger=org.jboss.as.domain.management.security:add(level=TRACE)
-/core-service=management/ldap-connection=ldapConnection:add(url="ldap://localhost:10389", search-credential="secret", search-dn="uid=admin,ou=system")
+/core-service=management/ldap-connection=ldapConnection:add(url="ldap://${ldapHost}:10389", search-credential="secret", search-dn="uid=admin,ou=system")
 /core-service=management/security-realm=ldap-no-cache:add()
 /core-service=management/security-realm=ldap-no-cache/authentication=ldap:add(connection=ldapConnection, base-dn="dc=jboss,dc=org", recursive=true, username-attribute=uid) 
 /core-service=management/security-realm=ldap-no-cache/authorization=ldap:add(connection=ldapConnection)

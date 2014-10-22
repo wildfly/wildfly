@@ -115,6 +115,8 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
 
     private static final int LDAP_PORT = 10389;
 
+    private static final String SECONDARY_TEST_ADDRESS = TestSuiteEnvironment.getSecondaryTestAddress(false);
+
     @ArquillianResource
     private static ContainerController container;
 
@@ -471,6 +473,7 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
         map.put("rolesProperties", escapePath(ROLES_FILE.getAbsolutePath()));
         map.put("usersProperties", escapePath(USERS_FILE.getAbsolutePath()));
         map.put("ldapUsersProperties", escapePath(LDAP_USERS_FILE.getAbsolutePath()));
+        map.put("ldapHost", SECONDARY_TEST_ADDRESS);
         FileUtils.write(BATCH_CLI_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(BATCH_CLI_FILENAME), "UTF-8"), map),
                 "UTF-8");
@@ -512,6 +515,7 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
 
     /**
      * Escapes backslashes in the file path.
+     *
      * @param path
      * @return
      */
@@ -658,8 +662,7 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
             }
             final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                     (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
-            Utils.fixApacheDSTransportAddress(createLdapServer,
-                    StringUtils.strip(TestSuiteEnvironment.getSecondaryTestAddress(false)));
+            Utils.fixApacheDSTransportAddress(createLdapServer, StringUtils.strip(SECONDARY_TEST_ADDRESS));
             ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
             startLdapServer();
         }
