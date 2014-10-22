@@ -71,7 +71,7 @@ public enum HandlerTypeEnum {
         this.type = type;
     }
 
-    static String forType(String alias) {
+    public static String forType(String alias) {
         HandlerTypeEnum resolvedType = types.get(alias);
 
         if (resolvedType != null) {

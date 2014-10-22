@@ -71,6 +71,9 @@ public interface PicketLinkMessages {
     @Message(id = 12521, value = "[%s] requires one of the given attributes [%s].")
     OperationFailedException requiredAlternativeAttributes(String pathElement, String attributeNames);
 
+    @Message(id = 12516, value = "Attribute [%s] is not longer supported.")
+    OperationFailedException attributeNoLongerSupported(String attributeName);
+
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -89,6 +92,9 @@ public interface PicketLinkMessages {
 
     @Message(id = 12509, value = "You must provide at least one identity store for identity configuration [%s].")
     OperationFailedException idmNoIdentityStoreProvided(String identityConfiguration);
+
+    @Message(id = 12517, value = "Could not create transactional EntityManager.")
+    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);
 
     @Message(id = 12522, value = "No supported type provided.")
     OperationFailedException idmNoSupportedTypesDefined();
@@ -109,9 +115,6 @@ public interface PicketLinkMessages {
     @Message(id = 12515, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
 
-    @Message(id = 12516, value = "Attribute [%s] is not longer supported.")
-    OperationFailedException attributeNoLongerSupported(String attributeName);
-
-    @Message(id = 12517, value = "Could not create transactional EntityManager.")
-    SecurityConfigurationException idmJpaFailedCreateTransactionEntityManager(@Cause Exception e);
+    @Message(id = 12523, value = "Handler [%s] already defined.")
+    IllegalStateException federationHandlerAlreadyDefined(String clazz);
 }
