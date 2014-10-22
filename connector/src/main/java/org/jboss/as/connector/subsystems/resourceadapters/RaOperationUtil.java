@@ -101,6 +101,7 @@ import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -121,6 +122,7 @@ import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.resourceadapter.AdminObject;
 import org.jboss.jca.common.api.metadata.resourceadapter.ConnectionDefinition;
 import org.jboss.jca.common.api.metadata.resourceadapter.WorkManager;
+import org.jboss.jca.common.api.metadata.resourceadapter.WorkManagerSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.common.PoolImpl;
@@ -364,10 +366,34 @@ public class RaOperationUtil {
         final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
         if (service == null) {
             ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter, name);
-            newControllers.add(serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+            ServiceBuilder builder = serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector())
-                    .addListener(verificationHandler).install());
+                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector());
+            // add dependency on security domain service if applicable for recovery config
+            for (ConnectionDefinition cd : resourceAdapter.getConnectionDefinitions()) {
+                Security security = cd.getSecurity();
+                if (security != null) {
+                    if (security.getSecurityDomain() != null) {
+                        builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomain()));
+                    }
+                    if (security.getSecurityDomainAndApplication() != null) {
+                        builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomainAndApplication()));
+                    }
+                    if (cd.getRecovery() != null && cd.getRecovery().getCredential() != null && cd.getRecovery().getCredential().getSecurityDomain() != null) {
+                        builder.addDependency(SecurityDomainService.SERVICE_NAME.append(cd.getRecovery().getCredential().getSecurityDomain()));
+                    }
+                }
+            }
+            if (resourceAdapter.getWorkManager() != null) {
+                final WorkManagerSecurity workManagerSecurity = resourceAdapter.getWorkManager().getSecurity();
+                if (workManagerSecurity != null) {
+                    final String securityDomainName = workManagerSecurity.getDomain();
+                    if (securityDomainName != null) {
+                        builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                    }
+                }
+            }
+            newControllers.add(builder.addListener(verificationHandler).install());
         }
         return raServiceName;
     }
