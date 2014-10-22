@@ -200,7 +200,8 @@ class HornetQService implements Service<HornetQServer> {
                                         NetworkUtils.canonize(binding.getSourceAddress().getHostAddress()));
                             }
                             if (binding.getSourcePort() != null) {
-                                tc.getParams().put(TransportConstants.LOCAL_PORT_PROP_NAME, binding.getSourcePort());
+                                // Use absolute port to account for source port offset/fixation
+                                tc.getParams().put(TransportConstants.LOCAL_PORT_PROP_NAME, binding.getAbsoluteSourcePort());
                             }
                         }
                         tc.getParams().put(HOST, host);
