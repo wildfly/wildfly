@@ -89,21 +89,22 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        if (!context.getModelNode().isDefined()) {
-            return;
-        }
-
+        // Start subsystem
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
-        List<ModelNode> identityManagement = context.getModelNode().asList();
+        ModelNode subsystemNode = context.getModelNode();
 
-        for (ModelNode modelNode : identityManagement) {
-            String modelName = modelNode.asProperty().getName();
+        if (subsystemNode.isDefined()) {
+            List<ModelNode> identityManagement = subsystemNode.asList();
 
-            if (modelName.equals(FEDERATION.getName())) {
-                writers.get(FEDERATION.getName()).write(writer, modelNode);
-            } else {
-                MESSAGES.parserUnexpectedElement(modelName);
+            for (ModelNode modelNode : identityManagement) {
+                String modelName = modelNode.asProperty().getName();
+
+                if (modelName.equals(FEDERATION.getName())) {
+                    writers.get(FEDERATION.getName()).write(writer, modelNode);
+                } else {
+                    MESSAGES.parserUnexpectedElement(modelName);
+                }
             }
         }
 
