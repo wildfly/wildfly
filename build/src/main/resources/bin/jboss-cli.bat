@@ -10,15 +10,19 @@ set CLI_OPTS=
 for %%x in (%*) do (
 
   if not defined varname (
-    set varname=%%x
+
+    echo %%x|FINDSTR /r /c:"^\-D" >nul
+    if not errorlevel 1 (
+      set varname=%%x
+    ) else (
+      set CLI_OPTS=!CLI_OPTS! %%x
+    )
+
   ) else (
 
-    echo !varname!|FINDSTR /r /c:"^\-D" >nul
-    if not errorlevel 1 (set SYS_OPTS=!SYS_OPTS! !varname!=%%x)
-
-    set CLI_OPTS=!CLI_OPTS! !varname!=%%x
-
+    set SYS_OPTS=!SYS_OPTS! !varname!=%%x
     set "varname="
+
   )
 )
 
@@ -87,8 +91,7 @@ if errorlevel == 1 (
 "%JAVA%" %JAVA_OPTS% %SYS_OPTS% ^
     -jar "%JBOSS_RUNJAR%" ^
     -mp "%JBOSS_MODULEPATH%" ^
-     org.jboss.as.cli %CLI_OPTS% ^
-     %*
+     org.jboss.as.cli %CLI_OPTS%
 
 :END
 if "x%NOPAUSE%" == "x" pause
