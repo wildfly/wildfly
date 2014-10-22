@@ -60,7 +60,7 @@ public enum CredentialTypeEnum {
         this.type = type;
     }
 
-    static String forType(String alias) {
+    public static String forType(String alias) {
         CredentialTypeEnum resolvedType = types.get(alias);
 
         if (resolvedType != null) {

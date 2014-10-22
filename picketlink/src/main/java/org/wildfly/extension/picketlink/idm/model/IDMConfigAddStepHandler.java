@@ -58,12 +58,21 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        validateAlternativeAttributes(context);
+        doValidateOnModelStage(context, operation);
+        super.execute(context, operation);
+    }
+
+    protected void doValidateOnModelStage(OperationContext context, ModelNode operation) {
+
+    }
+
+    protected void validateAlternativeAttributes(OperationContext context) {
         if (!this.alternativeAttributes.isEmpty()) {
             context.addStep(new AlternativeAttributeValidationStepHandler(
                     this.alternativeAttributes.toArray(new AttributeDefinition[this.alternativeAttributes.size()]))
                 , OperationContext.Stage.MODEL);
         }
-        super.execute(context, operation);
     }
 
     @Override

@@ -229,7 +229,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
 
         for (Handler actualHandler : new ArrayList<Handler>(handlers.getHandler())) {
             if (actualHandler.getClazz().equals(handler.getClazz())) {
-                throw MESSAGES.federationHandlerAlreadyDefined(handler.getClazz());
+                throw MESSAGES.typeAlreadyDefined(handler.getClazz());
             }
         }
 

@@ -109,8 +109,7 @@
         </xsd:attribute>
         <xsd:attribute name="code" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation>Defines a alias which maps to a built-in type. If code does not map to one of the provided alias, the value
-                would be considered a FQN of a type.</xsd:documentation>
+                <xsd:documentation>Defines an alias which maps to a built-in type.</xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="module" type="xsd:string" use="optional">
@@ -141,8 +140,7 @@
         </xsd:attribute>
         <xsd:attribute name="code" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation>Defines a alias which maps to a built-in type. If code does not map to one of the provided alias, the value
-                would be considered a FQN of a type.</xsd:documentation>
+                <xsd:documentation>Defines an alias which maps to a built-in type.</xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="module" type="xsd:string" use="optional">
@@ -283,8 +281,7 @@
         </xsd:attribute>
         <xsd:attribute name="code" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation>Defines a alias which maps to a built-in type. If code does not map to one of the provided alias, the value
-                would be considered a FQN of a type.</xsd:documentation>
+                <xsd:documentation>Defines an alias which maps to a built-in type.</xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="module" type="xsd:string" use="optional">

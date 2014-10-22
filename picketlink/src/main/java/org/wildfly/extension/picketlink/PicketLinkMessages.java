@@ -74,6 +74,9 @@ public interface PicketLinkMessages {
     @Message(id = 12516, value = "Attribute [%s] is not longer supported.")
     OperationFailedException attributeNoLongerSupported(String attributeName);
 
+    @Message(id = 12523, value = "Type [%s] already defined.")
+    IllegalStateException typeAlreadyDefined(String clazz);
+
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -114,7 +117,4 @@ public interface PicketLinkMessages {
 
     @Message(id = 12515, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
-
-    @Message(id = 12523, value = "Handler [%s] already defined.")
-    IllegalStateException federationHandlerAlreadyDefined(String clazz);
 }

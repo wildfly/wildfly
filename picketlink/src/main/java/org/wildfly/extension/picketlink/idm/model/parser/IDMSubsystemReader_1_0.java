@@ -25,23 +25,25 @@ package org.wildfly.extension.picketlink.idm.model.parser;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.XMLElement;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 import org.wildfly.extension.picketlink.idm.Namespace;
+import org.wildfly.extension.picketlink.idm.model.AttributedTypeEnum;
 import org.wildfly.extension.picketlink.idm.model.CredentialHandlerResourceDefinition;
+import org.wildfly.extension.picketlink.idm.model.CredentialTypeEnum;
 import org.wildfly.extension.picketlink.idm.model.FileStoreResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.IdentityConfigurationResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.JPAStoreResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreAttributeResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreMappingResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreResourceDefinition;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.SupportedTypeResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.SupportedTypesResourceDefinition;
-import org.wildfly.extension.picketlink.common.model.XMLElement;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -51,6 +53,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CLASS_NAME;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
@@ -231,7 +235,15 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
 
     private void parseLDAPMappingConfig(final XMLExtendedStreamReader reader, final ModelNode identityProviderNode,
                                                final List<ModelNode> addOperations) throws XMLStreamException {
-        String name = resolveNodeName(reader, LDAPStoreMappingResourceDefinition.CLASS_NAME, LDAPStoreMappingResourceDefinition.CODE);
+        String name = reader.getAttributeValue("", COMMON_CLASS_NAME.getName());
+
+        if (name == null) {
+            name = reader.getAttributeValue("", COMMON_CODE.getName());
+
+            if (name != null) {
+                name = CredentialTypeEnum.forType(name);
+            }
+        }
 
         ModelNode ldapMappingConfig = parseConfig(reader, LDAP_STORE_MAPPING,
                                                          name, identityProviderNode,
@@ -253,7 +265,15 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
 
     private ModelNode parseCredentialHandlerConfig(XMLExtendedStreamReader reader, ModelNode identityProviderNode,
                                                           List<ModelNode> addOperations) throws XMLStreamException {
-        String name = resolveNodeName(reader, CredentialHandlerResourceDefinition.CLASS_NAME, CredentialHandlerResourceDefinition.CODE);
+        String name = reader.getAttributeValue("", COMMON_CLASS_NAME.getName());
+
+        if (name == null) {
+            name = reader.getAttributeValue("", COMMON_CODE.getName());
+
+            if (name != null) {
+                name = CredentialTypeEnum.forType(name);
+            }
+        }
 
         return parseConfig(reader, IDENTITY_STORE_CREDENTIAL_HANDLER, name,
                                   identityProviderNode, CredentialHandlerResourceDefinition.INSTANCE.getAttributes(), addOperations);
@@ -279,7 +299,15 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
                                      List<ModelNode> addOperations) throws XMLStreamException {
                 switch (element) {
                     case SUPPORTED_TYPE:
-                        String name = resolveNodeName(reader, SupportedTypeResourceDefinition.CLASS_NAME, SupportedTypeResourceDefinition.CODE);
+                        String name = reader.getAttributeValue("", COMMON_CLASS_NAME.getName());
+
+                        if (name == null) {
+                            name = reader.getAttributeValue("", COMMON_CODE.getName());
+
+                            if (name != null) {
+                                name = AttributedTypeEnum.forType(name);
+                            }
+                        }
 
                         parseConfig(reader, SUPPORTED_TYPE, name, parentNode,
                                            SupportedTypeResourceDefinition.INSTANCE.getAttributes(), addOperations);
