@@ -136,6 +136,11 @@
            <artifactId>picketbox</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-version</artifactId>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>

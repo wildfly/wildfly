@@ -47,11 +47,13 @@ public class ProductConfig implements Serializable {
     private final String name;
     private final String version;
     private final String consoleSlot;
+    private final String cliIcon;
 
     public ProductConfig(ModuleLoader loader, String home, Map<?, ?> providedProperties) {
         String productName = null;
         String productVersion = null;
         String consoleSlot = null;
+        String cliIcon = null;
 
         FileReader reader = null;
         try {
@@ -73,6 +75,7 @@ public class ProductConfig implements Serializable {
                     productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
                     productVersion = manifest.getMainAttributes().getValue("JBoss-Product-Release-Version");
                     consoleSlot = manifest.getMainAttributes().getValue("JBoss-Product-Console-Slot");
+                    cliIcon = manifest.getMainAttributes().getValue("JBoss-Product-Icon");
                 }
             }
 
@@ -86,6 +89,7 @@ public class ProductConfig implements Serializable {
         name = productName;
         version = productVersion;
         this.consoleSlot = consoleSlot;
+        this.cliIcon = cliIcon;
     }
 
     private static String getProductConf(String home) {
@@ -108,6 +112,7 @@ public class ProductConfig implements Serializable {
         this.name = productName;
         this.version = productVersion;
         this.consoleSlot = consoleSlot;
+        this.cliIcon = "";
     }
 
     public String getProductName() {
@@ -120,6 +125,10 @@ public class ProductConfig implements Serializable {
 
     public String getConsoleSlot() {
         return consoleSlot;
+    }
+
+    public String getCliIcon() {
+        return cliIcon;
     }
 
     public String getPrettyVersionString() {
