@@ -145,6 +145,7 @@ public class StackAddHandler extends AbstractAddStepHandler {
         String machine = ModelNodes.asString(TransportResourceDefinition.MACHINE.resolveModelAttribute(context, transport));
         String rack = ModelNodes.asString(TransportResourceDefinition.RACK.resolveModelAttribute(context, transport));
         String site = ModelNodes.asString(TransportResourceDefinition.SITE.resolveModelAttribute(context, transport));
+
         transportConfig.setTopology(site, rack, machine);
 
         initProtocolProperties(context, transport, transportConfig);
@@ -195,7 +196,6 @@ public class StackAddHandler extends AbstractAddStepHandler {
                 .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, stackConfig.getModuleLoaderInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
         // add transport dependencies
         addSocketBindingDependency(builder, transportSocketBinding, transportConfig.getSocketBindingInjector());

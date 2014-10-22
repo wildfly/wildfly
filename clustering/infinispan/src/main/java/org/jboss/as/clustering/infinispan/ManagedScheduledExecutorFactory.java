@@ -23,7 +23,9 @@ package org.jboss.as.clustering.infinispan;
 
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 
+import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.infinispan.executors.ScheduledExecutorFactory;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 
@@ -31,7 +33,7 @@ import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
  * Executor factory that produces {@link ManagedScheduledExecutorService} instances.
  * @author Paul Ferraro
  */
-public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory {
+public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory, ThreadPoolExecutorFactory {
 
     private final ScheduledExecutorService executor;
 
@@ -41,6 +43,20 @@ public class ManagedScheduledExecutorFactory implements ScheduledExecutorFactory
 
     @Override
     public ScheduledExecutorService getScheduledExecutor(Properties p) {
+        return this.createExecutor();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public ScheduledExecutorService createExecutor(ThreadFactory factory) {
+        return this.createExecutor();
+    }
+
+    private ScheduledExecutorService createExecutor() {
         return new ManagedScheduledExecutorService(this.executor);
+    }
+
+    @Override
+    public void validate() {
     }
 }

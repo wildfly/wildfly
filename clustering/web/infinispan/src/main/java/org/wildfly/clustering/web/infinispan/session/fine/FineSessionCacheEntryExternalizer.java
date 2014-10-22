@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Set;
 
 import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
 import org.wildfly.clustering.web.infinispan.session.SimpleSessionMetaData;
@@ -51,21 +50,10 @@ public class FineSessionCacheEntryExternalizer extends AbstractSimpleExternalize
     @Override
     public void writeObject(ObjectOutput output, FineSessionCacheEntry<Object> entry) throws IOException {
         this.externalizer.writeObject(output, (SimpleSessionMetaData) entry.getMetaData());
-        Set<String> attributes = entry.getAttributes();
-        output.writeInt(attributes.size());
-        for (String attribute: attributes) {
-            output.writeUTF(attribute);
-        }
     }
 
     @Override
     public FineSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException {
-        FineSessionCacheEntry<Object> entry = new FineSessionCacheEntry<>(this.externalizer.readObject(input));
-        Set<String> attributes = entry.getAttributes();
-        int size = input.readInt();
-        for (int i = 0; i < size; ++i) {
-            attributes.add(input.readUTF());
-        }
-        return entry;
+        return new FineSessionCacheEntry<>(this.externalizer.readObject(input));
     }
 }

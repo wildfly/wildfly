@@ -20,7 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -122,7 +122,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.httpcomponents.httpcore>4.3.2</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
-        <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
+        <version.org.apache.lucene>4.8.1</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
@@ -143,10 +143,10 @@
         <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>5.1.2.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hibernate.hql>1.0.0.Alpha6</version.org.hibernate.hql>
-        <version.org.hibernate.search>4.5.1.Final</version.org.hibernate.search>
+        <version.org.hibernate.hql>1.1.0.Alpha3</version.org.hibernate.hql>
+        <version.org.hibernate.search>5.0.0.Alpha7</version.org.hibernate.search>
         <version.org.hornetq>2.4.4.Final</version.org.hornetq>
-        <version.org.infinispan>6.0.2.Final</version.org.infinispan>
+        <version.org.infinispan>7.0.0.CR2</version.org.infinispan>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.jasypt>1.9.1</version.org.jasypt>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
@@ -699,9 +699,7 @@
                                             <goal>clean</goal>
                                             <goal>genkey</goal>
                                             <goal>generateKeyPair</goal>
-                                            <goal>
-                                            	generateSecretKey
-                                            </goal>
+                                            <goal>generateSecretKey</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
@@ -3530,7 +3528,7 @@
 
             <dependency>
                 <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-analyzers</artifactId>
+                <artifactId>lucene-analyzers-common</artifactId>
                 <version>${version.org.apache.lucene}</version>
             </dependency>
             <dependency>
@@ -3546,6 +3544,11 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-memory</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queries</artifactId>
                 <version>${version.org.apache.lucene}</version>
             </dependency>
 
@@ -4110,8 +4113,8 @@
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>hibernate-search-analyzers</artifactId>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4223,6 +4226,10 @@
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-osgi</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -4235,16 +4242,12 @@
                         <artifactId>jgroups</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.marshalling</groupId>
-                        <artifactId>jboss-marshalling-river</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-osgi</artifactId>
                     </exclusion>
                     <!-- TODO remove this exclusion once this supports JTA 1.2 -->
                     <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
@@ -4273,6 +4276,10 @@
                         <groupId>commons-pool</groupId>
                         <artifactId>commons-pool</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.marshalling</groupId>
+                        <artifactId>jboss-marshalling-osgi</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -4282,12 +4289,12 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-lucene-v3</artifactId>
+                <artifactId>infinispan-objectfilter</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.lucene</groupId>
-                        <artifactId>lucene-core</artifactId>
+                        <groupId>org.hibernate.hql</groupId>
+                        <artifactId>hibernate-hql-parser</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -4311,6 +4318,10 @@
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-search-infinispan</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-serialization-avro</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

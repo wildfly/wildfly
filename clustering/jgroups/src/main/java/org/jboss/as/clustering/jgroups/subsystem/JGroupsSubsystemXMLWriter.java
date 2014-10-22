@@ -119,7 +119,6 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writeProtocolProperties(writer, protocol);
     }
 
-
     private static void writeProtocolProperties(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
         // the format of the property elements
         //  "property" => {

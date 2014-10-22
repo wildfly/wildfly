@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns="urn:infinispan:config:7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd">
+    <cache-container name="default" shutdown-hook="DONT_REGISTER">
+        <local-cache name="LuceneIndexesMetadata"/>
+        <local-cache name="LuceneIndexesData"/>
+        <local-cache name="LuceneIndexesLocking"/>
+    </cache-container>
+</infinispan>

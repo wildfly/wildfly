@@ -25,15 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.xa.XAResource;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.TransactionCoordinator;
-import org.infinispan.transaction.TransactionTable;
-import org.infinispan.transaction.xa.recovery.RecoveryManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.TxInterceptor;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -84,19 +77,6 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
 
         this.cache = container.getCache(this.name);
         this.cache.start();
-
-        // Temporary workaround for ISPN-4196
-        Configuration config = this.cache.getCacheConfiguration();
-        if (config.transaction().transactionMode().isTransactional()) {
-            ComponentRegistry registry = this.cache.getAdvancedCache().getComponentRegistry();
-            InterceptorChain chain = registry.getComponent(InterceptorChain.class);
-            TransactionTable table = registry.getComponent(TransactionTable.class);
-            TransactionCoordinator coordinator = registry.getComponent(TransactionCoordinator.class);
-            RecoveryManager recovery = registry.getComponent(RecoveryManager.class);
-            TxInterceptor interceptor = new TxInterceptor();
-            interceptor.init(table, config, coordinator, this.cache.getAdvancedCache().getRpcManager(), recovery);
-            chain.replaceInterceptor(interceptor, org.infinispan.interceptors.TxInterceptor.class);
-        }
 
         XAResourceRecoveryRegistry recoveryRegistry = this.dependencies.getRecoveryRegistry();
         if (recoveryRegistry != null) {

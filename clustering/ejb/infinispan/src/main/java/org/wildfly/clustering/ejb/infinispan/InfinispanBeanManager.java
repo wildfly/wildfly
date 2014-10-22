@@ -31,7 +31,7 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.notifications.KeyFilter;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -75,7 +75,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <T> the bean type
  */
 @Listener(primaryOnly = true)
-public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, TransactionBatch>, KeyFilter {
+public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, TransactionBatch>, KeyFilter<Object> {
 
     private final Cache<G, BeanGroupEntry<I, T>> groupCache;
     private final String beanName;

@@ -80,12 +80,9 @@ public class CacheConfigurationService extends AbstractCacheConfigurationService
         if (moduleId != null) {
             try {
                 Module module = this.dependencies.getModuleLoader().loadModule(moduleId);
-                // Override classloader with that of the specified module
-                ClassLoader loader = module.getClassLoader();
-                builder.classLoader(loader);
 
                 GroupsConfigurationBuilder groupsBuilder = builder.clustering().hash().groups();
-                for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, loader)) {
+                for (Grouper<?> grouper: ServiceLoader.load(Grouper.class, module.getClassLoader())) {
                     groupsBuilder.addGrouper(grouper);
                 }
             } catch (ModuleLoadException e) {
