@@ -545,6 +545,8 @@
             <maven-resource group="javax.validation" artifact="validation-api"/>
         </module-def>
 
+        <module-def name="javax.websocket.api"/>
+
         <module-def name="javax.ws.rs.api">
             <maven-resource group="org.jboss.spec.javax.ws.rs" artifact="jboss-jaxrs-api_1.1_spec"/>
         </module-def>

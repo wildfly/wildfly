@@ -47,6 +47,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
 
     private static final ModuleIdentifier SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
     private static final ModuleIdentifier JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
+    private static final ModuleIdentifier WEBSOCKET_API = ModuleIdentifier.create("javax.websocket.api");
     private static final ModuleIdentifier JBOSS_WEB = ModuleIdentifier.create("org.jboss.as.web");
 
     static {
@@ -73,6 +74,7 @@ public class WarClassloadingDependencyProcessor implements DeploymentUnitProcess
         // Add module dependencies on Java EE apis
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, SERVLET_API, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSP_API, false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WEBSOCKET_API, false, false, true, false));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
 
