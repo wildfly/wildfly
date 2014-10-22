@@ -33,7 +33,7 @@ import org.jboss.logging.Messages;
 /**
  * Date: 05.11.2011
  *
- * 12650 - 12699
+ * 12660 - 12699
  *
  * @author Stuart Douglas
  * @author Stan Silvert
@@ -46,24 +46,24 @@ public interface JSFMessages {
      */
     JSFMessages MESSAGES = Messages.getBundle(JSFMessages.class);
 
-    @Message(id = 12650, value = "Failed to load annotated class: %s")
+    @Message(id = 12660, value = "Failed to load annotated class: %s")
     String classLoadingFailed(DotName clazz);
 
-    @Message(id = 12651, value = "Annotation %s in class %s is only allowed on classes")
+    @Message(id = 12661, value = "Annotation %s in class %s is only allowed on classes")
     String invalidAnnotationLocation(Object annotation, AnnotationTarget classInfo);
 
-    @Message(id = 12652, value = "Instance creation failed")
+    @Message(id = 12662, value = "Instance creation failed")
     RuntimeException instanceCreationFailed(@Cause Throwable t);
 
-    @Message(id = 12653, value = "Instance destruction failed")
+    @Message(id = 12663, value = "Instance destruction failed")
     RuntimeException instanceDestructionFailed(@Cause Throwable t);
 
-    @Message(id = 12654, value = "Thread local injection container not set")
+    @Message(id = 12664, value = "Thread local injection container not set")
     IllegalStateException noThreadLocalInjectionContainer();
 
-    @Message(id = 12655, value = "@ManagedBean is only allowed at class level %s")
+    @Message(id = 12665, value = "@ManagedBean is only allowed at class level %s")
     String invalidManagedBeanAnnotation(AnnotationTarget target);
 
-    @Message(id = 12656, value = "Default JSF implementation slot '%s' is invalid")
+    @Message(id = 12666, value = "Default JSF implementation slot '%s' is invalid")
     DeploymentUnitProcessingException invalidDefaultJSFImpl(String defaultJsfVersion);
 }

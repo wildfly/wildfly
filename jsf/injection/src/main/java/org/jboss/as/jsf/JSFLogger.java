@@ -22,21 +22,21 @@
 
 package org.jboss.as.jsf;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
-
 /**
  * Date: 05.11.2011
- *
- *
- * 12600-12649
+ * <p/>
+ * <p/>
+ * 12600-12609
  *
  * @author Stuart Douglas
  */
@@ -61,6 +61,6 @@ public interface JSFLogger extends BasicLogger {
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = WARN)
-    @Message(id = 12603, value = "Unknown JSF version %s %s will be used instead")
+    @Message(id = 12603, value = "Unknown JSF version '%s'.  Default version '%s' will be used instead.")
     void unknownJSFVersion(String version, String referenceVersion);
 }
