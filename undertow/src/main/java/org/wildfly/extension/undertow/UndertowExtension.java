@@ -49,6 +49,7 @@ public class UndertowExtension implements Extension {
     protected static final PathElement PATH_JSP = PathElement.pathElement(Constants.SETTING, Constants.JSP);
     protected static final PathElement PATH_SESSION_COOKIE = PathElement.pathElement(Constants.SETTING, Constants.SESSION_COOKIE);
     protected static final PathElement PATH_PERSISTENT_SESSIONS = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
+    protected static final PathElement PATH_WEBSOCKETS = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     protected static final PathElement AJP_LISTENER_PATH = PathElement.pathElement(Constants.AJP_LISTENER);
     protected static final PathElement HOST_PATH = PathElement.pathElement(Constants.HOST);

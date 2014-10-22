@@ -43,7 +43,7 @@
         <xs:sequence>
             <xs:element name="buffer-cache" type="buffer-cacheType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="server" type="serverType" minOccurs="1" maxOccurs="unbounded"/>
-            <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="filters" type="filterType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
@@ -169,6 +169,7 @@
             <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="persistent-sessions" type="persistent-sessionsType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="websockets" type="websocketsType" maxOccurs="1" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
@@ -179,7 +180,7 @@
         <xs:attribute name="ignore-flush" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="eager-filter-initialization" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="default-session-timeout" type="xs:integer" use="optional" default="30"/>
-
+        <xs:attribute name="disable-caching-for-secured-pages" type="xs:boolean" use="optional" default="true"/>
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
@@ -191,6 +192,12 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
         <xs:attribute name="default-web-module" use="optional" type="xs:string" default="ROOT.war"/>
+    </xs:complexType>
+
+    <xs:complexType name="websocketsType">
+        <xs:attribute name="buffer-pool" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="dispatch-to-worker" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="jsp-configurationType">

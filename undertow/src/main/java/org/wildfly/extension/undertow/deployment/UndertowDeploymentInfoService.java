@@ -57,6 +57,7 @@ import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -225,8 +226,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ControlPoint> controlPointInjectedValue = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
     private final String topLevelDeploymentName;
+    private final WebSocketDeploymentInfo webSocketDeploymentInfo;
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, String topLevelDeploymentName) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, String topLevelDeploymentName, WebSocketDeploymentInfo webSocketDeploymentInfo) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -250,6 +252,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.servletExtensions = servletExtensions;
         this.sharedSessionManagerConfig = sharedSessionManagerConfig;
         this.topLevelDeploymentName = topLevelDeploymentName;
+        this.webSocketDeploymentInfo = webSocketDeploymentInfo;
     }
 
     @Override
@@ -561,11 +564,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             //in most cases flush just hurts performance for no good reason
             d.setIgnoreFlush(servletContainer.isIgnoreFlush());
 
-            //controlls initizalization of filters on start of application
+            //controls initialization of filters on start of application
             d.setEagerFilterInit(servletContainer.isEagerFilterInit());
 
             d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
             d.setServletStackTraces(servletContainer.getStackTraces());
+            d.setDisableCachingForSecuredPages(servletContainer.isDisableCachingForSecuredPages());
 
             if (servletContainer.getSessionPersistenceManager() != null) {
                 d.setSessionPersistenceManager(servletContainer.getSessionPersistenceManager());
@@ -900,9 +904,21 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             // Setup an deployer configured ServletContext attributes
-            for (ServletContextAttribute attribute : attributes) {
-                d.addServletContextAttribute(attribute.getName(), attribute.getValue());
+            if(attributes != null) {
+                for (ServletContextAttribute attribute : attributes) {
+                    d.addServletContextAttribute(attribute.getName(), attribute.getValue());
+                }
             }
+
+            //now setup websockets if they are enabled
+            if(servletContainer.isWebsocketsEnabled() && webSocketDeploymentInfo != null) {
+                webSocketDeploymentInfo.setBuffers(servletContainer.getWebsocketsBufferPool().getValue());
+                webSocketDeploymentInfo.setWorker(servletContainer.getWebsocketsWorker().getValue());
+                webSocketDeploymentInfo.setDispatchToWorkerThread(servletContainer.isDispatchWebsocketInvocationToWorker());
+                d.addServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo);
+
+            }
+
 
             if (mergedMetaData.getLocalEncodings() != null &&
                     mergedMetaData.getLocalEncodings().getMappings() != null) {
@@ -1355,6 +1371,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private List<ServletExtension> servletExtensions;
         private SharedSessionManagerConfig sharedSessionManagerConfig;
         private boolean explodedDeployment;
+        private WebSocketDeploymentInfo webSocketDeploymentInfo;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
             this.mergedMetaData = mergedMetaData;
@@ -1475,8 +1492,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setWebSocketDeploymentInfo(WebSocketDeploymentInfo webSocketDeploymentInfo) {
+            this.webSocketDeploymentInfo = webSocketDeploymentInfo;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, topLevelDeploymentName);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions, sharedSessionManagerConfig, topLevelDeploymentName, webSocketDeploymentInfo);
         }
     }
 

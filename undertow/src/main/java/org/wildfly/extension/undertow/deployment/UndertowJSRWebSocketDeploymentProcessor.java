@@ -37,24 +37,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
-import org.xnio.Pool;
-import org.xnio.XnioWorker;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.Endpoint;
 import javax.websocket.server.ServerApplicationConfig;
-import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 import java.lang.reflect.Modifier;
@@ -170,7 +164,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
             doDeployment(webSocketDeploymentInfo, annotatedEndpoints, config, endpoints);
 
-            installWebsockets(phaseContext, metaData, webSocketDeploymentInfo);
+            installWebsockets(phaseContext, webSocketDeploymentInfo);
 
         } finally {
             Thread.currentThread().setContextClassLoader(oldCl);
@@ -178,38 +172,22 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
     }
 
-    private void installWebsockets(final DeploymentPhaseContext phaseContext, final WarMetaData metaData, final WebSocketDeploymentInfo webSocketDeploymentInfo) {
+    private void installWebsockets(final DeploymentPhaseContext phaseContext, final WebSocketDeploymentInfo webSocketDeploymentInfo) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        FiltersMetaData filters = metaData.getMergedJBossWebMetaData().getFilters();
-        if (filters == null) {
-            metaData.getMergedJBossWebMetaData().setFilters(filters = new FiltersMetaData());
-        }
 
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(ServerContainer.class.getName(), webSocketDeploymentInfo));
-
-        final ServiceName serviceName = deploymentUnit.getServiceName().append(WebSocketContainerService.SERVICE_NAME);
-        WebSocketContainerService service = new WebSocketContainerService(webSocketDeploymentInfo);
-        phaseContext.getServiceTarget().addService(serviceName, service)
-                .addDependency(IOServices.WORKER.append("default"), XnioWorker.class, service.getXnioWorker()) //TODO: make this configurable
-                .addDependency(IOServices.BUFFER_POOL.append("default"), Pool.class, service.getInjectedBuffer())
-                .install();
-
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo));
+        deploymentUnit.putAttachment(UndertowAttachments.WEB_SOCKET_DEPLOYMENT_INFO, webSocketDeploymentInfo);
 
         //bind the container to JNDI to make it available for resource injection
         //this is not request by the spec, but is a convenient extension
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-        bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, serviceName, webSocketDeploymentInfo);
-
-        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, serviceName);
+        bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, webSocketDeploymentInfo);
     }
 
-    private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final ServiceName serviceName, final WebSocketDeploymentInfo webSocketInfo) {
+    private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final WebSocketDeploymentInfo webSocketInfo) {
         final ServiceName bindingServiceName = contextServiceName.append("ServerContainer");
         final BinderService binderService = new BinderService("ServerContainer");
         serviceTarget.addService(bindingServiceName, binderService)
-                .addDependency(serviceName)
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .install();
 

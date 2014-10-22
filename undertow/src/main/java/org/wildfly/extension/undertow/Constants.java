@@ -139,4 +139,6 @@ public interface Constants {
     String CERTIFICATE_FORWARDING = "certificate-forwarding";
     String OPTIONS = "options";
     String IGNORE_FLUSH = "ignore-flush";
+
+    String WEBSOCKETS = "websockets";
 }
