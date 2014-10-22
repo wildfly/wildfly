@@ -29,6 +29,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.naming.management.JndiViewOperation;
+import org.jboss.dmr.ModelType;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the Naming subsystem's root management resource.
@@ -42,6 +43,8 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
     static final SimpleOperationDefinition JNDI_VIEW = new SimpleOperationDefinitionBuilder(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME))
             .addAccessConstraint(NamingExtension.JNDI_VIEW_CONSTRAINT)
             .withFlag(OperationEntry.Flag.RUNTIME_ONLY)
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.STRING)
             .build();
 
     private NamingSubsystemRootResourceDefinition() {
