@@ -134,4 +134,7 @@ public interface PicketLinkLogger extends BasicLogger {
 
     @Message(id = 104, value = "Could not configure SAML Metadata to deployment [%s].")
     IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
+
+    @Message(id = 105, value = "Handler [%s] already defined.")
+    IllegalStateException federationHandlerAlreadyDefined(String clazz);
 }
