@@ -31,6 +31,7 @@ import javax.transaction.xa.XAResource;
 
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -66,12 +67,19 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     public MessageEndpoint createEndpoint(XAResource xaResource, long timeout) throws UnavailableException {
         Object delegate = service.obtain(timeout, MILLISECONDS);
         MessageEndpointInvocationHandler handler = new MessageEndpointInvocationHandler(service, delegate, xaResource);
+        // New instance creation leads to component initialization which needs to have the TCCL that corresponds to the
+        // component classloader. @see https://issues.jboss.org/browse/WFLY-3989
+        final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(this.factory.getClassLoader());
             return (MessageEndpoint) factory.newInstance(handler);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        } finally {
+            // reset TCCL
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
         }
     }
 
@@ -90,4 +98,5 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
         // The MDB class is the message endpoint class
         return this.endpointClass;
     }
+
 }

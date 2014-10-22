@@ -45,6 +45,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
@@ -174,9 +175,18 @@ public final class ViewService implements Service<ComponentView> {
         }
 
         public ManagedReference createInstance(Map<Object, Object> contextData) throws Exception {
-            return viewInstanceFactory.createViewInstance(this, contextData);
+            // view instance creation can lead to instantiating application component classes (like the MDB implementation class
+            // or even the EJB implementation class of a no-interface view exposing bean). Such class initialization needs to
+            // have the TCCL set to the component/application's classloader. @see https://issues.jboss.org/browse/WFLY-3989
+            final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(component.getComponentClass().getClassLoader());
+                return viewInstanceFactory.createViewInstance(this, contextData);
+            } finally {
+                // reset the TCCL
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
+            }
         }
-
 
         @Override
         public Object invoke(InterceptorContext interceptorContext) throws Exception {
