@@ -62,7 +62,8 @@
                                             <property name="management.address" value="${node0}"/>
                                             <property name="node1" value="${node1}"/>
                                             <property name="node0" value="${node0}"/>
-                                            <property name="jboss.dist" value="${jboss.dist}" />
+                                            <property name="mcast.ttl" value="${mcast.ttl}"/>
+                                            <property name="jboss.dist" value="${jboss.dist}"/>
                                             <target name="build-manual-mode"/>
                                         </ant>
                                     </target>
@@ -100,7 +101,7 @@
                         </configuration>
 
                     </plugin>
-                                                            
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
