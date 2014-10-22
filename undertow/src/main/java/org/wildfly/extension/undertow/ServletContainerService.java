@@ -31,6 +31,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.xnio.Pool;
+import org.xnio.XnioWorker;
+
+import java.nio.ByteBuffer;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -51,9 +55,16 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final boolean ignoreFlush;
     private final boolean eagerFilterInit;
     private final int defaultSessionTimeout;
+    private final boolean disableCachingForSecuredPages;
+
+    private final boolean websocketsEnabled;
+    private final InjectedValue<Pool<ByteBuffer>> websocketsBufferPool = new InjectedValue<>();
+    private final InjectedValue<XnioWorker> websocketsWorker = new InjectedValue<>();
+    private final boolean dispatchWebsocketInvocationToWorker;
 
     public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig,
-                                   String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout) {
+                                   String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush, boolean eagerFilterInit, int defaultSessionTimeout,
+                                   boolean disableCachingForSecuredPages, boolean websocketsEnabled, boolean dispatchWebsocketInvocationToWorker) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -63,6 +74,9 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.ignoreFlush = ignoreFlush;
         this.eagerFilterInit = eagerFilterInit;
         this.defaultSessionTimeout = defaultSessionTimeout;
+        this.disableCachingForSecuredPages = disableCachingForSecuredPages;
+        this.websocketsEnabled = websocketsEnabled;
+        this.dispatchWebsocketInvocationToWorker = dispatchWebsocketInvocationToWorker;
     }
 
     public void start(StartContext context) throws StartException {
@@ -103,6 +117,26 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public DirectBufferCache getBufferCache() {
         return bufferCacheInjectedValue.getOptionalValue();
+    }
+
+    public boolean isDisableCachingForSecuredPages() {
+        return disableCachingForSecuredPages;
+    }
+
+    public boolean isDispatchWebsocketInvocationToWorker() {
+        return dispatchWebsocketInvocationToWorker;
+    }
+
+    public InjectedValue<XnioWorker> getWebsocketsWorker() {
+        return websocketsWorker;
+    }
+
+    public InjectedValue<Pool<ByteBuffer>> getWebsocketsBufferPool() {
+        return websocketsBufferPool;
+    }
+
+    public boolean isWebsocketsEnabled() {
+        return websocketsEnabled;
     }
 
     InjectedValue<SessionPersistenceManager> getSessionPersistenceManagerInjectedValue() {
