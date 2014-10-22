@@ -180,8 +180,10 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
         //bind the container to JNDI to make it available for resource injection
         //this is not request by the spec, but is a convenient extension
-        final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-        bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, webSocketDeploymentInfo);
+        if(moduleDescription != null) {
+            final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
+            bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, webSocketDeploymentInfo);
+        }
     }
 
     private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final WebSocketDeploymentInfo webSocketInfo) {
