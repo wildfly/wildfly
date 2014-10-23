@@ -75,7 +75,7 @@ public class JPAStoreResourceDefinition extends AbstractIdentityStoreResourceDef
 
     private static ModelValidationStepHandler[] getModelValidators(SimpleAttributeDefinition[] attributes) {
         return new ModelValidationStepHandler[] {
-            new NotEmptyResourceValidationStepHandler(),
+            NotEmptyResourceValidationStepHandler.INSTANCE,
             new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)
         };
     }

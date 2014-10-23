@@ -22,6 +22,12 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -35,12 +41,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Pedro Silva
@@ -94,11 +94,7 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         performValidation(context);
-        doValidateOnModelStage(context, operation);
         super.execute(context, operation);
-    }
-
-    protected void doValidateOnModelStage(OperationContext context, ModelNode operation) {
     }
 
     protected void performValidation(OperationContext context) {

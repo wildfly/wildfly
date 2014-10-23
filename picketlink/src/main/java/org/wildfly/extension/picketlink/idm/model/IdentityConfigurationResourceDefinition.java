@@ -48,7 +48,7 @@ public class IdentityConfigurationResourceDefinition extends AbstractIDMResource
 
     private static ModelValidationStepHandler[] getModelValidators() {
         return new ModelValidationStepHandler[] {
-            new NotEmptyResourceValidationStepHandler()
+                NotEmptyResourceValidationStepHandler.INSTANCE
         };
     }
 }

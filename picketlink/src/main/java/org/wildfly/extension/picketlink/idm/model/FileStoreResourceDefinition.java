@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import java.io.File;
+
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -32,8 +34,6 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.NotEmptyResourceValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.RequiredChildValidationStepHandler;
-
-import java.io.File;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -76,7 +76,7 @@ public class FileStoreResourceDefinition extends AbstractIdentityStoreResourceDe
 
     private static ModelValidationStepHandler[] getModelValidators() {
         return new ModelValidationStepHandler[] {
-            new NotEmptyResourceValidationStepHandler(),
+            NotEmptyResourceValidationStepHandler.INSTANCE,
             new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)
         };
     }

@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.PicketLinkMessages;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
@@ -36,16 +35,18 @@ import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
  */
 public class NotEmptyResourceValidationStepHandler implements ModelValidationStepHandler {
 
-    public NotEmptyResourceValidationStepHandler() {
+    public static NotEmptyResourceValidationStepHandler INSTANCE = new NotEmptyResourceValidationStepHandler();
+
+    private NotEmptyResourceValidationStepHandler() {
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateChilds(context, operation);
+        validateChildren(context, operation);
         context.stepCompleted();
     }
 
-    protected void validateChilds(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void validateChildren(OperationContext context, ModelNode operation) throws OperationFailedException {
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
 
