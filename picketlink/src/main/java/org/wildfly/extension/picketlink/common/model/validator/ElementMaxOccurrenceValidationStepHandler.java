@@ -23,7 +23,6 @@ package org.wildfly.extension.picketlink.common.model.validator;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
@@ -38,13 +37,13 @@ import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOG
 /**
  * @author Pedro Igor
  */
-public class ElementOccurrenceValidationStepHandler implements OperationStepHandler {
+public class ElementMaxOccurrenceValidationStepHandler implements ModelValidationStepHandler {
 
     private final int maxOccurs;
     private final ModelElement parentElement;
     private final ModelElement element;
 
-    public ElementOccurrenceValidationStepHandler(ModelElement element, ModelElement parentElement, int maxOccurs) {
+    public ElementMaxOccurrenceValidationStepHandler(ModelElement element, ModelElement parentElement, int maxOccurs) {
         this.element = element;
         this.parentElement = parentElement;
         this.maxOccurs = maxOccurs;

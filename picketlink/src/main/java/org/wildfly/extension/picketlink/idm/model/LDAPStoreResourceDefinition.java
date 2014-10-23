@@ -29,6 +29,9 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.NotEmptyResourceValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.RequiredChildValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 /**
@@ -57,7 +60,7 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
     public static final LDAPStoreResourceDefinition INSTANCE = new LDAPStoreResourceDefinition(URL, BIND_DN, BIND_CREDENTIAL, BASE_DN_SUFFIX, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL);
 
     private LDAPStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.LDAP_STORE, new IDMConfigAddStepHandler(attributes), attributes);
+        super(ModelElement.LDAP_STORE, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);
     }
 
     @Override
@@ -66,4 +69,12 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
         addChildResourceDefinition(SupportedTypesResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(CredentialHandlerResourceDefinition.INSTANCE, resourceRegistration);
     }
+
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+            new NotEmptyResourceValidationStepHandler(),
+            new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)
+        };
+    }
+
 }

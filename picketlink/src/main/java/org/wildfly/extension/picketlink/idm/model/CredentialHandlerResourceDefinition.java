@@ -30,6 +30,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -53,10 +55,18 @@ public class CredentialHandlerResourceDefinition extends AbstractIDMResourceDefi
     public static final CredentialHandlerResourceDefinition INSTANCE = new CredentialHandlerResourceDefinition(CLASS_NAME, CODE, MODULE);
 
     private CredentialHandlerResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER, new CredentialHandlerAddHandler(attributes), attributes);
+        super(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER, new IDMConfigAddStepHandler(
+            new ModelValidationStepHandler[] {
+                new UniqueTypeValidationStepHandler(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER) {
+                    @Override
+                    protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                        return getCredentialType(context, model);
+                    }
+                }
+            }, attributes), attributes);
     }
 
-    static String getCredentialType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+    private static String getCredentialType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
         ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
         ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
 

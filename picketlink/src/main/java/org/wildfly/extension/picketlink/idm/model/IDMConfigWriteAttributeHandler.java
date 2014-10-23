@@ -56,6 +56,8 @@ public class IDMConfigWriteAttributeHandler extends RestartParentWriteAttributeH
                 final ModelNode parentModel = Resource.Tools.readModel(resource);
 
                 PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
+
+                context.stepCompleted();
             }
         }, OperationContext.Stage.MODEL);
         super.execute(context, operation);

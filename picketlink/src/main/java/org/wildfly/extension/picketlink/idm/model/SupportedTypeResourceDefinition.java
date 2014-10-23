@@ -30,6 +30,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
@@ -55,10 +57,22 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
     public static final SupportedTypeResourceDefinition INSTANCE = new SupportedTypeResourceDefinition(CLASS_NAME, CODE, MODULE);
 
     private SupportedTypeResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.SUPPORTED_TYPE, new SupportedTypeAddHandler(attributes), attributes);
+        super(ModelElement.SUPPORTED_TYPE, new IDMConfigAddStepHandler(
+            getModelValidators(), attributes), attributes);
     }
 
-    static String getSupportedType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+            new UniqueTypeValidationStepHandler(ModelElement.SUPPORTED_TYPE) {
+                @Override
+                protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                    return getSupportedType(context, model);
+                }
+            }
+        };
+    }
+
+    private static String getSupportedType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
         ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
         ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
 

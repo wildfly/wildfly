@@ -19,34 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.picketlink.idm.model;
+package org.wildfly.extension.picketlink.common.model.validator;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 
-import static org.wildfly.extension.picketlink.idm.model.LDAPStoreMappingResourceDefinition.getMappingType;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Igor
  */
-public class LDAPStoreMappingAddHandler extends IDMConfigAddStepHandler {
+public class NotEmptyResourceValidationStepHandler implements ModelValidationStepHandler {
 
-    LDAPStoreMappingAddHandler(AttributeDefinition... attributes) {
-        super(attributes);
+    public NotEmptyResourceValidationStepHandler() {
     }
 
     @Override
-    protected void doValidateOnModelStage(OperationContext context, ModelNode operation) {
-        context.addStep(new UniqueTypeValidationStepHandler(ModelElement.LDAP_STORE_MAPPING) {
-            @Override
-            protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
-                return getMappingType(context, model);
-            }
-        }, OperationContext.Stage.MODEL);
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        validateChilds(context, operation);
+        context.stepCompleted();
+    }
 
+    protected void validateChilds(OperationContext context, ModelNode operation) throws OperationFailedException {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+
+        if (resource.getChildTypes().isEmpty()) {
+            throw ROOT_LOGGER.emptyResource(pathAddress.getLastElement().toString());
+        }
     }
 }

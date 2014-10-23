@@ -24,7 +24,6 @@ package org.wildfly.extension.picketlink.common.model.validator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
@@ -35,7 +34,7 @@ import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOG
 /**
  * @author Pedro Igor
  */
-public class AlternativeAttributeValidationStepHandler implements OperationStepHandler {
+public class AlternativeAttributeValidationStepHandler implements ModelValidationStepHandler {
 
     private final AttributeDefinition[] attributes;
 

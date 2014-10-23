@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
-import org.wildfly.extension.picketlink.common.model.validator.ElementOccurrenceValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.ElementMaxOccurrenceValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 
 import java.util.ArrayList;
@@ -60,10 +60,10 @@ public class IdentityProviderConfigAddStepHandler extends RestartParentResourceA
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.addStep(
-            new ElementOccurrenceValidationStepHandler(ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, ModelElement.IDENTITY_PROVIDER,
+            new ElementMaxOccurrenceValidationStepHandler(ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, ModelElement.IDENTITY_PROVIDER,
                 1), OperationContext.Stage.MODEL);
         context.addStep(
-            new ElementOccurrenceValidationStepHandler(ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR, ModelElement.IDENTITY_PROVIDER,
+            new ElementMaxOccurrenceValidationStepHandler(ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR, ModelElement.IDENTITY_PROVIDER,
                 1), OperationContext.Stage.MODEL);
         if (!this.alternativeAttributes.isEmpty()) {
             context.addStep(new AlternativeAttributeValidationStepHandler(

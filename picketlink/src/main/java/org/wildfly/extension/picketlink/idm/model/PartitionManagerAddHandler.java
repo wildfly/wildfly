@@ -275,6 +275,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     }
                 }
             }
+        } else {
+            throw ROOT_LOGGER.idmNoSupportedTypesDefined();
         }
 
         return storeConfig;
