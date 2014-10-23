@@ -241,7 +241,7 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
             name = reader.getAttributeValue("", COMMON_CODE.getName());
 
             if (name != null) {
-                name = CredentialTypeEnum.forType(name);
+                name = AttributedTypeEnum.forType(name);
             }
         }
 
