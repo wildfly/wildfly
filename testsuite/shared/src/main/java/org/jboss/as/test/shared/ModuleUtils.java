@@ -88,7 +88,7 @@ public class ModuleUtils {
     }
 
 
-    private static void createTestModule(String moduleName, InputStream moduleXml, JavaArchive jar) throws IOException {
+    public static void createTestModule(String moduleName, InputStream moduleXml, JavaArchive ... jars) throws IOException {
         File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
         if (testModuleRoot.exists()) {
             throw new IllegalArgumentException(testModuleRoot + " already exists");
@@ -100,12 +100,14 @@ public class ModuleUtils {
 
         copyFile(new File(file, "module.xml"), moduleXml);
 
-        FileOutputStream jarFile = new FileOutputStream(new File(file, moduleName + ".jar"));
-        try {
-            jar.as(ZipExporter.class).exportTo(jarFile);
-        } finally {
-            jarFile.flush();
-            jarFile.close();
+        for(JavaArchive jar : jars) {
+            FileOutputStream jarFile = new FileOutputStream(new File(file, jar.getName()));
+            try {
+                jar.as(ZipExporter.class).exportTo(jarFile);
+            } finally {
+                jarFile.flush();
+                jarFile.close();
+            }
         }
 
     }
