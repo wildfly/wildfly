@@ -31,11 +31,12 @@ import org.picketlink.identity.federation.web.config.AbstractSAMLConfigurationPr
 import org.picketlink.identity.federation.web.config.IDPMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPPostMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPRedirectMetadataConfigurationProvider;
-import org.wildfly.extension.picketlink.PicketLinkMessages;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.config.SPConfiguration;
 
 import java.io.InputStream;
+
+import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 
 /**
  * <p> {@link org.picketlink.identity.federation.web.util.SAMLConfigurationProvider} to be used to with identity providers and service providers
@@ -66,8 +67,12 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
 
                     providerType = metadataConfig;
                 } catch (ProcessingException e) {
-                    throw PicketLinkMessages.MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
+                    throw MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
                 }
+            }
+
+            if (configParsedIDPType != null) {
+                configuration.importFrom(configParsedIDPType);
             }
 
             return (IDPType) providerType;
@@ -97,8 +102,12 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
 
                     providerType = metadataConfig;
                 } catch (ProcessingException e) {
-                    throw PicketLinkMessages.MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
+                    throw MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
                 }
+            }
+
+            if (configParsedSPType != null) {
+                configuration.importFrom(configParsedSPType);
             }
 
             return (SPType) providerType;
