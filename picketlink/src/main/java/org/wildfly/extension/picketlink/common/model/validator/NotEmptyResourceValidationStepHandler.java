@@ -21,30 +21,32 @@
  */
 package org.wildfly.extension.picketlink.common.model.validator;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
-
 /**
  * @author Pedro Igor
  */
 public class NotEmptyResourceValidationStepHandler implements ModelValidationStepHandler {
 
-    public NotEmptyResourceValidationStepHandler() {
+    public static NotEmptyResourceValidationStepHandler INSTANCE = new NotEmptyResourceValidationStepHandler();
+
+    private NotEmptyResourceValidationStepHandler() {
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateChilds(context, operation);
+        validateChildren(context, operation);
         context.stepCompleted();
     }
 
-    protected void validateChilds(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void validateChildren(OperationContext context, ModelNode operation) throws OperationFailedException {
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
 

@@ -72,7 +72,7 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
 
     private static ModelValidationStepHandler[] getModelValidators() {
         return new ModelValidationStepHandler[] {
-            new NotEmptyResourceValidationStepHandler(),
+            NotEmptyResourceValidationStepHandler.INSTANCE,
             new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)
         };
     }
