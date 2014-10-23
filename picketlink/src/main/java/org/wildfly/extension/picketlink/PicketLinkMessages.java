@@ -77,6 +77,12 @@ public interface PicketLinkMessages {
     @Message(id = 12523, value = "Type [%s] already defined.")
     IllegalStateException typeAlreadyDefined(String clazz);
 
+    @Message(id = 12524, value = "[%s] can not be empty.")
+    OperationFailedException emptyResource(String parentPathElement);
+
+    @Message(id = 12526, value = "[%s] requires child [%s].")
+    OperationFailedException requiredChild(String parentPathElement, String childPathElement);
+
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -101,6 +107,9 @@ public interface PicketLinkMessages {
 
     @Message(id = 12522, value = "No supported type provided.")
     OperationFailedException idmNoSupportedTypesDefined();
+
+    @Message(id = 12525, value = "No mapping was defined.")
+    OperationFailedException idmLdapNoMappingDefined();
 
     // Federation Messages
     @Message(id = 12510, value = "No Identity Provider configuration found for federation [%s]. ")

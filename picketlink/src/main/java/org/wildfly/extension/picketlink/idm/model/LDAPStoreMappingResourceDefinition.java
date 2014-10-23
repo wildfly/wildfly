@@ -31,6 +31,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -66,7 +68,15 @@ public class LDAPStoreMappingResourceDefinition extends AbstractIDMResourceDefin
     public static final LDAPStoreMappingResourceDefinition INSTANCE = new LDAPStoreMappingResourceDefinition(CLASS_NAME, CODE, MODULE, BASE_DN, OBJECT_CLASSES, PARENT_ATTRIBUTE, RELATES_TO);
 
     private LDAPStoreMappingResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.LDAP_STORE_MAPPING, new LDAPStoreMappingAddHandler(attributes), attributes);
+        super(ModelElement.LDAP_STORE_MAPPING, new IDMConfigAddStepHandler(
+            new ModelValidationStepHandler[] {
+                new UniqueTypeValidationStepHandler(ModelElement.LDAP_STORE_MAPPING) {
+                    @Override
+                    protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                        return getMappingType(context, model);
+                    }
+                }
+            }, attributes), attributes);
     }
 
     @Override
@@ -74,7 +84,7 @@ public class LDAPStoreMappingResourceDefinition extends AbstractIDMResourceDefin
         addChildResourceDefinition(LDAPStoreAttributeResourceDefinition.INSTANCE, resourceRegistration);
     }
 
-    static String getMappingType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+    private static String getMappingType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
         ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
         ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
 

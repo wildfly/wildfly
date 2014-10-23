@@ -28,14 +28,19 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Pedro Silva
@@ -43,35 +48,62 @@ import java.util.List;
 public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
 
     private final AttributeDefinition[] attributes;
-    private final List<AttributeDefinition> alternativeAttributes = new ArrayList<AttributeDefinition>();
+    private final List<ModelValidationStepHandler> modelValidators = new ArrayList<ModelValidationStepHandler>();
 
     IDMConfigAddStepHandler(final AttributeDefinition... attributes) {
+        this(null, attributes);
+    }
+
+    IDMConfigAddStepHandler(ModelValidationStepHandler[] modelValidators, final AttributeDefinition... attributes) {
         super(ModelElement.PARTITION_MANAGER.getName());
         this.attributes = attributes != null ? attributes : new AttributeDefinition[0];
+        configureModelValidators(modelValidators);
+    }
+
+    private void configureModelValidators(ModelValidationStepHandler[] modelValidators) {
+        List<AttributeDefinition> alternativeAttributes = new ArrayList<AttributeDefinition>();
 
         for (AttributeDefinition attribute : this.attributes) {
             if (attribute.getAlternatives() != null && attribute.getAlternatives().length > 0) {
-                this.alternativeAttributes.add(attribute);
+                alternativeAttributes.add(attribute);
             }
         }
+
+        if (!alternativeAttributes.isEmpty()) {
+            this.modelValidators.add(new AlternativeAttributeValidationStepHandler(
+                alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()])));
+        }
+
+        if (modelValidators != null) {
+            this.modelValidators.addAll(Arrays.asList(modelValidators));
+        }
+
+        this.modelValidators.add(new ModelValidationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final PathAddress address = getParentAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+                Resource resource = context.readResourceFromRoot(address);
+                final ModelNode parentModel = Resource.Tools.readModel(resource);
+
+                PartitionManagerAddHandler.INSTANCE.validateModel(context, address.getLastElement().getValue(), parentModel);
+                context.stepCompleted();
+            }
+        });
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateAlternativeAttributes(context);
+        performValidation(context);
         doValidateOnModelStage(context, operation);
         super.execute(context, operation);
     }
 
     protected void doValidateOnModelStage(OperationContext context, ModelNode operation) {
-
     }
 
-    protected void validateAlternativeAttributes(OperationContext context) {
-        if (!this.alternativeAttributes.isEmpty()) {
-            context.addStep(new AlternativeAttributeValidationStepHandler(
-                    this.alternativeAttributes.toArray(new AttributeDefinition[this.alternativeAttributes.size()]))
-                , OperationContext.Stage.MODEL);
+    protected void performValidation(OperationContext context) {
+        for (ModelValidationStepHandler validatonStepHandler : this.modelValidators) {
+            context.addStep(validatonStepHandler, OperationContext.Stage.MODEL);
         }
     }
 
