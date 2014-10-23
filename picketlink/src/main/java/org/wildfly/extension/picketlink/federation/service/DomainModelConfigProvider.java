@@ -31,9 +31,9 @@ import org.picketlink.identity.federation.web.config.AbstractSAMLConfigurationPr
 import org.picketlink.identity.federation.web.config.IDPMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPPostMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPRedirectMetadataConfigurationProvider;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.config.SPConfiguration;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.io.InputStream;
 
@@ -70,6 +70,10 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
                 }
             }
 
+            if (configParsedIDPType != null) {
+                configuration.importFrom(configParsedIDPType);
+            }
+
             return (IDPType) providerType;
         }
 
@@ -99,6 +103,10 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
                 } catch (ProcessingException e) {
                     throw PicketLinkLogger.ROOT_LOGGER.federationSAMLMetadataConfigError(configuration.getAlias(), e);
                 }
+            }
+
+            if (configParsedSPType != null) {
+                configuration.importFrom(configParsedSPType);
             }
 
             return (SPType) providerType;
