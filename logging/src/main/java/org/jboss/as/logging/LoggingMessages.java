@@ -744,4 +744,14 @@ public interface LoggingMessages {
      */
     @Message(id = 11597, value = "The suffix (%s) can not contain seconds or milliseconds.")
     String suffixContainsMillis(String suffix);
+
+    /**
+     * Creates an exception indicating the path is a directory and cannot be used as a log file.
+     *
+     * @param path the path attempting to be used as a log file
+     *
+     * @return an {@link org.jboss.as.controller.OperationFailedException} for the error.
+     */
+    @Message(id = 11598, value = "Path '%s' is a directory and cannot be used as a log file.")
+    OperationFailedException invalidLogFile(String path);
 }

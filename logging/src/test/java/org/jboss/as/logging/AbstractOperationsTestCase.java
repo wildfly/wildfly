@@ -121,9 +121,17 @@ public abstract class AbstractOperationsTestCase extends AbstractLoggingSubsyste
         return result;
     }
 
+    protected ModelNode executeOperationForFailure(final KernelServices kernelServices, final ModelNode op) {
+        final ModelNode result = kernelServices.executeOperation(op);
+        assertFalse("Operation was expected to fail: " + op, SubsystemOperations.isSuccessfulOutcome(result));
+        return result;
+    }
+
     protected ModelNode createFileValue(final String relativeTo, final String path) {
         final ModelNode file = new ModelNode().setEmptyObject();
-        file.get(PathResourceDefinition.RELATIVE_TO.getName()).set(relativeTo);
+        if (relativeTo != null) {
+            file.get(PathResourceDefinition.RELATIVE_TO.getName()).set(relativeTo);
+        }
         file.get(PathResourceDefinition.PATH.getName()).set(path);
         return file;
     }

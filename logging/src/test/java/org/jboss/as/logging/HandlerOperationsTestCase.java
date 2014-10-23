@@ -372,6 +372,8 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         verifyRemoved(kernelServices, address);
         removeFile(filename);
         removeFile(newFilename);
+
+        testCommonFileOperations(kernelServices, address);
     }
 
     private void testPeriodicRotatingFileHandler(final KernelServices kernelServices, final String profileName) throws Exception {
@@ -408,6 +410,8 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         verifyRemoved(kernelServices, address);
         removeFile(filename);
         removeFile(newFilename);
+
+        testCommonFileOperations(kernelServices, address);
     }
 
     private void testPeriodicSizeRotatingFileHandler(final KernelServices kernelServices, final String profileName) throws Exception {
@@ -447,6 +451,8 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         verifyRemoved(kernelServices, address);
         removeFile(filename);
         removeFile(newFilename);
+
+        testCommonFileOperations(kernelServices, address);
     }
 
     private void testSizeRotatingFileHandler(final KernelServices kernelServices, final String profileName) throws Exception {
@@ -486,6 +492,8 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         verifyRemoved(kernelServices, address);
         removeFile(filename);
         removeFile(newFilename);
+
+        testCommonFileOperations(kernelServices, address);
     }
 
     // TODO (jrp) do syslog? only concern is will it active it
@@ -525,5 +533,20 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         final ModelNode address = createPatternFormatterAddress(profileName, name).toModelNode();
         final ModelNode op = createRemoveOperation(address);
         executeOperation(kernelServices, op);
+    }
+
+    private void testCommonFileOperations(final KernelServices kernelServices, final ModelNode address) throws Exception {
+        // Create a directory a new directory
+        final LoggingTestEnvironment env = LoggingTestEnvironment.get();
+        final File dir = new File(env.getLogDir().getAbsolutePath(), "file-dir");
+        dir.mkdirs();
+        // Attempt to add a file-handler with the dir for the path
+        ModelNode op = OperationBuilder.createAddOperation(address)
+                .addAttribute(CommonAttributes.FILE, createFileValue(null, dir.toString()))
+                .build();
+        executeOperationForFailure(kernelServices, op);
+
+        // Clean-up
+        dir.delete();
     }
 }
