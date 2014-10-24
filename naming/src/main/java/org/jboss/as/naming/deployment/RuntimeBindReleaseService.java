@@ -22,7 +22,7 @@
 package org.jboss.as.naming.deployment;
 
 import org.jboss.as.naming.logging.NamingLogger;
-import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.SharedBinderService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -33,14 +33,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link Service} which on stop releases runtime installed {@link org.jboss.as.naming.service.BinderService}s.
+ * A {@link Service} which on stop releases acquired {@link org.jboss.as.naming.service.SharedBinderService}s.
  *
  * @author Eduardo Martins
  *
  */
 public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseService.References> {
 
+    /**
+     * the shared binder services owned
+     */
     private final References references = new References();
+
+    /**
+     * the shared binder services to acquire on start
+     */
+    private final List<SharedBinderService> servicesToAcquireOnStart;
+
+    public RuntimeBindReleaseService(List<SharedBinderService> servicesToAcquireOnStart) {
+        this.servicesToAcquireOnStart = servicesToAcquireOnStart;
+    }
+
+    public RuntimeBindReleaseService() {
+        this(null);
+    }
 
     @Override
     public References getValue() throws IllegalStateException, IllegalArgumentException {
@@ -49,7 +65,7 @@ public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseServ
 
     @Override
     public void start(StartContext context) throws StartException {
-
+        references.acquireAll(servicesToAcquireOnStart);
     }
 
     @Override
@@ -59,47 +75,47 @@ public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseServ
 
     public static class References {
 
-        // List instead of Set because binder services use a counter to track its references, which means that for instance, N rebinds will increase the binder service ref counter N times, thus the related BinderServices should have N entries too
-        private volatile List<BinderService> services;
+        // List instead of Set because binder services use a counter to track its references, and a deployment may have multiple components acquiring same shared bind
+        private List<SharedBinderService.Owners> services;
 
-        private References() {
-
+        public synchronized void acquire(SharedBinderService service) {
+            if (services == null) {
+                services = new ArrayList<>();
+            }
+            SharedBinderService.Owners serviceOwners = service.getOwners();
+            serviceOwners.acquire();
+            services.add(serviceOwners);
         }
 
-        public void add(BinderService service) {
-            synchronized (this) {
-                if (services == null) {
-                    services = new ArrayList<BinderService>();
+        public synchronized void acquireAll(List<SharedBinderService> servicesToAcquire) {
+            if (servicesToAcquire != null) {
+                for (SharedBinderService service : servicesToAcquire) {
+                    acquire(service);
                 }
-                services.add(service);
             }
         }
 
-        public boolean contains(ServiceName serviceName) {
-            synchronized (this) {
-                if (services != null) {
-                    for (BinderService service : services) {
-                        if (serviceName.equals(service.getServiceName())) {
-                            return true;
-                        }
+        public synchronized boolean contains(ServiceName serviceName) {
+            if (services != null) {
+                for (SharedBinderService.Owners service : services) {
+                    if (serviceName.equals(service.getServiceName())) {
+                        return true;
                     }
                 }
-                return false;
             }
+            return false;
         }
 
-        public void releaseAll() {
-            synchronized (this) {
-                if (services != null) {
-                    for (BinderService service : services) {
-                        try {
-                            service.release();
-                        } catch (Throwable e) {
-                            NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
-                        }
+        public synchronized void releaseAll() {
+            if (services != null) {
+                for (SharedBinderService.Owners service : services) {
+                    try {
+                        service.release();
+                    } catch (Throwable e) {
+                        NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
                     }
-                    services = null;
                 }
+                services = null;
             }
         }
 

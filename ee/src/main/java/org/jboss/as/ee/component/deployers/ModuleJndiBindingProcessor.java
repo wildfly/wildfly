@@ -42,6 +42,7 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.SharedBinderService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,7 +51,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.CircularDependencyException;
 import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
@@ -228,7 +228,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
             } else {
                 BinderService service;
                 try {
-                    service = new BinderService(bindInfo.getBindName(), bindingConfiguration.getSource(), true);
+                    service = new SharedBinderService(bindInfo.getBindName(), bindingConfiguration.getSource());
                     ServiceBuilder<ManagedReferenceFactory> serviceBuilder = CurrentServiceContainer.getServiceContainer().addService(bindInfo.getBinderServiceName(), service);
                     bindingConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, phaseContext, service.getManagedObjectInjector());
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
@@ -243,11 +243,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
                     }
                 }
-                //as these bindings are not child services
-                //we need to add a listener that released the service when the deployment stops
-                service.acquire();
-                ServiceController<?> unitService = CurrentServiceContainer.getServiceContainer().getService(phaseContext.getDeploymentUnit().getServiceName());
-                unitService.addListener(new BinderReleaseListener(service));
+                if (service instanceof SharedBinderService) {
+                    phaseContext.getDeploymentUnit().addToAttachmentList(org.jboss.as.naming.deployment.Attachments.SHARED_BINDER_SERVICES, (SharedBinderService)service);
+                }
             }
         } else {
             throw EeLogger.ROOT_LOGGER.nullBindingName(bindingConfiguration);
@@ -259,30 +257,5 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
     }
 
     public void undeploy(DeploymentUnit context) {
-    }
-
-    private static class BinderReleaseListener<T> extends AbstractServiceListener<T> {
-
-        private final BinderService binderService;
-
-        public BinderReleaseListener(final BinderService binderService) {
-            this.binderService = binderService;
-        }
-
-        @Override
-        public void listenerAdded(final ServiceController<? extends T> serviceController) {
-            if (serviceController.getState() == ServiceController.State.DOWN || serviceController.getState() == ServiceController.State.STOPPING) {
-                binderService.release();
-                serviceController.removeListener(this);
-            }
-        }
-
-        @Override
-        public void transition(final ServiceController<? extends T> serviceController, final ServiceController.Transition transition) {
-            if (transition.getAfter() == ServiceController.Substate.STOPPING) {
-                binderService.release();
-                serviceController.removeListener(this);
-            }
-        }
     }
 }
