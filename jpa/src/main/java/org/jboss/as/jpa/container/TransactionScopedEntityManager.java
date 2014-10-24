@@ -147,7 +147,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (entityManager == null) {
             entityManager = createEntityManager(emf, properties, synchronizationType);
             if (JPA_LOGGER.isDebugEnabled())
-                JPA_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager),
+                JPA_LOGGER.debugf("%s: created entity manager session %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                     TransactionUtil.getTransaction().toString());
             TransactionUtil.registerSynchronization(entityManager, scopedPuName);
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
@@ -155,7 +155,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         else {
             testForMixedSynchronizationTypes(entityManager, puScopedName, synchronizationType);
             if (JPA_LOGGER.isDebugEnabled()) {
-                JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager),
+                JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager, scopedPuName),
                     TransactionUtil.getTransaction().toString());
             }
         }
