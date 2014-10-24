@@ -199,7 +199,7 @@ public class SpnegoAuthenticator extends Authenticator {
                 if (respToken != null) {
                     ROOT_LOGGER.trace("Sending response token");
                     Headers respHeaders = exchange.getResponseHeaders();
-                    respHeaders.add(WWW_AUTHENTICATE_HEADER, NEGOTIATE_PREFIX + Base64.encodeBytes(respToken));
+                    respHeaders.add(WWW_AUTHENTICATE_HEADER, NEGOTIATE_PREFIX + Base64.encodeBytes(respToken, Base64.DONT_BREAK_LINES));
                 }
 
                 if (context.isEstablished()) {
