@@ -54,6 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CLASS_NAME;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
@@ -288,6 +289,16 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
         }
 
         ModelNode modelNode = Util.getEmptyOperation(ADD, null);
+
+        int attributeCount = reader.getAttributeCount();
+
+        for (int i = 0; i < attributeCount; i++) {
+            String attributeLocalName = reader.getAttributeLocalName(i);
+
+            if (ModelElement.forName(attributeLocalName) == null) {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
 
         for (SimpleAttributeDefinition simpleAttributeDefinition : attributes) {
             String attributeValue = reader.getAttributeValue("", simpleAttributeDefinition.getXmlName());

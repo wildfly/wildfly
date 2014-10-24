@@ -37,9 +37,15 @@ import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 public class AlternativeAttributeValidationStepHandler implements ModelValidationStepHandler {
 
     private final AttributeDefinition[] attributes;
+    private final boolean required;
 
     public AlternativeAttributeValidationStepHandler(AttributeDefinition[] attributes) {
+        this(attributes, true);
+    }
+
+    public AlternativeAttributeValidationStepHandler(AttributeDefinition[] attributes, boolean required) {
         this.attributes = attributes;
+        this.required = required;
     }
 
     @Override
@@ -64,7 +70,7 @@ public class AlternativeAttributeValidationStepHandler implements ModelValidatio
             }
         }
 
-        if (definedAttribute == null) {
+        if (this.required && definedAttribute == null) {
             throw MESSAGES.requiredAlternativeAttributes(address.getLastElement().toString(), getAttributeNames());
         }
     }
