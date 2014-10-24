@@ -30,9 +30,9 @@ public class HandlerParameterRemoveHandler extends RestartParentResourceRemoveHa
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         String providerAlias = parentAddress.subAddress(0, parentAddress.size() - 1).getLastElement().getValue();
-        String className = parentAddress.getLastElement().getValue();
+        String handlerName = parentAddress.getLastElement().getValue();
 
-        return SAMLHandlerService.createServiceName(providerAlias, className);
+        return SAMLHandlerService.createServiceName(providerAlias, handlerName);
     }
 
 }

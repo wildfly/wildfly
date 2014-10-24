@@ -30,8 +30,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -60,8 +60,8 @@ public class HandlerParameterAddHandler extends RestartParentResourceAddHandler 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         String providerAlias = parentAddress.subAddress(0, parentAddress.size() - 1).getLastElement().getValue();
-        String className = parentAddress.getLastElement().getValue();
+        String handlerName = parentAddress.getLastElement().getValue();
 
-        return SAMLHandlerService.createServiceName(providerAlias, className);
+        return SAMLHandlerService.createServiceName(providerAlias, handlerName);
     }
 }

@@ -33,8 +33,6 @@ import org.wildfly.extension.picketlink.idm.Namespace;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,21 +74,16 @@ public class IDMSubsystemWriter implements XMLStreamConstants, XMLElementWriter<
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        if (!context.getModelNode().isDefined()) {
-            return;
-        }
-
+        // Start subsystem
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
-        List<ModelNode> identityManagement = context.getModelNode().asList();
+        ModelNode subsystemNode = context.getModelNode();
 
-        for (ModelNode modelNode : identityManagement) {
-            String modelName = modelNode.asProperty().getName();
+        if (subsystemNode.isDefined()) {
+            List<ModelNode> identityManagement = subsystemNode.asList();
 
-            if (modelName.equals(PARTITION_MANAGER.getName())) {
+            for (ModelNode modelNode : identityManagement) {
                 writers.get(PARTITION_MANAGER.getName()).write(writer, modelNode);
-            } else {
-                PicketLinkLogger.ROOT_LOGGER.parserUnexpectedElement(modelName);
             }
         }
 

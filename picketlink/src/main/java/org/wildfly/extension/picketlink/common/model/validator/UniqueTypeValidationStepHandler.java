@@ -21,11 +21,14 @@
  */
 package org.wildfly.extension.picketlink.common.model.validator;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+
+import java.util.Set;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -34,51 +37,38 @@ import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOG
 /**
  * @author Pedro Igor
  */
-public class AlternativeAttributeValidationStepHandler implements ModelValidationStepHandler {
+public abstract class UniqueTypeValidationStepHandler implements ModelValidationStepHandler {
 
-    private final AttributeDefinition[] attributes;
+    private final ModelElement element;
 
-    public AlternativeAttributeValidationStepHandler(AttributeDefinition[] attributes) {
-        this.attributes = attributes;
+    public UniqueTypeValidationStepHandler(ModelElement element) {
+        this.element = element;
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateAlternatives(context, operation);
+        validateType(context, operation);
         context.stepCompleted();
     }
 
-    protected void validateAlternatives(OperationContext context, ModelNode operation) throws OperationFailedException {
-        ModelNode elementNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        ModelNode definedAttribute = null;
+    protected void validateType(OperationContext context, ModelNode operation) throws OperationFailedException {
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+        String elementName = pathAddress.getLastElement().getValue();
+        ModelNode typeNode = context.readResource(EMPTY_ADDRESS, false).getModel();
+        String type = getType(context, typeNode);
+        PathAddress parentAddress = pathAddress.subAddress(0, pathAddress.size() - 1);
+        Resource parentResource = context.readResourceFromRoot(parentAddress);
+        Set<Resource.ResourceEntry> children = parentResource.getChildren(this.element.getName());
 
-        for (AttributeDefinition attribute : this.attributes) {
-            if (elementNode.hasDefined(attribute.getName())) {
-                if (definedAttribute != null) {
-                    throw ROOT_LOGGER.invalidAlternativeAttributeOccurrence(attribute.getName(), address.getLastElement().toString(), getAttributeNames());
-                }
+        for (Resource.ResourceEntry child : children) {
+            String existingResourceName = child.getName();
+            String existingType = getType(context, child.getModel());
 
-                definedAttribute = attribute.resolveModelAttribute(context, elementNode);
+            if (!elementName.equals(existingResourceName) && (type.equals(existingType))) {
+                throw ROOT_LOGGER.typeAlreadyDefined(type);
             }
-        }
-
-        if (definedAttribute == null) {
-            throw ROOT_LOGGER.requiredAlternativeAttributes(address.getLastElement().toString(), getAttributeNames());
         }
     }
 
-    private String getAttributeNames() {
-        StringBuilder builder = new StringBuilder();
-
-        for (AttributeDefinition alternativeAttribute : this.attributes) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-
-            builder.append(alternativeAttribute.getName());
-        }
-
-        return builder.toString();
-    }
+    protected abstract String getType(OperationContext context, ModelNode model) throws OperationFailedException;
 }

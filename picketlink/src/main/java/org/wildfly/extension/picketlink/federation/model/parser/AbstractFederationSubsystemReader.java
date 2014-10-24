@@ -34,6 +34,7 @@ import org.wildfly.extension.picketlink.federation.Namespace;
 import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerParameterResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
+import org.wildfly.extension.picketlink.federation.model.handlers.HandlerTypeEnum;
 import org.wildfly.extension.picketlink.federation.model.idp.AttributeManagerResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.idp.IdentityProviderResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.idp.RoleGeneratorResourceDefinition;
@@ -54,6 +55,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CLASS_NAME;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
@@ -183,7 +186,16 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
     }
 
     private void parseHandlerConfig(final XMLExtendedStreamReader reader, final ModelNode entityProviderNode, final List<ModelNode> addOperations) throws XMLStreamException {
-        String name = resolveNodeName(reader, HandlerResourceDefinition.CLASS_NAME, HandlerResourceDefinition.CODE);
+        String name = reader.getAttributeValue("", COMMON_CLASS_NAME.getName());
+
+        if (name == null) {
+            name = reader.getAttributeValue("", COMMON_CODE.getName());
+
+            if (name != null) {
+                name = HandlerTypeEnum.forType(name);
+            }
+        }
+
         ModelNode handlerNode = parseConfig(reader, COMMON_HANDLER, name, entityProviderNode, HandlerResourceDefinition.INSTANCE
             .getAttributes(), addOperations);
 

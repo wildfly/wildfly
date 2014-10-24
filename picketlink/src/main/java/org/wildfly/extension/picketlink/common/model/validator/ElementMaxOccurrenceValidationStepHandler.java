@@ -19,41 +19,50 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.picketlink.federation.model.idp;
+package org.wildfly.extension.picketlink.common.model.validator;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.common.model.validator.ElementMaxOccurrenceValidationStepHandler;
 
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
+import java.util.Set;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Igor
  */
-public class IdentityProviderValidationStepHandler extends ElementMaxOccurrenceValidationStepHandler {
+public class ElementMaxOccurrenceValidationStepHandler implements ModelValidationStepHandler {
 
-    public IdentityProviderValidationStepHandler() {
-        super(ModelElement.IDENTITY_PROVIDER, ModelElement.FEDERATION, 1);
+    private final int maxOccurs;
+    private final ModelElement parentElement;
+    private final ModelElement element;
+
+    public ElementMaxOccurrenceValidationStepHandler(ModelElement element, ModelElement parentElement, int maxOccurs) {
+        this.element = element;
+        this.parentElement = parentElement;
+        this.maxOccurs = maxOccurs;
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateSecurityDomain(context);
         validateOccurrence(context, operation);
-
         context.stepCompleted();
     }
 
-    private void validateSecurityDomain(OperationContext context) throws OperationFailedException {
-        ModelNode identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-        boolean external = IdentityProviderResourceDefinition.EXTERNAL.resolveModelAttribute(context, identityProviderNode).asBoolean();
-        ModelNode securityDomain = IdentityProviderResourceDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, identityProviderNode);
+    protected void validateOccurrence(OperationContext context, ModelNode operation) throws OperationFailedException {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        PathAddress parentAddress = Util.getParentAddressByKey(address, this.parentElement.getName());
+        Resource parentResource = context.readResourceFromRoot(parentAddress);
+        Set<String> elements = parentResource.getChildrenNames(this.element.getName());
 
-        if (!external && !securityDomain.isDefined()) {
-            throw ROOT_LOGGER.requiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), ModelElement.IDENTITY_PROVIDER
+        if (elements.size() > this.maxOccurs) {
+            throw ROOT_LOGGER.invalidChildTypeOccurrence(parentAddress.getLastElement().toString(), this.maxOccurs, this.element
                 .getName());
         }
     }

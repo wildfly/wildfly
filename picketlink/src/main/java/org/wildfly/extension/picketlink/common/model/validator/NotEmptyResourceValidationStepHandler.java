@@ -21,50 +21,37 @@
  */
 package org.wildfly.extension.picketlink.common.model.validator;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-
-import java.util.Set;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Pedro Igor
  */
-public class ElementOccurrenceValidationStepHandler implements OperationStepHandler {
+public class NotEmptyResourceValidationStepHandler implements ModelValidationStepHandler {
 
-    private final int maxOccurs;
-    private final ModelElement parentElement;
-    private final ModelElement element;
+    public static NotEmptyResourceValidationStepHandler INSTANCE = new NotEmptyResourceValidationStepHandler();
 
-    public ElementOccurrenceValidationStepHandler(ModelElement element, ModelElement parentElement, int maxOccurs) {
-        this.element = element;
-        this.parentElement = parentElement;
-        this.maxOccurs = maxOccurs;
+    private NotEmptyResourceValidationStepHandler() {
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validateOccurrence(context, operation);
+        validateChildren(context, operation);
         context.stepCompleted();
     }
 
-    protected void validateOccurrence(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        PathAddress parentAddress = Util.getParentAddressByKey(address, this.parentElement.getName());
-        Resource parentResource = context.readResourceFromRoot(parentAddress);
-        Set<String> elements = parentResource.getChildrenNames(this.element.getName());
+    protected void validateChildren(OperationContext context, ModelNode operation) throws OperationFailedException {
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
 
-        if (elements.size() > this.maxOccurs) {
-            throw ROOT_LOGGER.invalidChildTypeOccurrence(parentAddress.getLastElement().toString(), this.maxOccurs, this.element
-                .getName());
+        if (resource.getChildTypes().isEmpty()) {
+            throw ROOT_LOGGER.emptyResource(pathAddress.getLastElement().toString());
         }
     }
 }

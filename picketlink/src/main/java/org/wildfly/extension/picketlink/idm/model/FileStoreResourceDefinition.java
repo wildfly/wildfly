@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
+import java.io.File;
+
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -29,8 +31,9 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-
-import java.io.File;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.NotEmptyResourceValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.RequiredChildValidationStepHandler;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -62,12 +65,19 @@ public class FileStoreResourceDefinition extends AbstractIdentityStoreResourceDe
     public static final FileStoreResourceDefinition INSTANCE = new FileStoreResourceDefinition(WORKING_DIR, RELATIVE_TO, ALWAYS_CREATE_FILE, ASYNC_WRITE, ASYNC_WRITE_THREAD_POOL, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL);
 
     private FileStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.FILE_STORE, new IDMConfigAddStepHandler(attributes), attributes);
+        super(ModelElement.FILE_STORE, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(SupportedTypesResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(CredentialHandlerResourceDefinition.INSTANCE, resourceRegistration);
+    }
+
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+            NotEmptyResourceValidationStepHandler.INSTANCE,
+            new RequiredChildValidationStepHandler(ModelElement.SUPPORTED_TYPES)
+        };
     }
 }

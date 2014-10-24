@@ -100,6 +100,15 @@ public interface PicketLinkLogger extends BasicLogger {
     @Message(id = 16, value = "[%s] requires one of the given attributes [%s].")
     OperationFailedException requiredAlternativeAttributes(String pathElement, String attributeNames);
 
+    @Message(id = 17, value = "Type [%s] already defined.")
+    IllegalStateException typeAlreadyDefined(String clazz);
+
+    @Message(id = 18, value = "[%s] can not be empty.")
+    OperationFailedException emptyResource(String parentPathElement);
+
+    @Message(id = 19, value = "[%s] requires child [%s].")
+    OperationFailedException requiredChild(String parentPathElement, String childPathElement);
+
     // IDM Messages 50-99
     @Message(id = 50, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -121,6 +130,9 @@ public interface PicketLinkLogger extends BasicLogger {
 
     @Message(id = 56, value = "No supported type provided.")
     OperationFailedException idmNoSupportedTypesDefined();
+
+    @Message(id = 57, value = "No mapping was defined.")
+    OperationFailedException idmLdapNoMappingDefined();
 
     // Federation Messages - 100-150
     @Message(id = 100, value = "No Identity Provider configuration found for federation [%s]. ")

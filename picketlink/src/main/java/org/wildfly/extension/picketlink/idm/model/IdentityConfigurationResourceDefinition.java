@@ -24,6 +24,8 @@ package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
+import org.wildfly.extension.picketlink.common.model.validator.NotEmptyResourceValidationStepHandler;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -34,7 +36,7 @@ public class IdentityConfigurationResourceDefinition extends AbstractIDMResource
     public static final IdentityConfigurationResourceDefinition INSTANCE = new IdentityConfigurationResourceDefinition();
 
     private IdentityConfigurationResourceDefinition() {
-        super(ModelElement.IDENTITY_CONFIGURATION, new IDMConfigAddStepHandler());
+        super(ModelElement.IDENTITY_CONFIGURATION, new IDMConfigAddStepHandler(getModelValidators()));
     }
 
     @Override
@@ -42,5 +44,11 @@ public class IdentityConfigurationResourceDefinition extends AbstractIDMResource
         addChildResourceDefinition(JPAStoreResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(FileStoreResourceDefinition.INSTANCE, resourceRegistration);
         addChildResourceDefinition(LDAPStoreResourceDefinition.INSTANCE, resourceRegistration);
+    }
+
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+                NotEmptyResourceValidationStepHandler.INSTANCE
+        };
     }
 }
