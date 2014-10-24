@@ -109,7 +109,7 @@ public class SpnegoAuthenticator extends Authenticator {
         // If no challenge give other Authenticator opportunity to handle request.
         Result result = null;
         if (wrapped != null) {
-            ROOT_LOGGER.trace("Delgating to wrapped authenticator.");
+            ROOT_LOGGER.trace("Delegating to wrapped authenticator.");
             result = wrapped.authenticate(exchange);
         } else {
             ROOT_LOGGER.trace("No negotiation response, and no wrapped authenticator.");
@@ -132,7 +132,7 @@ public class SpnegoAuthenticator extends Authenticator {
                 ROOT_LOGGER.trace("No existing WWW-Authenticate header");
                 values = new ArrayList<String>(1);
             }
-            ROOT_LOGGER.trace("Adding Negotate challenge");
+            ROOT_LOGGER.trace("Adding Negotiate challenge");
             values.add(0, NEGOTIATE);
             respHeaders.put(WWW_AUTHENTICATE_HEADER, values);
 
