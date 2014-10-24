@@ -86,6 +86,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -328,11 +329,28 @@ public class RaOperationUtil {
         }
         final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
         if (service == null) {
-            ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter, name);
-            newControllers.add(serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
-                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector())
-                    .addListener(verificationHandler).install());
+          ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter, name);
+          ServiceBuilder builder = serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+              .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+              .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector());
+            // add dependency on security domain service if applicable for recovery config
+            if (resourceAdapter.getConnectionDefinitions() != null && resourceAdapter.getConnectionDefinitions().size() > 0) {
+                for (org.jboss.jca.common.api.metadata.common.CommonConnDef cd : resourceAdapter.getConnectionDefinitions()) {
+                    CommonSecurity security = cd.getSecurity();
+                    if (security != null) {
+                        if (security.getSecurityDomain() != null) {
+                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomain()));
+                        }
+                        if (security.getSecurityDomainAndApplication() != null) {
+                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(security.getSecurityDomainAndApplication()));
+                        }
+                        if (cd.getRecovery() != null && cd.getRecovery().getCredential() != null && cd.getRecovery().getCredential().getSecurityDomain() != null) {
+                            builder.addDependency(SecurityDomainService.SERVICE_NAME.append(cd.getRecovery().getCredential().getSecurityDomain()));
+                        }
+                    }
+                }
+            }
+            newControllers.add(builder.addListener(verificationHandler).install());
         }
         return raServiceName;
     }
