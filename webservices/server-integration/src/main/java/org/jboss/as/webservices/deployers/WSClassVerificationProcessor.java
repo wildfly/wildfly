@@ -26,6 +26,9 @@ import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jws.WebService;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -53,6 +56,13 @@ import org.jboss.modules.Module;
  *
  */
 public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
+
+    private static final Set<String> cxfExportingModules = new HashSet<>();
+    static {
+        cxfExportingModules.add("org.apache.cxf");
+        cxfExportingModules.add("org.apache.cxf.impl");
+        cxfExportingModules.add("org.jboss.ws.cxf.jbossws-cxf-client");
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -130,7 +140,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
         for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
             final String id = dep.getIdentifier().getName();
-            if ("org.apache.cxf".equals(id) || "org.apache.cxf.impl".equals(id)) {
+            if (cxfExportingModules.contains(id)) {
                 return true;
             }
         }
