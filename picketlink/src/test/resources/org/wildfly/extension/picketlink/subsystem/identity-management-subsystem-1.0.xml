@@ -55,7 +55,7 @@
                    object-classes="inetOrgPerson, organizationalPerson">
             <attribute name="loginName" ldap-name="uid" is-identifier="true"/>
             <attribute name="firstName" ldap-name="cn"/>
-            <attribute name="lastName" ldap-name="sn"/>
+            <attribute name="lastName" ldap-name="sn" read-only="false"/>
             <attribute name="email" ldap-name="uid"/>
             <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
           </mapping>

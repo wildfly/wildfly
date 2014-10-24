@@ -68,20 +68,23 @@ public class LDAPStoreMappingResourceDefinition extends AbstractIDMResourceDefin
     public static final LDAPStoreMappingResourceDefinition INSTANCE = new LDAPStoreMappingResourceDefinition(CLASS_NAME, CODE, MODULE, BASE_DN, OBJECT_CLASSES, PARENT_ATTRIBUTE, RELATES_TO);
 
     private LDAPStoreMappingResourceDefinition(SimpleAttributeDefinition... attributes) {
-        super(ModelElement.LDAP_STORE_MAPPING, new IDMConfigAddStepHandler(
-            new ModelValidationStepHandler[] {
-                new UniqueTypeValidationStepHandler(ModelElement.LDAP_STORE_MAPPING) {
-                    @Override
-                    protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
-                        return getMappingType(context, model);
-                    }
-                }
-            }, attributes), attributes);
+        super(ModelElement.LDAP_STORE_MAPPING, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(LDAPStoreAttributeResourceDefinition.INSTANCE, resourceRegistration);
+    }
+
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+            new UniqueTypeValidationStepHandler(ModelElement.LDAP_STORE_MAPPING) {
+                @Override
+                protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                    return getMappingType(context, model);
+                }
+            }
+        };
     }
 
     private static String getMappingType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
