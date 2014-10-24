@@ -141,6 +141,11 @@ public class SpnegoAuthenticator extends Authenticator {
             ROOT_LOGGER.tracef("No Subject available for host '%s'", host);
         }
 
+        // We can not handle authentication but at least the wrapped version can.
+        if (result != null) {
+            return result;
+        }
+
         // To reach this point no result successfully created.
         return new Failure(FORBIDDEN);
     }
