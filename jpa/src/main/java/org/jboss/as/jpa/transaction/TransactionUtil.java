@@ -100,13 +100,13 @@ public class TransactionUtil {
         return Thread.currentThread().getName();
     }
 
-    public static String getEntityManagerDetails(EntityManager manager) {
+    public static String getEntityManagerDetails(EntityManager manager, String scopedPuName) {
         String result = currentThread() + ":";  // show the thread for correlation with other modules
         if (manager instanceof ExtendedEntityManager) {
             result += manager.toString();
         }
         else {
-            result += "[transaction scoped EntityManager]";
+            result += "transaction scoped EntityManager [" + scopedPuName + "]";
         }
         return result;
     }
@@ -150,7 +150,7 @@ public class TransactionUtil {
             if (safeToClose(status)) {
                 try {
                     if (JPA_LOGGER.isDebugEnabled())
-                        JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager));
+                        JPA_LOGGER.debugf("%s: closing entity managersession", getEntityManagerDetails(manager, scopedPuName));
                     manager.close();
                 } catch (Exception ignored) {
                     if (JPA_LOGGER.isDebugEnabled())
