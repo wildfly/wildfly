@@ -22,12 +22,6 @@
 
 package org.wildfly.extension.picketlink.idm.model;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -41,6 +35,12 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Pedro Silva
@@ -71,7 +71,7 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
 
         if (!alternativeAttributes.isEmpty()) {
             this.modelValidators.add(new AlternativeAttributeValidationStepHandler(
-                alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()])));
+                alternativeAttributes.toArray(new AttributeDefinition[alternativeAttributes.size()]), isAlternativesRequired()));
         }
 
         if (modelValidators != null) {
@@ -89,6 +89,10 @@ public class IDMConfigAddStepHandler extends RestartParentResourceAddHandler {
                 context.stepCompleted();
             }
         });
+    }
+
+    protected boolean isAlternativesRequired() {
+        return true;
     }
 
     @Override
