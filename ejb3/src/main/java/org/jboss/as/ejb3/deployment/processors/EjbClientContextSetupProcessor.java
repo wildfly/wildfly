@@ -80,7 +80,19 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
+        final DeploymentUnit deploymentUnit = context;
+        final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        if (module == null) {
+            return;
+        }
+        final ServiceController<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = (ServiceController<TCCLEJBClientContextSelectorService>) context.getServiceRegistry().getService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
 
+        if (tcclEJBClientContextSelectorServiceController != null) {
+            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
+            // de-associate the EJB client context with the deployment classloader
+            logger.debug("unRegistering EJB client context for classloader " + module.getClassLoader());
+            tcclBasedEJBClientContextSelector.unRegisterEJBClientContext(module.getClassLoader());
+        }
     }
 
     private EJBClientContext getEJBClientContext(final DeploymentPhaseContext phaseContext) {
