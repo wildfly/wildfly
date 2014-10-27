@@ -42,6 +42,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 import java.io.IOException;
@@ -127,14 +128,10 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
         final LocalEjbReceiver localEjbReceiver = this.localEjbReceiverInjectedValue.getOptionalValue();
         if (localEjbReceiver != null) {
             localEjbReceiver.stop(context);
-            logger.debug("Removed a local EJB receiver from descriptor based EJB client context named " + context.getController().getName());
+            logger.debugf("Removed a local EJB receiver from descriptor based EJB client context named %s", context.getController().getName());
         }
         if(this.ejbClientContext != null) {
-            try {
-                this.ejbClientContext.close();
-            } catch(IOException e) {
-                logger.warn("Failed to close ejb context", e);
-            }
+            IoUtils.safeClose(this.ejbClientContext);
         }
         this.ejbClientContext = null;
     }
