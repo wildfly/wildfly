@@ -5,16 +5,16 @@
              http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
              version="7">
     <permission>
-        <class-name>java.lang.RuntimePermission</class-name>
-        <name>org.jboss.as.security.remoting.GET_CONNECTION</name>
+        <class-name>org.jboss.as.security.remoting.RemotingPermission</class-name>
+        <name>clearConnection</name>
     </permission>
     <permission>
-        <class-name>java.lang.RuntimePermission</class-name>
-        <name>org.jboss.as.security.remoting.CLEAR_CONNECTION</name>
+        <class-name>org.jboss.as.security.remoting.RemotingPermission</class-name>
+        <name>getConnection</name>
     </permission>
     <permission>
-        <class-name>java.lang.RuntimePermission</class-name>
-        <name>org.jboss.as.security.remoting.SET_CONNECTION</name>
+        <class-name>org.jboss.as.security.remoting.RemotingPermission</class-name>
+        <name>setConnection</name>
     </permission>
     <permission>
         <class-name>java.lang.RuntimePermission</class-name>
