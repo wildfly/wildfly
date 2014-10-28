@@ -26,6 +26,7 @@ import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
+import org.jboss.as.jacorb.service.IORSecConfigMetaDataService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -81,8 +82,11 @@ public class CSIv2IORInterceptor extends LocalObject implements IORInterceptor {
             SSLHelper.insert(any, ssl);
             byte[] componentData = codec.encode_value(any);
             defaultSSLComponent = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
-            defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(new IORSecurityConfigMetaData(), codec,
-                    sslPort, orb);
+
+            IORSecurityConfigMetaData iorSecurityConfigMetaData = IORSecConfigMetaDataService.getCurrent();
+            if (iorSecurityConfigMetaData == null)
+                iorSecurityConfigMetaData = new IORSecurityConfigMetaData();
+            defaultCSIComponent = CSIv2Util.createSecurityTaggedComponent(iorSecurityConfigMetaData, codec, sslPort, orb);
         } catch (InvalidTypeForEncoding e) {
             throw JacORBMessages.MESSAGES.unexpectedException(e);
         }
