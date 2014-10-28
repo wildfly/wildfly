@@ -174,6 +174,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
         String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain != null && !securityDomain.isEmpty())
             builder.addDependency(SECURITY_DOMAIN_SERVICE_NAME.append(securityDomain));
+        builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME);
 
         // inject the socket bindings that specify the JacORB IIOP and IIOP/SSL ports.
         String socketBinding = props.getProperty(JacORBSubsystemConstants.ORB_SOCKET_BINDING);
