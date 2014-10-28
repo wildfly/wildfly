@@ -27,7 +27,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -49,8 +57,6 @@ import org.jboss.as.cli.gui.component.CLIOutput;
 import org.jboss.as.cli.gui.component.ScriptMenu;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
 import org.jboss.as.cli.gui.metacommand.UndeployAction;
-import org.jboss.as.version.ProductConfig;
-import org.jboss.modules.Module;
 
 /**
  * Static main class for the GUI.
@@ -234,9 +240,18 @@ public class GuiMain {
 
     private static String getCliIconPath() {
         String iconPath = "";
-        ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(),
-                    System.getenv("JBOSS_HOME"), null);
-        iconPath = productConfig.getCliIcon();
+        String manifestPath = System.getProperty("user.dir")
+                + "/../modules/system/layers/base/org/jboss/as/product/eap/dir/META-INF/MANIFEST.MF";
+        File f = new File(manifestPath);
+        Manifest manifest;
+        try {
+            InputStream mis = new FileInputStream(f);
+            manifest = new Manifest(mis);
+            Attributes attr = manifest.getMainAttributes();
+            iconPath = attr.getValue("JBoss-Product-Icon");
+        } catch (IOException ex) {
+            Logger.getLogger(GuiMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         return iconPath;
     }
