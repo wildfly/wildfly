@@ -42,5 +42,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
+        <module name="org.jboss.as.protocol"/>
     </dependencies>
 </module>
