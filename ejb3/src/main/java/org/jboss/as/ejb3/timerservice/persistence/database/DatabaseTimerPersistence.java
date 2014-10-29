@@ -234,6 +234,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "h2";
             } else if (name.toLowerCase().contains("oracle")) {
                 unified = "oracle";
+            }else if (name.toLowerCase().contains("mssql")) {
+                unified = "mssql";
+            }else if (name.toLowerCase().contains("sybase")) {
+                unified = "sybase";
             }
          }
         EjbLogger.ROOT_LOGGER.debugf("Check dialect for '%s', result is '%s'", name, unified);
