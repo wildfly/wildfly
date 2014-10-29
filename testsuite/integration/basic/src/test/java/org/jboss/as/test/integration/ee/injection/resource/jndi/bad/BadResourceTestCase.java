@@ -111,7 +111,7 @@ public class BadResourceTestCase {
         // just to blow up
         Assert.assertTrue("Failed to deploy: " + result, !Operations.isSuccessfulOutcome(result));
 
-        Assert.assertTrue(result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString()
+        Assert.assertTrue(""+result,result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString()
                 .contains(Constants.ERROR_MESSAGE));
 
     }
