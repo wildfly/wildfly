@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
-import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -89,18 +88,15 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
     private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
-        final EJBClientContext ejbClientContext;
         // The top level parent deployment unit will have the attachment containing the EJB client context
         // service name
         ServiceName serviceName;
         if (parentDeploymentUnit != null) {
-            ejbClientContext = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(parentDeploymentUnit.getName());
+            serviceName = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
         } else {
-            ejbClientContext = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(deploymentUnit.getName());
+            serviceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
         }
-        if (ejbClientContext != null) {
+        if (serviceName != null) {
             return serviceName;
         }
         return DefaultEjbClientContextService.DEFAULT_SERVICE_NAME;

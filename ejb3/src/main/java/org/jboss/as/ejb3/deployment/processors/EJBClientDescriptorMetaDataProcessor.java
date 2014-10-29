@@ -132,6 +132,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
         // attach the service name of this EJB client context to the deployment unit
         phaseContext.addDeploymentDependency(ejbClientContextServiceName, EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
+        deploymentUnit.putAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME, ejbClientContextServiceName);
     }
 
     @Override
