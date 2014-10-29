@@ -33,13 +33,10 @@ public interface Constants {
     
     String TESTED_DU_NAME = "BadTest";
     String TESTED_ARCHIVE_NAME = TESTED_DU_NAME + ".jar";
-    
 
-    String TEST_DU_NAME = "BadTestCase";
-    String TEST_ARCHIVE_NAME = TEST_DU_NAME + ".jar";
     
-    String JNDI_NAME_GLOBAL = "java:global/" + TEST_DU_NAME + "/ResourceEJBImpl";
-    String JNDI_NAME_BAD = "java:jboss:/" + TEST_DU_NAME + "/ResourceEJBImpl";
+    String JNDI_NAME_GLOBAL = "java:global/" + TESTED_DU_NAME + "/ResourceEJBImpl";
+    String JNDI_NAME_BAD = "java:jboss:/" + TESTED_DU_NAME + "/ResourceEJBImpl";
     
-    String ERROR_MESSAGE = "Context part 'jboss:' violates JNDI name syntax in 'java:jboss:/BadTestCase/ResourceEJBImpl' entry.";
+    String ERROR_MESSAGE = "A valid JNDI name must be provided: java:jboss:/BadTest/ResourceEJBImpl";
 }

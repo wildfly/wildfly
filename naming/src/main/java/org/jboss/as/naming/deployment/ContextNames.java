@@ -170,7 +170,7 @@ public class ContextNames {
         // URL might be:
         // java:context/restOfURL - where nameSpace is part between ':' and '/'
         if (namespace.contains(":")) {
-            throw NamingMessages.MESSAGES.jndiNameViolation(namespace, inContext);
+            throw NamingMessages.MESSAGES.invalidJndiName(inContext);
         }
     }
     /**
