@@ -97,7 +97,9 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
             @Override
             public void initContextForStore(IdentityContext context, IdentityStore<?> store) {
                 if (store instanceof JPAIdentityStore) {
-                    if (!context.isParameterSet(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER)) {
+                    EntityManager entityManager = context.getParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER);
+
+                    if (entityManager == null || !entityManager.isOpen()) {
                         context.setParameter(JPAIdentityStore.INVOCATION_CTX_ENTITY_MANAGER, getEntityManager(getTransactionManager().getValue()));
                     }
                 }
@@ -210,7 +212,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
     private EntityManager getEntityManager(TransactionManager transactionManager) {
         EntityManager entityManager = getOrCreateTransactionalEntityManager(transactionManager);
 
-        if (entityManager == null) {
+        if (entityManager == null || !entityManager.isOpen()) {
             entityManager = createEntityManager(transactionManager);
         }
 
