@@ -53,6 +53,7 @@
                 <filter-ref name="headers"/>
                 <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']"/>
                 <filter-ref name="404-handler"/>
+                <filter-ref name="mod-cluster"/>
             </location>
             <filter-ref name="headers"/>
         </host>
@@ -103,6 +104,7 @@
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip"/>
         <error-page name="404-handler" code="404" path="/opt/data/404.html"/>
+        <mod-cluster management-socket-binding="test3" advertise-socket-binding="test2" name="mod-cluster" />
         <filter name="custom-filter" class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" />
     </filters>
 

@@ -141,4 +141,15 @@ public interface Constants {
     String IGNORE_FLUSH = "ignore-flush";
 
     String WEBSOCKETS = "websockets";
+    //mod_cluster
+    String MOD_CLUSTER = "mod-cluster";
+    String MANAGEMENT_SOCKET_BINDING = "management-socket-binding";
+    String ADVERTISE_SOCKET_BINDING = "advertise-socket-binding";
+    String SECURITY_KEY = "security-key";
+    String ADVERTISE_MULTICAST_SOCKET_BINDING = "advertise-multicast-socket-binding";
+    String ADVERTISE_PROTOCOL = "advertise-protocol";
+    String ADVERTISE_PATH = "advertise-path";
+    String ADVERTISE_FREQUENCY = "advertise-frequency";
+    String HEALTH_CHECK_INTERVAL = "health-check-interval";
+    String BROKEN_NODE_TIMEOUT = "broken-node-timeout";
 }
