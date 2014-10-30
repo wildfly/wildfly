@@ -244,7 +244,9 @@ public final class RemoteDeployer implements Deployer {
             PathAddress address = PathAddress.pathAddress()
                     .append(SUBSYSTEM, "security")
                     .append(SECURITY_DOMAIN, name);
-            steps.add(Util.createAddOperation(address));
+            ModelNode securityDomain = Util.createAddOperation(address);
+            securityDomain.get(Constants.CACHE_TYPE).set("default");
+            steps.add(securityDomain);
             address = address.append(Constants.AUTHENTICATION, CLASSIC);
             steps.add(Util.createAddOperation(address));
             ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, "UsersRoles"));
