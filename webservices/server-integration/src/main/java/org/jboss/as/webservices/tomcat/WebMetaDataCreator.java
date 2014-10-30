@@ -266,11 +266,16 @@ final class WebMetaDataCreator {
     private void createLoginConfig(final Deployment dep, final JBossWebMetaData jbossWebMD) {
         final String authMethod = getAuthMethod(dep);
         final boolean hasAuthMethod = authMethod != null;
+        final String realmName = getRealmName(dep);
 
         if (hasAuthMethod) {
              WSLogger.ROOT_LOGGER.tracef("Creating new login config: %s, auth method: %s", EJB_WEBSERVICE_REALM, authMethod);
             final LoginConfigMetaData loginConfig = WebMetaDataHelper.getLoginConfig(jbossWebMD);
-            loginConfig.setRealmName(WebMetaDataCreator.EJB_WEBSERVICE_REALM);
+            if (realmName != null) {
+                loginConfig.setRealmName(realmName);
+            } else {
+                loginConfig.setRealmName(WebMetaDataCreator.EJB_WEBSERVICE_REALM);
+            }
             loginConfig.setAuthMethod(authMethod);
         }
     }
@@ -342,5 +347,17 @@ final class WebMetaDataCreator {
 
         return null;
     }
+
+    private String getRealmName(final Deployment dep) {
+        for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
+            final String realmName = ejb3SecurityAccessor.getRealmName(ejbEndpoint);
+            final boolean hasRealmName = realmName != null;
+            if (hasRealmName) {
+                return realmName;
+            }
+        }
+        return null;
+    }
+
 
 }

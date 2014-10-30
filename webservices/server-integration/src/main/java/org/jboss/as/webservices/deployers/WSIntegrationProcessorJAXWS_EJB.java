@@ -105,12 +105,12 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
                 final String authMethod = webCtx.getAuthMethod();
                 final boolean isSecureWsdlAccess = webCtx.isSecureWsdlAccess();
                 final String transportGuarantee = webCtx.getTransportGuarantee();
-
+                final String realmName = webCtx.getRealmName();
                 for (final SessionBeanComponentDescription sessionBean : sessionBeans) {
                     if (sessionBean.isStateless() || sessionBean.isSingleton()) {
                         final EJBViewDescription ejbViewDescription = sessionBean.addWebserviceEndpointView();
                         final ServiceName ejbViewName = ejbViewDescription.getServiceName();
-                        jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, ejbViewName, securityRoles, authMethod, isSecureWsdlAccess, transportGuarantee));
+                        jaxwsDeployment.addEndpoint(new EJBEndpoint(sessionBean, ejbViewName, securityRoles, authMethod, realmName, isSecureWsdlAccess, transportGuarantee));
                     }
                 }
             }
@@ -192,10 +192,12 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
         private final String authMethod;
         private final String transportGuarantee;
         private final boolean secureWsdlAccess;
+        private final String realmName;
 
         WebContextAnnotationWrapper(final AnnotationInstance annotation) {
             authMethod = stringValueOrNull(annotation, "authMethod");
             transportGuarantee = stringValueOrNull(annotation, "transportGuarantee");
+            realmName = stringValueOrNull(annotation, "realmName");
             secureWsdlAccess = booleanValue(annotation, "secureWSDLAccess");
         }
 
@@ -209,6 +211,10 @@ public final class WSIntegrationProcessorJAXWS_EJB implements DeploymentUnitProc
 
         boolean isSecureWsdlAccess() {
             return secureWsdlAccess;
+        }
+
+        String getRealmName() {
+           return realmName;
         }
 
         private String stringValueOrNull(final AnnotationInstance annotation, final String attribute) {

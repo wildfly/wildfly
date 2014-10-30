@@ -143,8 +143,10 @@ abstract class AbstractMetaDataBuilderEJB {
         final String transportGuarantee = getTransportGuarantee(ejbEndpoint, portComponentMD);
         // secure wsdl access
         final boolean secureWsdlAccess = isSecureWsdlAccess(ejbEndpoint, portComponentMD);
+
+        final String realmName = getRealmName(ejbEndpoint, portComponentMD);
         // propagate
-        wsEjbMDBuilder.setSecurityMetaData(new EJBSecurityMetaData(authMethod, transportGuarantee, secureWsdlAccess));
+        wsEjbMDBuilder.setSecurityMetaData(new EJBSecurityMetaData(authMethod, realmName, transportGuarantee, secureWsdlAccess));
 
         wsEjbsMD.add(wsEjbMDBuilder.build());
     }
@@ -162,6 +164,11 @@ abstract class AbstractMetaDataBuilderEJB {
     private static boolean isSecureWsdlAccess(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
         if (ejbEndpoint.isSecureWsdlAccess()) return true;
         return (portComponentMD != null && portComponentMD.getSecureWSDLAccess() != null) ? portComponentMD.getSecureWSDLAccess() : false;
+    }
+
+    private static String getRealmName(final EJBEndpoint ejbEndpoint, final JBossPortComponentMetaData portComponentMD) {
+       if (ejbEndpoint.getRealmName() != null) return ejbEndpoint.getRealmName();
+       return portComponentMD != null ? portComponentMD.getRealmName() : null;
     }
 
 }
