@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -70,7 +71,7 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
 
         newHandler.setClazz(typeName);
 
-        ModelNode handler = context.readResourceFromRoot(pathAddress).getModel();
+        ModelNode handler = Resource.Tools.readModel(context.readResourceFromRoot(pathAddress));
 
         if (handler.hasDefined(COMMON_HANDLER_PARAMETER.getName())) {
             for (Property handlerParameter : handler.get(COMMON_HANDLER_PARAMETER.getName()).asPropertyList()) {
