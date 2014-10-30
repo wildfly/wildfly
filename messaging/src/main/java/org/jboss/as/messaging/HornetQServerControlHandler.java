@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.registry.OperationEntry.Flag.READ_ONLY;
 import static org.jboss.as.controller.registry.OperationEntry.Flag.RUNTIME_ONLY;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
@@ -91,6 +92,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String ROLLBACK_PREPARED_TRANSACTION = "rollback-prepared-transaction";
     public static final String LIST_REMOTE_ADDRESSES = "list-remote-addresses";
     public static final String CLOSE_CONNECTIONS_FOR_ADDRESS = "close-connections-for-address";
+    public static final String CLOSE_CONNECTIONS_FOR_USER = "close-connections-for-user";
     public static final String LIST_CONNECTION_IDS= "list-connection-ids";
     public static final String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
     public static final String LIST_SESSIONS = "list-sessions";
@@ -118,6 +120,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     private final ParametersValidator transactionValidator = new ParametersValidator();
     private final ParametersValidator addressValidator = new ParametersValidator();
     private final ParametersValidator ipAddressValidator = new ParametersValidator();
+    private final ParametersValidator userValidator = new ParametersValidator();
     private final ParametersValidator optionalIpAddressValidator = new ParametersValidator();
     private final ParametersValidator connectionIdValidator = new ParametersValidator();
 
@@ -126,6 +129,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         transactionValidator.registerValidator(TRANSACTION_AS_BASE_64, stringLengthValidator);
         addressValidator.registerValidator(ADDRESS_MATCH, stringLengthValidator);
         ipAddressValidator.registerValidator(IP_ADDRESS, stringLengthValidator);
+        userValidator.registerValidator(USER, stringLengthValidator);
         optionalIpAddressValidator.registerValidator(IP_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         connectionIdValidator.registerValidator(CONNECTION_ID, stringLengthValidator);
     }
@@ -196,6 +200,13 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (CLOSE_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
                 ipAddressValidator.validate(operation);
                 boolean closed = serverControl.closeConnectionsForAddress(operation.require(IP_ADDRESS).asString());
+                context.getResult().set(closed);
+            } else if (CLOSE_CONNECTIONS_FOR_USER.equals(operationName)) {
+                userValidator.validate(operation);
+                String user = operation.require(USER).asString();
+                System.out.println("user = " + user);
+                boolean closed = serverControl.closeConnectionsForUser(user);
+                System.out.println("closed = " + closed);
                 context.getResult().set(closed);
             } else if (LIST_CONNECTION_IDS.equals(operationName)) {
                 String[] list = serverControl.listConnectionIDs();
@@ -335,7 +346,13 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                         HQ_SERVER, IP_ADDRESS, ModelType.STRING, false, ModelType.BOOLEAN, true);
             }
         }, runtimeOnly);
-
+        registry.registerOperationHandler(CLOSE_CONNECTIONS_FOR_USER, this, new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, CLOSE_CONNECTIONS_FOR_USER,
+                        HQ_SERVER, USER, ModelType.STRING, false, ModelType.BOOLEAN, true);
+            }
+        }, runtimeOnly);
         registry.registerOperationHandler(LIST_CONNECTION_IDS, this, new DescriptionProvider() {
             @Override
             public ModelNode getModelDescription(Locale locale) {
@@ -415,5 +432,11 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();
+    }
+
+    public static void main(String[] args) {
+        Integer id = new Integer(123456);
+
+        System.out.println(id.toString().equals(id));
     }
 }
