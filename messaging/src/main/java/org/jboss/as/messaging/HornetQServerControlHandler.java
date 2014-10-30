@@ -93,6 +93,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String LIST_REMOTE_ADDRESSES = "list-remote-addresses";
     public static final String CLOSE_CONNECTIONS_FOR_ADDRESS = "close-connections-for-address";
     public static final String CLOSE_CONNECTIONS_FOR_USER = "close-connections-for-user";
+    public static final String CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS= "close-consumer-connections-for-address";
     public static final String LIST_CONNECTION_IDS= "list-connection-ids";
     public static final String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
     public static final String LIST_SESSIONS = "list-sessions";
@@ -118,7 +119,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String IP_ADDRESS = "ip-address";
 
     private final ParametersValidator transactionValidator = new ParametersValidator();
-    private final ParametersValidator addressValidator = new ParametersValidator();
+    private final ParametersValidator addressMatchValidator = new ParametersValidator();
     private final ParametersValidator ipAddressValidator = new ParametersValidator();
     private final ParametersValidator userValidator = new ParametersValidator();
     private final ParametersValidator optionalIpAddressValidator = new ParametersValidator();
@@ -127,7 +128,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     private HornetQServerControlHandler() {
         final StringLengthValidator stringLengthValidator = new StringLengthValidator(1);
         transactionValidator.registerValidator(TRANSACTION_AS_BASE_64, stringLengthValidator);
-        addressValidator.registerValidator(ADDRESS_MATCH, stringLengthValidator);
+        addressMatchValidator.registerValidator(ADDRESS_MATCH, stringLengthValidator);
         ipAddressValidator.registerValidator(IP_ADDRESS, stringLengthValidator);
         userValidator.registerValidator(USER, stringLengthValidator);
         optionalIpAddressValidator.registerValidator(IP_ADDRESS, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
@@ -204,9 +205,12 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (CLOSE_CONNECTIONS_FOR_USER.equals(operationName)) {
                 userValidator.validate(operation);
                 String user = operation.require(USER).asString();
-                System.out.println("user = " + user);
                 boolean closed = serverControl.closeConnectionsForUser(user);
-                System.out.println("closed = " + closed);
+                context.getResult().set(closed);
+            } else if (CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
+                addressMatchValidator.validate(operation);
+                String addressMatch = operation.require(ADDRESS_MATCH).asString();
+                boolean closed = serverControl.closeConsumerConnectionsForAddress(addressMatch);
                 context.getResult().set(closed);
             } else if (LIST_CONNECTION_IDS.equals(operationName)) {
                 String[] list = serverControl.listConnectionIDs();
@@ -219,15 +223,15 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 String[] list = serverControl.listSessions(operation.require(CONNECTION_ID).asString());
                 reportListOfString(context, list);
             } else if (GET_ROLES.equals(operationName)) {
-                addressValidator.validate(operation);
+                addressMatchValidator.validate(operation);
                 String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
                 reportRoles(context, json);
             } else if (GET_ROLES_AS_JSON.equals(operationName)) {
-                addressValidator.validate(operation);
+                addressMatchValidator.validate(operation);
                 String json = serverControl.getRolesAsJSON(operation.require(ADDRESS_MATCH).asString());
                 reportRolesAsJSON(context, json);
             } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
-                addressValidator.validate(operation);
+                addressMatchValidator.validate(operation);
                 String json = serverControl.getAddressSettingsAsJSON(operation.require(ADDRESS_MATCH).asString());
                 context.getResult().set(json);
             } else if (FORCE_FAILOVER.equals(operationName)) {
@@ -351,6 +355,13 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             public ModelNode getModelDescription(Locale locale) {
                 return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, CLOSE_CONNECTIONS_FOR_USER,
                         HQ_SERVER, USER, ModelType.STRING, false, ModelType.BOOLEAN, true);
+            }
+        }, runtimeOnly);
+        registry.registerOperationHandler(CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS, this, new DescriptionProvider() {
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                return MessagingDescriptions.getSingleParamSimpleReplyOperation(locale, CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS,
+                        HQ_SERVER, ADDRESS_MATCH, ModelType.STRING, false, ModelType.BOOLEAN, true);
             }
         }, runtimeOnly);
         registry.registerOperationHandler(LIST_CONNECTION_IDS, this, new DescriptionProvider() {
