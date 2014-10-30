@@ -53,7 +53,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
@@ -65,6 +67,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
     private final InjectedValue<FederationService> federationService = new InjectedValue<FederationService>();
     private final PicketLinkType picketLinkType;
     private volatile PicketLinkSubsystemMetrics metrics;
+    private final Set<Handler> handlers = new LinkedHashSet<Handler>();
 
     public EntityProviderService(C configuration) {
         this.picketLinkType = createPicketLinkType(configuration);
@@ -164,20 +167,21 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
      * <p> Configure the SAML Handlers. </p>
      */
     private void configureHandlers() {
-        if (getPicketLinkType().getHandlers().getHandler().isEmpty()) {
-            getPicketLinkType().setHandlers(new Handlers());
+        Handlers actualHandlers = new Handlers();
 
+        actualHandlers.setHandlers(new ArrayList<Handler>());
+
+        if (this.handlers.isEmpty()) {
             for (Class<? extends SAML2Handler> commonHandlerClass : getDefaultHandlers()) {
-                addHandler(commonHandlerClass, getPicketLinkType().getHandlers());
+                addHandler(commonHandlerClass, actualHandlers);
+            }
+        } else {
+            for (Handler handler : this.handlers) {
+                actualHandlers.add(handler);
             }
         }
-    }
 
-    /**
-     * <p> Hook for pre-configured handlers. </p>
-     */
-    protected void doAddHandlers() {
-
+        getPicketLinkType().setHandlers(actualHandlers);
     }
 
     private void configureWarMetadata(DeploymentUnit deploymentUnit) {
@@ -215,15 +219,13 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
     }
 
     void addHandler(final Handler handler) {
-        Handlers handlers = getPicketLinkType().getHandlers();
-
-        for (Handler actualHandler : new ArrayList<Handler>(handlers.getHandler())) {
+        for (Handler actualHandler : new ArrayList<Handler>(this.handlers)) {
             if (actualHandler.getClazz().equals(handler.getClazz())) {
                 return;
             }
         }
 
-        handlers.add(handler);
+        this.handlers.add(handler);
     }
 
     void addHandler(Class<? extends SAML2Handler> handlerClassName, Handlers handlers) {
@@ -241,11 +243,9 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
     }
 
     void removeHandler(final Handler handler) {
-        Handlers handlers = getPicketLinkType().getHandlers();
-
-        for (Handler actualHandler : new ArrayList<Handler>(handlers.getHandler())) {
+        for (Handler actualHandler : new ArrayList<Handler>(this.handlers)) {
             if (actualHandler.getClazz().equals(handler.getClazz())) {
-                getPicketLinkType().getHandlers().remove(actualHandler);
+                this.handlers.remove(actualHandler);
             }
         }
     }
