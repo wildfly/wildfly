@@ -219,7 +219,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
 
         for (Handler actualHandler : new ArrayList<Handler>(handlers.getHandler())) {
             if (actualHandler.getClazz().equals(handler.getClazz())) {
-                throw PicketLinkLogger.ROOT_LOGGER.typeAlreadyDefined(handler.getClazz());
+                return;
             }
         }
 
@@ -241,7 +241,13 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
     }
 
     void removeHandler(final Handler handler) {
-        getPicketLinkType().getHandlers().remove(handler);
+        Handlers handlers = getPicketLinkType().getHandlers();
+
+        for (Handler actualHandler : new ArrayList<Handler>(handlers.getHandler())) {
+            if (actualHandler.getClazz().equals(handler.getClazz())) {
+                getPicketLinkType().getHandlers().remove(actualHandler);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
