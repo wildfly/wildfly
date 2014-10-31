@@ -86,9 +86,8 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             final HandlerChainService service = new HandlerChainService(handlerChainType, handlerChainId, protocolBindings);
             final ServiceTarget target = context.getServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
-            final Injector<UnifiedHandlerMetaData> injector = service.getHandlersInjector();
             for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, handlerChainServiceName, address, HANDLER)) {
-                handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, injector);
+                handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, service.getHandlersInjector());
             }
             ServiceController<?> controller = handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             if (newControllers != null) {

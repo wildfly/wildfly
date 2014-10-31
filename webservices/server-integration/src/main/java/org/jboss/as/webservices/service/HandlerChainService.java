@@ -24,6 +24,8 @@ package org.jboss.as.webservices.service;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jboss.as.webservices.dmr.ListInjector;
@@ -63,6 +65,15 @@ public final class HandlerChainService implements Service<UnifiedHandlerChainMet
 
     @Override
     public void start(final StartContext context) throws StartException {
+        Comparator<UnifiedHandlerMetaData> c = new Comparator<UnifiedHandlerMetaData>() {
+            @Override
+            public int compare(UnifiedHandlerMetaData o1, UnifiedHandlerMetaData o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+        };
+        synchronized (handlers) {
+            Collections.sort(handlers, c);
+        }
         handlerChain = new UnifiedHandlerChainMetaData(null, null, protocolBindings, handlers, false, handlerChainId);
     }
 

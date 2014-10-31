@@ -47,5 +47,6 @@
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true" services="export" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" export="true" services="export" />
         <module name="org.jboss.jaxbintros" export="true"/>
+        <module name="org.apache.ws.security" export="true"/>
     </dependencies>
 </module>
