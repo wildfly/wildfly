@@ -91,6 +91,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
     public static final String LIST_REMOTE_ADDRESSES = "list-remote-addresses";
     public static final String CLOSE_CONNECTIONS_FOR_ADDRESS = "close-connections-for-address";
     public static final String CLOSE_CONNECTIONS_FOR_USER = "close-connections-for-user";
+    public static final String CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS= "close-consumer-connections-for-address";
     public static final String LIST_CONNECTION_IDS= "list-connection-ids";
     public static final String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
     public static final String LIST_SESSIONS = "list-sessions";
@@ -190,6 +191,10 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (CLOSE_CONNECTIONS_FOR_USER.equals(operationName)) {
                 String user = USER.resolveModelAttribute(context, operation).asString();
                 boolean closed = serverControl.closeConnectionsForUser(user);
+                context.getResult().set(closed);
+            } else if (CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS.equals(operationName)) {
+                String address = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+                boolean closed = serverControl.closeConsumerConnectionsForAddress(address);
                 context.getResult().set(closed);
             } else if (LIST_CONNECTION_IDS.equals(operationName)) {
                 String[] list = serverControl.listConnectionIDs();
@@ -294,6 +299,11 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
         registry.registerOperationHandler(runtimeOnlyOperation(CLOSE_CONNECTIONS_FOR_USER, resolver)
                 .setParameters(USER)
+                .setReplyType(BOOLEAN)
+                .build(),
+                this);
+        registry.registerOperationHandler(runtimeOnlyOperation(CLOSE_CONSUMER_CONNECTIONS_FOR_ADDRESS, resolver)
+                .setParameters(ADDRESS_MATCH)
                 .setReplyType(BOOLEAN)
                 .build(),
                 this);

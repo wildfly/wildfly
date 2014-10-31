@@ -34,6 +34,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.jms.Connection;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -42,10 +43,14 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueue;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -117,6 +122,52 @@ public class HornetQServerManagementTestCase {
         }
     }
 
+    @Test
+    public void testCloseConsumerConnectionsForAddress() throws Exception {
+
+        JMSOperations adminSupport = JMSOperationsProvider.getInstance(managementClient);
+        adminSupport.createJmsQueue(getQueueName(), getQueueJndiName());
+
+        Connection connection = connectionFactory.createConnection("guest", "guest");
+        HornetQQueue queue = HornetQDestination.createQueue(getQueueName());
+
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        MessageConsumer consumer = session.createConsumer(queue);
+        connection.start();
+
+        final CountDownLatch connectionClosed = new CountDownLatch(1);
+
+        connection.setExceptionListener(new ExceptionListener() {
+            @Override
+            public void onException(JMSException e) {
+                connectionClosed.countDown();
+            }
+        });
+
+        ModelNode operation = getHornetQServerOperation("close-consumer-connections-for-address");
+        operation.get("address-match").set("jms.#");
+        ModelNode result = execute(operation, true);
+        assertTrue(result.isDefined());
+        assertEquals(true, result.asBoolean());
+
+        assertTrue(connectionClosed.await(500, MILLISECONDS));
+
+        // consumer is no longer valid
+        try {
+            consumer.receiveNoWait();
+            connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Assert.fail("consumer can no longer be used after it has been closed");
+        } catch (JMSException e) {
+        }
+
+        // connection is no longer valid
+        try {
+            connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Assert.fail("connection can no longer be used after it has been closed");
+        } catch (JMSException e) {
+        }
+    }
+
     private ModelNode getHornetQServerOperation(String operationName) {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "messaging");
@@ -141,4 +192,13 @@ public class HornetQServerManagementTestCase {
             return response.get("failure-description");
         }
     }
+
+    private String getQueueName() {
+        return getClass().getSimpleName();
+    }
+
+    private String getQueueJndiName() {
+        return "queue/" + getQueueName();
+    }
+
 }
