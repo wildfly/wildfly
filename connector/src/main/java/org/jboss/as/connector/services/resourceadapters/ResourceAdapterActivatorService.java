@@ -128,6 +128,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                                     value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                     .install();
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Started service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
+
         } catch (Throwable t) {
             // To clean up we need to invoke blocking behavior, so do that in another thread
             // and let this MSC thread return

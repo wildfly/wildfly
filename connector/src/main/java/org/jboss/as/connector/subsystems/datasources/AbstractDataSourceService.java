@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -45,6 +46,9 @@ import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.Injection;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.jca.adapters.jdbc.BaseWrapperManagedConnectionFactory;
 import org.jboss.jca.adapters.jdbc.JDBCResourceAdapter;
 import org.jboss.jca.adapters.jdbc.local.LocalManagedConnectionFactory;
@@ -68,6 +72,7 @@ import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
+import org.jboss.jca.core.spi.graceful.GracefulCallback;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -96,7 +101,7 @@ import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
  * @author John Bailey
  * @author maeste
  */
-public abstract class AbstractDataSourceService implements Service<DataSource> {
+public abstract class AbstractDataSourceService implements Service<DataSource>, ServerActivityCallback {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source");
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, AS7DataSourceDeployer.class.getName());
@@ -109,6 +114,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
     private final InjectedValue<MetadataRepository> mdr = new InjectedValue<MetadataRepository>();
     private final InjectedValue<ResourceAdapterRepository> raRepository = new InjectedValue<ResourceAdapterRepository>();
+    private final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
 
 
     private final String jndiName;
@@ -120,6 +126,51 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
      * The class loader to use. If null the Driver class loader will be used instead.
      */
     private final ClassLoader classLoader;
+
+    private final ServerActivity serverActivity = new ServerActivity() {
+        @Override
+        public void preSuspend(final ServerActivityCallback listener) {
+            try {
+                if (deploymentMD.getConnectionManagers() != null) {
+                    final CountDownLatch latch = new CountDownLatch(deploymentMD.getConnectionManagers().length);
+
+                    for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                        cm.prepareShutdown(new GracefulCallback() {
+                            @Override
+                            public void cancel() {
+                                //do nothing
+                            }
+
+                            @Override
+                            public void done() {
+                                latch.countDown();
+                            }
+                        });
+                    }
+                    latch.await();
+                    listener.done();
+                }
+            } catch (InterruptedException ie) {
+                //TODO: log me ?
+            }
+        }
+
+
+        public void suspended(ServerActivityCallback listener) {
+            listener.done();
+        }
+
+        @Override
+        public void resume() {
+            if (deploymentMD.getConnectionManagers() != null) {
+                for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+                    if (! cm.cancelShutdown()) {
+                        ConnectorLogger.ROOT_LOGGER.failedToResumeGraceful(cm.getJndiName());
+                    }
+                }
+            }
+        }
+    };
 
     protected AbstractDataSourceService(final String jndiName, final ClassLoader classLoader) {
         this.jndiName = jndiName;
@@ -139,6 +190,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         } catch (Throwable t) {
             throw ConnectorLogger.ROOT_LOGGER.deploymentError(t, jndiName);
         }
+        suspendControllerInjectedValue.getValue().registerActivity(serverActivity);
+
     }
 
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
@@ -162,6 +215,12 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         } finally {
             stopContext.asynchronous();
         }
+    }
+
+    @Override
+    public void done() {
+        stopService();
+        suspendControllerInjectedValue.getValue().registerActivity(serverActivity);
     }
 
     /**
@@ -194,11 +253,14 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             }
         }
 
+        //force shutdown invoked after this#done or this#stop
         if (deploymentMD.getConnectionManagers() != null) {
             for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
+
                 cm.shutdown();
             }
         }
+
 
 
         sqlDataSource = null;
@@ -249,6 +311,9 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
             return raRepository;
         }
 
+    public Injector<SuspendController> getSuspendControllerInjector() {
+        return suspendControllerInjectedValue;
+    }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {
         final StringBuffer valueBuf = new StringBuffer();

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Arrays;
@@ -785,6 +786,28 @@ public class Constants {
     static final SimpleOperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setParameters(USERNAME, PASSWORD)
             .setRuntimeOnly().build();
+
+    static final SimpleOperationDefinition GET_SHUTDOWN_DELAY = new SimpleOperationDefinitionBuilder("get-shutdown-delay", DataSourcesExtension.getResourceDescriptionResolver())
+            .setReplyType(ModelType.INT)
+            .setRuntimeOnly().build();
+
+    public static SimpleAttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder("timeout", ModelType.INT)
+               .setAllowExpression(true)
+               .setAllowNull(true)
+               .build();
+
+    static final SimpleOperationDefinition QUIESCE = new SimpleOperationDefinitionBuilder("quiesce", DataSourcesExtension.getResourceDescriptionResolver())
+               .setParameters(TIMEOUT)
+               .setRuntimeOnly().build();
+
+    static final SimpleOperationDefinition CANCEL_SHUTDOWN = new SimpleOperationDefinitionBuilder("cancel-shutdown", DataSourcesExtension.getResourceDescriptionResolver())
+            .setReplyType(ModelType.BOOLEAN)
+            .setRuntimeOnly().build();
+
+    static final SimpleOperationDefinition IS_SHUTDOWN = new SimpleOperationDefinitionBuilder("is-shutdown", DataSourcesExtension.getResourceDescriptionResolver())
+                .setReplyType(ModelType.BOOLEAN)
+                .setRuntimeOnly().build();
+
 
     static final OperationTransformer ENABLE_TRANSFORMER = new OperationTransformer() {
         @Override

@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -56,6 +57,9 @@ import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.ConfigProperty;
 import org.jboss.jca.common.api.metadata.spec.Connector;
@@ -64,6 +68,7 @@ import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
 import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
+import org.jboss.jca.core.spi.graceful.GracefulCallback;
 import org.jboss.jca.core.spi.mdr.AlreadyExistsException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
@@ -95,7 +100,7 @@ import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public abstract class AbstractResourceAdapterDeploymentService {
+public abstract class AbstractResourceAdapterDeploymentService  {
 
     // Must be set by the start method
     protected ResourceAdapterDeployment value;
@@ -113,10 +118,62 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
+    protected final InjectedValue<SuspendController> suspendControllerInjectedValue = new InjectedValue<>();
+
 
     protected String raRepositoryRegistrationId;
     protected String connectorServicesRegistrationName;
     protected String mdrRegistrationName;
+
+
+
+
+    protected final ServerActivity serverActivity = new ServerActivity() {
+        @Override
+        public void preSuspend(final ServerActivityCallback listener) {
+            try {
+                if (value!= null && value.getDeployment() != null && value.getDeployment().getConnectionManagers() != null) {
+                    final CountDownLatch latch = new CountDownLatch(value.getDeployment().getConnectionManagers().length);
+
+                    for (ConnectionManager cm : value.getDeployment().getConnectionManagers()) {
+                        cm.prepareShutdown(new GracefulCallback() {
+                            @Override
+                            public void cancel() {
+                                //do nothing
+                            }
+
+                            @Override
+                            public void done() {
+                                latch.countDown();
+                            }
+                        });
+                    }
+                    latch.await();
+                    listener.done();
+
+                }
+            } catch (InterruptedException ie) {
+                //TODO: log me ?
+            }
+
+        }
+
+        public void suspended(ServerActivityCallback listener) {
+            listener.done();
+        }
+
+        @Override
+        public void resume() {
+            if (value!= null && value.getDeployment() != null && value.getDeployment().getConnectionManagers() != null) {
+                for (ConnectionManager cm : value.getDeployment().getConnectionManagers()) {
+                    if (! cm.cancelShutdown()) {
+                        DEPLOYMENT_CONNECTOR_LOGGER.failedToResumeGraceful(cm.getJndiName());
+                    }
+                }
+            }
+        }
+    };
+
 
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
@@ -267,6 +324,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
     public Injector<ExecutorService> getExecutorServiceInjector() {
         return executorServiceInjector;
+    }
+
+    public Injector<SuspendController> getSuspendControllerInjector() {
+        return suspendControllerInjectedValue;
     }
 
     protected final ExecutorService getLifecycleExecutorService() {

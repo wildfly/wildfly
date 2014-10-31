@@ -32,6 +32,8 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -603,4 +605,26 @@ public class Constants {
             SCHEDULEWORK_DISTRIBUTION_ENABLED,
             STARTWORK_DISTRIBUTION_ENABLED
     };
+
+    static final SimpleOperationDefinition GET_SHUTDOWN_DELAY = new SimpleOperationDefinitionBuilder("get-shutdown-delay", ResourceAdaptersExtension.getResourceDescriptionResolver("graceful"))
+                .setReplyType(ModelType.INT)
+                .setRuntimeOnly().build();
+
+        public static SimpleAttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder("timeout", ModelType.INT)
+                   .setAllowExpression(true)
+                   .setAllowNull(true)
+                   .build();
+
+        static final SimpleOperationDefinition QUIESCE = new SimpleOperationDefinitionBuilder("quiesce", ResourceAdaptersExtension.getResourceDescriptionResolver("graceful"))
+                   .setParameters(TIMEOUT)
+                   .setRuntimeOnly().build();
+
+        static final SimpleOperationDefinition CANCEL_SHUTDOWN = new SimpleOperationDefinitionBuilder("cancel-shutdown", ResourceAdaptersExtension.getResourceDescriptionResolver("graceful"))
+                .setReplyType(ModelType.BOOLEAN)
+                .setRuntimeOnly().build();
+
+        static final SimpleOperationDefinition IS_SHUTDOWN = new SimpleOperationDefinitionBuilder("is-shutdown", ResourceAdaptersExtension.getResourceDescriptionResolver("graceful"))
+                    .setReplyType(ModelType.BOOLEAN)
+                    .setRuntimeOnly().build();
+
 }

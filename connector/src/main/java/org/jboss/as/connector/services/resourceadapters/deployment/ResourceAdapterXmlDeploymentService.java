@@ -33,6 +33,7 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
+import org.jboss.as.server.suspend.ServerActivityCallback;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.metadata.merge.Merger;
@@ -54,7 +55,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-public final class ResourceAdapterXmlDeploymentService extends AbstractResourceAdapterDeploymentService implements
+public final class ResourceAdapterXmlDeploymentService extends AbstractResourceAdapterDeploymentService implements ServerActivityCallback,
         Service<ResourceAdapterDeployment> {
 
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RaXmlDeployer");
@@ -126,6 +127,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                         new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
                 .addDependency(deploymentServiceName)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
+            suspendControllerInjectedValue.getValue().registerActivity(serverActivity);
         } catch (Throwable t) {
             cleanupStartAsync(context, raName, deploymentServiceName, t);
         }
@@ -137,6 +139,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     @Override
     public void stop(StopContext context) {
         stopAsync(context, raName, deploymentServiceName);
+    }
+
+    @Override
+    public void done() {
+        unregisterAll(raName);
+        suspendControllerInjectedValue.getValue().registerActivity(serverActivity);
     }
 
     public CommonDeployment getRaxmlDeployment() {
