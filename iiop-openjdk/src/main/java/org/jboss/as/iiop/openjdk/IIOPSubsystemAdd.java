@@ -210,7 +210,8 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
      // create the IOR security config metadata service.
         IORSecurityConfigMetaData securityConfigMetaData = null;
-        if (model.hasDefined(Constants.IOR_SETTINGS)) {
+        final ModelNode configNode = model.get(Constants.CONFIGURATION);
+        if (configNode.hasDefined(Constants.IOR_SETTINGS)) {
             securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
                     model.get(IORSettingsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         }
