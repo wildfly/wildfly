@@ -234,9 +234,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "h2";
             } else if (name.toLowerCase().contains("oracle")) {
                 unified = "oracle";
-            }else if (name.toLowerCase().contains("mssql")) {
+            }else if (name.toLowerCase().contains("microsoft")) {
                 unified = "mssql";
-            }else if (name.toLowerCase().contains("sybase")) {
+            }else if (name.toLowerCase().contains("jconnect")) {
                 unified = "sybase";
             }
          }
@@ -403,15 +403,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             // TODO need to analyze the Exception and suppress the Exception if 'only' the timer should not executed
             try {
                 tm.rollback();
-<<<<<<< HEAD
-            } catch (IllegalStateException rbe) {
-                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
-            } catch (SecurityException  rbe) {
-                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
-            } catch (SystemException rbe) {
-                EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
-            }
-=======
             } catch (IllegalStateException | SecurityException | SystemException rbe) {
                 EjbLogger.ROOT_LOGGER.timerUpdateFailedAndRollbackNotPossible(rbe);
             }
@@ -425,7 +416,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
             throw new RuntimeException(e);
         } catch (NotSupportedException e) {
             // happen from tm.begin, no rollback necessary
->>>>>>> a1bbbc4... Remove dangerous connection parameter change from the pooled connection.
             throw new RuntimeException(e);
         }catch (NotSupportedException e) {
             // happen from tm.begin, no rollback necessary
