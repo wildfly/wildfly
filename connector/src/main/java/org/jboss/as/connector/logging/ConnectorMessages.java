@@ -599,4 +599,7 @@ public interface ConnectorMessages {
     @Message(id = 10486, value = "Attributes %s rejected. Must be true")
     String rejectAttributesMustBeTrue(Set<String> key);
 
+    @Message(id = 10488, value = "Jndi name shouldn't include '//' or end with '/'")
+    OperationFailedException jndiNameShouldValidate();
 }
+

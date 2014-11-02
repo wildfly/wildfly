@@ -240,6 +240,8 @@ class Constants {
                     String str = value.asString();
                     if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
                         throw MESSAGES.jndiNameInvalidFormat();
+                    } else if (str.endsWith("/") || str.indexOf("//") != -1) {
+                        throw MESSAGES.jndiNameShouldValidate();
                     }
                 }
             } else {
