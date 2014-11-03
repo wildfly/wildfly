@@ -52,6 +52,7 @@ import java.util.List;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CLASS_NAME;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
@@ -355,6 +356,16 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
         }
 
         ModelNode modelNode = Util.getEmptyOperation(ADD, null);
+
+        int attributeCount = reader.getAttributeCount();
+
+        for (int i = 0; i < attributeCount; i++) {
+            String attributeLocalName = reader.getAttributeLocalName(i);
+
+            if (ModelElement.forName(attributeLocalName) == null) {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
 
         for (SimpleAttributeDefinition simpleAttributeDefinition : attributes) {
             simpleAttributeDefinition.parseAndSetParameter(reader.getAttributeValue("", simpleAttributeDefinition.getXmlName()), modelNode, reader);
