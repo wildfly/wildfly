@@ -39,11 +39,12 @@ import org.junit.runner.RunWith;
 
 /**
  * Create org.apache.openjpa:main module before running this test. The module
- * must depend on javaee.api and org.jboss.as.jpa.openjpa. 
+ * must depend on javaee.api and org.jboss.as.jpa.openjpa.
  *
  * @author Antti Laisi
  */
 @RunWith(Arquillian.class)
+@Ignore("WFCORE-4036")
 public class OpenJPASharedModuleProviderTestCase {
 
     private static final String ARCHIVE_NAME = "openjpa_module_test";
@@ -80,7 +81,7 @@ public class OpenJPASharedModuleProviderTestCase {
         WebArchive main = ShrinkWrap.create(WebArchive.class, "main.war");
         main.addClasses(OpenJPASharedModuleProviderTestCase.class);
         ear.addAsModule(main);
-        
+
         return ear;
     }
 
