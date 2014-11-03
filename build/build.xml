@@ -670,6 +670,15 @@
             <maven-resource group="org.apache.juddi" artifact="juddi-client"/>
         </module-def>
 
+        <module-def name="org.apache.lucene">
+            <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-analyzers"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-phonetic"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-smartcn"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-stempel"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-facet"/>
+        </module-def>
+
         <module-def name="org.apache.juddi.uddi-ws">
             <maven-resource group="org.apache.juddi" artifact="uddi-ws"/>
         </module-def>
@@ -680,6 +689,12 @@
 
         <module-def name="org.apache.santuario.xmlsec">
             <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
+        </module-def>
+
+        <module-def name="org.apache.solr">
+            <maven-resource group="org.apache.solr" artifact="solr-analysis-extras"/>
+            <maven-resource group="org.apache.solr" artifact="solr-core"/>
+            <maven-resource group="org.apache.solr" artifact="solr-solrj"/>
         </module-def>
 
         <module-def name="org.apache.velocity">
@@ -749,6 +764,17 @@
         <module-def name="org.hibernate.envers">
             <maven-resource group="org.hibernate" artifact="hibernate-envers"/>
         </module-def>
+
+        <module-def name="org.hibernate.search.engine">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-engine" />
+            <maven-resource group="org.hibernate" artifact="hibernate-search-analyzers" />
+            <maven-resource group="org.apache.avro" artifact="avro" />
+        </module-def>
+
+        <module-def name="org.hibernate.search.orm">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-orm" />
+        </module-def>
+
         <module-def name="org.hibernate.validator">
             <maven-resource group="org.hibernate" artifact="hibernate-validator"/>
         </module-def>
