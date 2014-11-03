@@ -22,10 +22,14 @@
 
 package org.jboss.as.iiop.openjdk.service;
 
+import java.security.AccessController;
+
 import org.jboss.as.iiop.openjdk.IIOPExtension;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -66,5 +70,16 @@ public class IORSecConfigMetaDataService implements Service<IORSecurityConfigMet
     @Override
     public IORSecurityConfigMetaData getValue() throws IllegalStateException, IllegalArgumentException {
         return this.iorSecurityConfigMetaData;
+    }
+
+    public static IORSecurityConfigMetaData getCurrent() {
+        return (IORSecurityConfigMetaData) currentServiceContainer().getRequiredService(SERVICE_NAME).getValue();
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        if (System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }
