@@ -25,6 +25,7 @@ package org.jboss.as.iiop.openjdk.csiv2;
 import org.jboss.as.iiop.openjdk.Constants;
 import org.jboss.as.iiop.openjdk.logging.IIOPLogger;
 import org.jboss.as.iiop.openjdk.service.CorbaORBService;
+import org.jboss.as.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
