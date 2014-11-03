@@ -70,6 +70,7 @@ import org.xnio.IoUtils;
  */
 public class DomainLifecycleUtil {
 
+    public static final String SLAVE_HOST_USERNAME = "slave";
     public static final String SLAVE_HOST_PASSWORD = "slave_us3r_password";
 
     private static final ThreadFactory threadFactory = new AsyncThreadFactory();
@@ -166,7 +167,7 @@ public class DomainLifecycleUtil {
                 FileOutputStream fos = new FileOutputStream(usersFile);
                 PrintWriter pw = new PrintWriter(fos, true);
                 pw.println("slave="
-                        + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm",
+                        + new UsernamePasswordHashUtil().generateHashedHexURP(SLAVE_HOST_USERNAME, "ManagementRealm",
                                 SLAVE_HOST_PASSWORD.toCharArray()));
                 pw.close();
                 fos.close();
