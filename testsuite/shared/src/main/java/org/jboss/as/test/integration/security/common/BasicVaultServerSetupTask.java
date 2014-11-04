@@ -70,6 +70,8 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
 
     private VaultHandler vaultHandler;
 
+    private String externalVaultPassword = null;
+
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
 
@@ -111,7 +113,11 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         op = Util.createAddOperation(VAULT_PATH);
         ModelNode vaultOption = op.get(VAULT_OPTIONS);
         vaultOption.get("KEYSTORE_URL").set(keystoreURL);
-        vaultOption.get("KEYSTORE_PASSWORD").set(nonInteractiveSession.getKeystoreMaskedPassword());
+        if (externalVaultPassword != null) {
+            vaultOption.get("KEYSTORE_PASSWORD").set(externalVaultPassword);
+        } else {
+            vaultOption.get("KEYSTORE_PASSWORD").set(nonInteractiveSession.getKeystoreMaskedPassword());
+        }
         vaultOption.get("KEYSTORE_ALIAS").set(VAULT_ALIAS);
         vaultOption.get("SALT").set(salt);
         vaultOption.get("ITERATION_COUNT").set(Integer.toString(iterationCount));
@@ -160,5 +166,9 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         if (datFile3.exists()) {
             datFile3.delete();
         }
+    }
+
+    protected void setExternalVaultPassword(String externalVaultPassword) {
+        this.externalVaultPassword = externalVaultPassword;
     }
 }
