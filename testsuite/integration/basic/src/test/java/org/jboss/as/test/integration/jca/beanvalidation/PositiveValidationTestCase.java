@@ -100,6 +100,7 @@ public class PositiveValidationTestCase {
         assertEquals("admin", adminObject.getAoProperty());
         assertEquals(4, con.getResourceAdapterProperty());
         assertEquals("prop", con.getManagedConnectionFactoryProperty());
+        con.close();
     }
 
     @Test

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.Set;
 import javax.naming.InitialContext;
+import javax.resource.cci.Connection;
 import javax.resource.cci.ConnectionFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -91,7 +92,9 @@ public abstract class AbstractModuleDeploymentTestCase extends
     public void testConnectionFactory(ConnectionFactory connectionFactory)
             throws Throwable {
         assertNotNull(connectionFactory);
-        assertNotNull(connectionFactory.getConnection());
+        Connection c = connectionFactory.getConnection(); 
+        assertNotNull(c);
+        c.close();
     }
 
     /**

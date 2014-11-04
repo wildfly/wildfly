@@ -87,7 +87,7 @@ public class SimpleTimerMDBTestCase {
             producer.send(message);
             producer.close();
         } finally {
-            //connection.stop();
+            connection.close();
         }
     }
 

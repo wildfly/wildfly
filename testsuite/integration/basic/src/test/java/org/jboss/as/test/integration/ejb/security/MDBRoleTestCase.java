@@ -113,7 +113,7 @@ public class MDBRoleTestCase {
       assertNotNull(reply);
       final String result = ((TextMessage) reply).getText();
       assertEquals(SimpleSLSB.SUCCESS, result);
-
+      connection.close();
    }
 
 }
