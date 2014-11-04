@@ -24,11 +24,13 @@ package org.wildfly.clustering.server.provider;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -136,11 +138,12 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
             newNodes.removeAll(previousMembers);
             try (Batch batch = this.batcher.createBatch()) {
                 if (!deadNodes.isEmpty()) {
-                    for (Object service: this.cache.keySet()) {
-                        Set<Node> nodes = this.cache.get(service);
-                        if (nodes != null) {
+                    try (CloseableIterator<Map.Entry<Object, Set<Node>>> entries = this.cache.entrySet().iterator()) {
+                        while (entries.hasNext()) {
+                            Map.Entry<Object, Set<Node>> entry = entries.next();
+                            Set<Node> nodes = entry.getValue();
                             if (nodes.removeAll(deadNodes)) {
-                                this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).replace(service, nodes);
+                                entry.setValue(nodes);
                             }
                         }
                     }

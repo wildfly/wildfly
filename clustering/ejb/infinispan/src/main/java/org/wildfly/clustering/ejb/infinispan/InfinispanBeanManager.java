@@ -29,9 +29,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.filter.KeyFilter;
+import org.infinispan.filter.NullValueConverter;
+import org.infinispan.iteration.EntryIterable;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -75,7 +77,7 @@ import org.wildfly.clustering.registry.Registry;
  * @param <T> the bean type
  */
 @Listener(primaryOnly = true)
-public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, TransactionBatch>, KeyFilter<Object> {
+public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, TransactionBatch> {
 
     private final Cache<G, BeanGroupEntry<I, T>> groupCache;
     private final String beanName;
@@ -93,6 +95,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     private final AtomicInteger passiveCount = new AtomicInteger();
     private final Batcher<TransactionBatch> batcher;
     private final Invoker invoker = new RetryingInvoker(0, 10, 100);
+    private final BeanKeyFilter<I> filter;
 
     volatile CommandDispatcher<Scheduler<I>> dispatcher;
     private volatile Scheduler<I> scheduler;
@@ -104,6 +107,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         this.groupCache = groupConfiguration.getCache();
         this.beanCache = beanConfiguration.getCache();
         this.batcher = new InfinispanBatcher(this.groupCache);
+        this.filter = new BeanKeyFilter<>(this.beanName);
         final Address address = this.groupCache.getCacheManager().getAddress();
         final KeyGenerator<G> groupKeyGenerator = new KeyGenerator<G>() {
             @Override
@@ -184,7 +188,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
             }
         };
         this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.beanName + ".schedulers", this.scheduler);
-        this.beanCache.addListener(this, this);
+        this.beanCache.addListener(this, this.filter);
         this.schedule(this.beanCache, new SimpleLocality(false), new ConsistentHashLocality(this.beanCache));
     }
 
@@ -196,14 +200,6 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
         for (KeyAffinityService<?> service: this.affinityServices) {
             service.stop();
         }
-    }
-
-    @Override
-    public boolean accept(Object key) {
-        if (!(key instanceof BeanKey)) return false;
-        @SuppressWarnings("unchecked")
-        BeanKey<I> beanKey = (BeanKey<I>) key;
-        return beanKey.getBeanName().equals(this.beanName);
     }
 
     @Override
@@ -295,8 +291,8 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
     @Override
     public int getActiveCount() {
         int size = 0;
-        for (Object key: this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet()) {
-            if (this.accept(key)) {
+        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
+            for (@SuppressWarnings("unused") CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
                 size += 1;
             }
         }
@@ -355,11 +351,9 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T, Tran
 
     private void schedule(Cache<BeanKey<I>, BeanEntry<G>> cache, Locality oldLocality, Locality newLocality) {
         // Iterate over sessions in memory
-        for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).keySet()) {
-            // Cache may contain non-string keys, so ignore any others
-            if (this.accept(key)) {
-                @SuppressWarnings("unchecked")
-                I id = ((BeanKey<I>) key).getId();
+        try (EntryIterable<BeanKey<I>, ?> entries = this.beanCache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD).filterEntries(this.filter)) {
+            for (CacheEntry<BeanKey<I>, ?> entry : entries.converter(NullValueConverter.getInstance())) {
+                I id = entry.getKey().getId();
                 // If we are the new primary owner of this session
                 // then schedule expiration of this session locally
                 if (!oldLocality.isLocal(id) && newLocality.isLocal(id)) {
