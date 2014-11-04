@@ -240,9 +240,9 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 unified = "h2";
             } else if (name.toLowerCase().contains("oracle")) {
                 unified = "oracle";
-            }else if (name.toLowerCase().contains("mssql")) {
+            }else if (name.toLowerCase().contains("microsoft")) {
                 unified = "mssql";
-            }else if (name.toLowerCase().contains("sybase")) {
+            }else if (name.toLowerCase().contains("jconnect")) {
                 unified = "sybase";
             }
          }
