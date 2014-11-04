@@ -455,7 +455,7 @@ public abstract class AbstractOperationTestCase {
         @Override
         public Resource readResource(PathAddress relativeAddress, boolean recursive) {
             final PathAddress address = operationAddress.append(relativeAddress);
-            return readResourceFromRoot(address);
+            return readResourceFromRoot(address, recursive);
         }
 
         @Override
@@ -466,8 +466,10 @@ public abstract class AbstractOperationTestCase {
         @Override
         public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
             Resource resource = this.root;
-            for (PathElement element : address) {
-                resource = resource.requireChild(element);
+            if (recursive) {
+                for (PathElement element : address) {
+                    resource = resource.requireChild(element);
+                }
             }
             return resource;
         }
@@ -834,7 +836,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         public Set<String> getAttributeNames(PathAddress address) {
-            return null;
+            return Collections.emptySet();
         }
 
         public AttributeAccess getAttributeAccess(PathAddress address, String attributeName) {

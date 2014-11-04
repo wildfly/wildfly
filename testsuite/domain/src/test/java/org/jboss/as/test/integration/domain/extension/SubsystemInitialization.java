@@ -60,7 +60,7 @@ class SubsystemInitialization {
     private final SubsystemParser parser;
     private final boolean allowExpressions;
 
-    static AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING).build();
+    static AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING, true).build();
 
     SubsystemInitialization(final String subsystemName, boolean allowExpressions) {
         this.subsystemName = subsystemName;
@@ -84,8 +84,8 @@ class SubsystemInitialization {
         registration.registerReadWriteAttribute(TEST_ATTRIBUTE, null, new BasicAttributeWriteHandler(TEST_ATTRIBUTE));
 
         // Other basic handlers
-        final AttributeDefinition integer = SimpleAttributeDefinitionBuilder.create("int", ModelType.INT).setAllowExpression(allowExpressions).build();
-        final AttributeDefinition string = SimpleAttributeDefinitionBuilder.create("string", ModelType.STRING).setAllowExpression(allowExpressions).build();
+        final AttributeDefinition integer = SimpleAttributeDefinitionBuilder.create("int", ModelType.INT, true).setAllowExpression(allowExpressions).build();
+        final AttributeDefinition string = SimpleAttributeDefinitionBuilder.create("string", ModelType.STRING, true).setAllowExpression(allowExpressions).build();
         registration.registerReadWriteAttribute(integer, null, new BasicAttributeWriteHandler(integer));
         registration.registerReadWriteAttribute(string, null, new BasicAttributeWriteHandler(string));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

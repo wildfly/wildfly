@@ -141,6 +141,14 @@ public abstract class AbstractControllerTestBase {
         return rsp;
     }
 
+    public ModelNode executeCheckForFailure(ModelNode operation) throws OperationFailedException {
+            ModelNode rsp = getController().execute(operation, null, null, null);
+            if (!FAILED.equals(rsp.get(OUTCOME).asString())) {
+                Assert.fail("Should have failed!");
+            }
+            return rsp;
+        }
+
     @Before
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");

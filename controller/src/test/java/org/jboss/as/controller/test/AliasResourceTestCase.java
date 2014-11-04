@@ -671,8 +671,8 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
     }
 
     private static SimpleAttributeDefinition READ_WRITE = new SimpleAttributeDefinition("rw", ModelType.STRING, true);
-    private static SimpleAttributeDefinition READ_ONLY = new SimpleAttributeDefinition("ro", ModelType.STRING, false);
-    private static SimpleAttributeDefinition RUNTIME = SimpleAttributeDefinitionBuilder.create("rt", ModelType.STRING, false).setStorageRuntime().build();
+    private static SimpleAttributeDefinition READ_ONLY = new SimpleAttributeDefinition("ro", ModelType.STRING, true);
+    private static SimpleAttributeDefinition RUNTIME = SimpleAttributeDefinitionBuilder.create("rt", ModelType.STRING, true).setStorageRuntime().build();
     private static SimpleAttributeDefinition READ_WRITE_ALIAS = SimpleAttributeDefinitionBuilder.create("rwa", READ_WRITE)
             .setFlags(AttributeAccess.Flag.ALIAS)
             .build();

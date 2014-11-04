@@ -72,7 +72,7 @@ import org.junit.Test;
  */
 public class GlobalNotificationsTestCase extends AbstractControllerTestBase {
 
-    public static final SimpleAttributeDefinition MY_ATTRIBUTE = create("my-attribute", LONG)
+    public static final SimpleAttributeDefinition MY_ATTRIBUTE = create("my-attribute", LONG, true)
             .setDefaultValue(new ModelNode(12345))
             .build();
     public static final SimpleAttributeDefinition MY_RUNTIME_ATTRIBUTE = create("my-runtime-attribute", LONG)

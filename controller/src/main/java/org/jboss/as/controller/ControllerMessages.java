@@ -2785,6 +2785,10 @@ public interface ControllerMessages {
     @Message(id = 13494, value="Incomplete expression: %s")
     OperationFailedException incompleteExpression(String expression);
 
+    // #380 in WildFly 9+
+    @Message(id = 13495, value="Attribute '%s' needs to be set or passed before attribute '%s' can be correctly set")
+    OperationFailedException requiredAttributeNotSet(String required, String name);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 
 }

@@ -837,7 +837,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         }
 
         void addAttribute(String name, AccessConstraintDefinition...constraints) {
-            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING);
+            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING, true);
             if (constraints != null) {
                 builder.setAccessConstraints(constraints);
             }

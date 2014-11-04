@@ -318,7 +318,7 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                     ? new ModelNode(VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE) : null;
 
             AttributeDefinition attributeDefinition = SimpleAttributeDefinitionBuilder
-                    .create(UNCONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING)
+                    .create(UNCONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING, true)
                     .setDefaultValue(defaultValue)
                     .build();
             resourceRegistration.registerReadOnlyAttribute(attributeDefinition, readAttributeHandler);
@@ -329,7 +329,7 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                     ? new ModelNode(VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE) : null;
 
             attributeDefinition = SimpleAttributeDefinitionBuilder
-                    .create(SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING)
+                    .create(SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING, true)
                     .setDefaultValue(defaultValue)
                     .setAccessConstraints(MY_SENSITIVE_CONSTRAINT)
                     .build();
@@ -341,7 +341,7 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
                     ? new ModelNode(VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE) : null;
 
             attributeDefinition = SimpleAttributeDefinitionBuilder
-                    .create(APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING)
+                    .create(APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, ModelType.STRING, true)
                     .setDefaultValue(defaultValue)
                     .setAccessConstraints(MY_APPLICATION_CONSTRAINT)
                     .build();
