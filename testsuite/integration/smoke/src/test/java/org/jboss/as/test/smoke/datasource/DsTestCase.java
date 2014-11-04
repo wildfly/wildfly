@@ -57,5 +57,6 @@ public class DsTestCase {
         Connection conn = ds.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
         Assert.assertTrue(rs.next());
+        conn.close();
     }
 }

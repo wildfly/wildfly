@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.ee.datasourcedefinition;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -70,8 +71,10 @@ public class DataSourceDefinitionTestCase {
     public void testDataSourceDefinition() throws NamingException, SQLException {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         DataSource ds = bean.getDataSource();
-        ResultSet result = ds.getConnection().createStatement().executeQuery("select 1");
+        Connection c = ds.getConnection();
+        ResultSet result = c.createStatement().executeQuery("select 1");
         Assert.assertTrue(result.next());
+        c.close();
     }
 
     @Test
@@ -83,8 +86,10 @@ public class DataSourceDefinitionTestCase {
         } catch (RuntimeException expected) {
         }
         DataSource ds = bean.getDataSource();
-        ResultSet result = ds.getConnection().createStatement().executeQuery("select id from coffee where id=1;");
+        Connection c = ds.getConnection();
+        ResultSet result = c.createStatement().executeQuery("select id from coffee where id=1;");
         Assert.assertFalse(result.next());
+        c.close();
     }
 
     @Test
@@ -92,8 +97,10 @@ public class DataSourceDefinitionTestCase {
         DataSourceBean bean = (DataSourceBean)ctx.lookup("java:module/" + DataSourceBean.class.getSimpleName());
         bean.insert2();
         DataSource ds = bean.getDataSource();
-        ResultSet result = ds.getConnection().createStatement().executeQuery("select id from coffee where id=2;");
+        Connection c = ds.getConnection();
+        ResultSet result = c.createStatement().executeQuery("select id from coffee where id=2;");
         Assert.assertTrue(result.next());
+        c.close();
     }
 
     @Test

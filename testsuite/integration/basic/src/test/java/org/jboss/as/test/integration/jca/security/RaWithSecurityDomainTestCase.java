@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.resource.cci.Connection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -96,6 +97,8 @@ public class RaWithSecurityDomainTestCase {
     @Test
     public void deploymentTest() throws Exception {
         assertNotNull("CF1 not found", connectionFactory1);
-        assertNotNull("Cannot obtain connection", connectionFactory1.getConnection());
+        Connection cci = connectionFactory1.getConnection();
+        assertNotNull("Cannot obtain connection", cci);
+        cci.close();
     }
 }

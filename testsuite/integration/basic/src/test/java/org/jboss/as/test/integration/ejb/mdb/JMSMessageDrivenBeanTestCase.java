@@ -84,7 +84,7 @@ public class JMSMessageDrivenBeanTestCase {
             final String result = ((TextMessage) reply).getText();
             assertEquals("replying Test", result);
         } finally {
-            //connection.stop();
+            connection.close();
         }
     }
 }

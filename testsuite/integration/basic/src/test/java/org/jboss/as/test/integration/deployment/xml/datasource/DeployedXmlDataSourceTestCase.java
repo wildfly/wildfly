@@ -102,6 +102,7 @@ public class DeployedXmlDataSourceTestCase {
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
         Assert.assertTrue(rs.next());
+        conn.close();
     }
 
 
@@ -112,6 +113,7 @@ public class DeployedXmlDataSourceTestCase {
         Connection conn = dataSource.getConnection();
         ResultSet rs = conn.prepareStatement("select 1").executeQuery();
         Assert.assertTrue(rs.next());
+        conn.close();
     }
 
 
