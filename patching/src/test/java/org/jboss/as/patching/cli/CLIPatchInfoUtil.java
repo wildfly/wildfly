@@ -47,7 +47,7 @@ public class CLIPatchInfoUtil {
     private static final String CP = "cumulative";
     private static final String ONE_OFF = "one-off";
 
-    public static void assertPatchInfo(byte[] info, String patchId, boolean oneOff, String targetName, String targetVersion,
+    public static void assertPatchInfo(byte[] info, String patchId, String link, boolean oneOff, String targetName, String targetVersion,
             String description) {
         final ByteArrayInputStream bis = new ByteArrayInputStream(info);
         final InputStreamReader reader = new InputStreamReader(bis);
@@ -61,11 +61,12 @@ public class CLIPatchInfoUtil {
         expected.put(IDENTITY_NAME, targetName);
         expected.put(IDENTITY_VERSION, targetVersion);
         expected.put(DESCR, description);
+        expected.put("Link", link);
 
         Assert.assertEquals(expected, actual);
     }
 
-    public static void assertPatchInfo(byte[] info, String patchId, boolean oneOff, String targetName, String targetVersion,
+    public static void assertPatchInfo(byte[] info, String patchId, String link, boolean oneOff, String targetName, String targetVersion,
             String description, List<Map<String,String>> elements) {
         final ByteArrayInputStream bis = new ByteArrayInputStream(info);
         final InputStreamReader reader = new InputStreamReader(bis);
@@ -77,6 +78,7 @@ public class CLIPatchInfoUtil {
         expected.put(IDENTITY_NAME, targetName);
         expected.put(IDENTITY_VERSION, targetVersion);
         expected.put(DESCR, description);
+        expected.put("Link", link);
 
         Map<String, String> actual = parseTable(buf);
         Assert.assertEquals(expected, actual);

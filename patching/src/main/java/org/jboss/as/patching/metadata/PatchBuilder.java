@@ -40,6 +40,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     protected String patchId;
     private String description;
+    private String link;
     private Identity identity;
     private PatchType patchType;
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
@@ -57,6 +58,11 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
             throw PatchMessages.MESSAGES.illegalPatchName(patchId);
         }
         this.patchId = patchId;
+        return this;
+    }
+
+    public PatchBuilder setLink(String link) {
+        this.link = link;
         return this;
     }
 
@@ -158,7 +164,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
             elements.add(holder.createElement(patchType));
         }
 
-        return new PatchImpl(patchId, description, identity, unmodifiableList(elements), unmodifiableList(modifications));
+        return new PatchImpl(patchId, description, link, identity, unmodifiableList(elements), unmodifiableList(modifications));
     }
 
     @Override

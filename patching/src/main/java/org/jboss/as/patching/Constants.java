@@ -59,6 +59,7 @@ public class Constants {
     public static final String DESCRIPTION = "description";
     public static final String IDENTITY_NAME = "identity-name";
     public static final String IDENTITY_VERSION = "identity-version";
+    public static final String LINK = "link";
     public static final String TIMESTAMP = "timestamp";
     public static final String TYPE = "type";
 

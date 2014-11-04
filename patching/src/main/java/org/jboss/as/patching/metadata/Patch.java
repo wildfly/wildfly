@@ -66,6 +66,13 @@ public interface Patch {
     String getDescription();
 
     /**
+     * Get the link to the patch.
+     *
+     * @return the link
+     */
+    String getLink();
+
+    /**
      * Returns the target identity.
      *
      * @return  identity which produced this patch

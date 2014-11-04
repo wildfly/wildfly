@@ -71,12 +71,12 @@ public class PatchXmlUnitTestCase {
 
     @Test
     public void testMarshallCP() throws Exception {
-        doMarshall("patch-01-CP.xml");
+        doMarshall("patch-11-CP.xml");
     }
 
     @Test
     public void testMarshallOneOff() throws Exception {
-        doMarshall("patch-02-ONE-OFF.xml");
+        doMarshall("patch-21-ONE-OFF.xml");
     }
 
     private void doMarshall(String fileName) throws Exception {

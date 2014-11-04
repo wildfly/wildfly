@@ -34,11 +34,17 @@ public class PatchImpl implements Patch {
 
     private final String patchID;
     private final String description;
+    private final String link;
     private final Identity identity;
     private final List<PatchElement> elements;
     private final List<ContentModification> modifications;
 
     public PatchImpl(String patchID, String description, Identity identity,
+                     List<PatchElement> elements, List<ContentModification> modifications) {
+        this(patchID, description, null, identity, elements, modifications);
+    }
+
+    public PatchImpl(String patchID, String description, String link, Identity identity,
                      List<PatchElement> elements, List<ContentModification> modifications) {
 
         if (!Patch.PATCH_NAME_PATTERN.matcher(patchID).matches()) {
@@ -47,6 +53,7 @@ public class PatchImpl implements Patch {
 
         this.patchID = patchID;
         this.description = description;
+        this.link = link;
         this.identity = identity;
         this.elements = elements;
         this.modifications = modifications;
@@ -60,6 +67,11 @@ public class PatchImpl implements Patch {
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getLink() {
+        return link;
     }
 
     @Override
@@ -94,6 +106,11 @@ public class PatchImpl implements Patch {
         @Override
         public String getDescription() {
             return patch.getDescription();
+        }
+
+        @Override
+        public String getLink() {
+            return patch.getLink();
         }
 
         @Override

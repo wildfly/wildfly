@@ -1,0 +1,374 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:patch:1.1"
+           targetNamespace="urn:jboss:patch:1.1"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+        >
+
+    <xs:element name="patch">
+        <xs:annotation>
+            <xs:documentation>
+                Patch description
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="link" type="linkType" minOccurs="0" maxOccurs="1"/>
+                <xs:choice>
+                    <xs:element name="upgrade" type="identityUpgradeType" maxOccurs="1"/>
+                    <xs:element name="no-upgrade" type="identityNoUpgradeType" maxOccurs="1"/>
+                </xs:choice>
+                <xs:element name="element" type="elementType" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="misc-files" type="misc-filesType" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Unique identifier of the patch.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="upgradeType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes the identity which produced the patch.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="requires" type="requiresType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the identity.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="identityUpgradeBaseType">
+        <xs:complexContent>
+            <xs:extension base="upgradeType">
+                <xs:attribute name="version" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The version of the identity.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="identityUpgradeType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that the patch upgrades the version of the identity.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="identityUpgradeBaseType">
+                <xs:attribute name="to-version" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The version of the identity after the patch has been applied.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="identityNoUpgradeType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that the patch upgrades the version of the identity.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="identityUpgradeBaseType">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="linkType">
+        <xs:attribute name="url" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="requiresType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes the one-off patches applied to the identity which
+                produced the patch.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="patch" type="one-offType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="one-offType">
+        <xs:annotation>
+            <xs:documentation>
+                One-off patch which was applied to the identity that produced
+                the patch.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the applied one-off patch.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="elementType">
+        <xs:annotation>
+            <xs:documentation>
+                Describes a patch element produced by a layer or an add-on.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:choice>
+                <xs:element name="upgrade" type="elementUpgradeType" maxOccurs="1"/>
+                <xs:element name="no-upgrade" type="elementUpgradeType" maxOccurs="1"/>
+            </xs:choice>
+            <xs:element name="modules" type="modulesType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="bundles" type="bundlesType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Unique identifier of the patch element.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="elementUpgradeType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that the patch upgrades the version of the identity.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="upgradeType">
+                <xs:attribute name="add-on" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the element is an add-on or layer
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="modulesType">
+        <xs:sequence>
+            <xs:element name="added" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="updated-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="removed-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="bundlesType">
+        <xs:complexContent>
+            <xs:extension base="modulesType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="misc-filesType">
+        <xs:sequence>
+            <xs:element name="added" type="added-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="updated-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="removed-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:attributeGroup name="slottedGroup">
+        <xs:annotation>
+            <xs:documentation>
+                A piece of patch content with a name and a slot.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="slot" type="xs:string"/>
+    </xs:attributeGroup>
+
+    <xs:complexType name="slotted-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                A piece of patch content with a name and a slot.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attributeGroup ref="slottedGroup"/>
+        <xs:attribute name="hash" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Hash of the content.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="updated-slotted-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous slotted content in the installation being patched that the patch modifies.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="slotted-contentType">
+                <xs:attribute name="new-hash" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The hash of the new content (the item replacing the currently installed one).
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="removed-slotted-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous slotted content in the installation being patched that the patch removes.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="updated-slotted-contentType">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="contentType">
+        <xs:annotation>
+            <xs:documentation>
+                A piece of patch content.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Location of the content within the patch file.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="hash" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Hash of the content.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content base type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="contentType">
+                <xs:attribute name="directory" type="xs:boolean" use="optional" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the content is a directory.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="added-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content that the patch adds to the installation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="misc-contentType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="existing-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content in the installation being patched that the patch modifies.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="misc-contentType">
+                <xs:attribute name="in-runtime-use" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the content is expected to be in use by a non-admin-only standalone server or Host Controller.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="updated-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content in the installation being patched that the patch modifies.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="existing-misc-contentType">
+                <xs:attribute name="new-hash" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The hash of the new content.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="removed-misc-contentType">
+        <xs:annotation>
+            <xs:documentation>
+                Miscellaneous content in the installation being patched that the patch removes.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="existing-misc-contentType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

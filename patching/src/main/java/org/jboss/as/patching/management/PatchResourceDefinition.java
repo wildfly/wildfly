@@ -150,6 +150,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                     SimpleAttributeDefinitionBuilder.create(Constants.IDENTITY_NAME, ModelType.STRING).build(),
                     SimpleAttributeDefinitionBuilder.create(Constants.IDENTITY_VERSION, ModelType.STRING).build(),
                     SimpleAttributeDefinitionBuilder.create(Constants.DESCRIPTION, ModelType.STRING).build(),
+                    SimpleAttributeDefinitionBuilder.create(Constants.LINK, ModelType.STRING).setAllowNull(true).build(),
                     ObjectListAttributeDefinition.Builder.of(Constants.ELEMENTS,
                             new ObjectTypeAttributeDefinition.Builder(Constants.ELEMENTS,
                                     PATCH_ID,

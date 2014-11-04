@@ -119,6 +119,7 @@ public class PatchInspectUnitTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(patchIDDescr)
+                .setLink("http://test.one")
                 .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                 .getParent()
                 .addContentModification(fileModified)
@@ -147,6 +148,7 @@ public class PatchInspectUnitTestCase extends AbstractTaskTestCase {
         Patch patch2 = PatchBuilder.create()
                 .setPatchId(patchID2)
                 .setDescription(patchID2Descr)
+                .setLink("http://test.two")
                 .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), productConfig.getProductName() + "CP2")
                 .getParent()
                 .addContentModification(fileModified2)
@@ -165,7 +167,7 @@ public class PatchInspectUnitTestCase extends AbstractTaskTestCase {
         System.setProperty("jboss.home.dir", env.getInstalledImage().getJbossHome().getAbsolutePath());
         bytesOs.reset();
         ctx.handle("patch inspect " + zippedOneOff.getAbsolutePath());
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID, true,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID, "http://test.one", true,
                 productConfig.getProductName(), productConfig.getProductVersion(), patchIDDescr);
 
         Map<String,String> element = new HashMap<String,String>();
@@ -175,12 +177,12 @@ public class PatchInspectUnitTestCase extends AbstractTaskTestCase {
         element.put("Description", oneOffElementDescr);
         bytesOs.reset();
         ctx.handle("patch inspect " + zippedOneOff.getAbsolutePath() + " --verbose");
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID, true,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID, "http://test.one", true,
                 productConfig.getProductName(), productConfig.getProductVersion(), patchIDDescr, Collections.singletonList(element));
 
         bytesOs.reset();
         ctx.handle("patch inspect " + zippedCP);
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID2, false,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID2, "http://test.two", false,
                 productConfig.getProductName(), productConfig.getProductVersion(), patchID2Descr);
 
         element.put("Patch ID", patchElementId2);
@@ -189,7 +191,7 @@ public class PatchInspectUnitTestCase extends AbstractTaskTestCase {
         element.put("Description", cpElementDescr);
         bytesOs.reset();
         ctx.handle("patch inspect " + zippedCP + " --verbose");
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID2, false,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), patchID2, "http://test.two", false,
                 productConfig.getProductName(), productConfig.getProductVersion(), patchID2Descr, Collections.singletonList(element));
     }
 }

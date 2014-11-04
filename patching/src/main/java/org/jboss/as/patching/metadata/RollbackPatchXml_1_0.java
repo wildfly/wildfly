@@ -142,7 +142,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         // Get started ...
         writer.writeStartDocument();
         writer.writeStartElement(Element.PATCH.name);
-        writer.writeDefaultNamespace(PatchXml.Namespace.ROLLBACK_1_0.getNamespace());
+        writer.writeDefaultNamespace(PatchXml.Namespace.ROLLBACK_1_1.getNamespace());
 
         writePatch(writer, rollbackPatch);
         writeInstallation(writer, rollbackPatch.getIdentityState());

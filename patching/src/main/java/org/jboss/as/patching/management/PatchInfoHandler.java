@@ -75,6 +75,10 @@ public class PatchInfoHandler implements OperationStepHandler {
                 result.get(Constants.PATCH_ID).set(entry.getPatchId());
                 result.get(Constants.TYPE).set(entry.getType().getName());
                 result.get(Constants.DESCRIPTION).set(entry.getMetadata().getDescription());
+                final String link = entry.getMetadata().getLink();
+                if (link != null) {
+                    result.get(Constants.LINK).set(link);
+                }
                 final Identity identity = entry.getMetadata().getIdentity();
                 result.get(Constants.IDENTITY_NAME).set(identity.getName());
                 result.get(Constants.IDENTITY_VERSION).set(identity.getVersion());

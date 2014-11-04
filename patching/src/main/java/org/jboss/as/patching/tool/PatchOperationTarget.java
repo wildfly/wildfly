@@ -208,6 +208,9 @@ public abstract class PatchOperationTarget {
                         result.get(Constants.IDENTITY_NAME).set(metadata.getIdentity().getName());
                         result.get(Constants.IDENTITY_VERSION).set(metadata.getIdentity().getVersion());
                         result.get(Constants.DESCRIPTION).set(next.getMetadata().getDescription());
+                        if (next.getMetadata().getLink() != null) {
+                            result.get(Constants.LINK).set(next.getMetadata().getLink());
+                        }
 
                         if (verbose) {
                             final ModelNode elements = result.get(Constants.ELEMENTS).setEmptyList();

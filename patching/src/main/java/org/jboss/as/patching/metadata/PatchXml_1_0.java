@@ -41,7 +41,7 @@ class PatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLEleme
         // Get started ...
         writer.writeStartDocument();
         writer.writeStartElement(Element.PATCH.name);
-        writer.writeDefaultNamespace(PatchXml.Namespace.PATCH_1_0.getNamespace());
+        writer.writeDefaultNamespace(PatchXml.Namespace.PATCH_1_1.getNamespace());
 
         writePatch(writer, patch);
 

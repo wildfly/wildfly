@@ -124,6 +124,7 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         Patch oneOff = PatchBuilder.create()
                 .setPatchId(oneOffID)
                 .setDescription(oneOffDescr)
+                .setLink("http://test.one")
                 .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
                 .getParent()
                 .addContentModification(miscFileAdded)
@@ -155,6 +156,7 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         Patch cp = PatchBuilder.create()
                 .setPatchId(cpID)
                 .setDescription(cpDescr)
+                .setLink("http://test.two")
                 .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), productConfig.getProductVersion() + "_CP" + cpID)
                 .getParent()
                 .addContentModification(fileModified2)
@@ -170,7 +172,7 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         handle("patch apply " + zippedCP.getAbsolutePath());
 
         handle("patch info --patch-id=" + oneOffID);
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), oneOffID, true,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), oneOffID, "http://test.one", true,
                 productConfig.getProductName(), productConfig.getProductVersion(), oneOffDescr);
 
         Map<String,String> element = new HashMap<String,String>();
@@ -179,11 +181,11 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         element.put("Type", "layer");
         element.put("Description", oneOffElementDescr);
         handle("patch info --patch-id=" + oneOffID + " --verbose");
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), oneOffID, true,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), oneOffID, "http://test.one", true,
                 productConfig.getProductName(), productConfig.getProductVersion(), oneOffDescr, Collections.singletonList(element));
 
         handle("patch info --patch-id=" + cpID);
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), cpID, false,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), cpID, "http://test.two", false,
                 productConfig.getProductName(), productConfig.getProductVersion(), cpDescr);
 
         element.put("Patch ID", elementCpID);
@@ -191,7 +193,7 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         element.put("Type", "layer");
         element.put("Description", cpElementDescr);
         handle("patch info --patch-id=" + cpID + " --verbose");
-        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), cpID, false,
+        CLIPatchInfoUtil.assertPatchInfo(bytesOs.toByteArray(), cpID, "http://test.two", false,
                 productConfig.getProductName(), productConfig.getProductVersion(), cpDescr, Collections.singletonList(element));
     }
 
