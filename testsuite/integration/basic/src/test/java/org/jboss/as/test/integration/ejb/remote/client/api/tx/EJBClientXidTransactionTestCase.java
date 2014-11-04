@@ -109,8 +109,8 @@ public class EJBClientXidTransactionTestCase {
     private static void instantiateTxManagement() {
         // These system properties are required or else we end up picking up JTS transaction manager,
         // which is not what we want
-        System.setProperty(JTAEnvironmentBean.class.getSimpleName() + "." + "transactionManagerClassName", TransactionManagerImple.class.getName());
-        System.setProperty(JTAEnvironmentBean.class.getSimpleName() + "." + "transactionSynchronizationRegistryClassName", TransactionSynchronizationRegistryImple.class.getName());
+        jtaPropertyManager.getJTAEnvironmentBean().setTransactionManagerClassName(TransactionManagerImple.class.getName());
+        jtaPropertyManager.getJTAEnvironmentBean().setTransactionSynchronizationRegistryClassName(TransactionSynchronizationRegistryImple.class.getName());
         txManager = jtaPropertyManager.getJTAEnvironmentBean().getTransactionManager();
         txSyncRegistry = jtaPropertyManager.getJTAEnvironmentBean().getTransactionSynchronizationRegistry();
     }
