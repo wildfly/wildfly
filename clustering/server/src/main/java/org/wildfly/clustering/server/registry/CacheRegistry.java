@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
@@ -104,9 +105,9 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
     @Override
     public Map<K, V> getEntries() {
         Map<K, V> map = new HashMap<>();
-        for (Node node: this.cache.keySet()) {
-            Map.Entry<K, V> entry = this.cache.get(node);
-            if (entry != null) {
+        try (CloseableIterator<Map.Entry<K, V>> entries = this.cache.values().iterator()) {
+            while (entries.hasNext()) {
+                Map.Entry<K, V> entry = entries.next();
                 map.put(entry.getKey(), entry.getValue());
             }
         }

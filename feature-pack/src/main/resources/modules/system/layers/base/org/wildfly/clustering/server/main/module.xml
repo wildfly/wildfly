@@ -37,6 +37,7 @@
 
     <dependencies>
         <module name="org.infinispan"/>
+        <module name="org.infinispan.commons"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.infinispan" services="import"/>
         <module name="org.jboss.as.clustering.jgroups"/>
