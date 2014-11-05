@@ -227,19 +227,15 @@ public class JBossContextConfig extends ContextConfig {
         }
 
         if (event.getType().equals(Lifecycle.BEFORE_LOAD_ON_STARTUP_EVENT)) {
-            if (event.getData() != null) {
-                String servletClass = (String) event.getData();
-                if (!servletClass.contains("org.apache")) // ignore apache servlets
-                    beforeLoadOnStartup(servletClass);
-            }
+            String servletClass = (String) event.getData();
+            if (!servletClass.contains("org.apache")) // ignore apache servlets
+                beforeLoadOnStartup(servletClass);
         }
 
         if (event.getType().equals(Lifecycle.AFTER_LOAD_ON_STARTUP_EVENT)) {
-            if (event.getData() != null) {
-                String servletClass = (String) event.getData();
-                if (!servletClass.contains("org.apache")) // ignore apache servlets
-                    afterLoadOnStartup(servletClass);
-            }
+            String servletClass = (String) event.getData();
+            if (!servletClass.contains("org.apache")) // ignore apache servlets
+                afterLoadOnStartup(servletClass);
         }
 
         if (event.getType().equals(Lifecycle.BEFORE_STOP_EVENT)) {
