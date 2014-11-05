@@ -23,6 +23,7 @@
 package org.wildfly.mod_cluster.undertow;
 
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -40,12 +41,14 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
     public ServiceBuilder<?> build(ServiceTarget target, String connector, int statusInterval) {
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
+        InjectedValue<SuspendController> suspendController = new InjectedValue<>();
         @SuppressWarnings("rawtypes")
         InjectedValue<ListenerService> listener = new InjectedValue<>();
-        return AsynchronousService.addService(target, SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, statusInterval))
+        return AsynchronousService.addService(target, SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener, suspendController, statusInterval))
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
                 .addDependency(UndertowService.listenerName(connector), ListenerService.class, listener)
+                .addDependency(SuspendController.SERVICE_NAME, SuspendController.class, suspendController)
         ;
     }
 }
