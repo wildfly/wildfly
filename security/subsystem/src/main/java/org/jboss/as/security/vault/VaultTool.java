@@ -54,6 +54,7 @@ public class VaultTool {
     public static final String SEC_ATTR_VALUE_PARAM = "sec-attr";
     public static final String CHECK_SEC_ATTR_EXISTS_PARAM = "check-sec-attr";
     public static final String REMOVE_SEC_ATTR_PARAM = "remove-sec-attr";
+    public static final String CREATE_KEYSTORE_PARAM = "create-keystore";
     public static final String HELP_PARAM = "help";
 
     private VaultInteractiveSession session = null;
@@ -161,6 +162,7 @@ public class VaultTool {
         options.addOption("v", ALIAS_PARAM, true, "Vault keystore alias");
         options.addOption("b", VAULT_BLOCK_PARAM, true, "Vault block");
         options.addOption("a", ATTRIBUTE_PARAM, true, "Attribute name");
+        options.addOption("t", CREATE_KEYSTORE_PARAM, false, "Automatically create keystore when it doesn't exist");
 
         OptionGroup og = new OptionGroup();
         Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, "Add secured attribute value (such as password) to store");
@@ -187,8 +189,9 @@ public class VaultTool {
         String encryptionDirectory = cmdLine.getOptionValue(ENC_DIR_PARAM, "vault");
         String salt = cmdLine.getOptionValue(SALT_PARAM, "12345678");
         int iterationCount = Integer.parseInt(cmdLine.getOptionValue(ITERATION_PARAM, "23"));
+        boolean createKeyStore = cmdLine.hasOption(CREATE_KEYSTORE_PARAM);
 
-        nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount);
+        nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount, createKeyStore);
 
         nonInteractiveSession.startVaultSession(cmdLine.getOptionValue("alias", "vault"));
 
