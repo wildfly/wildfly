@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
@@ -32,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -49,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -60,6 +61,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
@@ -82,8 +84,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -196,16 +196,16 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.LIST);
                 node.get(ATTRIBUTES, "attr1", VALUE_TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The values");
-                node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "attr1", NILLABLE).set(false);
                 node.get(ATTRIBUTES, "read-only", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "read-only", DESCRIPTION).set("A r/o int");
-                node.get(ATTRIBUTES, "read-only", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "read-only", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "metric1", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "metric1", DESCRIPTION).set("A random metric");
                 node.get(ATTRIBUTES, "read-write", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "metric2", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "read-write", DESCRIPTION).set("A r/w int");
-                node.get(ATTRIBUTES, "read-write", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "read-write", NILLABLE).set(true);
                 node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
                 node.get(CHILDREN, "type1", MIN_OCCURS).set(1);
                 node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
@@ -243,49 +243,49 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(DESCRIPTION).set("A test subsystem 2");
                 node.get(ATTRIBUTES, "bigdecimal", TYPE).set(ModelType.BIG_DECIMAL);
                 node.get(ATTRIBUTES, "bigdecimal", DESCRIPTION).set("A big decimal");
-                node.get(ATTRIBUTES, "bigdecimal", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "bigdecimal", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "biginteger", TYPE).set(ModelType.BIG_DECIMAL);
                 node.get(ATTRIBUTES, "biginteger", DESCRIPTION).set("A big integer");
-                node.get(ATTRIBUTES, "biginteger", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "biginteger", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "boolean", TYPE).set(ModelType.BOOLEAN);
                 node.get(ATTRIBUTES, "boolean", DESCRIPTION).set("A boolean");
-                node.get(ATTRIBUTES, "boolean", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "boolean", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "bytes", TYPE).set(ModelType.BYTES);
                 node.get(ATTRIBUTES, "bytes", DESCRIPTION).set("A bytes");
-                node.get(ATTRIBUTES, "bytes", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "bytes", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "double", TYPE).set(ModelType.DOUBLE);
                 node.get(ATTRIBUTES, "double", DESCRIPTION).set("A double");
-                node.get(ATTRIBUTES, "double", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "double", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "expression", TYPE).set(ModelType.EXPRESSION);
                 node.get(ATTRIBUTES, "expression", DESCRIPTION).set("A double");
-                node.get(ATTRIBUTES, "expression", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "expression", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "int", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "int", DESCRIPTION).set("A int");
-                node.get(ATTRIBUTES, "int", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "int", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "list", TYPE).set(ModelType.LIST);
                 node.get(ATTRIBUTES, "list", VALUE_TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "list", DESCRIPTION).set("A list");
-                node.get(ATTRIBUTES, "list", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "list", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "long", TYPE).set(ModelType.LONG);
                 node.get(ATTRIBUTES, "long", DESCRIPTION).set("A long");
-                node.get(ATTRIBUTES, "long", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "long", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "object", TYPE).set(ModelType.OBJECT);
                 node.get(ATTRIBUTES, "object", VALUE_TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "object", DESCRIPTION).set("A object");
-                node.get(ATTRIBUTES, "object", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "object", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "property", TYPE).set(ModelType.PROPERTY);
                 node.get(ATTRIBUTES, "property", VALUE_TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "property", DESCRIPTION).set("A property");
-                node.get(ATTRIBUTES, "property", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "property", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "string1", TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "string1", DESCRIPTION).set("A string");
-                node.get(ATTRIBUTES, "string1", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "string1", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "string2", TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "string2", DESCRIPTION).set("A string");
-                node.get(ATTRIBUTES, "string2", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "string2", NILLABLE).set(true);
                 node.get(ATTRIBUTES, "type", TYPE).set(ModelType.TYPE);
                 node.get(ATTRIBUTES, "type", DESCRIPTION).set("A type");
-                node.get(ATTRIBUTES, "type", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "type", NILLABLE).set(true);
 
 
                 return node;
@@ -302,7 +302,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(DESCRIPTION).set("A test subsystem 1");
                 node.get(ATTRIBUTES, "attr1", TYPE).set(ModelType.INT);
                 node.get(ATTRIBUTES, "attr1", DESCRIPTION).set("The value");
-                node.get(ATTRIBUTES, "attr1", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "attr1", NILLABLE).set(true);
                 node.get(CHILDREN).setEmptyObject();
                 return node;
             }
@@ -342,7 +342,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(DESCRIPTION).set("A subsystem");
                 node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                node.get(ATTRIBUTES, "name", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "name", NILLABLE).set(false);
                 node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
                 node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
                 node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
@@ -359,7 +359,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(DESCRIPTION).set("A subsystem");
                 node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
-                node.get(ATTRIBUTES, "name", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "name", NILLABLE).set(false);
                 node.get(CHILDREN, "type1", DESCRIPTION).set("The children1");
                 node.get(CHILDREN, "type1", MIN_OCCURS).set(0);
                 node.get(CHILDREN, "type1", MODEL_DESCRIPTION);
@@ -403,7 +403,6 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         }
 
     }
-
     protected void checkRootNodeDescription(ModelNode result, boolean recursive, boolean operations, boolean notifications) {
         assertEquals("description", result.require(DESCRIPTION).asString());
         assertEquals("profile", result.require(CHILDREN).require(PROFILE).require(DESCRIPTION).asString());
@@ -455,29 +454,33 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
         assertEquals(ModelType.LIST, result.require(ATTRIBUTES).require("attr1").require(TYPE).asType());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("attr1").require(VALUE_TYPE).asType());
-        assertEquals("The values", result.require(ATTRIBUTES).require("attr1").require(DESCRIPTION).asString());
-        assertTrue(result.require(ATTRIBUTES).require("attr1").require(REQUIRED).asBoolean());
+        assertThat(result.require(ATTRIBUTES).require("attr1").require(DESCRIPTION).asString(), anyOf(is("attr1"), is("The values")));
+        assertFalse(result.require(ATTRIBUTES).require("attr1").require(NILLABLE).asBoolean());
         assertEquals(AccessType.READ_ONLY.toString(), result.require(ATTRIBUTES).require("attr1").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-only").require(TYPE).asType());
-        assertEquals("A r/o int", result.require(ATTRIBUTES).require("read-only").require(DESCRIPTION).asString());
-        assertFalse(result.require(ATTRIBUTES).require("read-only").require(REQUIRED).asBoolean());
+        assertThat(result.require(ATTRIBUTES).require("read-only").require(DESCRIPTION).asString(), anyOf(is("read-only"), is("A r/o int")));
+        assertTrue(result.require(ATTRIBUTES).require("read-only").require(NILLABLE).asBoolean());
         assertEquals(AccessType.READ_ONLY.toString(), result.require(ATTRIBUTES).require("read-only").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("metric1").require(TYPE).asType());
-        assertEquals("A random metric", result.require(ATTRIBUTES).require("metric1").require(DESCRIPTION).asString());
+        assertThat( result.require(ATTRIBUTES).require("metric1").require(DESCRIPTION).asString(), anyOf(is("metric1"), is("A random metric")));
+        
         assertEquals(AccessType.METRIC.toString(), result.require(ATTRIBUTES).require("metric1").get(ACCESS_TYPE).asString());
         assertEquals(AccessType.METRIC.toString(), result.require(ATTRIBUTES).require("metric2").get(ACCESS_TYPE).asString());
         assertEquals(ModelType.INT, result.require(ATTRIBUTES).require("read-write").require(TYPE).asType());
-        assertEquals("A r/w int", result.require(ATTRIBUTES).require("read-write").require(DESCRIPTION).asString());
-        assertFalse(result.require(ATTRIBUTES).require("read-write").require(REQUIRED).asBoolean());
+        assertThat(result.require(ATTRIBUTES).require("read-write").require(DESCRIPTION).asString(), anyOf(is("A r/w int"), is("read-write")));
+
+        assertTrue(result.require(ATTRIBUTES).require("read-write").require(NILLABLE).asBoolean());
         assertEquals(expectedRwAttributeAccess.toString(), result.require(ATTRIBUTES).require("read-write").get(ACCESS_TYPE).asString());
 
-        assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
-        assertEquals(1, result.require(CHILDREN).require("type1").require(MIN_OCCURS).asInt());
+        assertThat(result.require(CHILDREN).require("type1").require(DESCRIPTION).asString(), anyOf(is("type1"), is("The children1")));
+        if(result.require(CHILDREN).require("type1").hasDefined(MIN_OCCURS)) {
+            assertEquals(1, result.require(CHILDREN).require("type1").require(MIN_OCCURS).asInt());
+        }
 
-        assertEquals("The children1", result.require(CHILDREN).require("type1").require(DESCRIPTION).asString());
-        assertEquals("The children2", result.require(CHILDREN).require("type2").require(DESCRIPTION).asString());
-        assertEquals(1, result.require(CHILDREN).require("type2").require(MIN_OCCURS).asInt());
-        assertEquals(1, result.require(CHILDREN).require("type2").require(MIN_OCCURS).asInt());
+        assertThat(result.require(CHILDREN).require("type2").require(DESCRIPTION).asString(), anyOf(is("type2"), is("The children2")));
+        if(result.require(CHILDREN).require("type2").hasDefined(MIN_OCCURS)) {
+            assertEquals(1, result.require(CHILDREN).require("type2").require(MIN_OCCURS).asInt());
+        }
 
         if (operations) {
             assertTrue(result.require(OPERATIONS).isDefined());

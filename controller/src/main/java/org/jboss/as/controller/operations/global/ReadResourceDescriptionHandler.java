@@ -211,6 +211,16 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, notifications, childResources, accessControlContext, accessControl);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
+        //Let's filter the children
+        if (!aliases && nodeDescription.hasDefined(CHILDREN)) {
+            for (Property child : nodeDescription.get(CHILDREN).asPropertyList()) {
+                String key = child.getName();
+                if (isGlobalAlias(registry, child)) {
+                    nodeDescription.get(CHILDREN).remove(key);
+                }
+            }
+        }
+
         if (ops) {
             for (final Map.Entry<String, OperationEntry> entry : registry.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, inherited).entrySet()) {
                 if (entry.getValue().getType() == OperationEntry.EntryType.PUBLIC) {
@@ -295,9 +305,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                     final OperationStepHandler handler = getRecursiveStepHandler(childReg, opName, accessControlContext, address);
                     context.addStep(rrRsp, rrOp, handler, OperationContext.Stage.MODEL, true);
+                    //Add a "child" => undefined
+                    nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
+                } else if (childReg.isAlias() && !aliases) {
+                    if (isSquatterResource(registry, element.getKey())) {
+                        if (!nodeDescription.get(CHILDREN, element.getKey()).isDefined()) {
+                            nodeDescription.get(CHILDREN).get(element.getKey()).remove(element.getValue());
+                        }
+                    }
                 }
-                //Add a "child" => undefined
-                nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
             }
         }
 
@@ -317,9 +333,34 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         });
     }
 
+    private boolean isSquatterResource(final ImmutableManagementResourceRegistration registry, final String key) {
+        return registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(key))) == null;
+    }
+
+    private boolean isGlobalAlias(final ImmutableManagementResourceRegistration registry, final Property child) {
+        if(isSquatterResource(registry, child.getName())) {
+            ImmutableManagementResourceRegistration squatterRegistration = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(child.getName(), child.getValue().asString())));
+            return squatterRegistration != null && squatterRegistration.isAlias();
+        }
+        String key = child.getName();
+        ImmutableManagementResourceRegistration wildCardChildRegistration = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(key)));
+        boolean isAlias = wildCardChildRegistration.isAlias();
+        Set<String> registredNames = registry.getChildNames(PathAddress.pathAddress(PathElement.pathElement(key)));
+        if (registredNames != null && !registredNames.isEmpty() && isAlias) {
+            for (String value : registredNames) {
+                ImmutableManagementResourceRegistration childRegistration = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(key, value)));
+                isAlias = isAlias && childRegistration != null && childRegistration.isAlias();
+                if(!isAlias) {
+                    return false;
+                }
+            }
+        }
+        return isAlias;
+    }
+
     private OperationStepHandler getRecursiveStepHandler(ImmutableManagementResourceRegistration childReg, String opName, ReadResourceDescriptionAccessControlContext accessControlContext, PathAddress address) {
         OperationStepHandler overrideHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
-        if (overrideHandler != null && overrideHandler.getClass() == ReadResourceDescriptionHandler.class || overrideHandler.getClass() == AliasStepHandler.class) {
+        if (overrideHandler != null && (overrideHandler.getClass() == ReadResourceDescriptionHandler.class || overrideHandler.getClass() == AliasStepHandler.class)) {
             // not an override
             overrideHandler = null;
         }
@@ -814,8 +855,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         public static AccessControl forName(String localName) {
-            final AccessControl value = localName != null ? MAP.get(localName.toLowerCase()) : null;
-            return value == null ? AccessControl.valueOf(localName.toUpperCase()) : value;
+            final AccessControl value = localName != null ? MAP.get(localName.toLowerCase(Locale.ENGLISH)) : null;
+            return value == null ? AccessControl.valueOf(localName.toUpperCase(Locale.ENGLISH)) : value;
         }
 
         private final String localName;
