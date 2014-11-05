@@ -7,14 +7,13 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 /**
  * @author Stuart Douglas
  */
 @WebServlet(name = "RunAsServlet", urlPatterns = "/runAs")
-@RunAs("Admin")
+@RunAs("peter")
 public class RunAsServlet extends HttpServlet {
 
     @EJB
@@ -22,7 +21,6 @@ public class RunAsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().write(currentUserEjb.helloAdmin());
-
+        resp.getWriter().write(currentUserEjb.getCurrentUser());
     }
 }

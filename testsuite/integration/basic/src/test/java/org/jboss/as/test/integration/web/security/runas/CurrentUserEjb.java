@@ -2,10 +2,8 @@ package org.jboss.as.test.integration.web.security.runas;
 
 import javax.annotation.Resource;
 import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-
 import java.security.Principal;
 
 /**
@@ -26,9 +24,4 @@ public class CurrentUserEjb {
         return callerPrincipal.getName();
     }
 
-    @RolesAllowed("Admin")
-    public String helloAdmin() {
-        getCurrentUser();
-        return "hello admin";
-    }
 }

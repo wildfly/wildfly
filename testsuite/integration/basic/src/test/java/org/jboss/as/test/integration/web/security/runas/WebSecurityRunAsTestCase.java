@@ -23,6 +23,9 @@ package org.jboss.as.test.integration.web.security.runas;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -32,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
+import org.jboss.as.test.integration.web.security.SecuredServlet;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -42,6 +46,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.net.URL;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit Test the RunAs function
@@ -57,7 +63,7 @@ public class WebSecurityRunAsTestCase {
     @Deployment
     public static WebArchive deployment() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "web-secure-runas.war");
-        war.addClasses(CurrentUserEjb.class, RunAsInitServlet.class, RunAsServlet.class, RunAsDestroyServlet.class);
+        war.addClasses(RunAsInitServlet.class, CurrentUserEjb.class, RunAsServlet.class);
 
         war.addAsWebInfResource(WebSecurityRunAsTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityRunAsTestCase.class.getPackage(), "web.xml", "web.xml");
@@ -76,11 +82,12 @@ public class WebSecurityRunAsTestCase {
     public void testServletRunAsInInitMethod() throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
+
             HttpGet httpget = new HttpGet(url.toExternalForm() + "/runAsInit");
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
-            Assert.assertEquals("hello admin", result);
+            Assert.assertEquals("anil", result);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
@@ -88,33 +95,18 @@ public class WebSecurityRunAsTestCase {
             httpclient.getConnectionManager().shutdown();
         }
     }
+
 
     @Test
     public void testServletRunAsInMethod() throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         try {
+
             HttpGet httpget = new HttpGet(url.toExternalForm() + "/runAs");
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
             String result = EntityUtils.toString(entity);
-            Assert.assertEquals("hello admin", result);
-        } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-            httpclient.getConnectionManager().shutdown();
-        }
-    }
-
-    @Test
-    public void testServletRunAsInDestroyMethod() throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        try {
-            HttpGet httpget = new HttpGet(url.toExternalForm() + "/runAsDestroy");
-            HttpResponse response = httpclient.execute(httpget);
-            HttpEntity entity = response.getEntity();
-            String result = EntityUtils.toString(entity);
-            Assert.assertEquals("defaultMsg", result);
+            Assert.assertEquals("peter", result);
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
