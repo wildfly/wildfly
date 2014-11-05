@@ -103,12 +103,12 @@
                      ]]>
          </xs:documentation>
       </xs:annotation>
-      <xs:attribute name="integrity" type="xs:string" use="required" default="NONE"/>
-      <xs:attribute name="confidentiality" type="xs:string" use="required" default="NONE"/>
+      <xs:attribute name="integrity" type="xs:string" use="required"/>
+      <xs:attribute name="confidentiality" type="xs:string" use="required"/>
       <xs:attribute name="detect-misordering" type="xs:string" use="optional" default="NONE"/>
       <xs:attribute name="detect-replay" type="xs:string" use="optional" default="NONE"/>
-      <xs:attribute name="establish-trust-in-client" type="xs:string" use="required" default="NONE"/>
-      <xs:attribute name="establish-trust-in-target" type="xs:string" use="required" default="NONE"/>
+      <xs:attribute name="establish-trust-in-client" type="xs:string" use="required"/>
+      <xs:attribute name="establish-trust-in-target" type="xs:string" use="required"/>
    </xs:complexType>
     
     <xs:complexType name="iorASContextType">
@@ -126,9 +126,9 @@
                       ]]>
           </xs:documentation>
        </xs:annotation>
-       <xs:attribute name="auth-method" type="xs:string" use="required" default="NONE"/>
-       <xs:attribute name="realm" type="xs:string" use="required" default="default"/>
-       <xs:attribute name="required" type="xs:string" use="required" default="false"/>
+       <xs:attribute name="auth-method" type="xs:string" use="required"/>
+       <xs:attribute name="realm" type="xs:string" use="required"/>
+       <xs:attribute name="required" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="iorSASContextType">
@@ -142,7 +142,7 @@
                       ]]>
           </xs:documentation>
        </xs:annotation>
-       <xs:attribute name="caller-propagation" type="xs:string" use="required" default="NONE"/>
+       <xs:attribute name="caller-propagation" type="xs:string" use="required"/>
     </xs:complexType>
 
 </xs:schema>
