@@ -44,6 +44,7 @@ import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.LoginConfig;
 import org.jboss.as.web.WebLogger;
+import org.jboss.as.web.WebMessages;
 import org.jboss.as.web.security.JBossGenericPrincipal;
 import org.jboss.as.web.security.JBossWebRealm;
 import org.jboss.security.SecurityContext;
@@ -123,6 +124,11 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
             PasswordValidationCallback pvc = cbh.getPasswordValidationCallback();
             CallerPrincipalCallback cpc = cbh.getCallerPrincipalCallback();
             GroupPrincipalCallback gpc = cbh.getGroupPrincipalCallback();
+
+            // if the process was a success, the modules must have handled the CallerPrincipalCallback.
+            if (cpc == null) {
+                throw WebMessages.MESSAGES.invalidNullCallerPrincipalCallback();
+            }
 
             // get the client principal from the callback.
             Principal clientPrincipal = cpc.getPrincipal();

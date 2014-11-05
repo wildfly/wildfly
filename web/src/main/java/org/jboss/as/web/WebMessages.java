@@ -374,4 +374,7 @@ public interface WebMessages {
 
     @Message(id = 18107, value = "Param-name is required to remove parameter")
     String paramNameRequiredForRemoveParam();
+
+    @Message(id = 18108, value = "Invalid null CallerPrincipalCallback. AuthModules are required to handle the callback when returning AuthStatus.SUCCESS")
+    IllegalStateException invalidNullCallerPrincipalCallback();
 }
