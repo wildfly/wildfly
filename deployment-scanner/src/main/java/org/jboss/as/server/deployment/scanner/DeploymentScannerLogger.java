@@ -256,4 +256,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15020, value = "Failed synchronizing status of deployment %s.")
     void failedStatusSynchronization(@Cause Throwable cause, String deploymentName);
+
+    @Message(id = 15062, value = "Failed to list files in directory %s. Check that the contents of the directory are readable.")
+    RuntimeException cannotListDirectoryFiles(File directory);
 }

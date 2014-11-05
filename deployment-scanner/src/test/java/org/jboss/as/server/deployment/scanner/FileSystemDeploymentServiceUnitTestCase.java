@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,6 +56,9 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.OperationResponse;
+import org.jboss.as.server.deployment.scanner.DeploymentScannerLogger;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
@@ -64,12 +68,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Unit tests of {@link FileSystemDeploymentService}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@RunWith(BMUnitRunner.class)
 public class FileSystemDeploymentServiceUnitTestCase {
 
     private static Logger logger = Logger.getLogger(FileSystemDeploymentServiceUnitTestCase.class);
@@ -1615,6 +1621,34 @@ public class FileSystemDeploymentServiceUnitTestCase {
         Assert.assertTrue(removed.exists());
         Assert.assertTrue(nestedRemoved.exists());
         Assert.assertEquals(0, sc.deployed.size());
+    }
+
+    /**
+    * WFCORE-210
+    */
+    @BMRule(name = "Test renaming failure",
+            targetClass = "java.io.File",
+            targetMethod = "listFiles(FileFilter)",
+            condition = "$1 != null",
+            action = "return null"
+    )
+    @Test
+    public void testNoUndeployment() throws Exception {
+        MockServerController sc = new MockServerController("foo.war", "failure.ear");
+        TesteeSet ts = createTestee(sc);
+        ts.controller.externallyDeployed.add("foo.war");
+        ts.controller.addCompositeSuccessResponse(1);
+        assertEquals(2, ts.controller.deployed.size());
+        try {
+            ts.testee.scan(true, new DefaultDeploymentOperations(sc), false);
+            fail("RuntimeException expected");
+        } catch (Exception ex) {
+            assertTrue(ex.getClass().isAssignableFrom(RuntimeException.class));
+            assertEquals(DeploymentScannerLogger.ROOT_LOGGER.cannotListDirectoryFiles(tmpDir).getLocalizedMessage(), ex.getLocalizedMessage());
+        }
+        assertEquals(2, ts.controller.deployed.size()); //Only non persistent deployments should be undeployed.
+        assertTrue(ts.controller.deployed.keySet().contains("foo.war"));
+        assertTrue(ts.controller.deployed.keySet().contains("failure.ear"));
     }
 
     @Test

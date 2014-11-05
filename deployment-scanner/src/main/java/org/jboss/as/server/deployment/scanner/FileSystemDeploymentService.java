@@ -301,10 +301,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private void establishDeployedContentList(File dir, final DeploymentOperations deploymentOperations) {
         final Set<String> deploymentNames = deploymentOperations.getDeploymentsStatus().keySet();
-        final File[] children = dir.listFiles();
-        if (children == null || children.length == 0) {
-            return;
-        }
+        final File[] children = listDirectoryChildren(dir);
         for (File child : children) {
             final String fileName = child.getName();
             if (child.isDirectory()) {
@@ -568,11 +565,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
      * @param scanContext context of the scan
      */
     private void scanDirectory(final File directory, final String relativePath, final ScanContext scanContext) {
-        final File[] children = directory.listFiles(filter);
-        if (children == null) {
-            return;
-        }
-
+        final File[] children = listDirectoryChildren(directory, filter);
         for (File child : children) {
             final String fileName = child.getName();
             if (fileName.endsWith(DEPLOYED)) {
@@ -1059,6 +1052,18 @@ class FileSystemDeploymentService implements DeploymentScanner {
         } finally {
             safeClose(fos);
         }
+    }
+
+    private static File[] listDirectoryChildren(File directory) {
+        return listDirectoryChildren(directory, null);
+    }
+
+    private static File[] listDirectoryChildren(File directory, FileFilter filter) {
+        File[] result = directory.listFiles(filter);
+        if (result == null) {
+            throw ROOT_LOGGER.cannotListDirectoryFiles(directory);
+        }
+        return result;
     }
 
     private abstract class ScannerTask {
