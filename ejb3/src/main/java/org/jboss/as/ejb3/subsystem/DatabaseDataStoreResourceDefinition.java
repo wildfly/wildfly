@@ -65,7 +65,7 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PARTITION, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(""))
+                    .setDefaultValue(new ModelNode("default"))
                     .setValidator(new StringLengthValidator(0))
                     .build();
 
