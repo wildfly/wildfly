@@ -31,7 +31,6 @@ import javax.ejb.TransactionManagementType;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
-
 import java.lang.reflect.Method;
 import java.rmi.Remote;
 import java.util.ArrayList;
@@ -103,7 +102,6 @@ import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.security.SecurityConstants;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -808,8 +806,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     if (securityDomainName != null) {
                         final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
                         serviceBuilder.addDependency(securityDomainServiceName);
-                        if(securityDomainName.endsWith(SecurityConstants.DEFAULT_APPLICATION_POLICY))
-                            serviceBuilder.addDependency(SecurityDomainService.SERVICE_NAME.append(SecurityConstants.DEFAULT_EJB_APPLICATION_POLICY));
                     }
                 }
             });
