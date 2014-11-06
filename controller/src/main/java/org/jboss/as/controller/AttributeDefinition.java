@@ -271,7 +271,8 @@ public abstract class AttributeDefinition {
     }
 
     private ModelNode convertToExpectedType(final ModelNode node) {
-        if (node.getType() == type || node.getType() == ModelType.EXPRESSION || Util.isExpression(node.asString()) || !node.isDefined()) {
+        ModelType nodeType = node.getType();
+        if (nodeType == type || nodeType == ModelType.UNDEFINED || nodeType == ModelType.EXPRESSION || Util.isExpression(node.asString())) {
             return node;
         }
         switch (type) {
@@ -287,17 +288,21 @@ public abstract class AttributeDefinition {
                 return new ModelNode(node.asDouble());
             case INT:
                 return new ModelNode(node.asInt());
-            case LIST:
-                return new ModelNode().set(node.asList());
+            // BZ1159759 disable complex conversion for EAP 6 as it needs more upstream bake
+            //case LIST:
+            //    return new ModelNode().set(node.asList());
             case LONG:
                 return new ModelNode(node.asLong());
-            case PROPERTY:
-                return new ModelNode().set(node.asProperty());
+            // BZ1159759 disable complex conversion for EAP 6 as it needs more upstream bake
+            //case PROPERTY:
+            //    return new ModelNode().set(node.asProperty());
             case TYPE:
                 return new ModelNode(node.asType());
             case STRING:
                 return new ModelNode(node.asString());
             case OBJECT:
+            case LIST:
+            case PROPERTY:
             default:
                 return node;
         }
