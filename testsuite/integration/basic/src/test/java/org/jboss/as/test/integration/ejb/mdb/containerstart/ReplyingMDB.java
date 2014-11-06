@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -74,12 +75,21 @@ public class ReplyingMDB implements MessageListener {
             if (message instanceof TextMessage) {
                 if (text.equals("await") && !message.getJMSRedelivered()) {
                     // we have received the first message
+                    log.infof("Message [%s, %s] contains text 'await'", message, text);
+                    // synchronize with test to start with undeploy
                     HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                     HelperSingletonImpl.barrier.reset();
-                    // wait for undeploy to start and wake up after the transaction
-                    // timeout is hit.
-                    // Since HornetQ 2.4.3.Final, the MDB is *not* interrupted when it is undeployed
-                    Thread.sleep(SECONDS.toMillis(WAIT_S));
+                    // since HornetQ 2.4.3.Final, the MDB is *not* interrupted when it is undeployed
+                    // (undeployment waits till the MDB ends with onMessage processing)
+                    // waiting to get transaction timeout
+                    try {
+                        Thread.sleep(SECONDS.toMillis(WAIT_S));
+                    } catch (InterruptedException ie) {
+                        log.info("Sleeping for transaction timeout was interrupted."
+                                + "This is expected at least for JTS transaction.");
+                    }
+                    // synchronize with test to undeploy would be in processing 
+                    HelperSingletonImpl.barrier.await(WAIT_S, SECONDS);
                 }
                 replyMessage = session.createTextMessage("Reply: " + text);
             } else {
@@ -88,7 +98,8 @@ public class ReplyingMDB implements MessageListener {
             Destination destination = message.getJMSReplyTo();
             message.setJMSDeliveryMode(NON_PERSISTENT);
             sender.send(destination, replyMessage);
-            log.info("onMessage method [OK], msg: " + message.toString());
+            log.infof("onMessage method [OK], msg: [%s] with id [%s]. Replying to destination [%s].", 
+                    text, message, destination);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
