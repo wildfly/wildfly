@@ -71,4 +71,11 @@ interface SecurityMetaDataAccessorEJB {
      * @return transport guarantee or null if not specified
      */
     String getTransportGuarantee(Endpoint endpoint);
+    /**
+     * Gets realm name for protect resource
+     *
+     * @param endpoint webservice EJB endpoint
+     * @return realm name or null if not specified
+     */
+    String getRealmName(Endpoint endpoint);
 }
