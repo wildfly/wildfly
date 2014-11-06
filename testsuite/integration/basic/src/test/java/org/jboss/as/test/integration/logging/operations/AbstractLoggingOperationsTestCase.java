@@ -31,19 +31,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 abstract class AbstractLoggingOperationsTestCase {
+    private final Logger log = Logger.getLogger(this.getClass().getName());
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "logging");
 
@@ -58,6 +59,10 @@ abstract class AbstractLoggingOperationsTestCase {
         return createAddress("root-logger", "ROOT");
     }
 
+    static PathAddress createProfileAddress(final String name) {
+        return createAddress("logging-profile", name);
+    }
+
     static PathAddress createCustomHandlerAddress(final String name) {
         return createAddress("custom-handler", name);
     }
@@ -66,7 +71,11 @@ abstract class AbstractLoggingOperationsTestCase {
         if (profileName == null) {
             return createAddress("custom-handler", name);
         }
-        return createAddress("logging-profile", profileName).append("custom-handler", name);
+        return createProfileAddress(profileName).append("custom-handler", name);
+    }
+
+    static PathAddress createSizeRotatingFileHandlerAddress(final String name) {
+        return createAddress("size-rotating-file-handler", name);
     }
 
     static File getAbsoluteLogFilePath(final ManagementClient client, final String filename) throws IOException, MgmtOperationException {
@@ -86,6 +95,17 @@ abstract class AbstractLoggingOperationsTestCase {
             closeable.close();
         } catch (Exception ignore) {
             // ignore
+        }
+    }
+
+    static void deleteLogFiles(File file) {
+        // avoid NPE
+        if (file != null && file.exists()) {
+            for (File f : file.getParentFile().listFiles()) {
+                if (f.getName().contains(file.getName())) {
+                    f.delete();
+                }
+            }
         }
     }
 
@@ -150,6 +170,17 @@ abstract class AbstractLoggingOperationsTestCase {
         final ModelNode op = Operations.createReadResourceOperation(address);
         final ModelNode result = getManagementClient().getControllerClient().execute(op);
         assertFalse("Resource not removed: " + address, Operations.isSuccessfulOutcome(result));
+    }
+
+    protected void cleanUpRemove(final ModelNode address) {
+        final ModelNode op = Operations.createRemoveOperation(address);
+        log.info(op.asString());
+        try {
+            ModelNode result = getManagementClient().getControllerClient().execute(op);
+            log.info(result.asString());
+        } catch (IOException ioe) {
+            log.warn(ioe.getMessage());
+        }
     }
 
     int getResponse(URL url) throws IOException {
