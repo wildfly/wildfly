@@ -131,7 +131,7 @@ public class VaultDatasourceTestCase {
             int iterationCount = 20;
 
             LOGGER.debug("keystoreURL="+keystoreURL);
-            nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount);
+            nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount, true);
             String vaultAlias = "vault";
             nonInteractiveSession.startVaultSession(vaultAlias);
 
