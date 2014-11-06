@@ -84,15 +84,19 @@ import org.junit.runner.RunWith;
  * Code sequence is:
  * 1. deploy the application
  * 2. send 1 "await" message
- *    => the MDB will sleep for 15 seconds
- * 3. undeploy the app and wait for the undeployment task to finish
- * 4. send 50 "do not lose" messages
- *    => after 10 seconds, the TX will timeout
- *    => after 15 seconds, the MDB woke up and the undeployment finishes
- * 5. ensure that the undeployment is completed
- * 6. redeploy the application
- * 7. send 10 "some more" messages
- * 8. check the test receives 62 messages:
+ *    => test waits to MDB would start with receiving the message
+ * 3. undeploy the app (undeploy waits until onMessage finishes work)
+ * 4. MDB transaction is timeouted which means that is marked as rollback only (no exception thrown)
+ *    transaction timeout influences only incoming message (is putting back to queue) 
+ *    the outgoing message is not "send" by XA aware connection factory
+ *    when TM runs on JTS then sleep is interrupted with interrupted exception
+ * 5. meanwhile sending 50 "50loop" messages
+ * 6. MDB onMessage finishes ist work ("await" message is delivered to out-queue)
+ *    and the undeployment of app could finish its work
+ * 7. ensure that the undeployment is completed
+ * 8. redeploy the application
+ * 9. send 10 "10loop" messages
+ * 10. check the test receives 62 messages:
  *    * 1 await
  *    * 50 do not lose
  *    * 10 some more
@@ -106,15 +110,14 @@ import org.junit.runner.RunWith;
 public class SendMessagesTestCase {
     private static final Logger log = Logger.getLogger(SendMessagesTestCase.class);
 
-    private static final String MBEAN = "mbean-containerstart";
+    private static final String MESSAGE_DRIVEN_BEAN = "message-driven-bean-containerstart";
     private static final String SINGLETON = "single-containerstart";
 
     private static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static String QUEUE_SEND = "queue/sendMessage";
 
-    private static final int UNDEPLOYED_WAIT_S = TimeoutUtil.adjust(20);
-    private static final int THREAD_WAIT_MS = TimeoutUtil.adjust(1000);
+    private static final int UNDEPLOYED_WAIT_S = TimeoutUtil.adjust(30);
     private static final int RECEIVE_WAIT_S = TimeoutUtil.adjust(30);
     
     @ContainerResource
@@ -157,7 +160,7 @@ public class SendMessagesTestCase {
 
     @Deployment(name = "mdb", order = 2, testable = false, managed = false)
     public static Archive<?> deploymentMdb() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MBEAN + ".jar")
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MESSAGE_DRIVEN_BEAN + ".jar")
                 .addClasses(ReplyingMDB.class, TimeoutUtil.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + SINGLETON + ".jar\n"), "MANIFEST.MF");
         // grant necessary permissions
@@ -217,38 +220,43 @@ public class SendMessagesTestCase {
             sendMessage(session, sender, replyQueue, "await");
             expected.add("Reply: await");
 
-            int awaitInt = awaitSingleton("first test"); // receive of first
-            log.debug("testsuite: awaitSingleton() returned: " + awaitInt);
+            // synchronize receiving message
+            int awaitInt = awaitSingleton("await before undeploy");
+            log.debug("testsuite: first awaitSingleton() returned: " + awaitInt);
 
             Future<?> undeployed = executor.submit(undeployTask());
-            // We want to wait for MDB.stop going into the semaphore
-            Thread.sleep(THREAD_WAIT_MS);
 
-            for (int i = 0; i < 50; i++) {
-                String msg = "Do not lose! (" + i + ")";
+            for (int i = 1; i <= 50; i++) {
+                String msg = this.getClass().getSimpleName() + " 50loop: " + i;
                 sendMessage(session, sender, replyQueue, msg); // should be bounced by BlockContainerShutdownInterceptor
                 expected.add("Reply: " + msg);
             }
+            log.debug("Sent 50 messages during MDB is undeploying");
+
+            // synchronize with transaction timeout
+            awaitInt = awaitSingleton("await after undeploy");
+            log.debug("testsuite: second awaitSingleton() returned: " + awaitInt);
 
             undeployed.get(UNDEPLOYED_WAIT_S, SECONDS);
 
             // deploying via management client, arquillian deployer does not work for some reason
             final ModelNode deployAddr = new ModelNode();
-            deployAddr.get(ClientConstants.OP_ADDR).add("deployment", MBEAN + ".jar");
+            deployAddr.get(ClientConstants.OP_ADDR).add("deployment", MESSAGE_DRIVEN_BEAN + ".jar");
             deployAddr.get(ClientConstants.OP).set("deploy");
             applyUpdate(deployAddr, managementClient.getControllerClient());
 
-            for (int i = 0; i < 10; i++) {
-                String msg = "Some more (" + i + ")";
+            for (int i = 1; i <= 10; i++) {
+                String msg = this.getClass().getSimpleName() + "10loop: " + i;
                 sendMessage(session, sender, replyQueue, msg);
                 expected.add("Reply: " + msg);
             }
-            log.debug("Some more messages sent");
+            log.debug("Sent 10 more messages");
 
             Set<String> received = new TreeSet<String>();
-            for (int i = 0; i < (1 + 50 + 10 + 1); i++) {
+            for (int i = 1; i <= (1 + 50 + 10 + 1); i++) {
                 Message msg = receiver.receive(SECONDS.toMillis(RECEIVE_WAIT_S));
-                assertNotNull("did not receive message " + i, msg);
+                assertNotNull("did not receive message with ordered number " + i +
+                        " in " + SECONDS.toMillis(RECEIVE_WAIT_S) + " seconds", msg);
                 String text = ((TextMessage) msg).getText();
                 received.add(text);
                 log.info(i + ": " + text);
@@ -270,7 +278,7 @@ public class SendMessagesTestCase {
         return new Callable<Void>() {
             public Void call() throws Exception {
                 ServerDeploymentManager deploymentManager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
-                final DeploymentPlan plan = deploymentManager.newDeploymentPlan().undeploy(MBEAN + ".jar").build();
+                final DeploymentPlan plan = deploymentManager.newDeploymentPlan().undeploy(MESSAGE_DRIVEN_BEAN + ".jar").build();
                 deploymentManager.execute(plan).get(UNDEPLOYED_WAIT_S, SECONDS);
                 return null;
             }
