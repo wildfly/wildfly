@@ -42,7 +42,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -123,7 +122,7 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
 
         //Simulate ApplyRemoteMasterDomainModelHandler
         final IgnoredDomainResourceRegistry ignoredResourceRegistry = createIgnoredDomainResourceRegistry(ignoredResources);
-        OperationResponse response = internalExecute(applyDomainModel, new OperationStepHandler() {
+        ModelNode response = internalExecute(applyDomainModel, new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 try {
@@ -189,9 +188,8 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
             }
         });
 
-        ModelNode result = response.getResponseNode();
-        if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+        if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
+            throw new RuntimeException(response.get(FAILURE_DESCRIPTION).asString());
         }
     }
 

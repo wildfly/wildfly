@@ -32,7 +32,7 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
-import org.jboss.as.controller.ModelController.OperationTransactionControl;
+import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -44,9 +44,8 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
-import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.client.OperationResponse;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -282,9 +281,10 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     @Override
-    protected OperationResponse internalExecute(Operation operation, OperationMessageHandler handler,
-            OperationTransactionControl control, OperationStepHandler prepareStep) {
-        return super.internalExecute(operation, handler, control, prepareStep);
+    protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler,
+                                        final ModelController.OperationTransactionControl control,
+                                        final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+        return super.internalExecute(operation, handler, control, attachments, prepareStep);
     }
 
     public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
