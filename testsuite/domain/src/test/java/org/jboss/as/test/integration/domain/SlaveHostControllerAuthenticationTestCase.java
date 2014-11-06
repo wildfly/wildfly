@@ -151,7 +151,7 @@ public class SlaveHostControllerAuthenticationTestCase {
         String salt = "87654321";
         int iterationCount = 20;
 
-        VaultSession nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount);
+        VaultSession nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount, true);
         String vaultAlias = "vault";
         nonInteractiveSession.startVaultSession(vaultAlias);
 
