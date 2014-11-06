@@ -135,6 +135,10 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
     }
 
     private void parseJts(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        // no attributes
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
         operation.get(CommonAttributes.JTS).set(true);
         requireNoContent(reader);
     }
@@ -250,6 +254,10 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
      *
      */
     static void parseProcessIdEnvironmentElement(XMLExtendedStreamReader reader, ModelNode coreEnvironmentAdd) throws XMLStreamException {
+        // no attributes
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
 
         // elements
         boolean encountered = false;
@@ -261,6 +269,9 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
                         throw unexpectedElement(reader);
                     }
                     encountered = true;
+                    if (reader.getAttributeCount() > 0) {
+                        throw unexpectedAttribute(reader, 0);
+                    }
                     coreEnvironmentAdd.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(true);
                     requireNoContent(reader);
                     break;
