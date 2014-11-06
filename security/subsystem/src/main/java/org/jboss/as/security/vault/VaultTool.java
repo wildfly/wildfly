@@ -80,8 +80,6 @@ public class VaultTool {
             try {
                 tool = new VaultTool(args);
                 returnVal = tool.execute();
-                if (returnVal != 100)
-                    tool.summary();
             } catch (Exception e) {
                 System.err.println(SecurityLogger.ROOT_LOGGER.problemOcurred());
                 e.printStackTrace(System.err);
@@ -212,12 +210,15 @@ public class VaultTool {
                 System.out.println(SecurityLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
                 return 6;
             }
-        } else {
+        } else if (cmdLine.hasOption(SEC_ATTR_VALUE_PARAM)) {
             // add password
             String password = cmdLine.getOptionValue(SEC_ATTR_VALUE_PARAM, "password");
             nonInteractiveSession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, password.toCharArray());
             summary();
             return 0;
+        } else {
+            System.out.println(SecurityLogger.ROOT_LOGGER.actionNotSpecified());
+            return -1;
         }
     }
 

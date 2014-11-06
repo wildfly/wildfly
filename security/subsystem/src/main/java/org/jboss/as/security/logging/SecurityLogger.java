@@ -834,5 +834,12 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Task: Remove secured attribute")
     String taskRemoveSecuredAttribute();
 
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Action not specified")
+    String actionNotSpecified();
 
 }
