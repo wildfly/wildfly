@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>14</version>
+      <version>16</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
@@ -61,12 +61,12 @@
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 
         <!-- Build configuration -->
-        <version.surefire.plugin>2.11</version.surefire.plugin>
+        <version.bundle.plugin>2.3.7</version.bundle.plugin>
         <!-- there is some problem with translated properties file newer version of checkstyle complains -->
         <version.checkstyle.plugin>2.9.1</version.checkstyle.plugin>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.source>1.6</maven.compiler.source>
-        <!-- Require maven 3.2.3 as 3.2.2  MNG-5663 -->
+        <!-- Require maven 3.2.3 as 3.2.2 has MNG-5663 -->
         <maven.min.version>3.2.3</maven.min.version>
         <!--
             Dependency versions. Please keep alphabetical.
