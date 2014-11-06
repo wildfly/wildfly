@@ -57,6 +57,7 @@ public class VaultToolTestCase {
   private static final String KEYSTORE_URL_VALUE = getKeystorePath();
   private static final String ENC_FILE_DIR_VALUE = CODE_LOCATION + "test_vault_dir";
   private static final String MASKED_MYPASSWORD_VALUE = "MASK-0UWB5tlhOmKYzJVl9KZaPN";
+  private static final String MASKED_MYPASSWORD_VALUE_INCORRECT = "MASK-UWB5tlhOmKYzJVl9KZaPN";
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
 
@@ -70,14 +71,23 @@ public class VaultToolTestCase {
 
   @Test
   public void testVaultTool() throws IOException, VaultReaderException {
+    doTestVaultTool(false);
+  }
+
+  @Test
+  public void testVaultFallback() throws IOException, VaultReaderException {
+    doTestVaultTool(true);
+  }
+
+  private void doTestVaultTool(boolean testFallbackFromIncorrectPasswordValue) throws IOException, VaultReaderException {
     // Replaces standard output with a ByteArrayOutputStream to parse the output later.
     System.setOut(new PrintStream(SYSTEM_OUT));
 
     try {
-      String[] args = generateArgs(); // Generate the required arguments
-      VaultTool.main(args);
+        String[] args = generateArgs(); // Generate the required arguments
+        VaultTool.main(args);
     } catch (ExitException e) {
-      Assert.assertEquals("Exit status is equal to 0", 0, e.status);
+        Assert.assertEquals("Exit status is equal to 0", 0, e.status);
     }
     SYSTEM_OUT.flush();
     String ouput = new String(SYSTEM_OUT.toByteArray());
@@ -86,17 +96,21 @@ public class VaultToolTestCase {
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);
     Assert.assertNotNull("VaultTool did not return a line starting with VAULT::", vaultSharedKey);
     MockRuntimeVaultReader rvr = new MockRuntimeVaultReader();
-    Map<String, Object> options = generateVaultOptionsMap();
+    Map<String, Object> options = generateVaultOptionsMap(testFallbackFromIncorrectPasswordValue);
     rvr.createVault("", options);
     String retrievedValueFromVault = rvr.retrieveFromVault(vaultSharedKey);
     Assert.assertEquals("The value retrieved from vault is not the same as the one initially stored", VALUE_TO_STORE,
         retrievedValueFromVault);
   }
 
-  private Map<String, Object> generateVaultOptionsMap() {
+  private Map<String, Object> generateVaultOptionsMap(boolean testFallbackFromIncorrectPasswordValue) {
     Map<String, Object> options = new HashMap<String, Object>();
     options.put("KEYSTORE_URL", KEYSTORE_URL_VALUE);
-    options.put("KEYSTORE_PASSWORD", MASKED_MYPASSWORD_VALUE);
+    if (testFallbackFromIncorrectPasswordValue) {
+        options.put("KEYSTORE_PASSWORD", MASKED_MYPASSWORD_VALUE_INCORRECT);
+    } else {
+        options.put("KEYSTORE_PASSWORD", MASKED_MYPASSWORD_VALUE);
+    }
     options.put("SALT", SALT_VALUE);
     options.put("ITERATION_COUNT", ITERATION_COUNT_VALUE);
     options.put("KEYSTORE_ALIAS", KEYSTORE_ALIAS_VALUE);
@@ -129,6 +143,7 @@ public class VaultToolTestCase {
     addAll(args, "-b", BLOCK_NAME);
     addAll(args, "-a", ATTRIBUTE_NAME);
     addAll(args, "-x", VALUE_TO_STORE);
+    addAll(args, "-t");
     return args.toArray(new String[0]);
   }
 

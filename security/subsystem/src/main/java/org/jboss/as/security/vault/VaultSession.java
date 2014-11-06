@@ -58,6 +58,7 @@ public final class VaultSession {
     private String encryptionDirectory;
     private String salt;
     private int iterationCount;
+    private boolean createKeystore;
 
     private SecurityVault vault;
     private String vaultAlias;
@@ -74,11 +75,28 @@ public final class VaultSession {
      */
     public VaultSession(String keystoreURL, String keystorePassword, String encryptionDirectory, String salt, int iterationCount)
             throws Exception {
+        this(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount, false);
+    }
+
+    /**
+     * Constructor to create VaultSession with possibility to create keystore automaticaly.
+     *
+     * @param keystoreURL
+     * @param keystorePassword
+     * @param encryptionDirectory
+     * @param salt
+     * @param iterationCount
+     * @param createKeystore
+     * @throws Exception
+     */
+    public VaultSession(String keystoreURL, String keystorePassword, String encryptionDirectory, String salt, int iterationCount, boolean createKeystore)
+            throws Exception {
         this.keystoreURL = keystoreURL;
         this.keystorePassword = keystorePassword;
         this.encryptionDirectory = encryptionDirectory;
         this.salt = salt;
         this.iterationCount = iterationCount;
+        this.createKeystore = createKeystore;
         validate();
     }
 
@@ -200,6 +218,9 @@ public final class VaultSession {
         options.put(PicketBoxSecurityVault.SALT, salt);
         options.put(PicketBoxSecurityVault.ITERATION_COUNT, Integer.toString(iterationCount));
         options.put(PicketBoxSecurityVault.ENC_FILE_DIR, encryptionDirectory);
+        if (createKeystore) {
+            options.put(PicketBoxSecurityVault.CREATE_KEYSTORE, Boolean.toString(createKeystore));
+        }
         return options;
     }
 

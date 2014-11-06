@@ -169,7 +169,7 @@ public class VaultHandler {
 
         try {
             this.vaultSession = new VaultSession(this.keyStore, this.keyStorePassword, this.encodedVaultFileDirectory,
-                    this.salt, this.iterationCount);
+                    this.salt, this.iterationCount, true);
             this.vaultSession.startVaultSession(this.alias);
         } catch (Exception e) {
             throw new RuntimeException("Problem creating VaultSession: ", e);
