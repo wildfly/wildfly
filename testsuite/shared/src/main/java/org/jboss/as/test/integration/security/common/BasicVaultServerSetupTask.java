@@ -150,4 +150,8 @@ public class BasicVaultServerSetupTask implements ServerSetupTask {
         // remove vault files
         vaultHandler.cleanUp();
     }
+
+    protected void setExternalVaultPassword(String externalVaultPassword) {
+        this.externalVaultPassword = externalVaultPassword;
+    }
 }
