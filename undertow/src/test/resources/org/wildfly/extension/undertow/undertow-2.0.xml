@@ -23,7 +23,7 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:undertow:2.0" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
-           default-server="some-server" instance-id="some-id">
+           default-server="some-server" instance-id="some-id" statistics-enabled="true">
 
     <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
     <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
