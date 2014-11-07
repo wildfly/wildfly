@@ -31,6 +31,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 
 import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
@@ -61,6 +62,16 @@ public class HandlerResourceDefinition extends AbstractFederationResourceDefinit
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         addChildResourceDefinition(HandlerParameterResourceDefinition.INSTANCE, resourceRegistration);
+    }
+
+    @Override
+    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
+        context.addStep(new UniqueTypeValidationStepHandler(ModelElement.COMMON_HANDLER) {
+            @Override
+            protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                return getHandlerType(context, model);
+            }
+        }, OperationContext.Stage.MODEL);
     }
 
     static String getHandlerType(OperationContext context, ModelNode elementNode) throws OperationFailedException {

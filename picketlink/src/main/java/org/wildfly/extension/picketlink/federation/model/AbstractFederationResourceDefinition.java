@@ -64,9 +64,14 @@ public abstract class AbstractFederationResourceDefinition extends AbstractResou
                         OperationContext.Stage.MODEL);
                 }
 
+                doRegisterModelWriteAttributeHandler(context, operation);
+
                 super.execute(context, operation);
             }
         };
     }
 
+    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
+
+    }
 }

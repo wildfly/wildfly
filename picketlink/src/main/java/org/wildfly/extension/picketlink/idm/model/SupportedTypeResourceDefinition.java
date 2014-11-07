@@ -72,6 +72,13 @@ public class SupportedTypeResourceDefinition extends AbstractIDMResourceDefiniti
         };
     }
 
+    @Override
+    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
+        for (ModelValidationStepHandler validator : getModelValidators()) {
+            context.addStep(validator, OperationContext.Stage.MODEL);
+        }
+    }
+
     private static String getSupportedType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
         ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
         ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
