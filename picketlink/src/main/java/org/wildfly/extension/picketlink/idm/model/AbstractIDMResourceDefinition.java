@@ -67,8 +67,14 @@ public abstract class AbstractIDMResourceDefinition extends AbstractResourceDefi
                         OperationContext.Stage.MODEL);
                 }
 
+                doRegisterModelWriteAttributeHandler(context, operation);
+
                 super.execute(context, operation);
             }
         };
+    }
+
+    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
+
     }
 }

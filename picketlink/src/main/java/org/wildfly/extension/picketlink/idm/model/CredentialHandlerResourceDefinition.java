@@ -56,14 +56,25 @@ public class CredentialHandlerResourceDefinition extends AbstractIDMResourceDefi
 
     private CredentialHandlerResourceDefinition(SimpleAttributeDefinition... attributes) {
         super(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER, new IDMConfigAddStepHandler(
-            new ModelValidationStepHandler[] {
-                new UniqueTypeValidationStepHandler(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER) {
-                    @Override
-                    protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
-                        return getCredentialType(context, model);
-                    }
+            getModelValidators(), attributes), attributes);
+    }
+
+    private static ModelValidationStepHandler[] getModelValidators() {
+        return new ModelValidationStepHandler[] {
+            new UniqueTypeValidationStepHandler(ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER) {
+                @Override
+                protected String getType(OperationContext context, ModelNode model) throws OperationFailedException {
+                    return getCredentialType(context, model);
                 }
-            }, attributes), attributes);
+            }
+        };
+    }
+
+    @Override
+    protected void doRegisterModelWriteAttributeHandler(OperationContext context, ModelNode operation) {
+        for (ModelValidationStepHandler validator : getModelValidators()) {
+            context.addStep(validator, OperationContext.Stage.MODEL);
+        }
     }
 
     private static String getCredentialType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
