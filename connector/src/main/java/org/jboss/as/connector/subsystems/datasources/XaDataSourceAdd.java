@@ -46,8 +46,8 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE, XA_DATASOURCE_PROPERTIES_ATTRIBUTES);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
-        return new XaDataSourceService(jndiName);
+    protected AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException {
+        return new XaDataSourceService(dsName, jndiName);
     }
 
     @Override

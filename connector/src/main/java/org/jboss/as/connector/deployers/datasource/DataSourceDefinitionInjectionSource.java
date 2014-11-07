@@ -155,7 +155,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                         jndiName, false, false, Defaults.CONNECTABLE, Defaults.TRACKING, properties,
                         className, null, null,
                         xaPool, null);
-                final XaDataSourceService xds = new XaDataSourceService(jndiName, module.getClassLoader());
+                final XaDataSourceService xds = new XaDataSourceService(jndiName, jndiName, module.getClassLoader());
                 xds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(xds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
             } else {
@@ -165,7 +165,7 @@ public class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjec
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), properties,
                         null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, Defaults.CONNECTABLE, Defaults.TRACKING, commonPool);
-                final LocalDataSourceService ds = new LocalDataSourceService(jndiName, module.getClassLoader());
+                final LocalDataSourceService ds = new LocalDataSourceService(jndiName, jndiName, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(ds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
             }

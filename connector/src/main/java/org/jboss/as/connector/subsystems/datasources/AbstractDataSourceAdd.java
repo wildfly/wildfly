@@ -148,7 +148,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         driverDemanderBuilder.addListener(verificationHandler);
         driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
-        AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
+        AbstractDataSourceService dataSourceService = createDataSourceService(dsName, jndiName);
 
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
 
@@ -197,7 +197,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
     protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;
 
-    protected abstract AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException;
+    protected abstract AbstractDataSourceService createDataSourceService(final String dsName, final String jndiName) throws OperationFailedException;
 
     static void populateAddModel(final ModelNode operation, final ModelNode modelNode,
             final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes, PropertiesAttributeDefinition[] properties) throws OperationFailedException {

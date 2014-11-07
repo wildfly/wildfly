@@ -105,7 +105,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestDS");
-        Assert.assertEquals("org.jboss.jca.adapters.jdbc.WrapperDataSource", jndiClass);
+        Assert.assertTrue(javax.sql.DataSource.class.isAssignableFrom(Class.forName(jndiClass)));
 
     }
 
@@ -170,7 +170,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
         // check that it is available through JNDI
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/datasources/TestXADS");
-        Assert.assertEquals("org.jboss.jca.adapters.jdbc.WrapperDataSource", jndiClass);
+        Assert.assertTrue(javax.sql.DataSource.class.isAssignableFrom(Class.forName(jndiClass)));
 
 
     }
