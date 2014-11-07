@@ -60,6 +60,11 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
         // write ws subsystem start element
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode subsystem = context.getModelNode();
+
+        if (Attributes.STATISTICS_ENABLED.isMarshallable(subsystem)) {
+            Attributes.STATISTICS_ENABLED.marshallAsAttribute(subsystem, writer);
+        }
+
         for (SimpleAttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
             attr.marshallAsElement(subsystem, true, writer);
         }
