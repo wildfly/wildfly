@@ -78,6 +78,9 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
     // @Override
     protected void processAnnotation(final DeploymentUnit unit, final EEModuleDescription moduleDescription)
             throws DeploymentUnitProcessingException {
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, unit)) {
+            return;
+        }
         final Map<String, EEModuleClassDescription> classDescriptionMap = new HashMap<String, org.jboss.as.ee.component.EEModuleClassDescription>();
         final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         for (EEModuleClassDescription classDescritpion : moduleDescription.getClassDescriptions()) {
