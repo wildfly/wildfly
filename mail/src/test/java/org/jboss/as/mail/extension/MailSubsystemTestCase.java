@@ -29,7 +29,6 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
 import java.io.IOException;
 import java.util.Properties;
-
 import javax.mail.Session;
 
 import org.jboss.as.controller.ModelVersion;
@@ -52,21 +51,16 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
+public class MailSubsystemTestCase extends AbstractSubsystemBaseTest {
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME));
 
-    public MailSubsystem11TestCase() {
+    public MailSubsystemTestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_1.xml");
-    }
-
-    @Override
-    public void testSubsystem() throws Exception {
-        standardSubsystemTest(null, false);
+        return readResource("subsystem_1_2.xml");
     }
 
     @Test
@@ -138,5 +132,38 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
+    @Test
+    public void testRuntime() throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(new MailSubsystem10TestCase.Initializer())
+                .setSubsystemXml(getSubsystemXml());
+        KernelServices mainServices = builder.build();
+        if (!mainServices.isSuccessfulBoot()) {
+            Assert.fail(mainServices.getBootError().toString());
+        }
+        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:/Mail"));
+        javaMailService.setMode(ServiceController.Mode.ACTIVE);
+        Session session = (Session) javaMailService.getValue();
+        Assert.assertNotNull("session should not be null", session);
+        Properties properties = session.getProperties();
+        Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
+        Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
+        Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
 
+        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Default"));
+        session = (Session) defaultMailService.getValue();
+        Assert.assertEquals("Debug should be true", true, session.getDebug());
+
+
+        ServiceController customMailService = mainServices.getContainer().getService(MailSessionAdd.SERVICE_NAME_BASE.append("java:jboss/mail/Custom"));
+        session = (Session) customMailService.getValue();
+        properties = session.getProperties();
+        String host = properties.getProperty("mail.smtp.host");
+        Assert.assertNotNull("smtp host should be set", host);
+        Assert.assertEquals("mail.example.com", host);
+
+        Assert.assertEquals("localhost", properties.get("mail.pop3.host")); //this one should be read out of socket binding
+        Assert.assertEquals("some-custom-prop-value", properties.get("mail.pop3.custom_prop")); //this one should be extra property
+        Assert.assertEquals("fully-qualified-prop-name", properties.get("some.fully.qualified.property")); //this one should be extra property
+
+    }
 }

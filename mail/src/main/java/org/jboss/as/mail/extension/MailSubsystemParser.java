@@ -87,7 +87,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             for (Property mailSession : sessions) {
                 ModelNode sessionData = mailSession.getValue();
                 writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
-
+                writer.writeAttribute(NAME,mailSession.getName());
                 JNDI_NAME.marshallAsAttribute(sessionData, writer);
                 DEBUG.marshallAsAttribute(sessionData, false, writer);
                 FROM.marshallAsAttribute(sessionData, false, writer);
@@ -162,7 +162,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0:
-                case MAIL_1_1: {
+                case MAIL_1_1:
+                case MAIL_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MAIL_SESSION: {
@@ -185,32 +186,37 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
     private void parseMailSession(final XMLExtendedStreamReader reader, List<ModelNode> list, final PathAddress parent) throws XMLStreamException {
         String jndiName = null;
+        String name = null;
         final ModelNode operation = new ModelNode();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
-            if (attr == Attribute.JNDI_NAME) {
+            if (attr == Attribute.NAME) {
+                name = value;
+            } else if (attr == Attribute.JNDI_NAME) {
                 jndiName = value;
                 JNDI_NAME.parseAndSetParameter(value, operation, reader);
-            }
-            if (attr == Attribute.DEBUG) {
+            } else if (attr == Attribute.DEBUG) {
                 DEBUG.parseAndSetParameter(value, operation, reader);
-            }
-            if (attr == Attribute.FROM) {
+            } else if (attr == Attribute.FROM) {
                 FROM.parseAndSetParameter(value, operation, reader);
             }
         }
         if (jndiName == null) {
             throw ParseUtils.missingRequired(reader, EnumSet.of(Attribute.JNDI_NAME));
         }
-        final PathAddress address = parent.append(MAIL_SESSION, jndiName);
+        if (name == null) {
+            name = jndiName;
+        }
+        final PathAddress address = parent.append(MAIL_SESSION, name);
         operation.get(OP_ADDR).set(address.toModelNode());
         operation.get(OP).set(ADD);
         list.add(operation);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case MAIL_1_0:
-                case MAIL_1_1: {
+                case MAIL_1_1:
+                case MAIL_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SMTP_SERVER: {
