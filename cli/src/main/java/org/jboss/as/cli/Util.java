@@ -127,11 +127,13 @@ public class Util {
     public static final String REDEPLOY = "redeploy";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
+    public static final String RELOAD = "reload";
     public static final String REMOVE = "remove";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String RESPONSE_HEADERS = "response-headers";
+    public static final String RESTART = "restart";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String ROLLED_BACK = "rolled-back";
@@ -144,6 +146,7 @@ public class Util {
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
+    public static final String SHUTDOWN = "shutdown";
     public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
     public static final String STEP_2 = "step-2";

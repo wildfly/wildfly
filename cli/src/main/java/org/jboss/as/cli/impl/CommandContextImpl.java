@@ -142,6 +142,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
+import org.jboss.as.cli.parsing.command.CommandFormat;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
@@ -1273,14 +1274,29 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public void handleClose() {
-        if(parsedCmd.getFormat().equals(OperationFormat.INSTANCE) && "shutdown".equals(parsedCmd.getOperationName())) {
-            final String restart = parsedCmd.getPropertyValue("restart");
-            if(restart == null || !Util.TRUE.equals(restart)) {
-                disconnectController();
-                printLine("");
-                printLine("The connection to the controller has been closed as the result of the shutdown operation.");
-                printLine("(Although the command prompt will wrongly indicate connection until the next line is entered)");
+        // if the connection loss was triggered by an instruction to restart/reload
+        // then we don't disconnect yet
+        if(parsedCmd.getFormat() != null) {
+            if(Util.RELOAD.equals(parsedCmd.getOperationName())) {
+                // do nothing
+            } else if(Util.SHUTDOWN.equals(parsedCmd.getOperationName())) {
+                if(CommandFormat.INSTANCE.equals(parsedCmd.getFormat())
+                        // shutdown command handler decides whether to disconnect or not
+                        || Util.TRUE.equals(parsedCmd.getPropertyValue(Util.RESTART))) {
+                    // do nothing
+                } else {
+                    disconnectController();
+                    printLine("");
+                    printLine("The controller has closed the connection.");
+                    printLine("(Although the command prompt may still wrongly indicate connection until the next line is entered)");
+                }
+            } else {
+                // we don't disconnect here because the connection may be closed by another
+                // CLI instance/session doing a reload (this happens in our testsuite)
             }
+        } else {
+            // we don't disconnect here because the connection may be closed by another
+            // CLI instance/session doing a reload (this happens in our testsuite)
         }
     }
 
