@@ -80,7 +80,9 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
          final ConfigService clientConfigService = new ConfigService(serverConfig, name, true);
          final ServiceTarget target = context.getServiceTarget();
          final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, clientConfigService);
-         setDependency(context, clientServiceBuilder, clientConfigService.getPropertiesInjector(), PropertyService.class, serviceName, address, Constants.PROPERTY);
+         for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PROPERTY)) {
+             clientServiceBuilder.addDependency(sn, PropertyService.class, clientConfigService.getPropertiesInjector());
+         }
          setDependency(context, clientServiceBuilder, clientConfigService.getPreHandlerChainsInjector(), UnifiedHandlerChainMetaData.class, serviceName, address, Constants.PRE_HANDLER_CHAIN);
          final Injector<UnifiedHandlerChainMetaData> postInjector = clientConfigService.getPostHandlerChainsInjector();
          setDependency(context, clientServiceBuilder, postInjector, UnifiedHandlerChainMetaData.class, serviceName, address, Constants.POST_HANDLER_CHAIN);
