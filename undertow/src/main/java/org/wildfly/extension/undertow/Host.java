@@ -36,9 +36,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import io.undertow.Handlers;
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.util.Methods;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -95,6 +97,8 @@ public class Host implements Service<Host> {
             filters.add(injectedFilter.getValue());
         }
 
+        //handle options * requests
+        rootHandler = new OptionsHandler(rootHandler);
 
         //handle requests that use the Expect: 100-continue header
         rootHandler = Handlers.httpContinueRead(rootHandler);
@@ -203,5 +207,26 @@ public class Host implements Service<Host> {
 
     public Map<String, AuthenticationMechanism> getAdditionalAuthenticationMechanisms() {
         return new LinkedHashMap<>(additionalAuthenticationMechanisms);
+    }
+
+    private static final class OptionsHandler implements HttpHandler {
+
+        private final HttpHandler next;
+
+        private OptionsHandler(HttpHandler next) {
+            this.next = next;
+        }
+
+        @Override
+        public void handleRequest(HttpServerExchange exchange) throws Exception {
+            if(exchange.getRequestMethod().equals(Methods.OPTIONS) &&
+                    exchange.getRelativePath().equals("*")) {
+                //handle the OPTIONS requests
+                //basically just return an empty response
+                exchange.endExchange();
+                return;
+            }
+            next.handleRequest(exchange);
+        }
     }
 }
