@@ -94,7 +94,6 @@ public final class RemoteDeployer implements Deployer {
     private static final String JBWS_DEPLOYER_PORT = "jbossws.deployer.port";
     private static final String JBWS_DEPLOYER_AUTH_USER = "jbossws.deployer.authentication.username";
     private static final String JBWS_DEPLOYER_AUTH_PWD = "jbossws.deployer.authentication.password";
-    private static final String JBWS_HTTPS_CONNECTOR_PROTOCOL = "jbossws.https.connector.protocol";
     private static final CallbackHandler callbackHandler = getCallbackHandler();
     private static final int TIMEOUT = 60000;
     private static InetAddress address;
@@ -278,7 +277,7 @@ public final class RemoteDeployer implements Deployer {
             ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", ADD);
             op.get("socket-binding").set("https");
             op.get("scheme").set("https");
-            op.get("protocol").set(System.getProperty(JBWS_HTTPS_CONNECTOR_PROTOCOL, "HTTP/1.1"));
+            op.get("protocol").set("HTTP/1.1");
             op.get("secure").set(true);
             op.get("enabled").set(true);
             steps.add(op);

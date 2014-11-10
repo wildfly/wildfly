@@ -29,7 +29,6 @@ import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceNa
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerServiceName;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -52,7 +51,6 @@ import org.jboss.msc.service.ServiceTarget;
 final class HandlerAdd extends AbstractAddStepHandler {
 
     static final HandlerAdd INSTANCE = new HandlerAdd();
-    static final AtomicInteger counter = new AtomicInteger(0);
 
     private HandlerAdd() {
         // forbidden instantiation
@@ -79,7 +77,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final String handlerName = address.getElement(address.size() - 1).getValue();
             final String handlerClass = operation.require(CLASS).asString();
 
-            final HandlerService service = new HandlerService(handlerName, handlerClass, counter.incrementAndGet());
+            final HandlerService service = new HandlerService(handlerName, handlerClass);
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);

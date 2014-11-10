@@ -36,13 +36,11 @@ public final class HandlerService implements Service<UnifiedHandlerMetaData> {
 
     private final String handlerName;
     private final String handlerClass;
-    private final int counter;
     private volatile UnifiedHandlerMetaData handler;
 
-    public HandlerService(String handlerName, String handlerClass, int counter) {
+    public HandlerService(String handlerName, String handlerClass) {
         this.handlerName = handlerName;
         this.handlerClass = handlerClass;
-        this.counter = counter;
     }
 
     @Override
@@ -52,7 +50,7 @@ public final class HandlerService implements Service<UnifiedHandlerMetaData> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        handler = new UnifiedHandlerMetaData(handlerClass, handlerName, null, null, null, null, String.valueOf(counter));
+        handler = new UnifiedHandlerMetaData(handlerClass, handlerName, null, null, null, null);
     }
 
     @Override
