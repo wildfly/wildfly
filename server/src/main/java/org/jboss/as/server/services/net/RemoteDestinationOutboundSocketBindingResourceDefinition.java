@@ -23,6 +23,7 @@
 package org.jboss.as.server.services.net;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -62,7 +64,7 @@ public class RemoteDestinationOutboundSocketBindingResourceDefinition extends Ou
         super(PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING),
                 RemoteDestinationOutboundSocketBindingAddHandler.INSTANCE,
-                OutboundSocketBindingRemoveHandler.INSTANCE, true);
+                new ServiceRemoveStepHandler(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME, RemoteDestinationOutboundSocketBindingAddHandler.INSTANCE), true);
     }
 
     @Override
