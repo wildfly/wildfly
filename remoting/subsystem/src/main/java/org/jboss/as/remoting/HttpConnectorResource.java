@@ -27,6 +27,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -47,12 +48,16 @@ public class HttpConnectorResource extends SimpleResourceDefinition {
             .setDefaultValue(null)
             .setAllowNull(true)
             .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.NAME))
+            .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition CONNECTOR_REF = new SimpleAttributeDefinition(CommonAttributes.CONNECTOR_REF, ModelType.STRING, false);
-    static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(
-            CommonAttributes.SECURITY_REALM, ModelType.STRING, true).setValidator(
-            new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
+
+    static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(CommonAttributes.SECURITY_REALM, ModelType.STRING, true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
+            .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
+            .build();
 
     private HttpConnectorResource() {
         super(PATH, RemotingExtension.getResourceDescriptionResolver(HTTP_CONNECTOR),
