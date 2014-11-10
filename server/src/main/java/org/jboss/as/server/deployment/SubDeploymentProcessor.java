@@ -48,6 +48,10 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
         final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final ServiceVerificationHandler serviceVerificationHandler = deploymentUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
 
+        if(deploymentResourceRoot.getRoot().isDirectory()) {
+            ExplodedDeploymentMarker.markAsExplodedDeployment(deploymentUnit);
+        }
+
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final List<ResourceRoot> childRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (final ResourceRoot childRoot : childRoots) {

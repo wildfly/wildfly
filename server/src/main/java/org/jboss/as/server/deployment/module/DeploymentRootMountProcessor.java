@@ -70,10 +70,8 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             deploymentRoot = deploymentContents;
             // nothing was mounted
             mountHandle = null;
-            if(deploymentUnit.getParent() == null ||
-                    ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit.getParent())) {
-                ExplodedDeploymentMarker.markAsExplodedDeployment(deploymentUnit);
-            }
+            ExplodedDeploymentMarker.markAsExplodedDeployment(deploymentUnit);
+
         } else {
             // The mount point we will use for the repository file
             deploymentRoot = VFS.getChild("content/" + deploymentName);
