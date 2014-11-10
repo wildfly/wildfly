@@ -121,7 +121,7 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         cli.sendLine("undeploy RolloutPlanTestCase.war --all-relevant-server-groups", true);
 
         // remove socket binding
-        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:remove", true);
+        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test-binding:remove(){allow-resource-service-restart=true}", true);
     }
 
     @Test
