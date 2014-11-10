@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.tx;
 
 import javax.ejb.EJBException;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -29,6 +30,7 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
+import org.jboss.tm.TransactionTimeoutConfiguration;
 
 /**
  * Suspend an incoming tx.
@@ -51,11 +53,16 @@ public abstract class BMTInterceptor implements Interceptor {
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         TransactionManager tm = component.getTransactionManager();
-        Transaction oldTx = tm.suspend();
+        int oldTimeout = getCurrentTransactionTimeout(component);
         try {
-            return handleInvocation(context);
+            Transaction oldTx = tm.suspend();
+            try {
+                return handleInvocation(context);
+            } finally {
+                if (oldTx != null) tm.resume(oldTx);
+            }
         } finally {
-            if (oldTx != null) tm.resume(oldTx);
+            tm.setTransactionTimeout(oldTimeout == -1 ? 0 : oldTimeout);
         }
     }
 
@@ -79,6 +86,14 @@ public abstract class BMTInterceptor implements Interceptor {
         } else {
             throw new EJBException(new RuntimeException(ex));
         }
+    }
+
+    protected int getCurrentTransactionTimeout(final EJBComponent component) throws SystemException {
+        final TransactionManager tm = component.getTransactionManager();
+        if (tm instanceof TransactionTimeoutConfiguration) {
+            return ((TransactionTimeoutConfiguration) tm).getTransactionTimeout();
+        }
+        return 0;
     }
 
     public EJBComponent getComponent() {
