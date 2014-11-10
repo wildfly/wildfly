@@ -264,7 +264,10 @@ public class HttpPostMgmtOpsTestCase {
         ret = httpMgmt.sendPostCommand(operation);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
-        ret = httpMgmt.sendPostCommand("socket-binding-group=standard-sockets/socket-binding=test", "remove");
+
+        operation = HttpMgmtProxy.getOpNode("socket-binding-group=standard-sockets/socket-binding=test", "remove");
+        operation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ret = httpMgmt.sendPostCommand(operation);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
         // check that the connector is no longer live

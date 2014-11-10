@@ -229,7 +229,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
-        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:remove");
+        cli.sendLine("/socket-binding-group=standard-sockets/socket-binding=test:remove{allow-resource-service-restart=true}");
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
 
