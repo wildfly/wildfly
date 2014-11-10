@@ -38,7 +38,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.HandlerChainService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -86,9 +85,8 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             final HandlerChainService service = new HandlerChainService(handlerChainType, handlerChainId, protocolBindings);
             final ServiceTarget target = context.getServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
-            final Injector<UnifiedHandlerMetaData> injector = service.getHandlersInjector();
             for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, handlerChainServiceName, address, HANDLER)) {
-                handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, injector);
+                handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, service.getHandlersInjector());
             }
             ServiceController<?> controller = handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             if (newControllers != null) {
