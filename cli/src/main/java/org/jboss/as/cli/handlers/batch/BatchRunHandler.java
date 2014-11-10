@@ -83,9 +83,10 @@ public class BatchRunHandler extends BaseOperationCommand {
     }
 
     @Override
-    protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
+    protected ModelNode buildRequestWOValidation(CommandContext ctx) throws CommandFormatException {
 
         final String path = file.getValue(ctx.getParsedCommandLine());
+        final ModelNode headersNode = headers.isPresent(ctx.getParsedCommandLine()) ? headers.toModelNode(ctx) : null;
 
         final BatchManager batchManager = ctx.getBatchManager();
         if(batchManager.isBatchActive()) {
@@ -98,7 +99,11 @@ public class BatchRunHandler extends BaseOperationCommand {
                 batchManager.discardActiveBatch();
                 throw new CommandFormatException("The batch is empty.");
             }
-            return batch.toRequest();
+            final ModelNode request = batch.toRequest();
+            if(headersNode != null) {
+                request.get(Util.OPERATION_HEADERS).set(headersNode);
+            }
+            return request;
         }
 
         if(path != null) {
@@ -118,15 +123,18 @@ public class BatchRunHandler extends BaseOperationCommand {
                 reader = new BufferedReader(new FileReader(f));
                 String line = reader.readLine();
                 batchManager.activateNewBatch();
-                final Batch batch = batchManager.getActiveBatch();
                 while(line != null) {
-                    batch.add(ctx.toBatchedCommand(line));
+                    ctx.handle(line);
                     line = reader.readLine();
                 }
-                return batch.toRequest();
+                final ModelNode request = batchManager.getActiveBatch().toRequest();
+                if(headersNode != null) {
+                    request.get(Util.OPERATION_HEADERS).set(headersNode);
+                }
+                return request;
             } catch(IOException e) {
                 throw new CommandFormatException("Failed to read file " + f.getAbsolutePath(), e);
-            } catch(CommandFormatException e) {
+            } catch(CommandLineException e) {
                 throw new CommandFormatException("Failed to create batch from " + f.getAbsolutePath(), e);
             } finally {
                 batchManager.discardActiveBatch();
@@ -152,5 +160,10 @@ public class BatchRunHandler extends BaseOperationCommand {
             ctx.printLine("The batch executed successfully");
             super.handleResponse(ctx, response, composite);
         }
+    }
+
+    @Override
+    protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
+        throw new UnsupportedOperationException();
     }
 }

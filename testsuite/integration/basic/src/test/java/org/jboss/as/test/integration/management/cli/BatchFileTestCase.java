@@ -98,7 +98,10 @@ public class BatchFileTestCase {
 
     @Test
     public void testRunBatchFile() throws Exception {
-        createFile(new String[]{"/system-property=batchfiletest:add(value=true)"});
+        createFile(new String[]{"/system-property=batchfiletest:add(value=true)",
+                "",
+                "# comments",
+                "/system-property=batchfiletest:write-attribute(value=false)"});
 
         final CommandContext ctx = CLITestUtil.getCommandContext();
         try {
@@ -110,8 +113,8 @@ public class BatchFileTestCase {
             assertTrue(batchRequest.get("address").asList().isEmpty());
             assertTrue(batchRequest.hasDefined("steps"));
             List<ModelNode> steps = batchRequest.get("steps").asList();
-            assertEquals(1, steps.size());
-            final ModelNode op = steps.get(0);
+            assertEquals(2, steps.size());
+            ModelNode op = steps.get(0);
             assertTrue(op.hasDefined("address"));
             List<Property> address = op.get("address").asPropertyList();
             assertEquals(1, address.size());
@@ -121,6 +124,18 @@ public class BatchFileTestCase {
             assertTrue(op.hasDefined("operation"));
             assertEquals("add", op.get("operation").asString());
             assertEquals("true", op.get("value").asString());
+
+            op = steps.get(1);
+            assertTrue(op.hasDefined("address"));
+            address = op.get("address").asPropertyList();
+            assertEquals(1, address.size());
+            assertEquals("system-property", address.get(0).getName());
+            assertEquals("batchfiletest", address.get(0).getValue().asString());
+
+            assertTrue(op.hasDefined("operation"));
+            assertEquals("write-attribute", op.get("operation").asString());
+            assertEquals("false", op.get("value").asString());
+
             assertTrue(batchRequest.hasDefined("operation-headers"));
             final ModelNode headers = batchRequest.get("operation-headers");
             assertEquals("true", headers.get("allow-resource-service-restart").asString());

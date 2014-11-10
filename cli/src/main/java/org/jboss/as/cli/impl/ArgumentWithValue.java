@@ -24,10 +24,12 @@ package org.jboss.as.cli.impl;
 import java.util.List;
 
 import org.jboss.as.cli.ArgumentValueConverter;
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -101,6 +103,15 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             throw new CommandFormatException(buf.toString());
         }
         return value;
+    }
+
+    public ModelNode toModelNode(CommandContext ctx) throws CommandFormatException {
+        final ParsedCommandLine parsedLine = ctx.getParsedCommandLine();
+        final String value = getValue(parsedLine, false);
+        if(value == null) {
+            return null;
+        }
+        return valueConverter.fromString(ctx, value);
     }
 
     @Override
