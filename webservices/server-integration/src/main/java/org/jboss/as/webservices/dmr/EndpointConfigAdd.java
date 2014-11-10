@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -83,6 +84,9 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
 
            final ServiceTarget target = context.getServiceTarget();
            final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, endpointConfigService);
+           for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PROPERTY)) {
+               clientServiceBuilder.addDependency(sn, PropertyService.class, endpointConfigService.getPropertiesInjector());
+           }
            setDependency(context, clientServiceBuilder, endpointConfigService.getPreHandlerChainsInjector(), serviceName, address, Constants.PRE_HANDLER_CHAIN);
            setDependency(context, clientServiceBuilder, endpointConfigService.getPostHandlerChainsInjector(), serviceName, address, Constants.POST_HANDLER_CHAIN);
            ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
