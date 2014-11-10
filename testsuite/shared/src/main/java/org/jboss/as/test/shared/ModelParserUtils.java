@@ -30,8 +30,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +93,7 @@ import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
@@ -118,8 +122,10 @@ public class ModelParserUtils {
         ServiceContainer serviceContainer = setupServiceContainer();
         try {
             FileUtils.copyFile(original, target);
-            ModelNode originalModel = loadServerModel(serviceContainer, target);
-            ModelNode reparsedModel = loadServerModel(serviceContainer, target);
+            // Only instantiate one per container as service names of the paths will be registered on the container
+            final TestPathManagerService pathManager = new TestPathManagerService(serviceContainer);
+            ModelNode originalModel = loadServerModel(serviceContainer, target, pathManager);
+            ModelNode reparsedModel = loadServerModel(serviceContainer, target, pathManager);
             fixupOSGiStandalone(originalModel);
             fixupOSGiStandalone(reparsedModel);
             compare(originalModel, reparsedModel);
@@ -278,7 +284,7 @@ public class ModelParserUtils {
         }
     }
 
-    private static ModelNode loadServerModel(final ServiceContainer serviceContainer, final File file) throws Exception {
+    private static ModelNode loadServerModel(final ServiceContainer serviceContainer, final File file, final PathManagerService pathManagerService) throws Exception {
         final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), null, null);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
@@ -297,7 +303,7 @@ public class ModelParserUtils {
             public void setup(ModelControllerService modelControllerService, Resource resource,
                     ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
                 ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(),
-                        persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, authorizer,
+                        persister, null, null, null, null, extensionRegistry, false, pathManagerService, authorizer,
                         AuditLogger.NO_OP_LOGGER, modelControllerService.getBootErrorCollector());
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
@@ -594,6 +600,27 @@ public class ModelParserUtils {
         @Override
         protected void initializeDomain(OperationContext context, ModelNode remoteDC) throws OperationFailedException {
             // no-op
+        }
+    }
+
+    private static class TestPathManagerService extends PathManagerService {
+        private TestPathManagerService(final ServiceTarget target) {
+            final Properties props;
+            if (System.getSecurityManager() == null) {
+                props = System.getProperties();
+            } else {
+                props = AccessController.doPrivileged(new PrivilegedAction<Properties>() {
+                    @Override
+                    public Properties run() {
+                        return System.getProperties();
+                    }
+                });
+            }
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_BASE_DIR, props.getProperty(ServerEnvironment.SERVER_BASE_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_CONFIG_DIR, props.getProperty(ServerEnvironment.SERVER_CONFIG_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_DATA_DIR, props.getProperty(ServerEnvironment.SERVER_DATA_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_LOG_DIR, props.getProperty(ServerEnvironment.SERVER_LOG_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_TEMP_DIR, props.getProperty(ServerEnvironment.SERVER_TEMP_DIR));
         }
     }
 
