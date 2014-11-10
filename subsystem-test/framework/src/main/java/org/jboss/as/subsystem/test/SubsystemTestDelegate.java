@@ -387,11 +387,18 @@ final class SubsystemTestDelegate {
         }
 
         for (PathElement childElement : childElements) {
-            addresses.add(address.append(childElement));
+            // Ignore runtime resources
+            if (!resource.getChild(childElement).isRuntime()) {
+                addresses.add(address.append(childElement));
+            }
         }
 
         for (PathElement childElement : childElements) {
-            getAllChildAddressesForRemove(address.append(childElement), addresses, resource.getChild(childElement));
+            // Ignore runtime resources
+            final Resource childResource = resource.getChild(childElement);
+            if (!childResource.isRuntime()) {
+                getAllChildAddressesForRemove(address.append(childElement), addresses, childResource);
+            }
         }
     }
 
