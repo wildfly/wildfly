@@ -61,10 +61,8 @@ public class ExternalPasswordByClassTestCase {
 
     @Test
     public void testVaultedSystemProperty() {
-        LOGGER.info("XXX");
         assertEquals("Vaulted system property wasn't read successfully", BasicVaultServerSetupTask.VAULT_ATTRIBUTE,
                 System.getProperty(TESTING_SYSTEM_PROPERTY));
-        LOGGER.info("YYY");
     }
 
     static class VaultSetupTask extends BasicVaultServerSetupTask {
