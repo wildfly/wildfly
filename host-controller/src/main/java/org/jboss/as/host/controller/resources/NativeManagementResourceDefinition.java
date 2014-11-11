@@ -46,6 +46,7 @@ import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.NativeManagementWriteAttributeHandler;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -75,7 +76,20 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, NATIVE_PORT, SECURITY_REALM };
+    public static final SimpleAttributeDefinition SERVER_NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SERVER_NAME, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build(); // TODO - We need some nice access constraints.
+
+    public static final SimpleAttributeDefinition SASL_PROTOCOL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SASL_PROTOCOL, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setDefaultValue(new ModelNode(ModelDescriptionConstants.REMOTE))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build(); // TODO - We need some nice access constraints.
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, NATIVE_PORT, SECURITY_REALM, SERVER_NAME, SASL_PROTOCOL };
 
     private final List<AccessConstraintDefinition> accessConstraints;
 

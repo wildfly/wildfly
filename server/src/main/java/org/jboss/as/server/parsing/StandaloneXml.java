@@ -653,13 +653,7 @@ public class StandaloneXml extends CommonXml {
         }
     }
 
-    private void parseManagementInterface1_1(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
-        final ModelNode operationAddress = address.clone();
-        operationAddress.add(MANAGEMENT_INTERFACE, http ? HTTP_INTERFACE : NATIVE_INTERFACE);
-        final ModelNode addOp = Util.getEmptyOperation(ADD, operationAddress);
-
-        // Handle attributes
-
+    private void parseManagementInterfaceAttributes_1_1(XMLExtendedStreamReader reader, ModelNode addOp, boolean http) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -687,6 +681,71 @@ public class StandaloneXml extends CommonXml {
                 }
             }
         }
+    }
+
+    private void parseManagementInterfaceAttributes_1_7(XMLExtendedStreamReader reader, ModelNode addOp, boolean http) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SASL_PROTOCOL: {
+                        if (http) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        NativeManagementResourceDefinition.SASL_PROTOCOL.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        if (http) {
+                            HttpManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        } else {
+                            NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        }
+                        break;
+                    }
+                    case SERVER_NAME: {
+                        if (http) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        NativeManagementResourceDefinition.SERVER_NAME.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case CONSOLE_ENABLED: {
+                        if (http) {
+                            HttpManagementResourceDefinition.CONSOLE_ENABLED.parseAndSetParameter(value, addOp, reader);
+                        }
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+    }
+
+    private void parseManagementInterface1_1(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
+        final ModelNode operationAddress = address.clone();
+        operationAddress.add(MANAGEMENT_INTERFACE, http ? HTTP_INTERFACE : NATIVE_INTERFACE);
+        final ModelNode addOp = Util.getEmptyOperation(ADD, operationAddress);
+
+        // Handle attributes
+        switch (expectedNs) {
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+            case DOMAIN_1_5:
+            case DOMAIN_1_6:
+                parseManagementInterfaceAttributes_1_1(reader, addOp, http);
+                break;
+            default:
+                parseManagementInterfaceAttributes_1_7(reader, addOp, http);
+        }
+
 
         // Handle elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1276,6 +1335,8 @@ public class StandaloneXml extends CommonXml {
 
             writer.writeStartElement(Element.NATIVE_INTERFACE.getLocalName());
             NativeManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
+            NativeManagementResourceDefinition.SASL_PROTOCOL.marshallAsAttribute(protocol, writer);
+            NativeManagementResourceDefinition.SERVER_NAME.marshallAsAttribute(protocol, writer);
 
             if (NativeManagementResourceDefinition.INTERFACE.isMarshallable(protocol)) {
                 writer.writeEmptyElement(Element.SOCKET.getLocalName());

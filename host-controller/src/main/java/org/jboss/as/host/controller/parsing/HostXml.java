@@ -678,6 +678,34 @@ public class HostXml extends CommonXml {
         }
     }
 
+    private void parseNativeManagementInterfaceAttributes_1_7(XMLExtendedStreamReader reader, ModelNode addOp) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case SASL_PROTOCOL: {
+                        NativeManagementResourceDefinition.SASL_PROTOCOL.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        NativeManagementResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SERVER_NAME: {
+                        NativeManagementResourceDefinition.SERVER_NAME.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+    }
+
     private void parseManagementInterface_1_5(XMLExtendedStreamReader reader, ModelNode address, boolean http, Namespace expectedNs, List<ModelNode> list)  throws XMLStreamException {
 
         final ModelNode operationAddress = address.clone();
@@ -688,7 +716,14 @@ public class HostXml extends CommonXml {
         if (http) {
             parseHttpManagementInterfaceAttributes_1_5(reader, addOp);
         } else {
-            parseNativeManagementInterfaceAttributes_1_5(reader, addOp);
+            switch (expectedNs) {
+                case DOMAIN_1_5:
+                case DOMAIN_1_6:
+                    parseNativeManagementInterfaceAttributes_1_5(reader, addOp);
+                    break;
+                default:
+                    parseNativeManagementInterfaceAttributes_1_7(reader, addOp);
+            }
         }
 
         // Handle elements
@@ -1970,6 +2005,8 @@ public class HostXml extends CommonXml {
 
             writer.writeStartElement(Element.NATIVE_INTERFACE.getLocalName());
             NativeManagementResourceDefinition.SECURITY_REALM.marshallAsAttribute(protocol, writer);
+            NativeManagementResourceDefinition.SASL_PROTOCOL.marshallAsAttribute(protocol, writer);
+            NativeManagementResourceDefinition.SERVER_NAME.marshallAsAttribute(protocol, writer);
 
             writer.writeEmptyElement(Element.SOCKET.getLocalName());
             NativeManagementResourceDefinition.INTERFACE.marshallAsAttribute(protocol, writer);

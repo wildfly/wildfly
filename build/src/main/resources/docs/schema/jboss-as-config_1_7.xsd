@@ -830,8 +830,6 @@
                 <xs:annotation>
                     <xs:documentation>
                         Configuration to enable Kerberos authentication.
-                        
-                        Currently only supported for HTTP.
                     </xs:documentation>
                 </xs:annotation>
             </xs:element> 
@@ -1777,7 +1775,7 @@
                         <xs:annotation>
                             <xs:documentation>
                                 Configuration of a keystore to use to create a trust manager to verify the server
-                                certificate for encrypted comminications. If the server certificate is signed off by a
+                                certificate for encrypted communications. If the server certificate is signed off by a
                                 signing authority, tls can be used without a truststore.
                             </xs:documentation>
                         </xs:annotation>
@@ -1849,7 +1847,7 @@
 
     <xs:complexType name="host-management-interfacesType">
         <xs:sequence>
-            <xs:element name="native-interface" type="host-native-management-interfaceType"/>
+            <xs:element name="native-interface" type="host-native-management-interfaceType" />
             <xs:element name="http-interface" type="host-http-management-interfaceType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -1865,6 +1863,37 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
+    
+    <xs:complexType name="native-management-interfaceType">
+        <xs:annotation>
+            <xs:documentation>
+                Additional attributes specific to the native management interface only.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="management-interfaceType">
+                <xs:attribute name="sasl-protocol" type="xs:string" use="optional" default="remote">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Where Remoting is accepting incomming connections part of the authentication process
+                            advertises the name of the protocol in use, by default this is 'remote' but this attribute
+                            can be set if an alternative is required.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="server-name" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Where Remoting is accepting incomming connection the initial exchange and the authentication
+                            process both advertise the name of the server, by default this is derived from the address Remoting
+                            is listening on but this attribute can be set to override the name.
+                         </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>            
+            </xs:extension>
+        </xs:complexContent>
+    
+    </xs:complexType>
 
     <xs:complexType name="host-native-management-interfaceType">
         <xs:annotation>
@@ -1873,7 +1902,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="management-interfaceType">
+            <xs:extension base="native-management-interfaceType">
                 <xs:sequence>
                     <xs:element name="socket" type="native-management-socketType"/>
                 </xs:sequence>
@@ -2014,7 +2043,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="management-interfaceType">
+            <xs:extension base="native-management-interfaceType">
                 <xs:annotation>
                     <xs:documentation>
                         Configuration of the socket to use for the native management interface is a choice
