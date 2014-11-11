@@ -32,13 +32,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
@@ -176,7 +180,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final List<ModelNode> ops = builder.parseXmlResource("/expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops,
                 new FailedOperationTransformationConfig()
-                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES))
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES))
                         .addFailedAttribute(createRootLoggerAddress(),
                                 new RejectExpressionsConfig(RootLoggerResourceDefinition.EXPRESSION_ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(LoggerResourceDefinition.LOGGER_PATH),
@@ -251,7 +255,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // However, the category attribute is a read-only attribute resolved at runtime by the name of the resource.
         // WildFly does not require the ModelFixer as read-only attributes can be left off. If a change is made in EAP
         // to do the same thing, this ModelFixer can and should be removed.
-        checkSubsystemModelTransformation(mainServices, modelVersion, new AttributeRemovalModelFixer(LoggerResourceDefinition.CATEGORY, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES));
+        checkSubsystemModelTransformation(mainServices, modelVersion, new AttributeRemovalModelFixer(LoggerResourceDefinition.CATEGORY, LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES));
     }
 
     private void testFailedTransformedBootOperations1_3_0(final ModelTestControllerVersion controllerVersion) throws Exception {
@@ -274,7 +278,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final List<ModelNode> ops = builder.parseXmlResource("/expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops,
                 new FailedOperationTransformationConfig()
-                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES))
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 new NewAttributesConfig(FileHandlerResourceDefinition.NAMED_FORMATTER))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),

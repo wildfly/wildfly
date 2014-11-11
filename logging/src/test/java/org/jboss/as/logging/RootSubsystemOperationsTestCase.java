@@ -68,75 +68,62 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
     public void testAttributes() throws Exception {
         final KernelServices kernelServices = boot();
         final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
-        testWrite(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES, true);
-        testUndefine(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES);
+        testWrite(kernelServices, address, LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES, true);
+        testUndefine(kernelServices, address, LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES);
     }
 
     @Test
-    public void testListLogFiles() throws Exception {
+    public void testLogFileResource() throws Exception {
         final KernelServices kernelServices = boot();
 
         // Subsystem address
-        final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
-        final ModelNode op = SubsystemOperations.createOperation("list-log-files", address);
+        final ModelNode address = SUBSYSTEM_ADDRESS.append("log-file").toModelNode();
+        ModelNode op = SubsystemOperations.createReadResourceOperation(address);
+        //op.get("include-runtime").set(true);
         ModelNode result = executeOperation(kernelServices, op);
-        List<ModelNode> logFiles = SubsystemOperations.readResult(result).asList();
+        List<ModelNode> resources = SubsystemOperations.readResult(result).asList();
+        assertFalse("No Resources were found: " + result, resources.isEmpty());
 
-        // Should only be one file
-        // TODO (jrp) can be tested when LOGMGR-83 is committed and the logmanager is updated
-        // assertEquals("Found: " + logFiles, 2, logFiles.size());
+        final int currentSize = resources.size();
 
-        // Should contain simple.log and simple-profile.log
-        boolean found = false;
-        boolean foundProfile = false;
-        for (ModelNode fileInfo : logFiles) {
-            final String fileName = fileInfo.get("file-name").asString();
-            if ("simple.log".equals(fileName)) {
-                found = true;
-            }
-            if ("profile-simple.log".equals(fileName)) {
-                foundProfile = true;
-            }
-            if ("ignore.log".equals(fileName)) {
-                fail("Found ignore.log, but the file should not be listed.");
-            }
-            if ("profile-ignore.log".equals(fileName)) {
-                fail("Found profile-ignore.log, but the file should not be listed.");
-            }
-        }
-        assertTrue("simple.log file was not found", found);
-        assertTrue("profile-simple.log file was not found", foundProfile);
+        // Add a new file not in the jboss.server.log.dir directory
+        final File logFile = new File(LoggingTestEnvironment.get().getLogDir(), "fh.log");
+        final ModelNode fhAddress = createFileHandlerAddress("fh").toModelNode();
+        op = SubsystemOperations.createAddOperation(fhAddress);
+        op.get("file").set(createFileValue(null, logFile.getAbsolutePath()));
+        executeOperation(kernelServices, op);
 
-        // Change the permissions on the file so read is not allowed
-        final File file = new File(LoggingTestEnvironment.get().getLogDir(), "simple.log");
-        // The file should exist
-        assertTrue("File does not exist", file.exists());
+        // Re-read the log-file resource, the size should be the same
+        result = executeOperation(kernelServices, SubsystemOperations.createReadResourceOperation(address));
+        resources = SubsystemOperations.readResult(result).asList();
+        assertEquals("Log file " + logFile.getAbsolutePath() + " should not be a resource", currentSize, resources.size());
 
-        // Only test if successfully set
-        if (file.setReadable(false)) {
-            result = executeOperation(kernelServices, op);
-            logFiles = SubsystemOperations.readResult(result).asList();
-            // The simple.log should not be in the list
-            assertEquals("Read permission was found to be true on the file.", 1, logFiles.size());
-            // Reset the file permissions
-            assertTrue("Could not reset file permissions", file.setReadable(true));
-        }
+        // Change the file path of the file handler which should make it a log-file resource
+        op = SubsystemOperations.createWriteAttributeOperation(fhAddress, "file", createFileValue("jboss.server.log.dir", "fh-2.log"));
+        executeOperation(kernelServices, op);
+        // Should be an additional resource
+        result = executeOperation(kernelServices, SubsystemOperations.createReadResourceOperation(address));
+        resources = SubsystemOperations.readResult(result).asList();
+        assertEquals("Additional log-file resource failed to dynamically get added", currentSize + 1, resources.size());
+
+        // Test the read-log-file on the
+        final ModelNode simpleLogAddress = SUBSYSTEM_ADDRESS.append("log-file", "simple.log").toModelNode();
+        op = SubsystemOperations.createOperation("read-log-file", simpleLogAddress);
+        testReadLogFile(kernelServices, op, getLogger());
+
+        // Test on the logging-profile
+        final ModelNode profileAddress = SUBSYSTEM_ADDRESS.append("logging-profile", "testProfile").append("log-file", "profile-simple.log").toModelNode();
+        op = SubsystemOperations.createOperation("read-log-file", profileAddress);
+        testReadLogFile(kernelServices, op, getLogger("testProfile"));
+
     }
 
-    @Test
-    public void testReadLogFile() throws Exception {
-        final KernelServices kernelServices = boot();
-
-        // Log 50 records
-        final Logger logger = getLogger();
+    private void testReadLogFile(final KernelServices kernelServices, final ModelNode op, final Logger logger) {
+        // Log some messages
         for (int i = 0; i < 50; i++) {
             logger.info(msg + i);
         }
 
-        // Subsystem address
-        final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
-        final ModelNode op = SubsystemOperations.createOperation("read-log-file", address);
-        op.get("name").set("simple.log");
         ModelNode result = executeOperation(kernelServices, op);
         List<String> logLines = SubsystemOperations.readResultAsList(result);
         assertEquals(10, logLines.size());
@@ -196,40 +183,6 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
         logLines = SubsystemOperations.readResultAsList(result);
         assertEquals(45, logLines.size());
         checkLogLines(logLines, 5);
-
-        // Change the permissions on the file so read is not allowed
-        final File file = new File(LoggingTestEnvironment.get().getLogDir(), op.get("name").asString());
-        // The file should exist
-        assertTrue("File does not exist", file.exists());
-
-        // Only test if successfully set
-        if (file.setReadable(false)) {
-            result = kernelServices.executeOperation(op);
-            assertFalse("Should have failed due to denial of read permissions on the file.", SubsystemOperations.isSuccessfulOutcome(result));
-            // Reset the file permissions
-            assertTrue("Could not reset file permissions", file.setReadable(true));
-        }
-
-        // Should be able to read profile-simple.log, but it should be empty
-        op.get("name").set("profile-simple.log");
-        result = executeOperation(kernelServices, op);
-        logLines = SubsystemOperations.readResultAsList(result);
-        assertEquals(0, logLines.size());
-
-        // Should not be able to read ignore.log even though the file exists
-        op.get("name").set("ignore.log");
-        result = kernelServices.executeOperation(op);
-        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
-
-        // Should not be able to read ignore.log even though the file exists
-        op.get("name").set("profile-ignore.log");
-        result = kernelServices.executeOperation(op);
-        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
-
-        // Test an invalid file
-        op.get("name").set("invalid");
-        result = kernelServices.executeOperation(op);
-        assertFalse("Should have failed due to invalid file.", SubsystemOperations.isSuccessfulOutcome(result));
     }
 
     private void checkLogLines(final List<String> logLines, final int start) {
@@ -243,6 +196,10 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
 
     private Logger getLogger() {
         return LogContext.getSystemLogContext().getLogger("org.jboss.as.logging.test");
+    }
+
+    private Logger getLogger(final String loggingProfile) {
+        return LoggingProfileContextSelector.getInstance().get(loggingProfile).getLogger("org.jboss.as.logging.test");
     }
 
     static void deleteRecursively(final File dir) {

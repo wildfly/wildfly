@@ -77,7 +77,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
 
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
 
-    static PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(SUBSYSTEM_PATH);
+    static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
     static {
         System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");

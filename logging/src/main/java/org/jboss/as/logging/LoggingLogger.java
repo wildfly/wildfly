@@ -42,7 +42,7 @@ import org.jboss.logmanager.LogContext;
 /**
  * This module is using message IDs in the range 11500-11599.
  * <p/>
- * This file is using the subset 11500-11529 for logger messages.
+ * This file is using the subset 11500-11528 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.

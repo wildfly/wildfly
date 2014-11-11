@@ -42,10 +42,12 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.logging.LoggingProfileOperations.LoggingProfileAdd;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
 import org.jboss.logmanager.ClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
@@ -155,28 +157,22 @@ public class LoggingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        final LoggingRootResource rootResource;
-        final ResolvePathHandler resolvePathHandler;
-        // Register for servers only even if in ADMIN_ONLY mode
+        PathManager pathManager = null;
+        // The path manager is only available if this is a server
         if (context.getProcessType().isServer()) {
-            rootResource = new LoggingRootResource(context.getPathManager());
-            resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                    .setParentAttribute(CommonAttributes.FILE)
-                    .build();
-        } else {
-            rootResource = new LoggingRootResource(null);
-            resolvePathHandler = null;
+            pathManager = context.getPathManager();
         }
+        final LoggingResourceDefinition rootResource = new LoggingResourceDefinition(pathManager);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResource);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
-        registerSubModels(registration, resolvePathHandler, true, subsystem, rootResource, context.isRegisterTransformers());
-        // Register logging profile sub-models
+        registerSubModels(registration, true, subsystem, rootResource, context.isRegisterTransformers(), pathManager);
+
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SUBSYSTEM_NAME, CommonAttributes.LOGGING_PROFILE);
         final List<AccessConstraintDefinition> accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
         ResourceDefinition profile = new SimpleResourceDefinition(LOGGING_PROFILE_PATH,
                 getResourceDescriptionResolver(),
-                LoggingProfileOperations.ADD_PROFILE,
+                new LoggingProfileAdd(pathManager),
                 LoggingProfileOperations.REMOVE_PROFILE) {
 
             @Override
@@ -185,7 +181,8 @@ public class LoggingExtension implements Extension {
             }
         };
 
-        registerLoggingProfileSubModels(registration.registerSubModel(profile), resolvePathHandler);
+        // Register logging profile sub-models
+        registerLoggingProfileSubModels(registration.registerSubModel(profile), pathManager);
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
     }
@@ -198,13 +195,23 @@ public class LoggingExtension implements Extension {
         }
     }
 
-    private void registerLoggingProfileSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler) {
-        registerSubModels(registration, resolvePathHandler, false, null, null, false);
+    private void registerLoggingProfileSubModels(final ManagementResourceRegistration registration, final PathManager pathManager) {
+        registerSubModels(registration, false, null, null, false, pathManager);
     }
 
-    private void registerSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler,
+    private void registerSubModels(final ManagementResourceRegistration registration,
                                    final boolean includeLegacyAttributes, final SubsystemRegistration subsystem,
-                                   final LoggingRootResource subsystemResourceDefinition, final boolean registerTransformers) {
+                                   final LoggingResourceDefinition subsystemResourceDefinition, final boolean registerTransformers, final PathManager pathManager) {
+        // Only register if the path manager is not null, e.g. is a server
+        ResolvePathHandler resolvePathHandler = null;
+        if (pathManager != null) {
+            resolvePathHandler = ResolvePathHandler.Builder.of(pathManager)
+                    .setParentAttribute(CommonAttributes.FILE)
+                    .build();
+            final LogFileResourceDefinition logFileResourceDefinition = new LogFileResourceDefinition(pathManager);
+            registration.registerSubModel(logFileResourceDefinition).setRuntimeOnly(true);
+        }
+
         final RootLoggerResourceDefinition rootLoggerResourceDefinition = new RootLoggerResourceDefinition(includeLegacyAttributes);
         registration.registerSubModel(rootLoggerResourceDefinition);
 

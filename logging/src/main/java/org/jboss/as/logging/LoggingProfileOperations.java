@@ -33,6 +33,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
@@ -43,13 +45,28 @@ import org.jboss.logmanager.config.LogContextConfiguration;
  */
 public class LoggingProfileOperations {
 
+    static class LoggingProfileAdd extends AbstractAddStepHandler {
+        private final PathManager pathManager;
 
-    static OperationStepHandler ADD_PROFILE = new AbstractAddStepHandler() {
+        LoggingProfileAdd(final PathManager pathManager) {
+            this.pathManager = pathManager;
+        }
+
+        @Override
+        protected Resource createResource(final OperationContext context) {
+            if (pathManager == null) {
+                return super.createResource(context);
+            }
+            final Resource resource = new LoggingResource(pathManager);
+            context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+            return resource;
+        }
+
         @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             model.setEmptyObject();
         }
-    };
+    }
 
     static OperationStepHandler REMOVE_PROFILE = new AbstractRemoveStepHandler() {
 

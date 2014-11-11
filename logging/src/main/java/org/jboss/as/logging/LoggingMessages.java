@@ -28,16 +28,19 @@ import java.util.EnumSet;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.Resource.NoSuchResourceException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Param;
 
 /**
  * This module is using message IDs in the range 11500-11599.
  * <p/>
- * This file is using the subset 11530-11599 for non-logger messages.
+ * This file is using the subset 11529-11599 for non-logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -701,18 +704,19 @@ public interface LoggingMessages {
      * @return an {@link org.jboss.as.controller.OperationFailedException} for the error
      */
     @Message(id = 11593, value = "Failed to read the log file '%s'")
-    OperationFailedException failedToReadLogFile(@Cause Throwable cause, String name);
+    RuntimeException failedToReadLogFile(@Cause Throwable cause, String name);
 
     /**
      * Creates an exception indicating the file was found in the log directory.
      *
+     * @param pathElement       the path element at which the resource failed
      * @param name              the name of the file that was not found
      * @param directoryProperty the name of the property used to resolved the log directory
      *
      * @return an {@link OperationFailedException} for the error
      */
     @Message(id = 11594, value = "File '%s' was not found and cannot be found in the %s directory property.")
-    OperationFailedException logFileNotFound(String name, String directoryProperty);
+    NoSuchResourceException logFileNotFound(@Param PathElement pathElement, String name, String directoryProperty);
 
     /**
      * Creates an exception indicating the user cannot read the file.
@@ -754,4 +758,20 @@ public interface LoggingMessages {
      */
     @Message(id = 11598, value = "Path '%s' is a directory and cannot be used as a log file.")
     OperationFailedException invalidLogFile(String path);
+
+    /**
+     * Create a failure description message indicating that the resource of given type can not be registered.
+     *
+     * @return an {@link UnsupportedOperationException} for the error
+     */
+    @Message(id = 11599, value = "Resources of type %s cannot be registered")
+    UnsupportedOperationException cannotRegisterResourceOfType(String childType);
+
+    /**
+     * Create a failure description message indicating that the resource of given type can not be removed.
+     *
+     * @return an {@link UnsupportedOperationException} for the error
+     */
+    @Message(id = 15929, value = "Resources of type %s cannot be removed")
+    UnsupportedOperationException cannotRemoveResourceOfType(String childType);
 }
