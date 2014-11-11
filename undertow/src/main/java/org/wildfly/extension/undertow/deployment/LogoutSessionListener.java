@@ -28,27 +28,29 @@ import io.undertow.server.session.Session;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 import io.undertow.servlet.spec.HttpSessionImpl;
-import org.jboss.security.CacheableManager;
+import org.jboss.security.AuthenticationManager;
 import org.wildfly.extension.undertow.security.AccountImpl;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 
 /**
- * Undertow session listener that flushes the authentication cache on session invalidation
+ * Undertow session listener that performs logout on session invalidation. The {@code AuthenticationManager} logout
+ * takes care of flushing the principal from cache if a security cache is in use.
  *
  *
  * @author Stuart Douglas
  */
-public class CacheInvalidationSessionListener implements HttpSessionListener {
+public class LogoutSessionListener implements HttpSessionListener {
 
-    private final CacheableManager<?, Principal> cm;
+    private final AuthenticationManager manager;
 
-    public CacheInvalidationSessionListener(CacheableManager<?, Principal> cm) {
-        this.cm = cm;
+    public LogoutSessionListener(AuthenticationManager manager) {
+        this.manager = manager;
     }
 
     @Override
@@ -62,10 +64,11 @@ public class CacheInvalidationSessionListener implements HttpSessionListener {
         //or we can look for the account that has been saved in the session
         //for maximum compatibility we do both
         ServletRequestContext src = ServletRequestContext.current();
+        Account requestAccount = null;
         if (src != null) {
-            Account account = src.getExchange().getSecurityContext().getAuthenticatedAccount();
-            if (account != null) {
-                clearAccount(account);
+            requestAccount = src.getExchange().getSecurityContext().getAuthenticatedAccount();
+            if (requestAccount != null) {
+                clearAccount(requestAccount);
             }
         }
         if (se.getSession() instanceof HttpSessionImpl) {
@@ -84,18 +87,22 @@ public class CacheInvalidationSessionListener implements HttpSessionListener {
             if (session != null) {
                 AuthenticatedSessionManager.AuthenticatedSession authenticatedSession = (AuthenticatedSessionManager.AuthenticatedSession) session.getAttribute(CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession");
                 if(authenticatedSession != null) {
-                    clearAccount(authenticatedSession.getAccount());
+                    Account sessionAccount = authenticatedSession.getAccount();
+                    if (sessionAccount != null && !sessionAccount.equals(requestAccount)) {
+                        clearAccount(sessionAccount);
+                    }
                 }
             }
         }
     }
 
     private void clearAccount(Account account) {
-        if (account instanceof AccountImpl) {
-            cm.flushCache(((AccountImpl) account).getOriginalPrincipal());
-        }
-        if (account != null) {
-            cm.flushCache(account.getPrincipal());
+        Principal principal = (account instanceof AccountImpl) ? ((AccountImpl) account).getOriginalPrincipal() :
+                account.getPrincipal();
+        if (principal != null) {
+            // perform the logout of the principal using the subject currently set in the security context.
+            Subject subject = SecurityActions.getSubject();
+            this.manager.logout(principal, subject);
         }
     }
 }
