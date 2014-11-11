@@ -59,7 +59,6 @@ public class ComplexPropertiesParseUtils {
         //security
         params.put("user-name", "sa");
         params.put("password", "sa");
-        params.put("security-domain", "HsqlDbRealm");
         params.put("reauth-plugin-class-name", "someClass1");
         //validation
         params.put("valid-connection-checker-class-name", "someClass2");
@@ -110,7 +109,6 @@ public class ComplexPropertiesParseUtils {
         params.put("recovery-plugin-class-name", "someClass5");
         params.put("recovery-username", "sa");
         params.put("recovery-password", "sa");
-        params.put("recovery-security-domain", "HsqlDbRealm");
 
 
         return params;

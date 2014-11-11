@@ -45,9 +45,6 @@
                 <password>
                     ${test.expr:sa}
                 </password>
-                <security-domain>
-                    ${test.expr:HsqlDbRealm}
-                </security-domain>
                 <reauth-plugin class-name="${test.expr:someClass1}">
                     <config-property name="name">${test.expr:Property1}</config-property>
                 </reauth-plugin>
@@ -162,9 +159,6 @@
                 <password>
                     ${test.expr:sa}
                 </password>
-                <security-domain>
-                    ${test.expr:HsqlDbRealm}
-                </security-domain>
                 <reauth-plugin class-name="${test.expr:someClass1}">
                     <config-property name="name">${test.expr:Property1}</config-property>
                 </reauth-plugin>
@@ -177,10 +171,7 @@
                     <password>
                         ${test.expr:sa}
                     </password>
-                    <security-domain>
-                        ${test.expr:HsqlDbRealm}
-                    </security-domain>
-                </recover-credential>
+                    </recover-credential>
                 <recover-plugin class-name="${test.expr:someClass5}">
                     <config-property name="name">Property5</config-property>
                     <config-property name="name1">${test.expr:Property6}</config-property>

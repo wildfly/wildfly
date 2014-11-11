@@ -291,7 +291,7 @@ class Constants {
             .setXmlName(Credential.Tag.USER_NAME.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode())
+            .addAlternatives(SECURITY_DOMAIN_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -300,7 +300,7 @@ class Constants {
             .setXmlName(Credential.Tag.PASSWORD.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode())
+            .setRequires(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -309,7 +309,7 @@ class Constants {
             .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode())
+            .addAlternatives(USERNAME_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(DS_SECURITY_DEF)
             .build();
@@ -341,15 +341,20 @@ class Constants {
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRequires(EXCEPTIONSORTERCLASSNAME_NAME)
             .build();
 
 
-    static SimpleAttributeDefinition STALE_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition STALE_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinitionBuilder(STALECONNECTIONCHECKERCLASSNAME_NAME, ModelType.STRING, true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName())
+            .setAllowExpression(true)
+            .build();
 
     static PropertiesAttributeDefinition STALE_CONNECTION_CHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(STALECONNECTIONCHECKERCLASSNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinition(VALID_CONNECTION_CHECKER_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
@@ -358,6 +363,7 @@ class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(VALID_CONNECTION_CHECKER_CLASSNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(), new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -386,6 +392,7 @@ class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(REAUTHPLUGIN_CLASSNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
@@ -437,7 +444,7 @@ class Constants {
                 .setXmlName(Credential.Tag.USER_NAME.getLocalName())
                 .setAllowExpression(true)
                 .setAllowNull(true)
-                .setDefaultValue(new ModelNode())
+                .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .build();
 
@@ -445,7 +452,7 @@ class Constants {
                 .setXmlName(Credential.Tag.PASSWORD.getLocalName())
                 .setAllowExpression(true)
                 .setAllowNull(true)
-                .setDefaultValue(new ModelNode())
+                .setRequires(RECOVERY_USERNAME_NAME)
                 .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .build();
 
@@ -453,7 +460,7 @@ class Constants {
                 .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
                 .setAllowExpression(true)
                 .setAllowNull(true)
-                .setDefaultValue(new ModelNode())
+                .addAlternatives(RECOVERY_USERNAME_NAME)
                 .build();
 
     static SimpleAttributeDefinition RECOVER_PLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVER_PLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);

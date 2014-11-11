@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.ValidateModelStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
@@ -78,6 +79,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
 
+        //verify model for alternatives & requires
+        context.addStep(ValidateModelStepHandler.INSTANCE, OperationContext.Stage.MODEL);
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

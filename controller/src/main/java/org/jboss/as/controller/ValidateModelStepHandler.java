@@ -28,7 +28,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-class ValidateModelStepHandler implements OperationStepHandler {
+public class ValidateModelStepHandler implements OperationStepHandler {
     public static final ValidateModelStepHandler INSTANCE = new ValidateModelStepHandler();
 
     private ValidateModelStepHandler() {

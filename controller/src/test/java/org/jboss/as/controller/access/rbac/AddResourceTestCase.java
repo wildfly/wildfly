@@ -420,7 +420,7 @@ public class AddResourceTestCase extends AbstractControllerTestBase {
         }
 
         void addAttribute(String name, AccessConstraintDefinition...constraints) {
-            addAttribute(name, true, null, null, constraints);
+            addAttribute(name, false, null, null, constraints);
         }
 
         void addAttribute(String name, boolean allowNull, Boolean nullSignificant, ModelNode defaultValue, AccessConstraintDefinition...constraints) {
