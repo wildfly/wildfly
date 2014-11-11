@@ -49,6 +49,7 @@ import static org.jboss.as.web.WebExtension.SUBSYSTEM_NAME;
 import static org.jboss.as.web.WebExtension.VALVE_PATH;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,18 +119,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-
-            @Override
-            protected ProcessType getProcessType() {
-                return ProcessType.HOST_CONTROLLER;
-            }
-
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-        };
+        return WebAdditionalInitialization.INSTANCE;
     }
 
     @Override
@@ -441,6 +431,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .addSingleChildFirstClass(WebSubsystemTestCase.WebAdditionalInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
@@ -479,6 +470,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .addSingleChildFirstClass(WebSubsystemTestCase.WebAdditionalInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
@@ -839,4 +831,19 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             return new ModelNode(value.asBoolean());
         }
     }
+
+    private static class WebAdditionalInitialization extends AdditionalInitialization implements Serializable {
+
+        static final WebAdditionalInitialization INSTANCE = new WebAdditionalInitialization();
+
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
+        }
+
+        @Override
+        protected RunningMode getRunningMode() {
+            return RunningMode.ADMIN_ONLY;
+        }
+    };
 }

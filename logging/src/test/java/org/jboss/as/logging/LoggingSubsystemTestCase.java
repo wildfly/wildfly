@@ -137,7 +137,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                 .setSubsystemXml(subsystemXml);
 
         // Create the legacy kernel
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
                         //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                         //which is strange since it should be loading it all from the current jboss modules
@@ -158,7 +158,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance());
 
         // Create the legacy kernel
-        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
                         //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
                         //which is strange since it should be loading it all from the current jboss modules

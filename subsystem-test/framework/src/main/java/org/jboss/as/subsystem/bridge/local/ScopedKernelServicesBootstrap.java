@@ -77,7 +77,7 @@ public class ScopedKernelServicesBootstrap {
             }
 
             //Convert additional Init
-            Object convertedAdditionalInit = null;//TODO objectConverter.convertAdditionalInitializationToChildCl(additionalInit);
+            Object convertedAdditionalInit = objectConverter.convertAdditionalInitializationToChildCl(additionalInit);
             Object convertedModelVersion = objectConverter.convertModelVersionToChildCl(legacyModelVersion);
             Object convertedValidateOpsFilter = objectConverter.convertValidateOperationsFilterToChildCl(validateOpsFilter);
 
