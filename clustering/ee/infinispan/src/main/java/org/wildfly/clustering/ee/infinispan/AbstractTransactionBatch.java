@@ -21,7 +21,11 @@
  */
 package org.wildfly.clustering.ee.infinispan;
 
+import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
+
+import org.infinispan.commons.CacheException;
 
 /**
  * Abstract {@link TransactionBatch} that associates and exposes the underlying transaction.
@@ -37,5 +41,14 @@ public abstract class AbstractTransactionBatch implements TransactionBatch {
     @Override
     public Transaction getTransaction() {
         return this.tx;
+    }
+
+    @Override
+    public boolean isActive() {
+        try {
+            return this.tx.getStatus() == Status.STATUS_ACTIVE;
+        } catch (SystemException e) {
+            throw new CacheException(e);
+        }
     }
 }

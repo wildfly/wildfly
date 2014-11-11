@@ -68,9 +68,12 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public void requestDone(HttpServerExchange exchange) {
-        try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
-            this.entry.getKey().close();
-            this.batch.close();
+        // Batch may no longer be active if session was invalidated
+        if (this.batch.isActive()) {
+            try (BatchContext context = this.manager.getSessionManager().getBatcher().resumeBatch(this.batch)) {
+                this.entry.getKey().close();
+                this.batch.close();
+            }
         }
     }
 
