@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
 import org.jboss.as.webservices.deployers.JBossWebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSClassVerificationProcessor;
@@ -43,6 +42,8 @@ import org.jboss.as.webservices.deployers.WebServicesContextJndiSetupProcessor;
 import org.jboss.as.webservices.deployers.WebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.injection.WSHandlerChainAnnotationProcessor;
+import org.jboss.as.webservices.logging.WSLogger;
+import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
@@ -54,6 +55,9 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
 final class WSDeploymentActivator {
 
     static void activate(final DeploymentProcessorTarget processorTarget, final boolean appclient) {
+        if (!isModularEnvironment()) {
+            return;
+        }
         processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_DESCRIPTOR, new WSRefDDProcessor());
         processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WS_REF_ANNOTATION, new WSRefAnnotationProcessor());
         processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WS, new WSDependenciesProcessor(!appclient));
@@ -84,4 +88,13 @@ final class WSDeploymentActivator {
         }
     }
 
+    private static boolean isModularEnvironment() {
+        try {
+            ModuleClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader();
+            return true;
+        } catch (Exception e) {
+            WSLogger.ROOT_LOGGER.couldNotActivateSubsystem(e);
+            return false;
+        }
+    }
 }
