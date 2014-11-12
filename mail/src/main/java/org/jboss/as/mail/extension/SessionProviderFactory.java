@@ -92,6 +92,7 @@ class SessionProviderFactory {
                 setServerProps(properties, sessionConfig.getImapServer(), "imap");
             }
             if (sessionConfig.getPop3Server() != null) {
+                properties.setProperty("mail.store.protocol", "pop3");
                 setServerProps(properties, sessionConfig.getPop3Server(), "pop3");
             }
             if (sessionConfig.getCustomServers() != null) {

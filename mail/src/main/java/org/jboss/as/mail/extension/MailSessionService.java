@@ -71,25 +71,4 @@ public class MailSessionService implements Service<Session> {
     public Session getValue() throws IllegalStateException, IllegalArgumentException {
         return provider.getSession();
     }
-
-    /*
-     * for testing purposes only!
-     * @param session
-     */
-    /*private static void sendMail(Session session) {
-        Message msg = new MimeMessage(session);
-        try {
-            InternetAddress addressFrom = new InternetAddress("tomaz.cerar@gmail.com");
-            msg.setFrom(addressFrom);
-            msg.setRecipients(Message.RecipientType.TO, new Address[]{new InternetAddress("tomaz@cerar.net")});
-            msg.setSubject("Test Jboss AS8 mail subsystem");
-            msg.setContent("Testing mail subsystem, loerm ipsum", "text/plain");
-            Transport.send(msg);
-        } catch (Exception e) {
-            // Needs i18n if using
-            MailLogger.ROOT_LOGGER.error("could not send mail", e);
-        }
-    }*/
-
-
 }
