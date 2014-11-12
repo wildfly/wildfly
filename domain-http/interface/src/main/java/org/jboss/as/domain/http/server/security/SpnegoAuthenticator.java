@@ -81,6 +81,8 @@ public class SpnegoAuthenticator extends Authenticator {
         }
     }
 
+    private static final String HTTP_PROTOCOL = "HTTP";
+
     private static final String NEGOTIATE_PREFIX = NEGOTIATE + " ";
 
     private final SecurityRealm securityRealm;
@@ -118,7 +120,7 @@ public class SpnegoAuthenticator extends Authenticator {
             String base64Header = authorization.substring(NEGOTIATE_PREFIX.length());
             byte[] decoded = Base64.decode(base64Header);
 
-            subjectIdentity = securityRealm.getSubjectIdentity(getHostName(exchange), false);
+            subjectIdentity = securityRealm.getSubjectIdentity(HTTP_PROTOCOL, getHostName(exchange));
             if (subjectIdentity != null) {
                 try {
                     Result result = Subject.doAs(subjectIdentity.getSubject(), new AcceptAction(exchange, decoded));
@@ -150,7 +152,7 @@ public class SpnegoAuthenticator extends Authenticator {
             Headers respHeaders = exchange.getResponseHeaders();
 
             String host = getHostName(exchange);
-            subjectIdentity = securityRealm.getSubjectIdentity(host, false);
+            subjectIdentity = securityRealm.getSubjectIdentity(HTTP_PROTOCOL, host);
             if (subjectIdentity != null) {
                 subjectIdentity.logout();
 

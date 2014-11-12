@@ -234,10 +234,10 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     }
 
     @Override
-    public SubjectIdentity getSubjectIdentity(String forHost, boolean isClient) {
+    public SubjectIdentity getSubjectIdentity(String protocol, String forHost) {
         KeytabIdentityFactoryService kifs = keytabFactory.getOptionalValue();
 
-        return kifs != null ? kifs.getSubjectIdentity(forHost, isClient) : null;
+        return kifs != null ? kifs.getSubjectIdentity(protocol, forHost) : null;
     }
 
     /*

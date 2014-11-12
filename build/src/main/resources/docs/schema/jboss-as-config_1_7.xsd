@@ -454,11 +454,17 @@
                     <xs:annotation>
                         <xs:documentation>
                             Reference to an individual keytab.
-
-                            On receipt of an incoming request the host name will be extracted from the request and the keytab to be used will be selected as follows: -
-                              1 - Iterate the list of keytabs and identify one where the host name is listed in the for-hosts attribute.
-                              2 - Iterate the list of keytabs and compare the host name against the host extracted from the request.
-                              3 - Use the keytab where for-hosts is set to '*'.
+                            
+                            On handling the authentication for an incoming request two pieces of information are known, the protocol and the name of the host 
+                            this server is acting as.  For HTTP requests the protocol will always be HTTP, for requests over Remoting by default the protocol will
+                            be 'remote' although this can be overridden.
+                            
+                            At the time authentication is going to be handled the keytab will be selected as follows: -
+                             1 - Iterate the list of keytabs and identity one where the for-hosts attribute contains an entry matching protocol/hostname.
+                             2 - Iterate the list of keytabs and identity one where the for-hosts attribute contains an entry matching hostname.
+                             3 - Iterate the list of keytabs and identify one where the name of the principal matches matches protocol/hostname.
+                             4 - Iterate the list of keytabs and identify one where the hostname portion of the principal matches the hostname of the request.
+                             5 - Use the keytab where for-hosts is set to '*'.
                               
                             If no match is found no keytab will be selected and Kerberos will not be available for communication as that host.
                         </xs:documentation>

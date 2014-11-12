@@ -84,11 +84,11 @@ public interface SecurityRealm {
      *
      * This method can return {@code null} if there is no appropriate identity.
      *
+     * @param protocol The protocol in use.
      * @param forHost The name of the host this identity should represent.
-     * @param isClient Is the caller acting on the client side or server side of the connection.
      * @return A {@link SubjectIdentity} for the server identity or {@code null} if none are available.
      */
-    SubjectIdentity getSubjectIdentity(final String forHost, final boolean isClient);
+    SubjectIdentity getSubjectIdentity(final String protocol, final String forHost);
 
     public static final class ServiceUtil {
 

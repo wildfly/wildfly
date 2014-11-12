@@ -93,6 +93,10 @@ class KeytabIdentityFactoryService implements Service<KeytabIdentityFactoryServi
             if (hostServiceMap.containsKey(currentHost) == false) {
                 hostServiceMap.put(currentHost, current);
             }
+            principal = principal.substring(0, end > -1 ? end : principal.length() - 1);
+            if (principal.equals(currentHost) == false && hostServiceMap.containsKey(principal) == false) {
+                hostServiceMap.put(principal, current);
+            }
         }
     }
 
@@ -115,12 +119,18 @@ class KeytabIdentityFactoryService implements Service<KeytabIdentityFactoryServi
      * SubjectIdentity factory method.
      */
 
-    SubjectIdentity getSubjectIdentity(final String forHost, final boolean isClient) {
+    SubjectIdentity getSubjectIdentity(final String protocol, final String forHost) {
         KeytabService selectedService = null;
-        selectedService = hostServiceMap.get(forHost);
+
+        String name = protocol + "/" + forHost;
+        selectedService = hostServiceMap.get(name);
         if (selectedService == null) {
-            SECURITY_LOGGER.tracef("No mapping for host '%s' to KeytabService, attempting to use default.", forHost);
-            selectedService = defaultService;
+            SECURITY_LOGGER.tracef("No mapping for name '%s' to KeytabService, attempting to use host only match.", name);
+            selectedService = hostServiceMap.get(forHost);
+            if (selectedService == null) {
+                SECURITY_LOGGER.tracef("No mapping for host '%s' to KeytabService, attempting to use default.", forHost);
+                selectedService = defaultService;
+            }
         }
 
         if (selectedService != null) {
@@ -129,7 +139,7 @@ class KeytabIdentityFactoryService implements Service<KeytabIdentityFactoryServi
                         selectedService.getPrincipal(), forHost);
             }
             try {
-                return selectedService.createSubjectIdentity(isClient);
+                return selectedService.createSubjectIdentity(false);
             } catch (LoginException e) {
                 SECURITY_LOGGER.keytabLoginFailed(selectedService.getPrincipal(), forHost, e);
                 /*
