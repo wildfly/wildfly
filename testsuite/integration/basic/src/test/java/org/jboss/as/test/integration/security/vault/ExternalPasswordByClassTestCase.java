@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +54,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ExternalPasswordModuleSetupTask.class,
         ExternalPasswordByClassTestCase.VaultSetupTask.class,
         ExternalPasswordByClassTestCase.SystemPropertySetup.class})
+@Ignore
 public class ExternalPasswordByClassTestCase {
 
     public static final String TESTING_SYSTEM_PROPERTY = "vault.testing.property";

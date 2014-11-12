@@ -168,8 +168,12 @@ public class VaultHandler {
         }
 
         try {
+            /* removed as temporary workaround until PB 4.9.0.Beta2 is pulled to WF-CORE
             this.vaultSession = new VaultSession(this.keyStore, this.keyStorePassword, this.encodedVaultFileDirectory,
                     this.salt, this.iterationCount, true);
+            */
+            this.vaultSession = new VaultSession(this.keyStore, this.keyStorePassword, this.encodedVaultFileDirectory,
+                    this.salt, this.iterationCount);
             this.vaultSession.startVaultSession(this.alias);
         } catch (Exception e) {
             throw new RuntimeException("Problem creating VaultSession: ", e);
