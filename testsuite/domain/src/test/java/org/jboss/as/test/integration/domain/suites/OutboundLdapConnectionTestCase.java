@@ -51,9 +51,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
-import org.jboss.as.test.integration.security.common.CoreUtils;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -109,7 +110,7 @@ public class OutboundLdapConnectionTestCase {
         final int expectedStatus = expectToPass ? 200 : 401;
 
         final String response =
-                CoreUtils.makeCallWithBasicAuthn(managementInterfaceUrl, USER_NAME, USER_PASSWORD, expectedStatus);
+                Utils.makeCallWithBasicAuthn(managementInterfaceUrl, USER_NAME, USER_PASSWORD, expectedStatus);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(response);

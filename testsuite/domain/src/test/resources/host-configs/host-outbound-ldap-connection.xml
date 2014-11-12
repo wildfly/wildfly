@@ -22,9 +22,9 @@
 ~
 -->
 
-<host xmlns="urn:jboss:domain:3.0"
+<host xmlns="urn:jboss:domain:1.7"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:domain:3.0 wildfly-config_3_0.xsd"
+      xsi:schemaLocation="urn:jboss:domain:1.7 wildfly-config_1_6.xsd"
       name="master">
 
     <paths>
@@ -83,7 +83,7 @@
             <native-interface security-realm="ManagementRealm">
                 <socket interface="management" port="9999"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm"  http-upgrade-enabled="true">
+            <http-interface security-realm="ManagementRealm">
                 <socket interface="management" port="9990"/>
             </http-interface>
         </management-interfaces>
