@@ -743,6 +743,14 @@ public interface SecurityLogger extends BasicLogger {
      *
      * @return
      */
+    @Message(id = NONE, value = "Automatically create keystore when it doesn't exist")
+    String cmdLineAutomaticallyCreateKeystore();
+
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
     @Message(id = NONE, value = "Secured attribute %s has been successfuly removed from vault")
     String messageAttributeRemovedSuccessfuly(String displayFormattedAttribute);
 
@@ -834,5 +842,12 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Task: Remove secured attribute")
     String taskRemoveSecuredAttribute();
 
+    /**
+     * i18n version of string from Vault Tool utility
+     *
+     * @return
+     */
+    @Message(id = NONE, value = "Action not specified")
+    String actionNotSpecified();
 
 }

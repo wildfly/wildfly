@@ -54,6 +54,7 @@ public class VaultTool {
     public static final String SEC_ATTR_VALUE_PARAM = "sec-attr";
     public static final String CHECK_SEC_ATTR_EXISTS_PARAM = "check-sec-attr";
     public static final String REMOVE_SEC_ATTR_PARAM = "remove-sec-attr";
+    public static final String CREATE_KEYSTORE_PARAM = "create-keystore";
     public static final String HELP_PARAM = "help";
 
     private VaultInteractiveSession session = null;
@@ -80,8 +81,6 @@ public class VaultTool {
             try {
                 tool = new VaultTool(args);
                 returnVal = tool.execute();
-                if (returnVal != 100)
-                    tool.summary();
             } catch (Exception e) {
                 System.err.println(SecurityLogger.ROOT_LOGGER.problemOcurred());
                 e.printStackTrace(System.err);
@@ -160,6 +159,7 @@ public class VaultTool {
         options.addOption("v", ALIAS_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineVaultKeyStoreAlias());
         options.addOption("b", VAULT_BLOCK_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineVaultBlock());
         options.addOption("a", ATTRIBUTE_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineAttributeName());
+        options.addOption("t", CREATE_KEYSTORE_PARAM, false, SecurityLogger.ROOT_LOGGER.cmdLineAutomaticallyCreateKeystore());
 
         OptionGroup og = new OptionGroup();
         Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, SecurityLogger.ROOT_LOGGER.cmdLineSecuredAttribute());
@@ -186,8 +186,9 @@ public class VaultTool {
         String encryptionDirectory = cmdLine.getOptionValue(ENC_DIR_PARAM, "vault");
         String salt = cmdLine.getOptionValue(SALT_PARAM, "12345678");
         int iterationCount = Integer.parseInt(cmdLine.getOptionValue(ITERATION_PARAM, "23"));
+        boolean createKeyStore = cmdLine.hasOption(CREATE_KEYSTORE_PARAM);
 
-        nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount);
+        nonInteractiveSession = new VaultSession(keystoreURL, keystorePassword, encryptionDirectory, salt, iterationCount, createKeyStore);
 
         nonInteractiveSession.startVaultSession(cmdLine.getOptionValue("alias", "vault"));
 
@@ -212,12 +213,15 @@ public class VaultTool {
                 System.out.println(SecurityLogger.ROOT_LOGGER.messageAttributeNotRemoved(VaultSession.blockAttributeDisplayFormat(vaultBlock, attributeName)));
                 return 6;
             }
-        } else {
+        } else if (cmdLine.hasOption(SEC_ATTR_VALUE_PARAM)) {
             // add password
             String password = cmdLine.getOptionValue(SEC_ATTR_VALUE_PARAM, "password");
             nonInteractiveSession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, password.toCharArray());
             summary();
             return 0;
+        } else {
+            System.out.println(SecurityLogger.ROOT_LOGGER.actionNotSpecified());
+            return -1;
         }
     }
 
