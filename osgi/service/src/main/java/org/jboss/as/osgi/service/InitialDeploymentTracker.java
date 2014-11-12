@@ -128,7 +128,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     @Override
     protected void serviceStartFailed(ServiceController<? extends Object> controller) {
         ServiceName serviceName = controller.getName();
-        LOGGER.warnf("ServiceStartFailed: %s", serviceName);
+        LOGGER.warnServiceStartFailed(serviceName.getCanonicalName());
     }
 
     @Override

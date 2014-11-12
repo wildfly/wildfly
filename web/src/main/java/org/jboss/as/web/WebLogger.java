@@ -173,4 +173,8 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 18228, value = "Shutting down the session manager while there are still requests being processed after waiting for %s milliseconds")
     void shutdownTimeoutExpired(long timeout);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18229, value = "Invalid servlet or resource alias '%s'")
+    void invalidRegistrationAlias(String alias, @Cause Exception e);
 }

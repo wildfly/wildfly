@@ -124,4 +124,12 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11917, value = "Deactivate deferred module phase for: %s")
     void warnDeactivateDeferredModulePhase(Bundle bundle);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11918, value = "Service '%s' failed to start")
+    void warnServiceStartFailed(String serviceName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11919, value = "Service '%s' failed to stop")
+    void warnServiceStopFailed(String serviceName, @Cause Exception exception);
 }

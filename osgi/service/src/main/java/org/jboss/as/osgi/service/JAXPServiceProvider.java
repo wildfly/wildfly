@@ -91,7 +91,11 @@ final class JAXPServiceProvider extends AbstractService<Void> {
                 activator.stop(syscontext);
                 activator = null;
             } catch (Exception e) {
-                LOGGER.warn(e);
+                String name = null;
+                if (context != null && context.getController() != null && context.getController().getName() != null) {
+                    name = context.getController().getName().getCanonicalName();
+                }
+                LOGGER.warnServiceStopFailed(name, e);
             }
         }
     }

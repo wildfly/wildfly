@@ -194,7 +194,10 @@ final class HttpServiceImpl implements HttpService {
         try {
             validateAlias(alias, true);
         } catch (NamespaceException e) {
-            WEB_LOGGER.errorf(e, "");
+            WEB_LOGGER.invalidRegistrationAlias(alias, e);
+            return;
+        } catch (IllegalArgumentException e) {
+            WEB_LOGGER.invalidRegistrationAlias(alias, e);
             return;
         }
 
