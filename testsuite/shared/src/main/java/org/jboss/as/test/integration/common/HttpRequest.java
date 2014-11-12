@@ -151,10 +151,13 @@ public class HttpRequest {
         if (responseCode != HttpURLConnection.HTTP_OK) {
             final InputStream err = conn.getErrorStream();
             try {
-                throw new IOException(read(err));
+                String response = err != null ? read(err) : null;
+                throw new IOException(String.format("HTTP Status %d Response: %s", responseCode, response));
             }
             finally {
-                err.close();
+                if (err != null) {
+                    err.close();
+                }
             }
         }
         final InputStream in = conn.getInputStream();

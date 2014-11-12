@@ -88,4 +88,19 @@ public class ExceptionHandlingTestCase {
             Assert.assertTrue(e.toString().contains("HTTP Status 500"));
         }
     }
+
+    /**
+     * BZ 900156: HttpRequest doesn't return meaningful description in response when get(...) is invoked with bad URL.
+     */
+    @Test
+    public void testIOException(@ArquillianResource URL url) throws Exception {
+        try {
+            @SuppressWarnings("unused")
+            String result = HttpRequest.get(url.toExternalForm() + "myjaxrs/helloworld .", 10, TimeUnit.SECONDS);
+            Assert.fail("Should not go there - IOException was expected!");
+        } catch (Exception e) {
+            Assert.assertTrue("HTTP status should be present in the exception message.",
+                    e.toString().contains("HTTP Status 505"));
+        }
+    }
 }
