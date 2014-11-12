@@ -321,7 +321,7 @@ public final class VaultSession {
      * Display info about vault itself in form of AS7 configuration file.
      */
     public void vaultConfigurationDisplay() {
-        System.out.println("Vault Configuration in AS7 config file:");
+        System.out.println("Vault Configuration in configuration file:");
         System.out.println("********************************************");
         System.out.println("...");
         System.out.println("</extensions>");
