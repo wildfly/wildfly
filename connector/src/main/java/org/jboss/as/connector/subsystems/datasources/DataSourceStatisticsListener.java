@@ -46,16 +46,18 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
     private static final PathElement POOL_STATISTICS = PathElement.pathElement("statistics", "pool");
 
     private final ManagementResourceRegistration registration;
+    private final Resource resource;
     private final String dsName;
     private final boolean statsEnabled;
 
-    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, final String dsName, final boolean statsEnabled) {
+    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName, final boolean statsEnabled) {
         this.registration = overrideRegistration;
+        this.resource = resource;
         this.dsName = dsName;
         this.statsEnabled = statsEnabled;
     }
 
-    public void transition(final ServiceController<?> controller,
+    public void transition(final ServiceController<? extends Object> controller,
                            final ServiceController.Transition transition) {
 
         switch (transition) {
@@ -84,6 +86,8 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                         OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(jdbcStats);
                         OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(jdbcStats);
                         jdbcRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
+                        resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                     }
 
                     if (poolStatsSize > 0) {
@@ -98,6 +102,8 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                         OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(poolStats);
                         OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(poolStats);
                         poolRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
+                        resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                     }
                 }
                 break;
@@ -112,28 +118,17 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                     subRegistration.unregisterSubModel(POOL_STATISTICS);
                     registration.unregisterOverrideModel(dsName);
                 }
+
+                if (resource.hasChild(JDBC_STATISTICS)) {
+                    resource.removeChild(JDBC_STATISTICS);
+                }
+
+                if (resource.hasChild(POOL_STATISTICS)) {
+                    resource.removeChild(POOL_STATISTICS);
+                }
                 break;
 
             }
-        }
-    }
-
-
-    public static void registerStatisticsResources(Resource datasourceResource) {
-        if (!datasourceResource.hasChild(JDBC_STATISTICS)) {
-            datasourceResource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
-        }
-        if (!datasourceResource.hasChild(POOL_STATISTICS)) {
-            datasourceResource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(POOL_STATISTICS));
-        }
-    }
-
-    public static void removeStatisticsResources(Resource datasourceResource) {
-        if (datasourceResource.hasChild(JDBC_STATISTICS)) {
-            datasourceResource.removeChild(JDBC_STATISTICS);
-        }
-        if (datasourceResource.hasChild(POOL_STATISTICS)) {
-            datasourceResource.removeChild(POOL_STATISTICS);
         }
     }
 }

@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -60,13 +59,11 @@ public class DataSourceDisable implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) {
-        final ManagementResourceRegistration datasourceRegistration = context.getResourceRegistrationForUpdate();
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        final ModelNode model = resource.getModel();
+
+        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         model.get(ENABLED).set(false);
 
         if (context.isNormalServer()) {
-            DataSourceStatisticsListener.removeStatisticsResources(resource);
             if (context.isResourceServiceRestartAllowed()) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -155,9 +152,9 @@ public class DataSourceDisable implements OperationStepHandler {
                             @Override
                             public void handleRollback(OperationContext context, ModelNode operation) {
                                 try {
-                                    reEnable(context, operation, datasourceRegistration);
+                                    reEnable(context,operation);
                                 } catch (OperationFailedException e) {
-                                    // ignored
+
                                 }
                             }
                         });
@@ -176,15 +173,14 @@ public class DataSourceDisable implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private void reEnable(final OperationContext context, final ModelNode operation, final ManagementResourceRegistration datasourceRegistration) throws OperationFailedException {
+    public void reEnable(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer()) {
             PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
             Resource resource = context.getOriginalRootResource();
             for (PathElement element : addr) {
                 resource = resource.getChild(element);
             }
-            DataSourceEnable.addServices(context, operation, null, datasourceRegistration,
-                    Resource.Tools.readModel(resource), isXa(), new LinkedList<ServiceController<?>>());
+            DataSourceEnable.addServices(context, operation, null, Resource.Tools.readModel(resource), isXa(), new LinkedList<ServiceController<?>>());
         }
     }
 

@@ -287,8 +287,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, managementName, false));
-        DataSourceStatisticsListener.registerStatisticsResources(resource);
+        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, managementName, false));
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
