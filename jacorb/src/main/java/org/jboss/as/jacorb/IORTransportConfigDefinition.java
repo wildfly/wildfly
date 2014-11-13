@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -116,7 +115,7 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
         super(PathElement.pathElement(JacORBSubsystemConstants.SETTING, JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
                 JacORBExtension.getResourceDescriptionResolver(JacORBSubsystemConstants.IOR_SETTINGS,
                         JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
-                new AbstractAddStepHandler(ATTRIBUTES),
+                new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

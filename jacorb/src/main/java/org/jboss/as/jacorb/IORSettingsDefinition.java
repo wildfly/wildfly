@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -29,7 +28,7 @@ class IORSettingsDefinition extends PersistentResourceDefinition {
     private IORSettingsDefinition() {
         super(PathElement.pathElement(JacORBSubsystemConstants.IOR_SETTINGS, JacORBSubsystemConstants.DEFAULT),
                 JacORBExtension.getResourceDescriptionResolver(JacORBSubsystemConstants.IOR_SETTINGS),
-                new AbstractAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+                new ReloadRequiredAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
