@@ -154,9 +154,9 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     /**
      * Validates failover on redeploy of a @Stateful bean containing injected JDBC resource manager connection factories
+     * test for WFLY-30 @Resource injection of Datasource on clustered SFSB fails with serialization error
      */
     @Test
-    @Ignore("WFLY-30 @Resource injection of Datasource on clustered SFSB fails with serialization error")
     public void connectionFactoryFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {

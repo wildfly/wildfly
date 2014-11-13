@@ -38,12 +38,12 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
     private final InjectedValue<ModifiableXaDataSource> dataSourceConfig = new InjectedValue<ModifiableXaDataSource>();
 
-    public XaDataSourceService(final String jndiName, final ClassLoader classLoader) {
-        super(jndiName, classLoader);
+    public XaDataSourceService(final String dsName, final String jndiName, final ClassLoader classLoader) {
+        super(dsName, jndiName, classLoader);
     }
 
-    public XaDataSourceService(final String jndiName) {
-        this(jndiName, null);
+    public XaDataSourceService(final String dsName, final String jndiName) {
+        this(dsName, jndiName, null);
     }
 
     @Override

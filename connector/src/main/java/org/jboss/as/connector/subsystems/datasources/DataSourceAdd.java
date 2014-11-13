@@ -45,8 +45,8 @@ public class DataSourceAdd extends AbstractDataSourceAdd {
         populateAddModel(operation, model, CONNECTION_PROPERTIES.getName(), DATASOURCE_ATTRIBUTE, DATASOURCE_PROPERTIES_ATTRIBUTES);
     }
 
-    protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
-        return new LocalDataSourceService(jndiName);
+    protected AbstractDataSourceService createDataSourceService(final String dsName,final String jndiName) throws OperationFailedException {
+        return new LocalDataSourceService(dsName, jndiName);
     }
 
     @Override
