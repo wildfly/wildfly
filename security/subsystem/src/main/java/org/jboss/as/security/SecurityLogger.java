@@ -55,14 +55,14 @@ public interface SecurityLogger extends BasicLogger {
     * @param version a {@link String} representing the current version
     */
    @LogMessage(level = Level.INFO)
-   @Message(id = 13170, value = "Current PicketBox version=%s")
+   @Message(id = 13370, value = "Current PicketBox version=%s")
    void currentVersion(String version);
 
    /**
     * Logs a message indicating that the security subsystem is being activated
     */
    @LogMessage(level = Level.INFO)
-   @Message(id = 13171, value = "Activating Security Subsystem")
+   @Message(id = 13371, value = "Activating Security Subsystem")
    void activatingSecuritySubsystem();
 
    /**
@@ -70,6 +70,6 @@ public interface SecurityLogger extends BasicLogger {
     * @param t the underlying exception
     */
    @LogMessage(level = Level.WARN)
-   @Message(id = 13172, value = "Error deleting JACC Policy")
+   @Message(id = 13372, value = "Error deleting JACC Policy")
    void errorDeletingJACCPolicy(@Cause Throwable t);
 }
