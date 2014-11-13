@@ -32,10 +32,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -82,22 +82,22 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
            final ConfigService endpointConfigService = new ConfigService(serverConfig, name, false);
 
            final ServiceTarget target = context.getServiceTarget();
-           final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, endpointConfigService);
-           setDependency(context, clientServiceBuilder, endpointConfigService.getPreHandlerChainsInjector(), serviceName, address, Constants.PRE_HANDLER_CHAIN);
-           setDependency(context, clientServiceBuilder, endpointConfigService.getPostHandlerChainsInjector(), serviceName, address, Constants.POST_HANDLER_CHAIN);
-           ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+           final ServiceBuilder<?> serviceBuilder = target.addService(serviceName, endpointConfigService);
+           for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PROPERTY)) {
+               serviceBuilder.addDependency(sn, PropertyService.class, endpointConfigService.getPropertiesInjector()); //get a new injector instance each time
+           }
+           for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.PRE_HANDLER_CHAIN)) {
+               serviceBuilder.addDependency(sn, UnifiedHandlerChainMetaData.class, endpointConfigService.getPreHandlerChainsInjector()); //get a new injector instance each time
+           }
+           for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, Constants.POST_HANDLER_CHAIN)) {
+               serviceBuilder.addDependency(sn, UnifiedHandlerChainMetaData.class, endpointConfigService.getPostHandlerChainsInjector()); //get a new injector instance each time
+           }
+           ServiceController<?> controller = serviceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
            if (newControllers != null) {
                newControllers.add(controller);
            }
         } else {
            context.reloadRequired();
-        }
-    }
-
-    private void setDependency(final OperationContext context, final ServiceBuilder<?> builder, final Injector<UnifiedHandlerChainMetaData> injector,
-            final ServiceName serviceName, final PathAddress address, final String handlerChainType) {
-        for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, handlerChainType)) {
-            builder.addDependency(sn, UnifiedHandlerChainMetaData.class, injector);
         }
     }
 }

@@ -288,4 +288,7 @@ public interface WSLogger extends BasicLogger {
             + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled.")
     WSFException invalidWSServlet(String servletClass);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 67, value = "Could not activate the webservices subsystem.")
+    void couldNotActivateSubsystem(@Cause Throwable cause);
 }

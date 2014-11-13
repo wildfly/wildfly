@@ -1,0 +1,31 @@
+<subsystem xmlns="urn:jboss:domain:webservices:2.0">
+    <modify-wsdl-address>true</modify-wsdl-address>
+    <wsdl-host>localhost</wsdl-host>
+    <wsdl-port>9895</wsdl-port>
+    <wsdl-secure-port>9944</wsdl-secure-port>
+    <wsdl-uri-scheme>https</wsdl-uri-scheme>
+    <wsdl-path-rewrite-rule>s/jaxws-jbws2150-codefirst/xx\/jaxws-jbws2150-codefirst/g</wsdl-path-rewrite-rule>
+    <endpoint-config name="Standard-Endpoint-Config"/>
+    <endpoint-config name="Recording-Endpoint-Config">
+        <pre-handler-chain name="recording-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="RecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+            <handler name="AnotherRecordingHandler" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+        </pre-handler-chain>
+        <post-handler-chain name="recording-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="RecordingHandler2" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+            <handler name="AnotherRecordingHandler2" class="org.jboss.ws.common.invocation.RecordingServerHandler"/>
+        </post-handler-chain>
+        <property name="foo" value="bar"/>
+        <property name="foo2" value="bar2"/>
+    </endpoint-config>
+    <client-config name="My-Client-Config">
+        <pre-handler-chain name="my-handlers" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM" />
+        <pre-handler-chain name="my-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="MyHandler" class="org.jboss.ws.common.invocation.MyHandler"/>
+        </pre-handler-chain>
+        <post-handler-chain name="my-handlers2" protocol-bindings="##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM">
+            <handler name="MyHandler2" class="org.jboss.ws.common.invocation.MyHandler2"/>
+        </post-handler-chain>
+        <property name="foo3" value="bar3"/>
+    </client-config>
+</subsystem>
