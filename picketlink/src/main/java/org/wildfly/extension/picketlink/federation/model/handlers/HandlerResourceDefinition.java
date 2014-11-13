@@ -74,7 +74,7 @@ public class HandlerResourceDefinition extends AbstractFederationResourceDefinit
         }, OperationContext.Stage.MODEL);
     }
 
-    static String getHandlerType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
+    public static String getHandlerType(OperationContext context, ModelNode elementNode) throws OperationFailedException {
         ModelNode classNameNode = CLASS_NAME.resolveModelAttribute(context, elementNode);
         ModelNode codeNode = CODE.resolveModelAttribute(context, elementNode);
 

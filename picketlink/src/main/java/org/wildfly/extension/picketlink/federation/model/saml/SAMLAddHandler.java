@@ -81,7 +81,7 @@ public class SAMLAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    private static STSType toSAMLConfig(OperationContext context, ModelNode fromModel) throws OperationFailedException {
+    static STSType toSAMLConfig(OperationContext context, ModelNode fromModel) throws OperationFailedException {
         int tokenTimeout = SAMLResourceDefinition.TOKEN_TIMEOUT.resolveModelAttribute(context, fromModel).asInt();
         int clockSkew = SAMLResourceDefinition.CLOCK_SKEW.resolveModelAttribute(context, fromModel).asInt();
 

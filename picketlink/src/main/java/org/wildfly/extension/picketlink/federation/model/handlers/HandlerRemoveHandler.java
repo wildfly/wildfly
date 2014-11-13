@@ -26,7 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
+import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
@@ -44,12 +44,9 @@ public class HandlerRemoveHandler extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
         String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
+        EntityProviderService providerService = EntityProviderService.getService(context, providerAlias);
+        String handlerType = HandlerResourceDefinition.getHandlerType(context, model);
 
-        context.removeService(SAMLHandlerService.createServiceName(providerAlias, pathAddress.getLastElement().getValue()));
-    }
-
-    @Override
-    protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        HandlerAddHandler.launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, null, null);
+        providerService.removeHandler(handlerType);
     }
 }

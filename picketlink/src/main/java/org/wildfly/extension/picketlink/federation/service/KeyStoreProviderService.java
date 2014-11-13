@@ -43,15 +43,15 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
 
     private static final String SERVICE_NAME = "KeyStoreProviderService";
 
-    private final KeyProviderType keyProviderType;
+    private volatile KeyProviderType keyProviderType;
     private final InjectedValue<FederationService> federationService = new InjectedValue<FederationService>();
-    private final String relativeTo;
-    private final String filePath;
+    private volatile  String relativeTo;
+    private volatile String filePath;
     private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
 
-    public KeyStoreProviderService(KeyProviderType keyProviderType, String workingDir, String relativeTo) {
+    public KeyStoreProviderService(KeyProviderType keyProviderType, String filePath, String relativeTo) {
         this.keyProviderType = keyProviderType;
-        this.filePath = workingDir;
+        this.filePath = filePath;
         this.relativeTo = relativeTo;
     }
 
@@ -66,13 +66,12 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
 
     @Override
     public void start(StartContext context) throws StartException {
-        configureKeyStoreFilePath();
-        getFederationService().getValue().setKeyProviderType(this.keyProviderType);
+        setKeyProviderType(this.keyProviderType, this.filePath, this.relativeTo);
     }
 
     @Override
     public void stop(StopContext context) {
-        getFederationService().getValue().setKeyProviderType(null);
+        setKeyProviderType(null, null, null);
         context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
@@ -85,22 +84,24 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
     }
 
     private void configureKeyStoreFilePath() {
-        String resolvedPath;
+        if (this.keyProviderType != null) {
+            String resolvedPath;
 
-        // if relative path is null, we use the file path only. This is because the file path can point to a resource inside the deployment,
-        // loaded from its classpath.
-        if (this.relativeTo != null) {
-            resolvedPath = getPathManager().getValue().resolveRelativePathEntry(this.filePath, this.relativeTo);
-        } else {
-            resolvedPath = this.filePath;
+            // if relative path is null, we use the file path only. This is because the file path can point to a resource inside the deployment,
+            // loaded from its classpath.
+            if (this.relativeTo != null) {
+                resolvedPath = getPathManager().getValue().resolveRelativePathEntry(this.filePath, this.relativeTo);
+            } else {
+                resolvedPath = this.filePath;
+            }
+
+            AuthPropertyType keyStoreURL = new AuthPropertyType();
+
+            keyStoreURL.setKey("KeyStoreURL");
+            keyStoreURL.setValue(resolvedPath);
+
+            this.keyProviderType.add(keyStoreURL);
         }
-
-        AuthPropertyType keyStoreURL = new AuthPropertyType();
-
-        keyStoreURL.setKey("KeyStoreURL");
-        keyStoreURL.setValue(resolvedPath);
-
-        this.keyProviderType.add(keyStoreURL);
     }
 
     public void removeKey(String key) {
@@ -124,5 +125,19 @@ public class KeyStoreProviderService implements Service<KeyStoreProviderService>
 
             this.keyProviderType.add(kv);
         }
+    }
+
+    public void setKeyProviderType(KeyProviderType keyProviderType, String file, String relativeTo) {
+        if (keyProviderType != null) {
+            for (KeyValueType kv : this.keyProviderType.getValidatingAlias()) {
+                keyProviderType.add(kv);
+            }
+        }
+
+        this.filePath = file;
+        this.relativeTo = relativeTo;
+        this.keyProviderType = keyProviderType;
+        configureKeyStoreFilePath();
+        getFederationService().getValue().setKeyProviderType(this.keyProviderType);
     }
 }

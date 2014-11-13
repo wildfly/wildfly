@@ -54,14 +54,25 @@
                 <trust-domain name="localhost"/>
             </trust>
             <handlers>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
+                    <handler-parameter name="param1" value="value1"/>
+                </handler>
                 <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
                 <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
                 <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
             </handlers>
         </identity-provider>
         <service-providers>
-            <service-provider name="employee.war" security-domain="sp" url="http://localhost:8080/employee/" post-binding="false" strict-post-binding="true"/>
+            <service-provider name="employee.war" security-domain="sp" url="http://localhost:8080/employee/" post-binding="false" strict-post-binding="true">
+                <handlers>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
+                        <handler-parameter name="param1" value="value1"/>
+                    </handler>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                </handlers>
+            </service-provider>
         </service-providers>
     </federation>
     <federation name="federation-with-encryption">

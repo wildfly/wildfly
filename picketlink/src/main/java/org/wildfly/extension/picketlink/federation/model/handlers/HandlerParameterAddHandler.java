@@ -22,27 +22,27 @@
 
 package org.wildfly.extension.picketlink.federation.model.handlers;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
+import org.jboss.msc.service.ServiceController;
+import org.picketlink.config.federation.KeyValueType;
+import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
+
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class HandlerParameterAddHandler extends RestartParentResourceAddHandler {
+public class HandlerParameterAddHandler extends AbstractAddStepHandler {
 
     static final HandlerParameterAddHandler INSTANCE = new HandlerParameterAddHandler();
-
-    private HandlerParameterAddHandler() {
-        super(ModelElement.COMMON_HANDLER.getName());
-    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -52,16 +52,25 @@ public class HandlerParameterAddHandler extends RestartParentResourceAddHandler 
     }
 
     @Override
-    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                                            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        HandlerAddHandler.INSTANCE.launchServices(context, parentAddress, parentModel, verificationHandler, null);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
+        String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 2).getLastElement().getValue();
+        String handlerType = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
+        EntityProviderService providerService = EntityProviderService.getService(context, providerAlias);
+        String handlerParameterName = pathAddress.getLastElement().getValue();
+        KeyValueType keyValueType = toHandlerParameterConfig(context, handlerParameterName, model);
+
+        providerService.addHandlerParameter(handlerType, keyValueType);
     }
 
-    @Override
-    protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        String providerAlias = parentAddress.subAddress(0, parentAddress.size() - 1).getLastElement().getValue();
-        String handlerName = parentAddress.getLastElement().getValue();
+    public static KeyValueType toHandlerParameterConfig(OperationContext context, String paramName, ModelNode parameterNode) throws OperationFailedException {
+        String paramValue = HandlerParameterResourceDefinition.VALUE
+            .resolveModelAttribute(context, parameterNode).asString();
 
-        return SAMLHandlerService.createServiceName(providerAlias, handlerName);
+        KeyValueType kv = new KeyValueType();
+
+        kv.setKey(paramName);
+        kv.setValue(paramValue);
+        return kv;
     }
 }

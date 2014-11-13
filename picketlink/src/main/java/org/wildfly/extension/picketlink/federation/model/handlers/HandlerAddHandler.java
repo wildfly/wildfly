@@ -26,33 +26,20 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.picketlink.config.federation.KeyValueType;
 import org.picketlink.config.federation.handler.Handler;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.AlternativeAttributeValidationStepHandler;
 import org.wildfly.extension.picketlink.common.model.validator.UniqueTypeValidationStepHandler;
 import org.wildfly.extension.picketlink.federation.service.EntityProviderService;
-import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
-import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
-import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER;
 import static org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition.getHandlerType;
-import static org.wildfly.extension.picketlink.federation.service.SAMLHandlerService.createServiceName;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -63,56 +50,6 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
 
     private HandlerAddHandler() {
 
-    }
-
-    static void launchServices(final OperationContext context, final PathAddress pathAddress , final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        Handler newHandler = new Handler();
-        String typeName = getHandlerType(context, model);
-
-        newHandler.setClazz(typeName);
-
-        ModelNode handler = Resource.Tools.readModel(context.readResourceFromRoot(pathAddress));
-
-        if (handler.hasDefined(COMMON_HANDLER_PARAMETER.getName())) {
-            for (Property handlerParameter : handler.get(COMMON_HANDLER_PARAMETER.getName()).asPropertyList()) {
-                String paramName = handlerParameter.getName();
-                String paramValue = HandlerParameterResourceDefinition.VALUE
-                                        .resolveModelAttribute(context, handlerParameter.getValue()).asString();
-
-                KeyValueType kv = new KeyValueType();
-
-                kv.setKey(paramName);
-                kv.setValue(paramValue);
-
-                newHandler.add(kv);
-            }
-        }
-
-        SAMLHandlerService service = new SAMLHandlerService(newHandler);
-        PathElement providerAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement();
-
-        ServiceTarget serviceTarget = context.getServiceTarget();
-        ServiceBuilder<SAMLHandlerService> serviceBuilder = serviceTarget.addService(createServiceName(providerAlias
-            .getValue(), pathAddress.getLastElement().getValue()), service);
-        ServiceName serviceName;
-
-        if (providerAlias.getKey().equals(IDENTITY_PROVIDER.getName())) {
-            serviceName = IdentityProviderService.createServiceName(providerAlias.getValue());
-        } else {
-            serviceName = ServiceProviderService.createServiceName(providerAlias.getValue());
-        }
-
-        serviceBuilder.addDependency(serviceName, EntityProviderService.class, service.getEntityProviderService());
-
-        if (verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        ServiceController<SAMLHandlerService> controller = serviceBuilder.install();
-
-        if (newControllers != null) {
-            newControllers.add(controller);
-        }
     }
 
     @Override
@@ -137,8 +74,21 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
-                                         List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ADDRESS));
+        String providerAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
+        EntityProviderService providerService = EntityProviderService.getService(context, providerAlias);
+        Handler handler = toHandlerConfig(context, model);
+
+        providerService.addHandler(handler);
+    }
+
+    public static Handler toHandlerConfig(OperationContext context, ModelNode handler) throws OperationFailedException {
+        Handler newHandler = new Handler();
+        String typeName = HandlerResourceDefinition.getHandlerType(context, handler);
+
+        newHandler.setClazz(typeName);
+
+        return newHandler;
     }
 }
