@@ -68,7 +68,7 @@ public class IORSASContextDefinition extends PersistentResourceDefinition {
         super(PathElement.pathElement(JacORBSubsystemConstants.SETTING, JacORBSubsystemConstants.IOR_SAS_CONTEXT),
                 JacORBExtension.getResourceDescriptionResolver(JacORBSubsystemConstants.IOR_SETTINGS,
                         JacORBSubsystemConstants.IOR_SAS_CONTEXT),
-                new AbstractAddStepHandler(ATTRIBUTES),
+                new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 

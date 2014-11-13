@@ -116,7 +116,7 @@ class IORTransportConfigDefinition extends PersistentResourceDefinition {
         super(PathElement.pathElement(JacORBSubsystemConstants.SETTING, JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
                 JacORBExtension.getResourceDescriptionResolver(JacORBSubsystemConstants.IOR_SETTINGS,
                         JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG),
-                new AbstractAddStepHandler(ATTRIBUTES),
+                new ReloadRequiredAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
