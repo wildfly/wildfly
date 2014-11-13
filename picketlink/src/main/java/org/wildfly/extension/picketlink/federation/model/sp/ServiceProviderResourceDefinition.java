@@ -21,23 +21,30 @@
  */
 package org.wildfly.extension.picketlink.federation.model.sp;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
+import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 import java.util.List;
+
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -109,10 +116,28 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
     @Override
     protected OperationStepHandler createAttributeWriterHandler() {
         List<SimpleAttributeDefinition> attributes = getAttributes();
-        return new ReloadRequiredWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
+        return new AbstractWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
             @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                super.execute(context, operation);
+            protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+                String alias = pathAddress.getLastElement().getValue();
+                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                ServiceController<ServiceProviderService> serviceController =
+                    (ServiceController<ServiceProviderService>) serviceRegistry.getService(ServiceProviderService.createServiceName(alias));
+
+                if (serviceController != null) {
+                    ServiceProviderService service = serviceController.getValue();
+                    ModelNode serviceProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
+
+                    service.setConfiguration(ServiceProviderAddHandler.toSPConfig(context, serviceProviderNode, alias));
+                }
+
+                return false;
+            }
+
+            @Override
+            protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+
             }
         };
     }
