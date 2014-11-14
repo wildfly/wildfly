@@ -1,5 +1,5 @@
-<subsystem xmlns="urn:jboss:domain:remoting:1.0">
-    <connector name="remoting-connector" socket-binding="remoting">
+<subsystem xmlns="urn:jboss:domain:remoting:1.2">
+    <connector name="remoting-connector" socket-binding="remoting" sasl-protocol="myProto" server-name="myServer">
         <authentication-provider name="blah"/>
         <properties>
            <property name="c1" value="connector one"/>

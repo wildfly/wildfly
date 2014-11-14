@@ -133,7 +133,7 @@ public class RemotingExtension implements Extension {
         // Register the remoting subsystem
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        registration.registerXMLElementWriter(RemotingSubsystem11Parser.INSTANCE);
+        registration.registerXMLElementWriter(RemotingSubsystemXMLPersister.INSTANCE);
 
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new RemotingSubsystemRootResource(context.getProcessType()));
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
@@ -211,7 +211,7 @@ public class RemotingExtension implements Extension {
     /**
      * The root element parser for the Remoting subsystem.
      */
-    static final class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    static final class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
         private static final RemotingSubsystem10Parser INSTANCE = new RemotingSubsystem10Parser();
 
@@ -535,103 +535,6 @@ public class RemotingExtension implements Extension {
                 propertyOp.get(VALUE).set(property.getValue());
                 list.add(propertyOp);
             }
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-            final ModelNode model = context.getModelNode();
-
-            writeWorkerThreadPoolIfAttributesSet(writer, model);
-
-            if (model.hasDefined(CONNECTOR)) {
-                final ModelNode connector = model.get(CONNECTOR);
-                for (String name : connector.keys()) {
-                    writeConnector(writer, connector.require(name), name);
-                }
-            }
-
-            writer.writeEndElement();
-        }
-
-        private void writeWorkerThreadPoolIfAttributesSet(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
-            if (model.hasDefined(CommonAttributes.WORKER_READ_THREADS) || model.hasDefined(CommonAttributes.WORKER_TASK_CORE_THREADS) || model.hasDefined(CommonAttributes.WORKER_TASK_KEEPALIVE) ||
-                    model.hasDefined(CommonAttributes.WORKER_TASK_LIMIT) || model.hasDefined(CommonAttributes.WORKER_TASK_MAX_THREADS) || model.hasDefined(CommonAttributes.WORKER_WRITE_THREADS)) {
-
-                    writer.writeStartElement(Element.WORKER_THREAD_POOL.getLocalName());
-
-                    RemotingSubsystemRootResource.WORKER_READ_THREADS.marshallAsAttribute(model, false, writer);
-                    RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.marshallAsAttribute(model, false, writer);
-                    RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.marshallAsAttribute(model, false, writer);
-                    RemotingSubsystemRootResource.WORKER_TASK_LIMIT.marshallAsAttribute(model, false, writer);
-                    RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.marshallAsAttribute(model, false, writer);
-                    RemotingSubsystemRootResource.WORKER_WRITE_THREADS.marshallAsAttribute(model, false, writer);
-
-                    writer.writeEndElement();
-                }
-
-        }
-
-        private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
-            writer.writeStartElement(Element.CONNECTOR.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-
-            ConnectorResource.SOCKET_BINDING.marshallAsAttribute(node, writer);
-            ConnectorCommon.SERVER_NAME.marshallAsAttribute(node, writer);
-            ConnectorCommon.SASL_PROTOCOL.marshallAsAttribute(node, writer);
-            ConnectorResource.AUTHENTICATION_PROVIDER.marshallAsElement(node, writer);
-
-            if (node.hasDefined(PROPERTY)) {
-                writeProperties(writer, node.get(PROPERTY));
-            }
-            if (node.hasDefined(SECURITY) && node.get(SECURITY).hasDefined(SASL)) {
-                writeSasl(writer, node.get(SECURITY, SASL));
-            }
-            writer.writeEndElement();
-        }
-
-        private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-            writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            for (Property prop : node.asPropertyList()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                PropertyResource.VALUE.marshallAsAttribute(prop.getValue(), writer);
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-
-        private void writeSasl(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-            writer.writeStartElement(Element.SASL.getLocalName());
-            SaslResource.INCLUDE_MECHANISMS_ATTRIBUTE.marshallAsElement(node, writer);
-            SaslResource.QOP_ATTRIBUTE.marshallAsElement(node, writer);
-            SaslResource.STRENGTH_ATTRIBUTE.marshallAsElement(node, writer);
-            SaslResource.SERVER_AUTH_ATTRIBUTE.marshallAsElement(node, writer);
-            SaslResource.REUSE_SESSION_ATTRIBUTE.marshallAsElement(node, writer);
-
-            if (node.hasDefined(SASL_POLICY)) {
-                writePolicy(writer, node.get(SASL_POLICY));
-            }
-            if (node.hasDefined(PROPERTY)) {
-                writeProperties(writer, node.get(PROPERTY));
-            }
-
-            writer.writeEndElement();
-        }
-
-        private void writePolicy(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-            writer.writeStartElement(Element.POLICY.getLocalName());
-            final ModelNode policy = node.get(POLICY);
-            SaslPolicyResource.FORWARD_SECRECY.marshallAsElement(policy, writer);
-            SaslPolicyResource.NO_ACTIVE.marshallAsElement(policy, writer);
-            SaslPolicyResource.NO_ANONYMOUS.marshallAsElement(policy, writer);
-            SaslPolicyResource.NO_DICTIONARY.marshallAsElement(policy, writer);
-            SaslPolicyResource.NO_PLAIN_TEXT.marshallAsElement(policy, writer);
-            SaslPolicyResource.PASS_CREDENTIALS.marshallAsElement(policy, writer);
-            writer.writeEndElement();
         }
     }
 }
