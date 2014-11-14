@@ -110,7 +110,12 @@ public class ApplicableMethodInformation<T> {
         }
     };
 
+
     public T getAttribute(MethodIntf methodIntf, Method method) {
+        return getAttribute(methodIntf, method, null);
+    }
+
+    public T getAttribute(MethodIntf methodIntf, Method method, MethodIntf defaultMethodIntf) {
         assert methodIntf != null : "methodIntf is null";
         assert method != null : "method is null";
 
@@ -138,7 +143,11 @@ public class ApplicableMethodInformation<T> {
         attr = get(style1, className);
         if (attr != null)
             return attr;
-        return defaultAttribute;
+        if(defaultMethodIntf == null) {
+            return defaultAttribute;
+        } else {
+            return getAttribute(defaultMethodIntf, method);
+        }
     }
 
     public List<T> getAllAttributes(MethodIntf methodIntf, Method method) {
