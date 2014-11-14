@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -99,6 +100,8 @@ public class ConnectorResource extends SimpleResourceDefinition {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
+
+    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {AUTHENTICATION_PROVIDER, SOCKET_BINDING, SECURITY_REALM, SERVER_NAME, SASL_PROTOCOL};
 
     private ConnectorResource() {
         super(PATH, RemotingExtension.getResourceDescriptionResolver(CONNECTOR),
@@ -234,8 +237,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(AUTHENTICATION_PROVIDER,
-                SOCKET_BINDING, SECURITY_REALM, SERVER_NAME, SASL_PROTOCOL);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         resourceRegistration.registerReadWriteAttribute(AUTHENTICATION_PROVIDER, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SECURITY_REALM, null, writeHandler);

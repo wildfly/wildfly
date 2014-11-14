@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -83,8 +82,11 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -121,10 +123,9 @@ public class RemotingExtension implements Extension {
 
     static final SensitiveTargetAccessConstraintDefinition REMOTING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(REMOTING_SECURITY);
 
-
-
-
     private static final ModelVersion VERSION_1_1 = ModelVersion.create(1, 1);
+    private static final ModelVersion VERSION_1_2 = ModelVersion.create(1, 2);
+    private static final ModelVersion VERSION_1_3 = ModelVersion.create(1, 3);
 
     @Override
     public void initialize(ExtensionContext context) {
@@ -152,32 +153,49 @@ public class RemotingExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             registerTransformers_1_1(registration);
+            registerTransformers_1_3(registration, VERSION_1_2);
+            registerTransformers_1_3(registration, VERSION_1_3);
         }
     }
 
     private void registerTransformers_1_1(SubsystemRegistration registration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        RejectExpressionValuesTransformer rejectExpression = new RejectExpressionValuesTransformer(RemotingSubsystemRootResource.ATTRIBUTES);
-        final TransformersSubRegistration subsystem = registration.registerModelTransformers(VERSION_1_1, rejectExpression);
-        subsystem.registerOperationTransformer(ADD, rejectExpression);
-        subsystem.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpression.getWriteAttributeTransformer());
+        builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RemotingSubsystemRootResource.ATTRIBUTES);
 
-        TransformersSubRegistration connector = subsystem.registerSubResource(ConnectorResource.PATH);
+
+        ResourceTransformationDescriptionBuilder connector = builder.addChildResource(ConnectorResource.PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ConnectorResource.ATTRIBUTES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ConnectorCommon.SASL_PROTOCOL.getDefaultValue()), ConnectorCommon.SASL_PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ConnectorCommon.SASL_PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ConnectorCommon.SERVER_NAME).end();
         PropertyResourceTransformers.registerTransformers(connector);
         SaslResourceTransformers.registerTransformers(connector);
 
-        TransformersSubRegistration remoteOutboundConnection = subsystem.registerSubResource(RemoteOutboundConnectionResourceDefinition.ADDRESS);
-        RejectExpressionValuesTransformer rejectUserNameExpression = new RejectExpressionValuesTransformer(RemoteOutboundConnectionResourceDefinition.USERNAME);
-        remoteOutboundConnection.registerOperationTransformer(ADD, rejectUserNameExpression);
-        remoteOutboundConnection.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectUserNameExpression.getWriteAttributeTransformer());
-
+        ResourceTransformationDescriptionBuilder remoteOutboundConnection = builder
+                .addChildResource(RemoteOutboundConnectionResourceDefinition.ADDRESS).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RemoteOutboundConnectionResourceDefinition.USERNAME)
+                .end();
         PropertyResourceTransformers.registerTransformers(remoteOutboundConnection);
 
-        TransformersSubRegistration localOutboundConnection = subsystem.registerSubResource(LocalOutboundConnectionResourceDefinition.ADDRESS);
+        ResourceTransformationDescriptionBuilder localOutboundConnection = builder.addChildResource(LocalOutboundConnectionResourceDefinition.ADDRESS);
         PropertyResourceTransformers.registerTransformers(localOutboundConnection);
 
-        TransformersSubRegistration outboundConnection = subsystem.registerSubResource(GenericOutboundConnectionResourceDefinition.ADDRESS);
+        ResourceTransformationDescriptionBuilder outboundConnection = builder.addChildResource(GenericOutboundConnectionResourceDefinition.ADDRESS);
         PropertyResourceTransformers.registerTransformers(outboundConnection);
+
+        TransformationDescription.Tools.register(builder.build(), registration, VERSION_1_1);
+    }
+
+    private void registerTransformers_1_3(SubsystemRegistration registration, ModelVersion version) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        builder.addChildResource(ConnectorResource.PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(ConnectorCommon.SASL_PROTOCOL.getDefaultValue()), ConnectorCommon.SASL_PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ConnectorCommon.SASL_PROTOCOL)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ConnectorCommon.SERVER_NAME);
+
+        TransformationDescription.Tools.register(builder.build(), registration, version);
     }
 
     /**

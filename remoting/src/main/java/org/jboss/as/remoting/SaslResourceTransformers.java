@@ -21,30 +21,26 @@
 */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.remoting.SaslResource.REUSE_SESSION_ATTRIBUTE;
 import static org.jboss.as.remoting.SaslResource.SASL_CONFIG_PATH;
 import static org.jboss.as.remoting.SaslResource.SERVER_AUTH_ATTRIBUTE;
 
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  *
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat, inc
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SaslResourceTransformers {
 
-    static TransformersSubRegistration registerTransformers(TransformersSubRegistration parent) {
-        TransformersSubRegistration sasl = parent.registerSubResource(SASL_CONFIG_PATH);
-        RejectExpressionValuesTransformer rejectPropertyExpression = new RejectExpressionValuesTransformer(SERVER_AUTH_ATTRIBUTE, REUSE_SESSION_ATTRIBUTE);
-        sasl.registerOperationTransformer(ADD, rejectPropertyExpression);
-        sasl.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectPropertyExpression.getWriteAttributeTransformer());
+    static void registerTransformers(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder sasl = builder.addChildResource(SASL_CONFIG_PATH).getAttributeBuilder()
+        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SERVER_AUTH_ATTRIBUTE, REUSE_SESSION_ATTRIBUTE).end();
+
 
         SaslPolicyResourceTransformers.registerTransformers(sasl);
         PropertyResourceTransformers.registerTransformers(sasl);
-
-        return sasl;
     }
 }
