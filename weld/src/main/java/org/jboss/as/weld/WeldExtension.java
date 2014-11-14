@@ -81,7 +81,7 @@ public class WeldExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(WeldSubsystemPersister.INSTANCE);
+        subsystem.registerXMLElementWriter(WeldSubsystem20Parser.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);

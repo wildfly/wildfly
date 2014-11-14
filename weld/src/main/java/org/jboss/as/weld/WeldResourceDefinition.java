@@ -21,14 +21,16 @@
  */
 package org.jboss.as.weld;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Resource definition for Weld subsystem
@@ -36,7 +38,7 @@ import org.jboss.dmr.ModelType;
  * @author Jozef Hartinger
  *
  */
-class WeldResourceDefinition extends SimpleResourceDefinition {
+class WeldResourceDefinition extends PersistentResourceDefinition {
 
     static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
@@ -64,9 +66,7 @@ class WeldResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, null, new ReloadRequiredWriteAttributeHandler(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE));
-        resourceRegistration.registerReadWriteAttribute(NON_PORTABLE_MODE_ATTRIBUTE, null, new ReloadRequiredWriteAttributeHandler(NON_PORTABLE_MODE_ATTRIBUTE));
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(new AttributeDefinition[] {REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE});
     }
 }

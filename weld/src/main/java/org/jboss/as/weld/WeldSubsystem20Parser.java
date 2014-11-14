@@ -21,53 +21,49 @@
  */
 package org.jboss.as.weld;
 
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.weld.WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE;
-import static org.jboss.as.weld.WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE_NAME;
-import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE;
-import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME;
-
-import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
-class WeldSubsystem20Parser implements XMLElementReader<List<ModelNode>> {
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+
+class WeldSubsystem20Parser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     public static final String NAMESPACE = "urn:jboss:domain:weld:2.0";
     static final WeldSubsystem20Parser INSTANCE = new WeldSubsystem20Parser();
+    private static final PersistentResourceXMLDescription xmlDescription;
+
+
+    static {
+        xmlDescription = PersistentResourceXMLDescription.builder(WeldResourceDefinition.INSTANCE)
+                .addAttributes(WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE, WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE)
+                .build();
+    }
 
     private WeldSubsystem20Parser() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-        ModelNode addOperation = Util.createAddOperation(PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM));
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            final String name = reader.getAttributeLocalName(i);
-            final String value = reader.getAttributeValue(i);
-            switch (name) {
-                case REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME: {
-                    REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                }
-                case NON_PORTABLE_MODE_ATTRIBUTE_NAME: {
-                    NON_PORTABLE_MODE_ATTRIBUTE.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
-            }
-        }
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+        ModelNode model = new ModelNode();
+        model.get(WeldResourceDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
+        xmlDescription.persist(writer, model, NAMESPACE);
+    }
 
-        requireNoContent(reader);
-        list.add(addOperation);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+        xmlDescription.parse(reader, PathAddress.EMPTY_ADDRESS, list);
     }
 }
