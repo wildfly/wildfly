@@ -10,4 +10,7 @@ public interface TransactionLocal {
 
     public int transactionStatus();
 
+
+    public int transactionStatus2();
+
 }

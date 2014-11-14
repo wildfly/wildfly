@@ -94,4 +94,22 @@ public class EjbTransactionDescriptorTestCase {
         }
     }
 
+
+    @Test
+    public void testRemoteMethodHasMandatoryNoMethodIntf() throws SystemException, NotSupportedException, NamingException {
+        final UserTransaction userTransaction = (UserTransaction)new InitialContext().lookup("java:jboss/UserTransaction");
+        final TransactionRemote bean = (TransactionRemote) initialContext.lookup("java:module/" + DescriptorBean.class.getSimpleName() + "!" + TransactionRemote.class.getName());
+        userTransaction.begin();
+        try {
+            Assert.assertEquals(Status.STATUS_ACTIVE, bean.transactionStatus2());
+        } finally {
+            userTransaction.rollback();
+        }
+        try {
+            bean.transactionStatus2();
+            throw new RuntimeException("Expected an exception");
+        } catch (EJBTransactionRequiredException e) {
+            //ignore
+        }
+    }
 }

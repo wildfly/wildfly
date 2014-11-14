@@ -42,6 +42,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -243,9 +244,10 @@ public class EJBComponentCreateService extends BasicComponentCreateService {
             return;
         }
 
-        TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, method);
+        MethodIntf defaultMethodIntf = (ejbComponentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+        TransactionAttributeType txAttr = ejbComponentDescription.getTransactionAttributes().getAttribute(methodIntf, method, defaultMethodIntf);
         txAttrs.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txAttr);
-        Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, method);
+        Integer txTimeout = ejbComponentDescription.getTransactionTimeouts().getAttribute(methodIntf, method, defaultMethodIntf);
         if (txTimeout != null) {
             txTimeouts.put(new MethodTransactionAttributeKey(methodIntf, MethodIdentifier.getIdentifierForMethod(method)), txTimeout);
         }
