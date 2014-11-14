@@ -25,12 +25,12 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
+import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -56,16 +56,16 @@ public class DomainDeploymentResourceDefinition extends DeploymentResourceDefini
                 DeploymentRemoveHandler.createForMaster(contentRepository));
     }
 
-    public static DomainDeploymentResourceDefinition createForDomainSlave(boolean backupDC, HostFileRepository fileRepository) {
+    public static DomainDeploymentResourceDefinition createForDomainSlave(boolean backupDC, HostFileRepository fileRepository, ContentRepository contentRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.DOMAIN,
                 DeploymentAttributes.DOMAIN_DEPLOYMENT_ADD_DEFINITION,
                 new DeploymentAddHandler(backupDC ? fileRepository : null),
-                DeploymentRemoveHandler.createForSlave(fileRepository));
+                DeploymentRemoveHandler.createForSlave(fileRepository, contentRepository));
     }
 
-    public static DomainDeploymentResourceDefinition createForServerGroup(HostFileRepository fileRepository) {
+    public static DomainDeploymentResourceDefinition createForServerGroup(HostFileRepository fileRepository, ContentRepository contentRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
-                new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
+                new ServerGroupDeploymentAddHandler(fileRepository, contentRepository), new ServerGroupDeploymentRemoveHandler(contentRepository));
     }
 
     @Override

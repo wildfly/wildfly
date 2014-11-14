@@ -82,6 +82,7 @@ import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.CannotCreateLocalDirectoryException;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.DidNotReadEntireFileException;
@@ -365,7 +366,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                     return resolveSubsystems(extensions.asList());
                 }
 
-                        @Override
+                @Override
                 public boolean applyDomainModel(final List<ModelNode> bootOperations) {
                     // Apply the model..
                     return applyRemoteDomainModel(bootOperations);
@@ -550,7 +551,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 }
                 case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                    localPath = localFileRepository.getDeploymentRoot(hash);
+                    localPath = localFileRepository.getDeploymentRoot(new ContentReference(filePath, hash));
                     break;
                 }
                 default: {
@@ -586,17 +587,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        public final File[] getDeploymentFiles(byte[] deploymentHash) {
-            final File root = getDeploymentRoot(deploymentHash);
+        public final File[] getDeploymentFiles(ContentReference reference) {
+            final File root = getDeploymentRoot(reference);
             return root.listFiles();
         }
 
         @Override
-        public File getDeploymentRoot(byte[] deploymentHash) {
-            String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-            final File file = localFileRepository.getDeploymentRoot(deploymentHash);
+        public File getDeploymentRoot(ContentReference reference) {
+            File file = localFileRepository.getDeploymentRoot(reference);
             if(! file.exists()) {
-                return getFile(hex, DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
+                return getFile(reference.getHexHash(), DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
             }
             return file;
         }
@@ -610,8 +610,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        public void deleteDeployment(byte[] deploymentHash) {
-            localFileRepository.deleteDeployment(deploymentHash);
+        public void deleteDeployment(ContentReference reference) {
+            localFileRepository.deleteDeployment(reference);
         }
     }
 

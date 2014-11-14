@@ -85,9 +85,11 @@ import org.jboss.as.domain.management.access.AccessConstraintResources;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -135,9 +137,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final ModelNode startRoot = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS));
 
         final Set<String> ourServerGroups = getOurServerGroups(context);
-        final Map<String, Set<byte[]>> deploymentHashes = new HashMap<String, Set<byte[]>>();
+        final Map<String, Set<ContentReference>> deploymentHashes = new HashMap<String, Set<ContentReference>>();
         final Set<String> relevantDeployments = new HashSet<String>();
-        final Set<byte[]> requiredContent = new HashSet<byte[]>();
+        final Set<ContentReference> requiredContent = new HashSet<ContentReference>();
 
         final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         clearDomain(rootResource);
@@ -171,12 +173,12 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                     if (model.hasDefined(CONTENT)) {
                         for (ModelNode contentItem : model.get(CONTENT).asList()) {
                             if (contentItem.hasDefined(HASH)) {
-                                Set<byte[]> hashes = deploymentHashes.get(id);
+                                Set<ContentReference> hashes = deploymentHashes.get(id);
                                 if (hashes == null) {
-                                    hashes = new HashSet<byte[]>();
+                                    hashes = new HashSet<ContentReference>();
                                     deploymentHashes.put(id, hashes);
                                 }
-                                hashes.add(contentItem.get(HASH).asBytes());
+                                hashes.add(ModelContentReference.fromModelAddress(resourceAddress, contentItem.get(HASH).asBytes()));
                                 if (hostControllerEnvironment.isBackupDomainFiles()) {
                                     relevantDeployments.add(pe.getValue());
                                 }
@@ -187,7 +189,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                     // We need to pull over management content from the master HC's repo
                     ModelNode model = resource.getModel();
                     if (model.hasDefined(HASH)) {
-                        requiredContent.add(model.get(HASH).asBytes());
+                        byte[] hash = model.get(HASH).asBytes();
+                        requiredContent.add(ModelContentReference.fromModelAddress(resourceAddress, hash));
                     }
                 }
 
@@ -201,13 +204,14 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
         // Make sure we have all needed deployment and management client content
         for (String id : relevantDeployments) {
-            Set<byte[]> hashes = deploymentHashes.remove(id);
+            Set<ContentReference> hashes = deploymentHashes.remove(id);
             if (hashes != null) {
                 requiredContent.addAll(hashes);
             }
         }
-        for (byte[] hash : requiredContent) {
-            fileRepository.getDeploymentFiles(hash);
+        for (ContentReference reference : requiredContent) {
+            fileRepository.getDeploymentFiles(reference);
+            contentRepository.addContentReference(reference);
         }
 
         if (!context.isBooting()) {
@@ -305,7 +309,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 if (idx == 0) {
                     if (MANAGEMENT_CLIENT_CONTENT.equals(type) && ROLLOUT_PLANS.equals(value)) {
                         // Needs a specialized resource type
-                        temp = new ManagedDMRContentTypeResource(element, ROLLOUT_PLAN, null, contentRepository);
+                        temp = new ManagedDMRContentTypeResource(resourceAddress, ROLLOUT_PLAN, null, contentRepository);
                         context.addResource(resourceAddress, temp);
                     }
                 } else if (accessControl) {

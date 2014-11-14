@@ -19,19 +19,13 @@
 package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME_NILLABLE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_GROUP_ADD_ATTRIBUTES;
-
-import java.util.List;
-import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -42,9 +36,11 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.repository.ContentReference;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * Handles addition of a deployment to a server group.
@@ -56,9 +52,11 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = ADD;
 
     private final HostFileRepository fileRepository;
+    private final ContentRepository contentRepository;
 
-    public ServerGroupDeploymentAddHandler(final HostFileRepository fileRepository) {
+    public ServerGroupDeploymentAddHandler(final HostFileRepository fileRepository, ContentRepository contentRepository) {
         this.fileRepository = fileRepository;
+        this.contentRepository = contentRepository;
     }
 
     /**
@@ -76,7 +74,11 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
             if ((content.hasDefined(CONTENT_HASH.getName()))) {
                 CONTENT_HASH.validateOperation(content);
                 // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(CONTENT_HASH.resolveModelAttribute(context, content).asBytes());
+                ContentReference reference = ModelContentReference.fromModelAddress(address, CONTENT_HASH.resolveModelAttribute(context, content).asBytes());
+                fileRepository.getDeploymentFiles(reference);
+                if (contentRepository != null) {
+                    contentRepository.addContentReference(reference);
+                }
             }
         }
 
@@ -136,32 +138,5 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
             return domainDeployment.get(ModelDescriptionConstants.RUNTIME_NAME).asString();
         }
         return name;
-    }
-
-    private void isRuntimeNameUniqueForServerGroup(String serverGroupName, OperationContext context, String name, String runtimeName) throws OperationFailedException {
-        if(serverGroupName != null) {
-            PathAddress address = PathAddress.pathAddress(PathAddress.pathAddress(SERVER_GROUP, serverGroupName), PathElement.pathElement(DEPLOYMENT));
-            Set<Resource.ResourceEntry> deployments = context.readResourceFromRoot(address).getChildren(DEPLOYMENT);
-            for(Resource.ResourceEntry existingDeployment : deployments) {
-                ModelNode existingDeploymentModel = existingDeployment.getModel();
-                if(existingDeploymentModel.hasDefined(RUNTIME_NAME.getName()) && !name.equals(existingDeployment.getName())) {
-                    if(existingDeploymentModel.get(RUNTIME_NAME.getName()).asString().equals(runtimeName)) {
-                        throw DomainControllerMessages.MESSAGES.runtimeNameMustBeUnique(existingDeployment.getName(), runtimeName, serverGroupName);
-                    }
-                }
-            }
-        }
-    }
-
-    private String getServerGroupName(ModelNode operation) {
-        if(operation.hasDefined(ADDRESS)) {
-            List<Property> adress = operation.get(ADDRESS).asPropertyList();
-            for(Property prop : adress) {
-                if(SERVER_GROUP.equals(prop.getName())) {
-                    return prop.getValue().asString();
-                }
-            }
-        }
-        return null;
     }
 }

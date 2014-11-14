@@ -38,6 +38,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler.RootFileReader;
 import org.jboss.dmr.ModelNode;
@@ -107,7 +108,7 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
                         }
                         case DomainControllerProtocol.PARAM_ROOT_ID_DEPLOYMENT: {
                             byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                            return localFileRepository.getDeploymentRoot(hash);
+                            return localFileRepository.getDeploymentRoot(new ContentReference(filePath, hash));
                         }
                         default: {
                             throw MESSAGES.invalidRootId(rootId);

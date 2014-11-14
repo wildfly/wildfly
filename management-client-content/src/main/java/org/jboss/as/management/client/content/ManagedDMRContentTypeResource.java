@@ -23,6 +23,7 @@
 package org.jboss.as.management.client.content;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -44,6 +45,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.management.client.content.ManagedDMRContentTypeResource.ManagedContent;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -57,18 +60,23 @@ import org.jboss.vfs.VirtualFile;
  */
 public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
 
-    private final PathElement pathElement;
+    private final PathAddress address;
     private final String childType;
     private final ContentRepository contentRepository;
     private final Map<String, ManagedContent> content = new TreeMap<String, ManagedContent>();
     private final ModelNode model = new ModelNode();
     private final MessageDigest messageDigest;
 
+    @Deprecated
     public ManagedDMRContentTypeResource(final PathElement pathElement, final String childType,
                                          final byte[] initialHash, final ContentRepository contentRepository) {
-        this.pathElement = pathElement;
+        this(PathAddress.pathAddress(pathElement), childType, initialHash, contentRepository);
+    }
+
+    public ManagedDMRContentTypeResource(final PathAddress address, final String childType, final byte[] initialHash, final ContentRepository contentRepository) {
         this.childType = childType;
         this.contentRepository = contentRepository;
+        this.address = address;
 
         try {
             this.messageDigest = MessageDigest.getInstance("SHA-1");
@@ -85,10 +93,10 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     }
 
     private ManagedDMRContentTypeResource(final ManagedDMRContentTypeResource toCopy) {
-        this.pathElement = toCopy.pathElement;
         this.childType = toCopy.childType;
         this.contentRepository = toCopy.contentRepository;
         this.messageDigest = toCopy.messageDigest;
+        this.address = toCopy.address;
         synchronized (toCopy.content) {
             for (Map.Entry<String, ManagedContent> entry : toCopy.content.entrySet()) {
                 ManagedContent value = entry.getValue();
@@ -243,12 +251,12 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
 
     @Override
     public String getName() {
-        return this.pathElement.getValue();
+        return this.address.getLastElement().getValue();
     }
 
     @Override
     public PathElement getPathElement() {
-        return this.pathElement;
+        return this.address.getLastElement();
     }
 
     ManagedContent getManagedContent(final String name) {
@@ -283,6 +291,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
                 }
             }
             this.model.get(ModelDescriptionConstants.HASH).set(initialHash);
+            contentRepository.addContentReference(new ContentReference(address.toCLIStyleString(), initialHash));
         } catch (IOException e) {
             throw new ContentStorageException(e);
         } finally {
@@ -293,6 +302,10 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     private void storeContent() throws IOException {
         final ModelNode node = new ModelNode();
         boolean hasContent;
+        ContentReference oldReference = null;
+        if(this.model.hasDefined(HASH)) {
+            oldReference = new ContentReference(address.toCLIStyleString(), this.model.get(HASH).asBytes());
+        }
         synchronized (content) {
             hasContent = !content.isEmpty();
             if (hasContent) {
@@ -304,9 +317,13 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
         if (hasContent) {
             ByteArrayInputStream bais = new ByteArrayInputStream(node.toString().getBytes());
             byte[] ourHash = contentRepository.addContent(bais);
-            this.model.get(ModelDescriptionConstants.HASH).set(ourHash);
+            this.model.get(HASH).set(ourHash);
+            this.contentRepository.addContentReference(new ContentReference(address.toCLIStyleString(), ourHash));
         } else {
-            this.model.get(ModelDescriptionConstants.HASH).clear();
+            this.model.get(HASH).clear();
+        }
+        if(oldReference != null) {
+            this.contentRepository.removeContent(oldReference);
         }
     }
 

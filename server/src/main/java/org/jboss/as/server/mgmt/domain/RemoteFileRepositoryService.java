@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.server.mgmt.domain;
 
 import static org.jboss.as.server.ServerMessages.MESSAGES;
@@ -27,8 +26,10 @@ import static org.jboss.as.server.ServerMessages.MESSAGES;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Set;
 
-import org.jboss.as.controller.HashUtil;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.repository.LocalDeploymentFileRepository;
@@ -98,11 +99,11 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     }
 
     @Override
-    public boolean syncContent(byte[] hash) {
-        if(! contentRepository.hasContent(hash)) {
-            getDeploymentFiles(hash); // Make sure it's in sync
+    public boolean syncContent(ContentReference reference) {
+        if (!contentRepository.hasContent(reference.getHash())) {
+            getDeploymentFiles(reference); // Make sure it's in sync
         }
-        return contentRepository.hasContent(hash);
+        return contentRepository.hasContent(reference.getHash());
     }
 
     @Override
@@ -111,42 +112,53 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     }
 
     @Override
-    public void removeContent(byte[] hash, Object reference) {
-        contentRepository.removeContent(hash, reference);
+    public void removeContent(ContentReference reference) {
+        contentRepository.removeContent(reference);
     }
 
     @Override
-    public final File[] getDeploymentFiles(byte[] deploymentHash) {
-        final File root = getDeploymentRoot(deploymentHash);
+    public final File[] getDeploymentFiles(ContentReference reference) {
+        final File root = getDeploymentRoot(reference);
         return root.listFiles();
     }
 
     @Override
-    public File getDeploymentRoot(byte[] deploymentHash) {
-        String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
-        final File file = localRepository.getDeploymentRoot(deploymentHash);
-        if(! file.exists()) {
-            return getFile(hex, DomainServerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
+    public File getDeploymentRoot(ContentReference reference) {
+        final File file = localRepository.getDeploymentRoot(reference);
+        if (!file.exists()) {
+            return getFile(reference, DomainServerProtocol.PARAM_ROOT_ID_DEPLOYMENT);
         }
         return file;
     }
 
-    private File getFile(final String relativePath, final byte repoId) {
+    private File getFile(final ContentReference reference, final byte repoId) {
         final RemoteFileRepositoryExecutor executor = this.remoteFileRepositoryExecutor;
         if (executor == null) {
             throw MESSAGES.couldNotFindHcFileRepositoryConnection();
         }
-        return remoteFileRepositoryExecutor.getFile(relativePath, repoId, localDeploymentFolder);
+        File file = remoteFileRepositoryExecutor.getFile(reference.getHexHash(), repoId, localDeploymentFolder);
+        addContentReference(reference);
+        return file;
     }
 
     @Override
-    public void deleteDeployment(byte[] deploymentHash) {
-        localRepository.deleteDeployment(deploymentHash);
+    public void deleteDeployment(ContentReference reference) {
+        if (hasContent(reference.getHash())) {//Don't delete referenced content in the back
+            removeContent(reference);
+        } else {
+            localRepository.deleteDeployment(reference);
+            removeContent(reference);
+        }
     }
 
     @Override
-    public void addContentReference(byte[] hash, Object reference) {
-        contentRepository.addContentReference(hash, reference);
+    public void addContentReference(ContentReference reference) {
+        contentRepository.addContentReference(reference);
+    }
+
+    @Override
+    public Map<String, Set<String>> cleanObsoleteContent() {
+        return contentRepository.cleanObsoleteContent();
     }
 
 }

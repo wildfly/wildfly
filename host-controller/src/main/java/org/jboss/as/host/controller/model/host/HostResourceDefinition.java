@@ -96,6 +96,7 @@ import org.jboss.as.server.controller.resources.ModuleLoadingResourceDefinition;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
+import org.jboss.as.server.operations.CleanObsoleteContentHandler;
 import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
@@ -291,6 +292,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerOperationHandler(ResolveExpressionHandler.DEFINITION, ResolveExpressionHandler.INSTANCE);
         hostRegistration.registerOperationHandler(ResolveExpressionOnHostHandler.DEFINITION, ResolveExpressionOnHostHandler.INSTANCE);
         hostRegistration.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
+        hostRegistration.registerOperationHandler(CleanObsoleteContentHandler.DEFINITION, CleanObsoleteContentHandler.createOperation(contentRepository));
 
         XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.DEFINITION, xmh);

@@ -46,6 +46,7 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.server.Services;
+import org.jboss.as.server.deployment.ContentCleanerService;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -158,8 +159,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
-
         DomainModelControllerService.addService(serviceTarget, environment, runningModeControl, processState, bootstrapListener, hostPathManagerService);
+        ContentCleanerService.addServiceOnHostController(serviceTarget, DomainModelControllerService.SERVICE_NAME, HC_EXECUTOR_SERVICE_NAME, HC_SCHEDULED_EXECUTOR_SERVICE_NAME);
     }
 
     @Override

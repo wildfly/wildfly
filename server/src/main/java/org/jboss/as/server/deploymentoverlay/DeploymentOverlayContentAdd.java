@@ -48,10 +48,12 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -104,7 +106,7 @@ public class DeploymentOverlayContentAdd extends AbstractAddStepHandler {
         if (content.hasDefined(HASH)) {
             managedContentValidator.validate(content);
             hash = content.require(HASH).asBytes();
-            addFromHash(hash, name, path, context);
+            addFromHash(hash, name, path, address, context);
         } else {
             hash = addFromContentAdditionParameter(context, content);
 
@@ -118,8 +120,7 @@ public class DeploymentOverlayContentAdd extends AbstractAddStepHandler {
             }
             transformers.add(new CompositeOperationAwareTransformer(slave));
         }
-
-
+        contentRepository.addContentReference(ModelContentReference.fromModelAddress(address, hash));
 
         ModelNode modified = operation.clone();
         modified.get(CONTENT).clone();
@@ -127,7 +128,7 @@ public class DeploymentOverlayContentAdd extends AbstractAddStepHandler {
         for (AttributeDefinition attr : DeploymentOverlayContentDefinition.attributes()) {
             attr.validateAndSet(modified, resource.getModel());
         }
-        if (!contentRepository.syncContent(hash)) {
+        if (!contentRepository.syncContent(ModelContentReference.fromModelAddress(address, hash))) {
             throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
         }
     }
@@ -142,11 +143,12 @@ public class DeploymentOverlayContentAdd extends AbstractAddStepHandler {
             throw ServerMessages.MESSAGES.multipleContentItemsNotSupported();
     }
 
-    byte[] addFromHash(byte[] hash, String deploymentOverlayName, final String contentName, final OperationContext context) throws OperationFailedException {
+    byte[] addFromHash(byte[] hash, String deploymentOverlayName, final String contentName, final PathAddress address, final OperationContext context) throws OperationFailedException {
+        ContentReference reference = ModelContentReference.fromModelAddress(address, hash);
         if(remoteRepository != null) {
-            remoteRepository.getDeploymentFiles(hash);
+            remoteRepository.getDeploymentFiles(reference);
         }
-        if (!contentRepository.syncContent(hash)) {
+        if (!contentRepository.syncContent(reference)) {
             if (context.isBooting()) {
                 if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
                     // The deployment content is missing, which would be a fatal boot error if we were going to actually

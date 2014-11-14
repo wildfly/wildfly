@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,6 +45,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
@@ -102,7 +102,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
         // Keep track of runtime name of deployment we are replacing for use in Stage.RUNTIME
         final String replacedRuntimeName = RUNTIME_NAME.resolveModelAttribute(context, deploymentModel).asString();
-
+        final PathAddress address = PathAddress.pathAddress(deploymentPath);
         // Keep track of hash we are replacing so we can drop it from the content repo if all is well
         ModelNode replacedContent = deploymentModel.get(CONTENT).get(0);
         final byte[] replacedHash = replacedContent.hasDefined(CONTENT_HASH.getName())
@@ -115,8 +115,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
             newHash = CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes();
-
-            contentItem = addFromHash(newHash);
+            ContentReference reference = ModelContentReference.fromModelAddress(address, newHash);
+            contentItem = addFromHash(reference);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
             newHash = contentItem.getHash();
@@ -156,24 +156,24 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                 if (resultAction == ResultAction.KEEP) {
                     if (replacedHash != null  && (newHash == null || !Arrays.equals(replacedHash, newHash))) {
                         // The old content is no longer used; clean from repos
-                        contentRepository.removeContent(replacedHash, name);
+                        contentRepository.removeContent(ModelContentReference.fromModelAddress(address, replacedHash));
                     }
                     if (newHash != null) {
-                        contentRepository.addContentReference(newHash, name);
+                        contentRepository.addContentReference(ModelContentReference.fromModelAddress(address, newHash));
                     }
                 } else if (newHash != null && (replacedHash == null || !Arrays.equals(replacedHash, newHash))) {
                     // Due to rollback, the new content isn't used; clean from repos
-                    contentRepository.removeContent(newHash, name);
+                    contentRepository.removeContent(ModelContentReference.fromModelAddress(address, newHash));
                 }
             }
         });
     }
 
-    DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash) throws OperationFailedException {
-        if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+    DeploymentHandlerUtil.ContentItem addFromHash(ContentReference reference) throws OperationFailedException {
+        if (!contentRepository.syncContent(reference)) {
+            throw ServerMessages.MESSAGES.noSuchDeploymentContent(reference.getHexHash());
         }
-        return new DeploymentHandlerUtil.ContentItem(hash);
+        return new DeploymentHandlerUtil.ContentItem(reference.getHash());
     }
 
     DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {

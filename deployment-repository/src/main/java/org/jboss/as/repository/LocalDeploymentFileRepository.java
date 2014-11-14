@@ -36,24 +36,24 @@ public class LocalDeploymentFileRepository implements DeploymentFileRepository {
 
     /** {@inheritDoc} */
     @Override
-    public File[] getDeploymentFiles(byte[] deploymentHash) {
-        return getDeploymentRoot(deploymentHash).listFiles();
+    public File[] getDeploymentFiles(ContentReference reference) {
+        return getDeploymentRoot(reference).listFiles();
     }
 
     /** {@inheritDoc} */
     @Override
-    public File getDeploymentRoot(byte[] deploymentHash) {
-        if (deploymentHash == null || deploymentHash.length == 0) {
+    public File getDeploymentRoot(ContentReference reference) {
+        if (reference == null || reference.getHexHash().isEmpty()) {
             return deploymentRoot;
         }
-        String hex = HashUtil.bytesToHexString(deploymentHash);
+        String hex = reference.getHexHash();
         File first = new File(deploymentRoot, hex.substring(0,2));
         return new File(first, hex.substring(2));
     }
 
     @Override
-    public void deleteDeployment(byte[] deploymentHash) {
-        File deployment = getDeploymentRoot(deploymentHash);
+    public void deleteDeployment(ContentReference reference) {
+        File deployment = getDeploymentRoot(reference);
         if (deployment != deploymentRoot) {
             deleteRecursively(deployment);
             if (deployment.getParentFile().list().length == 0) {

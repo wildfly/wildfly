@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.as.protocol.StreamUtils;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -60,22 +61,31 @@ public interface ContentRepository {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("content-repository");
 
     /**
+     * Time after which a marked obsolete content will be removed.
+     * Currently 5 minutes.
+     */
+    long OBSOLETE_CONTENT_TIMEOUT = 300000L;
+
+    String DELETED_CONTENT = "deleted-contents";
+    String MARKED_CONTENT = "marked-contents";
+
+    /**
      * Add the given content to the repository along with a reference tracked by {@code name}.
      *
      * @param stream stream from which the content can be read. Cannot be <code>null</code>
-     * @return the hash of the content that will be used as an internal identifier
-     *         for the content. Will not be <code>null</code>
+     * @return the hash of the content that will be used as an internal identifier for the content. Will not be
+     * <code>null</code>
      * @throws IOException if there is a problem reading the stream
      */
     byte[] addContent(InputStream stream) throws IOException;
 
     /**
-     * Adds a reference to the content hash.
+     * Adds a reference to the content.
      *
-     * @param hash the hash of the deployment
-     * @param reference An identifier which must honour the equals() and hashCode() contracts. In the case of a deployment, this will be the deployment name. This is also used in {@link #removeContent(byte[], String)}
+     * @param reference a reference to the content to be referenced. This is also used in
+     * {@link #removeContent(ContentReference reference)}
      */
-    void addContentReference(byte[] hash, Object reference);
+    void addContentReference(ContentReference reference);
 
     /**
      * Get the content as a virtual file.
@@ -91,41 +101,59 @@ public interface ContentRepository {
      *
      * @param hash the hash. Cannot be {@code null}
      *
-     * @return {@code true} if the repository has content with the given hash
+     * @return {@code true} if the repository has content with the given hash.
      */
     boolean hasContent(byte[] hash);
 
     /**
-     * Synchronize content with the given hash. This may be used in favor of {@linkplain #hasContent(byte[])}
-     * to explicitly allow additional operations to synchronize the content.
+     * Synchronize content with the given reference. This may be used in favor of {@linkplain #hasContent(byte[])} to
+     * explicitly allow additional operations to synchronize the local content with some external repository.
      *
-     * @param hash the hash. Cannot be {@code null}
-     * @return {@code true} if the repository has content with the given hash
+     * @param reference the reference to be synchronized. Cannot be {@code null}
+     *
+     * @return {@code true} if the repository has content with the given reference
      */
-    boolean syncContent(byte[] hash);
+    boolean syncContent(ContentReference reference);
 
     /**
      * Remove the given content from the repository.
      *
-     * Remove the given content from the repository. The reference for {@code name} will be removed, and if there are no references left the deployment will be totally removed
-     * @param hash the hash. Cannot be {@code null}
-     * @param reference An identifier which must honour the equals() and hashCode() contracts. In the case of a deployment, this will be the deployment name. This is also used in {@link #addContentReference(byte[], Object)}
+     * Remove the given content from the repository. The reference will be removed, and if there are no references left
+     * the content will be totally removed.
+     *
+     * @param reference a reference to the content to be unreferenced. This is also used in
+     * {@link #addContentReference(ContentReference reference)}
      */
-    void removeContent(byte[] hash, Object reference);
+    void removeContent(ContentReference reference);
+
+    /**
+     * Clean content that is not referenced from the repository.
+     *
+     * Remove the contents that are no longer referenced from the repository.
+     *
+     * @return the list of obsolete contents that were removed and the list of obsolete contents that were marked to
+     * be removed.
+     */
+    Map<String, Set<String>> cleanObsoleteContent();
 
     static class Factory {
 
         public static void addService(final ServiceTarget serviceTarget, final File repoRoot) {
-            ContentRepositoryImpl contentRepository = new ContentRepositoryImpl(repoRoot);
+            ContentRepositoryImpl contentRepository = new ContentRepositoryImpl(repoRoot, OBSOLETE_CONTENT_TIMEOUT);
             serviceTarget.addService(SERVICE_NAME, contentRepository).install();
         }
 
         public static ContentRepository create(final File repoRoot) {
-            return new ContentRepositoryImpl(repoRoot);
+            return create(repoRoot, OBSOLETE_CONTENT_TIMEOUT);
+        }
+
+        static ContentRepository create(final File repoRoot, long timeout) {
+            return new ContentRepositoryImpl(repoRoot, timeout);
         }
 
         /**
          * Default implementation of {@link ContentRepository}.
+         *
          * @author John Bailey
          */
         private static class ContentRepositoryImpl implements ContentRepository, Service<ContentRepository> {
@@ -133,11 +161,14 @@ public interface ContentRepository {
             protected static final String CONTENT = "content";
             private final File repoRoot;
             protected final MessageDigest messageDigest;
-            private final Map<String, Set<Object>> deploymentHashReferences = new HashMap<String, Set<Object>>();
+            private final Map<String, Set<ContentReference>> contentHashReferences = new HashMap<String, Set<ContentReference>>();
+            private final Map<String, Long> obsoleteContents = new HashMap<String, Long>();
+            private final long obsolescenceTimeout;
 
-            protected ContentRepositoryImpl(final File repoRoot) {
-                if (repoRoot == null)
+            protected ContentRepositoryImpl(final File repoRoot, long obsolescenceTimeout) {
+                if (repoRoot == null) {
                     throw DeploymentRepositoryMessages.MESSAGES.nullVar("repoRoot");
+                }
                 if (repoRoot.exists()) {
                     if (!repoRoot.isDirectory()) {
                         throw DeploymentRepositoryMessages.MESSAGES.notADirectory(repoRoot.getAbsolutePath());
@@ -150,7 +181,7 @@ public interface ContentRepository {
                     throw DeploymentRepositoryMessages.MESSAGES.cannotCreateDirectory(repoRoot.getAbsolutePath());
                 }
                 this.repoRoot = repoRoot;
-
+                this.obsolescenceTimeout = obsolescenceTimeout;
                 try {
                     this.messageDigest = MessageDigest.getInstance("SHA-1");
                 } catch (NoSuchAlgorithmException e) {
@@ -177,8 +208,7 @@ public interface ContentRepository {
                         fos.getFD().sync();
                         fos.close();
                         fos = null;
-                    }
-                    finally {
+                    } finally {
                         safeClose(fos);
                     }
                     sha1Bytes = messageDigest.digest();
@@ -200,13 +230,12 @@ public interface ContentRepository {
             }
 
             @Override
-            public void addContentReference(byte[] hash, Object reference) {
-                String hashString = HashUtil.bytesToHexString(hash);
-                synchronized (deploymentHashReferences) {
-                    Set<Object> references = deploymentHashReferences.get(hashString);
+            public void addContentReference(ContentReference reference) {
+                synchronized (contentHashReferences) {
+                    Set<ContentReference> references = contentHashReferences.get(reference.getHexHash());
                     if (references == null) {
-                        references = new HashSet<Object>();
-                        deploymentHashReferences.put(hashString, references);
+                        references = new HashSet<ContentReference>();
+                        contentHashReferences.put(reference.getHexHash(), references);
                     }
                     references.add(reference);
                 }
@@ -220,8 +249,8 @@ public interface ContentRepository {
             }
 
             @Override
-            public boolean syncContent(final byte[] hash) {
-                return hasContent(hash);
+            public boolean syncContent(ContentReference reference) {
+                return hasContent(reference.getHash());
             }
 
             @Override
@@ -312,11 +341,7 @@ public interface ContentRepository {
                 try {
                     fos = new FileOutputStream(dest);
                     fis = new FileInputStream(src);
-                    byte[] bytes = new byte[8192];
-                    int read;
-                    while ((read = fis.read(bytes)) > -1) {
-                        fos.write(bytes, 0, read);
-                    }
+                    StreamUtils.copyStream(fis, fos);
                     fos.flush();
                     fos.getFD().sync();
                     fos.close();
@@ -328,37 +353,102 @@ public interface ContentRepository {
             }
 
             @Override
-            public void removeContent(byte[] hash, Object reference) {
-                String hashString = HashUtil.bytesToHexString(hash);
-                synchronized (deploymentHashReferences) {
-                    final Set<Object> references = deploymentHashReferences.get(hashString);
+            public void removeContent(ContentReference reference) {
+                synchronized (contentHashReferences) {
+                    final Set<ContentReference> references = contentHashReferences.get(reference.getHexHash());
                     if (references != null) {
                         references.remove(reference);
-                        if (references.size() != 0) {
+                        if (!references.isEmpty()) {
                             return;
                         }
-                        deploymentHashReferences.remove(hashString);
+                        contentHashReferences.remove(reference.getHexHash());
                     }
                 }
 
-                File file = getDeploymentContentFile(hash, true);
+                File file = getDeploymentContentFile(reference.getHash(), true);
                 if(!file.delete()) {
-                    DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(file.getName());
-                    file.deleteOnExit();
+                    DeploymentRepositoryLogger.ROOT_LOGGER.contentDeletionError(file.getAbsolutePath());
                 }
                 File parent = file.getParentFile();
                 if (!parent.delete()) {
-                    DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(parent.getName());
-                    parent.deleteOnExit();
+                    DeploymentRepositoryLogger.ROOT_LOGGER.contentDeletionError(parent.getAbsolutePath());
                 }
-                parent = parent.getParentFile();
-                if (parent.list().length == 0) {
-                    if (!parent.delete()) {
-                        DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(parent.getName());
-                        parent.deleteOnExit();
+                File grandParent = parent.getParentFile();
+                if (grandParent.list().length == 0) {
+                    if (!grandParent.delete()) {
+                        DeploymentRepositoryLogger.ROOT_LOGGER.contentDeletionError(grandParent.getAbsolutePath());
                     }
                 }
                 DeploymentRepositoryLogger.ROOT_LOGGER.contentRemoved(file.getAbsolutePath());
+            }
+
+            /**
+             * Clean obsolete contents from the content repository.
+             * It will first mark contents as obsolete then after some time if these contents are still obsolete they
+             * will be removed.
+             *
+             * @return a map containing the list of marked contents and the list of deleted contents.
+             */
+            @Override
+            public Map<String, Set<String>> cleanObsoleteContent() {
+                Map<String, Set<String>> cleanedContents = new HashMap<String, Set<String>>(2);
+                cleanedContents.put(MARKED_CONTENT, new HashSet<String>());
+                cleanedContents.put(DELETED_CONTENT, new HashSet<String>());
+                synchronized (contentHashReferences) {
+                    for (ContentReference fsContent : listLocalContents()) {
+                        if (!contentHashReferences.containsKey(fsContent.getHexHash())) { //We have no refrence to this content
+                            if(markAsObsolete(fsContent)) {
+                                cleanedContents.get(DELETED_CONTENT).add(fsContent.getContentIdentifier());
+                            } else {
+                                cleanedContents.get(MARKED_CONTENT).add(fsContent.getContentIdentifier());
+                            }
+                        } else {
+                            obsoleteContents.remove(fsContent.getHexHash()); //Remove existing references from obsoleteContents
+                        }
+                    }
+                }
+                return cleanedContents;
+            }
+
+            /**
+             * Mark content as obsolete. If content was already marked for obsolescenceTimeout ms then it is removed.
+             *
+             * @param ref the content refrence to be marked as obsolete.
+             *
+             * @return true if the content refrence is removed, fale otherwise.
+             */
+            private boolean markAsObsolete(ContentReference ref) {
+                if (obsoleteContents.containsKey(ref.getHexHash())) { //This content is already marked as obsolete
+                    if (obsoleteContents.get(ref.getHexHash()) + obsolescenceTimeout < System.currentTimeMillis()) {
+                        DeploymentRepositoryLogger.ROOT_LOGGER.obsoleteContentCleaned(ref.getContentIdentifier());
+                        removeContent(ref);
+                        return true;
+                    }
+                } else {
+                    obsoleteContents.put(ref.getHexHash(), System.currentTimeMillis()); //Mark content as obsolete
+                }
+                return false;
+            }
+
+            private Set<ContentReference> listLocalContents() {
+                Set<ContentReference> localReferences = new HashSet<ContentReference>();
+                File[] rootHashes = repoRoot.listFiles();
+                for (File rootHash : rootHashes) {
+                    if (rootHash.isDirectory()) {
+                        File[] complementaryHashes = rootHash.listFiles();
+                        if (complementaryHashes == null || complementaryHashes.length == 0) {
+                            ContentReference reference = new ContentReference(rootHash.getAbsolutePath(), rootHash.getName());
+                            localReferences.add(reference);
+                        } else {
+                            for (File complementaryHash : complementaryHashes) {
+                                String hash = rootHash.getName() + complementaryHash.getName();
+                                ContentReference reference = new ContentReference(complementaryHash.getAbsolutePath(), hash);
+                                localReferences.add(reference);
+                            }
+                        }
+                    }
+                }
+                return localReferences;
             }
 
             protected static void safeClose(final Closeable closeable) {

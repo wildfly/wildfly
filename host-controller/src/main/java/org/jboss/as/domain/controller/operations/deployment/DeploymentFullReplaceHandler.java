@@ -42,10 +42,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.deployment.DeploymentHandlerUtils;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -88,6 +90,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
         String runtimeName = operation.hasDefined(RUNTIME_NAME)
                 ? DeploymentAttributes.RUNTIME_NAME.resolveModelAttribute(context, operation).asString() : name;
+        final PathAddress address = PathAddress.pathAddress(deploymentPath);
         // clone the content param, so we can modify it to our own content
         ModelNode content = operation.require(CONTENT).clone();
 
@@ -121,7 +124,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             } else {
                 // We are a slave controller
                 // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(newHash);
+                fileRepository.getDeploymentFiles(ModelContentReference.fromModelAddress(address, newHash));
             }
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
@@ -174,21 +177,23 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                 if (resultAction == ResultAction.KEEP) {
                     if (replacedHash != null  && (newHash == null || !Arrays.equals(replacedHash, newHash))) {
                         // The old content is no longer used; clean from repos
-                        if(contentRepository != null) {
-                            contentRepository.removeContent(replacedHash, name);
+                        ContentReference reference = ModelContentReference.fromModelAddress(address, replacedHash);
+                        if (contentRepository != null) {
+                            contentRepository.removeContent(reference);
                         } else {
-                            fileRepository.deleteDeployment(replacedHash);
+                            fileRepository.deleteDeployment(reference);
                         }
                     }
                     if (newHash != null && contentRepository != null) {
-                        contentRepository.addContentReference(newHash, name);
+                        contentRepository.addContentReference(ModelContentReference.fromModelAddress(address, newHash));
                     }
                 } else if (newHash != null && (replacedHash == null || !Arrays.equals(replacedHash, newHash))) {
                     // Due to rollback, the new content isn't used; clean from repos
-                    if (contentRepository != null ) {
-                        contentRepository.removeContent(newHash, name);
+                    ContentReference reference = ModelContentReference.fromModelAddress(address, newHash);
+                    if (contentRepository != null) {
+                        contentRepository.removeContent(reference);
                     } else {
-                        fileRepository.deleteDeployment(newHash);
+                        fileRepository.deleteDeployment(reference);
                     }
                 }
             }

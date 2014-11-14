@@ -68,6 +68,7 @@ import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.RuntimeExpressionResolver;
@@ -268,17 +269,17 @@ class TestModelControllerService extends ModelTestModelControllerService {
         return new HostFileRepository() {
 
             @Override
-            public File getDeploymentRoot(byte[] deploymentHash) {
+            public File getDeploymentRoot(ContentReference reference) {
                 return null;
             }
 
             @Override
-            public File[] getDeploymentFiles(byte[] deploymentHash) {
+            public File[] getDeploymentFiles(ContentReference reference) {
                 return null;
             }
 
             @Override
-            public void deleteDeployment(byte[] deploymentHash) {
+            public void deleteDeployment(ContentReference reference) {
             }
 
             @Override

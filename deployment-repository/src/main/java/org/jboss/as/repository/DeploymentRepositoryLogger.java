@@ -22,6 +22,7 @@
 
 package org.jboss.as.repository;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -61,4 +62,12 @@ interface DeploymentRepositoryLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 14902, value = "Cannot delete temp file %s, will be deleted on exit")
     void cannotDeleteTempFile(String path);
+
+    @LogMessage(level = INFO)
+    @Message(id = 14903, value = "Content %s is obsolete and will be removed")
+    void obsoleteContentCleaned(String contentIdentifier);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14904, value = "Couldn't delete content %s")
+    void contentDeletionError(String name);
 }

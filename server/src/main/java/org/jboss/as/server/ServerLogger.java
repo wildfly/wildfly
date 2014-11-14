@@ -417,4 +417,16 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15975, value = "Failed to connect to host-controller, retrying.")
     void failedToConnectToHostController();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15976, value = "Error cleaning obsolete content %s ")
+    void failedToCleanObsoleteContent(String failure);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15977, value = "Error cleaning obsolete content")
+    void failedToCleanObsoleteContent(@Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15978, value = "Error stopping content repository cleaner")
+    void failedToStopRepositoryCleaner(@Cause Exception e);
 }

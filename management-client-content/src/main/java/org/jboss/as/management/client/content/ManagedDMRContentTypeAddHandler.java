@@ -28,7 +28,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
@@ -51,14 +50,12 @@ public class ManagedDMRContentTypeAddHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        PathElement pe = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement();
-
+        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         ModelNode hashNode = HASH.validateOperation(operation);
         byte[] hash = hashNode.isDefined() ? hashNode.asBytes() : null;
 
         // Create and add the specialized resource type we use for this resource tree
-        ManagedDMRContentTypeResource resource = new ManagedDMRContentTypeResource(pe, childType, hash, contentRepository);
+        ManagedDMRContentTypeResource resource = new ManagedDMRContentTypeResource(address, childType, hash, contentRepository);
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
 
         context.stepCompleted();

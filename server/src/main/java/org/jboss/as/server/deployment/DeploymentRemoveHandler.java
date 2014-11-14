@@ -109,7 +109,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
 
                                 for (byte[] hash : removedHashes) {
                                     try {
-                                        contentRepository.removeContent(hash, name);
+                                        contentRepository.removeContent(ModelContentReference.fromDeploymentName(name, hash));
                                     } catch (Exception e) {
                                         //TODO
                                         ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));

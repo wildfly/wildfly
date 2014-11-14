@@ -34,6 +34,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -91,6 +92,7 @@ import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.ServerEnvironment;
@@ -527,8 +529,8 @@ public class ModelParserUtils {
         }
 
         @Override
-        public boolean syncContent(byte[] hash) {
-            return hasContent(hash);
+        public boolean syncContent(ContentReference reference) {
+            return hasContent(reference.getHash());
         }
 
         @Override
@@ -537,13 +539,17 @@ public class ModelParserUtils {
         }
 
         @Override
-        public void removeContent(byte[] hash, Object reference) {
+        public void removeContent(ContentReference reference) {
         }
 
         @Override
-        public void addContentReference(byte[] hash, Object reference) {
+        public void addContentReference(ContentReference reference) {
         }
 
+        @Override
+        public Map<String, Set<String>> cleanObsoleteContent() {
+            return null;
+        }
     }
 
     private static class MockFileRepository implements HostFileRepository {
@@ -559,17 +565,17 @@ public class ModelParserUtils {
         }
 
         @Override
-        public File[] getDeploymentFiles(byte[] deploymentHash) {
+        public File[] getDeploymentFiles(ContentReference reference) {
             return null;
         }
 
         @Override
-        public File getDeploymentRoot(byte[] deploymentHash) {
+        public File getDeploymentRoot(ContentReference reference) {
             return null;
         }
 
         @Override
-        public void deleteDeployment(byte[] deploymentHash) {
+        public void deleteDeployment(ContentReference reference) {
         }
     }
 

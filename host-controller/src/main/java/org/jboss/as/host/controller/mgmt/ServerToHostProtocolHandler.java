@@ -65,6 +65,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.repository.RemoteFileRequestAndHandler;
 import org.jboss.as.server.mgmt.domain.DomainServerProtocol;
@@ -306,7 +307,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
             final RemoteFileRequestAndHandler.RootFileReader reader = new RemoteFileRequestAndHandler.RootFileReader() {
                 public File readRootFile(byte rootId, String filePath) throws RequestProcessingException {
                     byte[] hash = HashUtil.hexStringToByteArray(filePath);
-                    return deploymentFileRepository.getDeploymentRoot(hash);
+                    return deploymentFileRepository.getDeploymentRoot(new ContentReference(filePath, hash));
                 }
             };
             ServerToHostRemoteFileRequestAndHandler.INSTANCE.handleRequest(input, reader, context);

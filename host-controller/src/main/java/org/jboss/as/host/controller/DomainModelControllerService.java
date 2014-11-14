@@ -253,8 +253,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private static ManagedAuditLogger createAuditLogger(HostControllerEnvironment environment) {
-        final File auditLogDir = new File(environment.getDomainDataDir(), "mgmt-audit");
-        final File domainLogFile = new File(auditLogDir, "mgmt-audit.log");
         return new ManagedAuditLoggerImpl(environment.getProductConfig().resolveVersion(), false);
     }
 

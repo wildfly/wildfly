@@ -43,6 +43,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.deployment.DeploymentHandlerUtils;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -94,7 +95,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
         ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
-        PathAddress address = PathAddress.pathAddress(opAddr);
+        final PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
         newModel.get(RUNTIME_NAME.getName()).set(runtimeName);
@@ -121,7 +122,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
                 }
             } else if (fileRepository != null) {
                 // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(hash);
+                fileRepository.getDeploymentFiles(ModelContentReference.fromModelAddress(address, hash));
             }
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
@@ -154,7 +155,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
             context.completeStep(new OperationContext.ResultHandler() {
                 public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if (resultAction == ResultAction.KEEP) {
-                        contentRepository.addContentReference(contentHash, name);
+                        contentRepository.addContentReference(ModelContentReference.fromModelAddress(address, contentHash));
                     }
                 }
             });

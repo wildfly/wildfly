@@ -121,8 +121,10 @@ import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
+import org.jboss.as.repository.ContentReference;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.as.server.operations.SetServerGroupHostHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
@@ -723,21 +725,21 @@ public final class ManagedServerOperationsFactory {
 
                 ModelNode domainDeployment = domainModel.require(DEPLOYMENT).require(name);
                 ModelNode deploymentContent = domainDeployment.require(CONTENT).clone();
-
+                PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name));
                 if (remoteRepository != null) {
                     // Make sure we have a copy of the deployment in the local repo
                     for (ModelNode content : deploymentContent.asList()) {
                         if ((content.hasDefined(HASH))) {
                             byte[] hash = content.require(HASH).asBytes();
-                            File[] files = domainController.getLocalFileRepository().getDeploymentFiles(hash);
+                            ContentReference reference = ModelContentReference.fromModelAddress(addr, hash);
+                            File[] files = domainController.getLocalFileRepository().getDeploymentFiles(reference);
                             if (files == null || files.length == 0) {
-                                remoteRepository.getDeploymentFiles(hash);
+                                remoteRepository.getDeploymentFiles(reference);
                             }
                         }
                     }
                 }
 
-                PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name));
                 ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
                 addOp.get(RUNTIME_NAME).set(details.get(RUNTIME_NAME));
                 addOp.get(CONTENT).set(deploymentContent);
@@ -775,10 +777,11 @@ public final class ManagedServerOperationsFactory {
                         final String contentName = content.getName();
                         final ModelNode contentDetails = content.getValue();
                         byte[] hash = contentDetails.require(CONTENT).asBytes();
-                        File[] files = domainController.getLocalFileRepository().getDeploymentFiles(hash);
+                        ContentReference reference = ModelContentReference.fromModelAddress(addr, hash);
+                        File[] files = domainController.getLocalFileRepository().getDeploymentFiles(reference);
                         if (files == null || files.length == 0) {
                             if (remoteRepository != null) {
-                                remoteRepository.getDeploymentFiles(hash);
+                                remoteRepository.getDeploymentFiles(reference);
                             }
                         }
                         addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY, name), PathElement.pathElement(CONTENT, contentName));

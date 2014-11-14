@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -73,7 +72,7 @@ public class DeploymentOverlayContentDefinition extends SimpleResourceDefinition
         super(DeploymentOverlayModel.CONTENT_PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY,ModelDescriptionConstants.CONTENT),
                 new DeploymentOverlayContentAdd(contentRepository, remoteRepository),
-                ModelOnlyRemoveStepHandler.INSTANCE);
+                new DeploymentOverlayContentRemove(contentRepository));
         this.contentRepository = contentRepository;
         readContent = new SimpleOperationDefinition(READ_CONTENT, getResourceDescriptionResolver());
     }

@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ModelContentReference;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -55,30 +56,32 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
     private DeploymentRemoveHandler() {
     }
 
-    public static DeploymentRemoveHandler createForSlave(DeploymentFileRepository fileRepository) {
-        return new SlaveDeploymentRemoveHandler(fileRepository);
+    public static DeploymentRemoveHandler createForSlave(DeploymentFileRepository fileRepository, ContentRepository contentRepository) {
+        return new SlaveDeploymentRemoveHandler(fileRepository, contentRepository);
     }
 
     public static DeploymentRemoveHandler createForMaster(ContentRepository contentRepository) {
         return new MasterDeploymentRemoveHandler(contentRepository);
     }
 
+    @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         checkCanRemove(context, operation);
-        final String name = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
         context.addStep(new OperationStepHandler() {
+            @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                 context.completeStep(new OperationContext.ResultHandler() {
                     @Override
                     public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                         if (resultAction != ResultAction.ROLLBACK) {
-                            removeContent(name, deploymentHashes);
+                            removeContent(address, deploymentHashes);
                         }
                     }
                 });
@@ -106,7 +109,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
     }
 
-    abstract void removeContent(String name, List<byte[]> hashes);
+    abstract void removeContent(PathAddress address, List<byte[]> hashes);
 
     private static class MasterDeploymentRemoveHandler extends DeploymentRemoveHandler {
         final ContentRepository contentRepository;
@@ -117,11 +120,11 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
 
         @Override
-        void removeContent(String name, List<byte[]> hashes) {
+        void removeContent(PathAddress address, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
                     if (contentRepository != null) {
-                        contentRepository.removeContent(hash, name);
+                        contentRepository.removeContent(ModelContentReference.fromModelAddress(address, hash));
                     }
                 } catch (Exception e) {
                     DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
@@ -133,18 +136,23 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
 
     private static class SlaveDeploymentRemoveHandler extends DeploymentRemoveHandler {
         final DeploymentFileRepository fileRepository;
+        final ContentRepository contentRepository;
 
-        private SlaveDeploymentRemoveHandler(final DeploymentFileRepository fileRepository) {
+        private SlaveDeploymentRemoveHandler(final DeploymentFileRepository fileRepository, final ContentRepository contentRepository) {
             assert fileRepository != null : "Null fileRepository";
+            assert contentRepository != null : "Null contentRepository";
             this.fileRepository = fileRepository;
+            this.contentRepository = contentRepository;
         }
 
         @Override
-        void removeContent(String name, List<byte[]> hashes) {
+        void removeContent(PathAddress address, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
-                    if (fileRepository != null) {
-                        fileRepository.deleteDeployment(hash);
+                    if (contentRepository.hasContent(hash)) {
+                        contentRepository.removeContent(ModelContentReference.fromModelAddress(address, hash));
+                    } else {
+                        fileRepository.deleteDeployment(ModelContentReference.fromModelAddress(address, hash));
                     }
                 } catch (Exception e) {
                     DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
