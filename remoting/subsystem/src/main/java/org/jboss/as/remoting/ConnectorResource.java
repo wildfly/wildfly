@@ -61,6 +61,7 @@ public class ConnectorResource extends SimpleResourceDefinition {
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
+            .setNullSignficant(true)
             .build();
 
     private ConnectorResource() {
