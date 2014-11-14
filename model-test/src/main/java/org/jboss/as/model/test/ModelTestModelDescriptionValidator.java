@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL_SIGNIFICANT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -137,6 +138,7 @@ public class ModelTestModelDescriptionValidator {
         validAttributeKeys.put(RESTART_REQUIRED, NullDescriptorValidator.INSTANCE); //TODO some more validation here
         validAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         validAttributeKeys.put(ACCESS_CONSTRAINTS, AccessConstraintValidator.INSTANCE);
+        validAttributeKeys.put(NIL_SIGNIFICANT, BooleanDescriptorValidator.INSTANCE);
         VALID_ATTRIBUTE_KEYS = Collections.unmodifiableMap(validAttributeKeys);
 
         Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
