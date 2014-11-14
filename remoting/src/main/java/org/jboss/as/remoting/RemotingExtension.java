@@ -113,7 +113,7 @@ public class RemotingExtension implements Extension {
     }
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final SensitivityClassification REMOTING_SECURITY =
@@ -187,6 +187,7 @@ public class RemotingExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.REMOTING_1_0.getUriString(), RemotingSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.REMOTING_1_1.getUriString(), RemotingSubsystem11Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.REMOTING_1_2.getUriString(), RemotingSubsystem12Parser.INSTANCE);
     }
 
     /**

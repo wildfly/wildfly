@@ -283,7 +283,7 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
@@ -634,7 +634,7 @@
                 </core-environment>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>

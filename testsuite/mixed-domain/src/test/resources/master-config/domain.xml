@@ -395,7 +395,7 @@
                 <remote-naming/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
@@ -830,7 +830,7 @@
                 <remote-naming/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
@@ -1262,7 +1262,7 @@
                 <remote-naming/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
@@ -1692,7 +1692,7 @@
                 <remote-naming/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
@@ -2104,7 +2104,7 @@
                 <remote-naming/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+            <subsystem xmlns="urn:jboss:domain:remoting:1.2">
                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
