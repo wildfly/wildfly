@@ -29,6 +29,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} attachment keys specific to EJB3 deployment
@@ -52,6 +53,7 @@ public class EjbDeploymentAttachmentKeys {
     public static final AttachmentKey<AttachmentList<EjbInjectionSource>> EJB_INJECTIONS = AttachmentKey.createList(EjbInjectionSource.class);
 
     public static final AttachmentKey<EJBClientContext> EJB_CLIENT_CONTEXT = AttachmentKey.create(EJBClientContext.class);
+    public static final AttachmentKey<ServiceName> EJB_CLIENT_CONTEXT_SERVICE_NAME = AttachmentKey.create(ServiceName.class);
 
     /**
      * components that have been registered with the management API

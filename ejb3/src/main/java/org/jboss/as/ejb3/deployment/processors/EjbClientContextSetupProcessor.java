@@ -26,7 +26,6 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
-import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -35,10 +34,13 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * A deployment processor which associates the {@link EJBClientContext}, belonging to a deployment unit,
@@ -52,6 +54,7 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
 
     private static final Logger logger = Logger.getLogger(EjbClientContextSetupProcessor.class);
 
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -59,68 +62,78 @@ public class EjbClientContextSetupProcessor implements DeploymentUnitProcessor {
         if (module == null) {
             return;
         }
-        final EJBClientContext ejbClientContext = this.getEJBClientContext(phaseContext);
-        final ServiceController<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = (ServiceController<TCCLEJBClientContextSelectorService>) phaseContext.getServiceRegistry().getService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
-        if (tcclEJBClientContextSelectorServiceController != null) {
-            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
-            // associate the EJB client context with the deployment classloader
-            logger.debug("Registering EJB client context " + ejbClientContext + " for classloader " + module.getClassLoader());
-            tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
-        }
+
+        RegistractionService registractionService = new RegistractionService(module);
+        ServiceName registrationServiceName = deploymentUnit.getServiceName().append("ejb3","client-context","registration-service");
+        phaseContext.getServiceTarget().addService(registrationServiceName, registractionService)
+                .addDependency(getEJBClientContextServiceName(phaseContext), EJBClientContext.class, registractionService.ejbClientContextInjectedValue)
+                .addDependency(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME, TCCLEJBClientContextSelectorService.class, registractionService.tcclEJBClientContextSelectorServiceController)
+                .install();
+
+
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if(moduleDescription == null) {
+        if (moduleDescription == null) {
             return;
         }
-        //we need to make sure all our components have a dependency on the EJB client context
-        final ServiceName clientContextService = getEJBClientContextServiceName(phaseContext);
+        //we need to make sure all our components have a dependency on the EJB client context registration, which in turn implies a dependency on the context
         for(final ComponentDescription component : moduleDescription.getComponentDescriptions()) {
-            component.addDependency(clientContextService, ServiceBuilder.DependencyType.REQUIRED);
+            component.addDependency(registrationServiceName, ServiceBuilder.DependencyType.REQUIRED);
         }
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
-
-    }
-
-    private EJBClientContext getEJBClientContext(final DeploymentPhaseContext phaseContext) {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
-        final EJBClientContext ejbClientContext;
-        // The top level parent deployment unit will have the attachment containing the EJB client context
-        // service name
-        if (parentDeploymentUnit != null) {
-            ejbClientContext = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-        } else {
-            ejbClientContext = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-        }
-        if (ejbClientContext != null) {
-            return ejbClientContext;
-        }
-        logger.debug("Deployment unit " + deploymentUnit + " doesn't have any explicit EJB client context configured. " +
-                "Falling back on the default " + DefaultEjbClientContextService.DEFAULT_SERVICE_NAME + " EJB client context service");
-        final ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-        final ServiceController<EJBClientContext> ejbClientContextServiceController = (ServiceController<EJBClientContext>) serviceRegistry.getRequiredService(DefaultEjbClientContextService.DEFAULT_SERVICE_NAME);
-        return ejbClientContextServiceController.getValue();
+    public void undeploy(final DeploymentUnit deploymentUnit) {
     }
 
     private ServiceName getEJBClientContextServiceName(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final DeploymentUnit parentDeploymentUnit = deploymentUnit.getParent();
-        final EJBClientContext ejbClientContext;
         // The top level parent deployment unit will have the attachment containing the EJB client context
         // service name
         ServiceName serviceName;
         if (parentDeploymentUnit != null) {
-            ejbClientContext = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(parentDeploymentUnit.getName());
+            serviceName = parentDeploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
         } else {
-            ejbClientContext = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT);
-            serviceName = DescriptorBasedEJBClientContextService.BASE_SERVICE_NAME.append(deploymentUnit.getName());
+            serviceName = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_CLIENT_CONTEXT_SERVICE_NAME);
         }
-        if (ejbClientContext != null) {
+        if (serviceName != null) {
             return serviceName;
         }
         return DefaultEjbClientContextService.DEFAULT_SERVICE_NAME;
+    }
+
+    private static final class RegistractionService implements Service<Void> {
+
+        private final Module module;
+
+        final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelectorServiceController = new InjectedValue<>();
+        final InjectedValue<EJBClientContext> ejbClientContextInjectedValue = new InjectedValue<>();
+
+        private RegistractionService(Module module) {
+            this.module = module;
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+
+            final EJBClientContext ejbClientContext = ejbClientContextInjectedValue.getValue();
+            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
+            // associate the EJB client context with the deployment classloader
+            logger.debugf("Registering EJB client context %s for classloader %s", ejbClientContext, module.getClassLoader());
+            tcclBasedEJBClientContextSelector.registerEJBClientContext(ejbClientContext, module.getClassLoader());
+        }
+
+        @Override
+        public void stop(StopContext context) {
+            final TCCLEJBClientContextSelectorService tcclBasedEJBClientContextSelector = tcclEJBClientContextSelectorServiceController.getValue();
+            // de-associate the EJB client context with the deployment classloader
+            logger.debugf("unRegistering EJB client context for classloader %s", module.getClassLoader());
+            tcclBasedEJBClientContextSelector.unRegisterEJBClientContext(module.getClassLoader());
+        }
+
+        @Override
+        public Void getValue() throws IllegalStateException, IllegalArgumentException {
+            return null;
+        }
     }
 }
