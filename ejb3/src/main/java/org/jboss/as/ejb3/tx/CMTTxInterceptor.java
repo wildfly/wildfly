@@ -226,24 +226,30 @@ public class CMTTxInterceptor implements Interceptor {
 
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
-        final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
-        final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
-        final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, invocation.getMethod());
-        switch (attr) {
-            case MANDATORY:
-                return mandatory(invocation, component);
-            case NEVER:
-                return never(invocation, component);
-            case NOT_SUPPORTED:
-                return notSupported(invocation, component);
-            case REQUIRED:
-                return required(invocation, component, timeoutInSeconds);
-            case REQUIRES_NEW:
-                return requiresNew(invocation, component, timeoutInSeconds);
-            case SUPPORTS:
-                return supports(invocation, component);
-            default:
-                throw EjbLogger.ROOT_LOGGER.unknownTxAttributeOnInvocation(attr, invocation);
+        final TransactionManager tm = component.getTransactionManager();
+        final int oldTimeout = getCurrentTransactionTimeout(component);
+        try {
+            final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
+            final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
+            final int timeoutInSeconds = component.getTransactionTimeout(methodIntf, invocation.getMethod());
+            switch (attr) {
+                case MANDATORY:
+                    return mandatory(invocation, component);
+                case NEVER:
+                    return never(invocation, component);
+                case NOT_SUPPORTED:
+                    return notSupported(invocation, component);
+                case REQUIRED:
+                    return required(invocation, component, timeoutInSeconds);
+                case REQUIRES_NEW:
+                    return requiresNew(invocation, component, timeoutInSeconds);
+                case SUPPORTS:
+                    return supports(invocation, component);
+                default:
+                    throw EjbLogger.ROOT_LOGGER.unknownTxAttributeOnInvocation(attr, invocation);
+            }
+        } finally {
+            tm.setTransactionTimeout(oldTimeout == -1 ? 0 : oldTimeout);
         }
     }
 
@@ -328,51 +334,37 @@ public class CMTTxInterceptor implements Interceptor {
 
     protected Object required(final InterceptorContext invocation, final EJBComponent component, final int timeout) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
-        final int oldTimeout = getCurrentTransactionTimeout(component);
 
-        try {
-            if (timeout != -1) {
-                tm.setTransactionTimeout(timeout);
-            }
+        if (timeout != -1) {
+            tm.setTransactionTimeout(timeout);
+        }
 
-            final Transaction tx = tm.getTransaction();
+        final Transaction tx = tm.getTransaction();
 
-            if (tx == null) {
-                return invokeInOurTx(invocation, tm, component);
-            } else {
-                return invokeInCallerTx(invocation, tx, component);
-            }
-        } finally {
-            if (tm != null) {
-                tm.setTransactionTimeout(oldTimeout);
-            }
+        if (tx == null) {
+            return invokeInOurTx(invocation, tm, component);
+        } else {
+            return invokeInCallerTx(invocation, tx, component);
         }
     }
 
     protected Object requiresNew(InterceptorContext invocation, final EJBComponent component, final int timeout) throws Exception {
         final TransactionManager tm = component.getTransactionManager();
-        int oldTimeout = getCurrentTransactionTimeout(component);
 
-        try {
-            if (timeout != -1 && tm != null) {
-                tm.setTransactionTimeout(timeout);
-            }
+        if (timeout != -1) {
+            tm.setTransactionTimeout(timeout);
+        }
 
-            Transaction tx = tm.getTransaction();
-            if (tx != null) {
-                tm.suspend();
-                try {
-                    return invokeInOurTx(invocation, tm, component);
-                } finally {
-                    tm.resume(tx);
-                }
-            } else {
+        Transaction tx = tm.getTransaction();
+        if (tx != null) {
+            tm.suspend();
+            try {
                 return invokeInOurTx(invocation, tm, component);
+            } finally {
+                tm.resume(tx);
             }
-        } finally {
-            if (tm != null) {
-                tm.setTransactionTimeout(oldTimeout);
-            }
+        } else {
+            return invokeInOurTx(invocation, tm, component);
         }
     }
 
