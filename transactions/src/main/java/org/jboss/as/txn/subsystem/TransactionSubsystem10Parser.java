@@ -240,6 +240,10 @@ class TransactionSubsystem10Parser implements XMLStreamConstants, XMLElementRead
      *
      */
     static void parseProcessIdEnvironmentElement(XMLExtendedStreamReader reader, ModelNode coreEnvironmentAdd) throws XMLStreamException {
+        // no attributes
+        if (reader.getAttributeCount() > 0) {
+            throw unexpectedAttribute(reader, 0);
+        }
 
         // elements
         boolean encountered = false;
@@ -251,6 +255,9 @@ class TransactionSubsystem10Parser implements XMLStreamConstants, XMLElementRead
                         throw unexpectedElement(reader);
                     }
                     encountered = true;
+                    if (reader.getAttributeCount() > 0) {
+                        throw unexpectedAttribute(reader, 0);
+                    }
                     coreEnvironmentAdd.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(true);
                     requireNoContent(reader);
                     break;
