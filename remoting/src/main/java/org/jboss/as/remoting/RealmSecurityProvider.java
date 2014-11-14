@@ -137,7 +137,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             if (authMechs.contains(AuthenticationMechanism.DIGEST)) {
                 mechanisms.add(DIGEST_MD5);
                 properties.add(Property.of(SASL_OPT_REALM_PROPERTY, realm.getName()));
-                properties.add(Property.of(SASL_OPT_ALT_PROTO_PROPERTY, "remote,remoting")); // Older clients were hard coded to use 'remote' as the protocol.
+                properties.add(Property.of(SASL_OPT_ALT_PROTO_PROPERTY, "remote,remoting")); // We have used both remote and remoting - chosen standard is remote.
                 Map<String, String> mechConfig = realm.getMechanismConfig(AuthenticationMechanism.DIGEST);
 
                 boolean plainTextDigest = true;

@@ -380,7 +380,7 @@ class RemotingSubsystem11Parser implements XMLStreamConstants, XMLElementReader<
         return policy;
     }
 
-    private void parseProperties(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    void parseProperties(XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
         while (reader.nextTag() != END_ELEMENT) {
             reader.require(START_ELEMENT, Namespace.CURRENT.getUriString(), Element.PROPERTY.getLocalName());
             final Property property = readProperty(reader, true);

@@ -562,6 +562,8 @@ public class RemotingExtension implements Extension {
             writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
             ConnectorResource.SOCKET_BINDING.marshallAsAttribute(node, writer);
+            ConnectorCommon.SERVER_NAME.marshallAsAttribute(node, writer);
+            ConnectorCommon.SASL_PROTOCOL.marshallAsAttribute(node, writer);
             ConnectorResource.AUTHENTICATION_PROVIDER.marshallAsElement(node, writer);
 
             if (node.hasDefined(PROPERTY)) {

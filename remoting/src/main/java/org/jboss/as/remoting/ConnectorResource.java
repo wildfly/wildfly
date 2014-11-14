@@ -40,6 +40,8 @@ import static org.jboss.as.remoting.SaslPolicyResource.NO_PLAIN_TEXT;
 import static org.jboss.as.remoting.SaslPolicyResource.PASS_CREDENTIALS;
 import static org.jboss.as.remoting.SaslResource.REUSE_SESSION_ATTRIBUTE;
 import static org.jboss.as.remoting.SaslResource.SERVER_AUTH_ATTRIBUTE;
+import static org.jboss.as.remoting.ConnectorCommon.SASL_PROTOCOL;
+import static org.jboss.as.remoting.ConnectorCommon.SERVER_NAME;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +63,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.remoting3.RemotingOptions;
 import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -104,6 +107,13 @@ public class ConnectorResource extends SimpleResourceDefinition {
 
     protected static OptionMap getFullOptions(OperationContext context, ModelNode fullModel) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder();
+
+        builder.set(RemotingOptions.SASL_PROTOCOL, ConnectorCommon.SASL_PROTOCOL.resolveModelAttribute(context, fullModel).asString());
+        ModelNode serverName = ConnectorCommon.SERVER_NAME.resolveModelAttribute(context, fullModel);
+        if (serverName.isDefined()) {
+            builder.set(RemotingOptions.SERVER_NAME, serverName.asString());
+        }
+
         ModelNode properties = fullModel.get(PROPERTY);
         if (properties.isDefined() && properties.asInt() > 0) {
             addOptions(context, properties, builder);
@@ -225,9 +235,11 @@ public class ConnectorResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(AUTHENTICATION_PROVIDER,
-                SOCKET_BINDING, SECURITY_REALM);
+                SOCKET_BINDING, SECURITY_REALM, SERVER_NAME, SASL_PROTOCOL);
         resourceRegistration.registerReadWriteAttribute(AUTHENTICATION_PROVIDER, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SOCKET_BINDING, null, writeHandler);
         resourceRegistration.registerReadWriteAttribute(SECURITY_REALM, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(SERVER_NAME, null, writeHandler);
+        resourceRegistration.registerReadWriteAttribute(SASL_PROTOCOL, null, writeHandler);
     }
 }

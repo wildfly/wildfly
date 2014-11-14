@@ -94,6 +94,8 @@
         <xs:attribute name="socket-binding" type="name-list" use="required"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="security-realm" type="xs:string" use="optional"/>
+        <xs:attribute name="server-name" type="xs:string" use="optional" />
+        <xs:attribute name="sasl-protocol" type="xs:string" default="remote" />
     </xs:complexType>
 
     <xs:complexType name="sasl">

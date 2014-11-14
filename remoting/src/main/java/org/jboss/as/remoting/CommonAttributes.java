@@ -44,13 +44,16 @@ interface CommonAttributes {
     String PROPERTIES = "properties";
     String PROPERTY = "property";
     String QOP = "qop";
+    String REMOTE = "remote";
     String REMOTE_OUTBOUND_CONNECTION = "remote-outbound-connection";
     String REUSE_SESSION= "reuse-session";
     String SASL = "sasl";
     String SASL_POLICY = "sasl-policy";
+    String SASL_PROTOCOL = "sasl-protocol";
     String SECURITY = "security";
     String SECURITY_REALM = "security-realm";
     String SERVER_AUTH = "server-auth";
+    String SERVER_NAME = "server-name";
     String SOCKET_BINDING = "socket-binding";
     String STRENGTH = "strength";
     String SUBSYSTEM = "subsystem";

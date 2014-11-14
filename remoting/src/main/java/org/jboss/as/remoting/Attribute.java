@@ -33,7 +33,9 @@ public enum Attribute {
     /* Remoting 1.0 attributes, in alpha order */
     NAME("name"),
     OUTBOUND_SOCKET_BINDING_REF("outbound-socket-binding-ref"),
+    SASL_PROTOCOL(CommonAttributes.SASL_PROTOCOL),
     SECURITY_REALM(CommonAttributes.SECURITY_REALM),
+    SERVER_NAME(CommonAttributes.SERVER_NAME),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
     URI("uri"),
     USERNAME("username"),
