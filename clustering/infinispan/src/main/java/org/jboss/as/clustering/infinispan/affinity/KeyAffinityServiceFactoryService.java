@@ -22,7 +22,9 @@
 
 package org.jboss.as.clustering.infinispan.affinity;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -31,6 +33,7 @@ import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.affinity.impl.KeyAffinityServiceImpl;
+import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -90,7 +93,21 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
     @Override
     public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
         boolean clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
-        return clustered ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
+        return clustered ? new LifecycleKeyAffinityService<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress())) : new SimpleKeyAffinityService<>(generator);
+    }
+
+    // Workaround for ISPN-4969
+    // This implementation needs to be explicitly started and stopped
+    private static class LifecycleKeyAffinityService<K> extends KeyAffinityServiceImpl<K> {
+
+        LifecycleKeyAffinityService(Executor executor, Cache<? extends K, ?> cache, KeyGenerator<? extends K> keyGenerator, int bufferSize, Collection<Address> filter) {
+            super(executor, cache, keyGenerator, bufferSize, filter, false);
+        }
+
+        @Override
+        public void handleCacheStopped(CacheStoppedEvent event) {
+            // Do nothing, we will stop the service manually
+        }
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {
