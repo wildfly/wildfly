@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,8 +29,8 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -44,21 +44,22 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * WS server config service.
  *
  * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class ServerConfigService implements Service<ServerConfig> {
 
     private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
-    private final AbstractServerConfig serverConfig;
+    private final ServerConfigImpl serverConfig;
 
-    private ServerConfigService(final AbstractServerConfig serverConfig) {
+    private ServerConfigService(final ServerConfigImpl serverConfig) {
         this.serverConfig = serverConfig;
     }
 
@@ -97,6 +98,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
             serverConfig.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
         }
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
+        builder.addDependency(DependencyType.REQUIRED, UndertowService.UNDERTOW, UndertowService.class, serverConfig.getUndertowServiceInjector());
         for (ServiceName dep : dependencies) {
             builder.addDependency(dep);
         }
