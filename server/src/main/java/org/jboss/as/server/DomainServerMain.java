@@ -134,9 +134,13 @@ public final class DomainServerMain {
 
             // Get the host-controller server client
             final ServiceContainer container = containerFuture.get();
-            final HostControllerClient client = getRequiredService(container, HostControllerConnectionService.SERVICE_NAME, HostControllerClient.class);
-            // Reconnect to the host-controller
-            client.reconnect(hostName, port, asAuthKey, managementSubsystemEndpoint);
+            if (!container.isShutdown()) {
+                //otherwise, ServiceNotFoundException or IllegalStateException is thrown because HostControllerClient is stopped
+                final HostControllerClient client = getRequiredService(container,
+                        HostControllerConnectionService.SERVICE_NAME, HostControllerClient.class);
+                // Reconnect to the host-controller
+                client.reconnect(hostName, port, asAuthKey, managementSubsystemEndpoint);
+            }
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();
