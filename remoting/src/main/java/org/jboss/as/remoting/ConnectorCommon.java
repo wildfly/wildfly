@@ -38,11 +38,13 @@ import org.jboss.dmr.ModelType;
 class ConnectorCommon {
 
     static final SimpleAttributeDefinition SERVER_NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.SERVER_NAME, ModelType.STRING, true)
+            .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition SASL_PROTOCOL = new SimpleAttributeDefinitionBuilder(CommonAttributes.SASL_PROTOCOL, ModelType.STRING, true)
+            .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setDefaultValue(new ModelNode(REMOTE))
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
