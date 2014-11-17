@@ -80,14 +80,14 @@ public class NativeManagementResourceDefinition extends SimpleResourceDefinition
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build(); // TODO - We need some nice access constraints.
+            .build();
 
     public static final SimpleAttributeDefinition SASL_PROTOCOL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SASL_PROTOCOL, ModelType.STRING, true)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setDefaultValue(new ModelNode(ModelDescriptionConstants.REMOTE))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .build(); // TODO - We need some nice access constraints.
+            .build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = new AttributeDefinition[] {INTERFACE, NATIVE_PORT, SECURITY_REALM, SERVER_NAME, SASL_PROTOCOL };
 
