@@ -90,8 +90,10 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
         }
     }
 
-    public boolean isReady() {
-        return true;
+    @Override
+    public boolean isReadyForHttpChallenge() {
+        // Never used for HTTP authentication.
+        return false;
     }
 
     public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
@@ -101,7 +103,6 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     /*
      * Service Methods
      */
-
 
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;

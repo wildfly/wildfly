@@ -96,7 +96,10 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         return Collections.singletonMap(VERIFY_PASSWORD_CALLBACK_SUPPORTED, Boolean.TRUE.toString());
     }
 
-    public boolean isReady() {
+
+    @Override
+    public boolean isReadyForHttpChallenge() {
+        // Configured for LDAP so assume we have some users.
         return true;
     }
 

@@ -55,14 +55,14 @@ public interface CallbackHandlerService {
     Map<String, String> getConfigurationOptions();
 
     /**
-     * Is this CallbackHandler ready for handling remote requests.
+     * Is this CallbackHandler ready for handling HTTP requests that involve a challenge?
      *
-     * To be used by the HTTP interface to display an error if the administrator has not completed the set-up of their AS
+     * To be used by the HTTP interface to display an error if the administrator has not completed the set-up of their
      * installation.
      *
-     * @return indication of if this is ready for remote requests.
+     * @return indication of if this {@link CallbackHandlerService} is ready for challenge based authentication.
      */
-    boolean isReady();
+    boolean isReadyForHttpChallenge();
 
     /**
      * Obtain a CallbackHandler instance for use during authentication.

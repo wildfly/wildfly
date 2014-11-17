@@ -85,8 +85,11 @@ public class ClientCertCallbackHandler implements Service<CallbackHandlerService
         return Collections.emptyMap();
     }
 
-    public boolean isReady() {
-        return true;
+    @Override
+    public boolean isReadyForHttpChallenge() {
+        // Whilst this CallbackHandlerService may be ready to authenticate it is not
+        // involved in challenge based authentication.
+        return false;
     }
 
     public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {

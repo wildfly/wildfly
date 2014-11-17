@@ -61,11 +61,11 @@ public interface SecurityRealm {
     AuthorizingCallbackHandler getAuthorizingCallbackHandler(final AuthenticationMechanism mechanism);
 
     /**
-     * Indicate that all supported mechanisms are ready.
+     * Indicate of this security realm is ready for challenge/response style HTTP authentication.
      *
-     * @return true if all mechanisms are ready to handle requests.
+     * @return true if the security realm is ready for challenge/response style HTTP authentication.
      */
-    boolean isReady();
+    boolean isReadyForHttpChallenge();
 
     /**
      * Used to obtain the SSLContext as configured for this security realm.

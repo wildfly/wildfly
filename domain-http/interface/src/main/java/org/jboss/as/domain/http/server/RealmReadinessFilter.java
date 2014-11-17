@@ -24,6 +24,7 @@ package org.jboss.as.domain.http.server;
 
 import java.io.IOException;
 
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Filter;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
@@ -43,11 +44,15 @@ abstract class RealmReadinessFilter extends Filter {
 
     @Override
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
-        if (securityRealm.isReady()) {
+        if (securityRealm.isReadyForHttpChallenge() || clientCertPotentiallyPossible(exchange)) {
             chain.doFilter(exchange);
         } else {
             rejectRequest(exchange);
         }
+    }
+
+    private boolean clientCertPotentiallyPossible(final HttpExchange exchange) {
+        return securityRealm.getSupportedAuthenticationMechanisms().contains(AuthenticationMechanism.CLIENT_CERT);
     }
 
     /**

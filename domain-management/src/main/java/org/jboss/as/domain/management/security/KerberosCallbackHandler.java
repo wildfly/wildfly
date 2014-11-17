@@ -93,6 +93,12 @@ public class KerberosCallbackHandler implements Service<CallbackHandlerService>,
         return true;
     }
 
+    @Override
+    public boolean isReadyForHttpChallenge() {
+        // Kerberos so if configured it is ready.
+        return true;
+    }
+
     public CallbackHandler getCallbackHandler(final Map<String, Object> sharedState) {
         return new CallbackHandler() {
 

@@ -102,7 +102,8 @@ public class PropertiesCallbackHandler extends UserPropertiesFileLoader implemen
         return response;
     }
 
-    public boolean isReady() {
+    @Override
+    public boolean isReadyForHttpChallenge() {
         Properties users;
         try {
             users = getProperties();

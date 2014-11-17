@@ -53,7 +53,7 @@ public abstract class SecurityRealmTestBase extends ManagementControllerTestBase
     @Test
     public void testRealmReady() {
         assertEquals("Security realm name", TEST_REALM, securityRealm.getName());
-        assertTrue("Realm is ready", securityRealm.isReady());
+        assertTrue("Realm is ready", securityRealm.isReadyForHttpChallenge());
     }
 
     @Before

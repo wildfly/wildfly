@@ -131,14 +131,15 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
         return service.getConfigurationOptions();
     }
 
-    public boolean isReady() {
+    @Override
+    public boolean isReadyForHttpChallenge() {
         for (CallbackHandlerService current : registeredServices.values()) {
-            // Only takes one to not be ready for us to return false.
-            if (current.isReady() == false) {
-                return false;
+            // As soon as one is ready for HTTP challenge based authentication return true.
+            if (current.isReadyForHttpChallenge()) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     public AuthorizingCallbackHandler getAuthorizingCallbackHandler(AuthenticationMechanism mechanism) {

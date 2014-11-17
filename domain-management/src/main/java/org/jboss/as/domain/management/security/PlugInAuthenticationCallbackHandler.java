@@ -131,7 +131,9 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
         }
     }
 
-    public boolean isReady() {
+    @Override
+    public boolean isReadyForHttpChallenge() {
+        // Assume we are ready.
         return true;
     }
 

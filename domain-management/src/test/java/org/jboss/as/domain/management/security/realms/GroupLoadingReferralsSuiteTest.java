@@ -25,6 +25,8 @@ package org.jboss.as.domain.management.security.realms;
 import static org.jboss.as.domain.management.security.realms.LdapTestSuite.HOST_NAME;
 import static org.jboss.as.domain.management.security.realms.LdapTestSuite.MASTER_LDAP_PORT;
 import static org.jboss.as.domain.management.security.realms.LdapTestSuite.SLAVE_LDAP_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -193,6 +195,12 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
     }
 
     // Group To Principal, Follow
+
+    @Test
+    @Override
+    public void testRealmReady() {
+        // Not using TEST_REALM so don't want to test it is ready.
+    }
 
     /**
      * Verify that the users group can be loaded when the users distinguished name was discovered after following a referral.
