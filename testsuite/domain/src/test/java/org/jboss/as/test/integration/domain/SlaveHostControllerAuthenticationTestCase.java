@@ -44,6 +44,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -180,7 +181,8 @@ public class SlaveHostControllerAuthenticationTestCase {
         try {
             domainSlaveClient.execute(new OperationBuilder(op).build());
         } catch(IOException e) {
-            if (!(e.getCause() instanceof ExecutionException)) {
+            final Throwable cause = e.getCause();
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
                 throw e;
             } // else ignore, this might happen if the channel gets closed before we got the response
         }

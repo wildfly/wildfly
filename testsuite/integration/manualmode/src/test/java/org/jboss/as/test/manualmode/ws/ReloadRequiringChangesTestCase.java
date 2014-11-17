@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -105,12 +106,12 @@ public class ReloadRequiringChangesTestCase {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
-        
+
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
         try {
             initialWsdlHost = getWsdlHost(client);
-            
+
             //change wsdl-host to "foo-host" and reload
             final String hostname = "foo-host";
 	        setWsdlHost(client, hostname);
@@ -130,19 +131,19 @@ public class ReloadRequiringChangesTestCase {
             }
         }
     }
-    
+
     @Test
     @OperateOnDeployment(DEPLOYMENT)
     public void testWSDLHostUndefineRequiresReloadAndDoesNotAffectRuntime() throws Exception {
         Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
-        
+
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
         try {
             initialWsdlHost = getWsdlHost(client);
-            
+
             //change wsdl-host to "my-host" and reload
             final String hostname = "my-host";
 	        setWsdlHost(client, hostname);
@@ -199,7 +200,7 @@ public class ReloadRequiringChangesTestCase {
     	}
     	applyUpdate(client, op);
     }
-    
+
     private static ModelNode createOpNode(String address, String operation) {
         ModelNode op = new ModelNode();
         // set address
@@ -214,7 +215,7 @@ public class ReloadRequiringChangesTestCase {
         op.get("operation").set(operation);
         return op;
     }
-    
+
 	private static ModelNode applyUpdate(final ModelControllerClient client, final ModelNode update) throws Exception {
 		final ModelNode result = client.execute(new OperationBuilder(update).build());
 		if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
@@ -244,11 +245,9 @@ public class ReloadRequiringChangesTestCase {
             Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
         } catch(IOException e) {
             final Throwable cause = e.getCause();
-            if (cause instanceof ExecutionException) {
-                // ignore, this might happen if the channel gets closed before we got the response
-            } else {
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
                 throw e;
-            }
+            } // else ignore, this might happen if the channel gets closed before we got the response
         }
     }
 
@@ -284,7 +283,7 @@ public class ReloadRequiringChangesTestCase {
             connection.connect();
             Assert.assertEquals(200, connection.getResponseCode());
             connection.getInputStream();
-            
+
 			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			String line;
 			while ((line = in.readLine()) != null) {

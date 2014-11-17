@@ -41,13 +41,13 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.wildfly.test.api.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -56,6 +56,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.api.Authentication;
 
 /**
  *
@@ -287,11 +288,9 @@ public class HornetQBackupActivationTestCase {
             execute(client, operation);
         } catch(IOException e) {
             final Throwable cause = e.getCause();
-            if (cause instanceof ExecutionException) {
-                // ignore, this might happen if the channel gets closed before we got the response
-            } else {
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
                 throw e;
-            }
+            } // else ignore, this might happen if the channel gets closed before we got the response
         }
     }
 
