@@ -34,8 +34,7 @@ import javax.naming.NameNotFoundException;
 
 import org.jboss.as.naming.JndiPermission.Action;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
-import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
+import org.jboss.as.naming.deployment.SharedBindingReferencesService;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
@@ -92,7 +91,7 @@ public class WritableServiceBasedNamingStoreTestCase {
 
     private void installOwnerService(ServiceName owner) throws InterruptedException {
         final CountDownLatch latch1 = new CountDownLatch(1);
-        container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
+        container.addService(SharedBindingReferencesService.serviceName(owner), new SharedBindingReferencesService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(new AbstractServiceListener<Object>() {
                     public void transition(ServiceController<?> controller, ServiceController.Transition transition) {
@@ -324,7 +323,7 @@ public class WritableServiceBasedNamingStoreTestCase {
             fail("Should have thrown name not found");
         } catch (NameNotFoundException expect) {
         }
-        final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_FOO)).getValue();
+        final SharedBindingReferencesService.References duBindingReferences = (SharedBindingReferencesService.References) container.getService(SharedBindingReferencesService.serviceName(OWNER_FOO)).getValue();
         WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             store.bind(name, value);
@@ -354,9 +353,9 @@ public class WritableServiceBasedNamingStoreTestCase {
         } catch (NameNotFoundException expect) {
         }
         // ensure the owners RuntimeBindReleaseService have no reference to the future bind
-        final RuntimeBindReleaseService.References fooDuBindingReferences = (RuntimeBindReleaseService.References) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_FOO)).getValue();
+        final SharedBindingReferencesService.References fooDuBindingReferences = (SharedBindingReferencesService.References) container.getService(SharedBindingReferencesService.serviceName(OWNER_FOO)).getValue();
         assertFalse(fooDuBindingReferences.contains(serviceName));
-        final RuntimeBindReleaseService.References barDuBindingReferences = (RuntimeBindReleaseService.References) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_BAR)).getValue();
+        final SharedBindingReferencesService.References barDuBindingReferences = (SharedBindingReferencesService.References) container.getService(SharedBindingReferencesService.serviceName(OWNER_BAR)).getValue();
         assertFalse(barDuBindingReferences.contains(serviceName));
 
         WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
