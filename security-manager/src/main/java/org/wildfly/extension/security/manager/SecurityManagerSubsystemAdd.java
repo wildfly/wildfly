@@ -47,7 +47,6 @@ import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
-import org.wildfly.extension.security.manager.service.SecurityManagerService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.wildfly.extension.security.manager.Constants.*;
@@ -113,11 +112,6 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
             maximumSet.add(new ImmediatePermissionFactory(new AllPermission()));
 
         // TODO validate the permission sets: the minimum-set must be implied by the maximum-set.
-
-        // install the WildFly security manager service.
-        controlers.add(context.getServiceTarget().addService(SecurityManagerService.SERVICE_NAME, new SecurityManagerService())
-                .addListener(handler)
-                .setInitialMode(ServiceController.Mode.ACTIVE).install());
 
         // install the DUP responsible for parsing security permissions found in META-INF/permissions.xml.
         context.addStep(new AbstractDeploymentChainStep() {
