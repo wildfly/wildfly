@@ -21,6 +21,8 @@
  */
 package org.jboss.as.naming.deployment;
 
+import java.util.List;
+
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -37,7 +39,6 @@ import org.jboss.msc.service.ServiceName;
  * is necessary to ensure the deployment is not considered complete until add bindings are up
  *
  * @author Stuart Douglas
- * @author Eduardo Martins
  */
 public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
@@ -52,10 +53,10 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
         final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
-        final RuntimeBindReleaseService service = new RuntimeBindReleaseService(deploymentUnit.getAttachmentList(org.jboss.as.naming.deployment.Attachments.SHARED_BINDER_SERVICES));
-        final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, service);
-        serviceBuilder.addDependencies(deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES));
+        final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
+        serviceBuilder.addDependencies(dependencies);
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
