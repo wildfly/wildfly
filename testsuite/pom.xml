@@ -110,11 +110,10 @@
         <jvm.args.ip.server>${jvm.args.ip}</jvm.args.ip.server>
         <jvm.args.ip.client>${jvm.args.ip}</jvm.args.ip.client>
 
-        <!-- Security. -->
-        <jvm.args.securityManager></jvm.args.securityManager>
-        <jvm.args.securityPolicy></jvm.args.securityPolicy>
-        <jvm.args.securityManagerOther></jvm.args.securityManagerOther>
-        <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy} ${jvm.args.securityManagerOther}</jvm.args.security>
+        <!-- Server arguments. Cannot have a null server argument in ARQ, set a dummy system property -->
+        <jboss.args>-Dts.wildfly.version=${project.version}</jboss.args>
+        <!-- jboss.args is used in the arquillian.xml files, but wildfly-core DomainLifecycleUtil expects jboss.domain.server.args -->
+        <jboss.domain.server.args></jboss.domain.server.args>
 
         <!-- Additional JVM args, like those for EC2. -->
         <jvm.args.other>-server</jvm.args.other>
@@ -180,7 +179,7 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <!-- Needed for @Resource(lookup=). -->
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
@@ -365,6 +364,8 @@
                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                            <jboss.dist>${jboss.dist}</jboss.dist>
                            <jboss.home>${basedir}/target/jbossas</jboss.home>
+                           <jboss.args>${jboss.args}</jboss.args>
+                           <jboss.domain.server.args>${jboss.domain.server.args}</jboss.domain.server.args>
                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                            <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                        </systemPropertyVariables>
@@ -639,24 +640,17 @@
             <properties><mcast3>${mcast3}</mcast3></properties>
         </profile>
 
-
-
-        <!-- Security policy.  ARQ-690, Wildfly-2823, Wildfly-2826. -->
+        <!-- Security manager. -->
         <profile>
-            <id>ts.security.policy</id>
-            <activation><property><name>security.policy</name></property></activation>
+            <id>ts.security.manager</id>
+            <activation>
+                <property>
+                    <name>security.manager</name>
+                </property>
+            </activation>
             <properties>
-                <jvm.args.securityManager>-Djava.security.manager</jvm.args.securityManager>
-                <jvm.args.securityPolicy>-Djava.security.policy=${security.policy}</jvm.args.securityPolicy>
-            </properties>
-        </profile>
-
-        <!-- Security Manager Other -->
-        <profile>
-            <id>ts.security.manager.other</id>
-            <activation><property><name>security.manager.other</name></property></activation>
-            <properties>
-                <jvm.args.securityManagerOther>${security.manager.other}</jvm.args.securityManagerOther>
+                <jboss.args>-secmgr</jboss.args>
+                <jboss.domain.server.args>-secmgr</jboss.domain.server.args>
             </properties>
         </profile>
 
