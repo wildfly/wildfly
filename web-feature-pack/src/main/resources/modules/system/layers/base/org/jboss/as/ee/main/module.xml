@@ -47,6 +47,7 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming" optional="true"/>
         <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.extension.request-controller" />
         <module name="org.jboss.as.server" />
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
