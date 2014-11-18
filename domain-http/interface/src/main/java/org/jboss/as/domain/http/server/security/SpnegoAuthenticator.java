@@ -87,11 +87,20 @@ public class SpnegoAuthenticator extends Authenticator {
             return context.createSuccess(exchange);
         }
 
+        boolean skipSpnego = false;
+
         // If we have a challenge handle it (We would only receive this if we sent a challenge to the client, had client cert been available no challenge would be sent).
         SubjectIdentity subjectIdentity = null;
         Headers reqHeaders = exchange.getRequestHeaders();
         String authorization = reqHeaders.getFirst(AUTHORIZATION_HEADER);
         if (authorization != null && authorization.startsWith(NEGOTIATE_PREFIX)) {
+            // Other mechs could choke on our header, they don't need it anyway.
+            List<String> authzHeaders = reqHeaders.remove(AUTHORIZATION_HEADER);
+            if (authzHeaders.size() > 1) {
+                authzHeaders.remove(0);
+                reqHeaders.put(AUTHORIZATION_HEADER, authzHeaders);
+            }
+
             ROOT_LOGGER.trace("Processing negotiation response.");
             String base64Header = authorization.substring(NEGOTIATE_PREFIX.length());
             byte[] decoded = Base64.decode(base64Header);
@@ -99,7 +108,11 @@ public class SpnegoAuthenticator extends Authenticator {
             subjectIdentity = securityRealm.getSubjectIdentity(getHostName(exchange), false);
             if (subjectIdentity != null) {
                 try {
-                    return Subject.doAs(subjectIdentity.getSubject(), new AcceptAction(exchange, decoded));
+                    Result result = Subject.doAs(subjectIdentity.getSubject(), new AcceptAction(exchange, decoded));
+                    if (result instanceof Success || result instanceof Retry) {
+                        return result;
+                    }
+                    skipSpnego = true; // Don't know why but it is broken so skip it.
                 } finally {
                     subjectIdentity.logout();
                 }
@@ -119,26 +132,28 @@ public class SpnegoAuthenticator extends Authenticator {
             return result;
         }
 
-        // If not authenticated add our own challenge (if applicable for host name.
-        Headers respHeaders = exchange.getResponseHeaders();
+        if (skipSpnego == false) {
+            // If not authenticated add our own challenge (if applicable for host name.
+            Headers respHeaders = exchange.getResponseHeaders();
 
-        String host = getHostName(exchange);
-        subjectIdentity = securityRealm.getSubjectIdentity(host, false);
-        if (subjectIdentity != null) {
-            subjectIdentity.logout();
+            String host = getHostName(exchange);
+            subjectIdentity = securityRealm.getSubjectIdentity(host, false);
+            if (subjectIdentity != null) {
+                subjectIdentity.logout();
 
-            List<String> values = respHeaders.remove(WWW_AUTHENTICATE_HEADER);
-            if (values == null) {
-                ROOT_LOGGER.trace("No existing WWW-Authenticate header");
-                values = new ArrayList<String>(1);
+                List<String> values = respHeaders.remove(WWW_AUTHENTICATE_HEADER);
+                if (values == null) {
+                    ROOT_LOGGER.trace("No existing WWW-Authenticate header");
+                    values = new ArrayList<String>(1);
+                }
+                ROOT_LOGGER.trace("Adding Negotiate challenge");
+                values.add(0, NEGOTIATE);
+                respHeaders.put(WWW_AUTHENTICATE_HEADER, values);
+
+                return new Retry(UNAUTHORIZED);
+            } else {
+                ROOT_LOGGER.tracef("No Subject available for host '%s'", host);
             }
-            ROOT_LOGGER.trace("Adding Negotiate challenge");
-            values.add(0, NEGOTIATE);
-            respHeaders.put(WWW_AUTHENTICATE_HEADER, values);
-
-            return new Retry(UNAUTHORIZED);
-        } else {
-            ROOT_LOGGER.tracef("No Subject available for host '%s'", host);
         }
 
         // We can not handle authentication but at least the wrapped version can.
