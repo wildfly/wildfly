@@ -48,6 +48,7 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.Oid;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
@@ -67,6 +68,18 @@ import org.jboss.util.Base64;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SpnegoAuthenticator extends Authenticator {
+
+    private static final Oid[] MECHANISMS;
+
+    static {
+        try {
+            Oid spnego = new Oid("1.3.6.1.5.5.2");
+            Oid kerberos = new Oid("1.2.840.113554.1.2.2");
+            MECHANISMS = new Oid[] { spnego, kerberos };
+        } catch (GSSException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final String NEGOTIATE_PREFIX = NEGOTIATE + " ";
 
@@ -204,7 +217,10 @@ public class SpnegoAuthenticator extends Authenticator {
                 if (gssContext == null) {
                     ROOT_LOGGER.trace("Creating new GSSContext");
                     GSSManager manager = GSSManager.getInstance();
-                    gssContext = manager.createContext((GSSCredential) null);
+
+                    GSSCredential credential = manager.createCredential(null, GSSCredential.INDEFINITE_LIFETIME, MECHANISMS, GSSCredential.ACCEPT_ONLY);
+
+                    gssContext = manager.createContext(credential);
 
                     context.setGssContext(gssContext);
                 }
@@ -223,6 +239,7 @@ public class SpnegoAuthenticator extends Authenticator {
                     return new Retry(UNAUTHORIZED);
                 }
             } catch (GSSException e) {
+                ROOT_LOGGER.trace("Unable to authenticate user.", e);
                 return new Failure(FORBIDDEN);
             }
         }
