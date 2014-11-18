@@ -64,7 +64,7 @@ public class KeytabService implements Service<KeytabService> {
 
     private static final boolean IS_IBM = System.getProperty("java.vendor").contains("IBM");
     private static final String KRB5LoginModule = "com.sun.security.auth.module.Krb5LoginModule";
-    private static final String IBMKRB5LoginModule = "com.sun.security.auth.module.Krb5LoginModule";
+    private static final String IBMKRB5LoginModule = "com.ibm.security.auth.module.Krb5LoginModule";
 
     private static final CallbackHandler NO_CALLBACK_HANDLER = new CallbackHandler() {
 
@@ -137,18 +137,18 @@ public class KeytabService implements Service<KeytabService> {
         if (debug) {
             options.put("debug", "true");
         }
+        options.put("principal", principal);
 
         final AppConfigurationEntry ace;
         if (IS_IBM) {
             options.put("noAddress", "true");
             options.put("credsType", isServer ? "acceptor" : "initiator");
-            options.put("useKeyTab", new File(keytabLocation).toURI().toURL().toString());
+            options.put("useKeytab", new File(keytabLocation).toURI().toURL().toString());
             ace = new AppConfigurationEntry(IBMKRB5LoginModule, REQUIRED, options);
         } else {
             options.put("storeKey", "true");
             options.put("useKeyTab", "true");
             options.put("keyTab", keytabLocation);
-            options.put("principal", principal);
             options.put("isInitiator", isServer ? "false" : "true");
 
             ace = new AppConfigurationEntry(KRB5LoginModule, REQUIRED, options);
