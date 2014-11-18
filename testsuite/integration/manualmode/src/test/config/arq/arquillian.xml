@@ -10,6 +10,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas -Djboss.node.name=default-jbossas</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -25,6 +26,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-with-remote-outbound-connection</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-with-remote-outbound-connection -Djboss.node.name=jbossas-with-remote-outbound-connection</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node1}</property>
                 <property name="managementPort">10090</property>
@@ -40,6 +42,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-layered</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-layered -Djboss.node.name=jbossas-layered</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -56,6 +59,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-failover</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-messaging-failover -Djboss.node.name=default-jbossas-messaging-failover</property>
                 <property name="serverConfig">standalone-full.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -71,6 +75,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas-messaging-failover</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.socket.binding.port-offset=100 -Djboss.inst=${basedir}/target/jbossas-messaging-failover -Djboss.node.name=default-jbossas-messaging-failover</property>
                 <property name="serverConfig">standalone-full-backup.xml</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:10090}</property>
@@ -86,6 +91,7 @@
                 <property name="jbossHome">${basedir}/target/jbossas</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas -Djboss.node.name=default-jbossas</property>
                 <property name="serverConfig">${jboss.server.config.file.name:standalone-ha.xml}</property>
+                <property name="jbossArguments">${jboss.args}</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
