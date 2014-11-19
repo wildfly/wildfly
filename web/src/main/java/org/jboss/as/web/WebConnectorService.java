@@ -318,29 +318,40 @@ class WebConnectorService implements Service<Connector> {
             connector.init();
             WebServer webServer = this.getWebServer();
 
-            ContainerListener listener = new ContainerListener() {
+            final PropertyChangeListener propertyListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent event) {
+                    if (event.getSource() instanceof Context && "available".equals(event.getPropertyName())
+                            && Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue())) {
+                        Context context = (Context) event.getSource();
+                        addStarted(context.getParent().getName(), context.getPath());
+                        if (areAllStarted()) {
+                            try {
+                                connector.start();
+                            } catch (LifecycleException e) {
+                                 // Ignored.
+                            }
+                        }
+                    }
+                }
+            };
+
+            final ContainerListener contextListener = new ContainerListener() {
                 @Override
                 public void containerEvent(ContainerEvent event) {
                     Object child = event.getData();
                     if (event.getContainer() instanceof Host) {
-                        PropertyChangeListener listener = new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent event) {
-                                if (event.getSource() instanceof Context && "available".equals(event.getPropertyName())
-                                        && Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue())) {
-                                    Context context = (Context) event.getSource();
-                                    addStarted(context.getParent().getName(), context.getPath());
-                                    if (areAllStarted()) {
-                                        try {
-                                            connector.start();
-                                        } catch (LifecycleException e) {
-                                            // Ignored.
-                                        }
-                                    }
-                                }
-                            }
-                        };
-                        ((Container) child).addPropertyChangeListener(listener);
+                        ((Container) child).addPropertyChangeListener(propertyListener);
+                    }
+                }
+            };
+
+            final ContainerListener hostListener = new ContainerListener() {
+                @Override
+                public void containerEvent(ContainerEvent event) {
+                    Object child = event.getData();
+                    if (event.getContainer() instanceof Engine && event.getType().equals(Container.ADD_CHILD_EVENT) && child instanceof Host) {
+                        ((Host) child).addContainerListener(contextListener);
                     }
                 }
             };
@@ -351,14 +362,20 @@ class WebConnectorService implements Service<Connector> {
             if (waited != null) {
 
                 Engine engine = (Engine) webServer.getService().getContainer();
-                engine.addContainerListener(listener);
+                // so we can add the listener to hosts added to the engine later
+                engine.addContainerListener(hostListener);
+                engine.addContainerListener(contextListener);
                 Container[] containers = engine.findChildren();
+
                 for (int j = 0; j < containers.length; j++) {
                     if (containers[j] instanceof Host) {
                         Host host = (Host) containers[j];
-                        containers[j].addContainerListener(listener);
+                        containers[j].addContainerListener(contextListener);
                         Container[] contexts =  host.findChildren();
+
                         for (int i = 0; i < contexts.length; i++) {
+                        // so we can detect any later context start
+                        contexts[i].addPropertyChangeListener(propertyListener);
                             if (contexts[i].isStarted()) {
                                 // Mark it as started.
                                 Context cont= (Context) contexts[i];
@@ -369,7 +386,7 @@ class WebConnectorService implements Service<Connector> {
                 }
                 allstarted = areAllStarted();
             }
-            if (allstarted)
+            if (allstarted && !connector.isAvailable())
                 connector.start();
             this.connector = connector;
         } catch (Exception e) {
