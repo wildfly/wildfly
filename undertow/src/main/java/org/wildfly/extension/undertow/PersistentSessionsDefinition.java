@@ -31,7 +31,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -42,13 +41,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -112,16 +108,13 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
             if (requiresRuntime(context)) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                        final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                        final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        performRuntime(context, operation, operation, verificationHandler, controllers);
+                        performRuntime(context, operation, operation);
 
-                        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
                         context.completeStep(new OperationContext.RollbackHandler() {
                             @Override
                             public void handleRollback(OperationContext context, ModelNode operation) {
-                                rollbackRuntime(context, operation, operation, controllers);
+                                rollbackRuntime(context, operation, operation);
                             }
                         });
                     }
@@ -130,7 +123,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
             context.stepCompleted();
         }
 
-        private void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+        private void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (isEnabled(context, model)) {
                 ModelNode pathValue = PATH.resolveModelAttribute(context, model);
                 ServiceBuilder<SessionPersistenceManager> builder;
@@ -148,19 +141,11 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
                     builder = context.getServiceTarget().addService(AbstractPersistentSessionManager.SERVICE_NAME, service)
                             .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, service.getModuleLoaderInjectedValue());
                 }
-
-                if (verificationHandler != null) {
-                    builder.addListener(verificationHandler);
-                }
-                ServiceController<SessionPersistenceManager> sc = builder.install();
-                if (controllers != null) {
-                    controllers.add(sc);
-                }
-
+                builder.install();
             }
         }
 
-        private void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        private void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         }
 
         @Override
@@ -171,8 +156,8 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, null, parentAddress.getLastElement().getValue());
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
         }
 
         @Override
@@ -194,8 +179,8 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, null, parentAddress.getLastElement().getValue());
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
+            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
         }
 
         @Override

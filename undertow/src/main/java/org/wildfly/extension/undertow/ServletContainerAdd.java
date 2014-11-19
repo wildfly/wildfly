@@ -30,7 +30,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -40,8 +39,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.io.IOServices;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
-
-import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -62,15 +59,15 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        installRuntimeServices(context, model, newControllers, name);
+        installRuntimeServices(context, resource.getModel(), name);
 
     }
 
-    public void installRuntimeServices(OperationContext context, ModelNode model, List<ServiceController<?>> newControllers, String name) throws OperationFailedException {
+    public void installRuntimeServices(OperationContext context, ModelNode model, String name) throws OperationFailedException {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
@@ -115,8 +112,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
             builder.addDependency(IOServices.BUFFER_POOL.append(info.getBufferPool()), Pool.class, (InjectedValue)container.getWebsocketsBufferPool());
         }
 
-        newControllers.add(builder
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
+        builder.setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
     }
 }

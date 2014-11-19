@@ -24,14 +24,11 @@ package org.wildfly.extension.undertow.filters;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -51,19 +48,15 @@ class FilterAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
         final FilterService service = new FilterService(handler, getResolvedModel(context, model));
         final ServiceTarget target = context.getServiceTarget();
-        ServiceController<?> sc = target.addService(UndertowService.FILTER.append(name), service)
+        target.addService(UndertowService.FILTER.append(name), service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
-
     }
 
     private ModelNode getResolvedModel(OperationContext context, ModelNode model) throws OperationFailedException {

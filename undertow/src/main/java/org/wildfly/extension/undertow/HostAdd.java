@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
@@ -60,7 +59,7 @@ class HostAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress serverAddress = address.subAddress(0, address.size() - 1);
         final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 2);
@@ -88,14 +87,13 @@ class HostAdd extends AbstractAddStepHandler {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
                 .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService());
 
-        builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
 
         configureFilterRef(fullModel, builder, service,address);
 
         ServiceController<WebHost> commonController = null;
         if (isDefaultHost) {
-            commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
+            commonController = addCommonHost(context, name, aliases, serverName, virtualHostServiceName);
             builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
         }
 
@@ -121,17 +119,9 @@ class HostAdd extends AbstractAddStepHandler {
                     .setInitialMode(Mode.PASSIVE);
             consoleServiceServiceController = redirectBuilder.install();
         }
-
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-            newControllers.add(consoleServiceServiceController);
-            if (isDefaultHost) {
-                newControllers.add(commonController);
-            }
-        }
     }
 
-    private ServiceController<WebHost> addCommonHost(OperationContext context, ServiceVerificationHandler verificationHandler, String hostName, List<String> aliases,
+    private ServiceController<WebHost> addCommonHost(OperationContext context, String hostName, List<String> aliases,
                                                      String serverName, ServiceName virtualHostServiceName) {
         WebHostService service = new WebHostService();
         final ServiceBuilder<WebHost> builder = context.getServiceTarget().addService(WebHost.SERVICE_NAME.append(hostName), service)
@@ -145,7 +135,6 @@ class HostAdd extends AbstractAddStepHandler {
             }
         }
 
-        builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.PASSIVE);
         return builder.install();
     }

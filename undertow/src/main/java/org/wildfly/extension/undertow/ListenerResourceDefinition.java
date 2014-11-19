@@ -192,7 +192,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         for(ConnectorStat attr : ConnectorStat.values()) {
-            resourceRegistration.registerReadOnlyAttribute(attr.definition, ReadStatisticHandler.INSTANCE);
+            resourceRegistration.registerMetric(attr.definition, ReadStatisticHandler.INSTANCE);
         }
     }
 

@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
@@ -86,7 +84,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String name = address.getLastElement().getValue();
 
@@ -99,14 +97,10 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             int priority = PRIORITY.resolveModelAttribute(context, operation).asInt();
             final FilterRef service = new FilterRef(predicate, priority);
             final ServiceTarget target = context.getServiceTarget();
-            ServiceController<?> sc = target.addService(UndertowService.getFilterRefServiceName(address, name), service)
+            target.addService(UndertowService.getFilterRefServiceName(address, name), service)
                     .addDependency(UndertowService.FILTER.append(name), FilterService.class, service.getFilter())
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
-
-            if (newControllers != null) {
-                newControllers.add(sc);
-            }
         }
     }
 }

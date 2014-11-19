@@ -22,15 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.List;
-
 import io.undertow.Version;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -91,15 +89,14 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * {@inheritDoc}
      */
     @Override
-    public void performBoottime(OperationContext context, ModelNode operation, final ModelNode model,
-                                ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-            throws OperationFailedException {
+        protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
         try {
             Class.forName("org.apache.jasper.compiler.JspRuntimeContext", true, this.getClass().getClassLoader());
         } catch (ClassNotFoundException e) {
             UndertowLogger.ROOT_LOGGER.couldNotInitJsp(e);
         }
+        final ModelNode model = resource.getModel();
 
         final String defaultVirtualHost = UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.resolveModelAttribute(context, model).asString();
         final String defaultContainer = UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.resolveModelAttribute(context, model).asString();
@@ -110,9 +107,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
         ServiceTarget target = context.getServiceTarget();
 
-        newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
+        target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+                .install();
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -154,16 +151,14 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
         if (builder != null) {
-            ServiceController<?> codecService = builder.buildServerDependency(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-            if (newControllers != null) {
-                newControllers.add(codecService);
-            }
+            builder.buildServerDependency(target)
+                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                    .install();
         }
 
-        ServiceController<?> sc = RouteValueService.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        if (newControllers != null) {
-            newControllers.add(sc);
-        }
+        RouteValueService.build(target)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
 
     }
 }
