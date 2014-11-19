@@ -25,11 +25,16 @@ package org.wildfly.mod_cluster.undertow;
 import io.undertow.servlet.api.Deployment;
 
 import java.security.AccessController;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.server.suspend.ServerActivity;
+import org.jboss.as.server.suspend.ServerActivityCallback;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -52,22 +57,25 @@ import org.wildfly.security.manager.action.GetAccessControlContextAction;
  *
  * @author Paul Ferraro
  */
-public class UndertowEventHandlerAdapter implements UndertowEventListener, Service<Void>, Runnable {
+public class UndertowEventHandlerAdapter implements UndertowEventListener, Service<Void>, Runnable, ServerActivity {
     private static final Logger log = Logger.getLogger(UndertowEventHandlerAdapter.class);
 
     @SuppressWarnings("rawtypes")
     private final Value<ListenerService> listener;
     private final Value<UndertowService> service;
     private final Value<ContainerEventHandler> eventHandler;
+    private final Value<SuspendController> suspendController;
+    private final Set<Context> contexts = new HashSet<>();
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
     private int statusInterval;
 
-    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<ListenerService> listener, int statusInterval) {
+    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<ListenerService> listener, Value<SuspendController> suspendController, int statusInterval) {
         this.eventHandler = eventHandler;
         this.service = service;
         this.listener = listener;
+        this.suspendController = suspendController;
         this.statusInterval = statusInterval;
     }
 
@@ -95,10 +103,12 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
         ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
         this.executor = Executors.newScheduledThreadPool(1, factory);
         this.executor.scheduleWithFixedDelay(this, 0, statusInterval, TimeUnit.SECONDS);
+        suspendController.getValue().registerActivity(this);
     }
 
     @Override
     public void stop(StopContext context) {
+        suspendController.getValue().unRegisterActivity(this);
         this.service.getValue().unregisterListener(this);
 
         this.executor.shutdown();
@@ -112,21 +122,23 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     }
 
     @Override
-    public void onDeploymentStart(Deployment deployment, Host host) {
+    public synchronized void onDeploymentStart(Deployment deployment, Host host) {
         Context context = this.createContext(deployment, host);
         this.eventHandler.getValue().add(context);
 
         // TODO break into onDeploymentAdd once implemented in Undertow
         this.eventHandler.getValue().start(context);
+        contexts.add(context);
     }
 
     @Override
-    public void onDeploymentStop(Deployment deployment, Host host) {
+    public synchronized void onDeploymentStop(Deployment deployment, Host host) {
         Context context = this.createContext(deployment, host);
         this.eventHandler.getValue().stop(context);
 
         // TODO break into onDeploymentRemove once implemented in Undertow
         this.eventHandler.getValue().remove(context);
+        contexts.remove(context);
     }
 
     @Override
@@ -162,6 +174,29 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
             }
         } catch (Throwable e) {
             log.error(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public synchronized void preSuspend(ServerActivityCallback listener) {
+        try {
+            for (Context context : contexts) {
+                this.eventHandler.getValue().stop(context);
+            }
+        } finally {
+            listener.done();
+        }
+    }
+
+    @Override
+    public void suspended(ServerActivityCallback listener) {
+        listener.done();
+    }
+
+    @Override
+    public void resume() {
+        for (Context context : contexts) {
+            this.eventHandler.getValue().start(context);
         }
     }
 }
