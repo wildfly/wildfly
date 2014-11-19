@@ -377,15 +377,15 @@ public class DigestAuthenticator extends Authenticator {
                     if (nextQuote < 0) {
                         throw MESSAGES.missingClosingQuote(response.key);
                     }
-                    if (message.charAt(nextQuote - 1) != ESCAPE) {
+                    if (isEscaped(message, nextQuote) == false) {
                         endQuote = nextQuote;
                     }
                 }
                 // Don't trim as was a quoted value.
-                response.value = message.substring(pos + 1, endQuote);
+                response.value = stripEscapes(message.substring(pos + 1, endQuote));
 
                 // Move pos after DELIMITER.
-                int nextDelimeter = message.indexOf(DELIMITER, pos);
+                int nextDelimeter = message.indexOf(DELIMITER, endQuote);
                 if (nextDelimeter > 0) {
                     pos = nextDelimeter + 1;
                 }
@@ -407,6 +407,45 @@ public class DigestAuthenticator extends Authenticator {
             return response;
         }
 
+        /**
+         * Starting from the position of a single character identify if that character is actually escaped.
+         *
+         * i.e. If the character before is a '\' then it may be escaped, if the character before that is '\' then it is not escaped.
+         *
+         * e.g. \,    - escaped
+         *      \\,   - not escaped
+         *      \\\,  - escaped
+         *      \\\\, - not escaped
+         *
+         * @param charPos
+         * @return
+         */
+        private boolean isEscaped(final String message, final int charPos) {
+            boolean escaped = false;
+            for (int i = charPos - 1; i > 0; i--) {
+                if (message.charAt(i) == ESCAPE) {
+                    escaped = !escaped;
+                } else {
+                    return escaped;
+                }
+            }
+            return escaped;
+        }
+
+        private String stripEscapes(String value) {
+            char[] cleaned = new char[value.length()];
+            int pos = cleaned.length - 1;
+
+            for (int i = value.length() -1 ; i >= 0 ; i--) {
+                cleaned[pos--] = value.charAt(i);
+                if (isEscaped(value, i)) {
+                    i--;
+                }
+            }
+
+            int startPos = pos + 1;
+            return new String(cleaned, startPos, cleaned.length - startPos);
+        }
 
         class Parameter {
             String key;
