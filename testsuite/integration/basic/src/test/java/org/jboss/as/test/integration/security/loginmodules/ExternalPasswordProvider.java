@@ -125,9 +125,10 @@ public class ExternalPasswordProvider {
         return counterFile.getAbsolutePath();
     }
 
-    void cleanup() {
+    public void cleanup() {
         if (counterFile.exists()) {
             counterFile.delete();
         }
     }
+
 }
