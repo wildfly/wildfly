@@ -292,7 +292,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
                 // Create SSLPolicy (SSL_REQUIRED ensures home and remote IORs will have port 0 in the primary address).
                 boolean sslRequired = false;
-                if (iorSecurityConfigMetaData != null) {
+                if (iorSecurityConfigMetaData != null && iorSecurityConfigMetaData.getTransportConfig() != null) {
                     IORTransportConfigMetaData tc = iorSecurityConfigMetaData.getTransportConfig();
                     sslRequired = IORTransportConfigMetaData.INTEGRITY_REQUIRED.equals(tc.getIntegrity())
                             || IORTransportConfigMetaData.CONFIDENTIALITY_REQUIRED.equals(tc.getConfidentiality())
