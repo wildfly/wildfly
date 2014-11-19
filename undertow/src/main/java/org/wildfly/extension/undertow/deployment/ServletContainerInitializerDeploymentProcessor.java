@@ -175,16 +175,16 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         try {
             // Get the ServletContainerInitializer class name
             is = sci.openStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String servletContainerInitializerClassName = reader.readLine().trim();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            String servletContainerInitializerClassName = reader.readLine();
             while (servletContainerInitializerClassName != null) {
                 try {
-                    if(!servletContainerInitializerClassName.isEmpty()) {
-                        int pos = servletContainerInitializerClassName.indexOf('#');
-                        if (pos > 0) {
-                            servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
-                        }
-                        servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+                    int pos = servletContainerInitializerClassName.indexOf('#');
+                    if (pos >= 0) {
+                        servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                    }
+                    servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+                    if (!servletContainerInitializerClassName.isEmpty()) {
                         // Instantiate the ServletContainerInitializer
                         ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
                         if (service != null) {
