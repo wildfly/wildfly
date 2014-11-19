@@ -23,10 +23,9 @@
 package org.jboss.as.test.integration.security.vault;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
-
-import org.apache.log4j.Logger;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.logging.Logger;
 
 /**
  * @author <a href="mailto:pskopek@redhat.com">Peter Skopek</a>.
@@ -37,6 +36,8 @@ public class ExternalPasswordModuleSetupTask implements ServerSetupTask {
     public static final String MODULE_NAME_BASE = "org.jboss.test.vault";
     public static final String MODULE_NAME = "vaultext";
     private static final String MODULE_JAR = "external.jar";
+
+    private static String moduleSuffix = null;
 
     private TestModule testModule;
 
@@ -60,10 +61,19 @@ public class ExternalPasswordModuleSetupTask implements ServerSetupTask {
         if (testModule != null) {
             testModule.remove();
         }
+        //reset module name to default
+        moduleSuffix = null;
     }
 
     public static String getModuleName() {
+        if (moduleSuffix != null) {
+            return MODULE_NAME_BASE + "." + moduleSuffix;
+        }
         return MODULE_NAME_BASE + "." + MODULE_NAME;
+    }
+
+    protected static void setModuleSuffix(String suffix) {
+        moduleSuffix = suffix;
     }
 
 }
