@@ -39,13 +39,13 @@ class ConnectorCommon {
 
     static final SimpleAttributeDefinition SERVER_NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.SERVER_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition SASL_PROTOCOL = new SimpleAttributeDefinitionBuilder(CommonAttributes.SASL_PROTOCOL, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
             .setDefaultValue(new ModelNode(REMOTE))
             .addAccessConstraint(RemotingExtension.REMOTING_SECURITY_DEF)
             .build();
