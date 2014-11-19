@@ -19,5 +19,12 @@
             </method>
             <trans-attribute>Mandatory</trans-attribute>
         </container-transaction>
+        <container-transaction>
+            <method>
+                <ejb-name>DescriptorBean</ejb-name>
+                <method-name>transactionStatus2</method-name>
+            </method>
+            <trans-attribute>Mandatory</trans-attribute>
+        </container-transaction>
     </assembly-descriptor>
 </ejb-jar>

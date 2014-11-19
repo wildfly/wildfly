@@ -43,4 +43,13 @@ public class DescriptorBean implements TransactionLocal, TransactionRemote {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public int transactionStatus2() {
+        try {
+            return transactionManager.getStatus();
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

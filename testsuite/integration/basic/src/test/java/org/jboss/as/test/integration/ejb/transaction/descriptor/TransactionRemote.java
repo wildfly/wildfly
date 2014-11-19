@@ -10,4 +10,5 @@ public interface TransactionRemote {
 
     public int transactionStatus();
 
+    public int transactionStatus2();
 }
