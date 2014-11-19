@@ -54,7 +54,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class PropertiesFileLoader {
 
-    private static final char[] ESCAPE_ARRAY = new char[] { '=' };
+    private static final char[] ESCAPE_ARRAY = new char[] { '=', '\\' };
     protected static final String COMMENT_PREFIX = "#";
 
     private final String path;
