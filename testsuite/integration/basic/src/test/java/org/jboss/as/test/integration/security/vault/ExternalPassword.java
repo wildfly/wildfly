@@ -28,12 +28,31 @@ package org.jboss.as.test.integration.security.vault;
  */
 public class ExternalPassword {
 
+    private String passwordPart1;
+    private String passwordPart2;
+
     public ExternalPassword() {
+        // will return default value
+    }
+
+    public ExternalPassword(String part1, String part2) {
+
+        // will return value which is constructed from two parts of password
+        this.passwordPart1 = part1;
+        this.passwordPart2 = part2;
+
     }
 
     public char[] toCharArray() {
-        // this return value has to be identical with BasicVaultServerSetupTask.VAULT_PASSWORD
+
+        if (passwordPart1 != null && passwordPart2 != null) {
+
+            return (passwordPart1 + passwordPart2).toCharArray();
+        }
+
+        // return default value which is identical with BasicVaultServerSetupTask.VAULT_PASSWORD
         // it is returned directly because this class is part of independent module
         return "VaultPassword".toCharArray();
+
     }
 }
