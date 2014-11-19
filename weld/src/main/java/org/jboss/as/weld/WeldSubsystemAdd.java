@@ -27,6 +27,7 @@ import static org.jboss.as.weld.WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_A
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -55,6 +56,7 @@ import org.jboss.msc.service.ServiceController.Mode;
  *
  * @author Stuart Douglas
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -67,7 +69,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation,Resource resource) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, ModelNode operation,Resource resource) throws OperationFailedException {
 
         final ModelNode model = resource.getModel();
         final boolean requireBeanDescriptor = REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
@@ -88,7 +90,7 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_EXTERNAL_BEAN_ARCHIVE, new ExternalBeanArchiveProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS, new WeldPortableExtensionProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_COMPONENT_INTEGRATION, new WeldComponentIntegrationProcessor());
-                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new WeldDeploymentProcessor(checkJtsEnabled(context)));
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CDI_VALIDATOR_FACTORY, new CdiBeanValidationFactoryProcessor());
                 processorTarget.addDeploymentProcessor(WeldExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WELD_BEAN_MANAGER, new WeldBeanManagerServiceProcessor());
             }
@@ -102,5 +104,14 @@ class WeldSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected boolean requiresRuntimeVerification() {
         return false;
+    }
+
+    // Synchronization objects created by iiop ejb beans require wrapping by JTSSychronizationWrapper to work correctly
+    // (WFLY-3538). This hack is used obtain jts configuration in order to avoid doing this in non-jts environments when it is
+    // not necessary.
+    private boolean checkJtsEnabled(final OperationContext context) {
+        final ModelNode jtsNode = context.readResourceFromRoot(PathAddress.pathAddress("subsystem", "transactions"), false)
+                .getModel().get("jts");
+        return jtsNode.isDefined() ? jtsNode.asBoolean() : false;
     }
 }

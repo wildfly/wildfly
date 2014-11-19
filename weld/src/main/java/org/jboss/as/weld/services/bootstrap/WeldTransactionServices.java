@@ -42,6 +42,7 @@ import org.jboss.weld.transaction.spi.TransactionServices;
  * This class is thread safe, and does not require a happens-before action between construction and usage
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  *
  */
 public class WeldTransactionServices implements TransactionServices, Service<WeldTransactionServices> {
@@ -51,6 +52,12 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     private final InjectedValue<UserTransaction> injectedTransaction = new InjectedValue<UserTransaction>();
 
     private final InjectedValue<TransactionManager> injectedTransactionManager = new InjectedValue<TransactionManager>();
+
+    private final boolean jtsEnabled;
+
+    public WeldTransactionServices(final boolean jtsEnabled) {
+        this.jtsEnabled = jtsEnabled;
+    }
 
     @Override
     public UserTransaction getUserTransaction() {
@@ -80,7 +87,13 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     @Override
     public void registerSynchronization(Synchronization synchronizedObserver) {
         try {
-            injectedTransactionManager.getValue().getTransaction().registerSynchronization(synchronizedObserver);
+            final Synchronization synchronization;
+            if (!jtsEnabled) {
+                synchronization = synchronizedObserver;
+            } else {
+                synchronization = new JTSSynchronizationWrapper(synchronizedObserver);
+            }
+            injectedTransactionManager.getValue().getTransaction().registerSynchronization(synchronization);
         } catch (IllegalStateException e) {
             throw new RuntimeException(e);
         } catch (RollbackException e) {
