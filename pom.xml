@@ -122,7 +122,7 @@
         <version.org.apache.httpcomponents.httpasyncclient>4.0.1</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.httpcomponents.httpcore>4.3.2</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
-        <version.org.apache.lucene>4.10.1</version.org.apache.lucene>
+        <version.org.apache.lucene>4.10.2</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.3</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
