@@ -287,6 +287,19 @@ public final class VaultSession {
     }
 
     /**
+     * Retrieves secured attribute from specified vault block with specified attribute name. This method can be called only after successful
+     * startVaultSession() call.
+     *
+     * @param vaultBlock security vault block
+     * @param attributeName Attribute name stored in security vault
+     * @return value of secured attribute if exists, otherwise null
+     * @throws Exception
+     */
+    public char[] retrieveSecuredAttribute(String vaultBlock, String attributeName) throws Exception {
+        return vault.retrieve(vaultBlock, attributeName, null);
+    }
+
+    /**
      * Display info about stored secured attribute.
      *
      * @param vaultBlock
