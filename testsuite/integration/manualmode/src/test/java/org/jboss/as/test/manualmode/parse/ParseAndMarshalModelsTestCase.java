@@ -36,8 +36,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -107,6 +110,7 @@ import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
@@ -166,11 +170,13 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ServiceContainer serviceContainer;
+    private PathManagerService pathManager;
 
     @Before
     public void setupServiceContainer() {
         if (isInContainer()) {
             serviceContainer = ServiceContainer.Factory.create("test");
+            pathManager = new TestPathManagerService(serviceContainer);
         }
     }
 
@@ -654,7 +660,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             @Override
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, null, authorizer, AuditLogger.NO_OP_LOGGER);
+                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, pathManager, null, authorizer, AuditLogger.NO_OP_LOGGER);
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
                 def.registerChildren(rootRegistration);
@@ -1066,6 +1072,28 @@ public class ParseAndMarshalModelsTestCase {
             // no-op
         }
     }
+
+    private static class TestPathManagerService extends PathManagerService {
+        private TestPathManagerService(final ServiceTarget target) {
+            final Properties props;
+            if (System.getSecurityManager() == null) {
+                props = System.getProperties();
+            } else {
+                props = AccessController.doPrivileged(new PrivilegedAction<Properties>() {
+                    @Override
+                    public Properties run() {
+                        return System.getProperties();
+                    }
+                });
+            }
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_BASE_DIR, props.getProperty(ServerEnvironment.SERVER_BASE_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_CONFIG_DIR, props.getProperty(ServerEnvironment.SERVER_CONFIG_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_DATA_DIR, props.getProperty(ServerEnvironment.SERVER_DATA_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_LOG_DIR, props.getProperty(ServerEnvironment.SERVER_LOG_DIR));
+            addHardcodedAbsolutePath(target, ServerEnvironment.SERVER_TEMP_DIR, props.getProperty(ServerEnvironment.SERVER_TEMP_DIR));
+        }
+    }
+
 
     private static PathManagerService MOCK_PATH_MANAGER = new PathManagerService() {
     };
