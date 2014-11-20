@@ -96,10 +96,6 @@ public class KeyStoreProviderResourceDefinition extends AbstractFederationResour
 
             @Override
             protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
-                ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
-
-                restored.get(attributeName).set(valueToRestore);
-
                 PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
                 updateConfiguration(context, pathAddress, true);
