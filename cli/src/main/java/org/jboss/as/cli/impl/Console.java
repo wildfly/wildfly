@@ -72,7 +72,12 @@ public interface Console {
 
     int getTerminalHeight();
 
-    void close();
+    /**
+     * Interrupts blocking readLine method.
+     *
+     * Added as solution to BZ-1149099.
+     */
+    void interrupt();
 
     static final class Factory {
 
@@ -206,9 +211,9 @@ public interface Console {
                 }
 
                 @Override
-                public void close() {
+                public void interrupt() {
                     try {
-                        console.stop();
+                        Settings.getInstance().getInputStream().close(); // BZ-1149099 - enables interruption of active prompt
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

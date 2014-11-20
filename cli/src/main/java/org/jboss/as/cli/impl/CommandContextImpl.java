@@ -352,7 +352,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             @Override
             public void shutdown() {
                 if (CommandContextImpl.this.console != null) {
-                    CommandContextImpl.this.console.close();
+                    CommandContextImpl.this.console.interrupt();
                 }
                 terminateSession();
             }};
