@@ -68,6 +68,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -378,7 +379,8 @@ final class SubsystemTestDelegate {
         }
 
 
-        kernelServices.executeOperation(composite);
+        final ModelNode result = kernelServices.executeOperation(composite);
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(), Operations.isSuccessfulOutcome(result));
 
         ModelNode model = kernelServices.readWholeModel().get(SUBSYSTEM, mainSubsystemName);
         Assert.assertFalse("Subsystem resources were not removed " + model, model.isDefined());
