@@ -36,10 +36,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -353,6 +355,9 @@ final class SubsystemTestDelegate {
 
         getAllChildAddressesForRemove(pathAddress, addresses, subsystemResource);
 
+        // Remove ignored children
+        removeIgnoredChildren(ignoredChildAddresses, addresses);
+
         // If the remove order comparator is not null, then sort the addresses
         if (removeOrderComparator != null) {
             Collections.sort(addresses, removeOrderComparator);
@@ -366,12 +371,10 @@ final class SubsystemTestDelegate {
 
         for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()); iterator.hasPrevious(); ) {
             PathAddress cur = iterator.previous();
-            if (!ignoredChildAddresses.contains(cur)) {
-                ModelNode remove = new ModelNode();
-                remove.get(OP).set(REMOVE);
-                remove.get(OP_ADDR).set(cur.toModelNode());
-                composite.get("steps").add(remove);
-            }
+            ModelNode remove = new ModelNode();
+            remove.get(OP).set(REMOVE);
+            remove.get(OP_ADDR).set(cur.toModelNode());
+            composite.get("steps").add(remove);
         }
 
 
@@ -396,6 +399,39 @@ final class SubsystemTestDelegate {
 
         for (PathElement childElement : childElements) {
             getAllChildAddressesForRemove(address.append(childElement), addresses, resource.getChild(childElement));
+        }
+    }
+
+    private void removeIgnoredChildren(final Collection<PathAddress> ignoredChildAddresses, final Collection<PathAddress> addresses) {
+        // Remove all known ignored children
+        addresses.removeAll(ignoredChildAddresses);
+        // Checked for wildcards removals
+        for (PathAddress ignoredChildAddress : ignoredChildAddresses) {
+            final PathElement lastIgnoredElement = ignoredChildAddress.getLastElement();
+            if (lastIgnoredElement.isWildcard()) {
+                // Check each address
+                for (final Iterator<PathAddress> iterator = addresses.iterator(); iterator.hasNext(); ) {
+                    final PathAddress childAddress = iterator.next();
+                    if (childAddress.size() == ignoredChildAddress.size()) {
+                        // Check the last element key for a match
+                        if (lastIgnoredElement.getKey().equals(childAddress.getLastElement().getKey())) {
+                            boolean match = true;
+                            // Check for matches on previous elements
+                            for (int i = 0; i < ignoredChildAddress.size() - 1; i++) {
+                                final PathElement e1 = ignoredChildAddress.getElement(i);
+                                final PathElement e2 = childAddress.getElement(i);
+                                if (!e1.equals(e2)) {
+                                    match = false;
+                                    break;
+                                }
+                            }
+                            if (match) {
+                                iterator.remove();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
