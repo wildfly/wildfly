@@ -61,6 +61,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
+import org.jboss.aesh.console.helper.InterruptHook;
 import org.jboss.aesh.console.settings.Settings;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
@@ -350,6 +351,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         shutdownHook = new CliShutdownHook.Handler() {
             @Override
             public void shutdown() {
+                if (CommandContextImpl.this.console != null) {
+                    CommandContextImpl.this.console.close();
+                }
                 terminateSession();
             }};
         CliShutdownHook.add(shutdownHook);

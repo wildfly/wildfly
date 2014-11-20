@@ -72,6 +72,8 @@ public interface Console {
 
     int getTerminalHeight();
 
+    void close();
+
     static final class Factory {
 
         public static Console getConsole(CommandContext ctx) throws CliInitializationException {
@@ -203,7 +205,16 @@ public interface Console {
                     return console.getTerminalSize().getHeight();
                 }
 
-            class HistoryImpl implements CommandHistory {
+                @Override
+                public void close() {
+                    try {
+                        console.stop();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                class HistoryImpl implements CommandHistory {
 
                 @SuppressWarnings("unchecked")
                 @Override
