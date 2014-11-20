@@ -193,4 +193,11 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
 
         return idpType;
     }
+
+    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            IdentityProviderRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
+    }
 }

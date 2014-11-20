@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.picketlink.config.federation.handler.Handler;
@@ -81,6 +82,13 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
         Handler handler = toHandlerConfig(context, model);
 
         providerService.addHandler(handler);
+    }
+
+    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            HandlerRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
     }
 
     public static Handler toHandlerConfig(OperationContext context, ModelNode handler) throws OperationFailedException {

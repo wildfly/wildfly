@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -43,8 +44,6 @@ import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourc
 import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 import java.util.List;
-
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -119,25 +118,44 @@ public class ServiceProviderResourceDefinition extends AbstractFederationResourc
         return new AbstractWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
             @Override
             protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-                String alias = pathAddress.getLastElement().getValue();
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                ServiceController<ServiceProviderService> serviceController =
-                    (ServiceController<ServiceProviderService>) serviceRegistry.getService(ServiceProviderService.createServiceName(alias));
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
-                if (serviceController != null) {
-                    ServiceProviderService service = serviceController.getValue();
-                    ModelNode serviceProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-
-                    service.setConfiguration(ServiceProviderAddHandler.toSPConfig(context, serviceProviderNode, alias));
-                }
+                updateConfiguration(context, pathAddress, false);
 
                 return false;
             }
 
             @Override
             protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+                ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
 
+                restored.get(attributeName).set(valueToRestore);
+
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+
+                updateConfiguration(context, pathAddress, true);
+            }
+
+            private void updateConfiguration(OperationContext context, PathAddress pathAddress, boolean rollback) throws OperationFailedException {
+                String alias = pathAddress.getLastElement().getValue();
+                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                ServiceController<ServiceProviderService> serviceController =
+                        (ServiceController<ServiceProviderService>) serviceRegistry.getService(ServiceProviderService.createServiceName(alias));
+
+                if (serviceController != null) {
+                    ServiceProviderService service = serviceController.getValue();
+
+                    ModelNode serviceProviderNode;
+
+                    if (!rollback) {
+                        serviceProviderNode = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
+                    } else {
+                        Resource rc = context.getOriginalRootResource().navigate(pathAddress);
+                        serviceProviderNode = rc.getModel();
+                    }
+
+                    service.setConfiguration(ServiceProviderAddHandler.toSPConfig(context, serviceProviderNode, alias));
+                }
             }
         };
     }

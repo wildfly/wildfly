@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -42,8 +43,6 @@ import org.wildfly.extension.picketlink.federation.model.AbstractFederationResou
 import org.wildfly.extension.picketlink.federation.service.KeyStoreProviderService;
 
 import java.util.List;
-
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -88,34 +87,53 @@ public class KeyStoreProviderResourceDefinition extends AbstractFederationResour
         return new AbstractWriteAttributeHandler(attributes.toArray(new AttributeDefinition[attributes.size()])) {
             @Override
             protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-                String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                ServiceController<KeyStoreProviderService> serviceController =
-                    (ServiceController<KeyStoreProviderService>) serviceRegistry.getService(KeyStoreProviderService.createServiceName(federationAlias));
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
-                if (serviceController != null) {
-                    KeyStoreProviderService service = serviceController.getValue();
-                    ModelNode keyStoreNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-
-                    ModelNode relativeToNode = KeyStoreProviderResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, keyStoreNode);
-                    String relativeTo = null;
-
-                    if (relativeToNode.isDefined()) {
-                        relativeTo = relativeToNode.asString();
-                    }
-
-                    String file = KeyStoreProviderResourceDefinition.FILE.resolveModelAttribute(context, keyStoreNode).asString();
-
-                    service.setKeyProviderType(KeyStoreProviderAddHandler.toKeyProviderType(context, keyStoreNode), file, relativeTo);
-                }
+                updateConfiguration(context, pathAddress, false);
 
                 return false;
             }
 
             @Override
             protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+                ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
 
+                restored.get(attributeName).set(valueToRestore);
+
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+
+                updateConfiguration(context, pathAddress, true);
+            }
+
+            private void updateConfiguration(OperationContext context, PathAddress pathAddress, boolean rollback) throws OperationFailedException {
+                String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
+                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                ServiceController<KeyStoreProviderService> serviceController =
+                        (ServiceController<KeyStoreProviderService>) serviceRegistry.getService(KeyStoreProviderService.createServiceName(federationAlias));
+
+                if (serviceController != null) {
+                    KeyStoreProviderService service = serviceController.getValue();
+                    ModelNode keyStoreProviderNode;
+
+                    if (!rollback) {
+                        keyStoreProviderNode = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
+                    } else {
+                        Resource rc = context.getOriginalRootResource().navigate(pathAddress);
+                        keyStoreProviderNode = rc.getModel();
+                    }
+
+                    ModelNode relativeToNode = KeyStoreProviderResourceDefinition.RELATIVE_TO.resolveModelAttribute(context,
+                            keyStoreProviderNode);
+                    String relativeTo = null;
+
+                    if (relativeToNode.isDefined()) {
+                        relativeTo = relativeToNode.asString();
+                    }
+
+                    String file = KeyStoreProviderResourceDefinition.FILE.resolveModelAttribute(context, keyStoreProviderNode).asString();
+
+                    service.setKeyProviderType(KeyStoreProviderAddHandler.toKeyProviderType(context, keyStoreProviderNode), file, relativeTo);
+                }
             }
         };
     }

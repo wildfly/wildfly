@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -130,25 +131,42 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
 
             @Override
             protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-                String alias = pathAddress.getLastElement().getValue();
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                ServiceController<IdentityProviderService> serviceController =
-                    (ServiceController<IdentityProviderService>) serviceRegistry.getService(IdentityProviderService.createServiceName(alias));
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
 
-                if (serviceController != null) {
-                    IdentityProviderService service = serviceController.getValue();
-                    ModelNode identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
-
-                    service.setConfiguration(IdentityProviderAddHandler.toIDPConfig(context, identityProviderNode, alias));
-                }
+                updateConfiguration(context, pathAddress, false);
 
                 return false;
             }
 
             @Override
             protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+                PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+                ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
 
+                restored.get(attributeName).set(valueToRestore);
+
+                updateConfiguration(context, pathAddress, true);
+            }
+
+            private void updateConfiguration(OperationContext context, PathAddress pathAddress, boolean rollback) throws OperationFailedException {
+                String alias = pathAddress.getLastElement().getValue();
+                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+                ServiceController<IdentityProviderService> serviceController =
+                        (ServiceController<IdentityProviderService>) serviceRegistry.getService(IdentityProviderService.createServiceName(alias));
+
+                if (serviceController != null) {
+                    IdentityProviderService service = serviceController.getValue();
+                    ModelNode identityProviderNode;
+
+                    if (!rollback) {
+                        identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
+                    } else {
+                        Resource rc = context.getOriginalRootResource().navigate(pathAddress);
+                        identityProviderNode = rc.getModel();
+                    }
+
+                    service.setConfiguration(IdentityProviderAddHandler.toIDPConfig(context, identityProviderNode, alias));
+                }
             }
         };
     }
