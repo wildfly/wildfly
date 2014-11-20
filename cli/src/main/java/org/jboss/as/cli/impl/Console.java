@@ -215,7 +215,7 @@ public interface Console {
                     try {
                         Settings.getInstance().getInputStream().close(); // BZ-1149099 - enables interruption of active prompt
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        //
                     }
                 }
 
