@@ -35,7 +35,7 @@ enum Element {
     UNKNOWN((String) null),
 
     ACCEPT(CommonAttributes.ACCEPT),
-    ADD_LOGGING_API_DEPENDENCIES(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES),
+    ADD_LOGGING_API_DEPENDENCIES(LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES),
     ALL(CommonAttributes.ALL),
     ANY(CommonAttributes.ANY),
     APP_NAME(SyslogHandlerResourceDefinition.APP_NAME),
@@ -82,7 +82,7 @@ enum Element {
     SYSLOG_FORMATTER(SyslogHandlerResourceDefinition.SYSLOG_FORMATTER),
     SYSLOG_HANDLER(SyslogHandlerResourceDefinition.SYSLOG_HANDLER),
     TARGET(ConsoleHandlerResourceDefinition.TARGET),
-    USE_DEPLOYMENT_LOGGING_CONFIG(LoggingRootResource.USE_DEPLOYMENT_LOGGING_CONFIG),
+    USE_DEPLOYMENT_LOGGING_CONFIG(LoggingResourceDefinition.USE_DEPLOYMENT_LOGGING_CONFIG),
     ;
 
     private final String name;
