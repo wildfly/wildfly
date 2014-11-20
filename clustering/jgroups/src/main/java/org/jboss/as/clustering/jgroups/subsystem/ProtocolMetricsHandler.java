@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +31,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -41,9 +39,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jgroups.Channel;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
@@ -57,6 +54,10 @@ import org.jgroups.util.Util;
  * @author Paul Ferraro
  */
 public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
+
+    interface ProtocolLocator {
+        Protocol findProtocol(ServiceRegistry registry, PathAddress address) throws ClassNotFoundException, ModuleLoadException;
+    }
 
     interface Attribute {
         String getName();
@@ -230,57 +231,54 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
+    private final ProtocolLocator locator;
+
+    public ProtocolMetricsHandler(ProtocolLocator locator) {
+        this.locator = locator;
+    }
+
     @Override
     protected void executeRuntimeStep(final OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // get the protocol name and attribute
-        PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String channelName = pathAddress.getElement(pathAddress.size() - 2).getValue();
-        String protocolName = pathAddress.getElement(pathAddress.size() - 1).getValue();
-        String name = operation.require(NAME).asString();
+        PathAddress address = Operations.getPathAddress(operation);
+        String protocolName = address.getLastElement().getValue();
+        String name = Operations.getAttributeName(operation);
 
-        // lookup the channel
-        ServiceName channelServiceName = ChannelService.getServiceName(channelName);
-        ServiceController<?> controller = context.getServiceRegistry(false).getService(channelServiceName);
-        if (controller != null) {
-            Channel channel = (Channel) controller.getValue();
-            if (channel != null) {
-                int index = protocolName.lastIndexOf('.');
-                if (index > 0) {
-                    protocolName = protocolName.substring(index + 1);
-                }
-                final Protocol protocol = channel.getProtocolStack().findProtocol(protocolName);
-                if (protocol != null) {
-                    Attribute attribute = this.getAttribute(protocol.getClass(), name);
-                    if (attribute != null) {
-                        FieldType type = FieldType.valueOf(attribute.getType());
-                        try {
-                            ModelNode result = new ModelNode();
-                            Object value = attribute.read(protocol);
-                            if (value != null) {
-                                type.setValue(result, value);
-                            }
-                            context.getResult().set(result);
-                        } catch (Exception e) {
-                            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(name));
+        try {
+            Protocol protocol = this.locator.findProtocol(context.getServiceRegistry(false), address);
+            if (protocol != null) {
+                Attribute attribute = getAttribute(protocol.getClass(), name);
+                if (attribute != null) {
+                    FieldType type = FieldType.valueOf(attribute.getType());
+                    try {
+                        ModelNode result = new ModelNode();
+                        Object value = attribute.read(protocol);
+                        if (value != null) {
+                            type.setValue(result, value);
                         }
-                    } else {
-                        context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
+                        context.getResult().set(result);
+                    } catch (Exception e) {
+                        context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.privilegedAccessExceptionForAttribute(name));
                     }
                 } else {
-                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.protocolNotFoundInStack(protocolName));
+                    context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(name));
                 }
+            } else {
+                context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.protocolNotFoundInStack(protocolName));
             }
+        } catch (ClassNotFoundException | ModuleLoadException e) {
+            context.getFailureDescription().set(e.getLocalizedMessage());
+        } finally {
+            context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
-        context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
-    private Attribute getAttribute(Class<? extends Protocol> targetClass, String name) {
-        Map<String, Attribute> attributes = this.findProtocolAttributes(targetClass);
+    private static Attribute getAttribute(Class<? extends Protocol> targetClass, String name) {
+        Map<String, Attribute> attributes = findProtocolAttributes(targetClass);
         return attributes.get(name);
     }
 
-    Map<String, Attribute> findProtocolAttributes(Class<? extends Protocol> protocolClass) {
+    static Map<String, Attribute> findProtocolAttributes(Class<? extends Protocol> protocolClass) {
         Map<String, Attribute> attributes = new HashMap<>();
         Class<?> targetClass = protocolClass;
         while (Protocol.class.isAssignableFrom(targetClass)) {

@@ -62,15 +62,10 @@ public class InfinispanExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, current.getMajor(), current.getMinor(), current.getMicro());
 
         // Create the path resolver handler
-        final ResolvePathHandler resolvePathHandler;
-        if (context.getProcessType().isServer()) {
-            resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+        ResolvePathHandler resolvePathHandler = context.getProcessType().isServer() ? ResolvePathHandler.Builder.of(context.getPathManager())
                     .setPathAttribute(FileStoreResourceDefinition.RELATIVE_PATH)
                     .setRelativeToAttribute(FileStoreResourceDefinition.RELATIVE_TO)
-                    .build();
-        } else {
-            resolvePathHandler = null;
-        }
+                    .build() : null;
 
         registration.registerSubsystemModel(new InfinispanSubsystemResourceDefinition(resolvePathHandler, context.isRuntimeOnlyRegistrationValid()));
         registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());

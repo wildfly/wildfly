@@ -34,6 +34,7 @@ class ModelKeys {
     static final String DEFAULT_STACK = "default-stack";
     static final String DIAGNOSTICS_SOCKET_BINDING = "diagnostics-socket-binding";
     static final String EXPORT_NATIVE_CONFIGURATION = "export-native-configuration";
+    static final String FORK = "fork";
     static final String MACHINE = "machine";
     static final String MODULE = "module";
     static final String NAME = "name";

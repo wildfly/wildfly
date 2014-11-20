@@ -31,7 +31,6 @@ import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.msc.InjectedValueServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -49,8 +48,8 @@ import org.wildfly.clustering.spi.GroupServiceInstaller;
  */
 public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
 
-    JGroupsSubsystemAddHandler(AttributeDefinition... attributes) {
-        super(attributes);
+    JGroupsSubsystemAddHandler() {
+        super(JGroupsSubsystemResourceDefinition.ATTRIBUTES);
     }
 
     @Override

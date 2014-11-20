@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -154,7 +153,53 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
             }
         }
-        ParseUtils.requireNoContent(reader);
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case FORK: {
+                    this.parseFork(reader, address, operations);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseFork(XMLExtendedStreamReader reader, PathAddress channelAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+        String name = require(reader, Attribute.NAME);
+        PathAddress address = channelAddress.append(ForkResourceDefinition.pathElement(name));
+        ModelNode operation = Util.createAddOperation(address);
+        operations.put(address, operation);
+
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    // Already parsed
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROTOCOL: {
+                    this.parseProtocol(reader, address, operations);
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private void parseStacks(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
@@ -222,7 +267,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseTransport(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        PathAddress address = stackAddress.append(TransportResourceDefinition.PATH);
+        String type = require(reader, Attribute.TYPE);
+        PathAddress address = stackAddress.append(TransportResourceDefinition.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -278,10 +324,6 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        if (!operation.hasDefined(ProtocolResourceDefinition.TYPE.getName())) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
-        }
-
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
         }
@@ -291,7 +333,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
         String type = require(reader, Attribute.TYPE);
         PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
-        ModelNode operation = Util.createOperation(ProtocolResourceDefinition.ADD.getName(), stackAddress);
+        ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -308,7 +350,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
             case TYPE: {
-                ProtocolResourceDefinition.TYPE.parseAndSetParameter(value, operation, reader);
+                // Already parsed
                 break;
             }
             case SOCKET_BINDING: {

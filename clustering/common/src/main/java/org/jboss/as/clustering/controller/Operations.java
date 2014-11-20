@@ -30,10 +30,46 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Factory methods for creating management operations.
+ * Utility methods for creating/manipulating management operations.
  * @author Paul Ferraro
  */
-public final class OperationFactory {
+public final class Operations {
+
+    /**
+     * Returns the address of the specified operation
+     * @param operation an operation
+     * @return a path address
+     */
+    public static PathAddress getPathAddress(ModelNode operation) {
+        return PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+    }
+
+    /**
+     * Returns the name of the specified operation
+     * @param operation an operation
+     * @return an operation name
+     */
+    public static String getName(ModelNode operation) {
+        return operation.require(ModelDescriptionConstants.OP).asString();
+    }
+
+    /**
+     * Returns the attribute name of the specified operation
+     * @param operation an operation
+     * @return an attribute name
+     */
+    public static String getAttributeName(ModelNode operation) {
+        return operation.require(ModelDescriptionConstants.NAME).asString();
+    }
+
+    /**
+     * Returns the attribute value of the specified operation
+     * @param operation an operation
+     * @return an attribute value
+     */
+    public static ModelNode getAttributeValue(ModelNode operation) {
+        return operation.hasDefined(ModelDescriptionConstants.VALUE) ? operation.get(ModelDescriptionConstants.VALUE) : new ModelNode();
+    }
 
     /**
      * Creates a composite operation using the specified operation steps.
@@ -96,7 +132,16 @@ public final class OperationFactory {
         return operation;
     }
 
-    private OperationFactory() {
+    /**
+     * Creates a describe operation using the specified address.
+     * @param address a resource path
+     * @return a describe operation
+     */
+    public static ModelNode createDescribeOperation(PathAddress address) {
+        return Util.createEmptyOperation(ModelDescriptionConstants.DESCRIBE, address);
+    }
+
+    private Operations() {
         // Hide
     }
 }

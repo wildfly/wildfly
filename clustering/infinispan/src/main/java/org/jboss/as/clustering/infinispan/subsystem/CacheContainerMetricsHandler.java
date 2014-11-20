@@ -18,15 +18,12 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,9 +36,8 @@ public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
         // Address is of the form: /subsystem=infinispan/cache-container=*
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String containerName = address.getLastElement().getValue();
-        String name = operation.require(ModelDescriptionConstants.NAME).asString();
+        String containerName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = Operations.getAttributeName(operation);
 
         CacheContainerMetric metric = CacheContainerMetric.forName(name);
 

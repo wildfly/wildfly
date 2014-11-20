@@ -25,6 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -49,7 +50,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(false))
+            .setDefaultValue(new ModelNode(false))
             .build();
 
     static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
@@ -64,14 +65,14 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(10L))
+            .setDefaultValue(new ModelNode(10L))
             .build();
 
     static final SimpleAttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
             .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(0))
+            .setDefaultValue(new ModelNode(0))
             .build();
 
     static final SimpleAttributeDefinition REMOTE_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
@@ -79,7 +80,7 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode().set(17500L))
+            .setDefaultValue(new ModelNode(17500L))
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
@@ -100,10 +101,9 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         super.registerAttributes(registration);
-        // do we really need a special handler here?
-        final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attribute : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, CacheReadAttributeHandler.INSTANCE, writeHandler);
+            registration.registerReadWriteAttribute(attribute, null, writeHandler);
         }
 
         if (this.allowRuntimeOnlyRegistration) {

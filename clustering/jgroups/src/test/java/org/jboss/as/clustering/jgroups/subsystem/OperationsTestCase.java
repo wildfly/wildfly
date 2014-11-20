@@ -30,11 +30,10 @@ public class OperationsTestCase extends OperationTestCaseBase {
     static final ModelNode removeStackOp = getProtocolStackRemoveOperation("maximal2");
 
     // transport test operations
-    static final ModelNode readTransportTypeOp = getTransportReadOperation("maximal", ModelKeys.TYPE);
-    static final ModelNode readTransportRackOp = getTransportReadOperation("maximal", ModelKeys.RACK);
-    static final ModelNode writeTransportRackOp = getTransportWriteOperation("maximal", ModelKeys.RACK, "new-rack");
-    static final ModelNode readTransportPropertyOp = getTransportPropertyReadOperation("maximal", "enable_bundling");
-    static final ModelNode writeTransportPropertyOp = getTransportPropertyWriteOperation("maximal", "enable_bundling", "false");
+    static final ModelNode readTransportRackOp = getTransportReadOperation("maximal", "TCP", ModelKeys.RACK);
+    static final ModelNode writeTransportRackOp = getTransportWriteOperation("maximal", "TCP", ModelKeys.RACK, "new-rack");
+    static final ModelNode readTransportPropertyOp = getTransportPropertyReadOperation("maximal", "TCP", "enable_bundling");
+    static final ModelNode writeTransportPropertyOp = getTransportPropertyWriteOperation("maximal", "TCP", "enable_bundling", "false");
 
     static final ModelNode addTransportOp = getTransportAddOperation("maximal2", "UDP");
     // addTransportOpWithProps calls the operation below to check passing optional parameters
@@ -43,7 +42,6 @@ public class OperationsTestCase extends OperationTestCaseBase {
     static final ModelNode removeTransportOp = getTransportRemoveOperation("maximal2", "UDP");
 
     // protocol test operations
-    static final ModelNode readProtocolTypeOp = getProtocolReadOperation("maximal", "MPING", ModelKeys.TYPE);
     static final ModelNode readProtocolSocketBindingOp = getProtocolReadOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING);
     static final ModelNode writeProtocolSocketBindingOp = getProtocolWriteOperation("maximal", "MPING", ModelKeys.SOCKET_BINDING, "new-socket-binding");
     static final ModelNode readProtocolPropertyOp = getProtocolPropertyReadOperation("maximal", "MPING", "name");
@@ -61,22 +59,19 @@ public class OperationsTestCase extends OperationTestCaseBase {
     @Test
     public void testSubsystemReadWriteOperations() throws Exception {
 
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        // KernelServices servicesA = super.installInController(subsystemXml) ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = this.buildKernelServices();
 
         // read the default stack
-        ModelNode result = servicesA.executeOperation(readSubsystemDefaultStackOp);
+        ModelNode result = services.executeOperation(readSubsystemDefaultStackOp);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("maximal", result.get(RESULT).resolve().asString());
 
         // write the default stack
-        result = servicesA.executeOperation(writeSubsystemDefaultStackOp);
+        result = services.executeOperation(writeSubsystemDefaultStackOp);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
-        result = servicesA.executeOperation(readSubsystemDefaultStackOp);
+        result = services.executeOperation(readSubsystemDefaultStackOp);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default", result.get(RESULT).asString());
     }
@@ -87,124 +82,100 @@ public class OperationsTestCase extends OperationTestCaseBase {
     @Test
     public void testTransportReadWriteOperation() throws Exception {
 
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
-
-        // read the transport type attribute
-        ModelNode result = servicesA.executeOperation(readTransportTypeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("TCP", result.get(RESULT).asString());
+        KernelServices services = this.buildKernelServices();
 
         // read the transport rack attribute
-        result = servicesA.executeOperation(readTransportRackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        ModelNode result = services.executeOperation(readTransportRackOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("rack1", result.get(RESULT).resolve().asString());
 
         // write the rack attribute
-        result = servicesA.executeOperation(writeTransportRackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(writeTransportRackOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = servicesA.executeOperation(readTransportRackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readTransportRackOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
 
     @Test
     public void testTransportReadWriteWithParameters() throws Exception {
         // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
-        Assert.assertTrue("Could not create services",servicesA.isSuccessfulBoot());
+        KernelServices services = this.buildKernelServices();
+        Assert.assertTrue("Could not create services",services.isSuccessfulBoot());
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
-        ModelNode result = servicesA.executeOperation(addStackOpWithParams);
+        ModelNode result = services.executeOperation(addStackOpWithParams);
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
-         // read the transport type attribute
-        result = servicesA.executeOperation(readTransportTypeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("TCP", result.get(RESULT).asString());
-
         // write the rack attribute
-        result = servicesA.executeOperation(writeTransportRackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(writeTransportRackOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = servicesA.executeOperation(readTransportRackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readTransportRackOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
 
     @Test
     public void testTransportPropertyReadWriteOperation() throws Exception {
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = this.buildKernelServices();
 
          // read the enable_bundling transport property
-        ModelNode result = servicesA.executeOperation(readTransportPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        ModelNode result = services.executeOperation(readTransportPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("true", result.get(RESULT).resolve().asString());
 
         // write the enable_bundling transport property
-        result = servicesA.executeOperation(writeTransportPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(writeTransportPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the enable_bundling transport property
-        result = servicesA.executeOperation(readTransportPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readTransportPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("false", result.get(RESULT).asString());
     }
 
     @Test
     public void testProtocolReadWriteOperation() throws Exception {
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = this.buildKernelServices();
 
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
-        ModelNode result = servicesA.executeOperation(addStackOpWithParams);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
-         // read the transport type attribute
-        result = servicesA.executeOperation(readProtocolTypeOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertEquals("MPING", result.get(RESULT).asString());
+        ModelNode result = services.executeOperation(addStackOpWithParams);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // read the socket binding attribute
-        result = servicesA.executeOperation(readProtocolSocketBindingOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readProtocolSocketBindingOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("jgroups-mping", result.get(RESULT).asString());
 
         // write the attribute
-        result = servicesA.executeOperation(writeProtocolSocketBindingOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(writeProtocolSocketBindingOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the attribute
-        result = servicesA.executeOperation(readProtocolSocketBindingOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readProtocolSocketBindingOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-socket-binding", result.get(RESULT).asString());
     }
 
     @Test
     public void testProtocolPropertyReadWriteOperation() throws Exception {
-        // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices services = this.buildKernelServices();
 
          // read the name protocol property
-        ModelNode result = servicesA.executeOperation(readProtocolPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        ModelNode result = services.executeOperation(readProtocolPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("value", result.get(RESULT).resolve().asString());
 
         // write the property
-        result = servicesA.executeOperation(writeProtocolPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(writeProtocolPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the property
-        result = servicesA.executeOperation(readProtocolPropertyOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        result = services.executeOperation(readProtocolPropertyOp);
+        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-value", result.get(RESULT).asString());
     }
 

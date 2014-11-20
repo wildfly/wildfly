@@ -33,6 +33,7 @@ public enum Element {
 
     CHANNEL(ModelKeys.CHANNEL),
     CHANNELS("channels"),
+    FORK(ModelKeys.FORK),
     PROPERTY(ModelKeys.PROPERTY),
     PROTOCOL(ModelKeys.PROTOCOL),
     RELAY(ModelKeys.RELAY),

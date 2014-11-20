@@ -36,6 +36,8 @@ public interface ProtocolConfiguration {
 
     String getName();
 
+    String getProtocolClassName();
+
     Map<String, String> getProperties();
 
     SocketBinding getSocketBinding();

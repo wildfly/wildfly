@@ -1,22 +1,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.io.IOException;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -32,337 +25,149 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
         super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());
     }
 
-    protected static ModelNode getCompositeOperation(ModelNode[] operations) {
-        // create the address of the cache
-        ModelNode compositeOp = new ModelNode() ;
-        compositeOp.get(OP).set(COMPOSITE);
-        compositeOp.get(OP_ADDR).setEmptyList();
-        // the operations to be performed
-        for (ModelNode operation : operations) {
-            compositeOp.get(STEPS).add(operation);
-        }
-        return compositeOp ;
-    }
-
     protected static ModelNode getSubsystemAddOperation(String defaultStack) {
-        // create the address of the subsystem
-        PathAddress subsystemAddress =  PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
-        // required attributes
-        addOp.get(ModelKeys.DEFAULT_STACK).set(defaultStack);
-        return addOp ;
+        ModelNode operation = Util.createAddOperation(getSubsystemAddress());
+        operation.get(JGroupsSubsystemResourceDefinition.DEFAULT_STACK.getName()).set(defaultStack);
+        return operation;
     }
 
     protected static ModelNode getSubsystemReadOperation(String name) {
-        // create the address of the subsystem
-        PathAddress subsystemAddress =  PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelNode readOp = new ModelNode() ;
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
-        // required attributes
-        readOp.get(NAME).set(name);
-        return readOp ;
+        return Operations.createReadAttributeOperation(getSubsystemAddress(), name);
     }
 
     protected static ModelNode getSubsystemWriteOperation(String name, String value) {
-        // create the address of the subsystem
-        PathAddress subsystemAddress =  PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelNode writeOp = new ModelNode() ;
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
-        // required attributes
-        writeOp.get(NAME).set(name);
-        writeOp.get(VALUE).set(value);
-        return writeOp ;
+        return Operations.createWriteAttributeOperation(getSubsystemAddress(), name, new ModelNode(value));
     }
 
     protected static ModelNode getSubsystemRemoveOperation() {
-        // create the address of the subsystem
-        PathAddress subsystemAddress =  PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        ModelNode removeOp = new ModelNode() ;
-        removeOp.get(OP).set(REMOVE);
-        removeOp.get(OP_ADDR).set(subsystemAddress.toModelNode());
-        return removeOp ;
+        return Util.createRemoveOperation(getSubsystemAddress());
     }
 
     protected static ModelNode getProtocolStackAddOperation(String stackName) {
-        // create the address of the cache
-        PathAddress stackAddr = getProtocolStackAddress(stackName);
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(stackAddr.toModelNode());
-        // required attributes
-        // addOp.get(DEFAULT_CACHE).set("default");
-        return addOp ;
+        return Util.createAddOperation(getProtocolStackAddress(stackName));
     }
 
     protected static ModelNode getProtocolStackAddOperationWithParameters(String stackName) {
-         ModelNode addOp = getProtocolStackAddOperation(stackName);
-         // add optional TRANSPORT attribute
-         ModelNode transport = addOp.get(ModelKeys.TRANSPORT);
-         transport.get(ModelKeys.TYPE).set("UDP");
-
-         // add optional PROTOCOLS attribute
-         ModelNode protocolsList = new ModelNode();
-         ModelNode mping = new ModelNode() ;
-         mping.get(ModelKeys.TYPE).set("MPING");
-         protocolsList.add(mping);
-         ModelNode flush = new ModelNode() ;
-         flush.get(ModelKeys.TYPE).set("pbcast.FLUSH");
-         protocolsList.add(flush);
-         addOp.get(ModelKeys.PROTOCOLS).set(protocolsList);
-         return addOp ;
-     }
+        ModelNode[] operations = new ModelNode[] {
+                getProtocolStackAddOperation(stackName),
+                getTransportAddOperation(stackName, "UDP"),
+                getProtocolAddOperation(stackName, "MPING"),
+                getProtocolAddOperation(stackName, "pbcast.FLUSH"),
+        };
+        return Operations.createCompositeOperation(operations);
+    }
 
     protected static ModelNode getProtocolStackRemoveOperation(String stackName) {
-        // create the address of the cache
-        PathAddress stackAddr = getProtocolStackAddress(stackName);
-        ModelNode removeOp = new ModelNode() ;
-        removeOp.get(OP).set(REMOVE);
-        removeOp.get(OP_ADDR).set(stackAddr.toModelNode());
-        return removeOp ;
+        return Util.createRemoveOperation(getProtocolStackAddress(stackName));
     }
 
-    protected static ModelNode getTransportAddOperation(String stackName, String protocolType) {
-        // create the address of the cache
-        PathAddress transportAddr = getTransportAddress(stackName);
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(transportAddr.toModelNode());
-        // required attributes
-        addOp.get(ModelKeys.TYPE).set(protocolType);
-        return addOp ;
+    protected static ModelNode getTransportAddOperation(String stackName, String protocol) {
+        return Util.createAddOperation(getTransportAddress(stackName, protocol));
     }
 
-    protected static ModelNode getTransportAddOperationWithProperties(String stackName, String protocolType) {
-        ModelNode addOp = getTransportAddOperation(stackName, protocolType);
-        // add optional PROPERTIES attribute
-        ModelNode propertyList = new ModelNode();
-        ModelNode propA = new ModelNode();
-        propA.add("A","a");
-        propertyList.add(propA);
-        ModelNode propB = new ModelNode();
-        propB.add("B","b");
-        propertyList.add(propB);
-        addOp.get(ModelKeys.PROPERTIES).set(propertyList);
-        return addOp ;
+    protected static ModelNode getTransportAddOperationWithProperties(String stackName, String type) {
+        ModelNode[] operations = new ModelNode[] {
+                getTransportAddOperation(stackName, type),
+                getProtocolPropertyAddOperation(stackName, type, "A", "a"),
+                getProtocolPropertyAddOperation(stackName, type, "B", "b"),
+        };
+        return Operations.createCompositeOperation(operations);
     }
 
-    protected static ModelNode getTransportRemoveOperation(String stackName, String protocolType) {
-        // create the address of the cache
-        PathAddress transportAddr = getTransportAddress(stackName);
-        ModelNode removeOp = new ModelNode() ;
-        removeOp.get(OP).set(REMOVE);
-        removeOp.get(OP_ADDR).set(transportAddr.toModelNode());
-        return removeOp ;
+    protected static ModelNode getTransportRemoveOperation(String stackName, String type) {
+        return Util.createRemoveOperation(getTransportAddress(stackName, type));
     }
 
-    protected static ModelNode getTransportReadOperation(String stackName, String name) {
-        // create the address of the subsystem
-        PathAddress transportAddress = getTransportAddress(stackName);
-        ModelNode readOp = new ModelNode() ;
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(transportAddress.toModelNode());
-        // required attributes
-        readOp.get(NAME).set(name);
-        return readOp ;
+    protected static ModelNode getTransportReadOperation(String stackName, String type, String name) {
+        return Operations.createReadAttributeOperation(getTransportAddress(stackName, type), name);
     }
 
-    protected static ModelNode getTransportWriteOperation(String stackName, String name, String value) {
-        // create the address of the subsystem
-        PathAddress transportAddress = getTransportAddress(stackName);
-        ModelNode writeOp = new ModelNode() ;
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(transportAddress.toModelNode());
-        // required attributes
-        writeOp.get(NAME).set(name);
-        writeOp.get(VALUE).set(value);
-        return writeOp ;
+    protected static ModelNode getTransportWriteOperation(String stackName, String type, String name, String value) {
+        return Operations.createWriteAttributeOperation(getTransportAddress(stackName, type), name, new ModelNode(value));
     }
 
-    protected static ModelNode getTransportPropertyAddOperation(String stackName, String propertyName, String propertyValue) {
-        // create the address of the subsystem
-        PathAddress transportPropertyAddress = getTransportPropertyAddress(stackName, propertyName);
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
-        // required attributes
-        addOp.get(NAME).set(ModelKeys.VALUE);
-        addOp.get(VALUE).set(propertyValue);
-        return addOp ;
+    protected static ModelNode getTransportPropertyAddOperation(String stackName, String type, String propertyName, String propertyValue) {
+        ModelNode operation = Util.createAddOperation(getTransportPropertyAddress(stackName, type, propertyName));
+        operation.get(PropertyResourceDefinition.VALUE.getName()).set(propertyValue);
+        return operation;
     }
 
-    protected static ModelNode getTransportPropertyReadOperation(String stackName, String propertyName) {
-        // create the address of the subsystem
-        PathAddress transportPropertyAddress = getTransportPropertyAddress(stackName, propertyName);
-        ModelNode readOp = new ModelNode() ;
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
-        // required attributes
-        readOp.get(NAME).set(ModelKeys.VALUE);
-        return readOp ;
+    protected static ModelNode getTransportPropertyReadOperation(String stackName, String type, String propertyName) {
+        return Operations.createReadAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), PropertyResourceDefinition.VALUE.getName());
     }
 
-    protected static ModelNode getTransportPropertyWriteOperation(String stackName, String propertyName, String propertyValue) {
-        // create the address of the subsystem
-        PathAddress transportPropertyAddress = getTransportPropertyAddress(stackName, propertyName);
-        ModelNode writeOp = new ModelNode() ;
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(transportPropertyAddress.toModelNode());
-        // required attributes
-        writeOp.get(NAME).set(ModelKeys.VALUE);
-        writeOp.get(VALUE).set(propertyValue);
-        return writeOp ;
+    protected static ModelNode getTransportPropertyWriteOperation(String stackName, String type, String propertyName, String propertyValue) {
+        return Operations.createWriteAttributeOperation(getTransportPropertyAddress(stackName, type, propertyName), PropertyResourceDefinition.VALUE.getName(), new ModelNode(propertyValue));
     }
 
-    protected static ModelNode getProtocolAddOperation(String stackName, String protocolType) {
-        // create the address of the cache
-        PathAddress stackAddr = getProtocolStackAddress(stackName);
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set("add-protocol");
-        addOp.get(OP_ADDR).set(stackAddr.toModelNode());
-        // required attributes
-        addOp.get(ModelKeys.TYPE).set(protocolType);
-        return addOp ;
+    protected static ModelNode getProtocolAddOperation(String stackName, String type) {
+        return Util.createAddOperation(getProtocolAddress(stackName, type));
     }
 
-    protected static ModelNode getProtocolAddOperationWithProperties(String stackName, String protocolType) {
-        ModelNode addOp = getProtocolAddOperation(stackName, protocolType);
-        // add optional PROPERTIES attribute
-        ModelNode propertyList = new ModelNode();
-        ModelNode propA = new ModelNode();
-        propA.add("A","a");
-        propertyList.add(propA);
-        ModelNode propB = new ModelNode();
-        propB.add("B","b");
-        propertyList.add(propB);
-        addOp.get(ModelKeys.PROPERTIES).set(propertyList);
-        return addOp ;
+    protected static ModelNode getProtocolAddOperationWithProperties(String stackName, String type) {
+        ModelNode[] operations = new ModelNode[] {
+                getProtocolAddOperation(stackName, type),
+                getProtocolPropertyAddOperation(stackName, type, "A", "a"),
+                getProtocolPropertyAddOperation(stackName, type, "B", "b"),
+        };
+        return Operations.createCompositeOperation(operations);
     }
 
     protected static ModelNode getProtocolReadOperation(String stackName, String protocolName, String name) {
-        // create the address of the subsystem
-        PathAddress protocolAddress = getProtocolAddress(stackName, protocolName);
-        ModelNode readOp = new ModelNode() ;
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(protocolAddress.toModelNode());
-        // required attributes
-        readOp.get(NAME).set(name);
-        return readOp ;
+        return Operations.createReadAttributeOperation(getProtocolAddress(stackName, protocolName), name);
     }
 
     protected static ModelNode getProtocolWriteOperation(String stackName, String protocolName, String name, String value) {
-        // create the address of the subsystem
-        PathAddress protocolAddress = getProtocolAddress(stackName, protocolName);
-        ModelNode writeOp = new ModelNode() ;
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(protocolAddress.toModelNode());
-        // required attributes
-        writeOp.get(NAME).set(name);
-        writeOp.get(VALUE).set(value);
-        return writeOp ;
+        return Operations.createWriteAttributeOperation(getProtocolAddress(stackName, protocolName), name, new ModelNode(value));
     }
 
     protected static ModelNode getProtocolPropertyAddOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        // create the address of the subsystem
-        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
-        ModelNode addOp = new ModelNode() ;
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
-        // required attributes
-        addOp.get(NAME).set(ModelKeys.VALUE);
-        addOp.get(VALUE).set(propertyValue);
-        return addOp ;
+        ModelNode operation = Util.createAddOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName));
+        operation.get(PropertyResourceDefinition.VALUE.getName()).set(propertyValue);
+        return operation;
     }
 
     protected static ModelNode getProtocolPropertyReadOperation(String stackName, String protocolName, String propertyName) {
-        // create the address of the subsystem
-        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
-        ModelNode readOp = new ModelNode() ;
-        readOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        readOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
-        // required attributes
-        readOp.get(NAME).set(ModelKeys.VALUE);
-        return readOp ;
+        return Operations.createReadAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), PropertyResourceDefinition.VALUE.getName());
     }
 
     protected static ModelNode getProtocolPropertyWriteOperation(String stackName, String protocolName, String propertyName, String propertyValue) {
-        // create the address of the subsystem
-        PathAddress protocolPropertyAddress = getProtocolPropertyAddress(stackName, protocolName, propertyName);
-        ModelNode writeOp = new ModelNode() ;
-        writeOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        writeOp.get(OP_ADDR).set(protocolPropertyAddress.toModelNode());
-        // required attributes
-        writeOp.get(NAME).set(ModelKeys.VALUE);
-        writeOp.get(VALUE).set(propertyValue);
-        return writeOp ;
+        return Operations.createWriteAttributeOperation(getProtocolPropertyAddress(stackName, protocolName, propertyName), PropertyResourceDefinition.VALUE.getName(), new ModelNode(propertyValue));
     }
 
-    protected static ModelNode getProtocolRemoveOperation(String stackName, String protocolType) {
-        // create the address of the cache
-        PathAddress stackAddr = getProtocolStackAddress(stackName);
-        ModelNode removeOp = new ModelNode() ;
-        removeOp.get(OP).set("remove-protocol");
-        removeOp.get(OP_ADDR).set(stackAddr.toModelNode());
-        // required attributes
-        removeOp.get(ModelKeys.TYPE).set(protocolType);
-        return removeOp ;
+    protected static ModelNode getProtocolRemoveOperation(String stackName, String type) {
+        return Util.createRemoveOperation(getProtocolAddress(stackName, type));
+    }
+
+    protected static PathAddress getSubsystemAddress() {
+        return PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
     }
 
     protected static PathAddress getProtocolStackAddress(String stackName) {
-        // create the address of the stack
-        PathAddress stackAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("stack",stackName));
-        return stackAddr ;
+        return getSubsystemAddress().append(StackResourceDefinition.pathElement(stackName));
     }
 
-    protected static PathAddress getTransportAddress(String stackName) {
-        // create the address of the cache
-        PathAddress protocolAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("stack",stackName),
-                PathElement.pathElement("transport", "TRANSPORT"));
-        return protocolAddr ;
+    protected static PathAddress getTransportAddress(String stackName, String type) {
+        return getProtocolStackAddress(stackName).append(TransportResourceDefinition.pathElement(type));
     }
 
-    protected static PathAddress getTransportPropertyAddress(String stackName, String propertyName) {
-        // create the address of the cache
-        PathAddress protocolAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("stack",stackName),
-                PathElement.pathElement("transport", "TRANSPORT"),
-                PathElement.pathElement("property", propertyName));
-        return protocolAddr ;
+    protected static PathAddress getTransportPropertyAddress(String stackName, String type, String propertyName) {
+        return getTransportAddress(stackName, type).append(PropertyResourceDefinition.pathElement(propertyName));
     }
 
-    protected static PathAddress getProtocolAddress(String stackName, String protocolType) {
-        // create the address of the cache
-        PathAddress protocolAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("stack",stackName),
-                PathElement.pathElement("protocol", protocolType));
-        return protocolAddr ;
+    protected static PathAddress getProtocolAddress(String stackName, String type) {
+        return getProtocolStackAddress(stackName).append(ProtocolResourceDefinition.pathElement(type));
     }
 
-    protected static PathAddress getProtocolPropertyAddress(String stackName, String protocolType, String propertyName) {
-        // create the address of the cache
-        PathAddress protocolAddr = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("stack",stackName),
-                PathElement.pathElement("protocol", protocolType),
-                PathElement.pathElement("property", propertyName));
-        return protocolAddr ;
+    protected static PathAddress getProtocolPropertyAddress(String stackName, String type, String propertyName) {
+        return getProtocolAddress(stackName, type).append(PropertyResourceDefinition.pathElement(propertyName));
     }
 
     protected String getSubsystemXml() throws IOException {
         return readResource(SUBSYSTEM_XML_FILE) ;
     }
 
+    protected KernelServices buildKernelServices() throws XMLStreamException, IOException, Exception {
+        return createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXml(this.getSubsystemXml()).build();
+    }
 }

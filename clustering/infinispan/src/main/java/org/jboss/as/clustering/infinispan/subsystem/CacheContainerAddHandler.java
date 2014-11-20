@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.util.Iterator;
@@ -34,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
@@ -84,24 +84,8 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
     private static final Logger log = Logger.getLogger(CacheContainerAddHandler.class.getPackage().getName());
 
-    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
-        CacheContainerResourceDefinition.DEFAULT_CACHE.validateAndSet(source, target);
-        // TODO: need to handle list types
-        if (source.hasDefined(CacheContainerResourceDefinition.ALIASES.getName())) {
-            target.get(CacheContainerResourceDefinition.ALIASES.getName()).set(source.get(CacheContainerResourceDefinition.ALIASES.getName()));
-        }
-        CacheContainerResourceDefinition.JNDI_NAME.validateAndSet(source, target);
-        CacheContainerResourceDefinition.START.validateAndSet(source, target);
-        CacheContainerResourceDefinition.LISTENER_EXECUTOR.validateAndSet(source, target);
-        CacheContainerResourceDefinition.EVICTION_EXECUTOR.validateAndSet(source, target);
-        CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
-        CacheContainerResourceDefinition.MODULE.validateAndSet(source, target);
-        CacheContainerResourceDefinition.STATISTICS_ENABLED.validateAndSet(source, target);
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        populate(operation, model);
+    CacheContainerAddHandler() {
+        super(CacheContainerResourceDefinition.ATTRIBUTES);
     }
 
     @Override
@@ -111,8 +95,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     }
 
     static void installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathAddress address = Operations.getPathAddress(operation);
         String name = address.getLastElement().getValue();
 
         // Handle case where ejb subsystem has already installed services for this cache-container
@@ -169,25 +152,25 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 String channel = ModelNodes.asString(TransportResourceDefinition.CHANNEL.resolveModelAttribute(context, transport));
                 transportExecutor = ModelNodes.asString(TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport));
 
+                if (channel == null) {
+                    // Transport uses the default channel - we need to find its actual name to locate the appropriate ChannelFactory service
+                    PathAddress jgroupsAddress = address.subAddress(0, address.size() - 2).append(JGroupsSubsystemResourceDefinition.PATH);
+                    ModelNode jgroupsModel = context.readResourceFromRoot(jgroupsAddress, false).getModel();
+                    channel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, jgroupsModel));
+                }
+
                 if (!name.equals(channel)) {
                     new BinderServiceBuilder(target).build(ChannelService.createChannelBinding(name), ChannelService.getServiceName(name), Channel.class).install();
 
                     ChannelService.build(target, name).setInitialMode(ON_DEMAND).install();
 
-                    if (channel == null) {
-                        // Transport uses the default channel - we need to find its actual name to locate the appropriate ChannelFactory service
-                        PathAddress jgroupsAddress = address.subAddress(0, address.size() - 2).append(JGroupsSubsystemResourceDefinition.PATH);
-                        ModelNode jgroupsModel = context.readResourceFromRoot(jgroupsAddress).getModel();
-                        channel = ModelNodes.asString(JGroupsSubsystemResourceDefinition.DEFAULT_CHANNEL.resolveModelAttribute(context, jgroupsModel));
-                    }
-
-                    new InjectedValueServiceBuilder(target).build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).install();
+                    builder.build(ChannelService.getFactoryServiceName(name), ChannelFactoryService.getServiceName(channel), ChannelFactory.class).install();
 
                     for (GroupServiceInstaller installer : ServiceLoader.load(ClusteredGroupServiceInstaller.class, ClusteredGroupServiceInstaller.class.getClassLoader())) {
                         log.debugf("Installing %s for cache container %s", installer.getClass().getSimpleName(), name);
-                        Iterator<ServiceName> serviceNames = installer.getServiceNames(channel).iterator();
+                        Iterator<ServiceName> names = installer.getServiceNames(channel).iterator();
                         for (ServiceName serviceName : installer.getServiceNames(name)) {
-                            builder.build(serviceName, serviceNames.next(), Object.class).install();
+                            builder.build(serviceName, names.next(), Object.class).install();
                         }
                     }
                 }
@@ -246,8 +229,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     }
 
     static void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        String name = address.getLastElement().getValue();
+        String name = Operations.getPathAddress(operation).getLastElement().getValue();
 
         // need to remove all container-related services started, in reverse order
         context.removeService(KeyAffinityServiceFactoryService.getServiceName(name));

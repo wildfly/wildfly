@@ -21,15 +21,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
+import org.jboss.as.clustering.controller.Operations;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.JChannel;
 
@@ -44,10 +41,8 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // get the channel name and channel attribute
-        PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String channelName = pathAddress.getLastElement().getValue();
-        String name = operation.require(NAME).asString();
+        String channelName = Operations.getPathAddress(operation).getLastElement().getValue();
+        String name = Operations.getAttributeName(operation);
         ChannelMetric metric = ChannelMetric.forName(name);
 
         if (metric == null) {

@@ -149,22 +149,20 @@ public class TransformersTestCase extends OperationTestCaseBase {
      */
     private void testTransformation(JGroupsModel model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
         ModelVersion version = model.getVersion();
-        String subsystemXml = readResource("subsystem-jgroups-transform.xml");
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(subsystemXml);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT).setSubsystemXmlResource("subsystem-jgroups-transform.xml");
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controller, version)
-                .addMavenResourceURL(mavenResourceURLs);
+        builder.createLegacyKernelServicesBuilder(null, controller, version).addMavenResourceURL(mavenResourceURLs).skipReverseControllerCheck();
 
-        KernelServices mainServices = builder.build();
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
+        KernelServices services = builder.build();
+
+        Assert.assertTrue(services.isSuccessfulBoot());
+        Assert.assertTrue(services.getLegacyServices(version).isSuccessfulBoot());
 
         // check that both versions of the legacy model are the same and valid
-        checkSubsystemModelTransformation(mainServices, version);
+        checkSubsystemModelTransformation(services, version);
     }
 
     /**
@@ -196,7 +194,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         // set a property to have an expression and let Byteman intercept the performRuntime call
 
         // build an ADD command to add a transport property using expression value
-        ModelNode operation = getTransportPropertyAddOperation("maximal", "bundler_type", "${the_bundler_type:new}");
+        ModelNode operation = getTransportPropertyAddOperation("maximal", "TCP", "bundler_type", "${the_bundler_type:new}");
 
         // perform operation on the 1.1.1 model
         ModelNode mainResult = services.executeOperation(operation);
@@ -280,12 +278,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services and add required jars
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
-                .addMavenResourceURL(mavenResourceURLs)
-                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-                //which is strange since it should be loading it all from the current jboss modules
-                //Also this works in several other tests
-                .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version).addMavenResourceURL(mavenResourceURLs).dontPersistXml().skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -303,11 +296,11 @@ public class TransformersTestCase extends OperationTestCaseBase {
                         // expect certain rejected expressions
                         .addFailedAttribute(
                                 subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
-                                        .append(TransportResourceDefinition.PATH),
+                                        .append(TransportResourceDefinition.WILDCARD_PATH),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
                         .addFailedAttribute(
                                 subsystemAddress.append(StackResourceDefinition.WILDCARD_PATH)
-                                        .append(TransportResourceDefinition.PATH)
+                                        .append(TransportResourceDefinition.WILDCARD_PATH)
                                         .append(PropertyResourceDefinition.WILDCARD_PATH),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
                         .addFailedAttribute(

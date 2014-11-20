@@ -23,37 +23,25 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Attribute handler for cache resource.
+ * Custom command to remove an alias for a cache-container.
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheWriteAttributeHandler implements OperationStepHandler {
+public class RemoveAliasHandler implements OperationStepHandler {
 
-    public static final CacheWriteAttributeHandler INSTANCE = new CacheWriteAttributeHandler();
     private final ParametersValidator nameValidator = new ParametersValidator();
-
-    private final Map<String, AttributeDefinition> attributeDefinitions = new HashMap<>();
-
-    public CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
-        for (AttributeDefinition def : definitions) {
-            this.attributeDefinitions.put(def.getName(), def);
-        }
-    }
 
     /**
      * An attribute write handler which performs special processing for ALIAS attributes.
@@ -66,20 +54,16 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         this.nameValidator.validate(operation);
-        final String attributeName = operation.require(NAME).asString();
-
-        // Don't require VALUE. Let the validator decide if it's bothered by an undefined value
-        ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
+        final String aliasToRemove = operation.require(NAME).asString();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
+        final ModelNode currentValue = submodel.get(CacheContainerResourceDefinition.ALIASES.getName()).clone();
 
-        AttributeDefinition attributeDefinition = this.attributeDefinitions.get(attributeName);
-        if (attributeDefinition != null) {
-            final ModelNode syntheticOp = new ModelNode();
-            syntheticOp.get(attributeName).set(newValue);
-            attributeDefinition.validateAndSet(syntheticOp, submodel);
-        } else {
-            submodel.get(attributeName).set(newValue);
-        }
+        ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove);
+
+        // now set the new ALIAS attribute
+        final ModelNode syntheticOp = new ModelNode();
+        syntheticOp.get(CacheContainerResourceDefinition.ALIASES.getName()).set(newValue);
+        CacheContainerResourceDefinition.ALIASES.validateAndSet(syntheticOp, submodel);
 
         // since we modified the model, set reload required
         if (requiresRuntime(context)) {
@@ -96,8 +80,8 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
 
     /**
      * Gets whether a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} handler should be added. This default implementation
-     * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()}  process type} is
-     * a server and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
+     * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()} process type} is a
+     * server and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
      *
      * @param context operation context
      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
@@ -106,9 +90,31 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
         return context.getProcessType().isServer() && !context.isBooting();
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : this.attributeDefinitions.values()) {
-           registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
+    /**
+     * Remove an alias from a LIST ModelNode of existing aliases.
+     *
+     * @param list LIST ModelNode of aliases
+     * @param alias
+     * @return LIST ModelNode with the alias removed
+     */
+    private static ModelNode removeAliasFromList(ModelNode list, String alias) throws OperationFailedException {
+
+        // check for empty string
+        if (alias == null || alias.equals("")) return list;
+
+        // check for undefined list (AS7-3476)
+        if (!list.isDefined()) {
+            throw InfinispanLogger.ROOT_LOGGER.cannotRemoveAliasFromEmptyList(alias);
         }
+
+        ModelNode newList = new ModelNode();
+        List<ModelNode> listElements = list.asList();
+
+        for (ModelNode listElement : listElements) {
+            if (!listElement.asString().equals(alias)) {
+                newList.add().set(listElement);
+            }
+        }
+        return newList;
     }
 }

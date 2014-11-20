@@ -22,17 +22,25 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.clustering.controller.transform.DefaultValueAttributeConverter;
+import org.jboss.as.clustering.controller.transform.PathAddressTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleAddOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleDescribeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleReadAttributeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleRemoveOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleResourceTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleUndefineAttributeOperationTransformer;
+import org.jboss.as.clustering.controller.transform.SimpleWriteAttributeOperationTransformer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -43,13 +51,17 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Resource description for /subsystem=jgroups/stack=X/transport=TRANSPORT
+ * Resource description for /subsystem=jgroups/stack=X/transport=*
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class TransportResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+    static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
+
+    static PathElement pathElement(String name) {
+        return PathElement.pathElement(ModelKeys.TRANSPORT, name);
+    }
 
     static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.SHARED.getLocalName())
@@ -113,44 +125,36 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
             DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE
     };
 
-    // the list of parameters accepted by a /subsystem=jgroups/stack=X/transport=TRANSPORT:add() operation
-    static final AttributeDefinition[] PARAMETERS = new AttributeDefinition[] {
-            ProtocolResourceDefinition.TYPE, ProtocolResourceDefinition.MODULE, SHARED, ProtocolResourceDefinition.SOCKET_BINDING, DIAGNOSTICS_SOCKET_BINDING,
-            DEFAULT_EXECUTOR, OOB_EXECUTOR, TIMER_EXECUTOR, THREAD_FACTORY, SITE, RACK, MACHINE, ProtocolResourceDefinition.PROPERTIES
-    };
-
-    // representation of the type of a single operation parameter TRANSPORT of type OBJECT holding transport attributes
-    // If this type is defined in a resource bundle with prefix X, the type descriptions
-    // should be of the form X.transport.type, X.transport.shared, etc.
-    static final ObjectTypeAttributeDefinition TRANSPORT = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.TRANSPORT, ATTRIBUTES)
-            .setAllowNull(true)
-            .setSuffix(null)
-            .build();
-
-    // operations
-    private static final OperationDefinition ADD = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT))
-            .setParameters(PARAMETERS)
-            .build();
-
-    static final OperationStepHandler ADD_HANDLER = new TransportAddHandler(PARAMETERS);
-
     static void buildTransformation(ModelVersion version, ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder builder = ProtocolResourceDefinition.buildTransformation(version, parent, PATH);
+        ResourceTransformationDescriptionBuilder builder = parent.addChildResource(WILDCARD_PATH);
+
+        ProtocolResourceDefinition.addTransformations(version, builder);
 
         if (JGroupsModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder().setValueConverter(new DefaultValueAttributeConverter(SHARED), SHARED);
+
+            builder.setCustomResourceTransformer(new SimpleResourceTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(new SimpleAddOperationTransformer(LEGACY_ADDRESS_TRANSFORMER, ATTRIBUTES)).inheritResourceAttributeDefinitions();
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.REMOVE).setCustomOperationTransformer(new SimpleRemoveOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleReadAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleWriteAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(new SimpleUndefineAttributeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
+            builder.addOperationTransformationOverride(ModelDescriptionConstants.DESCRIBE).setCustomOperationTransformer(new SimpleDescribeOperationTransformer(LEGACY_ADDRESS_TRANSFORMER));
         }
+
+        PropertyResourceDefinition.buildTransformation(version, builder);
     }
 
-    // registration
+    // Transform /subsystem=jgroups/stack=*/transport=* -> /subsystem=jgroups/stack=*/transport=TRANSPORT
+    static final PathAddressTransformer LEGACY_ADDRESS_TRANSFORMER = new PathAddressTransformer() {
+        @Override
+        public PathAddress transform(PathAddress address) {
+            return address.subAddress(0, address.size() - 1).append(pathElement(ModelKeys.TRANSPORT_NAME));
+        }
+    };
+
     TransportResourceDefinition() {
-        super(PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT), null, new TransportRemoveHandler());
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration registration) {
-        super.registerOperations(registration);
-        registration.registerOperationHandler(ADD, ADD_HANDLER);
+        super(WILDCARD_PATH, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -163,6 +167,6 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration registration) {
-        registration.registerSubModel(PropertyResourceDefinition.INSTANCE);
+        registration.registerSubModel(new PropertyResourceDefinition());
     }
 }

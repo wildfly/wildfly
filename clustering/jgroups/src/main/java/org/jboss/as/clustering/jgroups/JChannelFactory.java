@@ -281,11 +281,8 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         ModuleIdentifier module = protocol.getModule();
         final Map<String, String> properties = new HashMap<>(stack.getDefaults().getProperties(protocolName));
         properties.putAll(protocol.getProperties());
-        if (module.equals(ProtocolConfiguration.DEFAULT_MODULE) && !protocolName.startsWith(org.jgroups.conf.ProtocolConfiguration.protocol_prefix)) {
-            protocolName = org.jgroups.conf.ProtocolConfiguration.protocol_prefix + "." + protocolName;
-        }
         try {
-            return new org.jgroups.conf.ProtocolConfiguration(protocolName, properties, stack.getModuleLoader().loadModule(module).getClassLoader()) {
+            return new org.jgroups.conf.ProtocolConfiguration(protocol.getProtocolClassName(), properties, stack.getModuleLoader().loadModule(module).getClassLoader()) {
                 @Override
                 public Map<String, String> getOriginalProperties() {
                     return properties;

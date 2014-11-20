@@ -7,9 +7,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.io.IOException;
 
-import org.jboss.as.clustering.controller.OperationFactory;
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -50,7 +50,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getCacheContainerReadOperation(String containerName, String name) {
         // create the address of the subsystem
-        return OperationFactory.createReadAttributeOperation(getCacheContainerAddress(containerName), name);
+        return Operations.createReadAttributeOperation(getCacheContainerAddress(containerName), name);
     }
 
     protected static ModelNode getCacheContainerAddAliasOperation(String containerName, String name) {
@@ -93,7 +93,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, String name) {
         // create the address of the subsystem
-        return OperationFactory.createReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), name);
     }
 
     protected static ModelNode getCacheWriteOperation(String containerName, String cacheType, String cacheName, String name, String value) {
@@ -107,7 +107,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache store access
     protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
         // create the address of the subsystem
-        return OperationFactory.createReadAttributeOperation(getCacheStoreAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getCacheStoreAddress(containerName, cacheType, cacheName), name);
     }
 
     protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, String name, String value) {
@@ -116,7 +116,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     protected static ModelNode getMixedKeyedJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, String name) {
         // create the address of the subsystem
-        return OperationFactory.createReadAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), name);
+        return Operations.createReadAttributeOperation(getMixedKeyedJDBCCacheStoreAddress(containerName, cacheType, cacheName), name);
     }
 
     protected static ModelNode getMixedKeyedJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, String name, String value) {

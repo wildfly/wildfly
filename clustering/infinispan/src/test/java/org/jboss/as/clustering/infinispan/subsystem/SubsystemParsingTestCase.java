@@ -21,17 +21,15 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.clustering.controller.Operations;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
 import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -155,9 +153,9 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         // Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
 
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
+        Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
 
-        checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, this.getMainSubsystemName()));
+        checkLegacyParserStatisticsTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair()));
     }
 
     private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
@@ -219,8 +217,8 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         // Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
 
-        ModelNode describeOp = Util.createOperation(DESCRIBE, PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH));
-        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        ModelNode operation = Operations.createDescribeOperation(PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH));
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(operation)).asList();
 
         // Install the describe options from the first controller into a second controller
         KernelServices servicesB = this.createKernelServicesBuilder().setBootOperations(operations).build();

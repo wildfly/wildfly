@@ -19,17 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.clustering.infinispan.subsystem;
+package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.io.Serializable;
 
 import org.jboss.as.clustering.jgroups.subsystem.ChannelResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
-import org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.StackResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.TransportResourceDefinition;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -58,7 +58,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
     }
 
     @Override
-    protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration) {
+    protected void initializeExtraSubystemsAndModel(ExtensionRegistry registry, Resource root, ManagementResourceRegistration registration, RuntimeCapabilityRegistry capabilityRegistry) {
         new JGroupsExtension().initialize(registry.getExtensionContext(this.module, registration, true));
 
         Resource subsystem = Resource.Factory.create();
@@ -72,7 +72,6 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
         subsystem.registerChild(StackResourceDefinition.pathElement("tcp"), stack);
 
         Resource transport = Resource.Factory.create();
-        transport.getModel().get(ProtocolResourceDefinition.TYPE.getName()).set("TCP");
-        stack.registerChild(TransportResourceDefinition.PATH, transport);
+        stack.registerChild(TransportResourceDefinition.pathElement("TCP"), transport);
     }
 }
