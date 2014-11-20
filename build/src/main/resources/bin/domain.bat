@@ -32,11 +32,11 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
     echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
 )
 
-rem Read command-line args.
+rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
-if "%1" == "" (
+if "%~1" == "" (
    goto MAIN
-) else if "%1" == "-secmgr" (
+) else if "%~1" == "-secmgr" (
    set SECMGR=true
 )
 shift
@@ -98,25 +98,26 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Setup directories, note directories with spaces do not work
+setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
 :DIRLOOP
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
   )
 )
 
-for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
+for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
   if %%i == "" (
     goto ENDDIRLOOP
   ) else (
@@ -126,6 +127,7 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 )
 
 :ENDDIRLOOP
+setlocal DisableDelayedExpansion
 
 rem check the PROCESS_CONTROLLER_JAVA_OPTS
 set "X_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS%"

@@ -29,13 +29,13 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-rem Read command-line args.
+rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
-if "%1" == "" (
+if "%~1" == "" (
    goto MAIN
-) else if "%1" == "--debug" (
+) else if "%~1" == "--debug" (
    goto READ-DEBUG-PORT
-) else if "%1" == "-secmgr" (
+) else if "%~1" == "-secmgr" (
    set SECMGR=true
 )
 shift
@@ -44,7 +44,7 @@ goto READ-ARGS
 :READ-DEBUG-PORT
 set "DEBUG_MODE=true"
 set DEBUG_ARG="%2"
-if not "x%DEBUG_ARG" == "x" (
+if not %DEBUG_ARG% == "" (
    if x%DEBUG_ARG:-=%==x%DEBUG_ARG% (
       shift
       set DEBUG_PORT=%DEBUG_ARG%
@@ -102,27 +102,26 @@ if "%DEBUG_MODE%" == "true" (
 )
 
 set DIRNAME=
-
 rem Setup directories, note directories with spaces do not work
+setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
 :DIRLOOP
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.base.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.config.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.log.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
   )
 )
-
-for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
+for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
   if %%i == "" (
     goto ENDDIRLOOP
   ) else (
@@ -132,6 +131,7 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 )
 
 :ENDDIRLOOP
+setlocal DisableDelayedExpansion
 
 rem check the PROCESS_CONTROLLER_JAVA_OPTS
 set "X_JAVA_OPTS=%JAVA_OPTS%"
@@ -169,7 +169,7 @@ if "x%JBOSS_LOG_DIR%" == "x" (
 )
 rem Set the standalone configuration dir
 if "x%JBOSS_CONFIG_DIR%" == "x" (
-  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%/configuration"
+  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%\configuration"
 )
 
 rem Setup JBoss specific properties
