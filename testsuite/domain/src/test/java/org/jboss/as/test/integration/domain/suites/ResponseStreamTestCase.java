@@ -25,12 +25,14 @@ package org.jboss.as.test.integration.domain.suites;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
@@ -488,8 +490,8 @@ public class ResponseStreamTestCase {
 
             ModelNode respNode = response.getResponseNode();
             System.out.println(respNode.toString());
-            Assert.assertEquals(respNode.toString(), "success", respNode.get("outcome").asString());
-            ModelNode result = respNode.get("result");
+            Assert.assertEquals(respNode.toString(), SUCCESS, respNode.get(OUTCOME).asString());
+            ModelNode result = respNode.get(RESULT);
             Assert.assertEquals(respNode.toString(), ModelType.STRING, result.getType());
             List<? extends OperationResponse.StreamEntry> streams = response.getInputStreams();
             Assert.assertEquals(1, streams.size());
@@ -518,8 +520,9 @@ public class ResponseStreamTestCase {
         boolean readExpected = false;
         String read;
         while ((read = reader.readLine()) != null) {
-            readRegisteredServer = readRegisteredServer || read.contains("Registering server");
-            readRegisteredSlave = readRegisteredSlave || read.contains("Registered remote slave host");
+            System.out.println("New Line " + read);
+            readRegisteredServer = readRegisteredServer || read.contains("JBAS010919:");
+            readRegisteredSlave = readRegisteredSlave || read.contains("JBAS010918:");
             readExpected = readExpected || read.contains(expected);
         }
 

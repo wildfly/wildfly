@@ -120,7 +120,8 @@ public abstract class AbstractTimerManagementTestCase {
             getTimerDetails();
         } catch (OperationFailedException ofe) {
             final ModelNode failureDescription = ofe.getFailureDescription();
-            Assert.assertTrue(failureDescription.toString(), failureDescription.toString().contains("not found"));
+            Assert.assertTrue(failureDescription.toString(), failureDescription.toString().contains("JBAS014807"));
+            
         }
     }
 
