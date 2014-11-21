@@ -36,6 +36,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.logging.deployments.LoggingConfigDeploymentProcessor;
 import org.jboss.as.logging.deployments.LoggingDependencyDeploymentProcessor;
 import org.jboss.as.logging.deployments.LoggingProfileDeploymentProcessor;
@@ -52,24 +53,35 @@ import org.jboss.msc.service.ServiceController;
  */
 class LoggingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final LoggingSubsystemAdd INSTANCE = new LoggingSubsystemAdd();
+    private final PathManager pathManager;
 
-    private LoggingSubsystemAdd() {
+    LoggingSubsystemAdd(final PathManager pathManager) {
+        super(LoggingResourceDefinition.ATTRIBUTES);
+        this.pathManager = pathManager;
+    }
 
+    @Override
+    protected Resource createResource(final OperationContext context) {
+        if (pathManager == null) {
+            return super.createResource(context);
+        }
+        final Resource resource = new LoggingResource(pathManager);
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        return resource;
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         model.setEmptyObject();
-        for (SimpleAttributeDefinition attribute : LoggingRootResource.ATTRIBUTES) {
+        for (SimpleAttributeDefinition attribute : LoggingResourceDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final boolean addDependencies = LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.resolveModelAttribute(context, model).asBoolean();
-        final boolean useLoggingConfig = LoggingRootResource.USE_DEPLOYMENT_LOGGING_CONFIG.resolveModelAttribute(context, model).asBoolean();
+        final boolean addDependencies = LoggingResourceDefinition.ADD_LOGGING_API_DEPENDENCIES.resolveModelAttribute(context, model).asBoolean();
+        final boolean useLoggingConfig = LoggingResourceDefinition.USE_DEPLOYMENT_LOGGING_CONFIG.resolveModelAttribute(context, model).asBoolean();
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(final DeploymentProcessorTarget processorTarget) {
@@ -77,7 +89,7 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
                     processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_LOGGING, new LoggingDependencyDeploymentProcessor());
                 }
                 processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG,
-                        new LoggingConfigDeploymentProcessor(LoggingExtension.CONTEXT_SELECTOR, LoggingRootResource.USE_DEPLOYMENT_LOGGING_CONFIG.getName(), useLoggingConfig));
+                        new LoggingConfigDeploymentProcessor(LoggingExtension.CONTEXT_SELECTOR, LoggingResourceDefinition.USE_DEPLOYMENT_LOGGING_CONFIG.getName(), useLoggingConfig));
                 processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_PROFILE, new LoggingProfileDeploymentProcessor(LoggingExtension.CONTEXT_SELECTOR));
             }
         }, Stage.RUNTIME);

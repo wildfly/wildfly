@@ -93,7 +93,7 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
         ModelNode model = context.getModelNode();
 
         // Marshall attributes
-        for (AttributeDefinition attribute : LoggingRootResource.ATTRIBUTES) {
+        for (AttributeDefinition attribute : LoggingResourceDefinition.ATTRIBUTES) {
             attribute.marshallAsElement(model, false, writer);
         }
 

@@ -123,7 +123,9 @@ public abstract class AbstractOperationsTestCase extends AbstractLoggingSubsyste
 
     protected ModelNode createFileValue(final String relativeTo, final String path) {
         final ModelNode file = new ModelNode().setEmptyObject();
-        file.get(PathResourceDefinition.RELATIVE_TO.getName()).set(relativeTo);
+        if (relativeTo != null) {
+            file.get(PathResourceDefinition.RELATIVE_TO.getName()).set(relativeTo);
+        }
         file.get(PathResourceDefinition.PATH.getName()).set(path);
         return file;
     }
