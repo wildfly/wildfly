@@ -29,6 +29,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.security.AccessController;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -105,7 +106,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
             final StringBuilder b = new StringBuilder(8192);
             b.append("Configured system properties:");
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
-                b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
+                String propVal = property.toLowerCase(Locale.getDefault()).contains("password") ? "<redacted>" : properties.getProperty(property, "<undefined>");
+                b.append("\n\t").append(property).append(" = ").append(propVal);
             }
             CONFIG_LOGGER.debug(b);
             CONFIG_LOGGER.debugf("VM Arguments: %s", getVMArguments());
@@ -114,7 +116,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
                 final Map<String, String> env = System.getenv();
                 b.append("Configured system environment:");
                 for (String key : new TreeSet<String>(env.keySet())) {
-                    b.append("\n\t").append(key).append(" = ").append(env.get(key));
+                    String envVal = key.toLowerCase(Locale.getDefault()).contains("password") ? "<redacted>" : env.get(key);
+                    b.append("\n\t").append(key).append(" = ").append(envVal);
                 }
                 CONFIG_LOGGER.trace(b);
             }
