@@ -33,6 +33,13 @@
         <!-- Configure all standalone-ha.xml profiles not to be chatty by setting ip_ttl=0 -->
         <ts.config-as.configure-multicast-ttl name="jbossas" mcast.ttl="${mcast.ttl}"/>
 
+        <ts.config-as.add-interface name="jbossas"
+                                    interface="multicast"
+                                    inet-address="${node0}"/>
+        <ts.config-as.change-jgroups-multicast-interface name="jbossas"
+                                                         interface="multicast"/>
+
+
         <echo message="Copying and configuring instance jbossas-with-remote-outbound-connection"/>
         <copy todir="target/jbossas-with-remote-outbound-connection">
             <fileset dir="target/jbossas"/>
