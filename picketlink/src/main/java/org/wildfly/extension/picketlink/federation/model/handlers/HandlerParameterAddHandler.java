@@ -73,4 +73,13 @@ public class HandlerParameterAddHandler extends AbstractAddStepHandler {
         kv.setValue(paramValue);
         return kv;
     }
+
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            List<ServiceController<?>> controllers) {
+        try {
+            HandlerParameterRemoveHandler.INSTANCE.performRuntime(context, operation, model);
+        } catch (OperationFailedException ignore) {
+
+        }
+    }
 }

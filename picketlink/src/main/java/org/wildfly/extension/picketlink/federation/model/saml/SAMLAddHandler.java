@@ -92,4 +92,13 @@ public class SAMLAddHandler extends AbstractAddStepHandler {
 
         return stsType;
     }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            List<ServiceController<?>> controllers) {
+        try {
+            SAMLRemoveHandler.INSTANCE.performRuntime(context, operation, model);
+        } catch (OperationFailedException ignore) {
+        }
+    }
 }

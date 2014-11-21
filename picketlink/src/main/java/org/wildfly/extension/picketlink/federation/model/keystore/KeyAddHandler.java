@@ -77,4 +77,12 @@ public class KeyAddHandler extends AbstractAddStepHandler {
         ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
     }
+
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            List<ServiceController<?>> controllers) {
+        try {
+            KeyRemoveHandler.INSTANCE.performRuntime(context, operation, model);
+        } catch (OperationFailedException ignore) {
+        }
+    }
 }

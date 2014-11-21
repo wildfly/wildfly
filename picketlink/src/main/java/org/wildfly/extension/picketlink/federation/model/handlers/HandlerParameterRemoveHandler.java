@@ -26,4 +26,9 @@ public class HandlerParameterRemoveHandler extends AbstractRemoveStepHandler {
         String handlerParameterName = pathAddress.getLastElement().getValue();
         providerService.removeHandlerParameter(handlerType, handlerParameterName);
     }
+
+    @Override protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
+            throws OperationFailedException {
+        HandlerParameterAddHandler.INSTANCE.performRuntime(context, operation, model, null, null);
+    }
 }

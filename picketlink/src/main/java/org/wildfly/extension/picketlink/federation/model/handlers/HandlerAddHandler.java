@@ -83,6 +83,15 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
         providerService.addHandler(handler);
     }
 
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            List<ServiceController<?>> controllers) {
+        try {
+            HandlerRemoveHandler.INSTANCE.performRuntime(context, operation, model);
+        } catch (OperationFailedException ignore) {
+        }
+    }
+
     public static Handler toHandlerConfig(OperationContext context, ModelNode handler) throws OperationFailedException {
         Handler newHandler = new Handler();
         String typeName = HandlerResourceDefinition.getHandlerType(context, handler);

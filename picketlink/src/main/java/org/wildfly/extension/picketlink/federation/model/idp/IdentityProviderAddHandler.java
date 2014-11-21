@@ -43,8 +43,7 @@ import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.*;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -186,5 +185,14 @@ public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler
         }
 
         return idpType;
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
+            List<ServiceController<?>> controllers) {
+        try {
+            IdentityProviderRemoveHandler.INSTANCE.performRuntime(context, operation, model);
+        } catch (OperationFailedException ignore) {
+        }
     }
 }
