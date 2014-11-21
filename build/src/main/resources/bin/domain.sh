@@ -27,6 +27,7 @@ cygwin=false;
 darwin=false;
 linux=false;
 solaris=false;
+other=false;
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -41,6 +42,9 @@ case "`uname`" in
         ;;
     SunOS*)
         solaris=true
+        ;;
+    *)
+        other=true
         ;;
 esac
 
@@ -135,7 +139,7 @@ if $linux; then
     for var in $HOST_CONTROLLER_OPTS
     do
        # Remove quotes
-      p=`echo $var | tr -d '"'`
+      p=`echo $var | tr -d "'"`
       case $p in
         -Djboss.domain.base.dir=*)
              JBOSS_BASE_DIR=`readlink -m ${p#*=}`
@@ -157,7 +161,7 @@ if $solaris; then
     for var in $HOST_CONTROLLER_OPTS
     do
        # Remove quotes
-      p=`echo $var | tr -d '"'`
+      p=`echo $var | tr -d "'"`
       case $p in
         -Djboss.domain.base.dir=*)
              JBOSS_BASE_DIR=`echo $p | awk -F= '{print $2}'`
@@ -172,15 +176,15 @@ if $solaris; then
     done
 fi
 
-# No readlink -m on BSD
-if $darwin; then
+# No readlink -m on BSD and possibly other distros
+if [ $darwin ] || [ $other ]; then
     # consolidate the host-controller and command line opts
     HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $SERVER_OPTS"
     # process the host-controller options
     for var in $HOST_CONTROLLER_OPTS
     do
        # Remove quotes
-       p=`echo $var | tr -d '"'`
+       p=`echo $var | tr -d "'"`
        case $p in
         -Djboss.domain.base.dir=*)
              JBOSS_BASE_DIR=`cd ${p#*=} ; pwd -P`
