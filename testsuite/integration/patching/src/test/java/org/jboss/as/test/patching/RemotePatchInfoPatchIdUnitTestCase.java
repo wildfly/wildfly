@@ -54,6 +54,7 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.runner.ContentModificationUtils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -69,6 +70,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase {
 
+    private static final String serverAddr = TestSuiteEnvironment.getServerAddress();
     private ByteArrayOutputStream bytesOs;
     private CommandContext ctx;
 
@@ -79,7 +81,7 @@ public class RemotePatchInfoPatchIdUnitTestCase extends AbstractPatchingTestCase
         bytesOs = new ByteArrayOutputStream();
         // to avoid the need to reset the terminal manually after the tests, e.g. 'stty sane'
         org.jboss.aesh.console.settings.Settings.getInstance().setTerminal(new org.jboss.aesh.terminal.TestTerminal());
-        ctx = CommandContextFactory.getInstance().newCommandContext(null, -1, null, null, System.in, bytesOs);
+        ctx = CommandContextFactory.getInstance().newCommandContext(serverAddr, -1, null, null, System.in, bytesOs);
     }
 
     @Test
