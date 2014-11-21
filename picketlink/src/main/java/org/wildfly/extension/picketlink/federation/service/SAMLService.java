@@ -38,7 +38,7 @@ public class SAMLService implements Service<SAMLService> {
 
     private static final String SERVICE_NAME = "SAMLService";
 
-    private final STSType stsType;
+    private volatile STSType stsType;
     private final InjectedValue<FederationService> federationService = new InjectedValue<FederationService>();
 
     public SAMLService(final STSType stsType) {
@@ -56,16 +56,21 @@ public class SAMLService implements Service<SAMLService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        getFederationService().getValue().setSTSType(this.stsType);
+        setStsType(this.stsType);
     }
 
     @Override
     public void stop(StopContext context) {
-        getFederationService().getValue().setSTSType(null);
+        setStsType(null);
         context.getController().setMode(ServiceController.Mode.REMOVE);
     }
 
     public InjectedValue<FederationService> getFederationService() {
         return this.federationService;
+    }
+
+    public void setStsType(STSType stsType) {
+        this.stsType = stsType;
+        getFederationService().getValue().setSTSType(this.stsType);
     }
 }

@@ -83,4 +83,10 @@ public class TrustDomainAddHandler extends AbstractAddStepHandler {
         launchServices(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
     }
 
+    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            TrustDomainRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
+    }
 }

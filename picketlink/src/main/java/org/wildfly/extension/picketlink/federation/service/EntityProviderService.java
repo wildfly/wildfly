@@ -21,9 +21,11 @@
  */
 package org.wildfly.extension.picketlink.federation.service;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -218,7 +220,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
         return picketLinkType;
     }
 
-    void addHandler(final Handler handler) {
+    public void addHandler(final Handler handler) {
         for (Handler actualHandler : new ArrayList<Handler>(this.handlers)) {
             if (actualHandler.getClazz().equals(handler.getClazz())) {
                 return;
@@ -242,10 +244,10 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
         handlers.add(handler);
     }
 
-    void removeHandler(final Handler handler) {
-        for (Handler actualHandler : new ArrayList<Handler>(this.handlers)) {
-            if (actualHandler.getClazz().equals(handler.getClazz())) {
-                this.handlers.remove(actualHandler);
+    public void removeHandler(String handlerType) {
+        for (Handler handler : new ArrayList<Handler>(this.handlers)) {
+            if (handler.getClazz().equals(handlerType)) {
+                this.handlers.remove(handler);
             }
         }
     }
@@ -291,5 +293,50 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
 
     PicketLinkType getPicketLinkType() {
         return this.picketLinkType;
+    }
+
+    public void setConfiguration(C configuration) {
+        this.picketLinkType.setIdpOrSP((ProviderType) configuration);
+    }
+
+    public void removeHandlerParameter(String handlerType, String handlerParameterName) {
+        for (Handler handler : this.handlers) {
+            if (handler.getClazz().equals(handlerType)) {
+                for (KeyValueType kv : new ArrayList<KeyValueType>(handler.getOption())) {
+                    if (kv.getKey().equals(handlerParameterName)) {
+                        handler.remove(kv);
+                    }
+                }
+            }
+        }
+    }
+
+    public void addHandlerParameter(String handlerType, KeyValueType keyValueType) {
+        removeHandlerParameter(handlerType, keyValueType.getKey());
+
+        for (Handler handler : this.handlers) {
+            if (handler.getClazz().equals(handlerType)) {
+                handler.add(keyValueType);
+            }
+        }
+    }
+
+    public static EntityProviderService getService(OperationContext context, String alias) {
+        // We assume the mgmt ops that trigger IdentityProviderAddHandler or ServiceProviderAddHandler
+        // run before the OperationStepHandler that triggers deploy. If not, that's a user mistake.
+        // Since those handlers run first, we can count on MSC having services *registered* even
+        // though we cannot count on them being *started*.
+        ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        ServiceController<EntityProviderService> service = (ServiceController<EntityProviderService>) serviceRegistry.getService(IdentityProviderService.createServiceName(alias));
+
+        if (service == null) {
+            service = (ServiceController<EntityProviderService>) serviceRegistry.getService(ServiceProviderService.createServiceName(alias));
+        }
+
+        if (service == null) {
+            return null;
+        }
+
+        return service.getValue();
     }
 }

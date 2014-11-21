@@ -22,28 +22,30 @@
 
 package org.wildfly.extension.picketlink.federation.model.sp;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.picketlink.federation.config.SPConfiguration;
+import org.wildfly.extension.picketlink.federation.model.AbstractEntityProviderAddHandler;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
 
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class ServiceProviderAddHandler extends AbstractAddStepHandler {
+public class ServiceProviderAddHandler extends AbstractEntityProviderAddHandler {
 
     public static final ServiceProviderAddHandler INSTANCE = new ServiceProviderAddHandler();
 
@@ -66,7 +68,9 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                      final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchService(context, PathAddress.pathAddress(operation.get(ADDRESS)), model, verificationHandler, newControllers);
+        PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
+        ModelNode serviceProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
+        launchService(context, pathAddress, serviceProviderNode , verificationHandler, newControllers);
     }
 
     public static void launchService(OperationContext context, PathAddress pathAddress, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -77,6 +81,8 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
 
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias),
             FederationService.class,service.getFederationService());
+
+        configureHandler(context, model, service);
 
         SPConfiguration configuration = service.getConfiguration();
 
@@ -93,7 +99,7 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    private static SPConfiguration toSPConfig(OperationContext context, ModelNode fromModel, String alias) throws OperationFailedException {
+    static SPConfiguration toSPConfig(OperationContext context, ModelNode fromModel, String alias) throws OperationFailedException {
         SPConfiguration spType = new SPConfiguration(alias);
 
         String url = ServiceProviderResourceDefinition.URL.resolveModelAttribute(context, fromModel).asString();
@@ -129,5 +135,13 @@ public class ServiceProviderAddHandler extends AbstractAddStepHandler {
         spType.setLogOutPage(logoutPage);
 
         return spType;
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            ServiceProviderRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
     }
 }

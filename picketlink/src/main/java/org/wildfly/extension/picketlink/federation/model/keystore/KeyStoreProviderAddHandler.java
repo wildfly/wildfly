@@ -59,12 +59,6 @@ public class KeyStoreProviderAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                     final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        launchServices(context, operation, model, verificationHandler, newControllers);
-    }
-
     static void launchServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
         String federationAlias = pathAddress.subAddress(0, pathAddress.size() - 1).getLastElement().getValue();
@@ -96,6 +90,12 @@ public class KeyStoreProviderAddHandler extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(controller);
         }
+    }
+
+    @Override
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+        final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        launchServices(context, operation, model, verificationHandler, newControllers);
     }
 
     static KeyProviderType toKeyProviderType(OperationContext context, ModelNode model) throws OperationFailedException {

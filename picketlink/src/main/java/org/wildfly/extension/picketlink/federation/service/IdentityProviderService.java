@@ -60,13 +60,13 @@ public class IdentityProviderService extends EntityProviderService<IdentityProvi
     @Override
     public void start(final StartContext context) throws StartException {
         super.start(context);
-        getFederationService().getValue().setIdpConfiguration(getConfiguration());
+        setConfiguration(getConfiguration());
     }
 
     @Override
     public void stop(final StopContext context) {
         super.stop(context);
-        getFederationService().getValue().setIdpConfiguration(null);
+        setConfiguration(null);
     }
 
     void addTrustedDomain(final String domainName) {
@@ -99,5 +99,15 @@ public class IdentityProviderService extends EntityProviderService<IdentityProvi
 
     @Override
     protected void doConfigureDeployment(DeploymentUnit deploymentUnit) {
+    }
+
+    @Override
+    public void setConfiguration(IDPConfiguration configuration) {
+        if (configuration != null) {
+            configuration.setTrust(getConfiguration().getTrust());
+        }
+
+        super.setConfiguration(configuration);
+        getFederationService().getValue().setIdpConfiguration(configuration);
     }
 }

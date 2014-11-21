@@ -22,13 +22,13 @@
 
 package org.wildfly.extension.picketlink.federation.model.idp;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -37,6 +37,7 @@ import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowAttribute
 import org.picketlink.identity.federation.bindings.wildfly.idp.UndertowRoleGenerator;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
+import org.wildfly.extension.picketlink.federation.model.AbstractEntityProviderAddHandler;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 
@@ -50,7 +51,7 @@ import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOG
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class IdentityProviderAddHandler extends AbstractAddStepHandler {
+public class IdentityProviderAddHandler extends AbstractEntityProviderAddHandler {
 
     static final IdentityProviderAddHandler INSTANCE = new IdentityProviderAddHandler();
 
@@ -74,7 +75,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress pathAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-        ModelNode identityProviderNode = context.readResource(EMPTY_ADDRESS, false).getModel();
+        ModelNode identityProviderNode = Resource.Tools.readModel(context.readResource(EMPTY_ADDRESS));
         launchServices(context, identityProviderNode, verificationHandler, newControllers, pathAddress);
     }
 
@@ -86,6 +87,8 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
 
         serviceBuilder.addDependency(FederationService.createServiceName(federationAlias), FederationService.class,
                                             service.getFederationService());
+
+        configureHandler(context, model, service);
 
         IDPConfiguration configuration = service.getConfiguration();
 
@@ -104,7 +107,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    private static IDPConfiguration toIDPConfig(OperationContext context, ModelNode fromModel, String alias) throws OperationFailedException {
+    static IDPConfiguration toIDPConfig(OperationContext context, ModelNode fromModel, String alias) throws OperationFailedException {
         IDPConfiguration idpType = new IDPConfiguration(alias);
 
         boolean external = IdentityProviderResourceDefinition.EXTERNAL.resolveModelAttribute(context, fromModel).asBoolean();
@@ -189,5 +192,12 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
         }
 
         return idpType;
+    }
+
+    @Override protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        try {
+            IdentityProviderRemoveHandler.INSTANCE.performRuntime(context, operation, resource.getModel());
+        } catch (OperationFailedException ignore) {
+        }
     }
 }
