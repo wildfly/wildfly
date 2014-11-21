@@ -96,8 +96,7 @@ public final class Main {
         // -jar is jboss-modules.jar in jboss-home
         // log config should be fixed loc
 
-        boolean javaSecurityManager = false;
-        boolean securityManagerEnabled = false;
+        boolean securityManagerEnabled = System.getSecurityManager() != null;
         OUT: for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if ("-jvm".equals(arg)) {
@@ -137,9 +136,12 @@ public final class Main {
                                 addJavaOption(arg, javaOptions);
 
                             } else {
-                                addJavaOption(arg, smOptions);
+                                // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager and has been deprecated
                                 if (arg.startsWith("-Djava.security.manager")) {
-                                    javaSecurityManager = true;
+                                    ProcessLogger.ROOT_LOGGER.javaSecurityManagerDeprecated();
+                                    securityManagerEnabled = true;
+                                } else {
+                                    addJavaOption(arg, smOptions);
                                 }
                             }
                         }
@@ -156,7 +158,13 @@ public final class Main {
                         }
                         i += pcSocketConfig.getArgIncrement();
                     } else {
-                        addJavaOption(arg, javaOptions);
+                        // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager and has been deprecated
+                        if (arg.startsWith("-Djava.security.manager")) {
+                            ProcessLogger.ROOT_LOGGER.javaSecurityManagerDeprecated();
+                            securityManagerEnabled = true;
+                        } else {
+                            addJavaOption(arg, javaOptions);
+                        }
                     }
                 }
                 break OUT;
@@ -220,10 +228,7 @@ public final class Main {
         initialCommand.addAll(javaOptions);
         initialCommand.add("-jar");
         initialCommand.add(bootJar);
-        if (!javaSecurityManager && securityManagerEnabled) {
-            // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager
-            // If -Djava.security.manager was not used and we have a security manager that means that one of the jboss modules
-            // options -secmgr was used, in which case we propagate -secmgr
+        if (securityManagerEnabled) {
             initialCommand.add("-secmgr");
         }
         initialCommand.add("-mp");
@@ -232,10 +237,7 @@ public final class Main {
         initialCommand.add(jaxpModule);
         initialCommand.add(bootModule);
 
-        if (!javaSecurityManager && securityManagerEnabled) {
-            // The standard supported security manager mechanism in EAP 6.3 is -Djava.security.manager
-            // If -Djava.security.manager was not used and we have a security manager that means that one of the jboss modules
-            // options -secmgr was used, in which case we propagate -secmgr
+        if (securityManagerEnabled) {
             initialCommand.add("-secmgr");
         }
         initialCommand.add("-mp");  // Repeat the module path so HostController's Main sees it

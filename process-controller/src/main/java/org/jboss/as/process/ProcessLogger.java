@@ -263,4 +263,8 @@ interface ProcessLogger extends BasicLogger {
     @Message(id = 12021, value = "Failed to kill process '%s', trying to destroy the process instead.")
     void failedToKillProcess(String process);
 
+    @LogMessage(level = WARN)
+    @Message(id = 12022, value = "The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.")
+    void javaSecurityManagerDeprecated();
+
 }

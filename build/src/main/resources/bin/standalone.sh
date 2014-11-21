@@ -18,6 +18,10 @@ do
               DEBUG_PORT=$1
           fi
           ;;
+      -Djava.security.manager*)
+          echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+          SECMGR="true"
+          ;;
       -secmgr)
           SECMGR="true"
           ;;
@@ -264,11 +268,12 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
-# Process the JAVA_OPTS checking for -Djava.security.manager
+# If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
 SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
 if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr."
-    SECMGR="false"
+    JAVA_OPTS="-Djava.security.manager=org.jboss.modules._private.StartupSecurityManager $JAVA_OPTS -Djava.security.manager=org.jboss.modules._private.StartupSecurityManager"
+    echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    SECMGR="true"
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then

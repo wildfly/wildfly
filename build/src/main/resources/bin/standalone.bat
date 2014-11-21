@@ -28,6 +28,14 @@ if "%OS%" == "Windows_NT" (
 ) else (
   set DIRNAME=.\
 )
+setlocal EnableDelayedExpansion
+rem check for the security manager system property
+echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
+if not errorlevel == 1 (
+    echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+    set SECMGR=true
+)
+setlocal DisableDelayedExpansion
 
 rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
@@ -131,28 +139,14 @@ for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
 )
 
 :ENDDIRLOOP
+
+rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
+echo(!JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul && (
+  set "JAVA_OPTS=-Djava.security.manager=org.jboss.modules._private.StartupSecurityManager !JAVA_OPTS! -Djava.security.manager=org.jboss.modules._private.StartupSecurityManager"
+  echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+  set SECMGR=true
+)
 setlocal DisableDelayedExpansion
-
-rem check the PROCESS_CONTROLLER_JAVA_OPTS
-set "X_JAVA_OPTS=%JAVA_OPTS%"
-:JAVAOPTLOOP
-rem Ensure to disable the -secmgr if the -Djava.security.manager property is found
-echo(%X_JAVA_OPTS% | findstr /r /c:"^-Djava.security.manager" > nul && (
-  if "%SECMGR%" == "true" (
-    echo ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr.
-    set SECMGR=false
-  )
-)
-
-for /f "tokens=1* delims= " %%i IN ("%X_JAVA_OPTS%") DO (
-  if %%i == "" (
-    goto ENDJAVAOPTLOOP
-  ) else (
-    set X_JAVA_OPTS=%%j
-    GOTO JAVAOPTLOOP
-  )
-)
-:ENDJAVAOPTLOOP
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (

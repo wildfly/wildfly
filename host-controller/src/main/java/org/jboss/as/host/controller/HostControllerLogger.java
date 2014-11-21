@@ -514,10 +514,9 @@ public interface HostControllerLogger extends BasicLogger {
     void noDomainControllerConfigurationProvidedForAdminOnly(String policyAttribute, AdminOnlyDomainConfigPolicy policy,
                                                              String cachedDcCmdLineArg, RunningMode desiredRunningMode);
 
-    @LogMessage(level = Level.ERROR)
-    @Message(id = 16586, value = "The java.security.manager system property was set for the host and the -secmgr " +
-            "argument was passed host controller. Ignoring the -secmgr argument.")
-    void ignoreSecMgrArg();
+    @LogMessage(level = Level.WARN)
+    @Message(id = 16586, value = "The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.")
+    void javaSecurityManagerDeprecated();
 
     // END WITH 16599
 }
