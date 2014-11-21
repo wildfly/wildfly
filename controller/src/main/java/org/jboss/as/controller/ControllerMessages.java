@@ -2006,11 +2006,10 @@ public interface ControllerMessages {
      * or environment variable.
      *
      * @param toResolve  the node being resolved
-     * @param e the SecurityException
      * @return an {@link OperationFailedException} for the caller
      */
-    @Message(id = 14802, value = "Cannot resolve expression '%s' -- %s")
-    String cannotResolveExpression(ModelNode toResolve, IllegalStateException e);
+    @Message(id = 14802, value = "Cannot resolve expression '%s'")
+    OperationFailedException cannotResolveExpression(String toResolve);
 
     /**
      * Creates an exception indicating the resource is a duplicate.
@@ -2781,6 +2780,10 @@ public interface ControllerMessages {
     // #379 in WildFly 9+
     @Message(id = 13493, value = "System boot is in process; execution of remote management operations is not currently available")
     String managementUnavailableDuringBoot();
+
+    // #370 in WildFly 9+
+    @Message(id = 13494, value="Incomplete expression: %s")
+    OperationFailedException incompleteExpression(String expression);
 
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 

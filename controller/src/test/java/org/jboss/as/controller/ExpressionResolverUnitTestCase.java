@@ -24,7 +24,11 @@ package org.jboss.as.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 import org.junit.Test;
 
 /**
@@ -37,7 +41,7 @@ public class ExpressionResolverUnitTestCase {
     public void testDefaultExpressionResolverWithNoResolutions() throws OperationFailedException {
         ModelNode unresolved = createModelNode();
         ExpressionResolver.TEST_RESOLVER.resolveExpressions(unresolved);
-        fail("Did not fail with ISE: " + unresolved);
+        fail("Did not fail with OFE: " + unresolved);
     }
 
     @Test
@@ -47,15 +51,15 @@ public class ExpressionResolverUnitTestCase {
         System.setProperty("test.prop.c", "C");
         System.setProperty("test.prop.two", "TWO");
         System.setProperty("test.prop.three", "THREE");
-        
+
         // recursive example
         System.setProperty("test.prop.prop", "${test.prop.prop.intermediate}");
         System.setProperty("test.prop.prop.intermediate", "PROP");
-        
+
         // recursive example with a property expression as the default
         System.setProperty("test.prop.expr", "${NOTHERE:${ISHERE}}");
         System.setProperty("ISHERE", "EXPR");
-        
+
         //PROP
         try {
             ModelNode node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(createModelNode());
@@ -69,7 +73,7 @@ public class ExpressionResolverUnitTestCase {
             System.clearProperty("test.prop.prop");
         }
     }
-    
+
     @Test
     public void testDefaultExpressionResolverWithSystemPropertyResolutions() throws OperationFailedException {
         System.setProperty("test.prop.expr", "EXPR");
@@ -90,7 +94,7 @@ public class ExpressionResolverUnitTestCase {
             System.clearProperty("test.prop.prop");
         }
     }
-    
+
     @Test
     public void testPluggableExpressionResolverRecursive() throws OperationFailedException {
         ModelNode node = new ExpressionResolverImpl() {
@@ -118,7 +122,7 @@ public class ExpressionResolverUnitTestCase {
 
         checkResolved(node);
     }
-    
+
     @Test
     public void testPluggableExpressionResolver() throws OperationFailedException {
         ModelNode node = new ExpressionResolverImpl() {
@@ -155,7 +159,7 @@ public class ExpressionResolverUnitTestCase {
 
         }.resolveExpressions(unresolved);
 
-        fail("Did not fail with ISE: " + unresolved);
+        fail("Did not fail with OFE: " + unresolved);
     }
 
     @Test
@@ -185,6 +189,202 @@ public class ExpressionResolverUnitTestCase {
             System.clearProperty("test.prop.three");
             System.clearProperty("test.prop.prop");
         }
+    }
+
+    @Test
+    public void testPluggableExpressionResolverNestedExpression() throws OperationFailedException {
+        System.setProperty("test.prop.nested", "expr");
+        try {
+            ModelNode node = new ExpressionResolverImpl() {
+                @Override
+                protected void resolvePluggableExpression(ModelNode node) {
+                    String s = node.asString();
+                    if (s.equals("${test.prop.expr}")) {
+                        node.set("EXPR");
+                    }
+                }
+
+            }.resolveExpressions(new ModelNode(new ValueExpression("${test.prop.${test.prop.nested}}")));
+
+            assertEquals("EXPR", node.asString());
+        } finally {
+            System.clearProperty("test.prop.nested");
+        }
+    }
+
+    @Test
+    public void testNestedExpressions() throws OperationFailedException {
+        System.setProperty("foo", "FOO");
+        System.setProperty("bar", "BAR");
+        System.setProperty("baz", "BAZ");
+        System.setProperty("FOO", "oof");
+        System.setProperty("BAR", "rab");
+        System.setProperty("BAZ", "zab");
+        System.setProperty("foo.BAZ.BAR", "FOO.baz.bar");
+        System.setProperty("foo.BAZBAR", "FOO.bazbar");
+        System.setProperty("bazBAR", "BAZbar");
+        System.setProperty("fooBAZbar", "FOObazBAR");
+        try {
+            ModelNode node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo:${bar}}"));
+            assertEquals("FOO", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${${bar}}"));
+            assertEquals("rab", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo.${baz}.${bar}}"));
+            assertEquals("FOO.baz.bar", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo.${baz}${bar}}"));
+            assertEquals("FOO.bazbar", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("a${foo${baz${bar}}}b"));
+            assertEquals("aFOObazBARb", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("a${foo${baz${bar}}}"));
+            assertEquals("aFOObazBAR", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo${baz${bar}}}b"));
+            assertEquals("FOObazBARb", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("a${foo}.b.${bar}c"));
+            assertEquals("aFOO.b.BARc", node.asString());
+
+            System.clearProperty("foo");
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo:${bar}}"));
+            assertEquals("BAR", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo:${bar}.{}.$$}"));
+            assertEquals("BAR.{}.$$", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$$${bar}"));
+            assertEquals("$BAR", node.asString());
+
+        } finally {
+            System.clearProperty("foo");
+            System.clearProperty("bar");
+            System.clearProperty("baz");
+            System.clearProperty("FOO");
+            System.clearProperty("BAR");
+            System.clearProperty("BAZ");
+            System.clearProperty("foo.BAZ.BAR");
+            System.clearProperty("foo.BAZBAR");
+            System.clearProperty("bazBAR");
+            System.clearProperty("fooBAZbar");
+        }
+    }
+
+    @Test
+    public void testDollarEscaping() throws OperationFailedException {
+        System.setProperty("$$", "FOO");
+        try {
+            ModelNode node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$$"));
+            assertEquals("$", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$$$"));
+            assertEquals("$$", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$$$$"));
+            assertEquals("$$", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${$$$$:$$}"));
+            assertEquals("$$", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${$$:$$}"));
+            assertEquals("FOO", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${foo:$${bar}}"));
+            assertEquals("${bar}", node.asString());
+
+            node = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$${bar}"));
+            assertEquals("${bar}", node.asString());
+        } finally {
+            System.clearProperty("$$");
+        }
+    }
+
+    @Test
+    public void testFileSeparator() throws OperationFailedException {
+        assertEquals(File.separator, ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${/}")).asString());
+        assertEquals(File.separator + "a", ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${/}a")).asString());
+        assertEquals("a" + File.separator, ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("a${/}")).asString());
+    }
+
+    @Test
+    public void testPathSeparator() {
+        assertEquals(File.pathSeparator, new ValueExpression("${:}").resolveString());
+        assertEquals(File.pathSeparator + "a", new ValueExpression("${:}a").resolveString());
+        assertEquals("a" + File.pathSeparator, new ValueExpression("a${:}").resolveString());
+    }
+
+    @Test
+    public void testNonExpression() throws OperationFailedException {
+        ModelNode node =  ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("abc"));
+        assertEquals("abc", node.asString());
+        assertEquals(ModelType.STRING, node.getType());
+    }
+
+    @Test
+    public void testBlankExpression() throws OperationFailedException {
+        ModelNode node =  ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression(""));
+        assertEquals("", node.asString());
+        assertEquals(ModelType.STRING, node.getType());
+    }
+
+    /**
+     * Test that a incomplete expression to a system property reference throws an ISE
+     */
+    @Test(expected = OperationFailedException.class)
+    public void testIncompleteReference() throws OperationFailedException {
+        System.setProperty("test.property1", "test.property1.value");
+        try {
+            ModelNode resolved = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${test.property1"));
+            fail("Did not fail with OFE: " + resolved);
+        } finally {
+            System.clearProperty("test.property1");
+        }
+    }
+
+    /**
+     * Test that an incomplete expression is ignored if escaped
+     */
+    @Test
+    public void testEscapedIncompleteReference() throws OperationFailedException {
+        assertEquals("${test.property1", ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("$${test.property1")).asString());
+    }
+
+    /**
+     * Test that a incomplete expression to a system property reference throws an ISE
+     */
+    @Test(expected = OperationFailedException.class)
+    public void testIncompleteReferenceFollowingSuccessfulResolve() throws OperationFailedException {
+        System.setProperty("test.property1", "test.property1.value");
+        try {
+            ModelNode resolved = ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${test.property1} ${test.property1"));
+            fail("Did not fail with OFE: "+ resolved);
+        } finally {
+            System.clearProperty("test.property1");
+        }
+    }
+
+    /**
+     * Test an expression that contains more than one system property name to
+     * see that the second property value is used when the first property
+     * is not defined.
+     */
+    @Test
+    public void testSystemPropertyRefs() throws OperationFailedException {
+        System.setProperty("test.property2", "test.property2.value");
+        try {
+            assertEquals("test.property2.value", ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${test.property1,test.property2}")).asString());
+        } finally {
+            System.clearProperty("test.property2");
+        }
+        assertEquals("default", ExpressionResolver.TEST_RESOLVER.resolveExpressions(expression("${test.property1,test.property2:default}")).asString());
+    }
+
+    private ModelNode expression(String str) {
+        return new ModelNode(new ValueExpression(str));
     }
 
     private void checkResolved(ModelNode node) {
