@@ -274,4 +274,10 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 15602, value = "Invalid handler chain file: %s")
     void invalidHandlerChainFile(String fileName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 15617, value = "Servlet class %s declared in web.xml; either provide a proper deployment relying on JBossWS or disable the webservices subsystem for the "
+            + "current deployment adding a proper jboss-deployment-structure.xml descriptor to it. "
+            + "The former approach is recommended, as the latter approach causes most of the webservices Java EE and any JBossWS specific functionality to be disabled. ")
+    void invalidWSServlet(String servletClass);
+
 }

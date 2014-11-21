@@ -98,6 +98,8 @@ final class WebMetaDataModifier {
                     WebMetaDataHelper.newParamValue(WSFServlet.INTEGRATION_CLASSLOADER, dep.getType().toString(), initParams);
                     // configure webservice endpoint
                     WebMetaDataHelper.newParamValue(Endpoint.SEPID_DOMAIN_ENDPOINT, endpointClassName, initParams);
+                } else if (endpointClassName.startsWith("org.apache.cxf")) {
+                    ROOT_LOGGER.invalidWSServlet(endpointClassName);
                 }
             }
         }
