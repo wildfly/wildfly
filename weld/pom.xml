@@ -201,6 +201,11 @@
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-spi</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
