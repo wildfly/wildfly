@@ -100,6 +100,7 @@
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
+                                    <runOrder>alphabetical</runOrder>
                                 </configuration>
                             </execution>
                         </executions>
@@ -141,6 +142,7 @@
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
                                     </excludes>
+                                    <runOrder>alphabetical</runOrder>
                                 </configuration>
                             </execution>
                         </executions>
