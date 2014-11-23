@@ -98,8 +98,15 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  * Deployment processor that installs the weld services and all other required services
  *
  * @author Stuart Douglas
+ * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private final boolean jtsEnabled;
+
+    public WeldDeploymentProcessor(final boolean jtsEnabled) {
+        this.jtsEnabled = jtsEnabled;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -317,7 +324,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
     private ServiceName installTransactionService(final ServiceTarget serviceTarget, final DeploymentUnit deploymentUnit,
                                                   WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
-        final WeldTransactionServices weldTransactionServices = new WeldTransactionServices();
+        final WeldTransactionServices weldTransactionServices = new WeldTransactionServices(jtsEnabled);
 
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(
                 WeldTransactionServices.SERVICE_NAME);
