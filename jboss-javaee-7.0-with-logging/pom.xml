@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.1.1.Final-SNAPSHOT</version>
+        <version>8.2.0.Final-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -72,7 +72,7 @@
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.org.jboss.logging.processor}</version>
             </dependency>
-      
+
             <!--  jboss-logging API -->
             <dependency>
                 <groupId>org.jboss.logging</groupId>

@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.1.1.Final-SNAPSHOT</version>
+        <version>8.2.0.Final-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -54,8 +54,8 @@
         <dependencies>
 
             <!-- JBoss distributes a complete set of Java EE 7 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
-                a collection) of artifacts. We use this here so that we always get the correct 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
+                a collection) of artifacts. We use this here so that we always get the correct
                 versions of artifacts. Here we use the jboss-javaee-7.0 stack (you can read
                 this as the JBoss stack of the Java EE full Profile 7 APIs). You can actually use
                 this stack with any version of WildFly that implements Java EE 7! -->
@@ -76,7 +76,7 @@
                 <artifactId>hibernate-core</artifactId>
                 <version>${version.org.hibernate3}</version>
 
-                <!-- Some transitive dependencies of Hibernate 3 are available 
+                <!-- Some transitive dependencies of Hibernate 3 are available
                     in WildFly 7 as modules, so we don't include them in WEB-INF/lib, but instead
                     depend on the modules -->
                 <exclusions>
@@ -108,7 +108,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${version.org.hibernate3}</version>
-                <!-- Some transitive dependencies of Hibernate 3 are available 
+                <!-- Some transitive dependencies of Hibernate 3 are available
                     in WildFly 7 as modules, so we don't include them in WEB-INF/lib, but instead
                     depend on the modules -->
                 <exclusions>
@@ -136,7 +136,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${version.org.hibernate3.validator}</version>
-                <!-- Some transitive dependencies of Hibernate 3 are available 
+                <!-- Some transitive dependencies of Hibernate 3 are available
                     in WildFly 7 as modules, so we don't include them in WEB-INF/lib, but instead
                     depend on the modules -->
                 <exclusions>
@@ -152,7 +152,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
                 <version>${version.org.hibernate3.commons.annotations}</version>
-                <!-- Some transitive dependencies of Hibernate 3 are available 
+                <!-- Some transitive dependencies of Hibernate 3 are available
                     in WildFly 7 as modules, so we don't include them in WEB-INF/lib, but instead
                     depend on the modules -->
                 <exclusions>
@@ -169,7 +169,7 @@
                 <artifactId>hibernate-infinispan</artifactId>
                 <version>${version.org.hibernate3}</version>
                 <exclusions>
-                    <!-- Some transitive dependencies of Hibernate 3 are 
+                    <!-- Some transitive dependencies of Hibernate 3 are
                         available in WildFly 7 as modules, so we don't include them in WEB-INF/lib,
                         but instead depend on the modules -->
                     <exclusion>
