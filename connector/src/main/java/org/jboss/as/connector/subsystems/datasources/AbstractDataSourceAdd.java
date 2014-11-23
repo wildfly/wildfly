@@ -81,7 +81,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final Resource resource = createResource(context);
         populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
-        boolean enabled = ! operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
+        boolean enabled = ! operation.hasDefined(ENABLED.getName()) || ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {

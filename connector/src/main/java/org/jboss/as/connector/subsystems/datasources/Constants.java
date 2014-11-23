@@ -318,7 +318,7 @@ public class Constants {
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
-            .setAllowExpression(false)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
             .build();
