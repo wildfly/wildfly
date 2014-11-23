@@ -637,6 +637,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
             if (jspServlet != null) {
+                jspServlet.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(null)); // we need to clear the file attribute if it is set (WFLY-4106)
                 List<ServletMappingMetaData> list = servletMappings.get(jspServlet.getName());
                 if(list != null && ! list.isEmpty()) {
                     for (final ServletMappingMetaData mapping : list) {
