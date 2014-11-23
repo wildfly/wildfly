@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.1.1.Final-SNAPSHOT</version>
+        <version>8.2.0.Final-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -83,13 +83,13 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${version.org.hibernate}</version>
-                
+
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-envers</artifactId>
                 <version>${version.org.hibernate}</version>
-                
+
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -123,7 +123,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>${version.org.hibernate.validator}</version>
-                
+
             </dependency>
 
             <dependency>

@@ -26,7 +26,7 @@
 
     <parent>
         <groupId>org.wildfly.bom</groupId>
-        <version>8.1.1.Final-SNAPSHOT</version>
+        <version>8.2.0.Final-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -52,8 +52,8 @@
 
         <dependencies>
             <!-- JBoss distributes a complete set of Java EE 7 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
-                a collection) of artifacts. We use this here so that we always get the correct 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
+                a collection) of artifacts. We use this here so that we always get the correct
                 versions of artifacts. Here we use the jboss-javaee-7.0 stack (you can read
                 this as the JBoss stack of the Java EE full Profile 7 APIs). You can actually use
                 this stack with any version of WildFly that implements Java EE 7! -->
@@ -72,7 +72,7 @@
                 <version>${version.junit}</version>
                 <scope>test</scope>
             </dependency>
-            
+
             <!--  Resteasy BOM -->
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
