@@ -49,7 +49,7 @@ public class EJBClientClusterNodeConfig extends EJBClientCommonConnectionConfig 
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap channelOpts = getOptionMapFromProperties(channelProps, this.getClass().getClassLoader());
-            logger.debug("Channel creation options for node " + clusterNodeConfig.getNodeName() + " are " + channelOpts);
+            logger.debugf("Channel creation options for node %s are %s", clusterNodeConfig.getNodeName(), channelOpts);
             this.setChannelCreationOptions(channelOpts);
         }
 
@@ -58,7 +58,7 @@ public class EJBClientClusterNodeConfig extends EJBClientCommonConnectionConfig 
             // we don't use the deployment CL here since the XNIO project isn't necessarily added as a dep on the deployment's
             // module CL
             final OptionMap connectOpts = getOptionMapFromProperties(connectionProps, this.getClass().getClassLoader());
-            logger.debug("Connection creation options for node " + clusterNodeConfig.getNodeName() + " are " + connectOpts);
+            logger.debugf("Connection creation options for node %s are %s", clusterNodeConfig.getNodeName(), connectOpts);
             this.setConnectionCreationOptions(connectOpts);
         }
 

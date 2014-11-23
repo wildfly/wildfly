@@ -72,7 +72,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
     public void start(StartContext startContext) throws StartException {
         // register ourselves to the recovery manager service
         recoveryManagerService.getValue().addXAResourceRecovery(this);
-        logger.debug("Registered " + this + " with the transaction recovery manager");
+        logger.debugf("Registered %s with the transaction recovery manager", this);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
                     EJBTransactionRecoveryService.this.receiverContexts.clear();
                     // un-register ourselves from the recovery manager service
                     recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
-                    logger.debug("Un-registered " + this + " from the transaction recovery manager");
+                    logger.debugf("Un-registered %s from the transaction recovery manager", this);
                 } finally {
                     stopContext.complete();
                 }

@@ -36,6 +36,6 @@ public class TransactionRecoveryEJBClientContextInitializer implements EJBClient
     @Override
     public void initialize(EJBClientContext context) {
         context.registerEJBClientContextListener(EJBTransactionRecoveryService.INSTANCE);
-        EjbLogger.ROOT_LOGGER.debug("Registered " + EJBTransactionRecoveryService.INSTANCE + " as a listener to EJB client context " + context);
+        EjbLogger.ROOT_LOGGER.debugf("Registered %s as a listener to EJB client context %s", EJBTransactionRecoveryService.INSTANCE, context);
     }
 }

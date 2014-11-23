@@ -446,7 +446,7 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         } else {
             throw EjbLogger.ROOT_LOGGER.failToLookupJNDINameSpace(name);
         }
-        ROOT_LOGGER.debug("Looking up " + namespaceStrippedJndiName + " in jndi context: " + jndiContext);
+        ROOT_LOGGER.debugf("Looking up %s in jndi context: %s", namespaceStrippedJndiName, jndiContext);
         try {
             return jndiContext.lookup(namespaceStrippedJndiName);
         } catch (NamingException ne) {

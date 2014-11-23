@@ -148,10 +148,10 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
             try {
                 final IoFuture<Connection> futureConnection = NetworkUtil.connect(endpoint,"remote", destinationHost, destinationPort, null, connectionCreationOptions, callbackHandler, null);
                 connection = IoFutureHelper.get(futureConnection, connectionTimeout, TimeUnit.MILLISECONDS);
-                logger.debug("Successfully reconnected to connection " + connection);
+                logger.debugf("Successfully reconnected to connection %s", connection);
 
             } catch (Exception e) {
-                logger.debug("Failed to re-connect to " + this.destinationHost + ":" + this.destinationPort, e);
+                logger.debugf(e, "Failed to re-connect to %s:%d", this.destinationHost, this.destinationPort);
             }
             if (connection == null) {
                 return;

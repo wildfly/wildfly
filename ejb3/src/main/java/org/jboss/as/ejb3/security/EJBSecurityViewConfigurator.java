@@ -70,8 +70,12 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // for the bean nor there's any default security domain that's configured at EJB3 subsystem level.
         // In such cases, we do *not* apply any security interceptors
         if (ejbComponentDescription.getSecurityDomain() == null || ejbComponentDescription.getSecurityDomain().isEmpty()) {
-            ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() +
-                    ", since no explicit security domain is configured for the bean, nor is there any default security domain configured in the EJB3 subsystem");
+            if (ROOT_LOGGER.isDebugEnabled()) {
+                ROOT_LOGGER
+                        .debug("Security is *not* enabled on EJB: "
+                                + ejbComponentDescription.getEJBName()
+                                + ", since no explicit security domain is configured for the bean, nor is there any default security domain configured in the EJB3 subsystem");
+            }
             return;
         }
 
@@ -148,7 +152,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
         } else {
             // if security is not applicable for the EJB, then do *not* add the security related interceptors
-            ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() + ", no security interceptors will apply");
+            ROOT_LOGGER.debugf("Security is *not* enabled on EJB: %s, no security interceptors will apply",  ejbComponentDescription.getEJBName());
 
             if (viewMethodSecurityAttributesServiceBuilder != null) {
                 // we install the service anyway since other components can depend on it

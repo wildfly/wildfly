@@ -84,7 +84,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         }
         // check whether it's eligible for implicit no-interface view
         if (this.exposesNoInterfaceView(ejbClass)) {
-            logger.debug("Bean: " + sessionBeanComponentDescription.getEJBName() + " will be marked for (implicit) no-interface view");
+            logger.debugf("Bean: %s will be marked for (implicit) no-interface view", sessionBeanComponentDescription.getEJBName());
             sessionBeanComponentDescription.addNoInterfaceView();
             return;
         }
@@ -92,7 +92,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         // check for default local view
         Class<?> defaultLocalView = this.getDefaultLocalView(ejbClass);
         if (defaultLocalView != null) {
-            logger.debug("Bean: " + sessionBeanComponentDescription.getEJBName() + " will be marked for default local view: " + defaultLocalView.getName());
+            logger.debugf("Bean: %s will be marked for default local view: %s", sessionBeanComponentDescription.getEJBName(), defaultLocalView.getName());
             sessionBeanComponentDescription.addLocalBusinessInterfaceViews(Collections.singleton(defaultLocalView.getName()));
             return;
         }

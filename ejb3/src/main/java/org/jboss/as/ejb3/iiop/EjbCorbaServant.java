@@ -232,7 +232,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
 
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {
-            logger.debug("Unable to find opname '" + opName + "' valid operations:" + methodInvokerMap.keySet());
+            logger.debugf("Unable to find opname '%s' valid operations:%s", opName, methodInvokerMap.keySet());
             throw new BAD_OPERATION(opName);
         }
         final NamespaceContextSelector selector = componentView.getComponent().getNamespaceContextSelector();
