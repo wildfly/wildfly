@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.deployers.ds;
 
-import org.jboss.as.security.vault.RuntimeVaultReader;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
@@ -33,7 +32,7 @@ import org.jboss.jca.common.metadata.ParserException;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
 import org.jboss.jca.common.metadata.ds.DsSecurityImpl;
 import org.jboss.jca.common.metadata.ds.v11.DsParser;
-import org.jboss.logging.Logger;
+import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.metadata.property.PropertyResolver;
 
 import javax.xml.stream.XMLStreamException;
@@ -50,10 +49,11 @@ public class DsXmlParser extends DsParser {
 
 
     private final PropertyResolver propertyResolver;
+    private final PropertyReplacer propertyReplacer;
 
-
-    public DsXmlParser(PropertyResolver propertyResolver) {
+    public DsXmlParser(PropertyResolver propertyResolver, PropertyReplacer propertyReplacer) {
         this.propertyResolver = propertyResolver;
+        this.propertyReplacer = propertyReplacer;
     }
 
 
@@ -97,10 +97,23 @@ public class DsXmlParser extends DsParser {
                     switch (tag) {
                         case PASSWORD: {
                             password = elementAsString(reader);
-                            if (propertyResolver != null && password != null && password.trim().length() != 0) {
-                                String resolvedPassword = propertyResolver.resolve(password);
-                                if (resolvedPassword != null)
+                            boolean resolved = false;
+                            if (propertyReplacer != null && password != null && password.trim().length() != 0) {
+                                String resolvedPassword = propertyReplacer.replaceProperties(password);
+                                if (resolvedPassword != null) {
                                     password = resolvedPassword;
+                                    resolved = true;
+                                }
+                            }
+                            // Previous releases directly passed the text into PropertyResolver, which would not
+                            // deal properly with ${ and }, :defaultValue etc. But it would resolve e.g. "sys.prop.foo"
+                            // to "123" if there was a system property "sys.prop.foo". So, to avoid breaking folks
+                            // who learned to use that behavior, pass any unresolved password in to the PropertyResolver
+                            if (!resolved && propertyResolver != null && password != null && password.trim().length() != 0) {
+                                String resolvedPassword = propertyResolver.resolve(password);
+                                if (resolvedPassword != null) {
+                                    password = resolvedPassword;
+                                }
                             }
                             break;
                         }
