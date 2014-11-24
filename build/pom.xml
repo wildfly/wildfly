@@ -240,6 +240,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>com.redhat.gss</groupId>
+                    <artifactId>redhat-support-lib-java</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>com.sun.codemodel</groupId>
                     <artifactId>codemodel</artifactId>
                 </dependency>
@@ -318,6 +323,11 @@
                 <dependency>
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>commons-net</groupId>
+                    <artifactId>commons-net</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1499,6 +1509,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.resteasy3</groupId>
+                    <artifactId>resteasy-client</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-hibernatevalidator-provider</artifactId>
                 </dependency>
@@ -1514,7 +1529,17 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.resteasy3</groupId>
+                    <artifactId>resteasy-jaxb-provider</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-jaxrs</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy3</groupId>
                     <artifactId>resteasy-jaxrs</artifactId>
                 </dependency>
 
@@ -1530,6 +1555,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-multipart-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy3</groupId>
                     <artifactId>resteasy-multipart-provider</artifactId>
                 </dependency>
 
