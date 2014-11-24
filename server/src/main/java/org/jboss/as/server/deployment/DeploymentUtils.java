@@ -25,9 +25,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -58,6 +61,18 @@ public final class DeploymentUtils {
             roots.add(deploymentRoot);
         roots.addAll(deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS));
         return roots;
+    }
+
+    public static Set<String> getDeploymentHexHash(ModelNode deployment){
+        Set<String> hashes = new HashSet<String>();
+        if (deployment.hasDefined(CONTENT)) {
+            for (ModelNode contentElement : deployment.get(CONTENT).asList()) {
+                if (contentElement.hasDefined(HASH)) {
+                    hashes.add(HashUtil.bytesToHexString(contentElement.get(HASH).asBytes()));
+                }
+            }
+        }
+        return hashes;
     }
 
     /**

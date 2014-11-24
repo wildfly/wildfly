@@ -27,7 +27,11 @@ import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NoSuchResourceException;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
@@ -81,7 +85,13 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
                     @Override
                     public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                         if (resultAction != ResultAction.ROLLBACK) {
-                            removeContent(address, deploymentHashes);
+                            Set<String> newHashes;
+                            try {
+                                newHashes = DeploymentUtils.getDeploymentHexHash(context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
+                            } catch (NoSuchResourceException ex) {
+                                newHashes = Collections.EMPTY_SET;
+                            }
+                            removeContent(address, newHashes, deploymentHashes);
                         }
                     }
                 });
@@ -109,7 +119,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
     }
 
-    abstract void removeContent(PathAddress address, List<byte[]> hashes);
+    abstract void removeContent(PathAddress address, Set<String> newHashes, List<byte[]> hashes);
 
     private static class MasterDeploymentRemoveHandler extends DeploymentRemoveHandler {
         final ContentRepository contentRepository;
@@ -120,11 +130,13 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
 
         @Override
-        void removeContent(PathAddress address, List<byte[]> hashes) {
+        void removeContent(PathAddress address, Set<String> newHashes, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
-                    if (contentRepository != null) {
+                    if (contentRepository != null && (newHashes.isEmpty() || !newHashes.contains(HashUtil.bytesToHexString(hash)))) {
                         contentRepository.removeContent(ModelContentReference.fromModelAddress(address, hash));
+                    } else if(contentRepository != null) {
+                        DEPLOYMENT_LOGGER.undeployingDeploymentHasBeenRedeployed(address.getLastElement().getValue());
                     }
                 } catch (Exception e) {
                     DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
@@ -146,13 +158,15 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
 
         @Override
-        void removeContent(PathAddress address, List<byte[]> hashes) {
+        void removeContent(PathAddress address, Set<String> newHashes, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
                     if (contentRepository.hasContent(hash)) {
                         contentRepository.removeContent(ModelContentReference.fromModelAddress(address, hash));
-                    } else {
+                    } else if (newHashes.isEmpty() || !newHashes.contains(HashUtil.bytesToHexString(hash))) {
                         fileRepository.deleteDeployment(ModelContentReference.fromModelAddress(address, hash));
+                    } else {
+                        DEPLOYMENT_LOGGER.undeployingDeploymentHasBeenRedeployed(address.getLastElement().getValue());
                     }
                 } catch (Exception e) {
                     DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));

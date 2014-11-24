@@ -145,6 +145,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
         if (contentRepository != null && contentItem.getHash() != null) {
             final byte[] contentHash = contentItem.getHash();
             context.completeStep(new OperationContext.ResultHandler() {
+                @Override
                 public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if (resultAction == ResultAction.KEEP) {
                         contentRepository.addContentReference(ModelContentReference.fromModelAddress(address, contentHash));

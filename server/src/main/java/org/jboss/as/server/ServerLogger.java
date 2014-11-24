@@ -429,4 +429,8 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15978, value = "Error stopping content repository cleaner")
     void failedToStopRepositoryCleaner(@Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15979, value = "%s deployment has been re-deployed, let's NOT remove its content. You'll need to restart it.")
+    void undeployingDeploymentHasBeenRedeployed(String deploymentName);
 }

@@ -26,9 +26,12 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENAB
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -73,7 +76,6 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
                     final String deploymentUnitName;
                     final boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
                     if (enabled) {
@@ -106,10 +108,19 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                                 if (enabled) {
                                     ServerLogger.ROOT_LOGGER.deploymentUndeployed(managementName, deploymentUnitName);
                                 }
-
+                                Set<String> newHash;
+                                try {
+                                    newHash = DeploymentUtils.getDeploymentHexHash(context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
+                                } catch (NoSuchResourceException ex) {
+                                    newHash = Collections.EMPTY_SET;
+                                }
                                 for (byte[] hash : removedHashes) {
                                     try {
-                                        contentRepository.removeContent(ModelContentReference.fromDeploymentName(name, hash));
+                                        if(newHash.isEmpty() || !newHash.contains(HashUtil.bytesToHexString(hash))) {
+                                            contentRepository.removeContent(ModelContentReference.fromDeploymentName(name, hash));
+                                        } else {
+                                            ServerLogger.DEPLOYMENT_LOGGER.undeployingDeploymentHasBeenRedeployed(name);
+                                        }
                                     } catch (Exception e) {
                                         //TODO
                                         ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));
