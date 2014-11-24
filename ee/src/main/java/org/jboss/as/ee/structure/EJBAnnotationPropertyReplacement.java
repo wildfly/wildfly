@@ -25,7 +25,6 @@ package org.jboss.as.ee.structure;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.metadata.property.PropertyReplacers;
-import org.jboss.metadata.property.PropertyResolver;
 
 /**
  * @author wangchao
@@ -35,9 +34,9 @@ public class EJBAnnotationPropertyReplacement {
     public static PropertyReplacer propertyReplacer(final DeploymentUnit deploymentUnit) {
         Boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
         if (replacement == null || replacement) {
-            final PropertyResolver propertyResolver = deploymentUnit
-                    .getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
-            return PropertyReplacers.resolvingReplacer(propertyResolver);
+            PropertyReplacer replacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
+            // Replacer might be null if the EE subsystem isn't installed (e.g. sar w/o ee) TODO clean up this relationship
+            return replacer != null ? replacer : PropertyReplacers.noop();
         } else {
             return PropertyReplacers.noop();
         }
