@@ -30,6 +30,9 @@ import static org.jboss.as.controller.transform.description.RejectAttributeCheck
 import static org.jboss.as.controller.transform.description.RejectAttributeChecker.SIMPLE_EXPRESSIONS;
 import static org.jboss.as.messaging.AddressSettingDefinition.MAX_REDELIVERY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_MULTIPLIER;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_POLICY;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD;
 import static org.jboss.as.messaging.CommonAttributes.BACKUP_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
@@ -150,7 +153,7 @@ public class MessagingTransformers {
         hornetqServer.rejectChildResource(SharedStoreColocatedDefinition.PATH);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, MAX_REDELIVERY_DELAY, REDELIVERY_MULTIPLIER, SLOW_CONSUMER_CHECK_PERIOD, SLOW_CONSUMER_POLICY, SLOW_CONSUMER_THRESHOLD);
     }
 
     /**
