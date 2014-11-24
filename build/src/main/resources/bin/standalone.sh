@@ -18,6 +18,10 @@ do
               DEBUG_PORT=$1
           fi
           ;;
+      -Djava.security.manager*)
+          echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+          SECMGR="true"
+          ;;
       -secmgr)
           SECMGR="true"
           ;;
@@ -43,6 +47,7 @@ cygwin=false;
 darwin=false;
 linux=false;
 solaris=false;
+other=false;
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -57,6 +62,9 @@ case "`uname`" in
         ;;
     SunOS*)
         solaris=true
+        ;;
+    *)
+        other=true
         ;;
 esac
 
@@ -123,7 +131,7 @@ if $linux; then
     for var in $CONSOLIDATED_OPTS
     do
        # Remove quotes
-       p=`echo $var | tr -d '"'`
+       p=`echo $var | tr -d "'"`
        case $p in
          -Djboss.server.base.dir=*)
               JBOSS_BASE_DIR=`readlink -m ${p#*=}`
@@ -139,13 +147,13 @@ if $linux; then
 fi
 
 if $solaris; then
-    # consolidate the host-controller and command line opts
-    HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $@"
-    # process the host-controller options
-    for var in $HOST_CONTROLLER_OPTS
+    # consolidate the server and command line opts
+    CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
+    # process the standalone options
+    for var in $CONSOLIDATED_OPTS
     do
        # Remove quotes
-       p=`echo $var | tr -d '"'`
+       p=`echo $var | tr -d "'"`
       case $p in
         -Djboss.server.base.dir=*)
              JBOSS_BASE_DIR=`echo $p | awk -F= '{print $2}'`
@@ -160,15 +168,15 @@ if $solaris; then
     done
 fi
 
-# No readlink -m on BSD
-if $darwin; then
+# No readlink -m on BSD and possibly other distros
+if [ $darwin ] || [ $other ]; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options
     for var in $CONSOLIDATED_OPTS
     do
        # Remove quotes
-       p=`echo $var | tr -d '"'`
+       p=`echo $var | tr -d "'"`
        case $p in
          -Djboss.server.base.dir=*)
               JBOSS_BASE_DIR=`cd ${p#*=} ; pwd -P`
@@ -260,11 +268,12 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
-# Process the JAVA_OPTS checking for -Djava.security.manager
+# If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
 SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
 if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr."
-    SECMGR="false"
+    JAVA_OPTS="-Djava.security.manager=org.jboss.modules._private.StartupSecurityManager $JAVA_OPTS -Djava.security.manager=org.jboss.modules._private.StartupSecurityManager"
+    echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    SECMGR="true"
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then

@@ -174,6 +174,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
     private List<String> createCommandLine(ManagedDomainContainerConfiguration config) throws Exception {
 
+        boolean useSecMgr = false;
         final String jbossHomeDir = config.getJbossHome();
         String modulesPath = config.getModulePath();
         if (modulesPath == null || modulesPath.isEmpty()) {
@@ -202,7 +203,23 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add(javaExec);
         if (additionalJavaOpts != null) {
             for (String opt : additionalJavaOpts.split("\\s+")) {
-                cmd.add(opt);
+                if (opt.startsWith("-Djava.security.manager")) {
+                    useSecMgr = true;
+                } else {
+                    cmd.add(opt);
+                }
+            }
+        }
+
+        final List<String> jbossArgs = new ArrayList<String>();
+        if (config.getJbossArguments() != null) {
+            final String[] args = config.getJbossArguments().split("\\s+");
+            for (String arg  :args) {
+                if ("-secmgr".equals(arg) || arg.startsWith("-Djava.security.manager")) {
+                    useSecMgr = true;
+                } else {
+                    cmd.add(arg);
+                }
             }
         }
 
@@ -218,6 +235,9 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add("-Djboss.host.default.config=" + config.getHostConfig());
         cmd.add("-jar");
         cmd.add(modulesJar.getAbsolutePath());
+        if (useSecMgr) {
+            cmd.add("-secmgr");
+        }
         cmd.add("-mp");
         cmd.add(modulesPath);
         cmd.add("org.jboss.as.process-controller");
@@ -231,6 +251,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         cmd.add("--");
         cmd.add("-default-jvm");
         cmd.add(javaExec);
+        cmd.addAll(jbossArgs);
 
 
 

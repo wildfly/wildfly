@@ -28,14 +28,22 @@ if "%OS%" == "Windows_NT" (
 ) else (
   set DIRNAME=.\
 )
+setlocal EnableDelayedExpansion
+rem check for the security manager system property
+echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
+if not errorlevel == 1 (
+    echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+    set SECMGR=true
+)
+setlocal DisableDelayedExpansion
 
-rem Read command-line args.
+rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
-if "%1" == "" (
+if "%~1" == "" (
    goto MAIN
-) else if "%1" == "--debug" (
+) else if "%~1" == "--debug" (
    goto READ-DEBUG-PORT
-) else if "%1" == "-secmgr" (
+) else if "%~1" == "-secmgr" (
    set SECMGR=true
 )
 shift
@@ -44,7 +52,7 @@ goto READ-ARGS
 :READ-DEBUG-PORT
 set "DEBUG_MODE=true"
 set DEBUG_ARG="%2"
-if not "x%DEBUG_ARG" == "x" (
+if not %DEBUG_ARG% == "" (
    if x%DEBUG_ARG:-=%==x%DEBUG_ARG% (
       shift
       set DEBUG_PORT=%DEBUG_ARG%
@@ -102,27 +110,26 @@ if "%DEBUG_MODE%" == "true" (
 )
 
 set DIRNAME=
-
 rem Setup directories, note directories with spaces do not work
+setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
 :DIRLOOP
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.base.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.config.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.server.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.server.log.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
   )
 )
-
-for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
+for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
   if %%i == "" (
     goto ENDDIRLOOP
   ) else (
@@ -133,26 +140,13 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 :ENDDIRLOOP
 
-rem check the PROCESS_CONTROLLER_JAVA_OPTS
-set "X_JAVA_OPTS=%JAVA_OPTS%"
-:JAVAOPTLOOP
-rem Ensure to disable the -secmgr if the -Djava.security.manager property is found
-echo(%X_JAVA_OPTS% | findstr /r /c:"^-Djava.security.manager" > nul && (
-  if "%SECMGR%" == "true" (
-    echo ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr.
-    set SECMGR=false
-  )
+rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
+echo(!JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul && (
+  set "JAVA_OPTS=-Djava.security.manager=org.jboss.modules._private.StartupSecurityManager !JAVA_OPTS! -Djava.security.manager=org.jboss.modules._private.StartupSecurityManager"
+  echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+  set SECMGR=true
 )
-
-for /f "tokens=1* delims= " %%i IN ("%X_JAVA_OPTS%") DO (
-  if %%i == "" (
-    goto ENDJAVAOPTLOOP
-  ) else (
-    set X_JAVA_OPTS=%%j
-    GOTO JAVAOPTLOOP
-  )
-)
-:ENDJAVAOPTLOOP
+setlocal DisableDelayedExpansion
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
@@ -169,7 +163,7 @@ if "x%JBOSS_LOG_DIR%" == "x" (
 )
 rem Set the standalone configuration dir
 if "x%JBOSS_CONFIG_DIR%" == "x" (
-  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%/configuration"
+  set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%\configuration"
 )
 
 rem Setup JBoss specific properties

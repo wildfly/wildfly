@@ -59,17 +59,26 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 rem Add base package for L&F
 set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing"
 
+set LOGGING_CONFIG=
 echo "%JAVA_OPTS%" | findstr /I "logging.configuration" > nul
 if errorlevel == 1 (
-  set "JAVA_OPTS=%JAVA_OPTS% -Dlogging.configuration=file:"%JBOSS_HOME%"\bin\jboss-cli-logging.properties"
+  set "LOGGING_CONFIG=-Dlogging.configuration=file:%JBOSS_HOME%\bin\jboss-cli-logging.properties"
 ) else (
   echo logging.configuration already set in JAVA_OPTS
 )
-"%JAVA%" %JAVA_OPTS% ^
-    -jar "%JBOSS_RUNJAR%" ^
-    -mp "%JBOSS_MODULEPATH%" ^
-     org.jboss.as.cli ^
-     %*
+if "x%LOGGING_CONFIG%" == "x" (
+  "%JAVA%" %JAVA_OPTS% ^
+      -jar "%JBOSS_RUNJAR%" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+       org.jboss.as.cli ^
+         %*
+) else (
+  "%JAVA%" %JAVA_OPTS% "%LOGGING_CONFIG%" ^
+      -jar "%JBOSS_RUNJAR%" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+       org.jboss.as.cli ^
+       %*
+)
 
 :END
 if "x%NOPAUSE%" == "x" pause

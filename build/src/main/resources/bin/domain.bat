@@ -32,11 +32,20 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
     echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
 )
 
-rem Read command-line args.
+setlocal EnableDelayedExpansion
+rem check for the security manager system property
+echo(!SERVER_OPTS! | findstr /r /c:"-Djava.security.manager" > nul
+if not errorlevel == 1 (
+    echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+	set SECMGR=true
+)
+setlocal DisableDelayedExpansion
+
+rem Read command-line args, the ~ removes the quotes from the parameter
 :READ-ARGS
-if "%1" == "" (
+if "%~1" == "" (
    goto MAIN
-) else if "%1" == "-secmgr" (
+) else if "%~1" == "-secmgr" (
    set SECMGR=true
 )
 shift
@@ -98,25 +107,26 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Setup directories, note directories with spaces do not work
+setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
 :DIRLOOP
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
   )
 )
-echo(%CONSOLIDATED_OPTS% | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("%CONSOLIDATED_OPTS%") DO (
+echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
+  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
     for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
   )
 )
 
-for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
+for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
   if %%i == "" (
     goto ENDDIRLOOP
   ) else (
@@ -127,26 +137,13 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 :ENDDIRLOOP
 
-rem check the PROCESS_CONTROLLER_JAVA_OPTS
-set "X_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS%"
-:JAVAOPTLOOP
-rem Ensure to disable the -secmgr if the -Djava.security.manager property is found
-echo(%X_JAVA_OPTS% | findstr /r /c:"^-Djava.security.manager" > nul && (
-  if "%SECMGR%" == "true" (
-    echo ERROR: Cannot use -secmgr when the java.security.manager property is set in the JAVA_OPTS. Disabling -secmgr.
-    set SECMGR=false
-  )
+rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
+echo(!PROCESS_CONTROLLER_JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul && (
+  set "PROCESS_CONTROLLER_JAVA_OPTS=-Djava.security.manager=org.jboss.modules._private.StartupSecurityManager !PROCESS_CONTROLLER_JAVA_OPTS! -Djava.security.manager=org.jboss.modules._private.StartupSecurityManager"
+  echo WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable.
+  set SECMGR=true
 )
-
-for /f "tokens=1* delims= " %%i IN ("%X_JAVA_OPTS%") DO (
-  if %%i == "" (
-    goto ENDJAVAOPTLOOP
-  ) else (
-    set X_JAVA_OPTS=%%j
-    GOTO JAVAOPTLOOP
-  )
-)
-:ENDJAVAOPTLOOP
+setlocal DisableDelayedExpansion
 
 
 rem Setup JBoss specific properties

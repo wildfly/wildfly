@@ -66,7 +66,7 @@
 										<jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
 										<jboss.inst>${basedir}/target/jbossas</jboss.inst>
 					                                        <java.io.tmpdir>${java.io.tmpdir}</java.io.tmpdir>
-										<server.jvm.args>-Djava.security.manager
+										<server.jvm.args>
 											-Djava.security.policy==${basedir}/src/test/config/security.policy
 											-Djboss.modules.policy-permissions=true
 											${surefire.system.args}
@@ -79,6 +79,7 @@
 											-Dmcast=${mcast}
 											-Djava.io.tmpdir=${java.io.tmpdir}
 											${jvm.args.dirs}</server.jvm.args>
+										<jboss.args>-secmgr</jboss.args>
 									</systemPropertyVariables>
 								</configuration>
 							</execution>

@@ -78,6 +78,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
 
         try {
+            boolean useSecMgr = false;
             final String jbossHome = config.getJbossHome();
             File jbossHomeDir = new File(jbossHome).getCanonicalFile();
             if (jbossHomeDir.isDirectory() == false)
@@ -107,7 +108,23 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add(javaExec);
             if (additionalJavaOpts != null) {
                 for (String opt : additionalJavaOpts.split("\\s+")) {
-                    cmd.add(opt);
+                    if (opt.startsWith("-Djava.security.manager")) {
+                        useSecMgr = true;
+                    } else {
+                        cmd.add(opt);
+                    }
+                }
+            }
+
+            final List<String> jbossArgs = new ArrayList<String>();
+            if (config.getJbossArguments() != null) {
+                final String[] args = config.getJbossArguments().split("\\s+");
+                for (String arg  :args) {
+                    if ("-secmgr".equals(arg) || arg.startsWith("-Djava.security.manager")) {
+                        useSecMgr = true;
+                    } else {
+                        cmd.add(arg);
+                    }
                 }
             }
 
@@ -124,6 +141,9 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
+            if (useSecMgr) {
+                cmd.add("-secmgr");
+            }
             cmd.add("-mp");
             cmd.add(modulesPath);
             cmd.add("-jaxpmodule");
@@ -133,6 +153,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add(config.getServerConfig());
             if (config.isAdminOnly())
                cmd.add("--admin-only");
+            cmd.addAll(jbossArgs);
 
             // Wait on ports before launching; AS7-4070
             this.waitOnPorts();

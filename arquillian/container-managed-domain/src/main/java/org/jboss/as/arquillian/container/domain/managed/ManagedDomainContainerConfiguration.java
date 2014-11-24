@@ -37,6 +37,8 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
+    private String jbossArguments;
+
     private int startupTimeoutInSeconds = 60;
 
     private int stopTimeoutInSeconds = 60;
@@ -110,6 +112,24 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
      */
     public void setJavaVmArguments(String javaVmArguments) {
         this.javaVmArguments = javaVmArguments;
+    }
+
+    /**
+     * A space delimited set of arguments to pass to the server
+     *
+     * @return a space delimited set of augments or {@code null} if none were set
+     */
+    public String getJbossArguments() {
+        return jbossArguments;
+    }
+
+    /**
+     * Sets the arguments to pass to the server. The arguments should be spaced delimited.
+     *
+     * @param jbossArguments the arguments to set
+     */
+    public void setJbossArguments(String jbossArguments) {
+        this.jbossArguments = jbossArguments;
     }
 
     /**
