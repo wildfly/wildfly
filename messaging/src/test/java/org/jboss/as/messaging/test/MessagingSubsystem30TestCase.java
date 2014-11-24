@@ -409,7 +409,8 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, AddressSettingDefinition.PATH),
                                 createChainedConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, ConnectorServiceDefinition.PATH, ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
@@ -487,7 +488,8 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
         );
     }
 
@@ -543,7 +545,8 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER}))
+                                        new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY, AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
         );
     }
 
@@ -583,7 +586,8 @@ public class MessagingSubsystem30TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
-                                        new AttributeDefinition[]{ AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER }))
+                                        new AttributeDefinition[]{ AddressSettingDefinition.MAX_REDELIVERY_DELAY, AddressSettingDefinition.REDELIVERY_MULTIPLIER,
+                                                AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
         );
     }
 
