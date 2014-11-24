@@ -68,4 +68,17 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
                 super.handleUnknownGroupingHandlerAttribute(reader, element, operation);
         }
     }
+
+    @Override
+    protected void handleUnknownAddressSettingAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch(element) {
+            case SLOW_CONSUMER_CHECK_PERIOD:
+            case SLOW_CONSUMER_POLICY:
+            case SLOW_CONSUMER_THRESHOLD:
+                handleElementText(reader, element, operation);
+                break;
+            default:
+                super.handleUnknownAddressSettingAttribute(reader, element, operation);
+        }
+    }
 }

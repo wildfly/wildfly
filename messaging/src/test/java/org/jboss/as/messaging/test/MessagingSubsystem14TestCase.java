@@ -335,7 +335,8 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                                         new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
-                                new RejectExpressionsConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                                createChainedConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
+                                        new AttributeDefinition[] { AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(ConnectorServiceDefinition.PATH).append(ConnectorServiceParamDefinition.PATH),
                                 new RejectExpressionsConfig(ConnectorServiceParamDefinition.VALUE))
@@ -388,8 +389,13 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
                                 createChainedConfig(
+                                        new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, AddressSettingDefinition.PATH),
+                                createChainedConfig(
                                         new AttributeDefinition[] {},
-                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
+                                        new AttributeDefinition[] { AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD }))
         );
     }
 

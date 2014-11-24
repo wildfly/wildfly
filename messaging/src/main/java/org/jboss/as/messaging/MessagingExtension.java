@@ -57,7 +57,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:1.4
- *       <li>Management model: 1.3.1
+ *       <li>Management model: 1.4.0
  *     </ul>
  *   </dd>
  *   <dt>AS 7.3.0, 7.4.0</dt>
@@ -103,9 +103,10 @@ public class MessagingExtension implements Extension {
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
     public static final ModelVersion VERSION_1_2_1 = ModelVersion.create(1, 2, 1);
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
     public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);

@@ -47,6 +47,7 @@ import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
@@ -84,6 +85,7 @@ public class MessagingTransformers {
         registerTransformers_1_1_0(subsystem);
         registerTransformers_1_2_0(subsystem);
         registerTransformers_1_2_1(subsystem);
+        registerTransformers_1_3_0(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -158,6 +160,7 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectAttributesWithExpression(addressSetting, AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD);
 
         ResourceTransformationDescriptionBuilder connectorService = hornetqServer.addChildResource(ConnectorServiceDefinition.PATH);
 
@@ -241,6 +244,9 @@ public class MessagingTransformers {
         // but it was erroneously removed from the model. Discard it always just for 1.2.0
         discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
 
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD);
+
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_0);
     }
 
@@ -258,7 +264,21 @@ public class MessagingTransformers {
         // but it was erroneously removed from the model. Discard it always just for 1.2.0
         discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
 
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD);
+
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_1);
+    }
+
+    private static void registerTransformers_1_3_0(final SubsystemRegistration subsystem) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
+
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD, AddressSettingDefinition.SLOW_CONSUMER_POLICY, AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD);
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_3_0);
     }
 
     /**

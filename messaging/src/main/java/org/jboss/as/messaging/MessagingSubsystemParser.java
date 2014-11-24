@@ -1136,7 +1136,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static void processAddressSettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
+    void processAddressSettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
         String localName = null;
         do {
             reader.nextTag();
@@ -1157,7 +1157,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         } while (reader.hasNext() && localName.equals(Element.ADDRESS_SETTING.getLocalName()));
     }
 
-    static ModelNode parseAddressSettings(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    ModelNode parseAddressSettings(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final ModelNode addressSettingsSpec = new ModelNode();
 
         String localName;
@@ -1183,12 +1183,17 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, addressSettingsSpec);
                     break SWITCH;
                 } default: {
-                    break;
+                    handleUnknownAddressSettingAttribute(reader, element, addressSettingsSpec);
                 }
             }
         } while (!reader.getLocalName().equals(Element.ADDRESS_SETTING.getLocalName()) && reader.getEventType() == XMLExtendedStreamReader.END_ELEMENT);
 
         return addressSettingsSpec;
+    }
+
+    protected void handleUnknownAddressSettingAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
+            throws XMLStreamException {
+        // do nothing
     }
 
     static void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic) throws XMLStreamException {
