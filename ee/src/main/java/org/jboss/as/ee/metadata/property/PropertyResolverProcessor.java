@@ -27,6 +27,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.metadata.property.CompositePropertyResolver;
+import org.jboss.metadata.property.PropertyReplacers;
 
 /**
  * @author John Bailey
@@ -34,7 +35,9 @@ import org.jboss.metadata.property.CompositePropertyResolver;
 public class PropertyResolverProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_RESOLVER, new CompositePropertyResolver(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS)));
+        CompositePropertyResolver propertyResolver = new CompositePropertyResolver(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS));
+        deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_RESOLVER, propertyResolver);
+        deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_REPLACER, PropertyReplacers.resolvingReplacer(propertyResolver));
     }
 
     public void undeploy(DeploymentUnit context) {
