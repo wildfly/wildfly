@@ -426,7 +426,7 @@ class TransactionSubsystem13Parser implements XMLStreamConstants, XMLElementRead
                     TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
