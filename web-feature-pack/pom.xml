@@ -182,7 +182,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.websocket</groupId>
-            <artifactId>jboss-websocket-api_1.0_spec</artifactId>
+            <artifactId>jboss-websocket-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>
