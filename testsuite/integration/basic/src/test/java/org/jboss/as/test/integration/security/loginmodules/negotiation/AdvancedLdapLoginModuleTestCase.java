@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -33,8 +36,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.naming.Context;
 import javax.security.auth.login.LoginException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -97,8 +102,6 @@ import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -398,7 +401,7 @@ public class AdvancedLdapLoginModuleTestCase {
             final String hostname = Utils.getCannonicalHost(managementClient);
             final Map<String, String> map = new HashMap<String, String>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
-            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient, true);
+            final String secondaryTestAddress = NetworkUtils.canonize(Utils.getSecondaryTestAddress(managementClient, true));
             map.put("ldaphost", secondaryTestAddress);
             final String ldifContent = StrSubstitutor.replace(
                     IOUtils.toString(
