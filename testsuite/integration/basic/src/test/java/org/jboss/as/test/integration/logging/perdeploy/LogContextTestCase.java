@@ -38,11 +38,13 @@ import org.jboss.as.test.integration.logging.util.AbstractLoggingTest;
 import org.jboss.as.test.integration.logging.util.LoggingBean;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,26 +80,20 @@ public class LogContextTestCase extends AbstractLoggingTest {
         return ShrinkWrap.create(EnterpriseArchive.class, "logging.ear")
                 .addAsManifestResource(LoggingBean.class.getPackage(),
                         "logging.properties", "logging.properties")
-                .setManifest(new Asset() {
-                    public InputStream openStream() {
-                        ManifestBuilder builder = ManifestBuilder.newInstance();
-                        builder.addManifestHeader("Dependencies", "org.jboss.logmanager, org.jboss.as.logging");
-                        return builder.openStream();
-                    }
-                })
+                .setManifest(new StringAsset(
+                        Descriptors.create(ManifestDescriptor.class)
+                                .attribute("Dependencies", "org.jboss.logmanager, org.jboss.as.logging")
+                                .exportAsString()))
                 .addAsModules(logContextDeployment("logcontext-in-ear.war"), loggingDeployment("logging-in-ear.war"));
     }
 
     @Deployment(name = "logging-profile", testable = false, managed = false)
     public static WebArchive createLoggingProfileDeployment() {
         return loggingDeployment("logging-profile-test.war")
-                .setManifest(new Asset() {
-                    public InputStream openStream() {
-                        ManifestBuilder builder = ManifestBuilder.newInstance();
-                        builder.addManifestHeader("Logging-Profile", "test");
-                        return builder.openStream();
-                    }
-                });
+                .setManifest(new StringAsset(
+                        Descriptors.create(ManifestDescriptor.class)
+                                .attribute("Logging-Profile", "test")
+                                .exportAsString()));
     }
 
     @Deployment(name = "logging-profile-ear", testable = false, managed = false)
@@ -105,14 +101,11 @@ public class LogContextTestCase extends AbstractLoggingTest {
         return ShrinkWrap.create(EnterpriseArchive.class, "logging-profile.ear")
                 .addAsManifestResource(LoggingBean.class.getPackage(),
                         "logging.properties", "logging.properties")
-                .setManifest(new Asset() {
-                    public InputStream openStream() {
-                        ManifestBuilder builder = ManifestBuilder.newInstance();
-                        builder.addManifestHeader("Dependencies", "org.jboss.logmanager, org.jboss.as.logging");
-                        builder.addManifestHeader("Logging-Profile", "test");
-                        return builder.openStream();
-                    }
-                })
+                .setManifest(new StringAsset(
+                        Descriptors.create(ManifestDescriptor.class)
+                                .attribute("Dependencies", "org.jboss.logmanager, org.jboss.as.logging")
+                                .attribute("Logging-Profile", "test")
+                                .exportAsString()))
                 .addAsModules(logContextDeployment("logcontext-profile-in-ear.war"), loggingDeployment("logging-profile-in-ear.war"));
     }
 
@@ -167,13 +160,11 @@ public class LogContextTestCase extends AbstractLoggingTest {
         return ShrinkWrap
                 .create(WebArchive.class, name)
                 .addClasses(LogContextHackServlet.class)
-                .setManifest(new Asset() {
-                    public InputStream openStream() {
-                        ManifestBuilder builder = ManifestBuilder.newInstance();
-                        builder.addManifestHeader("Dependencies", "org.jboss.logmanager, org.jboss.as.logging");
-                        return builder.openStream();
-                    }
-                });
+                .setManifest(new StringAsset(
+                        Descriptors.create(ManifestDescriptor.class)
+                                .attribute("Dependencies", "org.jboss.logmanager, org.jboss.as.logging")
+                                .exportAsString()));
+
     }
 
     static class LoggingProfileSetup extends AbstractMgmtServerSetupTask {

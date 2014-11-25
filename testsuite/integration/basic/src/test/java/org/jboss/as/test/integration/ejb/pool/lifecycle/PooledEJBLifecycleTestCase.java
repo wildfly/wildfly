@@ -43,10 +43,12 @@ import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,17 +107,10 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(LifecycleCounterMDB.class);
         archive.addClass(LifecycleTracker.class);
         archive.addClass(Constants.class);
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append(DEPLOYED_SINGLETON_MODULE);
-                dependencies.append(" , org.hornetq.ra");
-                builder.addManifestHeader("Dependencies", dependencies.toString());
-                return builder.openStream();
-            }
-        });
+        archive.setManifest(new StringAsset(
+                Descriptors.create(ManifestDescriptor.class)
+                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.hornetq.ra")
+                        .exportAsString()));
 
         log.info(archive.toString(true));
         return archive;
@@ -127,17 +122,10 @@ public class PooledEJBLifecycleTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, SLSB_DEPLOYMENT_NAME);
         archive.addClass(PointLessMathBean.class);
         archive.addClass(LifecycleTracker.class);
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append(DEPLOYED_SINGLETON_MODULE);
-                dependencies.append(" , org.hornetq.ra");
-                builder.addManifestHeader("Dependencies", dependencies.toString());
-                return builder.openStream();
-            }
-        });
+        archive.setManifest(new StringAsset(
+                Descriptors.create(ManifestDescriptor.class)
+                        .attribute("Dependencies", DEPLOYED_SINGLETON_MODULE + ", org.hornetq.ra")
+                        .exportAsString()));
         log.info(archive.toString(true));
         return archive;
     }

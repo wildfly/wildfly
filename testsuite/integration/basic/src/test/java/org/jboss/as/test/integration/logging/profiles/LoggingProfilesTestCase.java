@@ -44,6 +44,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -62,7 +65,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -261,39 +263,21 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 
 	@Deployment
 	public static WebArchive createDeployment1() {
-		WebArchive archive1 = ShrinkWrap.create(WebArchive.class,
-				"logging1.war");
+		WebArchive archive1 = ShrinkWrap.create(WebArchive.class, "logging1.war");
 		archive1.addClasses(LoggingServlet.class);
-		archive1.setManifest(new Asset() {
-			@Override
-			public InputStream openStream() {
-				ManifestBuilder builder = ManifestBuilder.newInstance();
-				StringBuffer dependencies = new StringBuffer();
-				builder.addManifestHeader("Dependencies",
-						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile", "dummy-profile1");
-				return builder.openStream();
-			}
-		});
+		ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
+		manifest.attribute("Logging-Profile", "dummy-profile1");
+		archive1.setManifest(new StringAsset(manifest.exportAsString()));
 		return archive1;
 	}
 
 	@Deployment(name = "Deployment2")
 	public static WebArchive createDeployment2() {
-		WebArchive archive2 = ShrinkWrap.create(WebArchive.class,
-				"logging2.war");
+		WebArchive archive2 = ShrinkWrap.create(WebArchive.class, "logging2.war");
 		archive2.addClasses(LoggingServlet.class);
-		archive2.setManifest(new Asset() {
-			@Override
-			public InputStream openStream() {
-				ManifestBuilder builder = ManifestBuilder.newInstance();
-				StringBuffer dependencies = new StringBuffer();
-				builder.addManifestHeader("Dependencies",
-						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile", "dummy-profile2");
-				return builder.openStream();
-			}
-		});
+		ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
+		manifest.attribute("Logging-Profile", "dummy-profile2");
+		archive2.setManifest(new StringAsset(manifest.exportAsString()));
 		return archive2;
 	}
 
