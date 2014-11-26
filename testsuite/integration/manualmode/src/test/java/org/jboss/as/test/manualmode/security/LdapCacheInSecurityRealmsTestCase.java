@@ -66,7 +66,6 @@ import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.vfs.VFSUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -307,7 +306,6 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
      * @throws Exception
      */
     @Test
-    @Ignore("bz-1150024 HeaderParser fails to handle delimiters in DigestAuthenticator")
     public void testGroupToPrincipal() throws Exception {
         setHttpInterfaceRealm("ldap-cache-authz-group-to-principal-by-search-time-3-1");
         LdapSearchCounterInterceptor.resetCounter();
@@ -325,7 +323,6 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
      * @throws Exception
      */
     @Test
-    @Ignore("bz-1150024 HeaderParser fails to handle delimiters in DigestAuthenticator")
     public void testPrincipalToGroup() throws Exception {
         setHttpInterfaceRealm("ldap-cache-authz-principal-to-group-by-access-time-3-2");
         LdapSearchCounterInterceptor.resetCounter();
@@ -428,7 +425,6 @@ public class LdapCacheInSecurityRealmsTestCase extends AbstractCliTestBase {
      * @throws Exception
      */
     @Test
-    @Ignore("bz-1150024 HeaderParser fails to handle delimiters in DigestAuthenticator")
     public void testDelimitersInUsername() throws Exception {
         setHttpInterfaceRealm("delimiters-test");
         LdapSearchCounterInterceptor.resetCounter();
