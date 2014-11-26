@@ -772,6 +772,6 @@ public interface LoggingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error
      */
-    @Message(id = 15929, value = "Resources of type %s cannot be removed")
+    @Message(id = 11529, value = "Resources of type %s cannot be removed")
     UnsupportedOperationException cannotRemoveResourceOfType(String childType);
 }
