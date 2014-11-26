@@ -402,7 +402,7 @@ public class AdvancedLdapLoginModuleTestCase {
             final String hostname = Utils.getCannonicalHost(managementClient);
             final Map<String, String> map = new HashMap<String, String>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
-            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient, true);
+            final String secondaryTestAddress = NetworkUtils.canonize(Utils.getSecondaryTestAddress(managementClient, true));
             map.put("ldaphost", secondaryTestAddress);
             final String ldifContent = StrSubstitutor.replace(
                     IOUtils.toString(
