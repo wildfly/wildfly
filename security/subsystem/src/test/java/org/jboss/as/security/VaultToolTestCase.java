@@ -26,11 +26,9 @@ package org.jboss.as.security;
 
 import static java.util.Collections.addAll;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URLDecoder;
+import java.security.KeyStore;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +37,10 @@ import java.util.Map;
 
 import org.jboss.as.security.vault.MockRuntimeVaultReader;
 import org.jboss.as.security.vault.VaultTool;
-import org.jboss.as.server.services.security.VaultReaderException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Ignore;
+import org.junit.*;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 public class VaultToolTestCase {
 
@@ -64,24 +60,39 @@ public class VaultToolTestCase {
 
   private static final String getKeystorePath() {
      try {
-       return new String(URLDecoder.decode( CODE_LOCATION, "UTF-8" ) + "org/jboss/as/security/vault.keystore");
+       return new String(URLDecoder.decode(CODE_LOCATION, "UTF-8" ) + "org/jboss/as/security/vault.keystore");
      } catch (Exception e) {
        throw new Error("Unable to decode url", e);
      }
   }
 
+  private static void createAndFillKeystore(String fileName) throws Exception {
+      KeyStore ks = KeyStore.getInstance("JCEKS");
+      ks.load(null, KEYSTORE_PASSWORD.toCharArray());
+      KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+      keyGenerator.init(128);
+      SecretKey secretKey = keyGenerator.generateKey();
+      KeyStore.SecretKeyEntry skEntry = new KeyStore.SecretKeyEntry(secretKey);
+      KeyStore.PasswordProtection p = new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray());
+      ks.setEntry(KEYSTORE_ALIAS_VALUE, skEntry, p);
+      ks.store(new FileOutputStream(fileName), KEYSTORE_PASSWORD.toCharArray());
+  }
+
   @Test
-  public void testVaultTool() throws IOException, VaultReaderException {
+  public void testVaultTool() throws Exception {
     doTestVaultTool(false);
   }
 
   @Test
   @Ignore
-  public void testVaultFallback() throws IOException, VaultReaderException {
+  public void testVaultFallback() throws Exception {
     doTestVaultTool(true);
   }
 
-  private void doTestVaultTool(boolean testFallbackFromIncorrectPasswordValue) throws IOException, VaultReaderException {
+  private void doTestVaultTool(boolean testFallbackFromIncorrectPasswordValue) throws Exception {
+
+    createAndFillKeystore(KEYSTORE_URL_VALUE);
+
     // Replaces standard output with a ByteArrayOutputStream to parse the output later.
     System.setOut(new PrintStream(SYSTEM_OUT));
 
