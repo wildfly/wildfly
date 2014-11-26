@@ -26,7 +26,6 @@
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.ee"/>
         <extension module="org.jboss.as.ejb3"/>
-        <extension module="org.jboss.as.iiop-openjdk"/>
         <extension module="org.jboss.as.jpa"/>
         <extension module="org.jboss.as.logging"/>
         <extension module="org.jboss.as.naming"/>
@@ -34,6 +33,7 @@
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.bean-validation"/>
+        <extension module="org.wildfly.iiop-openjdk"/>
     </extensions>
 
     <profile>

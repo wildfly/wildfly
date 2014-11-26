@@ -45,7 +45,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.iiop.openjdk.service.CorbaNamingService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -88,6 +87,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
+import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;

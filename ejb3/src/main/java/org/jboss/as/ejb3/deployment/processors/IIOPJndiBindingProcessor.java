@@ -28,8 +28,6 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ejb3.iiop.handle.HandleDelegateImpl;
-import org.jboss.as.iiop.openjdk.deployment.IIOPDeploymentMarker;
-import org.jboss.as.iiop.openjdk.service.CorbaORBService;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -44,6 +42,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.omg.CORBA.ORB;
+import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
+import org.wildfly.iiop.openjdk.service.CorbaORBService;
 
 /**
  * Processor responsible for binding IIOP related resources to JNDI.

@@ -46,16 +46,6 @@ import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
-import org.jboss.as.iiop.openjdk.deployment.IIOPDeploymentMarker;
-import org.jboss.as.iiop.openjdk.rmi.AttributeAnalysis;
-import org.jboss.as.iiop.openjdk.rmi.InterfaceAnalysis;
-import org.jboss.as.iiop.openjdk.rmi.OperationAnalysis;
-import org.jboss.as.iiop.openjdk.rmi.RMIIIOPViolationException;
-import org.jboss.as.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
-import org.jboss.as.iiop.openjdk.service.CorbaNamingService;
-import org.jboss.as.iiop.openjdk.service.CorbaORBService;
-import org.jboss.as.iiop.openjdk.service.CorbaPOAService;
-import org.jboss.as.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -76,6 +66,16 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.PortableServer.POA;
+import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
+import org.wildfly.iiop.openjdk.rmi.AttributeAnalysis;
+import org.wildfly.iiop.openjdk.rmi.InterfaceAnalysis;
+import org.wildfly.iiop.openjdk.rmi.OperationAnalysis;
+import org.wildfly.iiop.openjdk.rmi.RMIIIOPViolationException;
+import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
+import org.wildfly.iiop.openjdk.service.CorbaNamingService;
+import org.wildfly.iiop.openjdk.service.CorbaORBService;
+import org.wildfly.iiop.openjdk.service.CorbaPOAService;
+import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 
 /**
  * This is the DUP that sets up IIOP for EJB's
