@@ -37,10 +37,12 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
 import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -73,6 +75,32 @@ public class WebservicesSubsystemRuntimeTestCase extends AbstractSubsystemBaseTe
                 target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
             }
         };
+    }
+    
+    @AfterClass
+    public static void resetClassLoaderProvider() {
+        //HACK: another hack required because we're not running in a valid modular environment, hence at the of the test
+        //the WS ClassLoaderProvider is still configured to use a ModularClassLoaderProvider backed by the fake
+        //module loader installed by this testcase. As a consequence other tests running after this might fail.
+        //The issue can be prevented in various ways, but given this whole test is a hack as we're not running in a
+        //proper environment, I prefer to do as below for now (after all, this is a testsuite issue only, WFLY-4122)
+        ClassLoaderProvider.setDefaultProvider(new ClassLoaderProvider() {
+            
+            @Override
+            public ClassLoader getWebServiceSubsystemClassLoader() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+            
+            @Override
+            public ClassLoader getServerJAXRPCIntegrationClassLoader() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+            
+            @Override
+            public ClassLoader getServerIntegrationClassLoader() {
+                return Thread.currentThread().getContextClassLoader();
+            }
+        });
     }
 
     @Test
