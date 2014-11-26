@@ -26,7 +26,6 @@ import static org.jboss.as.server.deployment.EjbDeploymentMarker.isEjbDeployment
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.iiop.openjdk.deployment.IIOPDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -37,6 +36,7 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
@@ -52,7 +52,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final ModuleIdentifier EJB_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.ejb3");
     private static final ModuleIdentifier EJB_CLIENT = ModuleIdentifier.create("org.jboss.ejb-client");
     private static final ModuleIdentifier EJB_IIOP_CLIENT = ModuleIdentifier.create("org.jboss.iiop-client");
-    private static final ModuleIdentifier IIOP_OPENJDK = ModuleIdentifier.create("org.jboss.as.iiop-openjdk");
+    private static final ModuleIdentifier IIOP_OPENJDK = ModuleIdentifier.create("org.wildfly.iiop-openjdk");
     private static final ModuleIdentifier EJB_API = ModuleIdentifier.create("javax.ejb.api");
 
 

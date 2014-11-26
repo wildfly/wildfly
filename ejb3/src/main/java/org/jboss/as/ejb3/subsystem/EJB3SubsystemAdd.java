@@ -120,8 +120,6 @@ import org.jboss.as.ejb3.remote.LocalEjbReceiver;
 import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.as.ejb3.remote.RegistryCollectorService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
-import org.jboss.as.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
-import org.jboss.as.iiop.openjdk.service.CorbaPOAService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
@@ -147,6 +145,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
+import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
+import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
