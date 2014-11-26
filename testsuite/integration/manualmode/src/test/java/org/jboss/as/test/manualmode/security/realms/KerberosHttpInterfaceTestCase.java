@@ -102,7 +102,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -280,12 +279,11 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      */
     @Test
     @InSequence(4)
-    @Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1156444")
     public void testNotSuitableKeyTab() throws Exception {
         // https://bugzilla.redhat.com/show_bug.cgi?id=1161589
         Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));
         setHttpInterfaceRealm("NotSuitableKeyTab");        
-        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 401);
+        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 403);
     }
     
     /**
@@ -311,12 +309,11 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      */
     @Test
     @InSequence(6)
-    @Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1156444")
     public void testWrongPrincipalKeyTab() throws Exception {
         // https://bugzilla.redhat.com/show_bug.cgi?id=1161589
         Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));
         setHttpInterfaceRealm("WrongPrincipalKeyTab");        
-        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 401);
+        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 403);
     }
     
     /**
@@ -327,12 +324,11 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      */
     @Test
     @InSequence(7)
-    @Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1156444")
     public void testWrongRealmKeyTab() throws Exception {
         // https://bugzilla.redhat.com/show_bug.cgi?id=1161589
         Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));
         setHttpInterfaceRealm("WrongRealmKeyTab");        
-        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 401);
+        makeCallWithKerberosAuthn(createSimpleManagementOperationURI(), USERNAME, PASSWORD, 403);
     }
     
     /**
@@ -420,7 +416,6 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      */
     @Test
     @InSequence(13)
-    @Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1156444")
     public void testFallBackInWrong2KerberosRealm() throws Exception {
         // https://bugzilla.redhat.com/show_bug.cgi?id=1161589
         Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));
@@ -439,7 +434,6 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      */
     @Test
     @InSequence(14)
-    @Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1156444")
     public void testFallBackInWrong3KerberosRealm() throws Exception {
         // https://bugzilla.redhat.com/show_bug.cgi?id=1161589
         Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));
@@ -652,20 +646,22 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
             final HttpGet httpGet = new HttpGet(uri);
             final HttpResponse response = httpClient.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
-            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode) {
-                fail("Unauthorized access to protected page returned " + statusCode + " instead of 401.");
-            }
             final HttpEntity entity = response.getEntity();
-            final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
-            assertTrue("WWW-Authenticate header is not present", authnHeaders != null && authnHeaders.length > 0);
-            final Set<String> authnHeaderValues = new HashSet<String>();
-            for (final Header header : authnHeaders) {
-                authnHeaderValues.add(header.getValue());
-            }
-            assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
+            if (HttpServletResponse.SC_UNAUTHORIZED != statusCode) {
+                if (expectedStatusCode!=HttpServletResponse.SC_FORBIDDEN)
+                    fail("Unauthorized access to protected page returned " + statusCode + " instead of 401.");
+            } else {
+                final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
+                assertTrue("WWW-Authenticate header is not present", authnHeaders != null && authnHeaders.length > 0);
+                final Set<String> authnHeaderValues = new HashSet<String>();
+                for (final Header header : authnHeaders) {
+                    authnHeaderValues.add(header.getValue());
+                }
+                assertTrue("WWW-Authenticate: Negotiate header is missing", authnHeaderValues.contains("Negotiate"));
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("HTTP response was SC_UNAUTHORIZED, let's authenticate the user " + user);
+                }
             }
             if (entity != null)
                 EntityUtils.consume(entity);
