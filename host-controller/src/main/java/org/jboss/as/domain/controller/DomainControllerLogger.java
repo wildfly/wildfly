@@ -189,6 +189,6 @@ public interface DomainControllerLogger extends BasicLogger {
     void interruptedAwaitingHostPreparedResponse(Set<String> hosts);
 
     @LogMessage(level = Level.WARN)
-    @Message(id = 10814, value = "%s deployment has been re-deployed, let's NOT remove its content. You'll need to restart it.")
+    @Message(id = 10814, value = "%s deployment has been re-deployed, its content will not be removed. You will need to restart it.")
     void undeployingDeploymentHasBeenRedeployed(String deploymentName);
 }
