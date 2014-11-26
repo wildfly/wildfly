@@ -407,12 +407,17 @@
 
         <module-def name="com.redhat.gss.redhat_support_lib">
             <maven-resource group="com.redhat.gss" artifact="redhat-support-lib-java"/>
+        </module-def>
+
+        <module-def name="com.redhat.gss.redhat_support_lib.deps">
+            <maven-resource group="commons-net" artifact="commons-net"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-client"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxb-provider"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxrs"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-multipart-provider"/>
         </module-def>
 
+    	
         <module-def name="com.sun.codemodel">
             <maven-resource group="com.sun.codemodel" artifact="codemodel"/>
         </module-def>
