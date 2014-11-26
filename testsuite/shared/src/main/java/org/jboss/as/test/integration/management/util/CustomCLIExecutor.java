@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -52,14 +53,22 @@ public class CustomCLIExecutor {
     private static final int STATUS_CHECK_INTERVAL = 2000;
 
     public static String execute(File cliConfigFile, String operation) {
+        return execute(cliConfigFile, operation, (List<String>)null, (Map<String, String>)null);
+    }
+
+    public static String execute(File cliConfigFile, String operation, List<String> parameters, Map<String, String> environment) {
 
         String defaultController = TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort();
-        return execute(cliConfigFile, operation, defaultController, false);
+        return execute(cliConfigFile, operation, defaultController, false, parameters, environment);
     }
 
     public static String execute(File cliConfigFile, String operation, String controller) {
 
         return execute(cliConfigFile, operation, controller, false);
+    }
+
+    public static String execute(File cliConfigFile, String operation, String controller, boolean logFailure) {
+        return execute(cliConfigFile, operation, controller, logFailure, (List<String>)null, (Map<String, String>)null);
     }
 
     /**
@@ -68,7 +77,8 @@ public class CustomCLIExecutor {
      *
      * @return String cliOutput
      */
-    public static String execute(File cliConfigFile, String operation, String controller, boolean logFailure) {
+    public static String execute(File cliConfigFile, String operation, String controller, boolean logFailure,
+            List<String> parameters, Map<String, String> environment) {
 
         String cliOutput;
         String jbossDist = System.getProperty("jboss.dist");
@@ -97,6 +107,18 @@ public class CustomCLIExecutor {
         command.add("org.jboss.as.cli");
         command.add("-c");
         command.add("--controller=" + controller);
+
+        if (parameters!=null) {
+            for (String param : parameters) {
+                command.add(param);
+            }
+        }
+
+        if (environment!=null) {
+            Map<String, String> builderEnvironment = builder.environment();
+            builderEnvironment.putAll(environment);
+        }
+
         command.add(operation);
         builder.command(command);
 
@@ -167,13 +189,25 @@ public class CustomCLIExecutor {
     }
 
     public static void waitForServerToReload(int timeout, File cliConfigFile) throws Exception {
+        waitForServerToReloadWithUserAndPassword(timeout, cliConfigFile, null, null);
+    }
+
+    public static void waitForServerToReloadWithUserAndPassword(int timeout, File cliConfigFile, String user, String password) throws Exception {
 
         Thread.sleep(TimeoutUtil.adjust(500));
         long start = System.currentTimeMillis();
         long now;
         do {
             try {
-                String result = CustomCLIExecutor.execute(cliConfigFile, READ_ATTRIBUTE_OPERATION + " server-state");
+                String result = null;
+                if (user!=null && password!=null) {
+                    List<String> params = new ArrayList<String>();
+                    params.add("--user=" + user);
+                    params.add("--password=" + password);
+                    result = CustomCLIExecutor.execute(cliConfigFile, READ_ATTRIBUTE_OPERATION + " server-state", params, null);
+                } else {
+                    result = CustomCLIExecutor.execute(cliConfigFile, READ_ATTRIBUTE_OPERATION + " server-state");
+                }
                 boolean normal = result.contains("running");
                 if (normal) {
                     return;

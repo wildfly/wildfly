@@ -85,7 +85,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         FileUtils.write(KRB5_CONF_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
 
-        createKeytab("HTTP/" + cannonicalHost + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
+        createServerKeytab(cannonicalHost);
         for (UserForKeyTab userForKeyTab : kerberosUsers()) {
             createKeytab(userForKeyTab.getUser(), userForKeyTab.getPassword(), userForKeyTab.getKeyTabFileName());
         }
@@ -129,6 +129,10 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         return HTTP_KEYTAB_FILE.getAbsolutePath();
     }
 
+    protected void createServerKeytab(String host) throws IOException {
+        createKeytab("HTTP/" + host + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
+    }
+
     // Private methods -------------------------------------------------------
 
     /**
@@ -139,7 +143,7 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
      * @param keytabFile
      * @throws IOException
      */
-    private void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
+    protected void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
         LOGGER.info("Principal name: " + principalName);
         final KerberosTime timeStamp = new KerberosTime();
 
