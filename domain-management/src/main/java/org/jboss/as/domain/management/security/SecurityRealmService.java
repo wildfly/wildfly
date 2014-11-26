@@ -182,16 +182,37 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                 return (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) == false;
             }
 
+            @SuppressWarnings("deprecation") // The use of the deprecated RealmUser is intentional.
             public SubjectUserInfo createSubjectUserInfo(Collection<Principal> userPrincipals) throws IOException {
                 Subject subject = this.subject == null ? new Subject() : this.subject;
                 Collection<Principal> allPrincipals = subject.getPrincipals();
+
+                Principal ru = null;
                 if (sharedState.containsKey(LOADED_USERNAME_KEY)) {
-                    allPrincipals.add(new RealmUser(getName(), (String) sharedState.get(LOADED_USERNAME_KEY)));
+                    // If we need to modify the name ours gets priority.
+                    ru = new RealmUser(getName(), (String) sharedState.get(LOADED_USERNAME_KEY));
                 } else {
+                    // Otherwise see if another already implements RealmUser
                     for (Principal userPrincipal : userPrincipals) {
-                        allPrincipals.add(userPrincipal);
-                        allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
+                        if (userPrincipal instanceof RealmUser) {
+                            ru = userPrincipal;
+                            break;
+                        }
                     }
+                }
+
+                for (Principal userPrincipal : userPrincipals) {
+                    if (userPrincipal instanceof RealmUser == false) {
+                        allPrincipals.add(userPrincipal);
+                        if (ru == null) {
+                            // Last resort map the first principal we find.
+                            ru = new RealmUser(name, userPrincipal.getName());
+                        }
+                    }
+                }
+
+                if (ru != null) {
+                    allPrincipals.add(ru);
                 }
 
                 Object skipGroupLoading = sharedState.get(SKIP_GROUP_LOADING_KEY);
