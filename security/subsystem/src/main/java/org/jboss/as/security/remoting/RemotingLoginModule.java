@@ -38,7 +38,10 @@ import javax.security.auth.login.LoginException;
 
 import org.jboss.as.security.SecurityLogger;
 import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Connection;
+import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.callback.ObjectCallback;
@@ -90,13 +93,27 @@ public class RemotingLoginModule extends AbstractServerLoginModule {
         Object credential = getCredential();
         Connection con = SecurityActions.remotingContextGetConnection();
         if (con != null) {
-            UserPrincipal up = null;
-            for (Principal current : con.getPrincipals()) {
-                if (current instanceof UserPrincipal) {
-                    up = (UserPrincipal) current;
-                    break;
+            Principal up = null;
+
+            UserInfo userInfo = con.getUserInfo();
+            if (userInfo instanceof SubjectUserInfo) {
+                for (Principal current : ((SubjectUserInfo) userInfo).getPrincipals()) {
+                    if (current instanceof RealmUser) {
+                        up = current;
+                        break;
+                    }
                 }
             }
+
+            if (up == null) {
+                for (Principal current : con.getPrincipals()) {
+                    if (current instanceof UserPrincipal) {
+                        up = (UserPrincipal) current;
+                        break;
+                    }
+                }
+            }
+
             // If we found a principal from the connection then authentication succeeded.
             if (up != null) {
                 identity = up;
