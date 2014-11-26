@@ -98,7 +98,7 @@ public class PermissionsCoverageTestUtil {
                 ModelNode childDescription = resourceDescription.get(descriptionContainer.name, "*");
                 verify(child, childDescription, descriptionContainer.next(), currentPath + descriptionContainer.pathSeparator + key);
             } else {
-                fail("No description for key " + key);
+                fail("No description for key " + key + " of " + currentPath);
             }
         }
     }

@@ -309,8 +309,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
                 } else if (childReg.isAlias() && !aliases) {
                     if (isSquatterResource(registry, element.getKey())) {
-                        if (!nodeDescription.get(CHILDREN, element.getKey()).isDefined()) {
-                            nodeDescription.get(CHILDREN).get(element.getKey()).remove(element.getValue());
+                        if (nodeDescription.get(CHILDREN).hasDefined(element.getKey())) {
+                            nodeDescription.get(CHILDREN).remove(element.getKey());
                         }
                     }
                 }
@@ -339,6 +339,19 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
     private boolean isGlobalAlias(final ImmutableManagementResourceRegistration registry, final Property child) {
         if(isSquatterResource(registry, child.getName())) {
+            Set<PathElement> childrenPath = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+            boolean found = false;
+            boolean alias = true;
+            for(PathElement childPath : childrenPath) {
+                if(childPath.getKey().equals(child.getName())) {
+                    found = true;
+                    ImmutableManagementResourceRegistration squatterRegistration = registry.getSubModel(PathAddress.pathAddress(childPath));
+                    alias = alias && (squatterRegistration != null && squatterRegistration.isAlias());
+                }
+            }
+            if(found && alias) {
+                return true;
+            }
             ImmutableManagementResourceRegistration squatterRegistration = registry.getSubModel(PathAddress.pathAddress(PathElement.pathElement(child.getName(), child.getValue().asString())));
             return squatterRegistration != null && squatterRegistration.isAlias();
         }
