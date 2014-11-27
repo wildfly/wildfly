@@ -141,7 +141,6 @@ public class KeytabService implements Service<KeytabService> {
 
         final AppConfigurationEntry ace;
         if (IS_IBM) {
-            options.put("noAddress", "true");
             options.put("credsType", isServer ? "acceptor" : "initiator");
             options.put("useKeytab", new File(keytabLocation).toURI().toURL().toString());
             ace = new AppConfigurationEntry(IBMKRB5LoginModule, REQUIRED, options);
