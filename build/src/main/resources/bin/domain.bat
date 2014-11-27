@@ -109,33 +109,32 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 rem Setup directories, note directories with spaces do not work
 setlocal EnableDelayedExpansion
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
-:DIRLOOP
-echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.base.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_BASE_DIR=%%~fi"
-  )
+set baseDirFound=false
+set configDirFound=false
+set logDirFound=false
+for %%a in (!CONSOLIDATED_OPTS!) do (
+   if !baseDirFound! == true (
+      set "JBOSS_BASE_DIR=%%~a"
+	  set baseDirFound=false
+   )
+   if !configDirFound! == true (
+      set "JBOSS_CONFIG_DIR=%%~a"
+	  set configDirFound=false
+   )
+   if !logDirFound! == true (
+      set "JBOSS_LOG_DIR=%%~a"
+	  set logDirFound=false
+   )
+   if "%%~a" == "-Djboss.server.base.dir" (
+       set baseDirFound=true
+   )
+   if "%%~a" == "-Djboss.server.config.dir" (
+       set configDirFound=true
+   )
+   if "%%~a" == "-Djboss.server.log.dir" (
+       set logDirFound=true
+   )
 )
-echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.config.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_CONFIG_DIR=%%~fi"
-  )
-)
-echo(!CONSOLIDATED_OPTS! | findstr /r /c:"^-Djboss.domain.log.dir" > nul && (
-  for /f "tokens=1,2* delims==" %%a IN ("!CONSOLIDATED_OPTS!") DO (
-    for /f %%i IN ("%%b") DO set "JBOSS_LOG_DIR=%%~fi"
-  )
-)
-
-for /f "tokens=1* delims= " %%i IN ("!CONSOLIDATED_OPTS!") DO (
-  if %%i == "" (
-    goto ENDDIRLOOP
-  ) else (
-    set CONSOLIDATED_OPTS=%%j
-    GOTO DIRLOOP
-  )
-)
-
-:ENDDIRLOOP
 
 rem If the -Djava.security.manager is found, enable the -secmgr and include a bogus security manager for JBoss Modules to replace
 echo(!PROCESS_CONTROLLER_JAVA_OPTS! | findstr /r /c:"-Djava.security.manager" > nul && (
