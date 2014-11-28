@@ -23,6 +23,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_SERVICES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_TIMESTAMP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MISSING_TRANSITIVE_DEPENDENCY_PROBLEMS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -60,6 +61,7 @@ public class BootErrorCollector {
         // for security reasons failure.get(FAILED).set(operation.clone());
         ModelNode failedOperation = error.get(FAILED_OPERATION);
         failedOperation.get(OP).set(operation.get(OP));
+        error.get(FAILURE_TIMESTAMP).set(System.currentTimeMillis());
         ModelNode opAddr = operation.get(OP_ADDR);
         if (!opAddr.isDefined()) {
             opAddr.setEmptyList();
@@ -102,6 +104,7 @@ public class BootErrorCollector {
 
         private static final AttributeDefinition OP_DEFINITION = ObjectTypeAttributeDefinition.Builder.of(FAILED_OPERATION,
                     SimpleAttributeDefinitionBuilder.create(OP, ModelType.STRING, false).build(),
+                    SimpleAttributeDefinitionBuilder.create(FAILURE_TIMESTAMP, ModelType.LONG, false).build(),
                     SimpleListAttributeDefinition.Builder.of(OP_ADDR,
                             SimpleAttributeDefinitionBuilder.create("element", ModelType.PROPERTY, false).build())
                             .build())

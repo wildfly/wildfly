@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED_SERVICES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_TIMESTAMP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICES_MISSING_DEPENDENCIES;
@@ -84,6 +85,7 @@ public class HostBootErrorsTestCase extends AbstractBootErrorTestCase {
         ModelNode error = errors.get(0);
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(OP).asString(), is(ADD));
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(ADDRESS).asString(), is("[(\"host\" => \"master\"),(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-udp\")]"));
+        Assert.assertThat(error.asString(), error.get(FAILURE_TIMESTAMP).isDefined(), is(true));
         Assert.assertThat(error.asString(), error.hasDefined(FAILURE_DESCRIPTION), is(true));
         Assert.assertThat(error.asString(), error.get(FAILURE_DESCRIPTION).asString(), containsString("testhost"));
         Assert.assertThat(error.asString(), error.hasDefined(FAILED_SERVICES), is(false));
@@ -91,6 +93,7 @@ public class HostBootErrorsTestCase extends AbstractBootErrorTestCase {
         error = errors.get(1);
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(OP).asString(), is(ADD));
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(ADDRESS).asString(), is("[(\"host\" => \"master\"),(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-tcp\")]"));
+        Assert.assertThat(error.asString(), error.get(FAILURE_TIMESTAMP).isDefined(), is(true));
         Assert.assertThat(error.asString(), error.hasDefined(FAILURE_DESCRIPTION), is(true));
         Assert.assertThat(error.asString(), error.get(FAILURE_DESCRIPTION).asString(), containsString("testhost"));
         Assert.assertThat(error.asString(), error.hasDefined(FAILED_SERVICES), is(false));
@@ -98,6 +101,7 @@ public class HostBootErrorsTestCase extends AbstractBootErrorTestCase {
         error = errors.get(2);
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(OP).asString(), is(ADD));
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(ADDRESS).asString(), is("[(\"host\" => \"master\"),(\"core-service\" => \"management\"),(\"access\" => \"audit\"),(\"syslog-handler\" => \"syslog-tls\")]"));
+        Assert.assertThat(error.asString(), error.get(FAILURE_TIMESTAMP).isDefined(), is(true));
         Assert.assertThat(error.asString(), error.hasDefined(FAILURE_DESCRIPTION), is(true));
         Assert.assertThat(error.asString(), error.get(FAILURE_DESCRIPTION).asString(), containsString("testhost"));
         Assert.assertThat(error.asString(), error.hasDefined(FAILED_SERVICES), is(false));
@@ -105,6 +109,7 @@ public class HostBootErrorsTestCase extends AbstractBootErrorTestCase {
         error = errors.get(3);
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(OP).asString(), is(ADD));
         Assert.assertThat(error.asString(), error.get(FAILED_OPERATION).get(ADDRESS).asString(), is("[(\"host\" => \"master\"),(\"core-service\" => \"management\"),(\"management-interface\" => \"native-interface\")]"));
+        Assert.assertThat(error.asString(), error.get(FAILURE_TIMESTAMP).isDefined(), is(true));
         Assert.assertThat(error.asString(), error.hasDefined(FAILURE_DESCRIPTION), is(true));
         Assert.assertThat(error.asString(), error.hasDefined(FAILED_SERVICES), is(false));
         Assert.assertThat(error.asString(), error.hasDefined(SERVICES_MISSING_DEPENDENCIES), is(true));

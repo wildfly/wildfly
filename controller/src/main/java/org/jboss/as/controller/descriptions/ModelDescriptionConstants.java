@@ -151,6 +151,7 @@ public class ModelDescriptionConstants {
     public static final String FAILED_SERVICES = "failed-services";
     public static final String FAILURE_COUNT = "failure-count";
     public static final String FAILURE_DESCRIPTION = "failure-description";
+    public static final String FAILURE_TIMESTAMP = "failure-timestamp";
     public static final String FILE = "file";
     public static final String FILE_HANDLER = "file-handler";
     public static final String FILTER = "filter";
