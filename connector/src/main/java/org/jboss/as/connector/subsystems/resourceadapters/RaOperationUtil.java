@@ -299,13 +299,20 @@ public class RaOperationUtil {
 
     }
 
-    public static void activate(OperationContext context, String raName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
+    public static void activate(OperationContext context, String raName, String archiveName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
 
-        final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
+        ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(archiveName));
 
         if (inactiveRaController == null) {
-            throw MESSAGES.RARNotYetDeployed(raName);
+
+            inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
+
+            if (inactiveRaController == null) {
+
+                throw ConnectorLogger.ROOT_LOGGER.RARNotYetDeployed(raName);
+            }
+
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));

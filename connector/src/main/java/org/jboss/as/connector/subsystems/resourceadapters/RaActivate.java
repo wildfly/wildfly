@@ -44,24 +44,24 @@ public class RaActivate implements OperationStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         final String idName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String raName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("archive").asString();
+        final String archiveName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("archive").asString();
 
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
                    final ServiceVerificationHandler svh = new ServiceVerificationHandler();
 
-                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, raName, idName, svh);
+                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveName, idName, svh);
 
                     if (restartedServiceName == null) {
-                        RaOperationUtil.activate(context, idName, svh);
+                        RaOperationUtil.activate(context, idName, archiveName, svh);
                     }
                     context.addStep(svh, OperationContext.Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             try {
-                                RaOperationUtil.removeIfActive(context, raName, idName);
+                                RaOperationUtil.removeIfActive(context, archiveName, idName);
                             } catch (OperationFailedException e) {
 
                             }

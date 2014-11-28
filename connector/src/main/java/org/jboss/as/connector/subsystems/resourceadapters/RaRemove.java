@@ -141,9 +141,9 @@ public class RaRemove implements OperationStepHandler {
                             try {
                                 if (wasActive){
                                     if(isModule){
-                                        RaOperationUtil.activate(context, idName, null);
+                                        RaOperationUtil.activate(context, idName, archiveName, null);
                                     } else {
-                                        RaOperationUtil.activate(context, archiveName, null);
+                                        RaOperationUtil.activate(context, archiveName, archiveName, null);
                                     }
                                 }
                             } catch (OperationFailedException e) {
