@@ -50,6 +50,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -219,6 +220,7 @@ class HornetQService implements Service<HornetQServer> {
                         if (binding == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindConnectorSocketBinding(tc.getName());
                         }
+                        binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
                         InetSocketAddress socketAddress = binding.getSocketAddress();
                         tc.getParams().put(HOST, socketAddress.getAddress().getHostAddress());
                         tc.getParams().put(PORT, "" + socketAddress.getPort());
@@ -243,7 +245,8 @@ class HornetQService implements Service<HornetQServer> {
                         if (binding == null) {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindBroadcastSocketBinding(name);
                         }
-                       newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
+                        binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
+                        newConfigs.add(BroadcastGroupAdd.createBroadcastGroupConfiguration(name, config, binding));
                     }
                 }
                 configuration.getBroadcastGroupConfigurations().clear();
@@ -270,6 +273,7 @@ class HornetQService implements Service<HornetQServer> {
                             throw MessagingLogger.ROOT_LOGGER.failedToFindDiscoverySocketBinding(name);
                         }
                         config = DiscoveryGroupAdd.createDiscoveryGroupConfiguration(name, entry.getValue(), binding);
+                        binding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(binding));
                     }
                     configuration.getDiscoveryGroupConfigurations().put(name, config);
                 }
@@ -302,6 +306,13 @@ class HornetQService implements Service<HornetQServer> {
             if (server != null) {
                 // FIXME stopped by the JMSService
                 // server.stop();
+
+                for (SocketBinding binding : socketBindings.values()) {
+                    binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
+                }
+                for (SocketBinding binding : groupBindings.values()) {
+                    binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
+                }
             }
             pathConfig.closeCallbacks(pathManager.getValue());
         } catch (Exception e) {
