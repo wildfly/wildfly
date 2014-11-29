@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <!--
-       JBoss, Home of Professional Open Source
+  JBoss, Home of Professional Open Source
   Copyright 2009, Red Hat Middleware LLC, and individual contributors
   as indicated by the @author tags.
   See the copyright.txt in the distribution for a
@@ -22,7 +22,7 @@
 -->
 <properties>
     <!--
-             This is the JBossTS configuration file for running ArjunaJTS.
+    This is the JBossTS configuration file for running ArjunaJTS.
     It should be called jbossts-properties.xml.
     You need a different version for ArjunaCore or JTA usage.
 
@@ -32,7 +32,7 @@
     in which case the token values are substituted for the values of the corresponding system
     properties as follows:
 
-    - Any occurrence of ${p} with the System.getProperty(p) value.
+    - Any occurance of ${p} with the System.getProperty(p) value.
     If there is no such property p defined, then the ${p} reference will remain unchanged.
 
     - If the property reference is of the form ${p:v} and there is no such property p,
@@ -70,7 +70,7 @@
     </entry>
 
     <!--
-               Base port number for determining a unique number to associate with an instance of the transaction service
+      Base port number for determining a unique number to associate with an instance of the transaction service
       (which is needed in order to support multiple instances on the same machine).
       Use the value 0 to allow the system to select the first available port number.
       If the port number is non-zero and the port is in use then the value will be incremented until either a successful binding
@@ -83,7 +83,7 @@
 
 
     <!--
-               Periodic recovery modules to use.  Invoked in the order they appear in the list.
+      Periodic recovery modules to use.  Invoked in the order they appear in the list.
          Check http://www.jboss.org/community/docs/DOC-10788 for more information
          on recovery modules and their configuration when running in various
          deployments.
@@ -105,13 +105,13 @@
     </entry>
 
     <!--
-                 Add the following to the set of expiryScannerClassNames above to move logs that cannot be completed by failure recovery.
+        Add the following to the set of expiryScannerClassNames above to move logs that cannot be completed by failure recovery.
             But be sure you know what you are doing and why!
              com.arjuna.ats.internal.arjuna.recovery.AtomicActionExpiryScanner
     -->
 
    <!--
-              The address and port number on which the recovery manager listens
+      The address and port number on which the recovery manager listens
       If running within an AS then the address the AS is bound to (jboss.bind.address) takes precedence
     -->
     <entry key="RecoveryEnvironmentBean.recoveryPort">4712</entry>
@@ -119,34 +119,34 @@
     <entry key="RecoveryEnvironmentBean.recoveryAddress"></entry>
 
     <!--
-               Use this to fix the port on which the TransactionStatusManager listens,
+      Use this to fix the port on which the TransactionStatusManager listens,
       The default behaviour is to use any free port.
     -->
     <entry key="RecoveryEnvironmentBean.transactionStatusManagerPort">0</entry>
 
     <!--
-               Use this to fix the address on which the TransactionStatusManager binds,
+      Use this to fix the address on which the TransactionStatusManager binds,
       The default behaviour is to use the loopback address (ie localhost).
       If running within an AS then the address the AS is bound to (jboss.bind.address) takes precedence
     -->
     <entry key="RecoveryEnvironmentBean.transactionStatusManagerAddress"></entry>
 
     <!--
-               For cases where the recovery manager is in process with the transaction manager and nothing else uses
+      For cases where the recovery manager is in process with the transaction manager and nothing else uses
       the ObjectStore, it is possible to disable the socket based recovery listener by setting this to NO.
       Caution: use of this property can allow multiple recovery processes to run on the same ObjectStore
       if you are not careful. That in turn can lead to incorrect transaction processing. Use with care.
     -->
-    <entry key="RecoveryEnvironmentBean.recoveryListener">YES</entry>
+    <entry key="RecoveryEnvironmentBean.recoveryListener">NO</entry>
 
 
     <!-- Recovery Activators to use. -->
     <entry key="RecoveryEnvironmentBean.recoveryActivatorClassNames">com.arjuna.ats.internal.jts.orbspecific.recovery.RecoveryEnablement</entry>
 
 
-        <entry key="JTAEnvironmentBean.transactionManagerClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple</entry>
+    <entry key="JTAEnvironmentBean.transactionManagerClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionManagerImple</entry>
 
-        <entry key="JTAEnvironmentBean.userTransactionClassName">com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple</entry>
+    <entry key="JTAEnvironmentBean.userTransactionClassName">com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple</entry>
 
     <entry key="JTAEnvironmentBean.transactionSynchronizationRegistryClassName">com.arjuna.ats.internal.jta.transaction.jts.TransactionSynchronizationRegistryImple</entry>
 
@@ -164,147 +164,22 @@
         com.arjuna.orbportability.orb.PostSet1=com.arjuna.ats.jts.utils.ORBSetup
     </entry>
 
+    <!-- change the orb -->
+    <entry key="OrbPortabilityEnvironmentBean.orbImpleClassName">com.arjuna.orbportability.internal.orbspecific.javaidl.orb.implementations.javaidl_1_4</entry>
+    <entry key="OrbPortabilityEnvironmentBean.poaImpleClassName">com.arjuna.orbportability.internal.orbspecific.javaidl.oa.implementations.javaidl_1_4</entry>
+    <entry key="OrbPortabilityEnvironmentBean.orbDataClassName">com.arjuna.orbportability.internal.orbspecific.versions.javaidl_1_4</entry>
+
     <!--
-               This property controls the port on which the Recovery ORB listens
+      This property controls the port on which the Recovery ORB listens
     -->
     <entry key="JTSEnvironmentBean.recoveryManagerPort">4711</entry>
 
     <!--
-               This property controls the address on which the Recovery ORB binds - defaults to the loopback connection
+      This property controls the address on which the Recovery ORB binds - defaults to the loopback connection
           If running within an AS then the address the AS is bound to (jboss.bind.address) takes precedence
     -->
     <entry key="JTSEnvironmentBean.recoveryManagerAddress"></entry>
     
-    
-            <!--
-        The location of initial references file (default is user.home)
-      -->
-        <!--
-      <property
-        name="com.arjuna.orbportability.initialReferencesRoot"
-       ></entry>
-      -->
-        <!--
-        The name of the initial references file (default is CosServices.cfg)
-      -->
-        <entry key="com.arjuna.orbportability.initialReferencesFile">CosServices.cfg</entry>
-        <!--
-        When reading and writing IORs, they can be read/written in this
-        directory. (default is serviceName)
-      -->
-        <!--
-        <property
-          name="com.arjuna.orbportability.fileDir"
-         ></entry>
-      -->
-        <!--
-        Default resolution service for the Transaction Manager Server.
-        ORB specific.
-      -->
-        <!--
-        <property
-          name="com.arjuna.orbportability.resolveService"
-         ></entry>
-      -->
-        <!--
-        Event handlers.
-      -->
-        <!--
-        <property
-          name="com.arjuna.orbportability.eventHandler_0"
-         ></entry>
-        <property
-          name="com.arjuna.orbportability.eventHandler_1"
-         ></entry>
-      -->
-        <!--
-        The ORB implementation class - this defaults to the class which
-        implements support for the first supported ORB in your classpath.
-      -->
-        <!--
-        <property
-          name="com.arjuna.orbportability.orbImplementation"
-         ></entry>
-      -->
-        <!--
-        The OA implementation class - this also defaults to the class which
-        implements support for the first supported ORB in your classpath
-      -->
-        <!--
-        <property
-          name="com.arjuna.orbportability.oaImplementation"
-         ></entry>
-      -->
-        <!--
-          This class handles context propagation issues, and should never
-          be commented out or removed.
-        -->
-        <entry key="com.arjuna.orbportability.orb.PreInit1">com.arjuna.ats.internal.jts.context.ContextPropagationManager</entry>
-        <!--
-          This property ensures the JTS knows which ORB to use and should never
-          be commented out or removed
-        -->
-        <entry key="com.arjuna.orbportability.orb.PostInit1">com.arjuna.ats.jts.utils.ORBSetup</entry>
-        <!--
-          This property ensures the crash recovery is initialised correctly and
-          should never be commented out or removed
-        -->
-        <entry key="com.arjuna.orbportability.orb.PostInit2">com.arjuna.ats.internal.jts.recovery.RecoveryInit</entry>
-        <!--
-          This property ensures the JTS knows which ORB to use and should never
-          be commented out or removed
-        -->
-        <entry key="com.arjuna.orbportability.orb.PostSet1">com.arjuna.ats.jts.utils.ORBSetup</entry>
-        <!--
-          This property ensures the JTS knows which ORB to use and should never
-          be commented out or removed
-        -->
-        <entry key="com.arjuna.orbportability.orb.PostSet2">com.arjuna.ats.internal.jts.recovery.RecoveryInit</entry>
-	
-	
-	
-	        <!--
-	(default is NO)
-      -->
-        <entry key="com.arjuna.ats.jts.transactionManager">NO</entry>
-        <!--
-        (default is NO)
-      -->
-        <entry key="com.arjuna.ats.jts.needTranContext">NO</entry>
-        <!--
-        (default is NO)
-      -->
-        <entry key="com.arjuna.ats.jts.alwaysPropagateContext">YES</entry>
-        <!--
-        (default is NO)
-      -->
-        <entry key="com.arjuna.ats.jts.checkedTransactions">NO</entry>
-        <!--
-        (default is YES)
-      -->
-        <entry key="com.arjuna.ats.jts.supportSubtransactions">YES</entry>
-        <!--
-        (default is YES)
-      -->
-        <entry key="com.arjuna.ats.jts.supportRollbackSync">YES</entry>
-        <!--
-        (default is NO)
-      -->
-        <entry key="com.arjuna.ats.jts.supportInterposedSynchronization">NO</entry>
-        <!--
-        Timeout in seconds to use for top-level transaction if 0 specified.
-        (default is no timeout)
-      -->
-        <!---
-        <property
-          name="com.arjuna.ats.jts.defaultTimeout"
-         ></entry>
-      -->
-        <!--
-        Propagate the context? (default is INTERPOSITION)
-        <entry key="com.arjuna.ats.jts.contextPropMode">CONTEXT</entry>
-      -->
-
-
+     <entry key="com.arjuna.ats.jts.alwaysPropagateContext">YES</entry>
 
 </properties>

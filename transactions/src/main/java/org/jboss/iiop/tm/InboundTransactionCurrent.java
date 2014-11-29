@@ -23,7 +23,6 @@ package org.jboss.iiop.tm;
 
 import javax.transaction.Transaction;
 
-import org.omg.CORBA.LocalInterface;
 import org.omg.CORBA.Current;
 
 /**
@@ -42,7 +41,7 @@ import org.omg.CORBA.Current;
  * @author <a href="mailto:reverbel@ime.usp.br">Francisco Reverbel</a>
  * @version $Revision$
  */
-public interface InboundTransactionCurrent extends LocalInterface, Current {
+public interface InboundTransactionCurrent extends Current {
     String NAME = "InboundTransactionCurrent";
 
     /**

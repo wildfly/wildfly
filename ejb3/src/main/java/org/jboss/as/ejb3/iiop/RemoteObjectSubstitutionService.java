@@ -27,7 +27,7 @@ import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitution;
+import org.jboss.javax.rmi.RemoteObjectSubstitution;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHandle;
 import org.jboss.ejb.client.EJBHomeHandle;
@@ -54,6 +54,8 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
 
     @Override
     public Object writeReplaceRemote(final Object object) {
+
+
         final DeploymentRepository deploymentRepository = deploymentRepositoryInjectedValue.getOptionalValue();
         //if we are not started yet just return
         if (deploymentRepository == null) {

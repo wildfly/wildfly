@@ -57,6 +57,7 @@ import org.junit.Test;
  *
  * @author Emanuel Muckenhuber
  */
+
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     public Ejb3SubsystemUnitTestCase() {

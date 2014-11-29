@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.jboss.narayana.jts:narayana-jts-jacorb}"/>
+        <artifact name="${org.jboss.narayana.jts:narayana-jts-idlj}"/>
     </resources>
 
     <dependencies>
@@ -42,7 +42,7 @@
         <module name="javax.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="org.hornetq"/>
-        <module name="org.jacorb"/>
+        <module name="javax.orb.api"/>
         <module name="javax.enterprise.api"/>
         <module name="org.jboss.weld.core"/>
         <module name="javax.annotation.api" export="true" />

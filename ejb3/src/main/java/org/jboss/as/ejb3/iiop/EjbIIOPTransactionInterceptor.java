@@ -30,12 +30,12 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
-import org.jboss.as.jacorb.tm.ForeignTransaction;
-import org.jboss.as.jacorb.tm.TxServerInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
+import org.wildfly.iiop.openjdk.tm.ForeignTransaction;
+import org.wildfly.iiop.openjdk.tm.TxServerInterceptor;
 
 /**
  * @author Stuart Douglas

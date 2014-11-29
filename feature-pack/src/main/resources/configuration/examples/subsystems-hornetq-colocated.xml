@@ -10,7 +10,7 @@
       <subsystem>ejb3.xml</subsystem>
       <subsystem>io.xml</subsystem>
       <subsystem>infinispan.xml</subsystem>
-      <subsystem>jacorb.xml</subsystem>
+      <subsystem>iiop-openjdk.xml</subsystem>
       <subsystem>jaxrs.xml</subsystem>
       <subsystem>jca.xml</subsystem>
       <subsystem>jmx.xml</subsystem>
