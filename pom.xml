@@ -1055,6 +1055,12 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>sun.jdk</groupId>
+                        <artifactId>jconsole</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
