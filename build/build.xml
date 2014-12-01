@@ -415,6 +415,7 @@
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxb-provider"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxrs"/>
             <maven-resource group="org.jboss.resteasy3" artifact="resteasy-multipart-provider"/>
+            <maven-resource group="org.jboss.resteasy3" artifact="jaxrs-api"/>
         </module-def>
 
     	

@@ -6014,6 +6014,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.resteasy3</groupId>
+                <artifactId>jaxrs-api</artifactId>
+                <version>${version.org.jboss.resteasy3}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.spec.javax.xml.ws</groupId>
                 <artifactId>jboss-jaxws-api_2.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec}</version>

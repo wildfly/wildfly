@@ -1719,6 +1719,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.resteasy3</groupId>
+                    <artifactId>jaxrs-api</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.spec.javax.xml.bind</groupId>
                     <artifactId>jboss-jaxb-api_2.2_spec</artifactId>
                 </dependency>
