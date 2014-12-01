@@ -35,9 +35,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.SaslException;
 
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.gui.CommandLine;
 import org.jboss.as.cli.impl.ModelControllerClientFactory.ConnectionCloseHandler;
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -251,6 +253,10 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             }
 
             if (ioe != null) {
+                if (ioe.getCause() != null && ioe.getCause() instanceof SaslException) {
+                    throw new CommandLineException("Failed to establish connection", ioe);
+                }
+
                 if (System.currentTimeMillis() - start > timeoutMillis) {
                     throw new CommandLineException("Failed to establish connection in " + (System.currentTimeMillis() - start)
                             + "ms", ioe);
