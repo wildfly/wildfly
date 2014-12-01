@@ -53,5 +53,6 @@
         <module name="org.jboss.jts" />
         <module name="org.jboss.jts.integration"/>
         <module name="org.picketbox"/>
+        <module name="org.wildfly.iiop-openjdk"/>
     </dependencies>
 </module>

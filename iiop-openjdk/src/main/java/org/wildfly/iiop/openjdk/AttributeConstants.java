@@ -55,7 +55,7 @@ public class AttributeConstants {
     static final SensitiveTargetAccessConstraintDefinition IIOP_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
             IIOP_SECURITY);
 
-    private static enum TrueFalse {
+    public static enum TrueFalse {
         TRUE("true"), FALSE("false");
 
         private String value;

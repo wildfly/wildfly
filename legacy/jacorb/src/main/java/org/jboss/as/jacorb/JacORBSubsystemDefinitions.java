@@ -40,6 +40,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.iiop.openjdk.Constants;
 
 /**
  * <p>
@@ -51,9 +52,9 @@ import org.jboss.dmr.ModelType;
  */
 class JacORBSubsystemDefinitions {
 
-    private static final ModelNode DEFAULT_DISABLED_PROPERTY = new ModelNode().set("off");
+    static final ModelNode DEFAULT_DISABLED_PROPERTY = new ModelNode().set("off");
 
-    private static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
+    static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
 
     private static final ParameterValidator SSL_CONFIG_VALIDATOR =
             new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
@@ -272,7 +273,7 @@ class JacORBSubsystemDefinitions {
     // naming attribute definitions.
     public static final SimpleAttributeDefinition NAMING_ROOT_CONTEXT = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.NAMING_ROOT_CONTEXT, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode().set("JBoss/Naming/root"))
+            .setDefaultValue(new ModelNode().set(Constants.ROOT_CONTEXT_INIT_REF))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .build();
@@ -312,7 +313,7 @@ class JacORBSubsystemDefinitions {
 
     public static final SimpleAttributeDefinition INTEROP_CHUNK_RMI_VALUETYPES = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.INTEROP_CHUNK_RMI_VALUETYPES, ModelType.STRING, true)
-            .setDefaultValue(DEFAULT_ENABLED_PROPERTY)
+            .setDefaultValue(DEFAULT_DISABLED_PROPERTY)
             .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
@@ -404,99 +405,19 @@ class JacORBSubsystemDefinitions {
             .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
-    public static final PropertiesAttributeDefinition PROPERTIES =
-            new PropertiesAttributeDefinition.Builder(JacORBSubsystemConstants.PROPERTIES, true)
-            .setAllowExpression(true)
-            .build();
+    public static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(
+            JacORBSubsystemConstants.PROPERTIES, true).setAllowExpression(true).build();
 
-    static final ParameterValidator IOR_TRANSPORT_CONFIG_VALIDATOR = new EnumValidator<IORTransportConfigValues>(
-            IORTransportConfigValues.class, true, true);
-
-    static final ModelNode DEFAULT_VALUE = new ModelNode(IORTransportConfigValues.NONE.toString());
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_INTEGRITY =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_INTEGRITY, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(IOR_TRANSPORT_CONFIG_VALIDATOR)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_CONFIDENTIALITY =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_CONFIDENTIALITY, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(IOR_TRANSPORT_CONFIG_VALIDATOR)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_TRUST_IN_TARGET =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_TRUST_IN_TARGET, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(new EnumValidator<IORTransportConfigValues>(IORTransportConfigValues.class, true, true,
-                            IORTransportConfigValues.NONE, IORTransportConfigValues.SUPPORTED))
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_TRUST_IN_CLIENT =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_TRUST_IN_CLIENT, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(IOR_TRANSPORT_CONFIG_VALIDATOR)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_DETECT_REPLAY =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_DETECT_REPLAY, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(IOR_TRANSPORT_CONFIG_VALIDATOR)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_TRANSPORT_DETECT_MISORDERING =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_TRANSPORT_DETECT_MISORDERING, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(DEFAULT_VALUE)
-                    .setValidator(IOR_TRANSPORT_CONFIG_VALIDATOR)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_AS_CONTEXT_AUTH_METHOD =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_AS_CONTEXT_AUTH_METHOD, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(AuthMethodValues.USERNAME_PASSWORD.toString()))
-                    .setValidator(new EnumValidator<AuthMethodValues>(AuthMethodValues.class, true, true))
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_AS_CONTEXT_REALM =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_AS_CONTEXT_REALM, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_AS_CONTEXT_REQUIRED =
-            new SimpleAttributeDefinitionBuilder(JacORBSubsystemConstants.IOR_AS_CONTEXT_REQUIRED, ModelType.BOOLEAN, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
-                    .setAllowExpression(true)
-                    .build();
-
-    static final SimpleAttributeDefinition IOR_SAS_CALLER_PROPAGATION = new SimpleAttributeDefinitionBuilder(
-            JacORBSubsystemConstants.IOR_SAS_CONTEXT_CALLER_PROPAGATION, ModelType.STRING, true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(CallerPropagationValues.NONE.toString()))
-            .setValidator(new EnumValidator<CallerPropagationValues>(CallerPropagationValues.class, true, true))
-            .setAllowExpression(true).build();
-
+    // This is added to enable running many WildFly instances with JacORB legacy subsystem enabled on one host. To enable
+    // this it is necessary to modify legacy configuration.
+    static final SimpleAttributeDefinition PERSISTENT_SERVER_ID = new SimpleAttributeDefinitionBuilder(
+            Constants.ORB_PERSISTENT_SERVER_ID, ModelType.STRING, true).setDefaultValue(new ModelNode().set("1"))
+            .setAllowExpression(true).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     // list that contains the orb attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
             ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES, ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION,
-            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING);
+            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING,PERSISTENT_SERVER_ID);
 
     // list that contains the orb connection attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_CONN_ATTRIBUTES = Arrays.asList(ORB_CONN_RETRIES,
@@ -528,17 +449,15 @@ class JacORBSubsystemDefinitions {
             SECURITY_SECURITY_DOMAIN, SECURITY_ADD_COMPONENT_INTERCEPTOR, SECURITY_CLIENT_SUPPORTS,
             SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES);
 
-    static final List<SimpleAttributeDefinition> SSL_CONFIG_ATTRIBUTES = Arrays.asList(SECURITY_CLIENT_SUPPORTS,
-            SECURITY_CLIENT_REQUIRES, SECURITY_SERVER_SUPPORTS, SECURITY_SERVER_REQUIRES);
+    static final List<SimpleAttributeDefinition> ON_OFF_ATTRIBUTES_TO_REJECT = Arrays.asList(ORB_CACHE_POA_NAMES, ORB_CACHE_TYPECODES,
+            INTEROP_CHUNK_RMI_VALUETYPES, INTEROP_COMET, INTEROP_INDIRECT_ENCODING_DISABLE, INTEROP_IONA,
+            INTEROP_LAX_BOOLEAN_ENCODING, POA_MONITORING, ORB_PRINT_VERSION, POA_QUEUE_WAIT,
+            INTEROP_STRICT_CHECK_ON_TC_CREATION, ORB_USE_BOM, ORB_USE_IMR);
 
-    static final List<SimpleAttributeDefinition> IOR_TRANSPORT_ATTRIBUTES = Arrays.asList(IOR_TRANSPORT_INTEGRITY,
-            IOR_TRANSPORT_CONFIDENTIALITY, IOR_TRANSPORT_TRUST_IN_TARGET, IOR_TRANSPORT_TRUST_IN_CLIENT,
-            IOR_TRANSPORT_DETECT_REPLAY, IOR_TRANSPORT_DETECT_MISORDERING);
-
-    static final List<SimpleAttributeDefinition> IOR_AS_CONTEXT_ATTRIBUTES = Arrays.asList(IOR_AS_CONTEXT_AUTH_METHOD,
-            IOR_AS_CONTEXT_REALM, IOR_AS_CONTEXT_REQUIRED);
-
-    static final List<SimpleAttributeDefinition> IOR_SAS_CONTEXT_ATTRIBUTES = Arrays.asList(IOR_SAS_CALLER_PROPAGATION);
+    static final List<SimpleAttributeDefinition> ATTRIBUTES_TO_REJECT = Arrays.asList(ORB_CONN_CLIENT_TIMEOUT,
+            ORB_CONN_MAX_MANAGED_BUF_SIZE, ORB_CONN_MAX_SERVER_CONNECTIONS, POA_REQUEST_PROC_MAX_THREADS, ORB_NAME,
+            ORB_CONN_OUTBUF_CACHE_TIMEOUT, ORB_CONN_OUTBUF_SIZE, POA_REQUEST_PROC_POOL_SIZE, POA_QUEUE_MAX, POA_QUEUE_MIN,
+            ORB_CONN_RETRIES, ORB_CONN_RETRY_INTERVAL, ORB_CONN_SERVER_TIMEOUT);
 
     // list that contains all attribute definitions.
     static final List<AttributeDefinition> SUBSYSTEM_ATTRIBUTES;
@@ -556,9 +475,6 @@ class JacORBSubsystemDefinitions {
         SUBSYSTEM_ATTRIBUTES.addAll(NAMING_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(INTEROP_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.addAll(SECURITY_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(IOR_TRANSPORT_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(IOR_AS_CONTEXT_ATTRIBUTES);
-        SUBSYSTEM_ATTRIBUTES.addAll(IOR_SAS_CONTEXT_ATTRIBUTES);
         SUBSYSTEM_ATTRIBUTES.add(PROPERTIES);
 
         Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();

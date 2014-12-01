@@ -30,6 +30,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 import javax.naming.ConfigurationException;
 import javax.naming.InvalidNameException;
@@ -444,5 +445,14 @@ public interface JacORBLogger extends BasicLogger {
                 "'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.CSIv2Initializer' " +
                 "and 'org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.SASClientInitializer' properties to be \"\"")
     String cannotUseSecurityClient();
+
+    @Message(id = 132, value = "Properties %s cannot be emulated using OpenJDK ORB and are not supported")
+    OperationFailedException cannotEmulateProperties(List<String> property);
+
+    @LogMessage(level = WARN)
+    @Message(id = 133, value = "JacORB is not used as an ORB implementation anymore. JacORB subsystem would be "
+            + "emulated using the current OpenJDK ORB implementation. Ability to emulate legacy JacORB configurations "
+            + "using OpenJDK ORB will be removed in future.")
+    void jacorbEmulationWarning();
 
 }

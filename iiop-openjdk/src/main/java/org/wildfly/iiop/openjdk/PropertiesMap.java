@@ -44,7 +44,6 @@ public interface PropertiesMap {
             put(Constants.ORB_GIOP_VERSION, ORBConstants.GIOP_VERSION);
             put(Constants.TCP_HIGH_WATER_MARK, ORBConstants.HIGH_WATER_MARK_PROPERTY);
             put(Constants.TCP_NUMBER_TO_RECLAIM, ORBConstants.NUMBER_TO_RECLAIM_PROPERTY);
-
         }
     });
 }

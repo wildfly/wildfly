@@ -101,6 +101,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 this.readElement_1_4(readerNS, reader, nodes);
                 break;
             }
+            case JacORB_2_0: {
+                this.readElement_2_0(readerNS, reader, nodes);
+                break;
+            }
             default: {
                 throw unexpectedElement(reader);
             }
@@ -252,7 +256,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                     break;
                 }
                 case IOR_SETTINGS: {
-                    this.parseIORSettingsConfig(namespace,reader, node);
+                    IORSettingsParser.INSTANCE.readElement(reader, nodes);
                     break;
                 }
                 case PROPERTIES: {
@@ -264,6 +268,11 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 }
             }
         }
+    }
+
+    private void readElement_2_0(Namespace namespace, XMLExtendedStreamReader reader, List<ModelNode> nodes)
+            throws XMLStreamException {
+        readElement_1_4(namespace, reader, nodes);
     }
 
     /**
@@ -333,6 +342,9 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         if (namespace.ordinal() >= Namespace.JacORB_1_2.ordinal()) {
             expectedAttributes.add(Attribute.ORB_SOCKET_BINDING);
             expectedAttributes.add(Attribute.ORB_SSL_SOCKET_BINDING);
+        }
+        if (namespace.ordinal() >= Namespace.JacORB_2_0.ordinal()) {
+            expectedAttributes.add(Attribute.ORB_PERSISTENT_SERVER_ID);
         }
 
         this.parseAttributes(reader, node, expectedAttributes, null);
@@ -406,7 +418,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
             for (String initializer : initializers) {
                 SimpleAttributeDefinition definition = (SimpleAttributeDefinition)JacORBSubsystemDefinitions.valueOf(initializer);
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
-                    node.get(definition.getName()).set("on");
+                    node.get(definition.getName()).set(JacORBSubsystemConstants.ON);
                 else
                     throw JacORBLogger.ROOT_LOGGER.invalidInitializerConfig(initializer, reader.getLocation());
             }
@@ -432,7 +444,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         requireNoContent(reader);
 
         //if security="on" change it to security="identity"
-        if(node.has(SECURITY) && node.get(SECURITY).asString().equals(SecurityAllowedValues.ON.toString())) {
+        if(node.has(SECURITY) && node.get(SECURITY).asString().equals(JacORBSubsystemConstants.ON)) {
             node.get(SECURITY).set(SecurityAllowedValues.IDENTITY.toString());
         }
     }
@@ -591,112 +603,6 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.SECURITY_SUPPORT_SSL, Attribute.SECURITY_SECURITY_DOMAIN,
                 Attribute.SECURITY_ADD_COMPONENT_INTERCEPTOR, Attribute.SECURITY_CLIENT_SUPPORTS,
                 Attribute.SECURITY_CLIENT_REQUIRES, Attribute.SECURITY_SERVER_SUPPORTS, Attribute.SECURITY_SERVER_REQUIRES);
-        this.parseAttributes(reader, node, expectedAttributes, null);
-        // the security element doesn't have child elements.
-        requireNoContent(reader);
-    }
-
-    /**
-     * <p>
-     * Parses the {@code ior-settings} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
-     * </p>
-     *
-     * @param namespace the expected {@code Namespace} of the parsed elements.
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node   the {@code ModelNode} that will hold the parsed security configuration.
-     * @throws javax.xml.stream.XMLStreamException
-     *          if an error occurs while parsing the XML.
-     */
-    private void parseIORSettingsConfig(Namespace namespace,XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.noneOf(Attribute.class);
-        this.parseAttributes(reader, node, expectedAttributes, null);
-
-        // parse the ior-settings config elements.
-        EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            // check the element namespace.
-            if (namespace != Namespace.forUri(reader.getNamespaceURI()))
-                throw unexpectedElement(reader);
-
-            final Element element = Element.forName(reader.getLocalName());
-            // check for duplicate elements.
-            if (!encountered.add(element)) {
-                throw duplicateNamedElement(reader, element.getLocalName());
-            }
-            switch (element) {
-                case IOR_TRANSPORT_CONFIG: {
-                    this.parseIORTransportConfig(reader, node);
-                    break;
-                }
-                case IOR_AS_CONTEXT: {
-                    this.parseIORASContext(reader, node);
-                    break;
-                }
-                case IOR_SAS_CONTEXT: {
-                    this.parseIORSASContext(reader, node);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parses the {@code transport-config} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node   the {@code ModelNode} that will hold the parsed security configuration.
-     * @throws javax.xml.stream.XMLStreamException
-     *          if an error occurs while parsing the XML.
-     */
-    private void parseIORTransportConfig(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.IOR_TRANSPORT_CONFIDENTIALITY,
-                Attribute.IOR_TRANSPORT_DETECT_MISORDERING, Attribute.IOR_TRANSPORT_DETECT_REPLAY,
-                Attribute.IOR_TRANSPORT_INTEGRITY, Attribute.IOR_TRANSPORT_TRUST_IN_CLIENT,
-                Attribute.IOR_TRANSPORT_TRUST_IN_TARGET);
-        this.parseAttributes(reader, node, expectedAttributes, null);
-        // the security element doesn't have child elements.
-        requireNoContent(reader);
-    }
-
-    /**
-     * <p>
-     * Parses the {@code as-context} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node   the {@code ModelNode} that will hold the parsed security configuration.
-     * @throws javax.xml.stream.XMLStreamException
-     *          if an error occurs while parsing the XML.
-     */
-    private void parseIORASContext(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.IOR_AS_CONTEXT_AUTH_METHOD,
-                Attribute.IOR_AS_CONTEXT_REALM, Attribute.IOR_AS_CONTEXT_REQUIRED);
-        this.parseAttributes(reader, node, expectedAttributes, null);
-        // the security element doesn't have child elements.
-        requireNoContent(reader);
-    }
-
-    /**
-     * <p>
-     * Parses the {@code sas-context} section of the JacORB subsystem configuration according to the XSD version 1.1 or higher.
-     * </p>
-     *
-     * @param reader the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node   the {@code ModelNode} that will hold the parsed security configuration.
-     * @throws javax.xml.stream.XMLStreamException
-     *          if an error occurs while parsing the XML.
-     */
-    private void parseIORSASContext(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {
-        // parse all security attributes.
-        EnumSet<Attribute> expectedAttributes = EnumSet.of(Attribute.IOR_SAS_CONTEXT_CALLER_PROPAGATION);
         this.parseAttributes(reader, node, expectedAttributes, null);
         // the security element doesn't have child elements.
         requireNoContent(reader);
@@ -892,7 +798,9 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         }
 
         // write the ior-settings configuration section if there are any security properties to be written.
-        this.writeIORSettingsConfig(writer,node);
+        if (node.hasDefined(JacORBSubsystemConstants.IOR_SETTINGS))
+            IORSettingsParser.INSTANCE.writeContent(writer,
+                    node.get(JacORBSubsystemConstants.IOR_SETTINGS, JacORBSubsystemConstants.DEFAULT));
 
         writer.writeEndElement(); // End of subsystem element
     }
@@ -1024,42 +932,6 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
 
     /**
      * <p>
-     * Writes the {@code ior-settings} section of the JacORB subsystem configuration using the contents of the provided
-     * {@code ModelNode}.
-     * </p>
-     *
-     * @param writer the {@code XMLExtendedStreamWriter} used to write the configuration XML.
-     * @param node   the {@code ModelNode} that might contain ORB configuration properties.
-     * @throws XMLStreamException if an error occurs while writing the ORB configuration.
-     */
-    private void writeIORSettingsConfig(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-
-        boolean writeIORTransportConfig = this.isWritable(node, JacORBSubsystemDefinitions.IOR_TRANSPORT_ATTRIBUTES);
-        boolean writeIORSettingsASContext = this.isWritable(node, JacORBSubsystemDefinitions.IOR_AS_CONTEXT_ATTRIBUTES);
-        boolean writeIORSettingsSASContext = this.isWritable(node, JacORBSubsystemDefinitions.IOR_SAS_CONTEXT_ATTRIBUTES);
-
-        if (!writeIORTransportConfig && !writeIORSettingsASContext && !writeIORSettingsSASContext) {
-            return;
-        } else {
-            writer.writeStartElement(JacORBSubsystemConstants.IOR_SETTINGS);
-            if (writeIORTransportConfig) {
-                writer.writeEmptyElement(JacORBSubsystemConstants.IOR_TRANSPORT_CONFIG);
-                this.writeAttributes(writer, node, JacORBSubsystemDefinitions.IOR_TRANSPORT_ATTRIBUTES);
-            }
-            if (writeIORSettingsASContext) {
-                writer.writeEmptyElement(JacORBSubsystemConstants.IOR_AS_CONTEXT);
-                this.writeAttributes(writer, node, JacORBSubsystemDefinitions.IOR_AS_CONTEXT_ATTRIBUTES);
-            }
-            if (writeIORSettingsSASContext) {
-                writer.writeEmptyElement(JacORBSubsystemConstants.IOR_SAS_CONTEXT);
-                this.writeAttributes(writer, node, JacORBSubsystemDefinitions.IOR_SAS_CONTEXT_ATTRIBUTES);
-            }
-            writer.writeEndElement();
-        }
-    }
-
-    /**
-     * <p>
      * Writes a {@code property} element for each generic property contained in the specified {@code ModelNode}.
      * </p>
      *
@@ -1131,9 +1003,10 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         JacORB_1_1("urn:jboss:domain:jacorb:1.1"),
         JacORB_1_2("urn:jboss:domain:jacorb:1.2"),
         JacORB_1_3("urn:jboss:domain:jacorb:1.3"),
-        JacORB_1_4("urn:jboss:domain:jacorb:1.4");
+        JacORB_1_4("urn:jboss:domain:jacorb:1.4"),
+        JacORB_2_0("urn:jboss:domain:jacorb:2.0");
 
-        static final Namespace CURRENT = JacORB_1_4;
+        static final Namespace CURRENT = JacORB_2_0;
 
         private final String namespaceURI;
 
@@ -1298,6 +1171,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         ORB_GIOP_MINOR_VERSION(JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION),
         ORB_SOCKET_BINDING(JacORBSubsystemConstants.ORB_SOCKET_BINDING),
         ORB_SSL_SOCKET_BINDING(JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING),
+        ORB_PERSISTENT_SERVER_ID(JacORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID),
 
         // attributes of the connection element.
         ORB_CONN_RETRIES(JacORBSubsystemConstants.ORB_CONN_RETRIES),
