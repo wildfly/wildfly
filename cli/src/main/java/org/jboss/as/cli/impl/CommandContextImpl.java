@@ -63,6 +63,7 @@ import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
 
+import org.jboss.aesh.console.settings.FileAccessPermission;
 import org.jboss.aesh.console.settings.Settings;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliEvent;
@@ -365,6 +366,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     protected void initBasicConsole(InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
         copyConfigSettingsToConsole(consoleInput, consoleOutput);
+        setConfigDefaultsToConsole();
         this.console = Console.Factory.getConsole(this);
     }
 
@@ -378,6 +380,16 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
         Settings.getInstance().setHistorySize(config.getHistoryMaxSize());
         Settings.getInstance().setEnablePipelineAndRedirectionParser(false);
+
+    }
+
+    private void setConfigDefaultsToConsole(){
+        // Modify Default History File Permissions
+        FileAccessPermission permissions = new FileAccessPermission();
+        permissions.setReadableOwnerOnly(true);
+        permissions.setWritableOwnerOnly(true);
+        Settings.getInstance().setHistoryFilePermission(permissions);
+
     }
 
     private void initCommands() {
