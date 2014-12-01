@@ -167,14 +167,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Arquillian bill of materials, used to configure Arquillian versions -->
-            <dependency>
-                <groupId>com.sun</groupId>
-                <artifactId>tools</artifactId>
-                <version>1.7</version>
-                <scope>system</scope>
-                <systemPath>${java.home}/../lib/tools.jar</systemPath> <!-- since jdk7 also on MAC this is proper path -->
-            </dependency>
             <dependency>
                 <groupId>org.syslog4j</groupId>
                 <artifactId>syslog4j</artifactId>
@@ -217,10 +209,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
         </dependency>
     </dependencies>
 
@@ -427,6 +415,22 @@
 
 
     <profiles>
+
+        <profile>
+            <id>tools-jar</id>
+            <activation>
+                <jdk>[1.7,1.8)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.7</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
 
         <!--
            Module profiles

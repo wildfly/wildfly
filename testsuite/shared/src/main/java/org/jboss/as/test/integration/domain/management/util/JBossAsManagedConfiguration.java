@@ -76,7 +76,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String modulePath = System.getProperty("module.path");
 
-    private String javaVmArguments = System.getProperty("server.jvm.args", "-Xmx512m -XX:MaxPermSize=128m");
+    private String javaVmArguments = System.getProperty("server.jvm.args", "-Xmx512m");
 
     private int startupTimeoutInSeconds = TimeoutUtil.adjust(120);
 
