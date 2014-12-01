@@ -181,7 +181,7 @@ if $solaris; then
 fi
 
 # No readlink -m on BSD and possibly other distros
-if [ $darwin ] || [ $other ]; then
+if $darwin || $other ; then
     # consolidate the host-controller and command line opts
     HOST_CONTROLLER_OPTS="$HOST_CONTROLLER_JAVA_OPTS $SERVER_OPTS"
     # process the host-controller options

@@ -169,7 +169,7 @@ if $solaris; then
 fi
 
 # No readlink -m on BSD and possibly other distros
-if [ $darwin ] || [ $other ]; then
+if $darwin || $other ; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options
