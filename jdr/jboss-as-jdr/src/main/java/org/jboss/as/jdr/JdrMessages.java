@@ -64,12 +64,12 @@ interface JdrMessages {
     @Message(id = Message.NONE, value = "port that the management api is bound to. (default: 9990)")
     String jdrPortMessage();
 
-    @Message(id = 13352, value = "Zipfile could not be created.")
+    @Message(id = 13152, value = "Zipfile could not be created.")
     OperationFailedException couldNotCreateZipfile();
 
-    @Message(id = 13353, value = "Could not configure JDR. At least one configuration step failed.")
+    @Message(id = 13153, value = "Could not configure JDR. At least one configuration step failed.")
     OperationFailedException couldNotConfigureJDR();
 
-    @Message(id = 13354, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
+    @Message(id = 13154, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
     OperationFailedException noCommandsToRun();
 }
