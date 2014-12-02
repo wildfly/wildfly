@@ -126,13 +126,27 @@ public class DomainLifecycleUtil {
 
             String jbossHomeDir = configuration.getJbossHome();
 
+            boolean useSecMgr = false;
+
             final List<String> additionalJavaOpts = new ArrayList<String>();
             final String jbossOptions = System.getProperty("jboss.options");
             if (jbossOptions != null) {
-                Collections.addAll(additionalJavaOpts, jbossOptions.split("\\s+"));
+                for (String opt : jbossOptions.split("\\s+")) {
+                    if (opt.startsWith("-Djava.security.manager") || "-secmgr".equals(opt)) {
+                        useSecMgr = true;
+                    } else {
+                        additionalJavaOpts.add(opt);
+                    }
+                }
             }
             if (configuration.getJavaVmArguments() != null) {
-                Collections.addAll(additionalJavaOpts, configuration.getJavaVmArguments().split("\\s+"));
+                for (String opt : configuration.getJavaVmArguments().split("\\s+")) {
+                    if (opt.startsWith("-Djava.security.manager")) {
+                        useSecMgr = true;
+                    } else {
+                        additionalJavaOpts.add(opt);
+                    }
+                }
             }
             additionalJavaOpts.add("-Djboss.home.dir=" + jbossHomeDir);
 
@@ -210,6 +224,9 @@ public class DomainLifecycleUtil {
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
+            if (useSecMgr) {
+                cmd.add("-secmgr");
+            }
             cmd.add("-mp");
             cmd.add(modulePath);
             // cmd.add("-jaxpmodule");
