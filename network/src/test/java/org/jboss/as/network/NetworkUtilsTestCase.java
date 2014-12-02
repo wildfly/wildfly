@@ -63,6 +63,24 @@ public class NetworkUtilsTestCase {
     }
 
     @Test
+    public void testFormatIPAddressForURI() throws Exception{
+        InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
+        Assert.assertEquals("127.0.0.1", NetworkUtils.formatIPAddressForURI(inetAddress));
+        
+        inetAddress = InetAddress.getByName("0:0:0:0:0:0:0:1");
+        Assert.assertEquals("[::1]", NetworkUtils.formatIPAddressForURI(inetAddress));
+        
+        inetAddress = InetAddress.getByName("fe80:0:0:0:f24d:a2ff:fe63:5766");
+        Assert.assertEquals("[fe80::f24d:a2ff:fe63:5766]", NetworkUtils.formatIPAddressForURI(inetAddress));
+        
+        inetAddress = InetAddress.getByName("1:0:0:1:0:0:0:1");
+        Assert.assertEquals("[1:0:0:1::1]", NetworkUtils.formatIPAddressForURI(inetAddress));
+        
+        inetAddress = InetAddress.getByName("1:0:0:1:1:0:0:1");
+        Assert.assertEquals("[1::1:1:0:0:1]", NetworkUtils.formatIPAddressForURI(inetAddress));
+    }
+
+    @Test
     public void testFormatSocketAddress() throws Exception {
         InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
         InetSocketAddress socketAddress = new InetSocketAddress(inetAddress,8000);

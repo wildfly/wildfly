@@ -104,16 +104,16 @@ public final class BootstrapListener {
             boolean hasHttp = mgmt.getHttpNetworkInterfaceBinding() != null && mgmt.getHttpPort() > 0;
             boolean hasHttps = mgmt.getHttpsNetworkInterfaceBinding() != null && mgmt.getHttpsPort() > 0;
             if (hasHttp && hasHttps) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsManagement(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), NetworkUtils.formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsManagement(NetworkUtils.formatIPAddressForURI(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), NetworkUtils.formatIPAddressForURI(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
                 if (mgmt.hasConsole()) {
-                    ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), NetworkUtils.formatAddress(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
+                    ServerLogger.AS_ROOT_LOGGER.logHttpAndHttpsConsole(NetworkUtils.formatIPAddressForURI(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort(), NetworkUtils.formatIPAddressForURI(mgmt.getHttpsNetworkInterfaceBinding().getAddress()), mgmt.getHttpsPort());
                 } else {
                     ServerLogger.AS_ROOT_LOGGER.logNoConsole();
                 }
             } else if (hasHttp) {
-                ServerLogger.AS_ROOT_LOGGER.logHttpManagement(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
+                ServerLogger.AS_ROOT_LOGGER.logHttpManagement(NetworkUtils.formatIPAddressForURI(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
                 if (mgmt.hasConsole()) {
-                    ServerLogger.AS_ROOT_LOGGER.logHttpConsole(NetworkUtils.formatAddress(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
+                    ServerLogger.AS_ROOT_LOGGER.logHttpConsole(NetworkUtils.formatIPAddressForURI(mgmt.getHttpNetworkInterfaceBinding().getAddress()), mgmt.getHttpPort());
                 } else {
                     ServerLogger.AS_ROOT_LOGGER.logNoConsole();
                 }
