@@ -22,6 +22,9 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import java.io.File;
+import java.io.FilePermission;
+import java.io.IOException;
 import java.security.Permission;
 import java.security.Permissions;
 import java.util.Enumeration;
@@ -34,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
 
@@ -66,7 +70,8 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final ModuleSpecification attachment = phaseContext.getDeploymentUnit().getAttachment(Attachments.MODULE_SPECIFICATION);
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ModuleSpecification attachment = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (attachment == null) {
             return;
         }
@@ -75,6 +80,19 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
         while (e.hasMoreElements()) {
             permissions.add(new ImmediatePermissionFactory(e.nextElement()));
         }
+
+        //make sure they can read the contents of the deployment
+        ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        try {
+            File file = root.getRoot().getPhysicalFile();
+            if(file != null && file.isDirectory()) {
+                FilePermission permission = new FilePermission(file.getAbsolutePath() + "/-", "read");
+                permissions.add(new ImmediatePermissionFactory(permission));
+            }
+        } catch (IOException ex) {
+            throw new DeploymentUnitProcessingException(ex);
+        }
+
     }
 
     public void undeploy(final DeploymentUnit context) {
