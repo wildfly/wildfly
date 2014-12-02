@@ -114,6 +114,14 @@ public interface AppClientMessages {
     String argVersion();
 
     /**
+     * Instructions for {@link org.jboss.as.process.CommandLineConstants#VERSION} command line argument.
+     *
+     * @return the instructions.
+     */
+    @Message(id = Message.NONE, value = "Runs the container with the security manager enabled.")
+    String argSecMgr();
+
+    /**
      * A message indicating that you must specify an application client to execute.
      *
      * @return the message.

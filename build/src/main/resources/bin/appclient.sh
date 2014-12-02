@@ -3,6 +3,28 @@
 DIRNAME=`dirname "$0"`
 PROGNAME=`basename "$0"`
 GREP="grep"
+SERVER_OPTS=""
+
+# Parsing incoming parameters
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+      -secmgr)
+          SECMGR="true"
+          ;;
+      -Djava.security.manager*)
+          echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+          SECMGR="true"
+          ;;
+      --)
+          shift
+          break;;
+      *)
+          SERVER_OPTS="$SERVER_OPTS '$1'"
+          ;;
+    esac
+    shift
+done
 
 # Use the maximum available, or set MAX_FD != -1 to use that
 MAX_FD="maximum"
@@ -104,6 +126,20 @@ if $cygwin; then
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
+# Process the JAVA_OPTS failing if the java.security.manager is set.
+SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
+if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
+    echo "WARNING: The use of -Djava.security.manager has been deprecated. Please use the -secmgr command line argument or SECMGR=true environment variable."
+    SECMGR="true"
+fi
+
+# Set up the module arguments
+MODULE_OPTS=""
+if [ "$SECMGR" = "true" ]; then
+    MODULE_OPTS="-secmgr";
+fi
+
+
 CLASSPATH="$CLASSPATH:\""$JBOSS_HOME"\"/jboss-modules.jar"
 
 # Execute the JVM in the foreground
@@ -112,11 +148,12 @@ eval \"$JAVA\" $JAVA_OPTS \
  \"-Dorg.jboss.boot.log.file="$JBOSS_HOME"/appclient/log/appclient.log\" \
  \"-Dlogging.configuration=file:"$JBOSS_HOME"/appclient/configuration/logging.properties\" \
  org.jboss.modules.Main \
+ $MODULE_OPTS \
  -mp \""${JBOSS_MODULEPATH}"\" \
  -jaxpmodule javax.xml.jaxp-provider \
  org.jboss.as.appclient \
  -Djboss.home.dir=\""$JBOSS_HOME"\" \
  -Djboss.server.base.dir=\""$JBOSS_HOME"/appclient\" \
- '"$@"'
+  "$SERVER_OPTS"
 JBOSS_STATUS=$?
 exit $JBOSS_STATUS
