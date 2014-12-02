@@ -71,7 +71,7 @@
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.security.manager" services="import"/>
         <module name="org.jboss.as.version"/>
         <module name="org.picketbox"/>
         <module name="org.jboss.metadata.common"/>
