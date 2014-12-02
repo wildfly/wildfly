@@ -89,7 +89,7 @@ public class RaAdd extends AbstractAddStepHandler {
                         //newly added configuration
                         ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName, name, svh);
                         if (restartedServiceName == null) {
-                            RaOperationUtil.activate(context, name, svh);
+                            RaOperationUtil.activate(context, name, archiveOrModuleName,  svh);
                         }
                         context.addStep(svh, OperationContext.Stage.VERIFY);
                         context.completeStep(new OperationContext.RollbackHandler() {
