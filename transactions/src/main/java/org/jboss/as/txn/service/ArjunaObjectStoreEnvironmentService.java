@@ -76,7 +76,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
         String objectStoreDir = pathManagerInjector.getValue().resolveRelativePathEntry(path, pathRef);
 
          final ObjectStoreEnvironmentBean defaultActionStoreObjectStoreEnvironmentBean =
-           BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "default");
+           BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, null);
 
 
         if(useHornetqJournalStore) {
