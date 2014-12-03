@@ -69,17 +69,6 @@
 
     <build>
         <plugins>
-            <!--
-            Don't deploy this to the maven repo. Shaded jars cause nothing but trouble for maven
-            users, so we don't want to make it easy for them to shoot themselves in the foot.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -89,6 +78,9 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
