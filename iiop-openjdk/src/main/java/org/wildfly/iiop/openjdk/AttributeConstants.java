@@ -37,19 +37,36 @@ public class AttributeConstants {
     private AttributeConstants() {
     }
 
-    static final ModelNode DEFAULT_DISABLED_PROPERTY = new ModelNode().set("off");
+    static final ModelNode FALSE_PROPERTY = new ModelNode().set("false");
 
-    static final ModelNode DEFAULT_ENABLED_PROPERTY = new ModelNode().set("on");
+    static final ModelNode TRUE_PROPERTY = new ModelNode().set("true");
+
+    static final ModelNode NONE_PROPERTY = new ModelNode().set("none");
 
     static final ParameterValidator SSL_CONFIG_VALIDATOR =
             new EnumValidator<SSLConfigValue>(SSLConfigValue.class, true, false);
 
-    static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<TransactionsAllowedValues>(
-            TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
+    static final ParameterValidator TRUE_FALSE_VALIDATOR = new EnumValidator<TrueFalse>(
+            TrueFalse.class, true, false, TrueFalse.TRUE, TrueFalse.FALSE);
 
     static final SensitivityClassification IIOP_SECURITY =
             new SensitivityClassification(IIOPExtension.SUBSYSTEM_NAME, "iiop-security", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition IIOP_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
             IIOP_SECURITY);
+
+    private static enum TrueFalse {
+        TRUE("true"), FALSE("false");
+
+        private String value;
+
+        private TrueFalse(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return this.value;
+        }
+    }
 }

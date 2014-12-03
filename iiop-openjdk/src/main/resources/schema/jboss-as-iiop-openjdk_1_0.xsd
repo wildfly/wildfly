@@ -99,23 +99,23 @@
                 The orbInitializersConfigType specifies the attributes used to configure the ORB initializers.
 
                 * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
-                    client   - The client interceptor will be installed. Remote calls from this server will propagate
-                               by sending the current username and password
                     identity - The server will just send the current username. The recieving server must trust this
                                server.
-                    off      - Security interceptors are not installed
+                    client   - The client interceptor will be installed. Remote calls from this server will propagate
+                               by sending the current username and password
+                    none      - Security interceptors are not installed
                 * transactions: indicates which transaction initializers should be installed. There are three possibilities:
-                    on   - This requires JTS to be enabled in the transactions subsystem config, and will enable full transaction
+                    full   - This requires JTS to be enabled in the transactions subsystem config, and will enable full transaction
                            interaoprability with other JBoss AS instances.
                     spec - This does not require JTS to be enabled, but will install the minimum set of transaction interceptors
                            required for EJB spec compliance. These interceptors detect an incoming transaction and throw an
                            exception if the invocation should be run in the incoming transaction context.
-                    off  - No transaction initalizers will be installed.
+                    none  - No transaction initalizers will be installed.
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="security" type="securityEnabledType" use="optional" default="off"/>
-        <xs:attribute name="transactions" type="transactionEnabledType" use="optional" default="off"/>
+        <xs:attribute name="security" type="securityEnabledType" use="optional" default="none"/>
+        <xs:attribute name="transactions" type="transactionEnabledType" use="optional" default="none"/>
     </xs:complexType>
 
     <xs:complexType name="namingConfigType">
@@ -126,12 +126,12 @@
 
                 * root-context: the naming service root context.
                 * export-corbaloc: indicates whether the root context should be exported as corbaloc::address:port/NameService
-                                   (on) or not (off).
+                                   (true) or not (false).
                         ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="root-context" type="xs:string" use="optional" default="NameService"/>
-        <xs:attribute name="export-corbaloc" type="onOffType" use="optional" default="on"/>
+        <xs:attribute name="export-corbaloc" type="trueFalseType" use="optional" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="securityConfigType">
@@ -156,9 +156,9 @@
                         ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="support-ssl" type="onOffType" use="optional" default="off"/>
+        <xs:attribute name="support-ssl" type="trueFalseType" use="optional" default="false"/>
         <xs:attribute name="security-domain" type="xs:string" use="optional"/>
-        <xs:attribute name="add-component-via-interceptor" type="onOffType" use="optional" default="on"/>
+        <xs:attribute name="add-component-via-interceptor" type="trueFalseType" use="optional" default="true"/>
         <xs:attribute name="client-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
         <xs:attribute name="client-requires" type="sslConfigType" use="optional" default="None"/>
         <xs:attribute name="server-supports" type="sslConfigType" use="optional" default="MutualAuth"/>
@@ -300,7 +300,7 @@
         <xs:attribute name="detect-misordering" type="xs:string" use="optional"/>
     </xs:complexType>
 
-    <xs:simpleType name="onOffType">
+    <xs:simpleType name="trueFalseType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
@@ -309,8 +309,8 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:token">
-            <xs:enumeration value="on"/>
-            <xs:enumeration value="off"/>
+            <xs:enumeration value="true"/>
+            <xs:enumeration value="false"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -321,8 +321,8 @@
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:token">
-            <xs:enumeration value="on"/>
-            <xs:enumeration value="off"/>
+            <xs:enumeration value="full"/>
+            <xs:enumeration value="none"/>
             <xs:enumeration value="spec"/>
         </xs:restriction>
     </xs:simpleType>
@@ -336,7 +336,7 @@
         <xs:restriction base="xs:token">
             <xs:enumeration value="identity"/>
             <xs:enumeration value="client"/>
-            <xs:enumeration value="off"/>
+            <xs:enumeration value="none"/>
         </xs:restriction>
     </xs:simpleType>
 

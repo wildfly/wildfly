@@ -302,15 +302,14 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         String installSecurity = (String) props.remove(Constants.ORB_INIT_SECURITY);
         if (installSecurity.equalsIgnoreCase(Constants.CLIENT)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_CLIENT.getInitializerClasses()));
-        } else if (installSecurity.equalsIgnoreCase(Constants.IDENTITY)
-                || installSecurity.equalsIgnoreCase("on")) {
+        } else if (installSecurity.equalsIgnoreCase(Constants.IDENTITY)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SECURITY_IDENTITY.getInitializerClasses()));
         }
 
         String installTransaction = (String) props.remove(Constants.ORB_INIT_TRANSACTIONS);
-        if (installTransaction.equalsIgnoreCase("on")) {
+        if (installTransaction.equalsIgnoreCase(Constants.FULL)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.TRANSACTIONS.getInitializerClasses()));
-        } else if (installTransaction.equalsIgnoreCase("spec")) {
+        } else if (installTransaction.equalsIgnoreCase(Constants.SPEC)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SPEC_TRANSACTIONS.getInitializerClasses()));
         }
 
@@ -330,7 +329,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
      *         security domain has been specified).
      */
     private void setupSSLFactories(final Properties props) throws OperationFailedException {
-        boolean supportSSL = "on".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
+        boolean supportSSL = "true".equalsIgnoreCase(props.getProperty(Constants.SECURITY_SUPPORT_SSL));
 
         if (supportSSL) {
             // if SSL is to be used, check if a security domain has been specified.

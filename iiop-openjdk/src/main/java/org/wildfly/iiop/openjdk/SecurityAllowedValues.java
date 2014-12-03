@@ -32,10 +32,8 @@ package org.wildfly.iiop.openjdk;
 enum SecurityAllowedValues {
 
     IDENTITY("identity"),
-    //legacy alias for 'identity'
-    ON("on"),
-    OFF("off"),
-    CLIENT("client");
+    CLIENT("client"),
+    NONE("none");
 
     private String name;
 

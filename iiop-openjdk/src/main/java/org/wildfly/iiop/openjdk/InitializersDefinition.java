@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -42,14 +43,14 @@ public class InitializersDefinition extends PersistentResourceDefinition {
 
     protected static final AttributeDefinition SECURITY = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_INIT_SECURITY, ModelType.STRING, true)
-            .setDefaultValue(AttributeConstants.DEFAULT_DISABLED_PROPERTY)
+            .setDefaultValue(AttributeConstants.NONE_PROPERTY)
             .setValidator(new EnumValidator<SecurityAllowedValues>(SecurityAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true)
             .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF).build();
 
     protected static final AttributeDefinition TRANSACTIONS = new SimpleAttributeDefinitionBuilder(
             Constants.ORB_INIT_TRANSACTIONS, ModelType.STRING, true)
-            .setDefaultValue(AttributeConstants.DEFAULT_DISABLED_PROPERTY)
+            .setDefaultValue(AttributeConstants.NONE_PROPERTY)
             .setValidator(new EnumValidator<TransactionsAllowedValues>(TransactionsAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
@@ -60,7 +61,7 @@ public class InitializersDefinition extends PersistentResourceDefinition {
 
     private InitializersDefinition() {
         super(IIOPExtension.PATH_INITIALIZERS, IIOPExtension.getResourceDescriptionResolver(Constants.ORB, Constants.ORB_INIT),
-                new InitializersAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+                new AbstractAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

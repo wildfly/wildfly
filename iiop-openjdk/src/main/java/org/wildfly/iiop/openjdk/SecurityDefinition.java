@@ -44,8 +44,8 @@ public class SecurityDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition SUPPORT_SSL = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_SUPPORT_SSL, ModelType.STRING, true)
-            .setDefaultValue(AttributeConstants.DEFAULT_DISABLED_PROPERTY)
-            .setValidator(AttributeConstants.ON_OFF_VALIDATOR)
+            .setDefaultValue(AttributeConstants.FALSE_PROPERTY)
+            .setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)
@@ -60,8 +60,8 @@ public class SecurityDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
             Constants.SECURITY_ADD_COMP_VIA_INTERCEPTOR, ModelType.STRING, true)
-            .setDefaultValue(AttributeConstants.DEFAULT_ENABLED_PROPERTY)
-            .setValidator(AttributeConstants.ON_OFF_VALIDATOR)
+            .setDefaultValue(AttributeConstants.TRUE_PROPERTY)
+            .setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
             .addAccessConstraint(AttributeConstants.IIOP_SECURITY_DEF)

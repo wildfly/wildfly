@@ -23,7 +23,7 @@
             <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
             <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>
             <xsl:element name="initializers" namespace="{namespace-uri()}">
-                <xsl:attribute name="transactions">on</xsl:attribute>
+                <xsl:attribute name="transactions">full</xsl:attribute>
                 <xsl:attribute name="security">client</xsl:attribute>
             </xsl:element>
         </xsl:copy>

@@ -59,8 +59,11 @@ public final class Constants {
     public static final String NAMING = "naming";
     public static final String NAMING_EXPORT_CORBALOC = "export-corbaloc";
     public static final String NAMING_ROOT_CONTEXT = "root-context";
+    public static final String NONE = "none";
     public static final String IDENTITY = "identity";
     public static final String SECURITY = "security";
+    public static final String SPEC = "spec";
+    public static final String FULL = "full";
     public static final String SECURITY_SUPPORT_SSL = "support-ssl";
     public static final String SECURITY_SECURITY_DOMAIN = "security-domain";
     public static final String SECURITY_ADD_COMP_VIA_INTERCEPTOR = "add-component-via-interceptor";

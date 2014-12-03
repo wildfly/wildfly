@@ -48,7 +48,7 @@ public class NamingDefinition extends PersistentResourceDefinition {
 
     protected static final AttributeDefinition EXPORT_CORBALOC = new SimpleAttributeDefinitionBuilder(
             Constants.NAMING_EXPORT_CORBALOC, ModelType.STRING, true)
-            .setDefaultValue(AttributeConstants.DEFAULT_ENABLED_PROPERTY).setValidator(AttributeConstants.ON_OFF_VALIDATOR)
+            .setDefaultValue(AttributeConstants.TRUE_PROPERTY).setValidator(AttributeConstants.TRUE_FALSE_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setAllowExpression(true).build();
 
     private static final List<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(

@@ -4,8 +4,8 @@
         <!-- set security=client -->
         <initializers security="client" transactions="spec" />
     </orb>
-    <naming root-context="JBoss/Naming/root" export-corbaloc="on" />
-    <security support-ssl="off" add-component-via-interceptor="on" client-supports="MutualAuth" client-requires="None"
+    <naming root-context="JBoss/Naming/root" export-corbaloc="true" />
+    <security support-ssl="false" add-component-via-interceptor="true" client-supports="MutualAuth" client-requires="None"
         server-supports="MutualAuth" server-requires="None" />
     <ior-settings>
         <transport-config integrity="required" confidentiality="required" detect-replay="supported" detect-misordering="supported"

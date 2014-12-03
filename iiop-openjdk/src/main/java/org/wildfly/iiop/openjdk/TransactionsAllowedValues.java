@@ -31,7 +31,7 @@ package org.wildfly.iiop.openjdk;
  */
 enum TransactionsAllowedValues {
 
-    ON("on"), OFF("off"), SPEC("spec");
+    FULL("full"), NONE("none"), SPEC("spec");
 
     private String name;
 
