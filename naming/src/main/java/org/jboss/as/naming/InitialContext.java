@@ -120,6 +120,8 @@ public class InitialContext extends InitialLdapContext {
                 try {
                     final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
                     defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
+                } catch (NamingException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw MESSAGES.failedToInstantiate(e, "InitialContextFactory", factoryClassName, classLoader);
                 }
