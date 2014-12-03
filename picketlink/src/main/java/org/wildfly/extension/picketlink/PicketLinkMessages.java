@@ -62,7 +62,7 @@ public interface PicketLinkMessages {
     @Message(id = 12518, value = "[%s] can only have [%d] child of type [%s].")
     OperationFailedException invalidChildTypeOccurrence(String parentPathElement, int maxOccurs, String elementName);
 
-    @Message(id = 15519, value = "Invalid attribute [%s] definition for [%s]. Only one of the following attributes are allowed: [%s].")
+    @Message(id = 12519, value = "Invalid attribute [%s] definition for [%s]. Only one of the following attributes are allowed: [%s].")
     OperationFailedException invalidAlternativeAttributeOccurrence(String attributeName, String pathElement, String attributeNames);
 
     @Message(id = 12520, value = "Required attribute [%s] for [%s].")
