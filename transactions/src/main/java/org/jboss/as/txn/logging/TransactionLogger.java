@@ -187,4 +187,13 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 22, value = "EE Concurrent's TransactionSetupProviderService not installed.")
     IllegalStateException transactionSetupProviderServiceNotInstalled();
+
+    @Message(id = 23, value = "%s must be undefined if %s is 'true'.")
+    OperationFailedException mustBeUndefinedIfTrue(String attrOne, String attrTwo);
+
+    @Message(id = 24, value = "%s must be defined if %s is defined.")
+    OperationFailedException mustBedefinedIfDefined(String attrOne, String attrTwo);
+
+    @Message(id = 25, value = "Either %s must be 'true' or  %s must be defined.")
+    OperationFailedException eitherTrueOrDefined(String attrOne, String attrTwo);
 }
