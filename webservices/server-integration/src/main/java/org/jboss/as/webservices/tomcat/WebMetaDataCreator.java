@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.webservices.config.ServerHostInfo;
 import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
@@ -126,9 +127,13 @@ final class WebMetaDataCreator {
 
         // Set virtual host
         final String virtualHost = dep.getService().getVirtualHost();
-        if (virtualHost != null) {
-             WSLogger.ROOT_LOGGER.tracef("Setting virtual host: %s", virtualHost);
-            jbossWebMD.setVirtualHosts(Arrays.asList(virtualHost));
+        ServerHostInfo serverHostInfo = new ServerHostInfo(virtualHost);
+        if (serverHostInfo.getHost() != null) {
+            WSLogger.ROOT_LOGGER.tracef("Setting virtual host: %s", serverHostInfo.getHost());
+            jbossWebMD.setVirtualHosts(Arrays.asList(serverHostInfo.getHost()));
+            if (serverHostInfo.getServerInstanceName() != null) {
+                jbossWebMD.setServerInstanceName(serverHostInfo.getServerInstanceName());
+            }
         }
     }
 

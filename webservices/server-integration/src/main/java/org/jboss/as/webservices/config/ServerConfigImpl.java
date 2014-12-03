@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,6 +33,10 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
+import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.ListenerService;
+import org.wildfly.extension.undertow.Server;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * WFLY specific ServerConfig, extending AbstractServerConfig with management
@@ -41,11 +45,13 @@ import org.jboss.wsf.spi.metadata.config.ClientConfig;
  * @author <a href="mailto:asoldano@redhat.com">Alessio Soldano</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:tdiesler@redhat.com">Thomas Diesler</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class ServerConfigImpl extends AbstractServerConfig implements AbstractServerConfigMBean {
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<UndertowService> injectedUndertowService = new InjectedValue<UndertowService>();
     private final AtomicInteger wsDeploymentCount = new AtomicInteger(0);
 
     private final DMRSynchCheckHandler webServiceHostUCH = new DMRSynchCheckHandler();
@@ -164,9 +170,15 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     public InjectedValue<ServerEnvironment> getServerEnvironmentInjector() {
         return injectedServerEnvironment;
     }
+    public InjectedValue<UndertowService> getUndertowServiceInjector() {
+        return injectedUndertowService;
+    }
 
     private ServerEnvironment getServerEnvironment() {
         return injectedServerEnvironment.getValue();
+    }
+    private UndertowService getUndertowService() {
+        return injectedUndertowService.getValue();
     }
 
     public static ServerConfigImpl newInstance() {
@@ -175,6 +187,33 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
 
     public void setClientConfigWrapper(ClientConfig config, boolean reload) {
         clientConfigStore.setWrapperConfig(config, reload);
+    }
+    @Override
+    public Integer getVirtualHostPort(String hostname, boolean securePort) {
+        ServerHostInfo hostInfo = new ServerHostInfo(hostname);
+        Host undertowHost = getUndertowHost(hostInfo);
+        if (undertowHost != null && !undertowHost.getServer().getListeners().isEmpty()) {
+            if (!securePort) {
+                return undertowHost.getServer().getListeners().get(0).getBinding().getValue().getPort();
+            } else {
+                for(ListenerService<?> listener : undertowHost.getServer().getListeners()) {
+                    if (listener.isSecure()) {
+                        return listener.getBinding().getValue().getPort();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getHostAlias(String hostname) {
+        ServerHostInfo hostInfo = new ServerHostInfo(hostname);
+        Host undertowHost = getUndertowHost(hostInfo);
+        if (undertowHost!= null && !undertowHost.getAllAliases().isEmpty()) {
+            return undertowHost.getAllAliases().iterator().next();
+        }
+        return null;
     }
 
     private class DMRSynchCheckHandler implements UpdateCallbackHandler {
@@ -197,5 +236,19 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         public void reset() {
             dmrSynched = true;
         }
+    }
+
+    private Host getUndertowHost(final ServerHostInfo info) {
+        for (Server server : getUndertowService().getServers()) {
+            if (info.getServerInstanceName() != null && !server.getName().equals(info.getServerInstanceName())) {
+                continue;
+            }
+            for (Host undertowHost : server.getHosts()) {
+                if (undertowHost.getName().equals(info.getHost())) {
+                    return undertowHost;
+                }
+            }
+        }
+        return null;
     }
 }
