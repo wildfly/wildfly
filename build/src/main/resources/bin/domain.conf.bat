@@ -12,11 +12,6 @@ rem # variables that run.bat uses. It is recommended to use this file to
 rem # configure these variables, rather than modifying run.bat itself.
 rem #
 
-if not "x%JAVA_OPTS%" == "x" (
-  echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
-  goto JAVA_OPTS_SET
-)
-
 rem #
 rem # Specify the JBoss Profiler configuration file to load.
 rem #
@@ -39,8 +34,13 @@ rem set "JAVA=C:\opt\jdk1.6.0_23\bin\java"
 
 rem #
 rem # Specify options to pass to the Java VM. Note, there are some additional
-rem # options that are always passed by run.bat.
+rem # options that are always passed by domain.bat.
 rem #
+
+if not "x%JAVA_OPTS%" == "x" (
+  echo "JAVA_OPTS already set in environment; overriding default settings with values: %JAVA_OPTS%"
+  goto JAVA_OPTS_SET
+)
 
 rem # JVM memory allocation pool parameters - modify as appropriate.
 set "JAVA_OPTS=-Xms64M -Xmx512M -XX:MaxPermSize=256M"
@@ -58,11 +58,17 @@ set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=org.jboss.byteman"
 rem # Use JBoss Modules lockless mode
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
 
+:JAVA_OPTS_SET
+
 rem The ProcessController process uses its own set of java options
-set "PROCESS_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+if "x%PROCESS_CONTROLLER_JAVA_OPTS%" == "x" (
+  set "PROCESS_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+)
 
 rem The HostController process uses its own set of java options
-set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+if "x%HOST_CONTROLLER_JAVA_OPTS%" == "x" (
+  set "HOST_CONTROLLER_JAVA_OPTS=%JAVA_OPTS%"
+)
 
 rem Uncomment this to run with a security manager enabled
 rem set "SECMGR=true"
@@ -74,6 +80,4 @@ rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=tr
 rem # Sample JPDA settings for shared memory debugging
 rem set "PROCESS_CONTROLLER_JAVA_OPTS=%PROCESS_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
 rem set "HOST_CONTROLLER_JAVA_OPTS=%HOST_CONTROLLER_JAVA_OPTS% -agentlib:jdwp=transport=dt_shmem,address=jboss,server=y,suspend=n"
-
-:JAVA_OPTS_SET
 
