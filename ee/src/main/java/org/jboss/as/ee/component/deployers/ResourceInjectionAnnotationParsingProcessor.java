@@ -81,7 +81,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final Map<String, String> locations = new HashMap<String, String>();
         locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
-        locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context available

@@ -35,12 +35,14 @@ import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,16 +84,10 @@ public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
         adminSupport.createJmsQueue(QUEUE_NAME, "java:jboss/exported/" + Constants.QUEUE_JNDI_NAME);
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SUB_DEPLOYMENT_NAME);
         ejbJar.addPackage(BEAN_PACKAGE);
-        ejbJar.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                dependencies.append("org.hornetq.ra");
-                builder.addManifestHeader("Dependencies", dependencies.toString());
-                return builder.openStream();
-            }
-        });
+        ejbJar.setManifest(new StringAsset(
+                Descriptors.create(ManifestDescriptor.class)
+                        .attribute("Dependencies", "org.hornetq.ra")
+                        .exportAsString()));
         EnterpriseArchive earArchive = ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME);
         earArchive.addAsModule(ejbJar);
 

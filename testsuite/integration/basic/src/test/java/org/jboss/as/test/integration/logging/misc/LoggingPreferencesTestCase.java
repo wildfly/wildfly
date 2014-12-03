@@ -34,12 +34,14 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.logging.util.LoggingBean;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -75,18 +77,10 @@ public class LoggingPreferencesTestCase {
 		jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 		jar.addAsResource(LoggingBean.class.getPackage(),
 				"jboss-logging.properties", "META-INF/jboss-logging.properties");
-		jar.setManifest(new Asset() {
-			@Override
-			public InputStream openStream() {
-				ManifestBuilder builder = ManifestBuilder.newInstance();
-				StringBuffer dependencies = new StringBuffer();
-				builder.addManifestHeader("Dependencies",
-						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile",
-						"non-existing-profile");
-				return builder.openStream();
-			}
-		});
+		jar.setManifest(new StringAsset(
+				Descriptors.create(ManifestDescriptor.class)
+						.attribute("Logging-Profile", "non-existing-profile")
+						.exportAsString()));
 		return jar;
 	}
 

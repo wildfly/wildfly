@@ -42,6 +42,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -56,7 +59,6 @@ import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -163,18 +165,10 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 	public static WebArchive createDeployment() {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, "logging.war");
 		archive.addClasses(LoggingServlet.class);
-		archive.setManifest(new Asset() {
-			@Override
-			public InputStream openStream() {
-				ManifestBuilder builder = ManifestBuilder.newInstance();
-				StringBuffer dependencies = new StringBuffer();
-				builder.addManifestHeader("Dependencies",
-						dependencies.toString());
-				builder.addManifestHeader("Logging-Profile",
-						"non-existing-profile");
-				return builder.openStream();
-			}
-		});
+		archive.setManifest(new StringAsset(
+				Descriptors.create(ManifestDescriptor.class)
+						.attribute("Logging-Profile", "non-existing-profile")
+						.exportAsString()));
 		return archive;
 	}
 

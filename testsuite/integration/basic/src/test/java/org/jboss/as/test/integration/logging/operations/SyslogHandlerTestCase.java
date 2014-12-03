@@ -68,10 +68,12 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -239,16 +241,10 @@ public class SyslogHandlerTestCase extends AbstractLoggingTest {
     public static WebArchive deployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war");
         war.addClasses(LoggingServlet.class);
-        war.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuffer dependencies = new StringBuffer();
-                builder.addManifestHeader("Dependencies", dependencies.toString());
-                builder.addManifestHeader("Logging-Profile", "syslog-profile");
-                return builder.openStream();
-            }
-        });
+        war.setManifest(new StringAsset(
+                Descriptors.create(ManifestDescriptor.class)
+                        .attribute("Logging-Profile", "syslog-profile")
+                        .exportAsString()));
         return war;
     }
 

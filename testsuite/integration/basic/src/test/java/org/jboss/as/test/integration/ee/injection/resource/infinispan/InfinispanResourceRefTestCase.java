@@ -30,12 +30,13 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,13 +51,10 @@ public class InfinispanResourceRefTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "infinispan-resource-ref.war");
         war.addClasses(InfinispanBean.class, InfinispanResourceRefTestCase.class);
         war.addAsWebInfResource(getWebXml(), "web.xml");
-        war.add(new Asset() {
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.infinispan export");
-                return builder.openStream();
-            }
-        }, JarFile.MANIFEST_NAME);
+        war.setManifest(new StringAsset(
+                Descriptors.create(ManifestDescriptor.class)
+                        .attribute("Dependencies", "org.infinispan export")
+                        .exportAsString()));
         return war;
     }
 

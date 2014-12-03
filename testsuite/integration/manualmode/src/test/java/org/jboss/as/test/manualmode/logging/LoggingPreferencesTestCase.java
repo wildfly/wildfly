@@ -35,17 +35,17 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -96,18 +96,11 @@ public class LoggingPreferencesTestCase {
     public static WebArchive createDeployment() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war");
         archive.addClasses(LoggingServlet.class)
-                .addAsResource("logging/per-deploy-logging.properties", "jboss-logging.properties");
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                StringBuilder dependencies = new StringBuilder();
-                builder.addManifestHeader("Dependencies",
-                        dependencies.toString());
-                builder.addManifestHeader("Logging-Profile", PROFILE_NAME);
-                return builder.openStream();
-            }
-        });
+                .addAsResource("logging/per-deploy-logging.properties", "jboss-logging.properties")
+                .setManifest(new StringAsset(
+                        Descriptors.create(ManifestDescriptor.class)
+                                .attribute("Logging-Profile", PROFILE_NAME)
+                                .exportAsString()));
         return archive;
     }
 
