@@ -189,7 +189,7 @@ public interface TransactionLogger extends BasicLogger {
     IllegalStateException transactionSetupProviderServiceNotInstalled();
 
     @Message(id = 23, value = "%s must be undefined if %s is 'true'.")
-    OperationFailedException mustBedefinedIfTrue(String attrOne, String attrTwo);
+    OperationFailedException mustBeUndefinedIfTrue(String attrOne, String attrTwo);
 
     @Message(id = 24, value = "%s must be defined if %s is defined.")
     OperationFailedException mustBedefinedIfDefined(String attrOne, String attrTwo);
