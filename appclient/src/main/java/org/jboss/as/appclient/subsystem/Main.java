@@ -258,6 +258,8 @@ public final class Main {
                     WildFlySecurityManager.setPropertyPrivileged(name, value);
                 } else if (arg.startsWith(CommandLineConstants.APPCLIENT_CONFIG)) {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
+                } else if (CommandLineConstants.SECMGR.equals(arg)) {
+                    // ignore the argument as it's allowed, but passed to jboss-modules and not used here
                 } else {
                     if (arg.startsWith("-")) {
                         STDOUT.println(AppClientLogger.ROOT_LOGGER.unknownOption(arg));

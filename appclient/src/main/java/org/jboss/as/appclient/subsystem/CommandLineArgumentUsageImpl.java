@@ -51,6 +51,9 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
 
         addArguments(CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
         instructions.add(AppClientLogger.ROOT_LOGGER.argVersion());
+
+        addArguments(CommandLineConstants.SECMGR);
+        instructions.add(AppClientLogger.ROOT_LOGGER.argSecMgr());
     }
 
     public static void printUsage(final PrintStream out) {
