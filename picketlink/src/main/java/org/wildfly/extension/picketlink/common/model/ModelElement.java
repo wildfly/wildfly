@@ -69,6 +69,8 @@ public enum ModelElement {
     LDAP_STORE_BIND_DN("bind-dn"),
     LDAP_STORE_BIND_CREDENTIAL("bind-credential"),
     LDAP_STORE_BASE_DN_SUFFIX("base-dn-suffix"),
+    LDAP_STORE_ACTIVE_DIRECTORY("active-directory"),
+    LDAP_STORE_UNIQUE_ID_ATTRIBUTE_NAME("unique-id-attribute-name"),
     LDAP_STORE_MAPPING("mapping"),
     LDAP_STORE_MAPPING_BASE_DN(LDAP_STORE_BASE_DN_SUFFIX.getName()),
     LDAP_STORE_MAPPING_OBJECT_CLASSES("object-classes"),

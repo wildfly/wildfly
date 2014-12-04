@@ -40,7 +40,9 @@
   <partition-manager jndi-name="picketlink/LDAPBasedPartitionManager" name="ldap.based.partition.manager">
     <identity-configuration name="ldap.config">
       <ldap-store url="ldap://localhost:10389" bind-dn="uid=admin,ou=system" bind-credential="secret"
-                  base-dn-suffix="dc=jboss,dc=org">
+                  base-dn-suffix="dc=jboss,dc=org"
+                  active-directory="true"
+                  unique-id-attribute-name="someAttribute">
         <supported-types>
           <supported-type name="IdentityType"  code="IdentityType"/>
           <supported-type name="Relationship"  code="Relationship"/>

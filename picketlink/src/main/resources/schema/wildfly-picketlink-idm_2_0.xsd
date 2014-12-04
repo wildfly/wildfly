@@ -264,6 +264,16 @@
                         <xsd:documentation>The size of the thread pool if asynchronous writing is enabled.</xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="active-directory" type="xsd:boolean" use="optional" default="false">
+                    <xsd:annotation>
+                        <xsd:documentation>Indicates if the LDAP server is a MSAD.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="unique-id-attribute-name" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation>The name of a LDAP attribute that unique identifies entries.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
