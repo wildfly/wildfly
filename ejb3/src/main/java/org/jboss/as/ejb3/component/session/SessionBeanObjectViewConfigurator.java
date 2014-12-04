@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -52,6 +53,8 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
+
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * configurator that sets up interceptors for an EJB's object view
@@ -80,7 +83,11 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(componentDescription.getEjbLocalHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
+                        EjbHomeViewDescription ejbLocalHomeView = componentDescription.getEjbLocalHomeView();
+                        if (ejbLocalHomeView == null) {
+                            throw MESSAGES.beanLocalHomeInterfaceIsNull(componentDescription.getComponentName());
+                        }
+                        serviceBuilder.addDependency(ejbLocalHomeView.getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
             } else if (method.getName().equals("getEJBHome") && method.getParameterTypes().length == 0) {
@@ -91,7 +98,11 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(componentDescription.getEjbHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
+                        EjbHomeViewDescription ejbHomeView = componentDescription.getEjbHomeView();
+                        if (ejbHomeView == null) {
+                            throw MESSAGES.beanHomeInterfaceIsNull(componentDescription.getComponentName());
+                        }
+                        serviceBuilder.addDependency(ejbHomeView.getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
             } else if (method.getName().equals("getHandle") && method.getParameterTypes().length == 0) {
