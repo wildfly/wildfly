@@ -24,6 +24,11 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.messaging.CommonAttributes.HA_POLICY;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_MASTER;
+import static org.jboss.as.messaging.CommonAttributes.REPLICATION_SLAVE;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE_MASTER;
+import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE_SLAVE;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
@@ -46,6 +51,13 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.messaging.ha.LiveOnlyDefinition;
+import org.jboss.as.messaging.ha.ReplicationColocatedDefinition;
+import org.jboss.as.messaging.ha.ReplicationMasterDefinition;
+import org.jboss.as.messaging.ha.ReplicationSlaveDefinition;
+import org.jboss.as.messaging.ha.SharedStoreColocatedDefinition;
+import org.jboss.as.messaging.ha.SharedStoreMasterDefinition;
+import org.jboss.as.messaging.ha.SharedStoreSlaveDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
@@ -123,6 +135,7 @@ public class MessagingExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    public static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     public static final ModelVersion VERSION_2_1_0 = ModelVersion.create(2, 1, 0);
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
@@ -204,6 +217,17 @@ public class MessagingExtension implements Extension {
 
         // Cluster connections
         serverRegistration.registerSubModel(new ClusterConnectionDefinition(registerRuntimeOnly));
+
+        // HA Policy
+        // only 1 ha-policy child is allowed among all of the registered models
+        // @see org.jboss.as.messaging.ha.ManagementHelper.checkNoOtherSibling() usage
+        serverRegistration.registerSubModel(LiveOnlyDefinition.INSTANCE);
+        serverRegistration.registerSubModel(new ReplicationMasterDefinition(pathElement(HA_POLICY, REPLICATION_MASTER), false));
+        serverRegistration.registerSubModel(new ReplicationSlaveDefinition(pathElement(HA_POLICY, REPLICATION_SLAVE), false));
+        serverRegistration.registerSubModel(ReplicationColocatedDefinition.INSTANCE);
+        serverRegistration.registerSubModel(new SharedStoreMasterDefinition(pathElement(HA_POLICY, SHARED_STORE_MASTER), false));
+        serverRegistration.registerSubModel(new SharedStoreSlaveDefinition(pathElement(HA_POLICY, SHARED_STORE_SLAVE), false));
+        serverRegistration.registerSubModel(SharedStoreColocatedDefinition.INSTANCE);
 
         // Grouping Handler
         serverRegistration.registerSubModel(new GroupingHandlerDefinition(registerRuntimeOnly));

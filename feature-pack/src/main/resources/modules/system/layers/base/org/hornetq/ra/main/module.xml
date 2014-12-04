@@ -45,5 +45,6 @@
         <module name="io.netty"/>
         <module name="org.jgroups"/>
         <module name="javax.resource.api"/>
+        <module name="org.jboss.ironjacamar.api"/>
     </dependencies>
 </module>

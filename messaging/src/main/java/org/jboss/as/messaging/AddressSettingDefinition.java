@@ -26,11 +26,13 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.MINUTES;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.SlowConsumerPolicy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -139,6 +141,26 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition SLOW_CONSUMER_CHECK_PERIOD = create("slow-consumer-check-period", ModelType.LONG)
+            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_CHECK_PERIOD))
+            .setMeasurementUnit(MINUTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
+    public static final SimpleAttributeDefinition SLOW_CONSUMER_POLICY = create("slow-consumer-policy", ModelType.STRING)
+            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_POLICY.toString()))
+            .setValidator(new EnumValidator<SlowConsumerPolicy>(SlowConsumerPolicy.class, true, true))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
+    public static final SimpleAttributeDefinition SLOW_CONSUMER_THRESHOLD = create("slow-consumer-threshold", ModelType.LONG)
+            .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SLOW_CONSUMER_THRESHOLD))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = new AttributeDefinition[]{ DEAD_LETTER_ADDRESS,
             EXPIRY_ADDRESS, REDELIVERY_DELAY, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES,
             PAGE_SIZE_BYTES, PAGE_MAX_CACHE_SIZE, ADDRESS_FULL_MESSAGE_POLICY, MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
@@ -163,7 +185,10 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
         MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
         LAST_VALUE_QUEUE,
         REDISTRIBUTION_DELAY,
-        SEND_TO_DLA_ON_NO_ROUTE
+        SEND_TO_DLA_ON_NO_ROUTE,
+        SLOW_CONSUMER_CHECK_PERIOD,
+        SLOW_CONSUMER_POLICY,
+        SLOW_CONSUMER_THRESHOLD
     };
 
     public AddressSettingDefinition(final boolean registerRuntimeOnly) {

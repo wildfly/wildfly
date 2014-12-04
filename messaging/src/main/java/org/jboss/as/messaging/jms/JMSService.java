@@ -143,6 +143,10 @@ public class JMSService implements Service<JMSServerManager> {
                 }
 
                 public void activated() {
+                }
+
+                @Override
+                public void activationComplete() {
                     if (overrideInVMSecurity) {
                         hornetQServer.getValue().getRemotingService().allowInvmSecurityOverride(new HornetQPrincipal(HornetQDefaultCredentials.getUsername(), HornetQDefaultCredentials.getPassword()));
                     }

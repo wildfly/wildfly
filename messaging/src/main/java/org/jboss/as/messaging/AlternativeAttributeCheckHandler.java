@@ -26,6 +26,7 @@ import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +42,13 @@ import org.jboss.dmr.ModelNode;
 public final class AlternativeAttributeCheckHandler implements OperationStepHandler {
 
     private final Map<String, AttributeDefinition> attributeDefinitions;
+
+    public AlternativeAttributeCheckHandler(final Collection<AttributeDefinition> definitions) {
+        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition def : definitions) {
+            attributeDefinitions.put(def.getName(), def);
+        }
+    }
 
     public AlternativeAttributeCheckHandler(final AttributeDefinition... definitions) {
         attributeDefinitions = new HashMap<String, AttributeDefinition>();

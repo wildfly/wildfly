@@ -33,6 +33,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_3_0_0;
 import static org.jboss.as.messaging.jms.Validators.noDuplicateElements;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -54,6 +55,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.messaging.ha.HAAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -77,11 +79,13 @@ public interface CommonAttributes {
 
     SensitiveTargetAccessConstraintDefinition MESSAGING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_SECURITY);
 
+    @Deprecated
     SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultAllowAutoFailback()))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = create( "async-connection-execution-enabled", BOOLEAN)
@@ -91,11 +95,13 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition BACKUP = create("backup", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultBackup()))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
@@ -125,11 +131,13 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultCheckForLiveServer()))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition CLUSTERED = create("clustered", BOOLEAN)
@@ -233,12 +241,14 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultFailbackDelay()))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
@@ -246,11 +256,13 @@ public interface CommonAttributes {
             .setDeprecated(VERSION_1_2_0)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = create("failover-on-shutdown", BOOLEAN)
             // TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
@@ -344,6 +356,14 @@ public interface CommonAttributes {
     SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultJournalFileSize()))
             .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    SimpleAttributeDefinition JOURNAL_LOCK_ACQUISITION_TIMEOUT = create("journal-lock-acquisition-timeout", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultJournalLockAcquisitionTimeout()))
+            .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -462,11 +482,11 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    AttributeDefinition MAX_SAVED_REPLICATED_JOURNAL_SIZE = create("max-saved-replicated-journal-size", INT)
-            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultMaxSavedReplicatedJournalsSize()))
+    @Deprecated
+    SimpleAttributeDefinition MAX_SAVED_REPLICATED_JOURNAL_SIZE = create(HAAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE)
             .setAllowNull(true)
-            .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = create("memory-measure-interval", LONG)
@@ -544,10 +564,12 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     AttributeDefinition BACKUP_GROUP_NAME = create("backup-group-name", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     SimpleAttributeDefinition OVERRIDE_IN_VM_SECURITY = create("override-in-vm-security", BOOLEAN)
@@ -628,10 +650,12 @@ public interface CommonAttributes {
             .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition REPLICATION_CLUSTERNAME = create("replication-clustername", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .setDeprecated(VERSION_3_0_0)
             .build();
 
     AttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
@@ -708,10 +732,12 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition SHARED_STORE = create("shared-store", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.isDefaultSharedStore()))
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setDeprecated(VERSION_3_0_0)
             .setRestartAllServices()
             .build();
 
@@ -786,6 +812,10 @@ public interface CommonAttributes {
     String CLASS_NAME = "class-name";
     String CLUSTER_CONNECTION = "cluster-connection";
     String CLUSTER_CONNECTIONS = "cluster-connections";
+    String CLUSTER_NAME = "cluster-name";
+    String CHECK_FOR_LIVE_SERVER2 = "check-for-live-server";
+    String COLOCATED = "colocated";
+    String CONFIGURATION = "configuration";
     String CONNECTION_FACTORY = "connection-factory";
     String CONNECTOR = "connector";
     String CONNECTORS = "connectors";
@@ -806,9 +836,13 @@ public interface CommonAttributes {
     String DIVERTS = "diverts";
     String DURABLE_MESSAGE_COUNT = "durable-message-count";
     String DURABLE_SUBSCRIPTION_COUNT = "durable-subscription-count";
+    String ENABLED = "enabled";
     String ENTRY = "entry";
+    String EXCLUDES = "excludes";
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
+    String GROUP_NAME = "group-name";
     String GROUPING_HANDLER = "grouping-handler";
+    String HA_POLICY = "ha-policy";
     String HOST = "host";
     String HTTP = "http";
     String HTTP_ACCEPTOR = "http-acceptor";
@@ -829,22 +863,23 @@ public interface CommonAttributes {
     String INBOUND_CONFIG = "inbound-config";
     String LARGE_MESSAGES_DIRECTORY = "large-messages-directory";
     String LAST_VALUE_QUEUE = "last-value=queue";
+    String LIVE_ONLY = "live-only";
     String LOCAL = "local";
     String LOCAL_TX = "LocalTransaction";
     String MANAGE_XML_NAME = "manage";
+    String MASTER = "master";
     String MATCH = "match";
     String MESSAGE_ID = "message-id";
     String MODE = "mode";
     String NAME = "name";
     String NETTY_ACCEPTOR = "netty-acceptor";
     String NETTY_CONNECTOR = "netty-connector";
-    String NONE = "none";
     String NON_DURABLE_MESSAGE_COUNT = "non-durable-message-count";
     String NON_DURABLE_SUBSCRIPTION_COUNT = "non-durable-subscription-count";
+    String NONE = "none";
     String NO_TX = "NoTransaction";
     String NUMBER_OF_BYTES_PER_PAGE = "number-of-bytes-per-page";
     String NUMBER_OF_PAGES = "number-of-pages";
-
     String PAGING_DIRECTORY = "paging-directory";
     String PARAM = "param";
     String PERMISSION_ELEMENT_NAME = "permission";
@@ -858,15 +893,26 @@ public interface CommonAttributes {
     String REMOTING_INCOMING_INTERCEPTOR = "remoting-incoming-interceptor";
     String REMOTING_OUTGOING_INTERCEPTOR = "remoting-outgoing-interceptor";
     String RESOURCE_ADAPTER = "resource-adapter";
+    String REPLICATION = "replication";
+    String REPLICATION_COLOCATED = "replication-colocated";
+    String REPLICATION_MASTER = "replication-master";
+    String REPLICATION_SLAVE = "replication-slave";
     String RESOLVE_ADDRESS_SETTING = "resolve-address-setting";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
     String RUNTIME_QUEUE = "runtime-queue";
+    String SCALE_DOWN = "scale-down";
+    String SCALE_DOWN_CONNECTORS = "scale-down-connectors";
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";
     String SERVLET_PATH = "servlet-path";
+    String SHARED_STORE_COLOCATED = "shared-store-colocated";
+    String SHARED_STORE_MASTER = "shared-store-master";
+    String SHARED_STORE_SLAVE = "shared-store-slave";
+    String SLAVE = "slave";
     String HORNETQ_SERVER = "hornetq-server";
+    String REMOTE_CONNECTORS = "remote-connectors";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";
     String STRING = "string";
@@ -890,7 +936,7 @@ public interface CommonAttributes {
             BACKUP, ALLOW_FAILBACK, FAILBACK_DELAY, FAILOVER_ON_SHUTDOWN, SHARED_STORE, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY,
             PAGE_MAX_CONCURRENT_IO, CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT,
             JOURNAL_BUFFER_SIZE, JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
-            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
+            JOURNAL_FILE_SIZE, JOURNAL_LOCK_ACQUISITION_TIMEOUT, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             MAX_SAVED_REPLICATED_JOURNAL_SIZE, PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL, MEMORY_WARNING_THRESHOLD, MEMORY_MEASURE_INTERVAL,
             CHECK_FOR_LIVE_SERVER, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME };
 

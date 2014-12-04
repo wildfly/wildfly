@@ -1420,17 +1420,12 @@
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.qpid</groupId>
             <artifactId>proton-jms</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
-            <artifactId>proton-j-impl</artifactId>
+            <artifactId>proton-j</artifactId>
         </dependency>
 
         <dependency>
@@ -1739,8 +1734,8 @@
             <artifactId>hornetq-jms-server</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.jbossts.jts</groupId>
-                    <artifactId>jbossjts-jacorb</artifactId>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1763,11 +1758,27 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-proton-plug</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-ra</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.jboss.logging</groupId>
                     <artifactId>jboss-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-selector</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

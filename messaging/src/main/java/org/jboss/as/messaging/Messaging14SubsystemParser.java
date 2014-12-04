@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -49,7 +50,9 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
     protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
         switch (element) {
             case MAX_SAVED_REPLICATED_JOURNAL_SIZE:
-                handleElementText(reader, element, operation);
+                // log that the attribute is deprecated (now handled by the ha-policy subresources) but add it to the hornetq-server model anyway
+                MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
+                CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE.parseAndSetParameter(reader.getElementText(), operation, reader);
                 break;
             default: {
                 super.handleUnknownConfigurationAttribute(reader, element, operation);

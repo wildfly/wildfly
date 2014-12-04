@@ -172,7 +172,10 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
             }
         }
         // Requires runtime service
-        return new BroadcastGroupConfiguration(name, broadcastPeriod, connectorRefs, null);
+        return new BroadcastGroupConfiguration()
+                .setName(name)
+                .setBroadcastPeriod(broadcastPeriod)
+                .setConnectorInfos(connectorRefs);
     }
 
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final SocketBinding socketBinding) throws Exception {
@@ -184,8 +187,17 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
         final long broadcastPeriod = config.getBroadcastPeriod();
         final List<String> connectorRefs = config.getConnectorInfos();
 
-        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration(groupAddress, groupPort, localAddress, localPort);
-        return new BroadcastGroupConfiguration(name, broadcastPeriod, connectorRefs, endpointFactoryConfiguration);
+        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new UDPBroadcastGroupConfiguration()
+                .setGroupAddress(groupAddress)
+                .setGroupPort(groupPort)
+                .setLocalBindAddress(localAddress)
+                .setLocalBindPort(localPort);
+
+        return new BroadcastGroupConfiguration()
+                .setName(name)
+                .setBroadcastPeriod(broadcastPeriod)
+                .setConnectorInfos(connectorRefs)
+                .setEndpointFactoryConfiguration(endpointFactoryConfiguration);
     }
 
     static BroadcastGroupConfiguration createBroadcastGroupConfiguration(final String name, final BroadcastGroupConfiguration config, final JChannel channel, final String channelName) throws Exception {
@@ -193,7 +205,10 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
         final long broadcastPeriod = config.getBroadcastPeriod();
         final List<String> connectorRefs = config.getConnectorInfos();
 
-        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration((JChannel) channel, channelName);
-        return new BroadcastGroupConfiguration(name, broadcastPeriod, connectorRefs, endpointFactoryConfiguration);
+        final BroadcastEndpointFactoryConfiguration endpointFactoryConfiguration = new JGroupsBroadcastGroupConfiguration((JChannel) channel, channelName);        return new BroadcastGroupConfiguration()
+                .setName(name)
+                .setBroadcastPeriod(broadcastPeriod)
+                .setConnectorInfos(connectorRefs)
+                .setEndpointFactoryConfiguration(endpointFactoryConfiguration);
     }
 }

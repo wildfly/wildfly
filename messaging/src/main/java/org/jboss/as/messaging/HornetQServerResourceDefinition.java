@@ -42,6 +42,7 @@ import static org.jboss.as.messaging.CommonAttributes.JOURNAL_BUFFER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_MIN_FILES;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_COMPACT_PERCENTAGE;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_FILE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_LOCK_ACQUISITION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MAX_IO;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_MIN_FILES;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_SYNC_NON_TRANSACTIONAL;
@@ -100,7 +101,7 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
             SHARED_STORE, PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY, PAGE_MAX_CONCURRENT_IO,
             CREATE_BINDINGS_DIR, CREATE_JOURNAL_DIR, JOURNAL_TYPE, JOURNAL_BUFFER_TIMEOUT, JOURNAL_BUFFER_SIZE,
             JOURNAL_SYNC_TRANSACTIONAL, JOURNAL_SYNC_NON_TRANSACTIONAL, LOG_JOURNAL_WRITE_RATE,
-            JOURNAL_FILE_SIZE, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
+            JOURNAL_FILE_SIZE, JOURNAL_LOCK_ACQUISITION_TIMEOUT, JOURNAL_MIN_FILES, JOURNAL_COMPACT_PERCENTAGE, JOURNAL_COMPACT_MIN_FILES, JOURNAL_MAX_IO,
             PERF_BLAST_PAGES, RUN_SYNC_SPEED_TEST, SERVER_DUMP_INTERVAL};
 
     private final boolean registerRuntimeOnly;

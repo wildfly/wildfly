@@ -36,6 +36,9 @@ import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDELIVERY_MULTIPLIER;
 import static org.jboss.as.messaging.AddressSettingDefinition.REDISTRIBUTION_DELAY;
 import static org.jboss.as.messaging.AddressSettingDefinition.SEND_TO_DLA_ON_NO_ROUTE;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_CHECK_PERIOD;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_POLICY;
+import static org.jboss.as.messaging.AddressSettingDefinition.SLOW_CONSUMER_THRESHOLD;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RESOLVE_ADDRESS_SETTING;
@@ -124,6 +127,9 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(REDELIVERY_MULTIPLIER.getName()).set(settings.getRedeliveryMultiplier());
         result.get(REDISTRIBUTION_DELAY.getName()).set(settings.getRedistributionDelay());
         result.get(SEND_TO_DLA_ON_NO_ROUTE.getName()).set(settings.isSendToDLAOnNoRoute());
+        result.get(SLOW_CONSUMER_CHECK_PERIOD.getName()).set(settings.getSlowConsumerCheckPeriod());
+        result.get(SLOW_CONSUMER_POLICY.getName()).set(settings.getSlowConsumerPolicy().toString());
+        result.get(SLOW_CONSUMER_THRESHOLD.getName()).set(settings.getSlowConsumerThreshold());
 
         context.stepCompleted();
     }

@@ -26,6 +26,7 @@
     <resources>
         <resource-root path="lib"/>
         <artifact name="${org.hornetq:hornetq-core-client}"/>
+        <artifact name="${org.hornetq:hornetq-selector}"/>
         <artifact name="${org.hornetq:hornetq-server}"/>
         <artifact name="${org.hornetq:hornetq-commons}"/>
         <artifact name="${org.hornetq:hornetq-tools}"/>

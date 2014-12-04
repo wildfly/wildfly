@@ -106,7 +106,11 @@ public class QueueAdd extends AbstractAddStepHandler {
         final String filter = filterNode.isDefined() ? filterNode.asString() : null;
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
-        return new CoreQueueConfiguration(queueAddress, name, filter, durable);
+        return new CoreQueueConfiguration()
+                .setName(name)
+                .setAddress(queueAddress)
+                .setFilterString(filter)
+                .setDurable(durable);
     }
 
 }

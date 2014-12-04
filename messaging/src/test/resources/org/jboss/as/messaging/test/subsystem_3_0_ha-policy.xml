@@ -1,0 +1,146 @@
+
+<subsystem xmlns="urn:jboss:domain:messaging:3.0">
+    <hornetq-server name="ha-policy-live-only-scale-down-discovery-group">
+        <ha-policy>
+            <live-only>
+                <scale-down enabled="${scale-down.enabled:true}"
+                            cluster-name="${scale-down.cluster-name:mycluster}"
+                            group-name="${scale-down.group-name:mygroup}">
+                    <discovery-group-ref discovery-group-name="groupC"/>
+                </scale-down>
+            </live-only>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-live-only-scale-down-connectors">
+        <ha-policy>
+            <live-only>
+                <scale-down enabled="${scale-down.enabled:true}"
+                            cluster-name="${scale-down.cluster-name:mycluster}"
+                            group-name="${scale-down.group-name:mygroup}">
+                    <connectors>
+                        <connector-ref connector-name="netty"/>
+                    </connectors>
+                </scale-down>
+            </live-only>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-replication-master">
+        <ha-policy>
+            <replication>
+                <master cluster-name="${replication-master.cluster-name:mycluster}"
+                        group-name="${replication-master.cluster-name:mygroup}"
+                        check-for-live-server="${replication-master.check-for-live-server:false}" />
+            </replication>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-replication-slave">
+        <ha-policy>
+            <replication>
+                <slave cluster-name="${replication-slave.cluster-name:mycluster}"
+                        group-name="${replication-slave.cluster-name:mygroup}"
+                        allow-failback="${replication-slave.allow-failback:true}"
+                        failback-delay="${replication-slave.failback-delay:53500}"
+                        restart-backup="${replication-slave.restart-backup:true}"
+                        max-saved-replicated-journal-size="${replication-slave.max-saved-replicated-journal-size:24}">
+                    <scale-down enabled="${replication-slave-scale-down.enabled:true}"
+                                cluster-name="${replication-slave-scale-down.cluster-name:mycluster}"
+                                group-name="${replication-slave-scale-down.group-name:mygroup}">
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                    </scale-down>
+                </slave>
+            </replication>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-replication-colocated">
+        <ha-policy>
+            <replication>
+                <colocated request-backup="${replication-colocated.request-backup:false}"
+                           backup-request-retries="${replication-colocated.backup-request-retries:-1}"
+                           backup-request-retry-interval="${replication-colocated.backup-request-retry-interval:5098}"
+                           max-backups="${replication-colocated.max-backups:5}"
+                           backup-port-offset="${replication-colocated.backup-port-offset:500}">
+                    <excludes>
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                    </excludes>
+
+                    <master cluster-name="${replication-colocated-master.cluster-name:mycluster}"
+                            group-name="${replication-colocated-master.cluster-name:mygroup}"
+                            check-for-live-server="${replication-colocated-master.check-for-live-server:false}" />
+
+                    <slave cluster-name="${replication-colocated-slave.cluster-name:mycluster}"
+                           group-name="${replication-colocated-slave.cluster-name:mygroup}"
+                           allow-failback="${replication-colocated-slave.allow-failback:true}"
+                           failback-delay="${replication-colocated-slave.failback-delay:53500}"
+                           restart-backup="${replication-colocated-slave.restart-backup:true}"
+                           max-saved-replicated-journal-size="${replication-colocated-slave.max-saved-replicated-journal-size:24}">
+                        <scale-down enabled="${replication-colocated-slave-scale-down.enabled:true}"
+                                    cluster-name="${replication-colocated-slave-scale-down.cluster-name:mycluster}"
+                                    group-name="${replication-colocated-slave-scale-down.group-name:mygroup}">
+                            <connectors>
+                                <connector-ref connector-name="netty"/>
+                            </connectors>
+                        </scale-down>
+                    </slave>
+                </colocated>
+            </replication>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-shared-store-master">
+        <ha-policy>
+            <shared-store>
+                <master failback-delay="${shared-store-master.failback-delay:567}"
+                        failover-on-server-shutdown="${shared-store-master.failover-on-server-shutdown:true}" />
+            </shared-store>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-shared-store-slave">
+        <ha-policy>
+            <shared-store>
+                <slave allow-failback="${shared-store-slave.allow-failback:false}"
+                       failback-delay="${shared-store-slave.failback-delay:567}"
+                       failover-on-server-shutdown="${shared-store-slave.failover-on-server-shutdown:true}"
+                       restart-backup="${shared-store-slave.restart-backup:false}">
+                    <scale-down enabled="${shared-store-slave-scale-down.enabled:true}"
+                                cluster-name="${shared-store-slave-scale-down.cluster-name:mycluster}"
+                                group-name="${shared-store-slave-slave-scale-down.group-name:mygroup}">
+                        <connectors>
+                            <connector-ref connector-name="netty"/>
+                        </connectors>
+                    </scale-down>
+                </slave>
+            </shared-store>
+        </ha-policy>
+    </hornetq-server>
+    <hornetq-server name="ha-policy-shared-store-colocated">
+        <ha-policy>
+            <shared-store>
+                <colocated request-backup="${shared-store-colocated.request-backup:false}"
+                           backup-request-retries="${shared-store-colocated.backup-request-retries:-1}"
+                           backup-request-retry-interval="${shared-store-colocated.backup-request-retry-interval:5098}"
+                           max-backups="${shared-store-colocated.max-backups:5}"
+                           backup-port-offset="${shared-store-colocated.backup-port-offset:500}">
+
+                    <master failback-delay="${shared-store-colocated-master.failback-delay:567}"
+                            failover-on-server-shutdown="${shared-store-colocated-master.failover-on-server-shutdown:true}" />
+
+                    <slave allow-failback="${shared-store-colocated-slave.allow-failback:false}"
+                           failback-delay="${shared-store-colocated-slave.failback-delay:567}"
+                           failover-on-server-shutdown="${shared-store-colocated-slave.failover-on-server-shutdown:true}"
+                           restart-backup="${shared-store-colocated-slave.restart-backup:false}">
+                        <scale-down enabled="${shared-store-colocated-slave-scale-down.enabled:true}"
+                                    cluster-name="${shared-store-colocated-slave-scale-down.cluster-name:mycluster}"
+                                    group-name="${shared-store-colocated-slave-slave-scale-down.group-name:mygroup}">
+                            <connectors>
+                                <connector-ref connector-name="netty"/>
+                            </connectors>
+                        </scale-down>
+                    </slave>
+                </colocated>
+            </shared-store>
+        </ha-policy>
+    </hornetq-server>
+</subsystem>

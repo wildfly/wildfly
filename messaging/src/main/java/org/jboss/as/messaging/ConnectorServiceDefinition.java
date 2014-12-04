@@ -81,7 +81,10 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
                 params.put(property.getName(), value);
             }
         }
-        return new ConnectorServiceConfiguration(factoryClass, params, name);
+        return new ConnectorServiceConfiguration()
+            .setName(name)
+            .setFactoryClassName(factoryClass)
+            .setParams(params);
     }
 
     @Override
