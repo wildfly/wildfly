@@ -405,14 +405,6 @@
             <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>
 
-        <module-def name="com.redhat.gss.redhat_support_lib">
-            <maven-resource group="com.redhat.gss" artifact="redhat-support-lib-java"/>
-            <maven-resource group="org.jboss.resteasy3" artifact="resteasy-client"/>
-            <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxb-provider"/>
-            <maven-resource group="org.jboss.resteasy3" artifact="resteasy-jaxrs"/>
-            <maven-resource group="org.jboss.resteasy3" artifact="resteasy-multipart-provider"/>
-        </module-def>
-
         <module-def name="com.sun.codemodel">
             <maven-resource group="com.sun.codemodel" artifact="codemodel"/>
         </module-def>
@@ -939,6 +931,27 @@
         <module-def name="org.jboss.as.jdr">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jdr"/>
         </module-def>
+        
+    	<!--
+    		com.redhat.gss.redhat-access-plugin is for EAP6-13 
+			which is not part of the distribution for 6.3.x
+    	<module-def name="com.redhat.gss.redhat-access-plugin">
+            <maven-resource group="com.redhat.gss" artifact="redhat-access-plugin"/>
+        </module-def>
+        -->
+        
+    	<!--
+    		com.redhat.gss.redhat-support-lib-java is for EAP6-13 
+			which is not part of the distribution for 6.3.x
+        <module-def name="com.redhat.gss.redhat-support-lib-java">
+            <maven-resource group="commons-net" artifact="commons-net"/>
+            <maven-resource group="com.sun.jersey" artifact="jersey-client"/>
+            <maven-resource group="com.sun.jersey" artifact="jersey-core"/>
+            <maven-resource group="com.sun.jersey.contribs" artifact="jersey-multipart"/>
+            <maven-resource group="com.sun.jersey.contribs" artifact="jersey-apache-client4"/>
+            <maven-resource group="com.redhat.gss" artifact="redhat-support-lib-java"/>
+        </module-def>
+        -->
 
         <module-def name="org.jboss.as.jpa">
             <maven-resource group="org.jboss.as" artifact="jboss-as-jpa"/>

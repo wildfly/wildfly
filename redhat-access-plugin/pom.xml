@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~ JBoss, Home of Professional Open Source. ~ Copyright 2010, Red Hat, 
+	Inc., and individual contributors ~ as indicated by the @author tags. See 
+	the copyright.txt file in the ~ distribution for a full listing of individual 
+	contributors. ~ ~ This is free software; you can redistribute it and/or modify 
+	it ~ under the terms of the GNU Lesser General Public License as ~ published 
+	by the Free Software Foundation; either version 2.1 of ~ the License, or 
+	(at your option) any later version. ~ ~ This software is distributed in the 
+	hope that it will be useful, ~ but WITHOUT ANY WARRANTY; without even the 
+	implied warranty of ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+	See the GNU ~ Lesser General Public License for more details. ~ ~ You should 
+	have received a copy of the GNU Lesser General Public ~ License along with 
+	this software; if not, write to the Free ~ Software Foundation, Inc., 51 
+	Franklin St, Fifth Floor, Boston, MA ~ 02110-1301 USA, or see the FSF site: 
+	http://www.fsf.org. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jboss.as</groupId>
+		<artifactId>jboss-as-parent</artifactId>
+		<version>7.5.0.Final-redhat-SNAPSHOT</version>
+	</parent>
+
+	<groupId>com.redhat.gss</groupId>
+	<artifactId>redhat-access-plugin</artifactId>
+
+	<name>JBoss Application Server: Red Hat Access Plugin</name>
+
+    <properties>
+        <!-- 
+        	These versions are for  EAP6-13 which is not part of the distribution for 6.3.x.
+        	Once we get going with 6.4 we should remove the ones that can be removed following
+        	the move from jersey to resteasy, and put the support-lib-java one in the root pom.
+       	-->
+        <version.com.redhat.gss.redhat-support-lib-java>1.0.4.jbossorg-1</version.com.redhat.gss.redhat-support-lib-java>
+        <version.com.sun.jersey>1.17.1</version.com.sun.jersey>
+        <version.commons-net>3.3</version.commons-net>
+    </properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.as</groupId>
+			<artifactId>jboss-as-controller</artifactId>
+		</dependency>
+        
+		<dependency>
+			<groupId>org.jboss.as</groupId>
+			<artifactId>jboss-as-server</artifactId>
+		</dependency>
+        
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.redhat.gss</groupId>
+			<artifactId>redhat-support-lib-java</artifactId>
+		</dependency>
+		<dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+	</dependencies>
+    <dependencyManagement>
+        <!-- 
+        	These versions are for  EAP6-13 which is not part of the distribution for 6.3.x.
+        	Once we get going with 6.4 we should remove the ones that can be removed following
+        	the move from jersey to resteasy, and put the support-lib-java one in the root pom.
+       	-->
+    
+   	    <dependencies>
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-support-lib-java</artifactId>
+                <version>${version.com.redhat.gss.redhat-support-lib-java}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-core</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-apache-client4</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-multipart</artifactId>
+                <version>${version.com.sun.jersey}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jvnet</groupId>
+                        <artifactId>mimepull</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${version.commons-net}</version>
+            </dependency>
+
+   	    </dependencies>
+   	</dependencyManagement>
+ 
+	
+</project>
