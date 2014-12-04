@@ -20,12 +20,12 @@
                 <trust-domain name="mycompany.com4"/>
             </trust>
             <handlers>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
-                <handler code="SAML2LogOutHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                <handler code="RolesGenerationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
-                <handler code="SAML2SignatureValidationHandler">
+                <handler name= "handler1" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                <handler name= "handler2" code="SAML2LogOutHandler"/>
+                <handler name= "handler3" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                <handler name= "handler4" code="RolesGenerationHandler"/>
+                <handler name= "handler5" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
+                <handler name= "handler6" code="SAML2SignatureValidationHandler">
                     <handler-parameter name="SIGN_RESPONSE_AND_ASSERTION" value="${test.picketlink.idp.sign.response_and_assertion:true}"/>
                 </handler>
             </handlers>

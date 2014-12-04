@@ -65,11 +65,11 @@ public class IDMSubsystemWriter implements XMLStreamConstants, XMLElementWriter<
         registerWriter(JPA_STORE);
         registerWriter(FILE_STORE);
         registerWriter(LDAP_STORE);
-        registerWriter(LDAP_STORE_MAPPING, XMLElement.LDAP_MAPPINGS);
+        registerWriter(LDAP_STORE_MAPPING, COMMON_NAME, XMLElement.LDAP_MAPPINGS);
         registerWriter(LDAP_STORE_ATTRIBUTE);
         registerWriter(SUPPORTED_TYPES);
-        registerWriter(SUPPORTED_TYPE);
-        registerWriter(IDENTITY_STORE_CREDENTIAL_HANDLER, XMLElement.IDENTITY_STORE_CREDENTIAL_HANDLERS);
+        registerWriter(SUPPORTED_TYPE, COMMON_NAME);
+        registerWriter(IDENTITY_STORE_CREDENTIAL_HANDLER, COMMON_NAME, XMLElement.IDENTITY_STORE_CREDENTIAL_HANDLERS);
     }
 
     @Override
@@ -103,4 +103,7 @@ public class IDMSubsystemWriter implements XMLStreamConstants, XMLElementWriter<
         writers.put(element.getName(), new ModelXMLElementWriter(element, parent, writers));
     }
 
+    private static void registerWriter(final ModelElement element, final ModelElement keyAttribute, final XMLElement parent) {
+        writers.put(element.getName(), new ModelXMLElementWriter(element, keyAttribute.getName(), parent, writers));
+    }
 }

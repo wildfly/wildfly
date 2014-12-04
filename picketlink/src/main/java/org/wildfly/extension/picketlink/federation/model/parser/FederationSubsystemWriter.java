@@ -59,11 +59,11 @@ import static org.wildfly.extension.picketlink.common.model.XMLElement.SERVICE_P
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class FederationSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext>  {
-
-    public static final FederationSubsystemWriter INSTANCE = new FederationSubsystemWriter();
+public class FederationSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final Map<String, ModelXMLElementWriter> writers = new HashMap<String, ModelXMLElementWriter>();
+
+    public static final FederationSubsystemWriter INSTANCE = new FederationSubsystemWriter();
 
     static {
         // federation elements writers
@@ -74,9 +74,9 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
         registerWriter(IDENTITY_PROVIDER_SAML_METADATA);
         registerWriter(IDENTITY_PROVIDER_SAML_METADATA_ORGANIZATION);
         registerWriter(IDENTITY_PROVIDER_TRUST_DOMAIN, COMMON_NAME, XMLElement.TRUST);
-        registerWriter(IDENTITY_PROVIDER_ROLE_GENERATOR);
-        registerWriter(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER);
-        registerWriter(COMMON_HANDLER, HANDLERS);
+        registerWriter(IDENTITY_PROVIDER_ROLE_GENERATOR, COMMON_NAME);
+        registerWriter(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, COMMON_NAME);
+        registerWriter(COMMON_HANDLER, COMMON_NAME, HANDLERS);
         registerWriter(COMMON_HANDLER_PARAMETER, COMMON_NAME);
         registerWriter(SERVICE_PROVIDER, COMMON_NAME, SERVICE_PROVIDERS);
         registerWriter(SAML);
@@ -113,12 +113,7 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
         writers.put(element.getName(), new ModelXMLElementWriter(element, writers));
     }
 
-    private static void registerWriter(final ModelElement element, final XMLElement parent) {
-        writers.put(element.getName(), new ModelXMLElementWriter(element, parent, writers));
-    }
-
     private static void registerWriter(final ModelElement element, final ModelElement keyAttribute, final XMLElement parent) {
         writers.put(element.getName(), new ModelXMLElementWriter(element, keyAttribute.getName(), parent, writers));
     }
-
 }

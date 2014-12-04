@@ -22,12 +22,14 @@
 
 package org.wildfly.extension.picketlink.idm;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.wildfly.extension.picketlink.idm.model.parser.IDMSubsystemReader_1_0;
-import org.wildfly.extension.picketlink.idm.model.parser.IDMSubsystemWriter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.wildfly.extension.picketlink.idm.model.parser.IDMSubsystemReader_1_0;
+import org.wildfly.extension.picketlink.idm.model.parser.IDMSubsystemReader_2_0;
+import org.wildfly.extension.picketlink.idm.model.parser.IDMSubsystemWriter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,10 +40,12 @@ import java.util.Map;
  */
 public enum Namespace {
 
-    PICKETLINK_IDENTITY_MANAGEMENT_1_0(1, 0, new IDMSubsystemReader_1_0(), new IDMSubsystemWriter());
+    PICKETLINK_IDENTITY_MANAGEMENT_1_0(1, 0, 0, new IDMSubsystemReader_1_0(), new IDMSubsystemWriter()),
+    PICKETLINK_IDENTITY_MANAGEMENT_2_0(2, 0, 0, new IDMSubsystemReader_2_0(), new IDMSubsystemWriter());
 
-    public static final Namespace CURRENT = PICKETLINK_IDENTITY_MANAGEMENT_1_0;
-    private static final String BASE_URN = "urn:jboss:domain:picketlink-identity-management:";
+    public static final Namespace CURRENT = PICKETLINK_IDENTITY_MANAGEMENT_2_0;
+    public static final String BASE_URN = "urn:jboss:domain:picketlink-identity-management:";
+
     private static final Map<String, Namespace> namespaces;
 
     static {
@@ -59,13 +63,15 @@ public enum Namespace {
 
     private final int major;
     private final int minor;
+    private final int patch;
     private final XMLElementReader<List<ModelNode>> reader;
     private final XMLElementWriter<SubsystemMarshallingContext> writer;
 
-    Namespace(int major, int minor, XMLElementReader<List<ModelNode>> reader,
-                     XMLElementWriter<SubsystemMarshallingContext> writer) {
+    Namespace(int major, int minor, int patch, XMLElementReader<List<ModelNode>> reader,
+            XMLElementWriter<SubsystemMarshallingContext> writer) {
         this.major = major;
         this.minor = minor;
+        this.patch = patch;
         this.reader = reader;
         this.writer = writer;
     }
@@ -96,12 +102,26 @@ public enum Namespace {
     }
 
     /**
+     *
+     * @return the patch
+     */
+    public int getPatch() {
+        return patch;
+    }
+
+    /**
      * Get the URI of this namespace.
      *
      * @return the URI
      */
     public String getUri() {
-        return BASE_URN + this.major + "." + this.minor;
+        String patchVersion = "";
+
+        if (this.patch > 0) {
+            patchVersion = "." + this.patch;
+        }
+
+        return BASE_URN + this.major + "." + this.minor + patchVersion;
     }
 
     /**
@@ -120,6 +140,14 @@ public enum Namespace {
      */
     public XMLElementWriter<SubsystemMarshallingContext> getXMLWriter() {
         return this.writer;
+    }
+
+    public ModelVersion getModelVersion() {
+        if (this.patch > 0) {
+            return ModelVersion.create(getMajor(), getMinor(), getPatch());
+        }
+
+        return ModelVersion.create(getMajor(), getMinor());
     }
 
 }

@@ -2,7 +2,7 @@
     <federation name="federation-without-signatures">
         <saml token-timeout="4000" clock-skew="0"/>
         <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://localhost:8080/idp/">
-            <attribute-manager class-name="org.picketlink.TestManager"/>
+            <attribute-manager name="attrib1" class-name="org.picketlink.TestManager"/>
             <trust>
                 <trust-domain name="localhost"/>
                 <trust-domain name="mycompany.com2"/>
@@ -54,23 +54,23 @@
                 <trust-domain name="localhost"/>
             </trust>
             <handlers>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
+                <handler name="handler1" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
                     <handler-parameter name="param1" value="value1"/>
                 </handler>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                <handler name= "handler2" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                <handler name= "handler3" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                <handler name= "handler4" class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
             </handlers>
         </identity-provider>
         <service-providers>
             <service-provider name="employee.war" security-domain="sp" url="http://localhost:8080/employee/" post-binding="false" strict-post-binding="true">
                 <handlers>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
+                    <handler name= "handler1" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler">
                         <handler-parameter name="param1" value="value1"/>
                     </handler>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                    <handler name= "handler2" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                    <handler name= "handler3" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                    <handler name= "handler4" class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
                 </handlers>
             </service-provider>
         </service-providers>
@@ -81,10 +81,10 @@
                 <trust-domain name="localhost"/>
             </trust>
             <handlers>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                <handler name= "handler1" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                <handler name= "handler2" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                <handler name= "handler3" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                <handler name= "handler4" class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
             </handlers>
         </identity-provider>
         <service-providers>
@@ -97,10 +97,10 @@
                 <trust-domain name="localhost"/>
             </trust>
             <handlers>
-                <handler code="SAML2IssuerTrustHandler"/>
-                <handler code="SAML2LogOutHandler"/>
-                <handler code="SAML2AuthenticationHandler"/>
-                <handler class-name="RolesGenerationHandler"/>
+                <handler name= "handler1" code="SAML2IssuerTrustHandler"/>
+                <handler name= "handler2" code="SAML2LogOutHandler"/>
+                <handler name= "handler3" code="SAML2AuthenticationHandler"/>
+                <handler name= "handler4" class-name="RolesGenerationHandler"/>
             </handlers>
         </identity-provider>
         <service-providers>
@@ -117,12 +117,12 @@
                 <trust-domain name="127.0.0.1" />
             </trust>
             <handlers>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
-                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler">
+                <handler name= "handler1" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                <handler name= "handler2" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                <handler name= "handler3" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                <handler name= "handler4" class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                <handler name= "handler5" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
+                <handler name= "handler6" class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler">
                     <handler-parameter name="SIGN_RESPONSE_AND_ASSERTION" value="true"/>
                 </handler>
             </handlers>
