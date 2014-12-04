@@ -28,6 +28,8 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import javax.security.auth.login.Configuration;
+
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -231,6 +233,58 @@ class SecurityActions {
         ClassLoader cl = module.getClassLoader();
         Class<?> clazz = cl.loadClass(name);
         return iface.cast(clazz.newInstance());
+    }
+
+    static Configuration getGlobalJaasConfiguration() throws SecurityException {
+        if (WildFlySecurityManager.isChecking() == false) {
+            return internalGetGlobalJaasConfiguration();
+        } else {
+
+            try {
+                return doPrivileged(new PrivilegedExceptionAction<Configuration>() {
+
+                    @Override
+                    public Configuration run() throws Exception {
+                        return internalGetGlobalJaasConfiguration();
+                    }
+
+                });
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException) e.getCause();
+            }
+
+        }
+    }
+
+    private static Configuration internalGetGlobalJaasConfiguration() throws SecurityException {
+        return Configuration.getConfiguration();
+    }
+
+    static void setGlobalJaasConfiguration(final Configuration configuration) throws SecurityException {
+        if (WildFlySecurityManager.isChecking() == false) {
+            internalSetGlobalJaasConfiguration(configuration);
+        } else {
+
+            try {
+                doPrivileged(new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws Exception {
+                        internalSetGlobalJaasConfiguration(configuration);
+
+                        return null;
+                    }
+
+                });
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException) e.getCause();
+            }
+
+        }
+    }
+
+    private static void internalSetGlobalJaasConfiguration(final Configuration configuration) throws SecurityException {
+        Configuration.setConfiguration(configuration);
     }
 
 }

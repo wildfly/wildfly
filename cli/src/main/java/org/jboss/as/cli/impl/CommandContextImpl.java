@@ -57,6 +57,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import javax.security.sasl.SaslException;
@@ -256,6 +258,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         password = null;
         disableLocalAuth = false;
         initSSLContext();
+        initJaasConfig();
         addShutdownHook();
     }
 
@@ -294,6 +297,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         initCommands();
 
         initSSLContext();
+        initJaasConfig();
 
         if (initConsole) {
             cmdCompleter = new CommandCompleter(cmdRegistry);
@@ -337,6 +341,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         initCommands();
 
         initSSLContext();
+        initJaasConfig();
 
         cmdCompleter = new CommandCompleter(cmdRegistry);
         initBasicConsole(consoleInput, consoleOutput);
@@ -550,6 +555,22 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         } catch (GeneralSecurityException e) {
             throw new CliInitializationException(e);
         }
+    }
+
+    /**
+     * The underlying SASL mechanisms may require a JAAS definition, unless a more specific definition as been provided use our
+     * own definition for GSSAPI.
+     */
+    private void initJaasConfig() {
+        Configuration coreConfig = null;
+
+        try {
+            coreConfig = SecurityActions.getGlobalJaasConfiguration();
+        } catch (SecurityException e) {
+            log.debug("Unable to obtain default configuration", e);
+        }
+
+        SecurityActions.setGlobalJaasConfiguration(new JaasConfigurationWrapper(coreConfig));
     }
 
     @Override
@@ -1572,6 +1593,34 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         public X509Certificate[] getAcceptedIssuers() {
             return getDelegate().getAcceptedIssuers();
         }
+    }
+
+    private class JaasConfigurationWrapper extends Configuration {
+
+        private final Configuration wrapped;
+
+        private JaasConfigurationWrapper(Configuration toWrap) {
+            this.wrapped = toWrap;
+        }
+
+        @Override
+        public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
+            AppConfigurationEntry[] response = wrapped != null ? wrapped.getAppConfigurationEntry(name) : null;
+            if (response == null) {
+                if ("com.sun.security.jgss.initiate".equals(name)) {
+                    HashMap<String, String> options = new HashMap<String, String>(2);
+                    options.put("useTicketCache", "true");
+                    options.put("doNotPrompt", "true");
+                    response = new AppConfigurationEntry[] { new AppConfigurationEntry(
+                            "com.sun.security.auth.module.Krb5LoginModule",
+                            AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options) };
+                }
+
+            }
+
+            return response;
+        }
+
     }
 
     class CommandLineRedirectionRegistration implements CommandLineRedirection.Registration {
