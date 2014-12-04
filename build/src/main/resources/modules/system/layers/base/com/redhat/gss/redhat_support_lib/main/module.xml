@@ -25,11 +25,15 @@
 <module xmlns="urn:jboss:module:1.1" name="com.redhat.gss.redhat_support_lib">
 
     <resources>
-        <!-- Insert resources here -->
+        <resource-root path="redhat-support-lib-java-2.0.7.redhat-2.jar"/>
+        <resource-root path="resteasy-client-3.0.10.Final-redhat-4.jar"/>
+        <resource-root path="resteasy-jaxb-provider-3.0.10.Final-redhat-4.jar"/>
+        <resource-root path="resteasy-jaxrs-3.0.10.Final-redhat-4.jar"/>
+        <resource-root path="resteasy-multipart-provider-3.0.10.Final-redhat-4.jar"/>
     </resources>
 
     <dependencies>
         <module name="org.jboss.logging"/>
-        <module name="com.redhat.gss.redhat_support_lib.deps"/>
+        <module name="commons-net"/>
     </dependencies>
 </module>
