@@ -108,7 +108,7 @@
                        type="xsd:ID"/>
     </xsd:complexType>
 
-    <xsd:complexType name="tracking-modeType">
+    <xsd:simpleType name="tracking-modeType">
         <xsd:annotation>
             <xsd:documentation>
 
@@ -119,14 +119,12 @@
 
             </xsd:documentation>
         </xsd:annotation>
-        <xsd:simpleContent>
-            <xsd:restriction base="xsd:string">
-                <xsd:enumeration value="COOKIE"/>
-                <xsd:enumeration value="URL"/>
-                <xsd:enumeration value="SSL"/>
-            </xsd:restriction>
-        </xsd:simpleContent>
-    </xsd:complexType>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="COOKIE"/>
+            <xsd:enumeration value="URL"/>
+            <xsd:enumeration value="SSL"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
     <xsd:complexType name="cookie-configType">
         <xsd:annotation>
@@ -299,13 +297,11 @@
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:complexType name="replication-granularityType">
-        <xsd:simpleContent>
-            <xsd:restriction base="xsd:string">
-                <xsd:enumeration value="SESSION"/>
-                <xsd:enumeration value="ATTRIBUTE"/>
-            </xsd:restriction>
-        </xsd:simpleContent>
-    </xsd:complexType>
+    <xsd:simpleType name="replication-granularityType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="SESSION"/>
+            <xsd:enumeration value="ATTRIBUTE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>
 

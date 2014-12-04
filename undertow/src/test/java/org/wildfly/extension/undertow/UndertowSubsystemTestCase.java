@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
@@ -77,6 +78,27 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("undertow-2.0.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-undertow_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/undertow.xml"
+        };
+    }
+
+    @Override
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.home.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
+        return properties;
     }
 
     @Test
