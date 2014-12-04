@@ -111,6 +111,12 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <!-- Used for the complete client JAR -->
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.jboss.sasl</groupId>
             <artifactId>jboss-sasl</artifactId>
