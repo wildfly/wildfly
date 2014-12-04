@@ -2,8 +2,8 @@
     <federation name="federation-without-signatures">
         <saml token-timeout="4000" clock-skew="0"/>
         <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://localhost:8080/idp/">
-            <role-generator class-name="org.picketlink.TestManager1"/>
-            <role-generator class-name="org.picketlink.TestManager2"/>
+            <role-generator name="rolegenerator1" class-name="org.picketlink.TestManager1"/>
+            <role-generator name="rolegenerator2" class-name="org.picketlink.TestManager2"/>
             <trust>
                 <trust-domain name="localhost"/>
                 <trust-domain name="mycompany.com2"/>

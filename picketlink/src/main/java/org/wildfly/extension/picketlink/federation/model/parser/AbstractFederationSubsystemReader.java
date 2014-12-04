@@ -34,7 +34,6 @@ import org.wildfly.extension.picketlink.federation.Namespace;
 import org.wildfly.extension.picketlink.federation.model.FederationResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerParameterResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourceDefinition;
-import org.wildfly.extension.picketlink.federation.model.handlers.HandlerTypeEnum;
 import org.wildfly.extension.picketlink.federation.model.idp.AttributeManagerResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.idp.IdentityProviderResourceDefinition;
 import org.wildfly.extension.picketlink.federation.model.idp.RoleGeneratorResourceDefinition;
@@ -56,8 +55,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CLASS_NAME;
-import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_CODE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
@@ -186,18 +183,8 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
         }, SERVICE_PROVIDER, serviceProviderNode, reader, addOperations);
     }
 
-    private void parseHandlerConfig(final XMLExtendedStreamReader reader, final ModelNode entityProviderNode, final List<ModelNode> addOperations) throws XMLStreamException {
-        String name = reader.getAttributeValue("", COMMON_CLASS_NAME.getName());
-
-        if (name == null) {
-            name = reader.getAttributeValue("", COMMON_CODE.getName());
-
-            if (name != null) {
-                name = HandlerTypeEnum.forType(name);
-            }
-        }
-
-        ModelNode handlerNode = parseConfig(reader, COMMON_HANDLER, name, entityProviderNode, HandlerResourceDefinition.INSTANCE
+    protected void parseHandlerConfig(final XMLExtendedStreamReader reader, final ModelNode entityProviderNode, final List<ModelNode> addOperations) throws XMLStreamException {
+        ModelNode handlerNode = parseConfig(reader, COMMON_HANDLER, COMMON_NAME.getName(), entityProviderNode, HandlerResourceDefinition.INSTANCE
             .getAttributes(), addOperations);
 
         parseElement(new ElementParser() {
@@ -232,15 +219,11 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
                             TrustDomainResourceDefinition.INSTANCE.getAttributes(), addOperations);
                         break;
                     case IDENTITY_PROVIDER_ROLE_GENERATOR:
-                        String roleGeneratorName = resolveNodeName(reader, RoleGeneratorResourceDefinition.CLASS_NAME, RoleGeneratorResourceDefinition.CODE);
-
-                        parseConfig(reader, IDENTITY_PROVIDER_ROLE_GENERATOR, roleGeneratorName, parentNode,
+                        parseConfig(reader, IDENTITY_PROVIDER_ROLE_GENERATOR, COMMON_NAME.getName(), parentNode,
                             RoleGeneratorResourceDefinition.INSTANCE.getAttributes(), addOperations);
                         break;
                     case IDENTITY_PROVIDER_ATTRIBUTE_MANAGER:
-                        String attributeManagerName = resolveNodeName(reader, AttributeManagerResourceDefinition.CLASS_NAME, AttributeManagerResourceDefinition.CODE);
-
-                        parseConfig(reader, IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, attributeManagerName, parentNode,
+                        parseConfig(reader, IDENTITY_PROVIDER_ATTRIBUTE_MANAGER, COMMON_NAME.getName(), parentNode,
                             AttributeManagerResourceDefinition.INSTANCE.getAttributes(), addOperations);
                         break;
                     case COMMON_HANDLER:
@@ -361,15 +344,6 @@ public abstract class AbstractFederationSubsystemReader implements XMLStreamCons
 
             visited.add(tagName);
         }
-    }
-
-    private String resolveNodeName(XMLExtendedStreamReader reader, SimpleAttributeDefinition primaryAttribute, SimpleAttributeDefinition alternativeAttribute) {
-        String name = reader.getAttributeValue("", primaryAttribute.getName());
-
-        if (name == null) {
-            name = reader.getAttributeValue("", alternativeAttribute.getName());
-        }
-        return name;
     }
 
     interface ElementParser {

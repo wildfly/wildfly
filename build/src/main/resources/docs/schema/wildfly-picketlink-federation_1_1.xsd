@@ -24,9 +24,9 @@
     <xsd:element name="subsystem" type="subsystemType"/>
 
     <xsd:complexType name="subsystemType">
-      <xsd:sequence>
-         <xsd:element name="federation" type="federationType" minOccurs="0" maxOccurs="unbounded"/>
-      </xsd:sequence>
+        <xsd:sequence>
+            <xsd:element name="federation" type="federationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="federationType">
@@ -66,6 +66,11 @@
         <xsd:annotation>
             <xsd:documentation>The RoleGenerator implementation that will be used to load roles and push them to SAML assertions.</xsd:documentation>
         </xsd:annotation>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the role generator name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>The FQN of the RoleGenerator type.</xsd:documentation>
@@ -87,6 +92,11 @@
         <xsd:annotation>
             <xsd:documentation>The AttributeManager implementation that will be used to load roles and push them to SAML assertions.</xsd:documentation>
         </xsd:annotation>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the attribute manager name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>The FQN of the AttributeManager type.</xsd:documentation>
@@ -134,9 +144,9 @@
         <xsd:attribute name="relative-to" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
-                One of the system-provided named paths (such as jboss.home.dir,
-                user.home, user.dir) relative to which the absolute path
-                will be calculated for the path specified in the file attribute.
+                    One of the system-provided named paths (such as jboss.home.dir,
+                    user.home, user.dir) relative to which the absolute path
+                    will be calculated for the path specified in the file attribute.
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -250,9 +260,9 @@
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="url" type="xsd:string" use="required">
-          <xsd:annotation>
-              <xsd:documentation>URL for this Service Provider.</xsd:documentation>
-          </xsd:annotation>
+            <xsd:annotation>
+                <xsd:documentation>URL for this Service Provider.</xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="post-binding" type="xsd:boolean" use="optional" default="true">
             <xsd:annotation>
@@ -265,8 +275,8 @@
         <xsd:attribute name="strict-post-binding" type="xsd:boolean" use="optional" default="true">
             <xsd:annotation>
                 <xsd:documentation>Indicates which SAML Binding to use. If is true
-                HTTP POST binding will be used. Othwerwise HTTP REDIRECT binding
-                will be used.
+                    HTTP POST binding will be used. Othwerwise HTTP REDIRECT binding
+                    will be used.
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
@@ -339,9 +349,14 @@
             <xsd:documentation>Defines the Handler Type.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-        <xsd:element name="handler-parameter" type="handlerParameterType" minOccurs="0" maxOccurs="unbounded"
-                     nillable="true"/>
+            <xsd:element name="handler-parameter" type="handlerParameterType" minOccurs="0" maxOccurs="unbounded"
+                         nillable="true"/>
         </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the handler name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>Defines the handler class name.</xsd:documentation>

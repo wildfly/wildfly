@@ -40,15 +40,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Pedro Igor
  */
-public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
+public class IDMSubsystem_1_1_UnitTestCase extends AbstractSubsystemBaseTest {
 
-    public IDMSubsystemUnitTestCase() {
+    public IDMSubsystem_1_1_UnitTestCase() {
         super(IDMExtension.SUBSYSTEM_NAME, new IDMExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("identity-management-subsystem-1.0.xml");
+        return readResource("identity-management-subsystem-1.1.xml");
     }
 
     @Test
@@ -77,7 +77,7 @@ public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("identity-management-subsystem-expressions-1.0.xml");
+        standardSubsystemTest("identity-management-subsystem-expressions-1.1.xml");
     }
 
     @Override

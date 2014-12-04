@@ -29,6 +29,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 
+import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
+
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
@@ -52,5 +54,6 @@ public class IDMExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), Namespace.CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_0.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_0.getXMLReader());
     }
 }
