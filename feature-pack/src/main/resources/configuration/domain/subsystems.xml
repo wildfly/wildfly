@@ -82,7 +82,7 @@
       <subsystem>jsf.xml</subsystem>
       <subsystem>jsr77.xml</subsystem>
       <subsystem>mail.xml</subsystem>
-      <subsystem>messaging.xml</subsystem>
+      <subsystem>messaging-activemq.xml</subsystem>
       <subsystem>naming.xml</subsystem>
       <subsystem>pojo.xml</subsystem>
       <subsystem>remoting.xml</subsystem>
@@ -116,7 +116,7 @@
       <subsystem>jsf.xml</subsystem>
       <subsystem>jsr77.xml</subsystem>
       <subsystem>mail.xml</subsystem>
-      <subsystem supplement="ha">messaging.xml</subsystem>
+      <subsystem supplement="ha">messaging-activemq.xml</subsystem>
       <subsystem>mod_cluster.xml</subsystem>
       <subsystem>naming.xml</subsystem>
       <subsystem>pojo.xml</subsystem>

@@ -55,6 +55,8 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,6 +93,12 @@ public class HornetQServerManagementTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @Before
+    public void setUp() {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup", "hornetq".equals(jmsOperations.getProviderName()));
+    }
 
     @Test
     public void testCloseConnectionForUser() throws Exception {

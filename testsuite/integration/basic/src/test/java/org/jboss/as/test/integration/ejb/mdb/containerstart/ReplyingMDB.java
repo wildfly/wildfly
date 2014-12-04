@@ -53,7 +53,6 @@ import org.jboss.logging.Logger;
         @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1"),
         @ActivationConfigProperty(propertyName = "transactionTimeout", propertyValue = "10"),
         @ActivationConfigProperty(propertyName = "useDLQ", propertyValue = "false") })
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class ReplyingMDB implements MessageListener {
     private static final Logger log = Logger.getLogger(ReplyingMDB.class);
     

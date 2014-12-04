@@ -53,7 +53,6 @@ import org.jboss.logging.Logger;
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "java:jboss/queue/callerPrincipal")
 })
 @SecurityDomain("ejb3-tests")
-@ResourceAdapter(value = "hornetq-ra.rar") // based on documentation to as 7
 public class MDBLifecycleCallback implements MessageDrivenBean, MessageListener {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(MDBLifecycleCallback.class);

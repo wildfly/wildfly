@@ -39,7 +39,6 @@ import org.jboss.logging.Logger;
 @MessageDriven(activationConfig = {
         @ActivationConfigProperty(propertyName = "destination", propertyValue = ResourceAdapterNameTestCase.QUEUE_JNDI_NAME)
 })
-@ResourceAdapter(value = "hornetq-ra.rar")
 public class OverriddenResourceAdapterNameMDB implements MessageListener {
 
     private static final Logger logger = Logger.getLogger(OverriddenResourceAdapterNameMDB.class);

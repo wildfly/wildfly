@@ -46,14 +46,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.categories.CommonCriteria;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
-import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
@@ -86,6 +85,7 @@ import org.junit.runner.RunWith;
 public class GetCallerPrincipalTestCase {
 
     private static final String QUEUE_NAME = "queue/callerPrincipal";
+    private static final String QUEUE_LOOKUP = "java:jboss/" + QUEUE_NAME;
 
     private static final Logger log = Logger.getLogger(GetCallerPrincipalTestCase.class);
 
@@ -104,24 +104,12 @@ public class GetCallerPrincipalTestCase {
 
         @Override
         protected void doSetup(final ManagementClient managementClient) throws Exception {
-            createQueue(QUEUE_NAME);
+            JMSOperationsProvider.getInstance(managementClient).createJmsQueue(QUEUE_NAME, QUEUE_LOOKUP);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            destroyQueue(QUEUE_NAME);
-        }
-        private void createQueue(String queueName) throws Exception {
-            ModelNode addJmsQueue = getQueueAddr(queueName);
-            addJmsQueue.get(ClientConstants.OP).set("add");
-            addJmsQueue.get("entries").add("java:jboss/" + queueName);
-            executeOperation(addJmsQueue);
-        }
-
-        private void destroyQueue(String queueName) throws Exception {
-            ModelNode removeJmsQueue = getQueueAddr(queueName);
-            removeJmsQueue.get(ClientConstants.OP).set("remove");
-            executeOperation(removeJmsQueue);
+            JMSOperationsProvider.getInstance(managementClient).removeJmsQueue(QUEUE_NAME);
         }
     }
 
@@ -196,14 +184,6 @@ public class GetCallerPrincipalTestCase {
         jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
-    }
-
-    private static ModelNode getQueueAddr(String name) {
-        final ModelNode queueAddr = new ModelNode();
-        queueAddr.get(ClientConstants.OP_ADDR).add("subsystem", "messaging");
-        queueAddr.get(ClientConstants.OP_ADDR).add("hornetq-server", "default");
-        queueAddr.get(ClientConstants.OP_ADDR).add("jms-queue", name);
-        return queueAddr;
     }
 
     private ITestResultsSingleton getResultsSingleton() throws NamingException {

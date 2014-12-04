@@ -34,7 +34,6 @@
         <extension module="org.jboss.as.jaxrs"/>
         <extension module="org.jboss.as.jdr"/>
         <extension module="org.jboss.as.mail"/>
-        <extension module="org.jboss.as.messaging"/>
         <extension module="org.jboss.as.modcluster"/>
         <extension module="org.jboss.as.naming"/>
         <extension module="org.jboss.as.remoting"/>
@@ -44,6 +43,7 @@
         <extension module="org.jboss.as.weld"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.messaging-activemq"/>
         <extension module="org.wildfly.extension.undertow"/>
     </extensions>
 
@@ -326,92 +326,36 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
-            <subsystem xmlns="urn:jboss:domain:messaging:1.1">
-                <hornetq-server>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-                    <journal-file-size>102400</journal-file-size>
-                    <journal-min-files>2</journal-min-files>
-                    <journal-type>NIO</journal-type>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <thread-pool-max-size>2</thread-pool-max-size>
-
-                    <connectors>
-                        <netty-connector name="netty" socket-binding="messaging"/>
-                        <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                            <param key="batch-delay" value="50"/>
-                        </netty-connector>
-                        <in-vm-connector name="in-vm" server-id="0"/>
-                    </connectors>
-
-                    <acceptors>
-                        <netty-acceptor name="netty" socket-binding="messaging"/>
-                        <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
-                            <param key="batch-delay" value="50"/>
-                            <param key="direct-deliver" value="false"/>
-                        </netty-acceptor>
-                        <in-vm-acceptor name="in-vm" server-id="0"/>
-                    </acceptors>
-
-                    <security-settings>
-                        <security-setting match="#">
-                            <permission type="createNonDurableQueue" roles="guest"/>
-                            <permission type="deleteNonDurableQueue" roles="guest"/>
-                            <permission type="consume" roles="guest"/>
-                            <permission type="send" roles="guest"/>
-                        </security-setting>
-                    </security-settings>
-
-                    <address-settings>
-                        <!--default for catch all-->
-                        <address-setting match="#">
-                            <dead-letter-address>jms.queue.DLQ</dead-letter-address>
-                            <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                            <redelivery-delay>0</redelivery-delay>
-                            <max-size-bytes>10485760</max-size-bytes>
-                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
-                            <address-full-policy>BLOCK</address-full-policy>
-                        </address-setting>
-                    </address-settings>
-
-                    <!--JMS Stuff-->
-                    <jms-connection-factories>
-                        <connection-factory name="InVmConnectionFactory">
-                            <connectors>
-                                <connector-ref connector-name="in-vm"/>
-                            </connectors>
-                            <entries>
-                                <entry name="java:/ConnectionFactory"/>
-                            </entries>
-                        </connection-factory>
-                        <connection-factory name="RemoteConnectionFactory">
-                            <connectors>
-                                <connector-ref connector-name="netty"/>
-                            </connectors>
-                            <entries>
-                                <entry name="RemoteConnectionFactory"/>
-                            </entries>
-                        </connection-factory>
-                        <pooled-connection-factory name="hornetq-ra">
-                            <transaction mode="xa"/>
-                            <connectors>
-                                <connector-ref connector-name="in-vm"/>
-                            </connectors>
-                            <entries>
-                                <entry name="java:/JmsXA"/>
-                            </entries>
-                        </pooled-connection-factory>
-                    </jms-connection-factories>
-
-                    <jms-destinations>
-                        <jms-queue name="testQueue">
-                            <entry name="queue/test"/>
-                        </jms-queue>
-                        <jms-topic name="testTopic">
-                            <entry name="topic/test"/>
-                        </jms-topic>
-                    </jms-destinations>
-                </hornetq-server>
+            <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
+                <server name="default"
+                        persistence-enabled="false">
+                    <journal file-size="102400"/>
+                    <security-setting name="#">
+                        <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
+                    </security-setting>
+                    <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
+                    <http-connector name="http-connector" socket-binding="http">
+                        <param name="http-upgrade-endpoint" value="http-acceptor"/>
+                    </http-connector>
+                    <http-connector name="http-connector-throughput" socket-binding="http">
+                        <param name="http-upgrade-endpoint" value="http-acceptor-throughput"/>
+                        <param name="batch-delay" value="50"/>
+                    </http-connector>
+                    <in-vm-connector name="in-vm" server-id="0"/>
+                    <http-acceptor name="http-acceptor" http-listener="default"/>
+                    <http-acceptor name="http-acceptor-throughput" http-listener="default">
+                        <param name="batch-delay" value="50"/>
+                        <param name="direct-deliver" value="false"/>
+                    </http-acceptor>
+                    <in-vm-acceptor name="in-vm" server-id="0"/>
+                    <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
+                    <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
+                    <jms-queue name="testQueue" entries="queue/test"/>
+                    <jms-topic name="testTopic" entries="topic/test"/>
+                    <connection-factory name="InVmConnectionFactory" connectors="in-vm" entries="java:/ConnectionFactory"/>
+                    <connection-factory name="RemoteConnectionFactory" connectors="http-connector" entries="java:jboss/exported/jms/RemoteConnectionFactory"/>
+                    <pooled-connection-factory name="activemq-ra" transaction="xa" connectors="in-vm" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"/>
+                </server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:webservices:1.1">
@@ -646,92 +590,36 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/>
-            <subsystem xmlns="urn:jboss:domain:messaging:1.1">
-                <hornetq-server>
-                    <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
-                    <journal-file-size>102400</journal-file-size>
-                    <journal-min-files>2</journal-min-files>
-                    <journal-type>NIO</journal-type>
-                    <!-- disable messaging persistence -->
-                    <persistence-enabled>false</persistence-enabled>
-                    <thread-pool-max-size>2</thread-pool-max-size>
-
-                    <connectors>
-                        <netty-connector name="netty" socket-binding="messaging"/>
-                        <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                            <param key="batch-delay" value="50"/>
-                        </netty-connector>
-                        <in-vm-connector name="in-vm" server-id="0"/>
-                    </connectors>
-
-                    <acceptors>
-                        <netty-acceptor name="netty" socket-binding="messaging"/>
-                        <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
-                            <param key="batch-delay" value="50"/>
-                            <param key="direct-deliver" value="false"/>
-                        </netty-acceptor>
-                        <in-vm-acceptor name="in-vm" server-id="0"/>
-                    </acceptors>
-
-                    <security-settings>
-                        <security-setting match="#">
-                            <permission type="createNonDurableQueue" roles="guest"/>
-                            <permission type="deleteNonDurableQueue" roles="guest"/>
-                            <permission type="consume" roles="guest"/>
-                            <permission type="send" roles="guest"/>
-                        </security-setting>
-                    </security-settings>
-
-                    <address-settings>
-                        <!--default for catch all-->
-                        <address-setting match="#">
-                            <dead-letter-address>jms.queue.DLQ</dead-letter-address>
-                            <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                            <redelivery-delay>0</redelivery-delay>
-                            <max-size-bytes>10485760</max-size-bytes>
-                            <message-counter-history-day-limit>10</message-counter-history-day-limit>
-                            <address-full-policy>BLOCK</address-full-policy>
-                        </address-setting>
-                    </address-settings>
-
-                    <!--JMS Stuff-->
-                    <jms-connection-factories>
-                        <connection-factory name="InVmConnectionFactory">
-                            <connectors>
-                                <connector-ref connector-name="in-vm"/>
-                            </connectors>
-                            <entries>
-                                <entry name="java:/ConnectionFactory"/>
-                            </entries>
-                        </connection-factory>
-                        <connection-factory name="RemoteConnectionFactory">
-                            <connectors>
-                                <connector-ref connector-name="netty"/>
-                            </connectors>
-                            <entries>
-                                <entry name="RemoteConnectionFactory"/>
-                            </entries>
-                        </connection-factory>
-                        <pooled-connection-factory name="hornetq-ra">
-                            <transaction mode="xa"/>
-                            <connectors>
-                                <connector-ref connector-name="in-vm"/>
-                            </connectors>
-                            <entries>
-                                <entry name="java:/JmsXA"/>
-                            </entries>
-                        </pooled-connection-factory>
-                    </jms-connection-factories>
-
-                    <jms-destinations>
-                        <jms-queue name="testQueue">
-                            <entry name="queue/test"/>
-                        </jms-queue>
-                        <jms-topic name="testTopic">
-                            <entry name="topic/test"/>
-                        </jms-topic>
-                    </jms-destinations>
-                </hornetq-server>
+            <subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
+                <server name="default"
+                        persistence-enabled="false">
+                    <journal file-size="102400"/>
+                    <security-setting name="#">
+                        <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
+                    </security-setting>
+                    <address-setting name="#" dead-letter-address="jms.queue.DLQ" expiry-address="jms.queue.ExpiryQueue" max-size-bytes="10485760" page-size-bytes="2097152" message-counter-history-day-limit="10"/>
+                    <http-connector name="http-connector" socket-binding="http">
+                        <param name="http-upgrade-endpoint" value="http-acceptor"/>
+                    </http-connector>
+                    <http-connector name="http-connector-throughput" socket-binding="http">
+                        <param name="http-upgrade-endpoint" value="http-acceptor-throughput"/>
+                        <param name="batch-delay" value="50"/>
+                    </http-connector>
+                    <in-vm-connector name="in-vm" server-id="0"/>
+                    <http-acceptor name="http-acceptor" http-listener="default"/>
+                    <http-acceptor name="http-acceptor-throughput" http-listener="default">
+                        <param name="batch-delay" value="50"/>
+                        <param name="direct-deliver" value="false"/>
+                    </http-acceptor>
+                    <in-vm-acceptor name="in-vm" server-id="0"/>
+                    <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
+                    <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
+                    <jms-queue name="testQueue" entries="queue/test"/>
+                    <jms-topic name="testTopic" entries="topic/test"/>
+                    <connection-factory name="InVmConnectionFactory" connectors="in-vm" entries="java:/ConnectionFactory"/>
+                    <connection-factory name="RemoteConnectionFactory" connectors="http-connector" entries="java:jboss/exported/jms/RemoteConnectionFactory"/>
+                    <pooled-connection-factory name="activemq-ra" transaction="xa" connectors="in-vm" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory"/>
+                </server>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
             <subsystem xmlns="urn:jboss:domain:webservices:1.1">
@@ -807,8 +695,6 @@
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="messaging" port="5445"/>
-            <socket-binding name="messaging-throughput" port="5455"/>
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
@@ -829,8 +715,6 @@
             <socket-binding name="remoting" port="4447"/>
             <socket-binding name="txn-recovery-environment" port="4712"/>
             <socket-binding name="txn-status-manager" port="4713"/>
-            <socket-binding name="messaging" port="5445"/>
-            <socket-binding name="messaging-throughput" port="5455"/>
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>

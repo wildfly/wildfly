@@ -7,7 +7,7 @@
     <jee:assembly-descriptor>
         <mdb:resource-adapter-binding>
             <jee:ejb-name>ConfiguredResourceAdapterNameMDB</jee:ejb-name>
-            <mdb:resource-adapter-name>hornetq-ra.rar</mdb:resource-adapter-name>
+            <mdb:resource-adapter-name>activemq-ra.rar</mdb:resource-adapter-name>
         </mdb:resource-adapter-binding>
     </jee:assembly-descriptor>
 </jboss>

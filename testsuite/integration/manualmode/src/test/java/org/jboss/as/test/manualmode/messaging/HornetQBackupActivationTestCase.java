@@ -22,7 +22,6 @@
 package org.jboss.as.test.manualmode.messaging;
 
 import static java.util.UUID.randomUUID;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -49,6 +48,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.common.jms.DefaultHornetQProviderJMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -77,16 +78,15 @@ public class HornetQBackupActivationTestCase {
     @ArquillianResource
     private static ContainerController container;
 
-    private ModelControllerClient liveClient;
-
-    private ModelControllerClient backupClient;
+    private JMSOperations liveJMSOperations;
+    private JMSOperations backupJMSOperations;
 
     @Before
     public void initServer() throws Exception {
         container.start(LIVE_SERVER);
         container.start(BACKUP_SERVER);
-        liveClient = createLiveClient();
-        backupClient = createBackupClient();
+        liveJMSOperations = new DefaultHornetQProviderJMSOperations(createLiveClient());
+        backupJMSOperations = new DefaultHornetQProviderJMSOperations(createBackupClient());
     }
 
     @After
@@ -97,8 +97,6 @@ public class HornetQBackupActivationTestCase {
         if (container.isStarted(LIVE_SERVER)) {
             container.stop(LIVE_SERVER);
         }
-        liveClient = null;
-        backupClient = null;
     }
 
     private static ModelControllerClient createLiveClient() {
@@ -113,20 +111,20 @@ public class HornetQBackupActivationTestCase {
 
     @Test
     public void testBackupActivation() throws Exception {
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
         final String queueName = randomUUID().toString();
-        addQueue(backupClient, queueName);
+        addQueue(backupJMSOperations, queueName);
         final String jmsQueueName = randomUUID().toString();
-        addJMSQueue(backupClient, jmsQueueName);
+        addJMSQueue(backupJMSOperations, jmsQueueName);
         final String jmsTopicName = randomUUID().toString();
-        addJMSTopic(backupClient, jmsTopicName);
+        addJMSTopic(backupJMSOperations, jmsTopicName);
 
-        checkQueue(backupClient, queueName, false);
-        checkJMSQueue(backupClient, jmsQueueName, false);
-        checkJMSTopic(backupClient, jmsTopicName, false);
-        checkConnectionFactory(backupClient, false);
+        checkQueue(backupJMSOperations, queueName, false);
+        checkJMSQueue(backupJMSOperations, jmsQueueName, false);
+        checkJMSTopic(backupJMSOperations, jmsTopicName, false);
+        checkConnectionFactory(backupJMSOperations, false);
 
         System.out.println("===================");
         System.out.println("STOP LIVE SERVER...");
@@ -134,13 +132,13 @@ public class HornetQBackupActivationTestCase {
         // shutdown live server
         container.stop(LIVE_SERVER);
         // let some time for the backup to detect the failure
-        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(backupJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
 
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
-        checkQueue(backupClient, queueName, true);
-        checkJMSQueue(backupClient, jmsQueueName, true);
-        checkJMSTopic(backupClient, jmsTopicName, true);
-        checkConnectionFactory(backupClient, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, true);
+        checkQueue(backupJMSOperations, queueName, true);
+        checkJMSQueue(backupJMSOperations, jmsQueueName, true);
+        checkJMSTopic(backupJMSOperations, jmsTopicName, true);
+        checkConnectionFactory(backupJMSOperations, true);
 
         System.out.println("====================");
         System.out.println("START LIVE SERVER...");
@@ -148,18 +146,18 @@ public class HornetQBackupActivationTestCase {
         // restart the live server
         container.start(LIVE_SERVER);
         // let some time for the backup to detect the live node and failback
-        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
+        waitForHornetQServerActivation(liveJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
 
         // let some time for the backup to detect the live node and failback
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(backupJMSOperations, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         // backup server has been restarted in passive mode
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
-        checkQueue(backupClient, queueName, false);
-        checkJMSQueue(backupClient, jmsQueueName, false);
-        checkJMSTopic(backupClient, jmsTopicName, false);
-        checkConnectionFactory(backupClient, false);
+        checkQueue(backupJMSOperations, queueName, false);
+        checkJMSQueue(backupJMSOperations, jmsQueueName, false);
+        checkJMSTopic(backupJMSOperations, jmsTopicName, false);
+        checkConnectionFactory(backupJMSOperations, false);
 
         System.out.println("=============================");
         System.out.println("RETURN TO NORMAL OPERATION...");
@@ -180,20 +178,20 @@ public class HornetQBackupActivationTestCase {
     // https://issues.jboss.org/browse/AS7-6840
     @Test
     public void testBackupFailoverAfterFailback() throws Exception {
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
         final String queueName = randomUUID().toString();
-        addQueue(backupClient, queueName);
+        addQueue(backupJMSOperations, queueName);
         final String jmsQueueName = randomUUID().toString();
-        addJMSQueue(backupClient, jmsQueueName);
+        addJMSQueue(backupJMSOperations, jmsQueueName);
         final String jmsTopicName = randomUUID().toString();
-        addJMSTopic(backupClient, jmsTopicName);
+        addJMSTopic(backupJMSOperations, jmsTopicName);
 
-        checkQueue(backupClient, queueName, false);
-        checkJMSQueue(backupClient, jmsQueueName, false);
-        checkJMSTopic(backupClient, jmsTopicName, false);
-        checkConnectionFactory(backupClient, false);
+        checkQueue(backupJMSOperations, queueName, false);
+        checkJMSQueue(backupJMSOperations, jmsQueueName, false);
+        checkJMSTopic(backupJMSOperations, jmsTopicName, false);
+        checkConnectionFactory(backupJMSOperations, false);
 
         System.out.println("===================");
         System.out.println("STOP LIVE SERVER...");
@@ -202,8 +200,8 @@ public class HornetQBackupActivationTestCase {
         container.stop(LIVE_SERVER);
 
         // let some time for the backup to detect the failure
-        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+        waitForHornetQServerActivation(backupJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, true);
 
         System.out.println("====================");
         System.out.println("START LIVE SERVER...");
@@ -212,10 +210,10 @@ public class HornetQBackupActivationTestCase {
         container.start(LIVE_SERVER);
 
         // let some time for the backup to detect the live node and failback
-        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        waitForHornetQServerActivation(liveJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        waitForHornetQServerActivation(backupJMSOperations, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
         System.out.println("==============================");
         System.out.println("STOP LIVE SERVER A 2ND TIME...");
@@ -224,68 +222,68 @@ public class HornetQBackupActivationTestCase {
         container.stop(LIVE_SERVER);
 
         // let some time for the backup to detect the failure
-        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+        waitForHornetQServerActivation(backupJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, true);
     }
 
     // https://issues.jboss.org/browse/AS7-6881
     @Test
     public void testPassiveBackupReload() throws Exception {
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
-        reload(backupClient);
+        reload(backupJMSOperations);
         // let some time for the server to reload
         waitForBackupServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(backupJMSOperations, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
 
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
     }
 
     @Test
     public void testActiveBackupReload() throws Exception {
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
         // shutdown live server
         container.stop(LIVE_SERVER);
         // let some time for the backup to detect the failure
-        waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
+        waitForHornetQServerActivation(backupJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, true);
 
-        reload(backupClient);
+        reload(backupJMSOperations);
         // let some time for the server to reload
         waitForBackupServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(backupJMSOperations, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
 
         // !! reloading an active backup server will make it passive again !!
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
     }
 
     // https://issues.jboss.org/browse/AS7-6881
     @Test
     public void testLiveReload() throws Exception {
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
 
-        reload(liveClient);
+        reload(liveJMSOperations);
         // let some time for the server to reload
         waitForLiveServerToReload(TimeoutUtil.adjust(RELOAD_TIMEOUT));
-        waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(liveJMSOperations, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         // let some time for the backup server to failback
-        waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
+        waitForHornetQServerActivation(backupJMSOperations, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
 
-        checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
-        checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
+        checkHornetQServerStartedAndActiveAttributes(liveJMSOperations, true, true);
+        checkHornetQServerStartedAndActiveAttributes(backupJMSOperations, true, false);
     }
 
-    private void reload(ModelControllerClient client) throws IOException {
+    private void reload(JMSOperations operations) throws IOException {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
         try {
-            execute(client, operation);
+            execute(operations.getControllerClient(), operation);
         } catch(IOException e) {
             final Throwable cause = e.getCause();
             if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
@@ -294,17 +292,16 @@ public class HornetQBackupActivationTestCase {
         }
     }
 
-    private static void waitForHornetQServerActivation(ModelControllerClient client, boolean expectedActive, int timeout) throws IOException {
+    private void waitForHornetQServerActivation(JMSOperations operations, boolean expectedActive, int timeout) throws IOException {
         long start = System.currentTimeMillis();
         long now;
         do {
             ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).add("subsystem", "messaging");
-            operation.get(OP_ADDR).add("hornetq-server", "default");
+            operation.get(OP_ADDR).set(operations.getServerAddress());
             operation.get(OP).set(READ_RESOURCE_OPERATION);
             operation.get(INCLUDE_RUNTIME).set(true);
             try {
-                ModelNode result = execute(client, operation);
+                ModelNode result = execute(operations.getControllerClient(), operation);
                 boolean started = result.get(RESULT, "started").asBoolean();
                 boolean active = result.get(RESULT, "active").asBoolean();
                 if (started && expectedActive == active) {
@@ -334,8 +331,9 @@ public class HornetQBackupActivationTestCase {
         long start = System.currentTimeMillis();
         long now;
         do {
-            backupClient.close();
-            backupClient = createBackupClient();
+            backupJMSOperations.getControllerClient().close();
+
+            ModelControllerClient backupClient = createBackupClient();
             ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).setEmptyList();
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -344,6 +342,7 @@ public class HornetQBackupActivationTestCase {
                 ModelNode result = execute(backupClient, operation);
                 boolean normal = "running".equals(result.get(RESULT).asString());
                 if (normal) {
+                    backupJMSOperations = new DefaultHornetQProviderJMSOperations(backupClient);
                     return;
                 }
             } catch (Exception e) {
@@ -367,8 +366,9 @@ public class HornetQBackupActivationTestCase {
         long start = System.currentTimeMillis();
         long now;
         do {
-            liveClient.close();
-            liveClient = createLiveClient();
+            liveJMSOperations.getControllerClient().close();
+
+            ModelControllerClient liveClient = createLiveClient();
             ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).setEmptyList();
             operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -377,6 +377,7 @@ public class HornetQBackupActivationTestCase {
                 ModelNode result = execute(liveClient, operation);
                 boolean normal = "running".equals(result.get(RESULT).asString());
                 if (normal) {
+                    liveJMSOperations = new DefaultHornetQProviderJMSOperations(liveClient);
                     return;
                 }
             } catch (Exception e) {
@@ -391,46 +392,25 @@ public class HornetQBackupActivationTestCase {
         fail("Live Server did not reload in the imparted time.");
     }
 
-    private static void addQueue(ModelControllerClient client, String queueName) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
-        operation.get(OP_ADDR).add("queue", queueName);
-        operation.get(OP).set(ADD);
-        operation.get("queue-address").set(queueName);
-        execute(client, operation);
+    private void addQueue(JMSOperations operations, String queueName) throws IOException {
+        operations.addCoreQueue(queueName, queueName, false);
     }
 
-    private static void addJMSQueue(ModelControllerClient client, String jmsQueueName) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
-        operation.get(OP_ADDR).add("jms-queue", jmsQueueName);
-        operation.get(OP).set(ADD);
-        operation.get("entries").setEmptyList();
-        operation.get("entries").add("java:jboss/exported/jms/" + jmsQueueName);
-        execute(client, operation);
+    private void addJMSQueue(JMSOperations operations, String jmsQueueName) throws IOException {
+        operations.createJmsQueue(jmsQueueName, "java:jboss/exported/jms/" + jmsQueueName);
     }
 
-    private static void addJMSTopic(ModelControllerClient client, String jmsTopicName) throws IOException {
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
-        operation.get(OP_ADDR).add("jms-topic", jmsTopicName);
-        operation.get(OP).set(ADD);
-        operation.get("entries").setEmptyList();
-        operation.get("entries").add("java:jboss/exported/jms/" + jmsTopicName);
-        execute(client, operation);
+    private void addJMSTopic(JMSOperations operations, String jmsTopicName) throws IOException {
+        operations.createJmsTopic(jmsTopicName, "java:jboss/exported/jms/" + jmsTopicName);
     }
 
-    private static void checkConnectionFactory(ModelControllerClient client, boolean active) throws Exception {
+    private void checkConnectionFactory(JMSOperations operations, boolean active) throws Exception {
         ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
-        operation.get(OP_ADDR).add("connection-factory", "RemoteConnectionFactory");
+        ModelNode address = operations.getServerAddress().add("connection-factory", "RemoteConnectionFactory");
+        operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
-        ModelNode result = execute(client, operation);
+        ModelNode result = execute(operations.getControllerClient(), operation);
         // initial-message-packet-size is a runtime attribute. if the server is passive, it returns undefined
         assertEquals(result.toJSONString(true), active, result.get(RESULT, "initial-message-packet-size").isDefined());
 
@@ -438,29 +418,23 @@ public class HornetQBackupActivationTestCase {
         operation.get(OP).set("add-jndi");
         operation.get("jndi-binding").set("java:jboss/exported/jms/" + randomUUID().toString());
         if (active) {
-            execute(client, operation);
+            execute(operations.getControllerClient(), operation);
         } else {
-            executeWithFailure(client, operation);
+            executeWithFailure(operations.getControllerClient(), operation);
         }
     }
 
-    private static void checkQueue(ModelControllerClient client, String queueName, boolean active) throws Exception {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("queue", queueName);
-        checkQueue0(client, address, "id", active);
+    private void checkQueue(JMSOperations operations, String queueName, boolean active) throws Exception {
+        ModelNode address = operations.getServerAddress().add("queue", queueName);
+        checkQueue0(operations.getControllerClient(), address, "id", active);
     }
 
-    private static void checkJMSQueue(ModelControllerClient client, String jmsQueueName, boolean active) throws Exception {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("jms-queue", jmsQueueName);
-        checkQueue0(client, address, "queue-address", active);
+    private void checkJMSQueue(JMSOperations operations, String jmsQueueName, boolean active) throws Exception {
+        ModelNode address = operations.getServerAddress().add("jms-queue", jmsQueueName);
+        checkQueue0(operations.getControllerClient(), address, "queue-address", active);
     }
 
-    private static void checkQueue0(ModelControllerClient client, ModelNode address, String runtimeAttributeName, boolean active) throws Exception {
+    private void checkQueue0(ModelControllerClient client, ModelNode address, String runtimeAttributeName, boolean active) throws Exception {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
@@ -477,42 +451,43 @@ public class HornetQBackupActivationTestCase {
         }
     }
 
-    private static void checkJMSTopic(ModelControllerClient client, String jmsTopicName, boolean active) throws Exception {
+    private void checkJMSTopic(JMSOperations operations, String jmsTopicName, boolean active) throws Exception {
         ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
-        operation.get(OP_ADDR).add("jms-topic", jmsTopicName);
+        ModelNode address = operations.getServerAddress().add("jms-topic", jmsTopicName);
+        operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
-        ModelNode result = execute(client, operation);
+        ModelNode result = execute(operations.getControllerClient(), operation);
         assertEquals(result.toJSONString(true), active, result.get(RESULT, "topic-address").isDefined());
 
         // runtime operation
         operation.get(OP).set("list-all-subscriptions");
         if (active) {
-            execute(client, operation);
+            execute(operations.getControllerClient(), operation);
         } else {
-            executeWithFailure(client, operation);
+            executeWithFailure(operations.getControllerClient(), operation);
         }
     }
 
-    public static void checkHornetQServerStartedAndActiveAttributes(ModelControllerClient client, boolean expectedStarted, boolean  expectedActive) throws IOException {
+    public void checkHornetQServerStartedAndActiveAttributes(JMSOperations operations, boolean expectedStarted, boolean  expectedActive) throws IOException {
         ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).add("subsystem", "messaging");
-        operation.get(OP_ADDR).add("hornetq-server", "default");
+        ModelNode address = operations.getServerAddress();
+        operation.get(OP_ADDR).set(address);
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
-        ModelNode result = execute(client, operation);
+        System.out.println("operation = " + operation);
+        ModelNode result = execute(operations.getControllerClient(), operation);
         assertEquals(expectedStarted, result.get(RESULT, "started").asBoolean());
         assertEquals(expectedActive, result.get(RESULT, "active").asBoolean());
     }
 
-    private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws IOException {
+    private ModelNode execute(ModelControllerClient client, ModelNode operation) throws IOException {
+        System.out.println("operation = " + operation);
         ModelNode result = client.execute(operation);
         return result;
     }
 
-    private static void executeWithFailure(ModelControllerClient client, ModelNode operation) throws IOException {
+    private void executeWithFailure(ModelControllerClient client, ModelNode operation) throws IOException {
         ModelNode result = client.execute(operation);
         assertEquals(result.toJSONString(true), FAILED, result.get(OUTCOME).asString());
         assertTrue(result.toJSONString(true), result.get(FAILURE_DESCRIPTION).asString().contains("WFLYMSG0066"));

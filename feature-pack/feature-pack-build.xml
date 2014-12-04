@@ -36,6 +36,10 @@
                 output-file="standalone/configuration/standalone-full.xml"/>
         <standalone
                 template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-full-hornetq.xml"
+                output-file="standalone/configuration/standalone-full-hornetq.xml"/>
+        <standalone
+                template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-ha.xml"
                 output-file="standalone/configuration/standalone-ha.xml">
             <property name="jgroups.supplement" value="" />
@@ -44,6 +48,12 @@
                 template="configuration/standalone/template.xml"
                 subsystems="configuration/standalone/subsystems-full-ha.xml"
                 output-file="standalone/configuration/standalone-full-ha.xml">
+            <property name="jgroups.supplement" value="" />
+        </standalone>
+        <standalone
+                template="configuration/standalone/template.xml"
+                subsystems="configuration/standalone/subsystems-full-ha-hornetq.xml"
+                output-file="standalone/configuration/standalone-full-ha-hornetq.xml">
             <property name="jgroups.supplement" value="" />
         </standalone>
         <standalone
@@ -105,6 +115,10 @@
         <copy-artifact artifact="org.wildfly:wildfly-client-all" to-location="bin/client/jboss-client.jar"/>
         <copy-artifact artifact="org.wildfly.core:wildfly-cli::client" to-location="bin/client/jboss-cli-client.jar"/>
         <copy-artifact artifact="org.hornetq:hornetq-native" to-location="modules/system/layers/base/org/hornetq/main" extract="true" >
+            <filter pattern="lib/*" include="true" />
+            <filter pattern="*" include="false"/>
+        </copy-artifact>
+        <copy-artifact artifact="org.apache.activemq:artemis-native" to-location="modules/system/layers/base/org/apache/activemq/artemis/main" extract="true" >
             <filter pattern="lib/*" include="true" />
             <filter pattern="*" include="false"/>
         </copy-artifact>

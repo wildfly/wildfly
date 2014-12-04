@@ -36,12 +36,16 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,7 +64,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 @ServerSetup(DeployedXmlJMSManagementTestCase.DeployedXmlJMSManagementTestCaseSetup.class)
 public class DeployedXmlJMSManagementTestCase {
 
-    public static final String TEST_JMS_XML = "test-jms.xml";
+    private static final String TEST_HORNETQ_JMS_XML = "test-hornetq-jms.xml";
+    private static final String TEST_ACTIVEMQ_JMS_XML = "test-activemq-jms.xml";
 
     static class DeployedXmlJMSManagementTestCaseSetup extends AbstractMgmtServerSetupTask {
 
@@ -68,7 +73,11 @@ public class DeployedXmlJMSManagementTestCase {
         protected void doSetup(final ManagementClient managementClient) throws Exception {
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlJMSManagementTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSManagementTestCase.class.getResource("/" + packageName + "/" + TEST_JMS_XML)).andDeploy().build();
+
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+            String xmlFile = (jmsOperations.getProviderName().equals("hornetq")) ? TEST_HORNETQ_JMS_XML : TEST_ACTIVEMQ_JMS_XML;
+
+            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlJMSManagementTestCase.class.getResource("/" + packageName + "/" + xmlFile)).andDeploy().build();
             final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
             final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
@@ -81,14 +90,24 @@ public class DeployedXmlJMSManagementTestCase {
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+            String xmlFile = (jmsOperations.getProviderName().equals("hornetq")) ? TEST_HORNETQ_JMS_XML : TEST_ACTIVEMQ_JMS_XML;
+
             final ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_JMS_XML).andRemoveUndeployed().build();
+            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(xmlFile).andRemoveUndeployed().build();
             manager.execute(undeployPlan).get();
         }
     }
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    private JMSOperations jmsOperations;
+
+    @Before
+    public void setUp() {
+        jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+    }
 
     @Deployment
     public static Archive<?> deploy() {
@@ -99,35 +118,42 @@ public class DeployedXmlJMSManagementTestCase {
 
     @Test
     public void testDeployedQueueInManagementModel() throws IOException {
-        final ModelNode address = new ModelNode();
-        address.add("deployment", TEST_JMS_XML);
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("jms-queue", "queue1");
-        address.protect();
-
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("durable");
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(true, result.get(RESULT).asBoolean());
-    }
-
-    @Test
-    public void testDeployedTopicInManagementModel() throws IOException {
-        final ModelNode address = new ModelNode();
-        address.add("deployment", TEST_JMS_XML);
-        address.add("subsystem", "messaging");
-        address.add("hornetq-server", "default");
-        address.add("jms-topic", "topic1");
+        final ModelNode address = getDeployedResourceAddress("jms-queue", "queue1");
         address.protect();
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("read-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("entries");
+        System.out.println("operation = " + operation);
         ModelNode result = managementClient.getControllerClient().execute(operation);
+        System.out.println("result = " + result);
+        Assert.assertEquals("java:/queue1", result.get(RESULT).asList().get(0).asString());
+    }
+
+    @Test
+    public void testDeployedTopicInManagementModel() throws IOException {
+        final ModelNode address = getDeployedResourceAddress("jms-topic", "topic1");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-attribute");
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set("entries");
+        System.out.println("operation = " + operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
+        System.out.println("result = " + result);
         Assert.assertEquals("java:/topic1", result.get(RESULT).asList().get(0).asString());
+    }
+
+    private ModelNode getDeployedResourceAddress(String type, String name) {
+        ModelNode address = new ModelNode();
+        String deployment = jmsOperations.getProviderName().equals("hornetq") ? TEST_HORNETQ_JMS_XML : TEST_ACTIVEMQ_JMS_XML;
+        address.add("deployment", deployment);
+        for (Property property : jmsOperations.getServerAddress().asPropertyList()) {
+            address.add(property.getName(), property.getValue());
+        }
+        address.add(type, name);
+        return address;
     }
 }

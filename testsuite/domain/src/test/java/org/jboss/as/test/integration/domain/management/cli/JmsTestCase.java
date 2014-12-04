@@ -73,7 +73,7 @@ public class JmsTestCase extends AbstractCliTestBase {
     private void testAddJmsQueue() throws Exception {
 
         // check the queue is not registered
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-queue");
         cli.sendLine("ls");
         String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsQueue"));
@@ -82,7 +82,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("jms-queue add --profile=" + profileName + " --queue-address=testJmsQueue --entries=testJmsQueue");
 
         // check it is listed
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-queue");
         cli.sendLine("ls");
         ls = cli.readOutput();
         assertTrue(ls.contains("testJmsQueue"));
@@ -94,7 +94,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("jms-queue remove --profile=" + profileName + " --queue-address=testJmsQueue");
 
         // check it is listed
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-queue");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-queue");
         cli.sendLine("ls");
         String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsQueue"));
@@ -103,7 +103,7 @@ public class JmsTestCase extends AbstractCliTestBase {
     private void testAddJmsTopic() throws Exception {
 
         // check the queue is not registered
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-topic");
         cli.sendLine("ls");
         String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsTopic"));
@@ -112,7 +112,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("jms-topic add --profile=" + profileName + " --topic-address=testJmsTopic --entries=testJmsTopic");
 
         // check it is listed
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-topic");
         cli.sendLine("ls");
         ls = cli.readOutput();
         assertTrue(ls.contains("testJmsTopic"));
@@ -124,7 +124,7 @@ public class JmsTestCase extends AbstractCliTestBase {
         cli.sendLine("jms-topic remove --profile=" + profileName + " --topic-address=testJmsTopic");
 
         // check it is listed
-        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging/hornetq-server=default/jms-topic");
+        cli.sendLine("cd /profile=" + profileName + "/subsystem=messaging-activemq/server=default/jms-topic");
         cli.sendLine("ls");
         String ls = cli.readOutput();
         assertFalse(ls.contains("testJmsTopic"));

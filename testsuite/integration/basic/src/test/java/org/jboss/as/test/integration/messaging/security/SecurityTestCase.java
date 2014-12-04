@@ -31,10 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
-
-import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
 import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
@@ -43,18 +39,20 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.Role;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,6 +67,12 @@ public class SecurityTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    @Before
+    public void setUp() {
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
+        Assume.assumeTrue("Test is relevant only when the messaging subsystem with HornetQ is setup", "hornetq".equals(jmsOperations.getProviderName()));
+    }
 
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {
