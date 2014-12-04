@@ -27,21 +27,21 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.extension.picketlink.federation.FederationExtension;
+import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 /**
  * @author Pedro Igor
  */
-public class FederationSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest {
+public class IDMSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest {
 
-    public FederationSubsystem_1_0_UnitTestCase() {
-        super(FederationExtension.SUBSYSTEM_NAME, new FederationExtension());
+    public IDMSubsystem_1_0_UnitTestCase() {
+        super(IDMExtension.SUBSYSTEM_NAME, new IDMExtension());
     }
 
     @Test
     public void testParseAndMarshalModel() throws Exception {
         //Parse the subsystem xml and install into the first controller
-        String subsystemXml = readResource("federation-subsystem-1.0.xml");
+        String subsystemXml = readResource("identity-management-subsystem-1.0.xml");
 
         KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml)
@@ -59,7 +59,5 @@ public class FederationSubsystem_1_0_UnitTestCase extends AbstractSubsystemTest 
 
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
-
-        assertRemoveSubsystemResources(servicesB);
     }
 }

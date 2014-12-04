@@ -27,6 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.common.model.validator.ModelValidationStepHandler;
@@ -57,7 +58,17 @@ public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDe
         .setAccessConstraints(BASE_DN_SUFFIX_CONSTRAINT)
         .setAllowExpression(true)
         .build();
-    public static final LDAPStoreResourceDefinition INSTANCE = new LDAPStoreResourceDefinition(URL, BIND_DN, BIND_CREDENTIAL, BASE_DN_SUFFIX, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL);
+    public static final SimpleAttributeDefinition ACTIVE_DIRECTORY = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_ACTIVE_DIRECTORY.getName(), ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+    public static final SimpleAttributeDefinition UNIQUE_ID_ATTRIBUTE_NAME = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_UNIQUE_ID_ATTRIBUTE_NAME
+            .getName(), ModelType.STRING, true)
+            .setAllowExpression(true)
+            .build();
+
+    public static final LDAPStoreResourceDefinition INSTANCE = new LDAPStoreResourceDefinition(URL, BIND_DN, BIND_CREDENTIAL, BASE_DN_SUFFIX, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL, ACTIVE_DIRECTORY,
+            UNIQUE_ID_ATTRIBUTE_NAME);
 
     private LDAPStoreResourceDefinition(SimpleAttributeDefinition... attributes) {
         super(ModelElement.LDAP_STORE, new IDMConfigAddStepHandler(getModelValidators(), attributes), attributes);

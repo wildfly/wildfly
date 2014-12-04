@@ -66,6 +66,11 @@
         <xsd:annotation>
             <xsd:documentation>The RoleGenerator implementation that will be used to load roles and push them to SAML assertions.</xsd:documentation>
         </xsd:annotation>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the role generator name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>The FQN of the RoleGenerator type.</xsd:documentation>
@@ -87,6 +92,11 @@
         <xsd:annotation>
             <xsd:documentation>The AttributeManager implementation that will be used to load roles and push them to SAML assertions.</xsd:documentation>
         </xsd:annotation>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the attribute manager name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>The FQN of the AttributeManager type.</xsd:documentation>
@@ -342,6 +352,11 @@
         <xsd:element name="handler-parameter" type="handlerParameterType" minOccurs="0" maxOccurs="unbounded"
                      nillable="true"/>
         </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>Defines the handler name.</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>Defines the handler class name.</xsd:documentation>

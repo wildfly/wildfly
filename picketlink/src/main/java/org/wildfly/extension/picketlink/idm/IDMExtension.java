@@ -24,10 +24,23 @@ package org.wildfly.extension.picketlink.idm;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription.Tools;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.picketlink.idm.model.IdentityConfigurationResourceDefinition;
+import org.wildfly.extension.picketlink.idm.model.LDAPStoreResourceDefinition;
+import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefinition;
+
+import static org.wildfly.extension.picketlink.idm.Namespace.PICKETLINK_IDENTITY_MANAGEMENT_1_0;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -47,10 +60,36 @@ public class IDMExtension implements Extension {
 
         subsystem.registerSubsystemModel(IDMSubsystemRootResourceDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(Namespace.CURRENT.getXMLWriter());
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers_1_0(context, subsystem);
+        }
+    }
+
+    private void registerTransformers_1_0(ExtensionContext context, SubsystemRegistration subsystemRegistration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder partitionManagerResourceBuilder = builder
+                .addChildResource(PartitionManagerResourceDefinition.INSTANCE);
+        ResourceTransformationDescriptionBuilder identityConfigResourceBuilder = partitionManagerResourceBuilder
+                .addChildResource(IdentityConfigurationResourceDefinition.INSTANCE);
+        ResourceTransformationDescriptionBuilder ldapTransfDescBuilder = identityConfigResourceBuilder
+                .addChildResource(LDAPStoreResourceDefinition.INSTANCE);
+
+        ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
+                LDAPStoreResourceDefinition.ACTIVE_DIRECTORY)
+                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)),
+                        LDAPStoreResourceDefinition.ACTIVE_DIRECTORY);
+
+        ldapTransfDescBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED,
+                LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME);
+
+        Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 0));
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUri(), Namespace.CURRENT.getXMLReader());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, PICKETLINK_IDENTITY_MANAGEMENT_1_0.getUri(), PICKETLINK_IDENTITY_MANAGEMENT_1_0.getXMLReader());
     }
 }

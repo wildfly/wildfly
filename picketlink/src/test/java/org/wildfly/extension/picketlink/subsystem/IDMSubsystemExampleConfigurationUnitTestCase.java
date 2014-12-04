@@ -48,7 +48,7 @@ public class IDMSubsystemExampleConfigurationUnitTestCase extends AbstractSubsys
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("identity-management-subsystem-example-1.0.xml");
+        return readResource("identity-management-subsystem-example-2.0.xml");
     }
 
     @Test

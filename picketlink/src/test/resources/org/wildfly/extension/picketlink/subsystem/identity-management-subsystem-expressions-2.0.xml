@@ -1,0 +1,77 @@
+<subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
+  <partition-manager jndi-name="picketlink/FileEmbeddedBasedPartitionManager" name="file.embedded.based.partition.manager">
+    <identity-configuration name="file.config">
+      <file-store working-dir="${test.picketlink.file.config.working-dir:/tmp/pl-idm-embedded}"
+                  always-create-files="${test.picketlink.file.config.always-create-files:true}"
+                  async-write="${test.picketlink.file.config.async-write:true}"
+                  async-write-thread-pool="${test.picketlink.file.config.async-pool:10}">
+        <supported-types supports-all="${test.picketlink.file.config.supports-all-types:true}"/>
+      </file-store>
+    </identity-configuration>
+  </partition-manager>
+
+  <partition-manager jndi-name="picketlink/JPADSBasedPartitionManager" name="jpa.ds.based.partition.manager">
+    <identity-configuration name="jpa.config">
+      <jpa-store data-source="${test.picketlink.jpa.config.data-source:jboss/datasources/ExampleDS}">
+        <supported-types supports-all="true"/>
+      </jpa-store>
+    </identity-configuration>
+  </partition-manager>
+
+  <partition-manager jndi-name="picketlink/JPAEMFBasedPartitionManager" name="jpa.emf.based.partition.manager">
+    <identity-configuration name="jpa.config">
+      <jpa-store entity-manager-factory="${test.picketlink.jpa.config.emf:jboss/TestingIDMEMF}">
+        <supported-types>
+          <supported-type name="Partition"  code="Partition"/>
+          <supported-type name="IdentityType"  code="IdentityType"/>
+          <supported-type name="Relationship"  class-name="org.picketlink.idm.model.Relationship"/>
+        </supported-types>
+      </jpa-store>
+    </identity-configuration>
+  </partition-manager>
+
+  <partition-manager jndi-name="picketlink/LDAPBasedPartitionManager" name="ldap.based.partition.manager">
+    <identity-configuration name="ldap.config">
+      <ldap-store url="${test.picketlink.ldap.config.ldap-url:ldap://localhost:10389}"
+                  bind-dn="${test.picketlink.ldap.config.ldap-bind-dn:uid=admin,ou=system}"
+                  bind-credential="${test.picketlink.ldap.config.ldap-bind-credential:secret}"
+                  base-dn-suffix="${test.picketlink.ldap.config.ldap-base-dn:dc=jboss,dc=org}"
+                  active-directory="true"
+                  unique-id-attribute-name="someAttribute">
+        <supported-types>
+          <supported-type name="IdentityType"  code="IdentityType"/>
+          <supported-type name="Relationship"  code="Relationship"/>
+        </supported-types>
+        <mappings>
+          <mapping name="Agent" class-name="org.picketlink.idm.model.basic.Agent" base-dn-suffix="ou=Agent,dc=jboss,dc=org"
+                   object-classes="account">
+            <attribute name="loginName" ldap-name="uid" is-identifier="true"/>
+            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
+          </mapping>
+          <mapping name="User" class-name="org.picketlink.idm.model.basic.User" base-dn-suffix="ou=People,dc=jboss,dc=org"
+                   object-classes="inetOrgPerson, organizationalPerson">
+            <attribute name="loginName" ldap-name="uid" is-identifier="true"/>
+            <attribute name="firstName" ldap-name="cn"/>
+            <attribute name="lastName" ldap-name="sn"/>
+            <attribute name="email" ldap-name="uid"/>
+            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
+          </mapping>
+          <mapping name="Role" class-name="org.picketlink.idm.model.basic.Role" base-dn-suffix="ou=Roles,dc=jboss,dc=org"
+                   object-classes="groupOfNames">
+            <attribute name="name" ldap-name="cn" is-identifier="true"/>
+            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
+          </mapping>
+          <mapping name="Group" class-name="org.picketlink.idm.model.basic.Group" base-dn-suffix="ou=Groups,dc=jboss,dc=org"
+                   object-classes="groupOfNames" parent-membership-attribute-name="member">
+            <attribute name="name" ldap-name="cn" is-identifier="true"/>
+            <attribute name="createdDate" ldap-name="createTimeStamp" read-only="true"/>
+          </mapping>
+          <mapping name="Grant" class-name="org.picketlink.idm.model.basic.Grant" relates-to="org.picketlink.idm.model.basic.Role">
+            <attribute name="assignee" ldap-name="member"/>
+          </mapping>
+        </mappings>
+      </ldap-store>
+    </identity-configuration>
+  </partition-manager>
+
+</subsystem>
