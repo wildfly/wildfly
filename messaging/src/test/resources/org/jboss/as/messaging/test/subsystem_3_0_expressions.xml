@@ -84,11 +84,11 @@
             </netty-connector>
             <in-vm-connector name="in-vm" server-id="${my.server-id:0}" />
             <connector name="myconnector">
-                <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                 <param key="host" value="192.168.1.2"/>
                 <param key="port" value="5445"/>
                 <param key="key-store-path" value="path/to/server.jks"/>
                 <param key="key-store-password" value="${VAULT::server-key::key-store-password::sharedKey}"/>
+                <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
             </connector>
         </connectors>
         <acceptors>
@@ -102,8 +102,8 @@
             </netty-acceptor>
             <in-vm-acceptor name="in-vm" server-id="${my.server-id:0}" />
             <acceptor name="myacceptor">
-                <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
                 <param key="batch-delay" value="${batch.delay:50}"/>
+                <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
             </acceptor>
         </acceptors>
         <broadcast-groups>

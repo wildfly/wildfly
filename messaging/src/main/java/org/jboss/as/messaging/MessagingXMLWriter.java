@@ -215,9 +215,11 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 for(final Property property : node.get(CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.CONNECTOR.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+
+                    writeTransportParam(writer, property.getValue().get(PARAM));
+
                     GenericTransportDefinition.SOCKET_BINDING.marshallAsElement(property.getValue(), writer);
                     CommonAttributes.FACTORY_CLASS.marshallAsElement(property.getValue(), writer);
-                    writeTransportParam(writer, property.getValue().get(PARAM));
                     writer.writeEndElement();
                 }
             }
@@ -269,9 +271,10 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
 
         RemoteTransportDefinition.SOCKET_BINDING.marshallAsAttribute(value, writer);
         InVMTransportDefinition.SERVER_ID.marshallAsAttribute(value, writer);
-        CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
 
         writeTransportParam(writer, value.get(PARAM));
+
+        CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
     }
 
     private static void writeTransportParam(final XMLExtendedStreamWriter writer, final ModelNode param) throws XMLStreamException {

@@ -1337,13 +1337,6 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
-          <xs:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xs:long">
-              <xs:annotation>
-                  <xs:documentation>
-                      How often the cluster connection will broadcast itself
-                  </xs:documentation>
-              </xs:annotation>
-          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="notification-attempts" type="xs:int">
               <xs:annotation>
                   <xs:documentation>
@@ -1351,6 +1344,13 @@
                   </xs:documentation>
               </xs:annotation>
           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="notification-interval" type="xs:long">
+               <xs:annotation>
+                   <xs:documentation>
+                       How often the cluster connection will broadcast itself
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
           <xs:choice>
              <xs:element maxOccurs="1" minOccurs="0" name="static-connectors">
                 <xs:complexType>
@@ -2514,10 +2514,10 @@
                  </xs:documentation>
              </xs:annotation>
          </xs:element>
-         <xs:element maxOccurs="1" minOccurs="1" name="destination" type="jms-bridgeResourceType">
+         <xs:element maxOccurs="1" minOccurs="1" name="target" type="jms-bridgeResourceType">
              <xs:annotation>
                  <xs:documentation>
-                     The destination of the JMS bridge.
+                     The target of the JMS bridge.
                  </xs:documentation>
              </xs:annotation>
          </xs:element>
