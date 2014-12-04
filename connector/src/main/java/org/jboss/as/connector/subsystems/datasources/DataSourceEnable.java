@@ -78,9 +78,10 @@ public class DataSourceEnable implements OperationStepHandler {
 
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
+        if (! context.isBooting())
+            model.get(ENABLED).set(true);
 
         if (context.isNormalServer()) {
-            model.get(ENABLED).set(true);
             DataSourceStatisticsListener.registerStatisticsResources(resource);
 
             context.addStep(new OperationStepHandler() {
