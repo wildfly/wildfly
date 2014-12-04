@@ -186,6 +186,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         ModelNode bindDn = LDAPStoreResourceDefinition.BIND_DN.resolveModelAttribute(context, ldapIdentityStore);
         ModelNode bindCredential = LDAPStoreResourceDefinition.BIND_CREDENTIAL.resolveModelAttribute(context, ldapIdentityStore);
         ModelNode baseDn = LDAPStoreResourceDefinition.BASE_DN_SUFFIX.resolveModelAttribute(context, ldapIdentityStore);
+        ModelNode uniqueIdAttributeName = LDAPStoreResourceDefinition.UNIQUE_ID_ATTRIBUTE_NAME.resolveModelAttribute(context, ldapIdentityStore);
+        ModelNode activeDirectory = LDAPStoreResourceDefinition.ACTIVE_DIRECTORY.resolveModelAttribute(context, ldapIdentityStore);
 
         if (url.isDefined()) {
             storeConfig.url(url.asString());
@@ -202,6 +204,12 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         if (baseDn.isDefined()) {
             storeConfig.baseDN(baseDn.asString());
         }
+
+        if (uniqueIdAttributeName.isDefined()) {
+            storeConfig.uniqueIdentifierAttributeName(uniqueIdAttributeName.asString());
+        }
+
+        storeConfig.activeDirectory(activeDirectory.asBoolean());
 
         if (ldapIdentityStore.hasDefined(LDAP_STORE_MAPPING.getName())) {
             for (Property mappingNode : ldapIdentityStore.get(LDAP_STORE_MAPPING.getName()).asPropertyList()) {

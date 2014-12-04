@@ -27,6 +27,6 @@ package org.wildfly.extension.picketlink.idm.model.parser;
  *
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  */
-public class IDMSubsystemReader_2_0 extends AbstractIDMSubsystemReader {
+public class IDMSubsystemReader_1_1 extends AbstractIDMSubsystemReader {
 
 }

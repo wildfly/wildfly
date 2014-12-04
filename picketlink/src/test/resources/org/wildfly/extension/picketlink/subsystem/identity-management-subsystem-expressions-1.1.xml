@@ -35,7 +35,9 @@
       <ldap-store url="${test.picketlink.ldap.config.ldap-url:ldap://localhost:10389}"
                   bind-dn="${test.picketlink.ldap.config.ldap-bind-dn:uid=admin,ou=system}"
                   bind-credential="${test.picketlink.ldap.config.ldap-bind-credential:secret}"
-                  base-dn-suffix="${test.picketlink.ldap.config.ldap-base-dn:dc=jboss,dc=org}">
+                  base-dn-suffix="${test.picketlink.ldap.config.ldap-base-dn:dc=jboss,dc=org}"
+                  active-directory="true"
+                  unique-id-attribute-name="someAttribute">
         <supported-types>
           <supported-type name="IdentityType"  code="IdentityType"/>
           <supported-type name="Relationship"  code="Relationship"/>

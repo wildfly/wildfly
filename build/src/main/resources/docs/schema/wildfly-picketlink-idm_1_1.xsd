@@ -24,9 +24,9 @@
     <xsd:element name="subsystem" type="subsystemType"/>
 
     <xsd:complexType name="subsystemType">
-      <xsd:sequence>
-         <xsd:element name="partition-manager" type="partitionManagerType" minOccurs="0" maxOccurs="unbounded"/>
-      </xsd:sequence>
+        <xsd:sequence>
+            <xsd:element name="partition-manager" type="partitionManagerType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="partitionManagerType">
@@ -34,17 +34,17 @@
             <xsd:documentation>Defines the Partition Manager type.</xsd:documentation>
         </xsd:annotation>
         <xsd:sequence>
-          <xsd:element name="identity-configuration" type="identityConfigurationType" minOccurs="1" maxOccurs="unbounded" nillable="false"/>
+            <xsd:element name="identity-configuration" type="identityConfigurationType" minOccurs="1" maxOccurs="unbounded" nillable="false"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required">
-          <xsd:annotation>
-            <xsd:documentation>Name for this instance.</xsd:documentation>
-          </xsd:annotation>
+            <xsd:annotation>
+                <xsd:documentation>Name for this instance.</xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="jndi-name" type="xsd:string" use="required">
-          <xsd:annotation>
-            <xsd:documentation>JNDI name to bind this instance.</xsd:documentation>
-          </xsd:annotation>
+            <xsd:annotation>
+                <xsd:documentation>JNDI name to bind this instance.</xsd:documentation>
+            </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
@@ -146,7 +146,7 @@
             <xsd:annotation>
                 <xsd:documentation>Defines a credential handler type that should be supported by a identity store.
                 </xsd:documentation>
-          </xsd:annotation>
+            </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="code" type="xsd:string" use="optional">
             <xsd:annotation>
@@ -169,21 +169,21 @@
                 <xsd:attribute name="entity-manager-factory" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation>The JNDI url of the EntityManagerFactory that should be used, instead of the default
-                        factory.
+                            factory.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="data-source" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation>The JNDI url of data source that should be used to create the default
-                        EntityManagerFactory.
+                            EntityManagerFactory.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="entity-module" type="xsd:string" use="optional">
                     <xsd:annotation>
                         <xsd:documentation>The name of the module where the JPA entities are located. Those entities will be used to
-                        initialize the JPA store.
+                            initialize the JPA store.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -210,9 +210,9 @@
                 <xsd:attribute name="relative-to" type="xsd:string" use="optional" default="jboss.server.data.dir">
                     <xsd:annotation>
                         <xsd:documentation>
-                        One of the system-provided named paths (such as jboss.home.dir,
-                        user.home, user.dir) relative to which the absolute path
-                        will be calculated for the path specified in the file attribute.
+                            One of the system-provided named paths (such as jboss.home.dir,
+                            user.home, user.dir) relative to which the absolute path
+                            will be calculated for the path specified in the file attribute.
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
@@ -262,6 +262,16 @@
                 <xsd:attribute name="base-dn-suffix" type="xsd:string" use="required">
                     <xsd:annotation>
                         <xsd:documentation>The size of the thread pool if asynchronous writing is enabled.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="active-directory" type="xsd:boolean" use="optional" default="false">
+                    <xsd:annotation>
+                        <xsd:documentation>Indicates if the LDAP server is a MSAD.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="unique-id-attribute-name" type="xsd:string" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation>The name of a LDAP attribute that unique identifies entries.</xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>

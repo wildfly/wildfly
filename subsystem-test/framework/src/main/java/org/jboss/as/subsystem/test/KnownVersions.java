@@ -103,6 +103,7 @@ class KnownVersions {
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "osgi", "1.1.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "picketlink-federation", "1.0.0", CORE_MODEL_EAP_6_3_0);
+        addSubsystemVersion(map, "picketlink-identity-management", "1.0.0", CORE_MODEL_EAP_6_3_0);
         addSubsystemVersion(map, "pojo", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.2.0", CORE_MODEL_7_2_0);

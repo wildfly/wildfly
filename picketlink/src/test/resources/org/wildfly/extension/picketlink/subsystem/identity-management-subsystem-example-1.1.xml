@@ -76,7 +76,9 @@
     <!-- A configuration using a LDAP-based identity store. -->
     <partition-manager name="ldap.idm" jndi-name="picketlink/LDAPBasedPartitionManager">
             <identity-configuration name="ldap.store">
-                <ldap-store url="ldap://${jboss.bind.address:127.0.0.1}:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org">
+                <ldap-store url="ldap://${jboss.bind.address:127.0.0.1}:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org"
+                            active-directory="true"
+                            unique-id-attribute-name="someAttribute">
                     <supported-types supports-all="false">
                         <supported-type name="IdentityType"  code="IdentityType"/>
                         <supported-type name="Relationship"  code="Relationship"/>
