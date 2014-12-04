@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.component.EjbHomeViewDescription;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
@@ -88,7 +89,11 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(entityBeanComponentDescription.getEjbLocalHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
+                        EjbHomeViewDescription ejbLocalHomeView = entityBeanComponentDescription.getEjbLocalHomeView();
+                        if (ejbLocalHomeView == null) {
+                            throw EjbLogger.ROOT_LOGGER.beanLocalHomeInterfaceIsNull(entityBeanComponentDescription.getComponentName());
+                        }
+                        serviceBuilder.addDependency(ejbLocalHomeView.getServiceName(), ComponentView.class, factory.getViewToCreate());
                     }
                 });
 
@@ -101,7 +106,12 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ComponentStartService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(entityBeanComponentDescription.getEjbHomeView().getServiceName(), ComponentView.class, factory.getViewToCreate());
+                        EjbHomeViewDescription ejbHomeView = entityBeanComponentDescription.getEjbHomeView();
+                        if (ejbHomeView == null) {
+                            throw EjbLogger.ROOT_LOGGER.beanHomeInterfaceIsNull(entityBeanComponentDescription.getComponentName());
+                        }
+                        serviceBuilder.addDependency(ejbHomeView.getServiceName(), ComponentView.class, factory.getViewToCreate());
+
                     }
                 });
 
