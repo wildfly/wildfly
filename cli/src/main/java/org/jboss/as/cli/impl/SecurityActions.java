@@ -236,7 +236,7 @@ class SecurityActions {
     }
 
     static Configuration getGlobalJaasConfiguration() throws SecurityException {
-        if (WildFlySecurityManager.isChecking() == false) {
+        if (System.getSecurityManager() == null) {
             return internalGetGlobalJaasConfiguration();
         } else {
 
@@ -261,7 +261,7 @@ class SecurityActions {
     }
 
     static void setGlobalJaasConfiguration(final Configuration configuration) throws SecurityException {
-        if (WildFlySecurityManager.isChecking() == false) {
+        if (System.getSecurityManager() == null) {
             internalSetGlobalJaasConfiguration(configuration);
         } else {
 
