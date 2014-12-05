@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -45,7 +46,7 @@ public class ConfigPropertyResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        resourceRegistration.registerReadWriteAttribute(Constants.CONFIG_PROPERTY_VALUE, null, new ReloadRequiredWriteAttributeHandler());
     }
 
 
