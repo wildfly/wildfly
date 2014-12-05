@@ -23,7 +23,6 @@
 
 package org.jboss.as.connector.subsystems.jca;
 
-import java.util.List;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
@@ -34,7 +33,6 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.txn.service.TxnServices;
@@ -60,7 +58,7 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
         final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator(appclient);
         context.addStep(new AbstractDeploymentChainStep() {
@@ -74,49 +72,44 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         TransactionIntegrationService tiService = new TransactionIntegrationService();
 
-        newControllers.add(serviceTarget
+        serviceTarget
                 .addService(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, tiService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, tiService.getTmInjector())
                 .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, tiService.getTsrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, org.jboss.tm.usertx.UserTransactionRegistry.class, tiService.getUtrInjector())
                 .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, tiService.getTerminatorInjector())
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, tiService.getRrInjector())
-                .addListener(verificationHandler)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install());
+                .install();
 
         final JcaSubsystemConfiguration config = new JcaSubsystemConfiguration();
 
         final JcaConfigService connectorConfigService = new JcaConfigService(config);
-        newControllers.add(serviceTarget
+        serviceTarget
                 .addService(ConnectorServices.CONNECTOR_CONFIG_SERVICE, connectorConfigService)
-                .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
-                .install());
+                .install();
 
         final IdleRemoverService idleRemoverService = new IdleRemoverService();
-        newControllers.add(serviceTarget
+        serviceTarget
                 .addService(ConnectorServices.IDLE_REMOVER_SERVICE, idleRemoverService)
-                .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
-                .install());
+                .install();
 
         final ConnectionValidatorService connectionValidatorService = new ConnectionValidatorService();
-        newControllers.add(serviceTarget
+        serviceTarget
                 .addService(ConnectorServices.CONNECTION_VALIDATOR_SERVICE, connectionValidatorService)
-                .addListener(verificationHandler)
                 .setInitialMode(Mode.ACTIVE)
-                .install());
+                .install();
 
 
 
         // TODO does the install of this and the DriverProcessor
         // belong in DataSourcesSubsystemAdd?
         final DriverRegistryService driverRegistryService = new DriverRegistryService();
-        newControllers.add(serviceTarget.addService(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, driverRegistryService)
-                .addListener(verificationHandler)
-                .install());
+        serviceTarget.addService(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, driverRegistryService)
+                .install();
 
-        newControllers.addAll(raDeploymentActivator.activateServices(serviceTarget, verificationHandler));
+        raDeploymentActivator.activateServices(serviceTarget);
     }
 }

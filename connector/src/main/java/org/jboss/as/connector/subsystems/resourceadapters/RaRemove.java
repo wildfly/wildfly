@@ -36,7 +36,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -129,10 +128,10 @@ public class RaRemove implements OperationStepHandler {
                         if (resourceAdapter != null) {
                             List<ServiceController<?>>  newControllers = new LinkedList<ServiceController<?>>();
                             if (model.get(ARCHIVE.getName()).isDefined()) {
-                                RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), idName, resourceAdapter, newControllers);
+                                RaOperationUtil.installRaServices(context, idName, resourceAdapter, newControllers);
                             } else {
                                 try {
-                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, new ServiceVerificationHandler(), idName, resourceAdapter, archiveName, newControllers);
+                                    RaOperationUtil.installRaServicesAndDeployFromModule(context, idName, resourceAdapter, archiveName, newControllers);
                                 } catch (OperationFailedException e) {
 
                                 }
@@ -140,9 +139,9 @@ public class RaRemove implements OperationStepHandler {
                             try {
                                 if (wasActive){
                                     if(isModule){
-                                        RaOperationUtil.activate(context, idName, archiveName, null);
+                                        RaOperationUtil.activate(context, idName, archiveName);
                                     } else {
-                                        RaOperationUtil.activate(context, archiveName, archiveName, null);
+                                        RaOperationUtil.activate(context, archiveName, archiveName);
                                     }
                                 }
                             } catch (OperationFailedException e) {

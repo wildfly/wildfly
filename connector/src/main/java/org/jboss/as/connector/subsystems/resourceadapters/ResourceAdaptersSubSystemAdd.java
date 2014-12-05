@@ -25,15 +25,12 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,7 +55,7 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
 
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(ResourceAdaptersExtension.SUBSYSTEM_PATH));
         ResourceAdaptersSubsystemService service = new ResourceAdaptersSubsystemService();
@@ -67,7 +64,7 @@ class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
             value.putIfAbsent(re.getModel().get(ARCHIVE.getName()).asString(), ConnectorServices.RA_SERVICE.append(re.getName()));
         }
         final ServiceBuilder<?> builder = context.getServiceTarget().addService(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, service);
-        newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
+        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
     }
 }

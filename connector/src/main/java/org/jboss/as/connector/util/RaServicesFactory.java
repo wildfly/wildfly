@@ -34,7 +34,6 @@ import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -57,7 +56,7 @@ import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
 
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, Activation raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, Activation raxml, final Resource deploymentResource) {
         // Create the service
 
         ServiceName serviceName = ConnectorServices.getDeploymentServiceName(deploymentUnitName,raxml);
@@ -91,9 +90,6 @@ public class RaServicesFactory {
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
 
-        if(serviceVerificationHandler != null) {
-            builder.addListener(serviceVerificationHandler);
-        }
         if (registration != null && deploymentResource != null) {
             String bootstrapCtxName =  raxml.getBootstrapContext() != null ? raxml.getBootstrapContext() : "default";
             if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {

@@ -125,7 +125,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource, null);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, raxml, deploymentResource);
 
                     }
                 }

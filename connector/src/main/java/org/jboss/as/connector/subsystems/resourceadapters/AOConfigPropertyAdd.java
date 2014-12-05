@@ -25,14 +25,11 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -52,9 +49,7 @@ public class AOConfigPropertyAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel) throws OperationFailedException {
 
         final String configPropertyValue = CONFIG_PROPERTY_VALUE.resolveModelAttribute(context, recoveryEnvModel).asString();
         final ModelNode address = operation.require(OP_ADDR);
@@ -69,8 +64,8 @@ public class AOConfigPropertyAdd extends AbstractAddStepHandler {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final AOConfigPropertiesService service = new AOConfigPropertiesService(configPropertyName, configPropertyValue);
-            ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
+        serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(aoServiceName, ModifiableAdminObject.class, service.getAOInjector() )
-                    .addListener(verificationHandler).install();
+                    .install();
     }
 }

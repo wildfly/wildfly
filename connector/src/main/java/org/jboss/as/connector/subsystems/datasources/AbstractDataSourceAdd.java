@@ -31,8 +31,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -42,7 +40,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -86,18 +83,12 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
-                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    performRuntime(context, operation, resource, model, verificationHandler, controllers);
-
-                    if(requiresRuntimeVerification()) {
-                        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-                    }
+                    performRuntime(context, operation, resource, model);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
-                            rollbackRuntime(context, operation, model, controllers);
+                            rollbackRuntime(context, operation, resource);
                         }
                     });
                 }
@@ -109,18 +100,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         context.stepCompleted();
     }
 
-    /**
-     * Method is {@code final}, and throws unsupported operation exception to prevent subclasses inadvertently overriding it.
-     *
-     * {@inheritDoc}
-     */
-    @Override
-    protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        throw new UnsupportedOperationException();
-    }
-
-    private void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource, final ModelNode model,
-                                final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
+    private void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource,
+                                final ModelNode model) throws OperationFailedException {
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
@@ -145,7 +126,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                 final ServiceBuilder<?> driverDemanderBuilder = serviceTarget
                         .addService(driverDemanderServiceName, driverDemanderService)
                         .addDependency(driverServiceName, Driver.class, driverDemanderService.getInjector());
-        driverDemanderBuilder.addListener(verificationHandler);
         driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName, jndiName);
@@ -178,21 +158,20 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         if (registration.isAllowsOverride()) {
             registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
         }
-        dataSourceServiceBuilder.addListener(verificationHandler);
-        startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
+        startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation);
 
         dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                     dataSourceService.getDriverInjector());
 
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
-        controllers.add(dataSourceServiceBuilder.install());
-        controllers.add(driverDemanderBuilder.install());
+        dataSourceServiceBuilder.install();
+        driverDemanderBuilder.install();
 
     }
 
     protected abstract void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler serviceVerificationHandler)
+            AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation)
             throws OperationFailedException;
 
     protected abstract void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException;

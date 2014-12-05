@@ -94,7 +94,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
             if (serviceLoader != null)
                 for (Driver driver : serviceLoader) {
-                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, null);
+                    startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
                 }
         } else {
             try {
@@ -102,7 +102,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
                         .asSubclass(Driver.class);
                 final Constructor<? extends Driver> constructor = driverClass.getConstructor();
                 final Driver driver = constructor.newInstance();
-                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, null);
+                startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName);
             } catch (Exception e) {
                 SUBSYSTEM_DATASOURCES_LOGGER.cannotInstantiateDriverClass(driverClassName, e);
 

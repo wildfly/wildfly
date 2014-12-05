@@ -21,13 +21,10 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -49,8 +46,7 @@ public class ArchiveValidationAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         final boolean enabled = JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().resolveModelAttribute(context, model).asBoolean();
         final boolean failOnError = JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().resolveModelAttribute(context, model).asBoolean();
@@ -65,9 +61,6 @@ public class ArchiveValidationAdd extends AbstractBoottimeAddStepHandler {
         final ArchiveValidationService service = new ArchiveValidationService(config);
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(jcaConfigServiceName, JcaSubsystemConfiguration.class, service.getJcaConfigInjector() )
-                    .addListener(verificationHandler).install();
-
-        context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-
+                    .install();
     }
 }

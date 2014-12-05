@@ -41,7 +41,6 @@ import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDef
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -127,7 +126,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
         Map<ResourceRoot, Index> annotationIndexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
 
-        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(), null);
+        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName());
         if (builder != null) {
             String bootstrapCtx = null;
 
@@ -177,7 +176,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
 
-    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader, final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName, final ServiceVerificationHandler verificationHandler) throws DeploymentUnitProcessingException {
+    public static ServiceBuilder process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader, final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName) throws DeploymentUnitProcessingException {
 
         Connector cmd = connectorXmlDescriptor != null ? connectorXmlDescriptor.getConnector() : null;
         final Activation activation = ironJacamarXmlDescriptor != null ? ironJacamarXmlDescriptor.getIronJacamar() : null;
@@ -229,9 +228,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(ConnectorServices.IDLE_REMOVER_SERVICE)
                     .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                     .addDependency(NamingService.SERVICE_NAME);
-            if(verificationHandler != null) {
-                builder.addListener(verificationHandler);
-            }
+
             return builder;
         } catch (Throwable t) {
             throw new DeploymentUnitProcessingException(t);

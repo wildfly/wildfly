@@ -23,15 +23,12 @@ package org.jboss.as.connector.subsystems.jca;
 
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 
-import java.util.List;
-
 import org.jboss.as.connector.services.bootstrap.BootStrapContextService;
 import org.jboss.as.connector.services.bootstrap.NamedBootstrapContext;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
@@ -57,8 +54,7 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
-                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
         String name = JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
         String workmanager = JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().resolveModelAttribute(context, model).asString();
@@ -71,15 +67,14 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
 
         CloneableBootstrapContext ctx = new NamedBootstrapContext(name);
                 final BootStrapContextService bootCtxService = new BootStrapContextService(ctx, name, usingDefaultWm);
-                newControllers.add(serviceTarget
+                serviceTarget
                         .addService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(name), bootCtxService)
                         .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ConnectorServices.WORKMANAGER_SERVICE.append(workmanager), WorkManager.class, bootCtxService.getWorkManagerValueInjector())
                         .addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, bootCtxService.getXaTerminatorInjector())
                         .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, bootCtxService.getTxManagerInjector())
                         .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, bootCtxService.getJcaConfigInjector())
-                        .addListener(verificationHandler)
                         .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install());
+                        .install();
 
     }
 }
