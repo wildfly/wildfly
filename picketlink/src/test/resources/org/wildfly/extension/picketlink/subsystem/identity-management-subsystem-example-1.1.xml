@@ -21,7 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~
   -->
-<subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
+<subsystem xmlns="urn:jboss:domain:picketlink-identity-management:1.1">
 
             <!-- A complete configuration using a file-based identity store. -->
     <partition-manager jndi-name="picketlink/FileCompletePartitionManager" name="file.complete.partition.manager">

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:picketlink-identity-management:2.0">
+<subsystem xmlns="urn:jboss:domain:picketlink-identity-management:1.1">
   <partition-manager jndi-name="picketlink/FileEmbeddedBasedPartitionManager" name="file.embedded.based.partition.manager">
     <identity-configuration name="file.config">
       <file-store working-dir="${test.picketlink.file.config.working-dir:/tmp/pl-idm-embedded}"
