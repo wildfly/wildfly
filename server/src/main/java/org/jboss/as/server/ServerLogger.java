@@ -136,11 +136,11 @@ public interface ServerLogger extends BasicLogger {
     void undeploymentRolledBackWithNoMessage(String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 15558, value = "Undeployed \"%s\" (runtime-name: \"%s\")")
+    @Message(id = 15858, value = "Undeployed \"%s\" (runtime-name: \"%s\")")
     void deploymentUndeployed(String managementName, String deploymentUnitName);
 
     @LogMessage(level = INFO)
-    @Message(id = 15559, value = "Deployed \"%s\" (runtime-name : \"%s\")")
+    @Message(id = 15859, value = "Deployed \"%s\" (runtime-name : \"%s\")")
     void deploymentDeployed(String managementName, String deploymentUnitName);
 
     @LogMessage(level = ERROR)
@@ -152,7 +152,7 @@ public interface ServerLogger extends BasicLogger {
     void redeployRolledBackWithNoMessage(String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 15562, value = "Redeployed \"%s\"")
+    @Message(id = 15862, value = "Redeployed \"%s\"")
     void deploymentRedeployed(String deploymentName);
 
     @LogMessage(level = ERROR)
@@ -164,23 +164,23 @@ public interface ServerLogger extends BasicLogger {
     void replaceRolledBackWithNoMessage(String replaced, String deployment);
 
     @LogMessage(level = INFO)
-    @Message(id = 15565, value = "Replaced deployment \"%s\" with deployment \"%s\"")
+    @Message(id = 15865, value = "Replaced deployment \"%s\" with deployment \"%s\"")
     void deploymentReplaced(String replaced, String deployment);
 
     @LogMessage(level = WARN)
-    @Message(id = 15566, value = "Annotations import option %s specified in jboss-deployment-structure.xml for additional module %s has been ignored. Additional modules cannot import annotations.")
+    @Message(id = 15866, value = "Annotations import option %s specified in jboss-deployment-structure.xml for additional module %s has been ignored. Additional modules cannot import annotations.")
     void annotationImportIgnored(ModuleIdentifier annotationModuleId, ModuleIdentifier additionalModuleId);
 
     @LogMessage(level = WARN)
-    @Message(id = 15567, value = "Deployment \"%s\" is using a private module (\"%s\") which may be changed or removed in future versions without notice.")
+    @Message(id = 15867, value = "Deployment \"%s\" is using a private module (\"%s\") which may be changed or removed in future versions without notice.")
     void privateApiUsed(String deployment, ModuleIdentifier dependency);
 
     @LogMessage(level = WARN)
-    @Message(id = 15568, value = "Deployment \"%s\" is using an unsupported module (\"%s\") which may be changed or removed in future versions without notice.")
+    @Message(id = 15868, value = "Deployment \"%s\" is using an unsupported module (\"%s\") which may be changed or removed in future versions without notice.")
     void unsupportedApiUsed(String deployment, ModuleIdentifier dependency);
 
     @LogMessage(level = WARN)
-    @Message(id = 15569, value = "Exception occurred removing deployment content %s")
+    @Message(id = 15869, value = "Exception occurred removing deployment content %s")
     void failedToRemoveDeploymentContent(@Cause Throwable cause, String hash);
 
     @LogMessage(level = ERROR)
