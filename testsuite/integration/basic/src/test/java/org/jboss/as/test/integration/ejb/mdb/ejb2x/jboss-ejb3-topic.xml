@@ -1,0 +1,42 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                         http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd
+                         http://www.jboss.org/j2ee/schema/jboss_5_0.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <enterprise-beans>
+        <message-driven>
+            <ejb-name>EJB20Topic1MDB</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.ejb2x.EJB2xMDB</ejb-class>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:jboss/ejb2x/topic</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+            <resource-env-ref>
+                <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
+                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <mapped-name>java:jboss/ejb2x/replyQueueA</mapped-name>
+            </resource-env-ref>
+        </message-driven>
+        <message-driven>
+            <ejb-name>EJB20Topic2MDB</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.ejb2x.EJB2xMDB</ejb-class>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:jboss/ejb2x/topic</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+            <resource-env-ref>
+                <resource-env-ref-name>jms/replyQueue</resource-env-ref-name>
+                <resource-env-ref-type>javax.jms.Queue</resource-env-ref-type>
+                <mapped-name>java:jboss/ejb2x/replyQueueB</mapped-name>
+            </resource-env-ref>
+        </message-driven>
+    </enterprise-beans>
+</jboss:ejb-jar>
