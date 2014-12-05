@@ -7078,7 +7078,6 @@
                 <module>osgi</module>
                 <module>picketlink</module>
                 <module>pojo</module>
-                <module>redhat-access-plugin</module>
                 <module>remoting-test</module>
                 <module>system-jmx</module>
                 <module>sar</module>
