@@ -850,4 +850,11 @@ public interface SecurityLogger extends BasicLogger {
     @Message(id = NONE, value = "Action not specified")
     String actionNotSpecified();
 
+    /**
+     * i18n version of VaultReader's Error resolving vault expression
+     *
+     * @return i18n version of error message string
+     */
+    @Message(id = NONE, value = "Error resolving vault expression (%s)")
+    String errorResolvingVaultExpression(String expression);
 }
