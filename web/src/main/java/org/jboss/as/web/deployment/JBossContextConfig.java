@@ -241,43 +241,20 @@ public class JBossContextConfig extends ContextConfig {
                     afterLoadOnStartup(servletClass);
             }
         }
-
-        if (event.getType().equals(Lifecycle.BEFORE_STOP_EVENT)) {
-            final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
-            final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
-
-            String securityDomain = SecurityUtil.unprefixSecurityDomain(metaData.getSecurityDomain());
-            if (securityDomain == null) {
-                securityDomain = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+        if(event.getType().equals(Lifecycle.BEFORE_UNLOAD_EVENT)){
+            if (event.getData() != null) {
+                String servlet = (String) event.getData();
+                if (!servlet.contains("org.apache")) // ignore apache servlets
+                    beforeUnload(servlet);
             }
+        }
 
-            SecurityContext sc = SecurityActions.getSecurityContext();
-            if (sc == null) {
-                sc = SecurityActions.createSecurityContext(securityDomain);
-                SecurityActions.setSecurityContextOnAssociation(sc);
+        if (event.getType().equals(Lifecycle.AFTER_UNLOAD_EVENT)){
+            if (event.getData() != null) {
+                String servlet = (String) event.getData();
+                if (!servlet.contains("org.apache")) // ignore apache servlets
+                    afterUnload();
             }
-
-            JBossServletsMetaData servletsMetadata = metaData.getServlets();
-            Map<String, RunAsIdentityMetaData> runAsIdentityMetaData = metaData.getRunAsIdentity();
-
-            try {
-                for (String servlet : servletsMetadata.keySet()) {
-                    JBossServletMetaData servletMetaData = servletsMetadata.get(servlet);
-                    String servletName = servletMetaData.getServletName();
-                    RunAsIdentityMetaData identity = runAsIdentityMetaData.get(servletName);
-                    RunAsIdentity runAsIdentity = null;
-                    if (identity != null) {
-                        WebLogger.WEB_SECURITY_LOGGER.tracef("%s, runAs: %s", servletName, identity);
-                        runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
-                                identity.getRunAsRoles());
-                    }
-                    SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
-                }
-
-            } catch (Throwable e) {
-                WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
-            }
-
         }
 
         super.lifecycleEvent(event);
@@ -710,8 +687,54 @@ public class JBossContextConfig extends ContextConfig {
         }
     }
 
+    protected void beforeUnload(String servletClass) {
+        final WarMetaData warMetaData = deploymentUnitContext.getAttachment(WarMetaData.ATTACHMENT_KEY);
+        final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
+
+        String securityDomain = SecurityUtil.unprefixSecurityDomain(metaData.getSecurityDomain());
+        if (securityDomain == null) {
+            securityDomain = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+        }
+
+        JBossServletsMetaData servletsMetadata = metaData.getServlets();
+        Map<String, RunAsIdentityMetaData> runAsIdentityMetaData = metaData.getRunAsIdentity();
+
+        try {
+            for (String servlet : servletsMetadata.keySet()) {
+                JBossServletMetaData servletMetaData = servletsMetadata.get(servlet);
+                if (servletClass.equals(servletMetaData.getServletClass())) {
+                    String servletName = servletMetaData.getServletName();
+                    RunAsIdentityMetaData identity = runAsIdentityMetaData.get(servletName);
+                    RunAsIdentity runAsIdentity = null;
+                    if (identity != null) {
+                        WebLogger.WEB_SECURITY_LOGGER.tracef("%s, runAs: %s", servletName, identity);
+                        runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
+                                identity.getRunAsRoles());
+                    }
+
+                    SecurityContext sc = SecurityActions.getSecurityContext();
+                    if (sc == null) {
+                        sc = SecurityActions.createSecurityContext(securityDomain);
+                        SecurityActions.setSecurityContextOnAssociation(sc);
+                    }
+
+                    SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
+                }
+            }
+
+        } catch (Throwable e) {
+            WebLogger.WEB_SECURITY_LOGGER.debug("Failed to determine servlet", e);
+        }
+
+    }
+
     @Override
     protected void afterLoadOnStartup(Object data) {
+        SecurityActions.clearSecurityContext();
+        SecurityRolesAssociation.setSecurityRoles(null);
+    }
+
+    protected void afterUnload() {
         SecurityActions.clearSecurityContext();
         SecurityRolesAssociation.setSecurityRoles(null);
     }
