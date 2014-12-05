@@ -28,6 +28,7 @@ import java.net.ProxySelector;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,11 +145,9 @@ public class ReloadWSDLPublisherTestCase {
             Assert.assertTrue(Operations.isSuccessfulOutcome(client.execute(operation)));
         } catch(IOException e) {
             final Throwable cause = e.getCause();
-            if (cause instanceof ExecutionException) {
-                // ignore, this might happen if the channel gets closed before we got the response
-            } else {
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
                 throw e;
-            }
+            } // else ignore, this might happen if the channel gets closed before we got the response
         } finally {
             client.close();
         }

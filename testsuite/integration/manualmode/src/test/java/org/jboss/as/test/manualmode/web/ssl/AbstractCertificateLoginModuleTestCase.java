@@ -39,6 +39,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -75,7 +76,7 @@ import org.xnio.IoUtils;
  * Abstract class which serve as a base for CertificateLoginModule tests. It is
  * used for setting up server/client keystores, https connector and contains
  * useful methods for testing two-way SSL connection.
- * 
+ *
  * @author Filip Bogyai
  */
 public abstract class AbstractCertificateLoginModuleTestCase {
@@ -100,7 +101,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
      * trusted certificates. Client with trusted certificate is allowed to
      * access both secured/unsecured resource. Client with untrusted certificate
      * can only access unprotected resources.
-     * 
+     *
      * @throws Exception
      */
     public void testLoginWithCertificate(String appName) throws Exception {
@@ -185,12 +186,9 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
         } catch (IOException e) {
             final Throwable cause = e.getCause();
-            if (cause instanceof ExecutionException) {
-                // ignore, this might happen if the channel gets closed before
-                // we got the response
-            } else {
+            if (!(cause instanceof ExecutionException) && !(cause instanceof CancellationException)) {
                 throw e;
-            }
+            } // else ignore, this might happen if the channel gets closed before we got the response
         }
     }
 
