@@ -25,33 +25,37 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.idm.Account;
-import org.jboss.security.CacheableManager;
+import org.jboss.security.AuthenticationManager;
 import org.wildfly.extension.undertow.security.AccountImpl;
 
 import java.security.Principal;
 
+import javax.security.auth.Subject;
+
 /**
- * Undertow security listener that invalidates the cache on logout
+ * Undertow security listener that invokes {@code AuthenticationManager.logout()} on logout, flushing the principal from
+ * the cache if a security cache is being used.
  *
  * @author Stuart Douglas
  */
-public class CacheInvalidationNotificationReceiver implements NotificationReceiver {
+public class LogoutNotificationReceiver implements NotificationReceiver {
 
-    private final CacheableManager<?, Principal> cm;
+    private final AuthenticationManager manager;
 
-    public CacheInvalidationNotificationReceiver(CacheableManager<?, Principal> cm) {
-        this.cm = cm;
+    public LogoutNotificationReceiver(AuthenticationManager manager) {
+        this.manager = manager;
     }
 
     @Override
     public void handleNotification(SecurityNotification notification) {
         if (notification.getEventType() == SecurityNotification.EventType.LOGGED_OUT) {
             Account account = notification.getAccount();
-            if(account instanceof AccountImpl) {
-                cm.flushCache(((AccountImpl)account).getOriginalPrincipal());
-            }
-            if(account != null) {
-                cm.flushCache(account.getPrincipal());
+            Principal principal =  (account instanceof AccountImpl) ?  ((AccountImpl) account).getOriginalPrincipal() :
+                account.getPrincipal();
+            if (principal != null) {
+                // perform the logout of the principal using the subject currently set in the security context.
+                Subject subject = SecurityActions.getSubject();
+                this.manager.logout(principal, subject);
             }
         }
     }
