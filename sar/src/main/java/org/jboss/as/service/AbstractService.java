@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.LifecycleContext;
@@ -73,7 +74,9 @@ abstract class AbstractService implements Service<Object> {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
             } finally {
-                for (SetupAction action : setupActions) {
+                ListIterator<SetupAction> it = setupActions.listIterator(setupActions.size());
+                while (it.hasPrevious()) {
+                    SetupAction action = it.previous();
                     action.teardown(Collections.<String, Object>emptyMap());
                 }
             }
