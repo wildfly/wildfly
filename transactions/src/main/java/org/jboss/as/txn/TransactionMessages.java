@@ -127,4 +127,12 @@ public interface TransactionMessages {
     @Message(id = 10110, value = "Jndi names have to start with java:/ or java:jboss/")
     OperationFailedException jndiNameInvalidFormat();
 
+    @Message(id = 10111, value = "%s must be undefined if %s is 'true'.")
+    OperationFailedException mustBeUndefinedIfTrue(String attrOne, String attrTwo);
+
+    @Message(id = 10112, value = "%s must be defined if %s is defined.")
+    OperationFailedException mustBedefinedIfDefined(String attrOne, String attrTwo);
+
+    @Message(id = 10113, value = "Either %s must be 'true' or  %s must be defined.")
+    OperationFailedException eitherTrueOrDefined(String attrOne, String attrTwo);
 }
