@@ -47,6 +47,17 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
         return "<subsystem xmlns=\"urn:jboss:domain:jsr77:1.0\"/>";
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-jsr77_1_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/jsr77.xml"
+        };
+    }
 
     @Test
     public void testTransformersAS712() throws Exception {
