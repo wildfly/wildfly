@@ -66,6 +66,18 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-jacorb_1_4.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/jacorb.xml"
+        };
+    }
+
+    @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
     }
