@@ -49,6 +49,18 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws IOException {
+        return "schema/jboss-as-naming_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/naming.xml"
+        };
+    }
+
     @Test
     public void testOnlyExternalContextAllowsCache() throws Exception {
         KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
