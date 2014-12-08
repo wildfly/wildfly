@@ -100,18 +100,19 @@
 
     <xs:complexType name="profileType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="remotingEjbReceiver" type="remotingEjbReceiverType"/>
+            <xs:element name="remoting-ejb-receiver" type="remoting-ejb-receiverType"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="remotingEjbReceiverType">
+    <xs:complexType name="remoting-ejb-receiverType">
         <xs:all>
             <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0"
                         maxOccurs="1"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="outbound-connection-ref" type="xs:string" use="required"/>
+        <xs:attribute name="connect-timeout" type="xs:long" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="asyncType">

@@ -25,6 +25,9 @@ package org.jboss.as.ejb3.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -68,6 +71,18 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
+    }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/wildfly-ejb3_3_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/ejb3.xml"
+        };
     }
 
     @Test
