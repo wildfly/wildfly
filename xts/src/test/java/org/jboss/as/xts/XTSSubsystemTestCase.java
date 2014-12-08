@@ -49,6 +49,19 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
+
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-xts_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/xts.xml"
+        };
+    }
+
     @Test
     public void testBoot712() throws Exception {
         testBoot1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
