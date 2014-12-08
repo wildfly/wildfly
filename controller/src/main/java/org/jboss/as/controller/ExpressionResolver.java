@@ -52,19 +52,28 @@ public interface ExpressionResolver {
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
     /**
-     * An {@code ExpressionResolver} suitable for test cases that simply calls {@link ModelNode#resolve()}.
-     * Should not be used for production code as it does not support resolution from a security vault.
+     * An {@code ExpressionResolver} that can only resolve from system properties
+     * and environment variables. Should not be used for most product resolution use cases as it does
+     * not support resolution from a security vault.
      */
-    ExpressionResolver TEST_RESOLVER = new ExpressionResolverImpl();
+    ExpressionResolver SIMPLE = new ExpressionResolverImpl();
 
     /**
-     * Default {@code ExpressionResolver} that simply calls {@link ModelNode#resolve()}.
+     * An {@code ExpressionResolver} suitable for test cases that can only resolve from system properties
+     * and environment variables.
+     * Should not be used for production code as it does not support resolution from a security vault.
+     */
+    ExpressionResolver TEST_RESOLVER = SIMPLE;
+
+    /**
+     * Default {@code ExpressionResolver} that can only resolve from system properties
+     * and environment variables.
      * Should not be used for production code as it does not support resolution from a security vault.
      *
      * @deprecated use {@link #TEST_RESOLVER} for test cases
      */
     @Deprecated
-    ExpressionResolver DEFAULT = TEST_RESOLVER;
+    ExpressionResolver DEFAULT = SIMPLE;
 
     /**
      * An expression resolver that throws an {@code OperationFailedException} if any expressions are found.
@@ -78,7 +87,7 @@ public interface ExpressionResolver {
             if (EXPRESSION_PATTERN.matcher(expression).matches()) {
                 throw ControllerMessages.MESSAGES.illegalUnresolvedModel(expression);
             }
-            // It wasn't an expression any way; convert the node to type STRING
+            // It wasn't an expression anyway; convert the node to type STRING
             node.set(expression);
         }
     };

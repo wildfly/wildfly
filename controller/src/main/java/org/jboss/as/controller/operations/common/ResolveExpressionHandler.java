@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.common;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -75,7 +76,7 @@ public class ResolveExpressionHandler implements OperationStepHandler {
                     toResolve = ParseUtils.parsePossibleExpression(toResolve.asString());
                 }
                 try {
-                    ModelNode resolved = toResolve.resolve();
+                    ModelNode resolved = ExpressionResolver.SIMPLE.resolveExpressions(toResolve);
                     ModelNode result = context.getResult();
                     if (resolved.isDefined()) {
                         result.set(resolved.asString());

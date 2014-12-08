@@ -24,13 +24,18 @@ package org.jboss.as.test.integration.management.api.core;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
+import java.io.IOException;
 
 /**
  * Test for functionality added with AS7-2139.
@@ -76,5 +81,53 @@ public class ResolveExpressionTestCase extends ContainerResourceMgmtTestBase {
         ModelNode response = executeOperation(op, false);
         Assert.assertFalse("Management operation " + op.asString() + " succeeded: " + response.toString(),
                 "success".equals(response.get("outcome").asString()));
+    }
+
+    @Test
+    public void testNestedExpression() throws Exception {
+
+        try {
+            setupNestingProperties();
+            ModelNode op = createOpNode(null, "resolve-expression");
+            op.get("expression").set("${${A}b}");
+        } finally {
+            clearNestingProperties();
+        }
+    }
+
+    private void clearNestingProperties() throws Exception {
+
+        Exception ex = null;
+
+        for (String value : new String[]{"A", "B", "ab"}) {
+            ModelNode op = Util.createEmptyOperation("remove", PathAddress.pathAddress("system-property", value));
+            try {
+                executeOperation(op);
+            } catch (IOException e1) {
+                if (ex == null) {
+                    ex = e1;
+                }
+            } catch (MgmtOperationException e1) {
+                if (ex == null) {
+                    ex = e1;
+                }
+            }
+        }
+
+        if (ex != null) {
+            throw ex;
+        }
+    }
+
+    private void setupNestingProperties() throws IOException, MgmtOperationException {
+        ModelNode opA = Util.createAddOperation(PathAddress.pathAddress("system-property", "A"));
+        opA.get("value").set("a");
+        executeOperation(opA);
+        ModelNode opB = Util.createAddOperation(PathAddress.pathAddress("system-property", "B"));
+        opA.get("value").set("b");
+        executeOperation(opB);
+        ModelNode opab = Util.createAddOperation(PathAddress.pathAddress("system-property", "ab"));
+        opA.get("value").set("asd");
+        executeOperation(opab);
     }
 }
