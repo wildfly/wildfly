@@ -32,7 +32,7 @@ public class StatefulRequiresNewLifecycleBean extends LifecycleSuperClass {
 
     @PostConstruct
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void postConstruct() {
+    private void postConstruct() {
         saveTxState();
     }
 
