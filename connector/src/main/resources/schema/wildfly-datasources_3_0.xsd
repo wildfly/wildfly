@@ -972,21 +972,22 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="datasource-class" type="xs:token" maxOccurs="1" minOccurs="0">
-      <xs:annotation>
-          <xs:documentation>
-           <![CDATA[[
-              The fully qualifed name of the javax.sql.DataSource implementation
-              class.
-             ]]>
-          </xs:documentation>
-        </xs:annotation></xs:element>
       <xs:element name="xa-datasource-class" type="xs:token" maxOccurs="1" minOccurs="0">
       <xs:annotation>
           <xs:documentation>
            <![CDATA[[
               The fully qualifed name of the javax.sql.XADataSource implementation
               class. Ex: <xa-datasource-class>oracle.jdbc.xa.client.OracleXADataSource</xa-datasource-class>
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="datasource-class" type="xs:token" maxOccurs="1" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              The fully qualifed name of the javax.sql.DataSource implementation
+              class.
              ]]>
           </xs:documentation>
         </xs:annotation></xs:element>
