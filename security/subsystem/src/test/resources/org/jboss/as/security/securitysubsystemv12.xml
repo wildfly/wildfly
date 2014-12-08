@@ -78,9 +78,9 @@
                   keystore-provider-argument="${test.prop:key-arg}"
                   key-manager-factory-algorithm="${test.prop:JKS}"
                   key-manager-factory-provider="${test.prop:JKS-provider}"
-                  client-alias="${test.prop:client-alias"
-                  server-alias="${test.prop:server-alias"
-                  service-auth-token="${test.prop:server-auth-token"
+                  client-alias="${test.prop:client-alias}"
+                  server-alias="${test.prop:server-alias}"
+                  service-auth-token="${test.prop:server-auth-token}"
                   client-auth="${test.prop:true}"
                   cipher-suites="${test.prop:aaa,bbb,ccc}"
                   protocols="${test.prop:one,two,three}">
@@ -91,8 +91,8 @@
             <authentication-jaspi>
                 <login-module-stack name="lm-stack">
                     <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
-                        <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
-                        <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
+                        <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
+                        <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
                     </login-module>
                 </login-module-stack>
                 <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
