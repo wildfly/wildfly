@@ -47,6 +47,18 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
         return "<subsystem xmlns=\"urn:jboss:domain:jaxrs:1.0\"/>";
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-jaxrs_1_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+            "/subsystem-templates/jaxrs.xml"
+        };
+    }
+
     @Test
     public void testTransformersAS712() throws Exception {
         testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
