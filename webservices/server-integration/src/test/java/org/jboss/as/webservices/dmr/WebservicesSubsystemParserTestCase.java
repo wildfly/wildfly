@@ -65,6 +65,18 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         return readResource("ws-subsystem20.xml"); //for default test
     }
 
+    @Override
+    protected String getSubsystemXsdPath() throws Exception {
+        return "schema/jboss-as-webservices_2_0.xsd";
+    }
+
+    @Override
+    protected String[] getSubsystemTemplatePaths() throws IOException {
+        return new String[] {
+                "/subsystem-templates/webservices.xml"
+        };
+    }
+
     protected AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization() {
             @Override
