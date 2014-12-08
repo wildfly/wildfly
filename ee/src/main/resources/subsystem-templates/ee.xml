@@ -8,15 +8,15 @@
             <context-services>
                 <context-service name="default" jndi-name="java:jboss/ee/concurrency/context/default" use-transaction-setup-provider="@@use-transaction-setup-provider@@"/>
             </context-services>
+            <managed-thread-factories>
+                <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
+            </managed-thread-factories>
             <managed-executor-services>
                 <managed-executor-service name="default" jndi-name="java:jboss/ee/concurrency/executor/default" context-service="default" hung-task-threshold="60000" core-threads="5" max-threads="25" keepalive-time="5000" />
             </managed-executor-services>
             <managed-scheduled-executor-services>
                 <managed-scheduled-executor-service name="default" jndi-name="java:jboss/ee/concurrency/scheduler/default" context-service="default" hung-task-threshold="60000" core-threads="2" keepalive-time="3000"/>
             </managed-scheduled-executor-services>
-            <managed-thread-factories>
-                <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
-            </managed-thread-factories>
         </concurrent>
         <?DEFAULT_BINDINGS?>
     </subsystem>
