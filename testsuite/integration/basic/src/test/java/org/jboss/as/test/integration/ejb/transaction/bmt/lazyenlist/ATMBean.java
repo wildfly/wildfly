@@ -166,6 +166,9 @@ public class ATMBean implements ATM {
                     throw new IllegalArgumentException("can't find account " + id);
                 balance = rs.getDouble(1);
 
+                rs.close();
+                psSelect.close();
+
                 PreparedStatement ps = conn.prepareStatement("UPDATE account SET balance = ? WHERE id = ?");
                 try {
                     beginTx();
@@ -177,10 +180,16 @@ public class ATMBean implements ATM {
                         if (rows != 1)
                             throw new IllegalStateException("first update failed");
 
+                        ps.close();
+                        conn.close();
+
                         commitTx();
                     } finally {
                         rollbackTxIfNeeded();
                     }
+
+                    conn = ds.getConnection();
+                    ps = conn.prepareStatement("UPDATE account SET balance = ? WHERE id = ?");
 
                     beginTx();
                     try {
@@ -199,7 +208,6 @@ public class ATMBean implements ATM {
 
                 return balance;
             } finally {
-                psSelect.close();
                 conn.close();
             }
         } catch (SQLException e) {
