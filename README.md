@@ -24,7 +24,7 @@ On Windows use the corresponding batch script
 
 > build.bat
 
-If you already have Maven 3.1.0 (or newer) installed you can use it directly
+If you already have Maven 3.2.1 (or newer) installed you can use it directly
 
 > mvn install
 
@@ -47,7 +47,7 @@ To stop the server, press Ctrl + C, or use the admin console
 
 > $ ./jboss-cli.sh --connect command=:shutdown
 
-More information on the wiki: http://community.jboss.org/wiki/JBossAS7UserGuide
+More information: https://docs.jboss.org/author/display/WFLY9/Getting+Started+Guide
 
 Contributing
 ------------------
@@ -70,7 +70,7 @@ For basic smoke tests, simply: "./build.sh test"
 
 To run all the tests
 
-> $ ./build.sh install -PallTests
+> $ ./build.sh install -DallTests
 
 Using Eclipse
 -------------
