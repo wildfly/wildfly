@@ -18,7 +18,7 @@
 /core-service=management/security-realm=MinimalKeyTab/authentication=kerberos:add()
 /core-service=management/security-realm=ThreeKeyTabs:add()
 /core-service=management/security-realm=ThreeKeyTabs/server-identity=kerberos:add()
-/core-service=management/security-realm=ThreeKeyTabs/server-identity=kerberos/keytab="HTTP/${hostname}@JBOSS.ORG":add(path=${keyTabAbsolutePath},for-hosts=[${hostname},someAnotherHost])
+/core-service=management/security-realm=ThreeKeyTabs/server-identity=kerberos/keytab="HTTP/${hostname}@JBOSS.ORG":add(path=${keyTabAbsolutePath},for-hosts=["${hostname}",someAnotherHost])
 /core-service=management/security-realm=ThreeKeyTabs/server-identity=kerberos/keytab="HTTP/wronghost@JBOSS.ORG":add(path=${keyTabAbsolutePath},for-hosts=[wronghost])
 /core-service=management/security-realm=ThreeKeyTabs/server-identity=kerberos/keytab="HTTP/wronghost2@JBOSS.ORG":add(path=${keyTabAbsolutePath},for-hosts=[*])
 /core-service=management/security-realm=ThreeKeyTabs/authentication=kerberos:add()

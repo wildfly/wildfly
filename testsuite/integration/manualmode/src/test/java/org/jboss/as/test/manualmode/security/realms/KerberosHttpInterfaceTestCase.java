@@ -610,6 +610,9 @@ public class KerberosHttpInterfaceTestCase extends AbstractCliTestBase {
      * @throws IOException 
      */
     private boolean testTestOperationContainKerberosPrincipal(String realm, String principal) throws IOException {
+        if (principal.contains("[")||principal.contains("]")) {
+            principal = principal.replace(":", "\\:");
+        }
         cli.sendLine("/core-service=management/security-realm=" + realm +"/server-identity=kerberos/keytab=" + principal 
                 +":test()",true);
         CLIOpResult result = cli.readAllAsOpResult();
