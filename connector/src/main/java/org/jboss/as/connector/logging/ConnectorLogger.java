@@ -29,7 +29,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.sql.Driver;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -40,6 +39,9 @@ import org.jboss.msc.service.StartException;
 
 /**
  * Date: 01.09.2011
+ *
+ * The messages in this file AND ConnectorMessages are in the range 10400-10499,
+ * make sure they don't overlap
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -273,14 +275,6 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10487, value = "Unable to find driver class name in \"%s\" jar")
     void cannotFindDriverClassName(String driverName);
 
-    /**
-      * Creates an exception indicating missing rar.
-      *
-      * @param raName - name.
-      * @return a {@link OperationFailedException} for the error.
-      */
-     @Message(id = 80, value = "RAR '%s' not yet deployed.")
-     OperationFailedException RARNotYetDeployed(String raName);
 }
 
 

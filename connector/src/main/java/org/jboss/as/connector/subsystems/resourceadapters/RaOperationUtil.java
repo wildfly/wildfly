@@ -73,6 +73,7 @@ import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcesso
 import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
 import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
 import org.jboss.as.connector.logging.ConnectorLogger;
+import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
@@ -310,7 +311,7 @@ public class RaOperationUtil {
 
             if (inactiveRaController == null) {
 
-                throw ConnectorLogger.ROOT_LOGGER.RARNotYetDeployed(raName);
+                throw ConnectorMessages.MESSAGES.RARNotYetDeployed(raName);
             }
 
         }

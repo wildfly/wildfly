@@ -30,16 +30,18 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.deployers.common.DeployException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
 /**
  * Date: 01.09.2011
+ * The messages in this file AND ConnectorLogger are in the range 10400-10499,
+ * make sure they don't overlap
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -598,6 +600,8 @@ public interface ConnectorMessages {
 
     @Message(id = 10486, value = "Attributes %s rejected. Must be true")
     String rejectAttributesMustBeTrue(Set<String> key);
+
+    //10487 used by Logger
 
     @Message(id = 10488, value = "Jndi name shouldn't include '//' or end with '/'")
     OperationFailedException jndiNameShouldValidate();
