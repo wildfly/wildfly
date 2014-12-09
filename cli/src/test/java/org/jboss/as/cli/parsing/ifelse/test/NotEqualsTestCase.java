@@ -81,4 +81,16 @@ public class NotEqualsTestCase extends ComparisonTestBase {
         node.get("result").set("11");
         assertFalse(node, "result != 11");
     }
+
+    @Test
+    public void testUndefined() throws Exception {
+        ModelNode node = new ModelNode();
+        node.get("result");
+        assertFalse(node, "result != undefined");
+        assertFalse(node, "result != \"undefined\"");
+        assertFalse(node, "result != 'undefined'");
+
+        node.get("result").set("undefined");
+        assertFalse(node, "result != undefined");
+    }
 }

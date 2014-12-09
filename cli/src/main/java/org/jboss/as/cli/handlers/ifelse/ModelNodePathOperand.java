@@ -51,7 +51,7 @@ public class ModelNodePathOperand implements Operand {
     public Object resolveValue(CommandContext ctx, ModelNode response) throws CommandLineException {
         ModelNode targetValue = response;
         for(String name : path) {
-            if(!targetValue.hasDefined(name)) {
+            if(!targetValue.has(name)) {
                 break;
             } else {
                 targetValue = targetValue.get(name);

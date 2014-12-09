@@ -90,4 +90,14 @@ public class NotGreaterThanTestCase extends ComparisonTestBase {
         assertFalse(node, "result.value1 <= 11");
         assertFalse(node, "result <= 11");
     }
+
+    @Test
+    public void testUndefined() throws Exception {
+        ModelNode node = new ModelNode();
+        node.get("result");
+        assertFalse(node, "result <= 999999");
+        assertFalse(node, "result <= false");
+        assertFalse(node, "result <= true");
+        assertFalse(node, "result <= \"string\"");
+    }
 }

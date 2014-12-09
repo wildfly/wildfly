@@ -90,6 +90,20 @@ public class NonExistingPathComparisonTestCase {
     }
 
     @Test
+    public void testUndefined() throws Exception {
+        final CommandContext ctx = CLITestUtil.getCommandContext(cliOut);
+        try {
+            ctx.connectController();
+            ctx.handle(this.getAddPropertyReqWithoutValue());
+            assertEquals("undefined", runIf(ctx, "==", "&&", "undefined"));
+            assertEquals("true", runIf(ctx, "==", "||", "undefined"));
+        }finally {
+            ctx.handleSafe(this.getRemovePropertyReq());
+            ctx.terminateSession();
+            cliOut.reset();
+        }
+    }
+    @Test
     public void testGreaterThan() throws Exception {
         final CommandContext ctx = CLITestUtil.getCommandContext(cliOut);
         try {
@@ -165,6 +179,9 @@ public class NonExistingPathComparisonTestCase {
                 append(") of ").append(getReadPropertyReq()).toString();
     }
 
+    protected String getAddPropertyReqWithoutValue() {
+        return "/system-property=" + PROP_NAME + ":add()";
+    }
     protected String getAddPropertyReq(String value) {
         return "/system-property=" + PROP_NAME + ":add(value=" + value + ")";
     }
@@ -185,7 +202,7 @@ public class NonExistingPathComparisonTestCase {
         final String response = cliOut.toString();
         final int start = response.indexOf(RESPONSE_VALUE_PREFIX);
         if(start < 0) {
-            Assert.fail("Value not found in the response: " + response);
+            return "undefined";//Assert.fail("Value not found in the response: " + response);
         }
         final int end = response.indexOf('"', start + RESPONSE_VALUE_PREFIX.length() + 1);
         if(end < 0) {
