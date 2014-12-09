@@ -125,13 +125,13 @@ for %%a in (!CONSOLIDATED_OPTS!) do (
       set "JBOSS_LOG_DIR=%%~a"
 	  set logDirFound=false
    )
-   if "%%~a" == "-Djboss.server.base.dir" (
+   if "%%~a" == "-Djboss.domain.base.dir" (
        set baseDirFound=true
    )
-   if "%%~a" == "-Djboss.server.config.dir" (
+   if "%%~a" == "-Djboss.domain.config.dir" (
        set configDirFound=true
    )
-   if "%%~a" == "-Djboss.server.log.dir" (
+   if "%%~a" == "-Djboss.domain.log.dir" (
        set logDirFound=true
    )
 )
