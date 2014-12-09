@@ -47,7 +47,7 @@ public class AS7Plugin implements JdrPlugin {
             new TreeCommand(),
             new JarCheck(),
             new CallAS7("configuration").param("recursive", "true"),
-            new CallAS7("dump-services").resource("core-service", "service-container"),
+            new CallAS7("dump-services").operation("dump-services").resource("core-service", "service-container"),
             new CallAS7("cluster-proxies-configuration").resource("subsystem", "modcluster"),
             new CollectFiles("*/standalone/configuration/*").sanitizer(xmlSanitizer, passwordSanitizer),
             new CollectFiles("*/domain/configuration/*").sanitizer(xmlSanitizer, passwordSanitizer),
