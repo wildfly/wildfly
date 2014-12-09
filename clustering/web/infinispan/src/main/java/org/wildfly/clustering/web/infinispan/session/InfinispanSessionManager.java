@@ -288,8 +288,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         if (!event.isPre() && !this.persistent) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
-            ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
-            triggerPostActivationEvents(session);
+            V value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                triggerPostActivationEvents(session);
+            }
         }
     }
 
@@ -298,8 +301,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         if (event.isPre() && !this.persistent) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-            ImmutableSession session = this.factory.createSession(id, this.factory.findValue(id));
-            triggerPrePassivationEvents(session);
+            V value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                triggerPrePassivationEvents(session);
+            }
         }
     }
 
@@ -308,20 +314,23 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L, Transac
         if (event.isPre()) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-            ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
-            ImmutableSessionAttributes attributes = session.getAttributes();
+            V value = this.factory.findValue(id);
+            if (value != null) {
+                ImmutableSession session = this.factory.createImmutableSession(id, value);
+                ImmutableSessionAttributes attributes = session.getAttributes();
 
-            HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
-            HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
-            for (HttpSessionListener listener: this.context.getSessionListeners()) {
-                listener.sessionDestroyed(sessionEvent);
-            }
+                HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
+                HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
+                for (HttpSessionListener listener: this.context.getSessionListeners()) {
+                    listener.sessionDestroyed(sessionEvent);
+                }
 
-            for (String attribute: attributes.getAttributeNames()) {
-                Object value = attributes.getAttribute(attribute);
-                if (value instanceof HttpSessionBindingListener) {
-                    HttpSessionBindingListener listener = (HttpSessionBindingListener) value;
-                    listener.valueUnbound(new HttpSessionBindingEvent(httpSession, attribute, value));
+                for (String name: attributes.getAttributeNames()) {
+                    Object attribute = attributes.getAttribute(name);
+                    if (attribute instanceof HttpSessionBindingListener) {
+                        HttpSessionBindingListener listener = (HttpSessionBindingListener) attribute;
+                        listener.valueUnbound(new HttpSessionBindingEvent(httpSession, name, attribute));
+                    }
                 }
             }
         }
