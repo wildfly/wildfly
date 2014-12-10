@@ -219,7 +219,8 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
     @Test
     public void readChildrenTypes() throws Exception {
-        ModelNode op = createOperation(READ_CHILDREN_TYPES_OPERATION);
+        ModelNode op = createOperation(READ_CHILDREN_TYPES_OPERATION);        
+        op.get(INCLUDE_ALIASES).set(true);
         ModelNode result = executeForResult(op);
         List<ModelNode> list = result.asList();
         Assert.assertEquals(2, list.size());

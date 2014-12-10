@@ -68,15 +68,19 @@ public class ReadChildrenTypesHandler implements OperationStepHandler {
             throw new OperationFailedException(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean(false);
-        Set<String> childTypes = new TreeSet<String>(registry.getChildNames(PathAddress.EMPTY_ADDRESS));
+        Set<PathElement> childTypes = registry.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        Set<String> children = new TreeSet<String>();
+        for (final PathElement child : childTypes) {
+            PathAddress relativeAddr = PathAddress.pathAddress(child);
+            ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
+            if (aliases || childReg == null || !childReg.isAlias()) {
+                children.add(child.getKey());
+            }
+        }
         final ModelNode result = context.getResult();
         result.setEmptyList();
-        for (final String key : childTypes) {
-            PathAddress relativeAddr = PathAddress.pathAddress(PathElement.pathElement(key));
-            ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
-            if (aliases || (childReg == null || !childReg.isAlias())) {
-                result.add(key);
-            }
+        for(String child : children) {
+           result.add(child);
         }
         context.stepCompleted();
     }
