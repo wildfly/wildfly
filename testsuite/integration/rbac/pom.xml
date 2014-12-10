@@ -86,51 +86,6 @@
                                         </fileMapper>
                                     </fileMappers>
                                 </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>properties-role-mapping-standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacLdapAuthG2U.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <fileMappers>
-                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                                            <pattern>^properties-role-mapping</pattern>
-                                            <replacement>ldap-role-mapping-g2u</replacement>
-                                        </fileMapper>
-                                    </fileMappers>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>properties-role-mapping-standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacLdapAuthU2G.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <fileMappers>
-                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                                            <pattern>^properties-role-mapping</pattern>
-                                            <replacement>ldap-role-mapping-u2g</replacement>
-                                        </fileMapper>
-                                    </fileMappers>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/enableJmxNonCoreMbeansSensitivity.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <fileMappers>
-                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                                            <pattern>^</pattern>
-                                            <replacement>jmx-sensitivity-</replacement>
-                                        </fileMapper>
-                                    </fileMappers>
-                                </transformationSet>
                             </transformationSets>
                         </configuration>
                     </plugin>
@@ -160,44 +115,6 @@
                         </executions>
                     </plugin>
 
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.4</version>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>keytool-api-1.7</artifactId>
-                                <version>1.4</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <phase>generate-test-resources</phase>
-                                <id>clean-jcetest-keystore</id>
-                                <goals>
-                                    <goal>clean</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <phase>generate-test-resources</phase>
-                                <id>genkey-jcetest-keystore</id>
-                                <goals>
-                                    <goal>generateKeyPair</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <keystore>${basedir}/target/jcetest.keystore</keystore>
-                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
-                            <keypass>password</keypass>
-                            <storepass>password</storepass>
-                            <alias>test</alias>
-                            <keyalg>RSA</keyalg>
-                            <keysize>2048</keysize>
-                            <validity>365</validity>
-                        </configuration>
-                    </plugin>
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -212,18 +129,10 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
+                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile. -->
                                     <includes>
                                         <include>org/jboss/as/test/integration/mgmt/access/**/*TestCase*.java</include>
                                     </includes>
-                                    <excludes>
-                                        <!-- see the other executions -->
-                                        <exclude>**/PropertiesRoleMappingTestCase.java</exclude>
-                                        <exclude>**/JmxSensitiveTestCase.java</exclude>
-                                        <exclude>**/LdapRoleMappingG2UTestCase.java</exclude>
-                                        <exclude>**/LdapRoleMappingU2GTestCase.java</exclude>
-                                    </excludes>
-
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
@@ -233,104 +142,6 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>access-integration-properties-role-mapping-full.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/mgmt/access/PropertiesRoleMappingTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>properties-role-mapping-standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>access-integration-ldap-role-mapping-g2u-full.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/mgmt/access/LdapRoleMappingG2UTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>ldap-role-mapping-g2u-standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>access-integration-ldap-role-mapping-u2g-full.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/mgmt/access/LdapRoleMappingU2GTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>ldap-role-mapping-u2g-standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>access-integration-jmx-sensitivity-full.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/mgmt/access/JmxSensitiveTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>jmx-sensitivity-standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
                         </executions>
