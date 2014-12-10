@@ -52,7 +52,7 @@ public class ModelNodePathOperand implements Operand {
         ModelNode targetValue = response;
         for(String name : path) {
             if(!targetValue.has(name)) {
-                break;
+                return null;
             } else {
                 targetValue = targetValue.get(name);
             }

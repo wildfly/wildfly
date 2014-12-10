@@ -21,21 +21,18 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
-import org.jboss.as.cli.CommandLineException;
-
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class NotGreaterThanOperation extends ComparisonOperation {
+public class NotGreaterThanOperation extends SameTypeOperation {
 
     NotGreaterThanOperation() {
         super(ExpressionParser.NGT);
     }
 
     @Override
-    protected boolean compare(Object left, Object right) throws CommandLineException {
+    protected boolean doCompare(Object left, Object right) {
         if(left == null || right == null) {
             return false;
         }

@@ -21,19 +21,18 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
-
 /**
  *
  * @author Alexey Loubyansky
  */
-public class EqualsOperation extends ComparisonOperation {
+public class EqualsOperation extends SameTypeOperation {
 
     EqualsOperation() {
         super(ExpressionParser.EQ);
     }
 
     @Override
-    protected boolean compare(Object left, Object right) {
+    protected boolean doCompare(Object left, Object right) {
         if(left == null) {
             return right == null;
         }

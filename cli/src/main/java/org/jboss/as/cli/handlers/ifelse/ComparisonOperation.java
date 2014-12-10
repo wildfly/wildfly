@@ -58,9 +58,6 @@ abstract class ComparisonOperation extends BaseOperation {
             throw new CommandLineException("Operands aren't instances of org.jboss.dmr.ModelNode: " +
                 left.getClass().getName() + ", " + right.getClass().getName());
         }
-        if(((ModelNode) left).getType() != ((ModelNode)right).getType()) {
-            return false;
-        }
         return compare(left, right);
     }
 

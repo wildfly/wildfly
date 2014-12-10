@@ -21,6 +21,7 @@
  */
 package org.jboss.as.cli.handlers.ifelse;
 
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -34,6 +35,10 @@ public class NotEqualsOperation extends ComparisonOperation {
 
     @Override
     protected boolean compare(Object left, Object right) {
+        if(((ModelNode) left).getType() != ((ModelNode)right).getType()) {
+            return true;
+        }
+
         if(left == null) {
             return right != null;
         }
