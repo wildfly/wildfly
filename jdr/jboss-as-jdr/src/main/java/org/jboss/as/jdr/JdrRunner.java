@@ -50,10 +50,12 @@ public class JdrRunner implements JdrReportCollector {
     JdrEnvironment env = new JdrEnvironment();
     CommandContext ctx;
 
-    public JdrRunner() {
+    public JdrRunner(boolean serverRunning) {
+        this.env.setServerRunning(serverRunning);
     }
 
     public JdrRunner(String protocol, String user, String pass, String host, String port) {
+        this.env.setServerRunning(false);
         this.env.setUsername(user);
         this.env.setPassword(pass);
         this.env.setHost(host);
