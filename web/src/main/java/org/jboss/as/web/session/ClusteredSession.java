@@ -1378,7 +1378,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
      */
     public void notifyWillPassivate(ClusteredSessionNotificationCause cause) {
         // Notify interested session event listeners
-        fireSessionEvent(Session.SESSION_PASSIVATED_EVENT, null);
+        fireSessionEvent(Session.SESSION_PASSIVATED_EVENT, cause.toString());
 
         if (hasActivationListener != Boolean.FALSE) {
             boolean hasListener = false;
