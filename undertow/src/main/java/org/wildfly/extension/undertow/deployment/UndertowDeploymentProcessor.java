@@ -26,6 +26,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.core.InMemorySessionManagerFactory;
 
+import org.apache.jasper.Constants;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -42,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ExplodedDeploymentMarker;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
@@ -87,6 +89,7 @@ import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecServic
 
 import javax.security.jacc.PolicyConfiguration;
 
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -151,7 +154,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, String hostName)
             throws DeploymentUnitProcessingException {
-        final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile deploymentRoot = deploymentResourceRoot.getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
             throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
@@ -227,13 +231,22 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         SharedSessionManagerConfig sharedSessionManagerConfig = deploymentUnit.getParent() != null ? deploymentUnit.getParent().getAttachment(UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG) : null;
 
+        if(!deploymentResourceRoot.isUsePhysicalCodeSource()) {
+            try {
+                deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(Constants.CODE_SOURCE_ATTRIBUTE_NAME, deploymentRoot.toURL()));
+            } catch (MalformedURLException e) {
+                throw new DeploymentUnitProcessingException(e);
+            }
+        }
+
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(Constants.PERMISSION_COLLECTION_ATTRIBUTE_NAME, deploymentUnit.getAttachment(Attachments.MODULE_PERMISSIONS)));
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
-                .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
+                .setAttributes(deploymentUnit.getAttachmentList(ServletContextAttribute.ATTACHMENT_KEY))
                 .setTopLevelDeploymentName(deploymentUnit.getParent() == null ? deploymentUnit.getName() : deploymentUnit.getParent().getName())
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
