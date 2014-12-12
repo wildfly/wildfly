@@ -57,6 +57,7 @@ import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Unit Test the programmatic login feature of Servlet 3
@@ -84,6 +85,7 @@ public class WebSecurityProgrammaticLoginTestCase {
         war.addClass(SecuredServlet.class);
         war.addClass(AbstractSecurityDomainSetup.class);
         war.addPackage(CommonCriteria.class.getPackage());
+        war.addAsManifestResource(createPermissionsXmlAsset(new RuntimePermission("org.jboss.security.*")), "permissions.xml");
 
         return war;
     }

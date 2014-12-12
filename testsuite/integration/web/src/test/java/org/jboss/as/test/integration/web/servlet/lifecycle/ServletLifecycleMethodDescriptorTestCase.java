@@ -28,13 +28,16 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.naming.JndiPermission;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -51,6 +54,8 @@ public class ServletLifecycleMethodDescriptorTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "single.war");
         war.addClasses(HttpRequest.class, LifeCycleMethodServlet.class);
         war.addAsWebInfResource(ServletLifecycleMethodDescriptorTestCase.class.getPackage(), "web.xml", "web.xml");
+        war.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.naming meta-inf\n"), "MANIFEST.MF");
+        war.addAsManifestResource(createPermissionsXmlAsset(new JndiPermission("java:global/env/foo", "bind")), "permissions.xml");
         return war;
     }
 

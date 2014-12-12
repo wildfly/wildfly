@@ -32,8 +32,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.net.URL;
+import java.security.AllPermission;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author Eduardo Martins
@@ -49,6 +51,14 @@ public class DefaultContextServiceServletTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addClasses(HttpRequest.class, DefaultContextServiceTestServlet.class, TestServletRunnable.class);
+        war.addAsManifestResource(
+                createPermissionsXmlAsset(
+                        // Needed for getting the principle and logging in in the DefaultContextServiceTestServlet
+                        new RuntimePermission("org.jboss.security.*"),
+                        // TODO (jrp) This permission needs to be removed once WFLY-4176 is resolved
+                        new RuntimePermission("getClassLoader"),
+                        new RuntimePermission("modifyThread")
+                        ), "permissions.xml");
         return war;
     }
 
