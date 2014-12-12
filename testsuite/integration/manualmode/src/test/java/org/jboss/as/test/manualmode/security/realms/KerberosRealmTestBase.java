@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -49,7 +50,6 @@ import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.ldap.LdapServer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -95,45 +95,7 @@ public abstract class KerberosRealmTestBase extends AbstractCliTestBase {
         return cli.readAllAsOpResult().isIsOutcomeSuccess();
     }
     
-    /**
-     * A server setup task which configures and starts Kerberos KDC server.
-     */
-    //@formatter:off
-    @CreateDS(
-        name = "JBossDS",
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss",
-                suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=org\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
-                {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
-                })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
-            transports =
-            {
-                @CreateTransport( protocol = "LDAP",  port = LDAP_PORT1)
-            })
-    @CreateKdcServer(primaryRealm = "JBOSS.ORG",
-        kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
-        searchBaseDn = "dc=jboss,dc=org",
-        transports =
-        {
-            @CreateTransport(protocol = "UDP", port = KERBEROS_PORT1)
-        })
-    //@formatter:on
-    abstract static class AbstractDirectoryServerSetupTask implements ServerSetupTask {
+    abstract static class AbstractKerberosServerConfig {
 
         private DirectoryService directoryService;
         private KdcServer kdcServer;
@@ -141,35 +103,37 @@ public abstract class KerberosRealmTestBase extends AbstractCliTestBase {
 
         private boolean removeBouncyCastle = false;
 
+        public abstract void setup(ManagementClient managementClient, InputStream ldifInputStream) throws Exception;
+
         /**
          * Creates directory services, starts LDAP server and KDCServer
          *
          * @param managementClient
-         * @param containerId
          * @throws Exception
-         * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
          */
-        @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        protected final void setupInternal(ManagementClient managementClient, InputStream ldifInputStream) throws Exception {
+            if (directoryService != null) {
+                throw new IllegalStateException("DS service is already instantiated.");
+            }
             try {
-                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
                     Security.addProvider(new BouncyCastleProvider());
                     removeBouncyCastle = true;
                 }
-            } catch(SecurityException ex) {
+            } catch (SecurityException ex) {
                 LOGGER.warn("Cannot register BouncyCastleProvider", ex);
             }
             directoryService = DSAnnotationProcessor.getDirectoryService();
-            final String hostname = Utils.getCannonicalHost(managementClient);
+            final String hostname = Utils.getCanonicalHost(managementClient);
             final Map<String, String> map = new HashMap<String, String>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
             final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient, true);
-            final String ldifContent = StrSubstitutor.replace(IOUtils.toString(getLdifInputStream(), "UTF-8"), map);
+            if (ldifInputStream != null) {
+                final String ldifContent = StrSubstitutor.replace(IOUtils.toString(ldifInputStream, "UTF-8"), map);
             LOGGER.info(ldifContent);
-            
-            //InputStream resourceAsStream = KerberosRealmTestBase.class.getResourceAsStream(getLdifFileSimpleName());
-            
+
+            // InputStream resourceAsStream = KerberosRealmTestBase.class.getResourceAsStream(getLdifFileSimpleName());
+
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {
                 for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
@@ -179,13 +143,13 @@ public abstract class KerberosRealmTestBase extends AbstractCliTestBase {
                 e.printStackTrace();
                 throw e;
             }
-            
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, KERBEROS_PORT1, hostname);
-            
+            }
+            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 10000, hostname);
+
             final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                     (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
             fixTransportAddress(createLdapServer, secondaryTestAddress);
-            
+
             ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
             ldapServer.start();
         }
@@ -195,7 +159,7 @@ public abstract class KerberosRealmTestBase extends AbstractCliTestBase {
          *
          * @param createLdapServer
          */
-        private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
+        private static void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
             final CreateTransport[] createTransports = createLdapServer.transports();
             for (int i = 0; i < createTransports.length; i++) {
                 final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
@@ -207,159 +171,121 @@ public abstract class KerberosRealmTestBase extends AbstractCliTestBase {
         /**
          * Stops LDAP server and KDCServer and shuts down the directory service.
          *
-         * @param managementClient
-         * @param containerId
          * @throws Exception
-         * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
          */
-        @Override
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+        public final void tearDown() throws Exception {
+            if (ldapServer == null || kdcServer == null || directoryService == null) {
+                throw new IllegalStateException("LDAP/KDC/DS services are not running.");
+            }
             ldapServer.stop();
+            ldapServer = null;
             kdcServer.stop();
+            kdcServer = null;
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            if(removeBouncyCastle) {
+            directoryService = null;
+            if (removeBouncyCastle) {
                 try {
                     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-                } catch(SecurityException ex) {
+                } catch (SecurityException ex) {
                     LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
                 }
             }
         }
 
-        abstract protected InputStream getLdifInputStream();
+        /**
+         * Returns true if the directory service is started.
+         * 
+         * @return
+         */
+        public boolean isDirectoryServiceRunning() {
+            return directoryService != null && directoryService.isStarted();
+        }
     }
-    
-    /**
-     * A server setup task which configures and starts Kerberos KDC server.
-     */
-    //@formatter:off
-    @CreateDS(
-        name = "JBossDS2",
-        partitions =
-        {
-            @CreatePartition(
-                name = "jboss2",
-                suffix = "dc=jboss,dc=com",
-                contextEntry = @ContextEntry(
-                    entryLdif =
-                        "dn: dc=jboss,dc=com\n" +
-                        "dc: jboss\n" +
-                        "objectClass: top\n" +
-                        "objectClass: domain\n\n" ),
-                indexes =
+
+    public static class JBossOrgKerberosServerConfig extends AbstractKerberosServerConfig {
+
+        //@formatter:off
+        @Override
+        @CreateDS(
+            name = "JBossDS",
+            partitions =
+            {
+                @CreatePartition(
+                    name = "jboss",
+                    suffix = "dc=jboss,dc=org",
+                    contextEntry = @ContextEntry(
+                        entryLdif =
+                            "dn: dc=jboss,dc=org\n" +
+                            "dc: jboss\n" +
+                            "objectClass: top\n" +
+                            "objectClass: domain\n\n" ),
+                    indexes =
+                    {
+                        @CreateIndex( attribute = "objectClass" ),
+                        @CreateIndex( attribute = "dc" ),
+                        @CreateIndex( attribute = "ou" )
+                    })
+            },
+            additionalInterceptors = { KeyDerivationInterceptor.class })
+        @CreateLdapServer (
+                transports =
                 {
-                    @CreateIndex( attribute = "objectClass" ),
-                    @CreateIndex( attribute = "dc" ),
-                    @CreateIndex( attribute = "ou" )
+                    @CreateTransport( protocol = "LDAP",  port = LDAP_PORT1)
                 })
-        },
-        additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer (
+        @CreateKdcServer(primaryRealm = "JBOSS.ORG",
+            kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
+            searchBaseDn = "dc=jboss,dc=org",
             transports =
             {
-                @CreateTransport( protocol = "LDAP",  port = LDAP_PORT2)
+                @CreateTransport(protocol = "UDP", port = KERBEROS_PORT1)
             })
-    @CreateKdcServer(primaryRealm = "JBOSS.COM",
-        kdcPrincipal = "krbtgt/JBOSS.COM@JBOSS.COM",
-        searchBaseDn = "dc=jboss,dc=com",
-        transports =
-        {
-            @CreateTransport(protocol = "UDP", port = KERBEROS_PORT2)
-        })
-    //@formatter:on
-    abstract static class AbstractDirectory2ServerSetupTask implements ServerSetupTask {
-
-        private DirectoryService directoryService;
-        private KdcServer kdcServer;
-        private LdapServer ldapServer;
-
-        private boolean removeBouncyCastle = false;
-
-        /**
-         * Creates directory services, starts LDAP server and KDCServer
-         *
-         * @param managementClient
-         * @param containerId
-         * @throws Exception
-         * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
-         */
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            try {
-                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-                    Security.addProvider(new BouncyCastleProvider());
-                    removeBouncyCastle = true;
-                }
-            } catch(SecurityException ex) {
-                LOGGER.warn("Cannot register BouncyCastleProvider", ex);
-            }
-            directoryService = DSAnnotationProcessor.getDirectoryService();
-            final String hostname = Utils.getCannonicalHost(managementClient);
-            final Map<String, String> map = new HashMap<String, String>();
-            map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
-            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient, true);
-            final String ldifContent = StrSubstitutor.replace(IOUtils.toString(getLdifInputStream(), "UTF-8"), map);
-            LOGGER.info(ldifContent);
-            
-            final SchemaManager schemaManager = directoryService.getSchemaManager();
-            try {
-                for (LdifEntry ldifEntry : new LdifReader(IOUtils.toInputStream(ldifContent))) {
-                    directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw e;
-            }
-            
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, KERBEROS_PORT2, hostname);
-            
-            final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
-                    (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
-            fixTransportAddress(createLdapServer, secondaryTestAddress);
-            
-            ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
-            ldapServer.start();
+        //@formatter:on
+        public final void setup(ManagementClient managementClient, InputStream ldifInputStream) throws Exception {
+            setupInternal(managementClient, ldifInputStream);
         }
+    }
 
-        /**
-         * Fixes bind address in the CreateTransport annotation.
-         *
-         * @param createLdapServer
-         */
-        private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
-            final CreateTransport[] createTransports = createLdapServer.transports();
-            for (int i = 0; i < createTransports.length; i++) {
-                final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
-                mgCreateTransport.setAddress(address);
-                createTransports[i] = mgCreateTransport;
-            }
+    public static class JBossComKerberosServerConfig extends AbstractKerberosServerConfig {
+
+        //@formatter:off
+        @Override
+        @CreateDS(
+            name = "JBossDS2",
+            partitions =
+            {
+                @CreatePartition(
+                    name = "jboss2",
+                    suffix = "dc=jboss,dc=com",
+                    contextEntry = @ContextEntry(
+                        entryLdif =
+                            "dn: dc=jboss,dc=com\n" +
+                            "dc: jboss\n" +
+                            "objectClass: top\n" +
+                            "objectClass: domain\n\n" ),
+                    indexes =
+                    {
+                        @CreateIndex( attribute = "objectClass" ),
+                        @CreateIndex( attribute = "dc" ),
+                        @CreateIndex( attribute = "ou" )
+                    })
+            },
+            additionalInterceptors = { KeyDerivationInterceptor.class })
+        @CreateLdapServer (
+                transports =
+                {
+                    @CreateTransport( protocol = "LDAP",  port = LDAP_PORT2)
+                })
+        @CreateKdcServer(primaryRealm = "JBOSS.COM",
+            kdcPrincipal = "krbtgt/JBOSS.COM@JBOSS.COM",
+            searchBaseDn = "dc=jboss,dc=com",
+            transports =
+            {
+                @CreateTransport(protocol = "UDP", port = KERBEROS_PORT2)
+            })
+        //@formatter:on
+        public final void setup(ManagementClient managementClient, InputStream ldifInputStream) throws Exception {
+            setupInternal(managementClient, ldifInputStream);
         }
-
-        /**
-         * Stops LDAP server and KDCServer and shuts down the directory service.
-         *
-         * @param managementClient
-         * @param containerId
-         * @throws Exception
-         * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
-         *      java.lang.String)
-         */
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            ldapServer.stop();
-            kdcServer.stop();
-            directoryService.shutdown();
-            FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
-            if(removeBouncyCastle) {
-                try {
-                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-                } catch(SecurityException ex) {
-                    LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
-                }
-            }
-        }
-
-        abstract protected InputStream getLdifInputStream();
     }
 }

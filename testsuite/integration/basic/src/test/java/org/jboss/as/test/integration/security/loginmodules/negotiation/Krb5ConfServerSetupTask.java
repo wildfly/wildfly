@@ -24,15 +24,11 @@ package org.jboss.as.test.integration.security.loginmodules.negotiation;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 
 /**
  * This server setup task creates a krb5.conf file and generates KeyTab files for the HTTP server and users hnelson and jduke.
- * The task also sets system properties
- * <ul>
- * <li>"java.security.krb5.conf" - path to the newly created krb5.conf is set</li>
- * <li>"sun.security.krb5.debug" - true is set (Kerberos debugging for Oracle Java)</li>
- * </ul>
  * 
  * @author Josef Cacek
  */
@@ -48,5 +44,5 @@ public class Krb5ConfServerSetupTask extends AbstractKrb5ConfServerSetupTask {
         users.add(new UserForKeyTab("jduke@JBOSS.ORG", "theduke", JDUKE_KEYTAB_FILE));
         return users;
     }
-    
+
 }

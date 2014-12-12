@@ -26,11 +26,14 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.kerberos.shared.crypto.encryption.KerberosKeyFactory;
 import org.apache.directory.server.kerberos.shared.keytab.Keytab;
@@ -64,6 +67,8 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
 
     private String origKrb5Conf;
     private String origKrbDebug;
+    private String origIbmJGSSDebug;
+    private String origIbmKrbDebug;
 
     // Public methods --------------------------------------------------------
 
@@ -79,21 +84,30 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
-        final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
+        final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCanonicalHost(managementClient));
         final Map<String, String> map = new HashMap<String, String>();
         map.put("hostname", cannonicalHost);
-        FileUtils.write(KRB5_CONF_FILE,
-                StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
-
+        final String supportedEncTypes = getSupportedEncTypes();
+        map.put("enctypes", supportedEncTypes);
+        LOGGER.info("Supported enctypes in krb5.conf: " + supportedEncTypes);
+        FileUtils.write(
+                KRB5_CONF_FILE,
+                StrSubstitutor.replace(
+                        IOUtils.toString(AbstractKrb5ConfServerSetupTask.class.getResourceAsStream(KRB5_CONF), "UTF-8"), map),
+                "UTF-8");
         createServerKeytab(cannonicalHost);
-        for (UserForKeyTab userForKeyTab : kerberosUsers()) {
+        final List<UserForKeyTab> kerberosUsers = kerberosUsers();
+        if (kerberosUsers != null) {
+            for (UserForKeyTab userForKeyTab : kerberosUsers) {
             createKeytab(userForKeyTab.getUser(), userForKeyTab.getPassword(), userForKeyTab.getKeyTabFileName());
         }
 
+        }
         LOGGER.info("Setting Kerberos configuration: " + KRB5_CONF_FILE);
         origKrb5Conf = Utils.setSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath());
         origKrbDebug = Utils.setSystemProperty("sun.security.krb5.debug", "true");
-
+        origIbmJGSSDebug = Utils.setSystemProperty("com.ibm.security.jgss.debug", "all");
+        origIbmKrbDebug = Utils.setSystemProperty("com.ibm.security.krb5.Krb5Debug", "all");
     }
 
     /**
@@ -109,6 +123,8 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         FileUtils.deleteDirectory(WORK_DIR);
         Utils.setSystemProperty("java.security.krb5.conf", origKrb5Conf);
         Utils.setSystemProperty("sun.security.krb5.debug", origKrbDebug);
+        Utils.setSystemProperty("com.ibm.security.jgss.debug", origIbmJGSSDebug);
+        Utils.setSystemProperty("com.ibm.security.krb5.Krb5Debug", origIbmKrbDebug);
     }
 
     /**
@@ -129,11 +145,31 @@ public abstract class AbstractKrb5ConfServerSetupTask implements ServerSetupTask
         return HTTP_KEYTAB_FILE.getAbsolutePath();
     }
 
+    /**
+     * Creates a default "HTTP/{host}@JBOSS.ORG" server keytab. it can be overridden if you want to use another SPN, password or
+     * keytab file location (or do more magic here).
+     *
+     * @param host
+     * @throws IOException
+     */
     protected void createServerKeytab(String host) throws IOException {
         createKeytab("HTTP/" + host + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
     }
 
     // Private methods -------------------------------------------------------
+
+    /**
+     * Returns comma-separated list of JDK-supported encryption type names for use in krb5.conf.
+     *
+     * @return
+     */
+    private String getSupportedEncTypes() {
+        final List<String> enctypesList = new ArrayList<String>();
+        for (EncryptionType encType : KerberosKeyFactory.getKerberosKeys("dummy@JBOSS.ORG", "dummy").keySet()) {
+            enctypesList.add(encType.getName());
+        }
+        return StringUtils.join(enctypesList, ',');
+    }
 
     /**
      * Creates a keytab file for given principal.

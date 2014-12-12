@@ -21,18 +21,21 @@
  */
 package org.jboss.as.test.manualmode.security.realms;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import static org.hamcrest.CoreMatchers.containsString;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -44,13 +47,9 @@ import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
 import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
-import static org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask.HTTP_KEYTAB_FILE;
 import org.jboss.as.test.integration.security.common.Utils;
-import static org.jboss.as.test.manualmode.security.realms.KerberosRealmTestBase.escapePath;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.logging.Logger;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,14 +63,12 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class KerberosInCLITestCase extends KerberosRealmTestBase {
-    
-    private static final Logger LOGGER = Logger.getLogger(KerberosInCLITestCase.class);
-    
+
     private static final String DEFAULT_JBOSSAS = "default-jbossas";
 
     private static final String BATCH_CLI_FILENAME = "kerberos-in-cli-batch.cli";
     private static final String REMOVE_BATCH_CLI_FILENAME = "kerberos-in-cli-remove-batch.cli";
-    
+
     private static final File WORK_DIR = new File("kerberos-in-cli" + System.currentTimeMillis());
     private static final File BATCH_CLI_FILE = new File(WORK_DIR, BATCH_CLI_FILENAME);
     private static final File REMOVE_BATCH_CLI_FILE = new File(WORK_DIR, REMOVE_BATCH_CLI_FILENAME);
@@ -81,7 +78,7 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
     private static final File USERS_FILE = new File(WORK_DIR, USERS_FILENAME);
     private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
     private static final File HOSTNAME_JBOSS_CLI_FILE = new File(WORK_DIR, "hostname-jboss-cli.xml");
-    
+
     private static final String KRB5CC_FILENAME = "krb5cc";
     private static final File KRB5CC_FILE = new File(WORK_DIR, KRB5CC_FILENAME);
     private static final String KRB5CC_EMPTY_FILENAME = "krb5cc_empty";
@@ -90,102 +87,103 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
     private static final File KRB5CC_WRONG_REALM_FILE = new File(WORK_DIR, KRB5CC_WRONG_REALM_FILENAME);
     private static final String KRB5CC_EXPIRED_FILENAME = "krb5cc_expired";
     private static final File KRB5CC_EXPIRED_FILE = new File(WORK_DIR, KRB5CC_EXPIRED_FILENAME);
-    
+
     private static final String USER = "hnelson";
     private static final String REALM = "JBOSS.ORG";
     private static final String USERNAME = USER + "@" + REALM;
-    
+
     private static final String JAAS_USER = "admin";
     private static final String JAAS_PASSWORD = "admin";
-    
+
     private static String hostname = null;
     private static String originalRealm = null;
-    
+
     private static final String RELOAD = "reload";
     private static final String WHOAMI = ":whoami";
     private static final int CLI_TIMEOUT = 60000;
     private static final int MAX_RELOAD_TIME = 30000;
-    
+
     private static final List<String> JAAS_CLI_PARAMS = createJaasParams();
     private static final List<String> KRB_AND_JAAS_CLI_PARAMS = createKrbAndJaasParams();
-    
+
     @ArquillianResource
     private static ContainerController container;
-    
+
     private static final Krb5ConfServerSetupTask krb5ConfServerSetupTask = new Krb5ConfServerSetupTask();
-    private static final DirectoryServerSetupTask directoryServerSetupTask = new DirectoryServerSetupTask();
-    private static final Directory2ServerSetupTask directoryServerSetupTask2 = new Directory2ServerSetupTask();
-    
-    
+    private static final AbstractKerberosServerConfig directoryServerSetupOrg = new JBossOrgKerberosServerConfig();
+    private static final AbstractKerberosServerConfig directoryServerSetupCom = new JBossComKerberosServerConfig();
+
     static class Krb5ConfServerSetupTask extends AbstractKrb5ConfServerSetupTask {
-        
+
         @Override
         protected List<AbstractKrb5ConfServerSetupTask.UserForKeyTab> kerberosUsers() {
             ArrayList<AbstractKrb5ConfServerSetupTask.UserForKeyTab> users = new ArrayList<AbstractKrb5ConfServerSetupTask.UserForKeyTab>();
-            users.add(new AbstractKrb5ConfServerSetupTask.UserForKeyTab("hnelson@JBOSS.ORG", "secret", new File(WORK_DIR,"hnelson.keytab")));
+            users.add(new AbstractKrb5ConfServerSetupTask.UserForKeyTab("hnelson@JBOSS.ORG", "secret", new File(WORK_DIR,
+                    "hnelson.keytab")));
             return users;
         }
-        
+
         @Override
         protected void createServerKeytab(String host) throws IOException {
             createKeytab("remote/" + host + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
         }
-        
+
     }
-    
+
     /**
-     * IBM JDK is ignored for Kerberos authentication to Management Console. See https://bugzilla.redhat.com/show_bug.cgi?id=1174156.
-     * Oracle JDK 6 is ignored since it is not able to use KRB5CCNAME environment property.
+     * Skip unsupported/unstable/buggy Kerberos configurations.
      */
     @BeforeClass
     public static void beforeClass() {
-        Assume.assumeTrue(!System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("IBM"));        
-        Assume.assumeTrue(!isOracleJdk6());
+        KerberosTestUtils.assumeCLIKerberosAuthenticationSupported(hostname);
     }
-    
+
     /**
      * Initialize servers and appropriate settings.
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(Integer.MIN_VALUE)
     public void initServer() throws Exception {
-        
+
         container.start(DEFAULT_JBOSSAS);
 
         WORK_DIR.mkdirs();
-        
-        ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();        
+
+        ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         ManagementClient managementClient = null;
         try {
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort());
 
             krb5ConfServerSetupTask.setup(managementClient, DEFAULT_JBOSSAS);
-            directoryServerSetupTask.setup(managementClient, DEFAULT_JBOSSAS);
-            directoryServerSetupTask2.setup(managementClient, DEFAULT_JBOSSAS);
+            final String testClassName = getClass().getSimpleName();
+            directoryServerSetupOrg.setup(managementClient, getClass().getResourceAsStream(testClassName + ".ldif"));
+            directoryServerSetupCom.setup(managementClient, getClass().getResourceAsStream(testClassName + "2.ldif"));
 
-            hostname = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
+            hostname = NetworkUtils.formatPossibleIpv6Address(Utils.getCanonicalHost(managementClient));
         } finally {
-            if (managementClient!=null)
+            if (managementClient != null)
                 managementClient.close();
-            if (client!=null) 
+            if (client != null)
                 client.close();
         }
-        
+
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(ROLES_FILENAME), ROLES_FILE);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(USERS_FILENAME), USERS_FILE);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(KRB5CC_FILENAME), KRB5CC_FILE);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(KRB5CC_EMPTY_FILENAME), KRB5CC_EMPTY_FILE);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(KRB5CC_WRONG_REALM_FILENAME), KRB5CC_WRONG_REALM_FILE);
         FileUtils.copyInputStreamToFile(getClass().getResourceAsStream(KRB5CC_EXPIRED_FILENAME), KRB5CC_EXPIRED_FILE);
-        
+
         final Map<String, String> map = new HashMap<String, String>();
         map.put("hostname", hostname);
-        FileUtils.write(HOSTNAME_JBOSS_CLI_FILE, StrSubstitutor.replace(
-                IOUtils.toString(getClass().getResourceAsStream(JBOSS_CLI_FILE), "UTF-8"), map), "UTF-8");
-        
+        FileUtils
+                .write(HOSTNAME_JBOSS_CLI_FILE,
+                        StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(JBOSS_CLI_FILE), "UTF-8"), map),
+                        "UTF-8");
+
         map.put("keyTabAbsolutePath", escapePath(Krb5ConfServerSetupTask.getKeyTabFullPath()));
         map.put("wrongKeyTabAbsolutePath", escapePath(Krb5ConfServerSetupTask.getKeyTabFullPath()) + "wrong");
         map.put("krbConfFile", escapePath(Krb5ConfServerSetupTask.getKrb5ConfFullPath()));
@@ -194,45 +192,47 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
         FileUtils.write(BATCH_CLI_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(BATCH_CLI_FILENAME), "UTF-8"), map),
                 "UTF-8");
-        
+
         FileUtils.write(REMOVE_BATCH_CLI_FILE, StrSubstitutor.replace(
                 IOUtils.toString(getClass().getResourceAsStream(REMOVE_BATCH_CLI_FILENAME), "UTF-8"), map), "UTF-8");
 
         initCLI();
         cli.sendLine("/core-service=management/management-interface=native-interface:read-attribute(name=security-realm)");
         CLIOpResult result = cli.readAllAsOpResult();
-        originalRealm = (String)result.getResult();
+        originalRealm = (String) result.getResult();
         final boolean batchResult = runBatch(BATCH_CLI_FILE);
         closeCLI();
         assertTrue("Server configuration failed", batchResult);
-        
+
         CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, RELOAD);
-        CustomCLIExecutor.waitForServerToReloadWithUserAndPassword(MAX_RELOAD_TIME, HOSTNAME_JBOSS_CLI_FILE, JAAS_USER, JAAS_PASSWORD);
-        
+        CustomCLIExecutor.waitForServerToReloadWithUserAndPassword(MAX_RELOAD_TIME, HOSTNAME_JBOSS_CLI_FILE, JAAS_USER,
+                JAAS_PASSWORD);
+
     }
-    
+
     /**
      * Test whether fall back is taken into account when path to keytab file in server configuration is wrong.
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(2)
     public void testFallbackForWrongKeytab() throws Exception {
         // ignore for OpenJDK6 - bz-1179185
-        Assume.assumeTrue(!(System.getProperty("java.version").contains("1.6.0") && 
-                System.getProperty("java.vm.name").toUpperCase(Locale.ENGLISH).startsWith("OPENJDK")));
-        
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+        Assume.assumeTrue(!(System.getProperty("java.version").contains("1.6.0") && System.getProperty("java.vm.name")
+                .toUpperCase(Locale.ENGLISH).startsWith("OPENJDK")));
+
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
+
     /**
      * Only set security realm for another tests.
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(3)
@@ -241,82 +241,89 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
                 + "(name=security-realm,value=TestKerberosRealm)";
         CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, setTestKerberosRealm, JAAS_CLI_PARAMS, null);
         CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, RELOAD, JAAS_CLI_PARAMS, null);
-        CustomCLIExecutor.waitForServerToReloadWithUserAndPassword(MAX_RELOAD_TIME, HOSTNAME_JBOSS_CLI_FILE, JAAS_USER, JAAS_PASSWORD);
+        CustomCLIExecutor.waitForServerToReloadWithUserAndPassword(MAX_RELOAD_TIME, HOSTNAME_JBOSS_CLI_FILE, JAAS_USER,
+                JAAS_PASSWORD);
     }
-    
+
     /**
      * Test whether user with valid Kerberos ticket has granted access to Management CLI.
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(4)
     public void testAccessWithCorrectTicket() throws Exception {
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + USERNAME + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + USERNAME + "\""));
     }
-    
+
     /**
-     * Test whether user without valid Kerberos ticket in cache has not granted access to Management CLI. Wrong authentication 
+     * Test whether user without valid Kerberos ticket in cache has not granted access to Management CLI. Wrong authentication
      * with Kerberos is expected to fallback into JAAS authentication in this test.
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(5)
     public void testAccessWithoutTicket() throws Exception {
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_EMPTY_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
+
     /**
-     * Test whether user without Kerberos principal has not granted access to Management CLI. Wrong authentication with Kerberos 
+     * Test whether user without Kerberos principal has not granted access to Management CLI. Wrong authentication with Kerberos
      * is expected to fallback into JAAS authentication in this test.
      */
     @Test
     @InSequence(6)
     public void testAccessWithoutKerberosPrincipal() {
-        String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, createKrbEnvironment(""));
+        String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
+                createKrbEnvironment(""));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
+
     /**
-     * Test whether user with valid Kerberos ticket from wrong realm has not granted access to Management CLI. Wrong authentication 
-     * with Kerberos is expected to fallback into JAAS authentication in this test.
+     * Test whether user with valid Kerberos ticket from wrong realm has not granted access to Management CLI. Wrong
+     * authentication with Kerberos is expected to fallback into JAAS authentication in this test.
      */
     @Test
     @InSequence(7)
     public void testAccessWithKerberosTicketFromWrongRealm() {
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_WRONG_REALM_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
+
     /**
-     * Test whether user with expired Kerberos ticket has not granted access to Management CLI. Wrong authentication with Kerberos 
-     * is expected to fallback into JAAS authentication in this test.
+     * Test whether user with expired Kerberos ticket has not granted access to Management CLI. Wrong authentication with
+     * Kerberos is expected to fallback into JAAS authentication in this test.
      */
     @Test
     @InSequence(8)
     public void testAccessWithKerberosExpiredTicket() {
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_EXPIRED_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
+
     /**
-     * Test whether fallback is taken into account when Kerberos server is down. 
+     * Test whether fallback is taken into account when Kerberos server is down.
      * 
      * THIS TEST ALSO SHUT DOWN KERBEROS SERVER!
      * 
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     @InSequence(Integer.MAX_VALUE - 2)
@@ -326,26 +333,25 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
         try {
             managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort());
-            directoryServerSetupTask.tearDown(managementClient, DEFAULT_JBOSSAS);
-            directoryServerSetupTask2.tearDown(managementClient, DEFAULT_JBOSSAS);
+            directoryServerSetupOrg.tearDown();
+            directoryServerSetupCom.tearDown();
             krb5ConfServerSetupTask.tearDown(managementClient, DEFAULT_JBOSSAS);
         } finally {
-            if (managementClient!=null)
+            if (managementClient != null)
                 managementClient.close();
-            if (client!=null) 
+            if (client != null)
                 client.close();
         }
-        
-        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS, 
+
+        final String cliOutput = CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, WHOAMI, KRB_AND_JAAS_CLI_PARAMS,
                 createKrbEnvironment(KRB5CC_FILE.getAbsolutePath()));
         assertThat("CLI output does not contain outcome success.", cliOutput, containsString("\"outcome\" => \"success\""));
-        assertThat("Result of :whoami operation does not contain expected user.", cliOutput, containsString("\"username\" => \"" + JAAS_USER + "\""));
+        assertThat("Result of :whoami operation does not contain expected user.", cliOutput,
+                containsString("\"username\" => \"" + JAAS_USER + "\""));
     }
-    
-    
-    
+
     /**
-     * Revert the AS configuration and stop the server as the last but one step. Kerberos and directory servers is stopped in 
+     * Revert the AS configuration and stop the server as the last but one step. Kerberos and directory servers is stopped in
      * testFallbackWhenKrbServerIsDown() test.
      *
      * @throws Exception
@@ -354,16 +360,17 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
     @InSequence(Integer.MAX_VALUE - 1)
     public void closeServer() throws Exception {
         assertTrue(container.isStarted(DEFAULT_JBOSSAS));
-                
+
         String unsecureNativeInterface = "/core-service=management/management-interface=native-interface:write-attribute"
                 + "(name=security-realm,value=" + originalRealm + ")";
         String cliOutput = CustomCLIExecutor.execute(null, unsecureNativeInterface, JAAS_CLI_PARAMS, null);
-        assertThat("Revert of native-interface security realm was unsuccessful", cliOutput, containsString("\"outcome\" => \"success\""));
+        assertThat("Revert of native-interface security realm was unsuccessful", cliOutput,
+                containsString("\"outcome\" => \"success\""));
         CustomCLIExecutor.execute(HOSTNAME_JBOSS_CLI_FILE, RELOAD, JAAS_CLI_PARAMS, null);
         CustomCLIExecutor.waitForServerToReload(MAX_RELOAD_TIME, HOSTNAME_JBOSS_CLI_FILE);
-        
+
         assertTrue(container.isStarted(DEFAULT_JBOSSAS));
-        
+
         initCLI();
         final boolean batchResult = runBatch(REMOVE_BATCH_CLI_FILE);
         closeCLI();
@@ -373,7 +380,7 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
 
         assertTrue("Reverting server configuration failed", batchResult);
     }
-    
+
     private static List<String> createJaasParams() {
         List<String> params = new ArrayList<String>();
         params.add("--timeout=" + CLI_TIMEOUT);
@@ -381,44 +388,20 @@ public class KerberosInCLITestCase extends KerberosRealmTestBase {
         params.add("--password=" + JAAS_PASSWORD);
         return params;
     }
-    
+
     private static List<String> createKrbAndJaasParams() {
         List<String> params = createJaasParams();
         params.add("-Djavax.security.auth.useSubjectCredsOnly=false");
-        params.add("-Djava.security.krb5.conf=" + escapePath(Krb5ConfServerSetupTask.getKrb5ConfFullPath()));        
+        params.add("-Djava.security.krb5.conf=" + escapePath(Krb5ConfServerSetupTask.getKrb5ConfFullPath()));
         params.add("-Dsun.security.krb5.debug=true");
         return params;
     }
-    
-    private Map<String,String> createKrbEnvironment(String cachePath) {
+
+    private Map<String, String> createKrbEnvironment(String cachePath) {
         final Map<String, String> environment = new HashMap<String, String>();
-        environment.put("KRB5CCNAME", "FILE:"+escapePath(cachePath));
+        environment.put("KRB5CCNAME", "FILE:" + escapePath(cachePath));
         environment.put("KRB5_CONFIG", Krb5ConfServerSetupTask.getKrb5ConfFullPath());
         return environment;
     }
-    
-    private static boolean isOracleJdk6() {
-        return System.getProperty("java.vendor").toUpperCase(Locale.ENGLISH).contains("SUN") && 
-                System.getProperty("java.version").contains("1.6.0") && 
-                System.getProperty("java.vm.name").toUpperCase(Locale.ENGLISH).startsWith("JAVA");
-    }
-    
-    static class DirectoryServerSetupTask extends AbstractDirectoryServerSetupTask {
 
-        @Override
-        protected InputStream getLdifInputStream() {
-            return KerberosInCLITestCase.class.getResourceAsStream(KerberosInCLITestCase.class.getSimpleName() + ".ldif");
-        }
-        
-    }
-    
-    static class Directory2ServerSetupTask extends AbstractDirectory2ServerSetupTask {
-
-        @Override
-        protected InputStream getLdifInputStream() {
-            return KerberosInCLITestCase.class.getResourceAsStream(KerberosInCLITestCase.class.getSimpleName() + "2.ldif");
-        }
-        
-    }
-    
 }

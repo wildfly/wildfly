@@ -92,6 +92,7 @@ import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
@@ -102,6 +103,7 @@ import org.jboss.security.negotiation.AdvancedLdapLoginModule;
 import org.jboss.security.negotiation.NegotiationAuthenticator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -149,6 +151,14 @@ public class AdvancedLdapLoginModuleTestCase {
     ManagementClient mgmtClient;
 
     // Public methods --------------------------------------------------------
+
+    /**
+     * Skip unsupported/unstable/buggy Kerberos configurations.
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     /**
      * Creates {@link WebArchive} for {@link #test1(URL)}.
@@ -268,7 +278,9 @@ public class AdvancedLdapLoginModuleTestCase {
      */
     private void testDeployment(URL webAppURL, String... assignedRoles) throws MalformedURLException, ClientProtocolException,
             IOException, URISyntaxException, LoginException, PrivilegedActionException {
-        final URI rolesPrintingURI = getServletURI(webAppURL, RolePrintingServlet.SERVLET_PATH + "?" + QUERY_ROLES);
+        final URI rolesPrintingURI = getServletURI(webAppURL, RolePrintingServlet.SERVLET_PATH + "?"
+                + QUERY_ROLES);
+
         final String rolesResponse = Utils.makeCallWithKerberosAuthn(rolesPrintingURI, "jduke", "theduke", 200);
         final List<String> assignedRolesList = Arrays.asList(assignedRoles);
 
@@ -279,13 +291,15 @@ public class AdvancedLdapLoginModuleTestCase {
                 assertNotInRole(rolesResponse, role);
             }
         }
-        final URI principalPrintingURI = getServletURI(webAppURL, PrincipalPrintingServlet.SERVLET_PATH);
+        final URI principalPrintingURI = getServletURI(webAppURL,
+                PrincipalPrintingServlet.SERVLET_PATH);
         final String principal = Utils.makeCallWithKerberosAuthn(principalPrintingURI, "jduke", "theduke", 200);
         assertEquals("Unexpected Principal name", "jduke@JBOSS.ORG", principal);
     }
 
     /**
-     * Constructs URI for given servlet path.
+     * Constructs URI for given servlet path. For the host (canonical host name) in the URI check if kerberos is supported for
+     * this configuration (Java version, Java vendor, hostname).
      *
      * @param servletPath
      * @return
@@ -398,7 +412,7 @@ public class AdvancedLdapLoginModuleTestCase {
                 LOGGER.warn("Cannot register BouncyCastleProvider", ex);
             }
             directoryService = DSAnnotationProcessor.getDirectoryService();
-            final String hostname = Utils.getCannonicalHost(managementClient);
+            final String hostname = Utils.getCanonicalHost(managementClient);
             final Map<String, String> map = new HashMap<String, String>();
             map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
             final String secondaryTestAddress = NetworkUtils.canonize(Utils.getSecondaryTestAddress(managementClient, true));
@@ -502,7 +516,7 @@ public class AdvancedLdapLoginModuleTestCase {
                         .putOption("doNotPrompt", TRUE);
             }
             kerberosModuleBuilder.putOption("principal",
-                    "HTTP/" + NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient)) + "@JBOSS.ORG") //
+                    "HTTP/" + NetworkUtils.formatPossibleIpv6Address(Utils.getCanonicalHost(managementClient)) + "@JBOSS.ORG") //
                     .putOption("debug", TRUE);
             final SecurityDomain hostDomain = new SecurityDomain.Builder().name("host")
                     .loginModules(kerberosModuleBuilder.build()) //

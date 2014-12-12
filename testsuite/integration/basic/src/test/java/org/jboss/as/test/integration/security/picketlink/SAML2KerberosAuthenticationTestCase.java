@@ -69,7 +69,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.security.common.AbstractKrb5ConfServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.NullHCCredentials;
@@ -77,6 +80,7 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
+import org.jboss.as.test.integration.security.common.negotiation.KerberosTestUtils;
 import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
@@ -84,6 +88,7 @@ import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -94,9 +99,9 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ 
+    KerberosServerSetupTask.Krb5ConfServerSetupTask.class,
     KerberosServerSetupTask.SystemPropertiesSetup.class,
     KerberosServerSetupTask.class,
-    KerberosKeyTabSetup.class,
     SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
 })
 @RunAsClient
@@ -118,12 +123,23 @@ public class SAML2KerberosAuthenticationTestCase {
 
     private static final String DUKE_PASSWORD = "theduke";
 
+    @ArquillianResource
+    ManagementClient mgmtClient;
+
     private static void consumeResponse(final HttpResponse response) {
         HttpEntity entity = response.getEntity();
         EntityUtils.consumeQuietly(entity);
     }
 
     // Public methods --------------------------------------------------------
+
+    /**
+     * Skip unsupported/unstable/buggy Kerberos configurations.
+     */
+    @BeforeClass
+    public static void beforeClass() {
+        KerberosTestUtils.assumeKerberosAuthenticationSupported(null);
+    }
 
     /**
      * Creates a {@link WebArchive} for given security domain.
@@ -262,16 +278,16 @@ public class SAML2KerberosAuthenticationTestCase {
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukePrincipal(@ArquillianResource URL webAppURL, @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
+        final String cannonicalHost = Utils.getCanonicalHost(mgmtClient);
         final URI principalPrintingURL = new URI(webAppURL.toExternalForm() + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?test=testDeploymentViaKerberos");
-
-        String responseBody = makeCallWithKerberosAuthn(principalPrintingURL, idpURL.toURI(), "jduke", DUKE_PASSWORD);
+        String responseBody = makeCallWithKerberosAuthn(principalPrintingURL,
+                Utils.replaceHost(idpURL.toURI(), cannonicalHost), "jduke", DUKE_PASSWORD);
 
         assertThat("Unexpected principal", responseBody, equalTo("jduke"));
     }
 
 
     // Private methods -------------------------------------------------------
-
 
     /**
      * Returns response body for the given URL request as a String. It also checks if the returned HTTP status code is the
@@ -287,9 +303,17 @@ public class SAML2KerberosAuthenticationTestCase {
      * @throws PrivilegedActionException
      * @throws LoginException
      */
-    public static String makeCallWithKerberosAuthn(final URI uri, final URI idpUri, final String user, final String pass) throws IOException, URISyntaxException,
+    public static String makeCallWithKerberosAuthn(URI uri, URI idpUri, final String user, final String pass)
+            throws IOException, URISyntaxException,
             PrivilegedActionException, LoginException {
         
+        final String canonicalHost = Utils.getDefaultHost(true);
+        uri = Utils.replaceHost(uri, canonicalHost);
+        idpUri = Utils.replaceHost(idpUri, canonicalHost);
+
+        LOGGER.info("Making call to: " + uri);
+        LOGGER.info("Expected IDP: " + idpUri);
+
         // Use our custom configuration to avoid reliance on external config
         Configuration.setConfiguration(new Krb5LoginConfiguration());
 
@@ -334,7 +358,7 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .options(
                                       Krb5LoginConfiguration.getOptions(
                                         KerberosServerSetupTask.getHttpServicePrincipal(managementClient),
-                                        KerberosKeyTabSetup.getKeyTab(),
+                                        AbstractKrb5ConfServerSetupTask.HTTP_KEYTAB_FILE,
                                         true
                                       )
                                     )
@@ -342,7 +366,7 @@ public class SAML2KerberosAuthenticationTestCase {
                     )
                     .build()
             );
-            
+
             // Add IdP security domain
             res.add(new SecurityDomain.Builder()
                     .name(IDENTITY_PROVIDER_REALM)
@@ -362,7 +386,8 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .putOption(
                                             Context.PROVIDER_URL,
                                             "ldap://"
-                                                    + KerberosServerSetupTask.getCannonicalHost(managementClient)
+                                                    + NetworkUtils.formatPossibleIpv6Address(Utils
+                                                            .getCanonicalHost(managementClient))
                                                     + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")

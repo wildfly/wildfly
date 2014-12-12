@@ -54,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
@@ -102,6 +103,10 @@ public class Utils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     public static final String UTF_8 = "UTF-8";
+
+    public static final boolean IBM_JDK = StringUtils.startsWith(SystemUtils.JAVA_VENDOR, "IBM");
+    public static final boolean OPEN_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "OpenJDK");
+    public static final boolean ORACLE_JDK = StringUtils.startsWith(SystemUtils.JAVA_VM_NAME, "Java HotSpot");
 
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
     public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
@@ -369,7 +374,7 @@ public class Utils {
             address = mgmtClient.getMgmtAddress();
         }
         if (useCannonicalHost) {
-            address = getCannonicalHost(address);
+            address = getCanonicalHost(address);
         }
         return stripSquareBrackets(address);
     }
@@ -705,22 +710,23 @@ public class Utils {
     }
 
     /**
-     * Returns cannonical hostname retrieved from management address of the givem {@link ManagementClient}.
+     * Returns canonical hostname retrieved from management address of the given {@link ManagementClient}. If <code>null</code>
+     * client is provided then <code>null</code> is returned.
      *
      * @param managementClient
      * @return
      */
-    public static final String getCannonicalHost(final ManagementClient managementClient) {
-        return getCannonicalHost(managementClient.getMgmtAddress());
+    public static final String getCanonicalHost(final ManagementClient managementClient) {
+        return managementClient != null ? getCanonicalHost(managementClient.getMgmtAddress()) : null;
     }
 
     /**
-     * Returns cannonical hostname form of the given address.
+     * Returns canonical hostname form of the given address.
      *
      * @param address hosname or IP address
      * @return
      */
-    public static final String getCannonicalHost(final String address) {
+    public static final String getCanonicalHost(final String address) {
         String host = stripSquareBrackets(address);
         try {
             host = InetAddress.getByName(host).getCanonicalHostName();
@@ -761,7 +767,7 @@ public class Utils {
             boolean useCannonicalHost) throws URISyntaxException {
         URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
         if (useCannonicalHost) {
-            resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
+            resultURI = replaceHost(resultURI, getCanonicalHost(mgmtClient));
         }
         return resultURI;
     }
@@ -950,7 +956,7 @@ public class Utils {
      */
     public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
             String vaultConfig) {
-        String hostname = System.getProperty("node0");
+        String hostname = getDefaultHost(false);
 
         // expand possible IPv6 address
         try {
@@ -1021,5 +1027,17 @@ public class Utils {
             // should never happen - everybody likes the "UTF-8" :)
         }
         return response;
+    }
+
+    /**
+     * Returns hostname - either read from the "node0" system property or the loopback address "127.0.0.1".
+     *
+     * @param canonical return hostname in canonical form
+     *
+     * @return
+     */
+    public static String getDefaultHost(boolean canonical) {
+        final String hostname = System.getProperty("node0", "127.0.0.1");
+        return canonical ? getCanonicalHost(hostname) : hostname;
     }
 }
